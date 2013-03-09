@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -89,16 +89,16 @@ class Assembler {
         File ear = new File(System.getProperty("java.io.tmpdir"), name + ".ear");
         ear.deleteOnExit();
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(ear));
-        for (String key : metadatas.keySet()) {
-            tranferFile(metadatas.get(key), jos, key, false);
+        for (Map.Entry<String, File> me : metadatas.entrySet()) {
+            tranferFile(me.getValue(), jos, me.getKey(), false);
         }
-        for (String archiveName : archives.keySet()) {
-            File archive = archives.get(archiveName);
+        for (Map.Entry<String, File> ame : archives.entrySet()) {
+            File archive = ame.getValue();
             if (archive.isDirectory()) {
-                archive = new File(assembleJAR(archiveName, archive,
+                archive = new File(assembleJAR(ame.getKey(), archive,
                         Collections.EMPTY_LIST, Collections.EMPTY_MAP));
             }
-            tranferFile(archive, jos, archiveName, false);
+            tranferFile(archive, jos, ame.getKey(), false);
         }
         jos.close();
         return ear.toURI();
@@ -113,8 +113,8 @@ class Assembler {
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(archive));
 
         transferDir(rootDirectory, jos, "");
-        for (String key : metadatas.keySet()) {
-            tranferFile(metadatas.get(key), jos, key, false);
+        for (Map.Entry<String, File> me : metadatas.entrySet()) {
+            tranferFile(me.getValue(), jos, me.getKey(), false);
         }
         for (File classpath : classpaths) {
             if (classpath.isDirectory()) {
@@ -133,8 +133,8 @@ class Assembler {
         archive.deleteOnExit();
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(archive));
         transferDir(rootDirectory, jos, "");
-        for (String key : metadatas.keySet()) {
-            tranferFile(metadatas.get(key), jos, key, false);
+        for (Map.Entry<String, File> me : metadatas.entrySet()) {
+            tranferFile(me.getValue(), jos, me.getKey(), false);
         }
         for (File classpath : classpaths) {
             if (classpath.isDirectory()) {
@@ -153,8 +153,8 @@ class Assembler {
         rar.deleteOnExit();
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(rar));
         transferDir(rootDirectory, jos, "");
-        for (String key : metadatas.keySet()) {
-            tranferFile(metadatas.get(key), jos, key, false);
+        for (Map.Entry<String, File> me : metadatas.entrySet()) {
+            tranferFile(me.getValue(), jos, me.getKey(), false);
         }
 
         // Make a single connector jar out of all the classpath directories and add it to the RAR file.

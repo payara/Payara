@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,11 +71,7 @@ public class Server {
      */
     public static class Builder {
         final String serverName;
-        boolean loggerEnabled;
-        boolean verbose;
-        File loggerFile;
         EmbeddedFileSystem fileSystem;
-        int jmxPort = 0;
 
         /**
          * Creates an unconfigured instance. The habitat will be obtained
@@ -94,7 +90,6 @@ public class Server {
          * @return this instance
          */
         public Builder logger(boolean enabled) {
-            loggerEnabled = enabled;
             return this;
         }
 
@@ -105,7 +100,6 @@ public class Server {
          * @return this instance
          */
         public Builder logFile(File f) {
-            loggerFile = f;
             return this;
         }
 
@@ -116,7 +110,6 @@ public class Server {
          * @return this instance
          */
         public Builder verbose(boolean b) {
-            this.verbose = b;
             return this;
         }
 
@@ -128,7 +121,6 @@ public class Server {
          * @return this instance
          */
         public Builder jmxPort(int portNumber) {
-            this.jmxPort = portNumber;
             return this;
         }
 
@@ -181,20 +173,6 @@ public class Server {
         }
     }
 
-    private final static class ContainerStatus {
-
-        int status=0;
-
-        private void started() { status=1; }
-        private void stopped() { status=0; }
-        private boolean isStopped() {
-            return status==0;
-        }
-        private boolean isStarted() {
-            return status==1;
-        }
-    }
-
     private final static class Container {
         private final EmbeddedContainer container;
         boolean started;
@@ -208,11 +186,6 @@ public class Server {
     private final static Map<String, Server> servers = new HashMap<String, Server>();
 
     private final String serverName;
-    private final boolean loggerEnabled;
-    private final boolean verbose;
-    private final File loggerFile;
-    private final int jmxPort;
-    private final ContainerStatus status = new ContainerStatus();
     private final ServiceHandle<EmbeddedFileSystem> fileSystem;
     private final ServiceLocator habitat;
     private final List<Container> containers = new ArrayList<Container>();
@@ -252,11 +225,7 @@ public class Server {
     
     private Server(Builder builder, Properties properties) {
         serverName = builder.serverName;
-        loggerEnabled = builder.loggerEnabled;
-        verbose = builder.verbose;
-        loggerFile = builder.loggerFile;
-        jmxPort = builder.jmxPort;
-
+        
         try {
             if(properties == null) {
                 properties = new Properties();
@@ -360,9 +329,6 @@ public class Server {
      */
     public synchronized void addContainer(final ContainerBuilder.Type type) {
 
-        if (status.isStarted()) {
-            throw new IllegalStateException("Cannot add container to a started embedded instance");
-        }
         containers.add(new Container(new EmbeddedContainer() {
 
             final List<Container> delegates = new ArrayList<Container>();
@@ -466,9 +432,6 @@ public class Server {
      * @throws IllegalStateException if the container is already started.
      */
     public synchronized <T extends EmbeddedContainer> T addContainer(ContainerBuilder<T> info) {
-        if (status.isStarted()) {
-            throw new IllegalStateException("Cannot add containers to an already started embedded instance");
-        }
         T container = info.create(this);
         if (container!=null && containers.add(new Container(container))) {
             return container;

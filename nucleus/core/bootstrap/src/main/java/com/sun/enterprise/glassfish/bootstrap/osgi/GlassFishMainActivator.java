@@ -75,7 +75,6 @@ import static com.sun.enterprise.glassfish.bootstrap.osgi.Constants.AUTO_START_P
  * @see #prepareStartupContext(org.osgi.framework.BundleContext)
  */
 public class GlassFishMainActivator implements BundleActivator {
-    private BundleContext context;
     private String installRoot;
 
     /**
@@ -121,8 +120,7 @@ public class GlassFishMainActivator implements BundleActivator {
     private boolean nonEmbedded;
 
     public void start(BundleContext context) throws Exception {
-        this.context = context;
-        nonEmbedded = isNonEmbedded();
+        nonEmbedded = context.getProperty(Constants.BUILDER_NAME_PROPERTY) != null;
         if (nonEmbedded) {
             GlassFishRuntime embeddedGfr = new EmbeddedOSGiGlassFishRuntime(context);
             context.registerService(GlassFishRuntime.class.getName(), embeddedGfr, null);
@@ -132,7 +130,7 @@ public class GlassFishMainActivator implements BundleActivator {
             final BootstrapProperties bsProperties = new BootstrapProperties(properties);
 
             System.out.println(GlassFishRuntime.class + " is loaded by [" + GlassFishRuntime.class.getClassLoader() + "]");
-            GlassFishRuntime existingGfr = lookupGfr();
+            GlassFishRuntime existingGfr = lookupGfr(context);
             if (existingGfr == null) {
                 System.out.println("Bootstrapping a new GlassFishRuntime");
                 // Should we do the following in a separate thread?
@@ -150,13 +148,12 @@ public class GlassFishMainActivator implements BundleActivator {
      *
      * @return an already bootstrapped GlassFishRuntime or null if no such runtime is bootstrapped
      */
-    private GlassFishRuntime lookupGfr() {
+    private GlassFishRuntime lookupGfr(BundleContext context) {
+        if (context == null) {
+            return null;
+        }
         final ServiceReference serviceReference = context.getServiceReference(GlassFishRuntime.class.getName());
         return serviceReference != null ? (GlassFishRuntime) context.getService(serviceReference) : null;
-    }
-
-    private boolean isNonEmbedded() {
-        return context.getProperty(Constants.BUILDER_NAME_PROPERTY) != null;
     }
 
     private Properties prepareStartupContext(final BundleContext context) {
@@ -195,7 +192,7 @@ public class GlassFishMainActivator implements BundleActivator {
         properties.setProperty(Constants.INSTANCE_ROOT_PROP_NAME,
                 instanceRoot);
 
-        properties.putAll(makeProvisioningOptions());
+        properties.putAll(makeProvisioningOptions(context));
 
         // This property is understood by our corresponding builder.
         properties.setProperty(Constants.BUILDER_NAME_PROPERTY, EmbeddedOSGiGlassFishRuntimeBuilder.class.getName());
@@ -224,10 +221,10 @@ public class GlassFishMainActivator implements BundleActivator {
         return null;
     }
 
-    private Properties makeProvisioningOptions() {
+    private Properties makeProvisioningOptions(BundleContext context) {
         Properties provisioningOptions = new Properties();
         URI installURI = new File(installRoot).toURI();
-        String installLocations = getBundleContext().getProperty(AUTO_INSTALL_PROP);
+        String installLocations = context.getProperty(AUTO_INSTALL_PROP);
         if (installLocations == null) {
             StringBuilder defaultInstallLocations = new StringBuilder();
             for (String entry : DEFAULT_INSTALLATION_LOCATIONS_RELATIVE) {
@@ -236,7 +233,7 @@ public class GlassFishMainActivator implements BundleActivator {
             installLocations = defaultInstallLocations.toString();
         }
         provisioningOptions.setProperty(AUTO_INSTALL_PROP, installLocations);
-        String startLocations = getBundleContext().getProperty(AUTO_START_PROP);
+        String startLocations = context.getProperty(AUTO_START_PROP);
         if (startLocations == null) {
             StringBuilder deafultStartLocations = new StringBuilder();
             for (String entry : DEFAULT_START_LOCATIONS_RELATIVE) {
@@ -267,10 +264,6 @@ public class GlassFishMainActivator implements BundleActivator {
             gfr.shutdown();
             gfr = null;
         }
-    }
-
-    private BundleContext getBundleContext() {
-        return context;
     }
 
 }

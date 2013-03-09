@@ -102,7 +102,6 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
      */
 
     private Framework framework;
-    private Properties properties;
 
     private Logger logger = LogFacade.BOOTSTRAP_LOGGER;
 
@@ -120,7 +119,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     public GlassFishRuntime build(BootstrapProperties bsProps) throws GlassFishException {
         try {
             MainHelper.buildStartupContext(bsProps.getProperties());
-            properties = bsProps.getProperties();
+            Properties properties = bsProps.getProperties();
 
             // Set the builder name so that when we check for nonEmbedded() inside GlassFishMainActivator,
             // we can identify the environment.
@@ -134,9 +133,9 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
             // Step 1: install/update/delete bundles
             if (newFramework()) {
-                storeProvisioningOptions();
+                storeProvisioningOptions(properties);
             } else {
-                reconfigure(); // this will reconfigure if any provisioning options have changed.
+                reconfigure(properties); // this will reconfigure if any provisioning options have changed.
             }
             BundleProvisioner bundleProvisioner = BundleProvisioner.createBundleProvisioner(
                     framework.getBundleContext(), properties);
@@ -144,7 +143,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
 
             if (bundleProvisioner.hasAnyThingChanged()) {
                 bundleProvisioner.refresh();
-                deleteHK2Cache(); // clean hk2 cache so that updated bundle details will go in there.
+                deleteHK2Cache(properties); // clean hk2 cache so that updated bundle details will go in there.
                 // Save the bundle ids for use during restart.
                 storeBundleIds(bundleIds.toArray(new Long[bundleIds.size()]));
             }
@@ -209,14 +208,16 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         throw new GlassFishException("No GlassFishRuntime available");
     }
 
-    private void deleteHK2Cache() {
+    private void deleteHK2Cache(Properties properties) {
         // This is a HACK - thanks to some weired optimization trick
         // done for GlassFish. HK2 maintains a cache of inhabitants and
         // that needs  to be recreated when there is a change in modules dir.
         final String cacheDir = properties.getProperty(HK2_CACHE_DIR);
         if (cacheDir != null) {
             File inhabitantsCache = new File(cacheDir, INHABITANTS_CACHE);
-            if (inhabitantsCache.exists()) inhabitantsCache.delete();
+            if (inhabitantsCache.exists()) {
+                inhabitantsCache.delete();
+            }
         }
     }
 
@@ -242,13 +243,8 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
      * certain initial provisoning options have changed, etc. If such thing has happened, it uninstalls
      * all the bundles that were installed from GlassFish installation location.
      */
-    private void reconfigure() throws Exception {
-        if (hasBeenReconfigured()) {
-            // uninstallOldBundles() will also uninstall framework extension bundles.
-            // This in turn requires a framework to be updated, but as of Felix 3.0.8,
-            // Felix framework can't be updated. It leads to some NPE in resolver somewhere.
-            // As a work around, we create a new framework instance with a clean cache.
-            // uninstallOldBundles();
+    private void reconfigure(Properties properties) throws Exception {
+        if (hasBeenReconfigured(properties)) {
             logger.log(Level.INFO, LogFacade.PROVISIONING_OPTIONS_CHANGED);
             framework.stop();
             framework.waitForStop(0);
@@ -258,51 +254,17 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
             framework = fwLauncher.launchOSGiFrameWork();
             logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "reconfigure", "Launched {0}",
                     new Object[]{framework});
-            storeProvisioningOptions();
+            storeProvisioningOptions(properties);
         }
     }
 
-    /**
-     * Uninstall bundles that were installed as part of an earlier provisoning process.
-     */
-    private void uninstallOldBundles() {
-        final Long[] ids = readBundleIds();
-        if (ids.length == 0) {
-            for (Bundle b : framework.getBundleContext().getBundles()) {
-                if (b != framework) uninstallBundle(b);
-            }
-        }
-        for (Long id : ids) {
-            uninstallBundle(id);
-        }
-    }
-
-    private void uninstallBundle(Long id) {
-        Bundle b = framework.getBundleContext().getBundle(id);
-        if (b != null) {
-            uninstallBundle(b);
-        } else {
-            logger.log(Level.WARNING, LogFacade.CANT_LOCATE_BUNDLE, new Object[]{id});
-        }
-    }
-
-    private void uninstallBundle(Bundle b) {
-        try {
-            b.uninstall();
-            logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "uninstallBundle",
-                    "Uninstalled {0}", new Object[]{b});
-        } catch (BundleException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private boolean hasBeenReconfigured() {
+    private boolean hasBeenReconfigured(Properties properties) {
         try {
             logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "hasBeenReconfigured", "oldProvisioningOptions = {0}",
                     new Object[]{getOldProvisioningOptions()});
             logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "hasBeenReconfigured", "newProvisioningOptions = {0}",
-                    new Object[]{getNewProvisioningOptions()});
-            return !getNewProvisioningOptions().equals(getOldProvisioningOptions());
+                    new Object[]{getNewProvisioningOptions(properties)});
+            return !getNewProvisioningOptions(properties).equals(getOldProvisioningOptions());
         } catch (IOException e) {
             e.printStackTrace();
             return true;
@@ -312,7 +274,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     /**
      * @return properties used by BundleProvisioner
      */
-    private Properties getNewProvisioningOptions() {
+    private Properties getNewProvisioningOptions(Properties properties) {
         if (newProvisioningOptions == null) {
             Properties props = new Properties();
             for (String key : properties.stringPropertyNames()) {
@@ -344,27 +306,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         }
     }
 
-    private Long[] readBundleIds() {
-        try {
-            File f = framework.getBundleContext().getDataFile(BUNDLEIDS_FILENAME);
-            if (f == null || !f.exists()) return new Long[0];// GLASSFISH-19623: f can be null
-            ObjectInputStream is = new ObjectInputStream(new FileInputStream(f));
-            Long[] result;
-            try {
-                result = (Long[]) is.readObject();
-            } finally {
-                is.close();
-            }
-            logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "readBundleIds", "Read bundle ids from {0}",
-                    new Object[]{f.getAbsolutePath()});
-            return result;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new Long[0];
-        }
-    }
-
-    private void storeProvisioningOptions() {
+    private void storeProvisioningOptions(Properties properties) {
         try {
             File f = framework.getBundleContext().getDataFile(PROVISIONING_OPTIONS_FILENAME);
             // GLASSFISH-19623: f can be null
@@ -373,7 +315,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
                 return;
             }
             final FileOutputStream os = new FileOutputStream(f);
-            getNewProvisioningOptions().store(os, "");
+            getNewProvisioningOptions(properties).store(os, "");
             os.flush();
             os.close();
             logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "storeProvisioningOptions", "Stored provisioning options in {0}",
