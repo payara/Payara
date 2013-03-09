@@ -71,15 +71,11 @@ import org.glassfish.deployment.common.SimpleDeployer;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
-import org.glassfish.weld.services.EjbServicesImpl;
-import org.glassfish.weld.services.InjectionServicesImpl;
-import org.glassfish.weld.services.ProxyServicesImpl;
-import org.glassfish.weld.services.SecurityServicesImpl;
-import org.glassfish.weld.services.TransactionServicesImpl;
-import org.glassfish.weld.services.ValidationServicesImpl;
+import org.glassfish.weld.services.*;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
+import org.jboss.weld.bootstrap.spi.BootstrapConfiguration;
 import org.jboss.weld.ejb.spi.EjbServices;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.security.spi.SecurityServices;
@@ -478,6 +474,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
            
             ProxyServices proxyServices = new ProxyServicesImpl(services);
             deploymentImpl.getServices().add(ProxyServices.class, proxyServices);
+
+            BootstrapConfigurationImpl bootstrapConfiguration = new BootstrapConfigurationImpl();
+            deploymentImpl.getServices().add(BootstrapConfiguration.class, bootstrapConfiguration);
 
         } else {
             deploymentImpl.scanArchive(archive, ejbs, context);

@@ -40,6 +40,7 @@
 
 package org.glassfish.weld.services;
 
+import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.jboss.weld.injection.spi.InjectionContext;
@@ -70,12 +71,8 @@ public class InjectionServicesImpl implements InjectionServices {
         bundleContext = context;
     }
 
-
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
-
         try {
-
-
             ServiceLocator h = Globals.getDefaultHabitat();
             ComponentEnvManager compEnvManager = (ComponentEnvManager) h.getService(ComponentEnvManager.class);
 
@@ -143,11 +140,27 @@ public class InjectionServicesImpl implements InjectionServices {
     }
 
     public void validateResourceInjectionPoint(InjectionPoint injectionPoint) {
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        GlassfishNamingManager glassfishNamingManager = serviceLocator.getService(GlassfishNamingManager.class);
+        try {
+            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/BeanManager");
+            System.out.println( "junk");
+        } catch ( Exception exc ) {
+
+        }
+
+        try {
+            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/UserTransaction");
+            System.out.println( "junk");
+        } catch ( Exception exc ) {
+
+        }
+
+
 
     }
 
     public void cleanup() {
 
     }
-  
 }

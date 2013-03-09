@@ -84,6 +84,7 @@
                                 org.jboss.weld.serialization
                                 org.jboss.weld.injection.attributes,
                                 org.jboss.weld.util.collections,
+                                org.jboss.weld.annotated.slim
                                 org.jboss.weld.annotated.slim.backed
                        -->
                             <Export-Package>
@@ -99,6 +100,7 @@
                                 org.jboss.weld.serialization,
                                 org.jboss.weld.injection.attributes,
                                 org.jboss.weld.util.collections,
+                                org.jboss.weld.annotated.slim,
                                 org.jboss.weld.annotated.slim.backed
                             </Export-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
