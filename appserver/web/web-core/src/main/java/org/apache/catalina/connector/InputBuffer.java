@@ -131,7 +131,7 @@ public class InputBuffer extends Reader
      */
     private Request grizzlyRequest;
 
-    private org.glassfish.grizzly.http.server.io.InputBuffer grizzlyInputBuffer;
+    private org.glassfish.grizzly.http.io.InputBuffer grizzlyInputBuffer;
 
     private org.apache.catalina.connector.Request request;
 
