@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,30 +40,20 @@
 
 -->
 
-<!--
-  A parent project that contains modules which are distribution fragements.
-  Each sub-module contain distribution details about exactly one OSGi runtime.
--->
+<FindBugsFilter>
+    <!--
+         Request: Sahoo
+         Approval: Bill Shannon
+     -->
+    <!-- 
+        Since jline is a third-party library, we can't do much to fix
+        findbugs reported erros in it. So, we skip scanning all jline classes.
+    -->
+    <Match>
+        <Package name="jline"/>
+    </Match>
+    <Match>
+        <Package name="org.fusesource.jansi.internal"/>
+    </Match>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-      <groupId>org.glassfish.main</groupId>
-      <artifactId>glassfish-nucleus-parent</artifactId>
-      <version>4.0-SNAPSHOT</version>
-      <relativePath>../pom.xml</relativePath>
-    </parent>
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.osgi-platforms</groupId>
-    <artifactId>osgi-platforms</artifactId>
-    <name>Distribution Fragments for various OSGi platforms</name>
-    <modules>
-        <module>felix</module>
-        <module>osgi-cli-remote</module>
-        <module>osgi-cli-interactive</module>
-        <module>osgi-container</module>
-        <module>osgi-cli-interactive-l10n</module>
-        <module>osgi-cli-remote-l10n</module>
-    </modules>
-</project>
-
+</FindBugsFilter>

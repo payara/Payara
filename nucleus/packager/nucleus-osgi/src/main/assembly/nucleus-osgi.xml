@@ -62,8 +62,16 @@
             <directory>${temp.dir}</directory>
             <excludes>
                 <exclude>modules/org.apache.felix.*.jar</exclude>
+                <exclude>modules/osgi-cli-interactive.jar</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/modules</directory>
+            <includes>
+                <include>osgi-cli-interactive.jar</include>
+            </includes>
+            <outputDirectory>${install.dir.name}/lib/asadmin</outputDirectory>
         </fileSet>
     </fileSets>
 </assembly>

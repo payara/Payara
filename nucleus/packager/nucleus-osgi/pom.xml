@@ -90,13 +90,11 @@
             <artifactId>osgi-cli-remote</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!--
         <dependency>
-            <groupId>org.glassfish.main.osgi</groupId>
+            <groupId>org.glassfish.main.osgi-platforms</groupId>
             <artifactId>osgi-cli-interactive</artifactId>
             <version>${project.version}</version>
         </dependency>
-        -->
         <dependency>
             <groupId>org.glassfish.main.osgi-platforms</groupId>
             <artifactId>osgi-container</artifactId>
