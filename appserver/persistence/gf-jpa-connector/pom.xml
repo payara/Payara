@@ -51,6 +51,7 @@
     </parent>
 
     <artifactId>gf-jpa-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Connector for JPA runtime in glassfish</name>
     
@@ -61,7 +62,7 @@
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>developer</role>
-		        <role>lead</role>
+                <role>lead</role>
             </roles>
         </developer>
     </developers>

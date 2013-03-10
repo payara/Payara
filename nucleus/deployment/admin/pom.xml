@@ -48,10 +48,10 @@
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>nucleus-deployment</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>deployment-admin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Deployment Related Admin Classes</name>
 

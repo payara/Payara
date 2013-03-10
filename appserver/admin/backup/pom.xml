@@ -46,13 +46,45 @@
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>admin</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>backup</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Backup Restore classes</name>
     <description>Backup Restore</description>
+
+    <developers>
+        <developer>
+            <id>kasso</id>
+            <name>Chris Kasso</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>yaminikb</id>
+            <name>Yamini K B</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+        
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+    </build>        
+                
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
@@ -65,33 +97,4 @@
             <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
-	<developers>
-		<developer>
-			<id>kasso</id>
-			<name>Chris Kasso</name>
-			<organization>Oracle, Inc.</organization>
-			<roles>
-				<role>lead</role>
-				<role>developer</role>
-			</roles>
-		</developer>
-		<developer>
-			<id>yaminikb</id>
-			<name>Yamini K B</name>
-			<organization>Oracle, Inc.</organization>
-			<roles>
-				<role>developer</role>
-			</roles>
-		</developer>
-	</developers>
-	<build>
-		<resources>
-			<resource>
-				<directory>src/main/java</directory>
-				<includes>
-				<include>**/*.properties</include>
-				</includes>
-			</resource>
-		</resources>
-	</build>
 </project>

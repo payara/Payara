@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>resources-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Resources Connector</name>
     <description>Connector (glue) module for resources infrastructure</description>

@@ -49,8 +49,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>persistence-common</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Common persistence code between JPA and CMP</name>
     

@@ -138,6 +138,8 @@
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
+        <javadoc.skip>false</javadoc.skip>
+        <deploy.skip>false</deploy.skip>
     </properties>
     
     <modules>
@@ -395,6 +397,7 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <configuration>
                     <retryFailedDeploymentCount>10</retryFailedDeploymentCount>
+                    <skip>${deploy.skip}</skip>
                 </configuration>
             </plugin>
             <plugin>
@@ -402,37 +405,15 @@
                 <artifactId>config-generator</artifactId>
 		<configuration>
 		    <excludes>**/.ade_path/**</excludes>
+                    <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
 		</configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate-injectors</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>generate-test-injectors</id>
-                        <goals>
-                            <goal>generate-test-injectors</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>hk2-inhabitant-generator</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate-inhabitants</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>generate-test-inhabitants</id>
-                        <goals>
-                            <goal>generate-test-inhabitants</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <configuration>
+                    <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -480,16 +461,11 @@
                         <_include>-${basedir}/osgi.bundle</_include>
                     </instructions>
                     <excludeDependencies>tools-jar</excludeDependencies>
+                    <supportedProjectTypes>
+                        <supportedProjectType>glassfish-jar</supportedProjectType>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>bundle-manifest</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>manifest</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -511,23 +487,15 @@
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgiversion-maven-plugin</artifactId>
-                <executions>
-                    <!-- Since we don't want qualifier like b05 or SNAPSHOT to appear
-                         in package version attribute, we use the following goal to
-                         populate a project property with an OSGi version which is
-                         equivalent to maven version without qualifier and then use that
-                         property in osgi.bundle while exporting. -->
-                    <execution>
-                        <id>compute-osgi-version</id>
-                        <goals>
-                            <goal>compute-osgi-version</goal>
-                        </goals>
-                        <configuration>
-                            <dropVersionComponent>qualifier</dropVersionComponent>
-                            <versionPropertyName>project.osgi.version</versionPropertyName>
-                        </configuration>
-                    </execution>
-                </executions>
+                <!-- Since we don't want qualifier like b05 or SNAPSHOT to appear
+                in package version attribute, we use the following goal to
+                populate a project property with an OSGi version which is
+                equivalent to maven version without qualifier and then use that
+                property in osgi.bundle while exporting. -->                
+                <configuration>
+                    <dropVersionComponent>qualifier</dropVersionComponent>
+                    <versionPropertyName>project.osgi.version</versionPropertyName>
+                </configuration>
             </plugin>
 
             <plugin>
@@ -583,24 +551,16 @@
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>command-security-maven-plugin</artifactId>
                 <version>${command-security-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>check-command-authorization</id>
-                        <phase>process-classes</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                        <configuration>
-                            <isFailureFatal>false</isFailureFatal>
-                        </configuration>
-                    </execution>
-                </executions>
+                <configuration>
+                    <isFailureFatal>false</isFailureFatal>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
                     <detectOfflineLinks>false</detectOfflineLinks>
+                    <skip>${javadoc.skip}</skip>
                 </configuration>
             </plugin>
         </plugins>

@@ -51,6 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-updatecenter-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Update Center Plugin</name>
     <description>Update Center plugin bundle for GlassFish V3 Admin Console</description>

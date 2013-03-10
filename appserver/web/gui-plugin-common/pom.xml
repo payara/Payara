@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-gui-plugin-common</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Web container and GUI plug-in common classes</name>
 

@@ -47,10 +47,10 @@
         <groupId>org.glassfish.main.cluster</groupId>
         <artifactId>cluster</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gms-bootstrap</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GMS Bootstrap Module</name>
     <dependencies>

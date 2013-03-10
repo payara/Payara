@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>kernel</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Kernel Classes</name>
     

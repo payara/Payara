@@ -49,8 +49,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>gf-ejb-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>EJB Container connector for Glassfish</name>
 

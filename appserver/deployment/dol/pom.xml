@@ -51,6 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>dol</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Deployment Object Library</name>
 
@@ -59,17 +60,6 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>classpath</id>
-                        <configuration>
-                          <silent>true</silent>
-                          <outputFile>${project.build.directory}/classpath.txt</outputFile>
-                        </configuration>
-                        <goals>
-                            <goal>build-classpath</goal>
-                        </goals>
-                    </execution>
-
                     <execution>
                         <phase>process-resources</phase>
                         <goals>

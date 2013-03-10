@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>jms-admin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <version>4.0-SNAPSHOT</version>
     <name>JMS admin</name>

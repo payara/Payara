@@ -50,6 +50,7 @@
 
     <groupId>org.glassfish.main.osgi-platforms</groupId>
     <artifactId>osgi-cli-remote</artifactId>
+    <packaging>glassfish-jar</packaging>
 
     <name>Admin CLI bridge command to the OSGi Shell</name>
     <description>${project.name}}</description>

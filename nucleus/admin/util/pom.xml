@@ -49,9 +49,9 @@
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>nucleus-admin</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>admin-util</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>admin-util</name>
     <description>Admin Utilities</description>

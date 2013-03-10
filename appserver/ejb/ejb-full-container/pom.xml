@@ -52,6 +52,7 @@
     </parent>
 
     <artifactId>ejb-full-container</artifactId>
+    <packaging>glassfish-jar</packaging>
     <name>Full EJB Container add-ons</name>
 
     <developers>

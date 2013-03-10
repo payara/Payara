@@ -51,8 +51,8 @@
     </parent>  
     <groupId>org.glassfish.main.common</groupId>
     <artifactId>scattered-archive-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Scattered Archive APIs of Glassfish</name>
-
 </project>
 

@@ -49,8 +49,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>jpa-container</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JPA container for glassfish</name>
     
@@ -61,7 +61,7 @@
             <organization>Oracle, Inc.</organization>
             <roles>
                 <role>developer</role>
-		        <role>lead</role>
+                <role>lead</role>
             </roles>
         </developer>
     </developers>

@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>ejb.security</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Ejb Security Integration</name>
     <developers>
@@ -70,6 +71,7 @@
             </roles>
         </developer>
     </developers>
+    
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -87,6 +89,7 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>

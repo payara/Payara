@@ -49,8 +49,10 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>security</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Security Core Classes</name>
+    
     <developers>
         <developer>
             <id>kumarjayanti</id>

@@ -50,8 +50,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>soap-tcp</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>SOAP/TCP integration code</name>
 
@@ -66,6 +66,7 @@
             </roles>
         </developer>
     </developers>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.webservices</groupId>

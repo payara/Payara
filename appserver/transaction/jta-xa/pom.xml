@@ -54,10 +54,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jta-xa</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JTA-XA Implementation for Glassfish</name>
+    
     <developers>
-	<!-- information on the module's developers -->
         <developer>
             <id>mvatkina</id>
             <name>Marina Vatkina</name>
@@ -80,7 +81,6 @@
     </build>
 
     <dependencies>
-	<!-- Dependencies on other modules/jars -->
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>
@@ -102,6 +102,7 @@
         <dependency>
             <groupId>org.glassfish.common</groupId>
             <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

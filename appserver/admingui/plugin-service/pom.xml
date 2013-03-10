@@ -52,6 +52,7 @@
     </parent>
     <groupId>org.glassfish.main.admingui</groupId>
     <artifactId>console-plugin-service</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Integration</name>
     <description>GlassFish V3 Admin Console Integration</description>

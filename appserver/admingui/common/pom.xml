@@ -51,6 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Common</name>
     <description>This bundle contains common code that may be shared across plugins.</description>

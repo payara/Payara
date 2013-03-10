@@ -46,10 +46,10 @@
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Appserver Core Bootstraping Classes</name>
     <description>Glassfish appserver boostraping classes</description>

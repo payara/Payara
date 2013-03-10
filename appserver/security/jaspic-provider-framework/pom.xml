@@ -50,6 +50,8 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jaspic.provider.framework</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
     <name>Jaspic Provider Framework</name>
     <description>JSR-196 Provider Framework Reference Implementation</description>
     

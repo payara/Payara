@@ -51,6 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>registration-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Registration API</name>
     <description>Registration API</description>

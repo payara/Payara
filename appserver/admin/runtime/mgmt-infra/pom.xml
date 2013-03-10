@@ -49,6 +49,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>rt-mgmt-infra</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Runtime Management Infrastructure</name>
     <description>Runtime Management Infrastructure Classes</description>
@@ -59,5 +60,4 @@
           <artifactId>core</artifactId>
         </dependency>
     </dependencies>
-
 </project>

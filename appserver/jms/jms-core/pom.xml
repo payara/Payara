@@ -49,12 +49,12 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jms-core</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
     <name>JMS Module</name>
     
-    <version>4.0-SNAPSHOT</version>
     <developers>
         <developer>
             <id>sats</id>
@@ -85,42 +85,42 @@
         <dependency>
             <groupId>org.glassfish.main.jms</groupId>
             <artifactId>gf-jms-connector</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-internal-api</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-inbound-runtime</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.transaction</groupId>
             <artifactId>transaction-internal-api</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.ejb</groupId>
             <artifactId>gf-ejb-connector</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     	<dependency>
             <groupId>org.glassfish.main.core</groupId>
@@ -132,5 +132,4 @@
             <artifactId>javax.jms-api</artifactId>
         </dependency>
     </dependencies>
-
 </project>

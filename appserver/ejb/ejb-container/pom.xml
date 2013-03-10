@@ -52,6 +52,7 @@
     </parent>
 
     <artifactId>ejb-container</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish Core EJB container implementation</name>
 

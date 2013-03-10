@@ -52,6 +52,7 @@
     </parent>
 
     <artifactId>entitybean-container</artifactId>
+    <packaging>glassfish-jar</packaging>
     <name>Entity Bean container</name>
 
     <developers>
@@ -96,6 +97,5 @@
             <artifactId>ejb-container</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 </project>

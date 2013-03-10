@@ -51,6 +51,8 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
   <artifactId>jdbc-core</artifactId>
+  <packaging>glassfish-jar</packaging>
+  
   <name>Core JDBC Resource Adapter classes</name>
 
   <properties>
@@ -58,47 +60,43 @@
   </properties>
 
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.properties</include>
-          <include>**/*.xml</include>
-        </includes>
-      </resource>
-      <resource>
-          <directory>src/main/resources</directory>
-      </resource>
-    </resources>
+      <resources>
+          <resource>
+              <directory>src/main/java</directory>
+              <includes>
+                  <include>**/*.properties</include>
+                  <include>**/*.xml</include>
+              </includes>
+          </resource>
+          <resource>
+              <directory>src/main/resources</directory>
+          </resource>
+      </resources>
   </build>
 
   <dependencies>
-
-    <dependency>
-      <groupId>org.glassfish.main.common</groupId>
-      <artifactId>glassfish-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>		    
-
-    <dependency>
-      <groupId>org.glassfish.main.connectors</groupId>
-      <artifactId>connectors-internal-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.glassfish.main.common</groupId>
-      <artifactId>common-util</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>management-api</artifactId>
-        </dependency>
-        <dependency>
-	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
-        </dependency>
+      <dependency>
+          <groupId>org.glassfish.main.common</groupId>
+          <artifactId>glassfish-api</artifactId>
+          <version>${project.version}</version>
+      </dependency>		    
+      <dependency>
+          <groupId>org.glassfish.main.connectors</groupId>
+          <artifactId>connectors-internal-api</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.main.common</groupId>
+          <artifactId>common-util</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.external</groupId>
+          <artifactId>management-api</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.glassfish.gmbal</groupId>
+          <artifactId>gmbal</artifactId>
+      </dependency>
   </dependencies>
 </project>

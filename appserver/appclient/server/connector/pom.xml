@@ -51,6 +51,7 @@
 
     <groupId>org.glassfish.main.appclient.server</groupId>
     <artifactId>appclient-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish AppClient Server-Side Connector</name>
     

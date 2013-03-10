@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-glue</artifactId>
+    <packaging>glassfish-jar</packaging>
 
     <name>Web Container glue code</name>
 
@@ -101,6 +102,7 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -120,7 +122,6 @@
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>stats77</artifactId>

@@ -49,6 +49,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-connectors-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish Connectors Connector</name>
     <description>Connector (gluecode) for GlassFish Java EE Connector Architecture Runtime</description>

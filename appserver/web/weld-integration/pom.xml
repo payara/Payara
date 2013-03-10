@@ -49,8 +49,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>weld-integration</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Weld integration for glassfish</name>
     
@@ -66,6 +66,7 @@
             <organization>Oracle, Inc.</organization>
         </developer>
     </developers>
+    
     <build>
         <resources>
             <resource>
@@ -84,11 +85,11 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.faces</artifactId>
-            <version>${mojarra.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.web</groupId>

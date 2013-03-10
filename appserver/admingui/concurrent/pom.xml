@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-concurrent-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Concurrent Plugin</name>
     <description>Concurrent (JSR236)  plugin bundle for GlassFish Admin Console</description>

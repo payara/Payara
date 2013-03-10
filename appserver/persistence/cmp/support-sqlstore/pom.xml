@@ -50,8 +50,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>cmp-support-sqlstore</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>support-sqlstore module for cmp</name>
 

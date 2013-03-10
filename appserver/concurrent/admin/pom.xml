@@ -49,6 +49,7 @@
         <version>4.0-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-admin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Concurrent Admin Module</name>
     <build>

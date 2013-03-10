@@ -47,9 +47,9 @@
         <groupId>org.glassfish.main.admingui</groupId>
         <artifactId>admingui</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-web-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Web Container Plugin</name>
     <description>Web container plugin bundle for GlassFish V3 Admin Console</description>

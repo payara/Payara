@@ -54,10 +54,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jts</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JTS Implementation for Glassfish</name>
+    
     <developers>
-	<!-- information on the module's developers -->
         <developer>
             <id>mvatkina</id>
             <name>Marina Vatkina</name>
@@ -115,7 +116,6 @@
     </build>
 
     <dependencies>
-	<!-- Dependencies on other modules/jars -->
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>

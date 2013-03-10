@@ -50,8 +50,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>jsr109-impl</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JSR-109 implementation to deploy Metro</name>
 
@@ -60,17 +60,6 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
-                     <execution>
-                        <id>classpathBuild</id>
-                        <configuration>
-                          <silent>true</silent>
-                          <outputFile>${project.build.directory}/classpath.txt</outputFile>
-                        </configuration>
-                        <goals>
-                            <goal>build-classpath</goal>
-                        </goals>
-                    </execution>
-
                     <execution>
                         <phase>process-resources</phase>
                         <goals>

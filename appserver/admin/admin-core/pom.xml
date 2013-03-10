@@ -47,10 +47,10 @@
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>admin</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>admin-core</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>admin-core</name>
     <description>Admin Core</description>
@@ -59,19 +59,19 @@
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- test dependencies -->
         <dependency>
             <groupId>org.glassfish.main.tests</groupId>
             <artifactId>utils</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

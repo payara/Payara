@@ -52,30 +52,31 @@
     <artifactId>admin-cli-l10n</artifactId>
 
     <name>admin-cli l10n</name>
+    
+    <properties>
+        <javadoc.skip>true</javadoc.skip>
+        <deploy.skip>true</deploy.skip>
+    </properties>
+    
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <instructions>
-                        <Export-Package />
-                    </instructions>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package />
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
@@ -87,17 +88,16 @@
                     </manifestEntries>
                   </archive>
                 </configuration>
-            </plugin>
+            </plugin>            
         </plugins>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
                 <excludes>
                     <exclude>**/*.jar</exclude>
-                    <exclude>**/.ade_path/**</exclude>
                 </excludes>
             </resource>
         </resources>
-    </build>
+    </build>    
 </project>
 

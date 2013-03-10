@@ -47,9 +47,9 @@
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-ee-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Java EE dependent public APIs of Glassfish V3</name>
 

@@ -49,6 +49,7 @@
         <version>4.0-SNAPSHOT</version>
     </parent>    
     <artifactId>concurrent-runtime</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Concurrent Runtime Module</name>
 
@@ -58,66 +59,54 @@
             <artifactId>concurrent-config</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.transaction</groupId>
             <artifactId>jts</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>hk2</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.resources</groupId>
             <artifactId>resources-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
-
        <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
         </dependency>
-
        <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.enterprise.concurrent</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.easymock</groupId>
             <artifactId>easymock</artifactId>
             <version>3.0</version>
             <scope>test</scope>
         </dependency>
-
     </dependencies>
-
 </project>
 

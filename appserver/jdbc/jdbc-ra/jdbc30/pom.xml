@@ -41,48 +41,49 @@
 
 -->
 
-  <parent>
-    <artifactId>jdbc-ra</artifactId>
-    <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
-    <version>4.0-SNAPSHOT</version>
-    <relativePath>../pom.xml</relativePath>
-  </parent>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc30</groupId>
-  <artifactId>jdbc30</artifactId>
-  <name>JDBC 30 related classes for JDBC Resource Adapter</name>
+    <parent>
+        <artifactId>jdbc-ra</artifactId>
+        <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
+        <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc30</groupId>
+    <artifactId>jdbc30</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>JDBC 30 related classes for JDBC Resource Adapter</name>
 
-  <properties>
-    <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
-  </properties>
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
 
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <excludes>
-          <exclude>**/*.java</exclude>
-        </excludes>	  
-      </resource>
-    </resources>
-    <plugins>
-	    <plugin>
-	      <!--
-	        Use JDBC 3.0 API regardless of which JDK we are building with.
-	      -->
-	      <artifactId>maven-compiler-plugin</artifactId>
-	      <configuration>
-	        <compilerArgument>-Xbootclasspath/p:${project.basedir}/jdbc30.jar</compilerArgument>
-	      </configuration>
-	    </plugin>
-	  </plugins>
-  </build>
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <excludes>
+                    <exclude>**/*.java</exclude>
+                </excludes>	  
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <!--
+                  Use JDBC 3.0 API regardless of which JDK we are building with.
+                -->
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <compilerArgument>-Xbootclasspath/p:${project.basedir}/jdbc30.jar</compilerArgument>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
-      <artifactId>jdbc-core</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.jdbc.jdbc-ra.jdbc-core</groupId>
+            <artifactId>jdbc-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

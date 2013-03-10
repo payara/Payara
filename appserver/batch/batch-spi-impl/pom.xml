@@ -50,6 +50,7 @@
     </parent>
 
     <artifactId>batch-spi-impl</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Batch SPI Implementation for Glassfish</name>
     <dependencies>

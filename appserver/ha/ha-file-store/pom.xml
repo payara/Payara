@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>ha-file-store</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish ha-file-store</name>
 

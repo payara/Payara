@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-runtime</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Connectors Runtime</name>
     <description>Java EE Connector Architecture Runtime for GlassFish</description>

@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>        
     </parent>    
     <artifactId>websecurity</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>WebTier Security Integration</name>
     <developers>

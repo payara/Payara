@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-inbound-runtime</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Connectors Inbound Support</name>
 

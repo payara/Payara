@@ -49,6 +49,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>work-management</artifactId>
+    <packaging>glassfish-jar</packaging>
 
     <name>Work Management</name>    
     <description>Java EE Connector Architecture Work Management module</description>

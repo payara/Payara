@@ -48,8 +48,8 @@
         <version>4.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>metro-glue</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish Metro Glue Code</name>
 

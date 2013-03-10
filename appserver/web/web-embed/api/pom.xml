@@ -49,7 +49,8 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>web-embed-api</artifactId>    
+    <artifactId>web-embed-api</artifactId>   
+    <packaging>glassfish-jar</packaging> 
     
     <name>GlassFish Web container Embedded APIs</name>
 
@@ -65,10 +66,7 @@
             </roles>
         </developer>
     </developers>
-    <build>
-        <resources>
-        </resources>
-	</build>
+
     <dependencies>
         <dependency>
             <groupId>javax.servlet</groupId>

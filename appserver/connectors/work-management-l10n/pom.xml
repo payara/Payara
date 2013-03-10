@@ -53,7 +53,12 @@
     <name>Work Management l10n</name>    
     <description>Java EE Connector Architecture Work Management module l10n</description>
 
-    <developers>
+    <properties>
+        <javadoc.skip>true</javadoc.skip>
+        <deploy.skip>true</deploy.skip>
+    </properties>
+    
+     <developers>
         <developer>
             <name>Georges Murr</name>
             <organization>Oracle, Inc.</organization>
@@ -62,31 +67,26 @@
             </roles>
         </developer>
     </developers>
-
+    
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
-                <configuration>
-                    <instructions>
-                        <Export-Package />
-                    </instructions>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package />
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
         <resources>
@@ -98,5 +98,4 @@
             </resource>
         </resources>
     </build>
-
 </project>

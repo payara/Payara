@@ -51,6 +51,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-core</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Core Jar</name>
 

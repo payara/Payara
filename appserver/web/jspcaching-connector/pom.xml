@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>jspcaching-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JSP caching taglib connector module</name>
 

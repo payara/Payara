@@ -52,6 +52,7 @@
     </parent>
 
     <artifactId>ejb-internal-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>EJB container Internal API</name>
 

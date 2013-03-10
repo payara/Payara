@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>connectors-internal-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Connectors Private APIs for GlassFish Containers</name>
 

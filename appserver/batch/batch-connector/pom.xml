@@ -50,6 +50,7 @@
     </parent>
 
     <artifactId>batch-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Batch runtime connector for Glassfish</name>
     <build>

@@ -51,6 +51,7 @@
     </parent>  
     <groupId>org.glassfish.main.common</groupId>
     <artifactId>glassfish-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Public APIs of Glassfish V3</name>
 

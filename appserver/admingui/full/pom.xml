@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-common-full-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Full distribution plugin</name>
     <description>Plugin bundle for GlassFish v3 Admin Console common-full package</description>

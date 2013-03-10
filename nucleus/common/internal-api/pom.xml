@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>internal-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Private APIs of Glassfish V3</name>
 

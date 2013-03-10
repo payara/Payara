@@ -52,6 +52,7 @@
     </parent>
     <groupId>org.glassfish.main.flashlight</groupId>
     <artifactId>flashlight-framework</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>flashlight-framework</name>
 

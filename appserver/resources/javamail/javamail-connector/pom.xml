@@ -49,6 +49,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>javamail-connector</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JavaMail Connector</name>
     <description>Connector (glue) for GlassFish JavaMail Support</description>

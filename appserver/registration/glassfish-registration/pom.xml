@@ -51,6 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>glassfish-registration</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish Registration</name>
     <description>GlassFish specific module for registration</description>

@@ -51,6 +51,7 @@
 
     <groupId>org.glassfish.main.appclient.server</groupId>
     <artifactId>appclient-server-core</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish AppClient Server-Side Core</name>
 

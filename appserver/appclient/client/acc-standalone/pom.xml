@@ -68,7 +68,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-client</artifactId>
-    <packaging>jar</packaging>
+    <packaging>glassfish-jar</packaging>
     <name>Client library (including ACC)</name>
 
     <properties>

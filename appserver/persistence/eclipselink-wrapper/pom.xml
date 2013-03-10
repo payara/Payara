@@ -88,18 +88,18 @@
             <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
             <scope>compile</scope>
         </dependency>
-		<dependency>
-			<groupId>org.eclipse.persistence</groupId>
-			<artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
-			<version>${eclipselink.version}</version>
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
+            <version>${eclipselink.version}</version>
             <exclusions>  <!-- We do not use the processor in GlassFish -->
-                 <exclusion>
-                   <groupId>org.eclipse.persistence</groupId>
-                   <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-                 </exclusion>
+                <exclusion>
+                    <groupId>org.eclipse.persistence</groupId>
+                    <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
+                </exclusion>
             </exclusions>
-			<scope>compile</scope>
-		</dependency>
+            <scope>compile</scope>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.moxy</artifactId>
@@ -141,5 +141,4 @@
             </snapshots>
         </repository>
     </repositories>
-
 </project>

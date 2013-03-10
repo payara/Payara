@@ -50,6 +50,8 @@
     </parent>
 
     <artifactId>osgi-container</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
     <name>OSGi Container</name>
     <description>OSGi adapter to use OSGi modules as application code</description>
 

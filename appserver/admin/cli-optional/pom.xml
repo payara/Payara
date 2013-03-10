@@ -47,10 +47,9 @@
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>admin</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    
     <artifactId>cli-optional</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>admin-cli-optional</name>
     
@@ -97,6 +96,7 @@
             </roles>
         </developer>
     </developers>
+    
     <build>
         <plugins>
             <plugin>
@@ -157,31 +157,31 @@
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-cli</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>        <dependency>
             <groupId>org.glassfish.main.core</groupId>
             <artifactId>glassfish</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>server-mgmt</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>launcher</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
@@ -195,7 +195,7 @@
         <dependency>    
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>backup</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>

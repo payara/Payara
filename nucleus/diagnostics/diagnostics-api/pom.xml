@@ -50,11 +50,11 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>diagnostics-api</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
     <name>Diagnostics API</name>
     <description>Glassfish Diagnostics API</description>
 
-    <build>
-    </build>
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>

@@ -133,7 +133,7 @@
         <dependency>
             <groupId>com.sun.jsftemplating</groupId>
             <artifactId>jsftemplating</artifactId>
-            <scope>optional</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>

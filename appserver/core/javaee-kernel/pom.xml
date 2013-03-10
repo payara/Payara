@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>javaee-kernel</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Java EE related distributions kernel Classes</name>
     

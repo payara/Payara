@@ -49,6 +49,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>gf-client-module</artifactId>
+    <packaging>glassfish-jar</packaging>
      <!-- the main artifact is the OSGi module JAR -->
     <name>Client OSGi module (including ACC)</name>
     

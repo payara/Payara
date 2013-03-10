@@ -50,6 +50,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>javamail-runtime</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish JavaMail runtime</name>
 

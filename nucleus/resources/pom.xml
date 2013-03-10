@@ -50,8 +50,11 @@
     </parent>
     <groupId>org.glassfish.main.resourcebase.resources</groupId>
     <artifactId>nucleus-resources</artifactId>    
+    <packaging>glassfish-jar</packaging>
+    
     <name>nucleus.resources</name>
-    <description>Nucleus Resource Classes</description>    
+    <description>Nucleus Resource Classes</description>   
+     
     <developers>
         <developer>
             <id>naman_mehta</id>

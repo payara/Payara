@@ -47,9 +47,9 @@
         <groupId>org.glassfish.main.connectors</groupId>
         <artifactId>connectors</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>connectors-admin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Connectors admin</name>
 

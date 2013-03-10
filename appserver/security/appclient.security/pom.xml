@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>        
     </parent>    
     <artifactId>appclient.security</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Appclient Security Integration</name>
     <developers>
@@ -70,6 +71,7 @@
             </roles>
         </developer>
     </developers>
+    
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -87,6 +89,7 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
@@ -107,7 +110,7 @@
             <artifactId>ejb.security</artifactId>
             <version>${project.version}</version>
         </dependency>
-         <dependency>
+        <dependency>
             <groupId>org.glassfish.main.appclient</groupId>
             <artifactId>acc-config</artifactId>
             <version>${project.version}</version>
@@ -117,5 +120,5 @@
             <artifactId>orb-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
-         </dependencies>
+    </dependencies>
 </project>

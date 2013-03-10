@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-jdbc-plugin</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Admin Console JDBC Plugin</name>
     <description>JDBC plugin bundle for GlassFish V3 Admin Console</description>

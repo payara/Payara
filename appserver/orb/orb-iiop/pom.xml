@@ -49,6 +49,7 @@
         <version>4.0-SNAPSHOT</version>
     </parent>
     <artifactId>orb-iiop</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>GlassFish ORB interface layer implementation</name>
     <developers>

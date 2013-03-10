@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>        
     </parent>    
     <artifactId>inmemory.jacc.provider</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>A Pluggable InMemory JACC Provider</name>
     <developers>
@@ -62,6 +63,7 @@
             </roles>
         </developer>
     </developers>
+    
     <build>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
@@ -73,6 +75,7 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>

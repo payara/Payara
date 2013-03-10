@@ -54,10 +54,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>transaction-internal-api</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Transaction Service Internal API</name>
+    
     <developers>
-	<!-- information on the module's developers -->
         <developer>
             <id>mvatkina</id>
             <name>Marina Vatkina</name>
@@ -69,7 +70,6 @@
     </developers>
 
     <dependencies>
-	<!-- Dependencies on other modules/jars -->
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>
@@ -85,7 +85,6 @@
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>javax.persistence</artifactId>
-            <version>${javax-persistence-api.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
@@ -105,6 +104,7 @@
             <version>${project.version}</version>
         </dependency>
     </dependencies>
+    
     <repositories>
         <repository>
             <id>eclipselink.repository</id>
@@ -119,5 +119,4 @@
             </snapshots>
         </repository>
     </repositories>
-
 </project>

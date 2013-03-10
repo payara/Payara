@@ -50,8 +50,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>security-dol</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Security DOL Integration</name>
+    
     <developers>
         <developer>
             <id>kumarjayanti</id>
@@ -81,17 +83,16 @@
             </resource>
         </resources>
     </build>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>
         </dependency>
-
-               <dependency>
+        <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>dol</artifactId>
             <version>${project.version}</version>
         </dependency>
-
     </dependencies>
 </project>

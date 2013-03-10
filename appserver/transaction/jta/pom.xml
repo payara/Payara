@@ -54,10 +54,11 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jta</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>JTA Implementation for Glassfish</name>
+    
     <developers>
-	<!-- information on the module's developers -->
         <developer>
             <id>mvatkina</id>
             <name>Marina Vatkina</name>
@@ -112,7 +113,6 @@
     </build>
 
     <dependencies>
-	<!-- Dependencies on other modules/jars -->
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>
@@ -153,7 +153,6 @@
             <artifactId>config-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>common-util</artifactId>
@@ -167,7 +166,6 @@
 	    <groupId>org.glassfish.gmbal</groupId>
 	    <artifactId>gmbal</artifactId>
         </dependency>
-
     </dependencies>
 
     <repositories>
@@ -184,5 +182,4 @@
             </snapshots>
         </repository>
     </repositories>
-
 </project>

@@ -47,10 +47,10 @@
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
         <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>stats77</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>stats77</name>
     <description>Interim replacement for JSR 77 Stats and Statistics</description>

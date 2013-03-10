@@ -50,6 +50,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>    
     <artifactId>deployment-client</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Deployment Client Classes and Interfaces</name>
 

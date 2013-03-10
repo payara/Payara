@@ -51,6 +51,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>web-naming</artifactId>
+    <packaging>glassfish-jar</packaging>
     
     <name>Web Container Naming Utilities</name>
 
@@ -66,13 +67,11 @@
             </roles>
         </developer>
     </developers>
+    
     <properties>
         <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
     </properties>
-    <build>
-	<resources>
-        </resources>
-    </build>
+    
     <dependencies>
         <dependency>
             <groupId>com.sun.mail</groupId>
