@@ -87,6 +87,9 @@ public class DeploymentImpl implements Deployment {
 
     private Logger logger = CDILoggerInfo.getLogger();
 
+    // holds BDA's created for extensions
+    private Map<ClassLoader, BeanDeploymentArchive> extensionBDAMap = new HashMap<>();
+
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
      * from information from the provided <code>ReadableArchive</code>.
@@ -289,7 +292,7 @@ public class DeploymentImpl implements Deployment {
                     logger.log(FINE,
                                CDILoggerInfo.LOAD_BEAN_DEPLOYMENT_ARCHIVE_ADD_TO_EXISTING,
                                new Object[] {beanClass.getName(), bda });
-                //((BeanDeploymentArchiveImpl)bda).addBeanClass(beanClass.getName());
+                    //((BeanDeploymentArchiveImpl)bda).addBeanClass(beanClass.getName());
                 }
                 return bda;
             }
@@ -321,6 +324,11 @@ public class DeploymentImpl implements Deployment {
             }
         }
 
+        BeanDeploymentArchive extensionBDA = extensionBDAMap.get(beanClass.getClassLoader());
+        if ( extensionBDA != null ) {
+            return extensionBDA;
+        }
+
         // If the BDA was not found for the Class, create one and add it
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.LOAD_BEAN_DEPLOYMENT_ARCHIVE_CREATE_NEW_BDA, new Object []{beanClass});
@@ -334,11 +342,11 @@ public class DeploymentImpl implements Deployment {
         // TODO: The workaround will be removed once the defect is addressed.
         WeldGFExtension gfExtension = beanClass.getAnnotation(WeldGFExtension.class);
         if(gfExtension != null)
-        	beanClasses.addAll(java.util.Arrays.asList(gfExtension.beans()));
+            beanClasses.addAll(java.util.Arrays.asList(gfExtension.beans()));
 
         BeanDeploymentArchive newBda =
             new BeanDeploymentArchiveImpl(beanClass.getName(),
-                    beanClasses, beanXMLUrls, ejbs, context);
+                                          beanClasses, beanXMLUrls, ejbs, context);
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE,
                        CDILoggerInfo.LOAD_BEAN_DEPLOYMENT_ARCHIVE_ADD_NEW_BDA_TO_ROOTS,
@@ -354,6 +362,8 @@ public class DeploymentImpl implements Deployment {
                        CDILoggerInfo.LOAD_BEAN_DEPLOYMENT_ARCHIVE_RETURNING_NEWLY_CREATED_BDA,
                        new Object[]{beanClass, newBda});
         }
+        addBeanDeploymentArchives(newBda);
+        extensionBDAMap.put( beanClass.getClassLoader(), newBda);
         return newBda;
     }
 
@@ -371,8 +381,8 @@ public class DeploymentImpl implements Deployment {
         ArrayList<Metadata<Extension>> extnList = new ArrayList<Metadata<Extension>>();
         for(BeanDeploymentArchive bda:bdas){
             Iterable<Metadata<Extension>> bdaExtns = context.getTransientAppMetaData(
-                    WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class).loadExtensions(
-                    ((BeanDeploymentArchiveImpl) bda).getModuleClassLoaderForBDA());
+                WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class).loadExtensions(
+                ((BeanDeploymentArchiveImpl) bda).getModuleClassLoaderForBDA());
             for(Metadata<Extension> bdaExtn : bdaExtns){
                 extnList.add(bdaExtn);
             }
@@ -415,8 +425,8 @@ public class DeploymentImpl implements Deployment {
     // This method creates and returns a List of BeanDeploymentArchives for each
     // Weld enabled jar under /lib of an existing Archive.
     private List<BeanDeploymentArchive> scanForLibJars(
-                            ReadableArchive archive, Collection<EjbDescriptor> ejbs,
-                            DeploymentContext context) {
+        ReadableArchive archive, Collection<EjbDescriptor> ejbs,
+        DeploymentContext context) {
         List<ReadableArchive> libJars = null;
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if ((holder != null) && (holder.app != null)) {
@@ -460,9 +470,9 @@ public class DeploymentImpl implements Deployment {
             while (libJarIterator.hasNext()) {
                 ReadableArchive libJarArchive = (ReadableArchive)libJarIterator.next();
                 BeanDeploymentArchive bda = new BeanDeploymentArchiveImpl(
-                        libJarArchive, ejbs, context,
-                        /* use lib/jarname as BDA ID */ libDir + SEPARATOR_CHAR
-                        + libJarArchive.getName());
+                    libJarArchive, ejbs, context,
+                    /* use lib/jarname as BDA ID */ libDir + SEPARATOR_CHAR
+                    + libJarArchive.getName());
                 this.beanDeploymentArchives.add(bda);
                 if (libJarBDAs  == null) {
                     libJarBDAs = new ArrayList<BeanDeploymentArchive>();
