@@ -41,36 +41,20 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import java.util.Properties;
 
-import static org.glassfish.deployment.common.JavaEEResourceType.*;
+import static org.glassfish.deployment.common.JavaEEResourceType.JMSDD;
 
-public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
+public class JMSDestinationDefinitionDescriptor extends AbstractConnectorResourceDescriptor {
 
     private static final long serialVersionUID = 6874534064049457633L;
 
     // the <description> element will be processed by base class
-    private String name ;
     private String className;
-    private String resourceAdapter;
     private String destinationName;
-    private Properties properties = new Properties();
-
-    private String resourceId;
-    private static final String JAVA_URL = "java:";
-    private static final String JAVA_COMP_URL = "java:comp/";
 
     public JMSDestinationDefinitionDescriptor() {
         super();
         super.setResourceType(JMSDD);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getClassName() {
@@ -81,14 +65,6 @@ public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
         this.className = className;
     }
 
-    public String getResourceAdapter() {
-        return resourceAdapter;
-    }
-
-    public void setResourceAdapter(String resourceAdapter) {
-        this.resourceAdapter = resourceAdapter;
-    }
-
     public String getDestinationName() {
         return destinationName;
     }
@@ -97,49 +73,8 @@ public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
         this.destinationName = destinationName;
     }
 
-    public void addProperty(String key, String value) {
-        properties.put(key, value);
-    }
-
-    public String getProperty(String key) {
-        return (String)properties.get(key);
-    }
-
-    public Properties getProperties(){
-        return properties;
-    }
-
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public boolean equals(Object object) {
-        if (object instanceof JMSDestinationDefinitionDescriptor) {
-            JMSDestinationDefinitionDescriptor reference = (JMSDestinationDefinitionDescriptor)object;
-            return getJavaName(this.getName()).equals(getJavaName(reference.getName()));
-        }
-        return false;
-    }
-
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + getName().hashCode();
-        return result;
-    }
-
-    public static String getJavaName(String theName) {
-        if (!theName.contains(JAVA_URL)) {
-            theName = JAVA_COMP_URL + theName;
-        }
-        return theName;
-    }
-
     public void addJMSDestinationPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
-        properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
+        getProperties().put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
     public boolean isConflict(JMSDestinationDefinitionDescriptor other) {
@@ -148,8 +83,7 @@ public class JMSDestinationDefinitionDescriptor extends ResourceDescriptor {
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
                 DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 DOLUtils.equals(getDestinationName(), other.getDestinationName()) &&
-                properties.equals(other.properties)
+                getProperties().equals(other.getProperties())
             );
     }
 }
-

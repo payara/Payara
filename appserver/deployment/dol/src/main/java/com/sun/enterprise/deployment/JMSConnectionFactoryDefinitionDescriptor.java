@@ -41,43 +41,27 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import java.util.Properties;
 
-import static org.glassfish.deployment.common.JavaEEResourceType.*;
+import static org.glassfish.deployment.common.JavaEEResourceType.JMSCFDD;
 
-public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor {
+public class JMSConnectionFactoryDefinitionDescriptor extends AbstractConnectorResourceDescriptor {
 
     private static final long serialVersionUID = 794492878801534084L;
 
     // the <description> element will be processed by base class
-    private String name ;
     private String className;
-    private String resourceAdapter;
     private String user;
     private String password;
     private String clientId;
-    private Properties properties = new Properties();
     private boolean transactional = true;
     private int maxPoolSize = -1;
     private int minPoolSize = -1;
 
     private boolean transactionSet = false;
 
-    private String resourceId;
-    private static final String JAVA_URL = "java:";
-    private static final String JAVA_COMP_URL = "java:comp/";
-
     public JMSConnectionFactoryDefinitionDescriptor() {
         super();
         super.setResourceType(JMSCFDD);
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getClassName() {
@@ -86,14 +70,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
 
     public void setClassName(String className) {
         this.className = className;
-    }
-
-    public String getResourceAdapter() {
-        return resourceAdapter;
-    }
-
-    public void setResourceAdapter(String resourceAdapter) {
-        this.resourceAdapter = resourceAdapter;
     }
 
     public String getUser() {
@@ -118,18 +94,6 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
 
     public void setClientId(String clientId) {
         this.clientId = clientId;
-    }
-
-    public void addProperty(String key, String value) {
-        properties.put(key, value);
-    }
-
-    public String getProperty(String key) {
-        return (String)properties.get(key);
-    }
-
-    public Properties getProperties(){
-        return properties;
     }
 
     public boolean isTransactional() {
@@ -165,37 +129,8 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
         this.minPoolSize = minPoolSize;
     }
 
-    public String getResourceId() {
-        return resourceId;
-    }
-
-    public void setResourceId(String resourceId) {
-        this.resourceId = resourceId;
-    }
-
-    public boolean equals(Object object) {
-        if (object instanceof JMSConnectionFactoryDefinitionDescriptor) {
-            JMSConnectionFactoryDefinitionDescriptor reference = (JMSConnectionFactoryDefinitionDescriptor)object;
-            return getJavaName(this.getName()).equals(getJavaName(reference.getName()));
-        }
-        return false;
-    }
-
-    public int hashCode() {
-        int result = 17;
-        result = 37 * result + getName().hashCode();
-        return result;
-    }
-
-    public static String getJavaName(String theName) {
-        if (!theName.contains(JAVA_URL)) {
-            theName = JAVA_COMP_URL + theName;
-        }
-        return theName;
-    }
-
     public void addJMSConnectionFactoryPropertyDescriptor(ResourcePropertyDescriptor propertyDescriptor){
-        properties.put(propertyDescriptor.getName(), propertyDescriptor.getValue());
+        getProperties().put(propertyDescriptor.getName(), propertyDescriptor.getValue());
     }
 
     public boolean isConflict(JMSConnectionFactoryDefinitionDescriptor other) {
@@ -206,11 +141,10 @@ public class JMSConnectionFactoryDefinitionDescriptor extends ResourceDescriptor
                 DOLUtils.equals(getUser(), other.getUser()) &&
                 DOLUtils.equals(getPassword(), other.getPassword()) &&
                 DOLUtils.equals(getClientId(), other.getClientId()) &&
-                properties.equals(other.properties) &&
+                getProperties().equals(other.getProperties()) &&
                 isTransactional() == other.isTransactional() &&
                 getMinPoolSize() == other.getMinPoolSize() &&
                 getMaxPoolSize() == other.getMaxPoolSize()
             );
     }
 }
-
