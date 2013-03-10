@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -152,7 +152,8 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
     @Override
     protected void configureHttpProtocol(final ServiceLocator habitat,
             final NetworkListener networkListener,
-            final Http http, final FilterChainBuilder filterChainBuilder) {
+            final Http http, final FilterChainBuilder filterChainBuilder,
+            boolean securityEnabled) {
 
         if (httpAdapter == null) {
             registerMonitoringStatsProviders();
@@ -212,14 +213,13 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             aad.setName(address.toString() + port);
             
             ServiceLocatorUtilities.addOneDescriptor(grizzlyService.getHabitat(), aad);
-
-            super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
+            super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder, securityEnabled);
             final Protocol protocol = http.getParent();
             for (NetworkListener listener : protocol.findNetworkListeners()) {
                 grizzlyService.notifyMapperUpdateListeners(listener, mapper);
             }
         } else {
-            super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder);
+            super.configureHttpProtocol(habitat, networkListener, http, filterChainBuilder, securityEnabled);
         }
     }
 
