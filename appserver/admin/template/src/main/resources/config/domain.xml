@@ -457,7 +457,6 @@
          <system-property name="ASADMIN_LISTENER_PORT" value="24848"/>
          <system-property name="HTTP_LISTENER_PORT" value="28080"/>
          <system-property name="HTTP_SSL_LISTENER_PORT" value="28181"/>
-         <system-property name="JMS_PROVIDER_PORT" value="27676"/>
          <system-property name="IIOP_LISTENER_PORT" value="23700"/>
          <system-property name="IIOP_SSL_LISTENER_PORT" value="23820"/>
          <system-property name="IIOP_SSL_MUTUALAUTH_PORT" value="23920"/>
