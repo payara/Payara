@@ -140,23 +140,23 @@ public class InjectionServicesImpl implements InjectionServices {
     }
 
     public void validateResourceInjectionPoint(InjectionPoint injectionPoint) {
-        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
-        GlassfishNamingManager glassfishNamingManager = serviceLocator.getService(GlassfishNamingManager.class);
-        try {
-            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/BeanManager");
-            System.out.println( "junk");
-        } catch ( Exception exc ) {
-
-        }
-
-        try {
-            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/UserTransaction");
-            System.out.println( "junk");
-        } catch ( Exception exc ) {
-
-        }
-
-
+//        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+//        GlassfishNamingManager glassfishNamingManager = serviceLocator.getService(GlassfishNamingManager.class);
+//        try {
+//            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/BeanManager");
+//            System.out.println( "junk");
+//        } catch ( Exception exc ) {
+//
+//        }
+//
+//        try {
+//            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/UserTransaction");
+//            System.out.println( "junk");
+//        } catch ( Exception exc ) {
+//
+//        }
+//
+//
 
     }
 
