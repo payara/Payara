@@ -183,7 +183,7 @@ public class CommandSecurityChecker implements PostConstruct {
                     public Boolean run() {
                         return ((AdminCommandSecurity.Preauthorization) command).preAuthorization(adminCommandContext);
                     }
-                    
+
                 });
                 if ( ! result) {
                     return false;
@@ -192,10 +192,10 @@ public class CommandSecurityChecker implements PostConstruct {
             final List<AccessCheckWork> accessChecks = assembleAccessCheckWork(command, subject);
             result = (embeddedSystemAdministrator.matches(subject)) ||
                 checkAccessRequired(subject, env, command, accessChecks);
-        
+
         } catch (Exception ex) {
             ADMSEC_AUTHZ_LOGGER.log(Level.SEVERE, AdminLoggerInfo.mUnexpectedException, ex);
-            throw new SecurityException(ex);
+            throw new RuntimeException(ex);
         }
         /*
          * Check the result and throw the SecurityException outside the previous
