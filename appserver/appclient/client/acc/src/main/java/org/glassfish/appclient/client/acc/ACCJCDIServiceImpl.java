@@ -39,7 +39,10 @@
  */
 package org.glassfish.appclient.client.acc;
 
+import com.sun.enterprise.container.common.spi.InterceptorInvoker;
 import com.sun.enterprise.container.common.spi.JCDIService;
+import com.sun.enterprise.container.common.spi.JavaEEInterceptorBuilder;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
@@ -51,6 +54,7 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.inject.Inject;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
 
@@ -62,16 +66,20 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
     private WeldContainer weldContainer = null;
 
+    @Inject
+    private InjectionManager injectionMgr;
+
+
 
     @Override
     public boolean isCurrentModuleJCDIEnabled() {
-        return true;
+        return hasBeansXML(Thread.currentThread().getContextClassLoader());
     }
 
 
     @Override
     public boolean isJCDIEnabled(BundleDescriptor bundle) {
-        return false; // TODO: PJZ: Change this to enable CDI in AppClient Container
+        return hasBeansXML(bundle.getClassLoader());
     }
 
 
@@ -93,6 +101,34 @@ public class ACCJCDIServiceImpl implements JCDIService {
     }
 
 
+    private <T> T createEEManagedObject(ManagedBeanDescriptor desc) throws Exception {
+        JavaEEInterceptorBuilder interceptorBuilder =
+                                        (JavaEEInterceptorBuilder) desc.getInterceptorBuilder();
+
+        InterceptorInvoker interceptorInvoker = interceptorBuilder.createInvoker(null);
+
+        Object[] interceptorInstances = interceptorInvoker.getInterceptorInstances();
+
+        // Inject interceptor instances
+        for(int i = 0; i < interceptorInstances.length; i++) {
+            injectionMgr.injectInstance(interceptorInstances[i], desc.getGlobalJndiName(), false);
+        }
+
+        interceptorInvoker.invokeAroundConstruct();
+
+        // This is the managed bean class instance
+        T managedBean = (T) interceptorInvoker.getTargetInstance();
+
+        injectionMgr.injectInstance(managedBean, desc);
+
+        interceptorInvoker.invokePostConstruct();
+
+        desc.addBeanInstanceInfo(managedBean, interceptorInvoker);
+
+        return managedBean;
+    }
+
+
     @Override
     @SuppressWarnings("unchecked")
     public JCDIInjectionContext createManagedObject(Class            managedClass,
@@ -100,18 +136,23 @@ public class ACCJCDIServiceImpl implements JCDIService {
                                                     boolean          invokePostConstruct) {
         JCDIInjectionContext context = null;
 
-        BeanManager beanManager = null;
+        Object managedObject = null;
+
+        try {
+            managedObject =
+                createEEManagedObject(bundle.getManagedBeanByBeanClass(managedClass.getName()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         WeldContainer wc = getWeldContainer();
         if (wc != null) {
-            beanManager = wc.getBeanManager();
+            BeanManager beanManager = wc.getBeanManager();
 
             AnnotatedType annotatedType = beanManager.createAnnotatedType(managedClass);
             InjectionTarget target = beanManager.createInjectionTarget(annotatedType);
 
             CreationalContext cc = beanManager.createCreationalContext(null);
-
-            Object managedObject = target.produce(cc);
 
             target.inject(managedObject, cc);
 
@@ -121,16 +162,6 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             context = new JCDIInjectionContextImpl(target, cc, managedObject);
         }
-// TODO: PJZ: This doesn't seem appropriate
-//        if (beanManager != null) {
-//            try {
-//                ((ManagedBeanManagerImpl) beanManager).createEEManagedBean(bundle.getDescriptorExtension(ManagedBeanDescriptor.class),
-//                                                                           managedClass,
-//                                                                           invokePostConstruct);
-//            } catch (Exception e) {
-//                //
-//            }
-//        }
 
         return context;
     }
@@ -174,9 +205,18 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
     private WeldContainer getWeldContainer() {
         if (weldContainer == null) {
-            weldContainer = (new Weld()).initialize();
+            try {
+                weldContainer = (new Weld()).initialize();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
         return weldContainer;
+    }
+
+
+    private boolean hasBeansXML(ClassLoader cl) {
+        return (cl.getResource("META-INF/beans.xml") != null);
     }
 
 
