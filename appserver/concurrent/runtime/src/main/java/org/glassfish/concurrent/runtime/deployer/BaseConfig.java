@@ -57,6 +57,18 @@ public abstract class BaseConfig implements Serializable {
         return defaultValue;
     }
 
+    public long parseLong(String strValue, long defaultValue) {
+        if (strValue != null) {
+            try {
+                long longValue = Long.parseLong(strValue);
+                return longValue;
+            } catch (NumberFormatException e) {
+                // ignore, just return default in this case
+            }
+        }
+        return defaultValue;
+    }
+
     public enum TYPE {
         MANAGED_EXECUTOR_SERVICE,
         MANAGED_SCHEDULED_EXECUTOR_SERVICE,

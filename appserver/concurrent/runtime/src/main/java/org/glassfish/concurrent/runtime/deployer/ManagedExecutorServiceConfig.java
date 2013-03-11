@@ -52,10 +52,10 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
     private boolean longRunningTasks;
     private int threadPriority;
     private int corePoolSize;
-    private int keepAliveSeconds;
+    private long keepAliveSeconds;
     private int maximumPoolSize;
     private int taskQueueCapacity;
-    private int threadLifeTimeSeconds;
+    private long threadLifeTimeSeconds;
 
     public ManagedExecutorServiceConfig(ManagedExecutorService config) {
         super(config.getJndiName());
@@ -64,10 +64,10 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
-        keepAliveSeconds = parseInt(config.getKeepAliveSeconds(), Integer.MAX_VALUE);
+        keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
         maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
         taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
-        threadLifeTimeSeconds = parseInt(config.getThreadLifetimeSeconds(), 0);
+        threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
     }
 
     public String getContextInfo() {
@@ -90,7 +90,7 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         return corePoolSize;
     }
 
-    public int getKeepAliveSeconds() {
+    public long getKeepAliveSeconds() {
         return keepAliveSeconds;
     }
 
@@ -102,7 +102,7 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         return taskQueueCapacity;
     }
 
-    public int getThreadLifeTimeSeconds() {
+    public long getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
     }
 

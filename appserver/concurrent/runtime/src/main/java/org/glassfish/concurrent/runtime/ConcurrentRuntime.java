@@ -152,8 +152,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
-                config.getThreadPriority(),
-                config.isLongRunningTasks());
+                config.getThreadPriority());
         ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
@@ -161,6 +160,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getCorePoolSize(),
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                config.getThreadLifeTimeSeconds(),
                 config.getTaskQueueCapacity(),
                 createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
@@ -192,8 +192,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
-                config.getThreadPriority(),
-                config.isLongRunningTasks());
+                config.getThreadPriority());
         ManagedScheduledExecutorServiceImpl mes = new ManagedScheduledExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
@@ -201,6 +200,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getCorePoolSize(),
                 config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
+                config.getThreadLifeTimeSeconds(),
                 config.getTaskQueueCapacity(),
                 createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
@@ -230,8 +230,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
         ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(config.getJndiName(),
                 createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
-                config.getThreadPriority(),
-                false);
+                config.getThreadPriority());
         if (managedThreadFactoryMap == null) {
             managedThreadFactoryMap = new HashMap();
         }

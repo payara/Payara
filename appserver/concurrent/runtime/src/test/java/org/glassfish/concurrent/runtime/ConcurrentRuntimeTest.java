@@ -175,7 +175,7 @@ public class ConcurrentRuntimeTest {
         final int CORE_POOL_SIZE = 1;
         final int MAXIMUM_POOL_SIZE = 5;
         final boolean LONG_RUNNING_TASKS = true;
-        final int KEEP_ALIVE_SECONDS = 88;
+        final long KEEP_ALIVE_SECONDS = 88L;
         final int TASK_QUEUE_CAPACITY = 12345;
 
 

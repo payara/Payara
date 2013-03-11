@@ -124,8 +124,8 @@
         <websocket-api.version>1.0-rc1</websocket-api.version>
         <tyrus.version>1.0-b13</tyrus.version>
         <jsonp.version>1.0-b04</jsonp.version>
-        <concurrent-api.version>1.0-b04</concurrent-api.version>
-        <concurrent.version>1.0-b03</concurrent.version>
+        <concurrent-api.version>1.0-b05</concurrent-api.version>
+        <concurrent.version>1.0-b04</concurrent.version>
         <javax.batch-api.version>1.0-b13</javax.batch-api.version>
         <com.ibm.jbatch-runtime-all.version>1.0-b13</com.ibm.jbatch-runtime-all.version>
         <com.ibm.jbatch-ri-spi.version>1.0-b13</com.ibm.jbatch-ri-spi.version>
