@@ -208,7 +208,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         throw new GlassFishException("No GlassFishRuntime available");
     }
 
-    private void deleteHK2Cache(Properties properties) {
+    private void deleteHK2Cache(Properties properties) throws GlassFishException {
         // This is a HACK - thanks to some weired optimization trick
         // done for GlassFish. HK2 maintains a cache of inhabitants and
         // that needs  to be recreated when there is a change in modules dir.
@@ -216,7 +216,10 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
         if (cacheDir != null) {
             File inhabitantsCache = new File(cacheDir, INHABITANTS_CACHE);
             if (inhabitantsCache.exists()) {
-                inhabitantsCache.delete();
+                if (!inhabitantsCache.delete()) {
+                    throw new GlassFishException("cannot delete cache:" + 
+                            inhabitantsCache.getAbsolutePath());
+                }
             }
         }
     }
@@ -288,6 +291,7 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
     }
 
     private void storeBundleIds(Long[] bundleIds) {
+        ObjectOutputStream os = null;
         try {
             File f = framework.getBundleContext().getDataFile(BUNDLEIDS_FILENAME);
             // GLASSFISH-19623: f can be null
@@ -295,18 +299,26 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
                 logger.log(Level.WARNING, LogFacade.CANT_STORE_BUNDLEIDS);
                 return;
             }
-            ObjectOutputStream os = new ObjectOutputStream(new FileOutputStream(f));
+            os = new ObjectOutputStream(new FileOutputStream(f));
             os.writeObject(bundleIds);
             os.flush();
-            os.close();
             logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "storeBundleIds", "Stored bundle ids in {0}",
                     new Object[]{f.getAbsolutePath()});
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    // ignored
+                }
+            }
         }
     }
 
     private void storeProvisioningOptions(Properties properties) {
+        FileOutputStream os = null;
         try {
             File f = framework.getBundleContext().getDataFile(PROVISIONING_OPTIONS_FILENAME);
             // GLASSFISH-19623: f can be null
@@ -314,14 +326,21 @@ public final class OSGiGlassFishRuntimeBuilder implements RuntimeBuilder {
                 logger.log(Level.WARNING, LogFacade.CANT_STORE_PROVISIONING_OPTIONS);
                 return;
             }
-            final FileOutputStream os = new FileOutputStream(f);
+            os = new FileOutputStream(f);
             getNewProvisioningOptions(properties).store(os, "");
             os.flush();
-            os.close();
             logger.logp(Level.FINE, "OSGiGlassFishRuntimeBuilder", "storeProvisioningOptions", "Stored provisioning options in {0}",
                     new Object[]{f.getAbsolutePath()});
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if (os != null) {
+                try {
+                    os.close();
+                } catch (IOException e) {
+                    // ignored
+                }
+            }
         }
     }
 
