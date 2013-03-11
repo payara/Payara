@@ -221,6 +221,11 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
     }
 
     @Override
+    public Set<FullAndPartURIs> topLevelDownloads() throws IOException {
+        return earLevelDownloads();
+    }
+
+    @Override
     public File rootForSignedFilesInApp() {
         return new File(dc().getScratchDir("xml").getParentFile(), "signed/");
     }

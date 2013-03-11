@@ -284,6 +284,11 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
     }
 
     @Override
+    public Set<FullAndPartURIs> topLevelDownloads() throws IOException {
+        return clientLevelDownloads();
+    }
+
+    @Override
     public URI appClientUserURIForFacade(DeploymentContext dc) {
         return appClientUserURI(dc);
     }
