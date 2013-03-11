@@ -119,11 +119,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             currentSecurityContext = securityContext.getCurrentSecurityContext();
         }
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
-        savedInvocation = currentInvocation.clone();
-        savedInvocation.instance = currentInvocation.instance;
-        savedInvocation.setResourceTableKey(null);
-        if (!naming) {
-            savedInvocation.setJNDIEnvironment(null);
+        if (currentInvocation != null) {
+            savedInvocation = currentInvocation.clone();
+            savedInvocation.instance = currentInvocation.instance;
+            savedInvocation.setResourceTableKey(null);
+            if (!naming) {
+                savedInvocation.setJNDIEnvironment(null);
+            }
         }
         // TODO - support workarea propagation
         return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext);
