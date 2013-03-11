@@ -112,7 +112,7 @@ public class JvmOptionsTest extends RestTestBase {
             put(option1Name, "someValue");
         }};
 
-        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = post(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -131,10 +131,10 @@ public class JvmOptionsTest extends RestTestBase {
         final String optionName = "-Dfile" + generateRandomString();
         final String optionValue = "C:\\ABC\\DEF\\";
         Map<String, String> newOptions = new HashMap<String, String>() {{
-            put(optionName, optionValue);
+            put(optionName, escape(optionValue));
         }};
 
-        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = post(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -156,7 +156,7 @@ public class JvmOptionsTest extends RestTestBase {
             put(option2Name, "");
         }};
 
-        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = post(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -183,7 +183,7 @@ public class JvmOptionsTest extends RestTestBase {
         }};
 
         // Test new config to make sure option is there
-        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = post(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
         List<String> jvmOptions = getJvmOptions(response);
@@ -214,7 +214,7 @@ public class JvmOptionsTest extends RestTestBase {
         Response response = post(URL_TEST_CONFIG + "/java-config/create-profiler", attrs);
         assertTrue(isSuccess(response));
 
-        response = put(URL_TEST_CONFIG + "/java-config/profiler/jvm-options", newOptions);
+        response = post(URL_TEST_CONFIG + "/java-config/profiler/jvm-options", newOptions);
         assertTrue(isSuccess(response));
 
         response = get(URL_TEST_CONFIG + "/java-config/profiler/jvm-options");
@@ -229,10 +229,10 @@ public class JvmOptionsTest extends RestTestBase {
         final String optionName = "-XX:MaxPermSize";
         final String optionValue = "152m";
         Map<String, String> newOptions = new HashMap<String, String>() {{
-            put(optionName, optionValue);
+            put(escape(optionName), optionValue);
         }};
 
-        Response response = put(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
+        Response response = post(URL_TEST_CONFIG_JVM_OPTIONS, newOptions);
         assertTrue(isSuccess(response));
         response = get(URL_TEST_CONFIG_JVM_OPTIONS);
 //        assertTrue(isSuccess(response));
@@ -258,5 +258,12 @@ public class JvmOptionsTest extends RestTestBase {
         List<String> jvmOptions = (List<String>)((Map)responseMap.get("extraProperties")).get("leafList");
 
         return jvmOptions;
+    }
+  
+    protected String escape(String part) {
+        String changed = part
+                .replace("\\", "\\\\")
+                .replace(":", "\\:");
+        return changed;
     }
 }

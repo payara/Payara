@@ -42,7 +42,6 @@ package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 
-import javax.inject.Provider;
 import javax.ws.rs.PUT;
 import org.jvnet.hk2.config.TransactionFailure;
 import java.util.HashMap;
@@ -50,11 +49,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.DELETE;
@@ -65,7 +61,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 
-import org.glassfish.admin.rest.adapter.LocatorBridge;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import org.glassfish.admin.rest.results.OptionsResult;
@@ -75,7 +70,6 @@ import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
-import org.glassfish.admin.rest.RestService;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
 
@@ -162,6 +156,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
 
     @PUT //create
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
+    @Deprecated
     public Response add(HashMap<String, String> data) throws TransactionFailure {
         String postCommand = getPostCommand();
         Map<String, String> payload = null;
@@ -328,11 +323,13 @@ public abstract class CollectionLeafResource extends AbstractResource {
             if ("target".equals(key) || "profiler".equals(key)) {
                 results.put(key, entry.getValue());
             } else {
-                options.append(sep).append(escapeOptionPart(entry.getKey()));
+//                options.append(sep).append(escapeOptionPart(entry.getKey()));
+                options.append(sep).append(entry.getKey());
 
                 String value = entry.getValue();
                 if ((value != null) && (!value.isEmpty())) {
-                    options.append("=").append(escapeOptionPart(entry.getValue()));
+//                    options.append("=").append(escapeOptionPart(entry.getValue()));
+                    options.append("=").append(entry.getValue());
                 }
                 sep = ":";
             }
@@ -356,8 +353,8 @@ public abstract class CollectionLeafResource extends AbstractResource {
      */
     protected String escapeOptionPart(String part) {
         String changed = part
-                .replaceAll("\\\\", "\\\\\\\\")
-                .replaceAll(":", "\\\\:");
+                .replace("\\", "\\\\")
+                .replace(":", "\\:");
         return changed;
     }
 
@@ -375,7 +372,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
             if (index > -1) {
                 existing.put(escapeOptionPart(option.substring(0, index)), escapeOptionPart(option.substring(index+1)));
             } else {
-                existing.put(option, "");
+                existing.put(escapeOptionPart(option), "");
             }
         }
 

@@ -146,7 +146,9 @@ public class RestTestBase {
     protected Client getClient() {
         if (client == null) {
             client = new ClientWrapper(new HashMap<String, String>(), adminUser, adminPass);
-            client.register(new LoggingFilter());
+            if (Boolean.parseBoolean(System.getProperty("DEBUG"))) {
+                client.register(new LoggingFilter());
+            }
         }
         return client;
     }
