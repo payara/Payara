@@ -83,9 +83,9 @@
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
-				<phase>package</phase>
+                        <phase>package</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <unzip src="target/admingui.war" dest="target/temp" />
                                 <delete file="target/admingui.war" />
                                 <mkdir dir="target/temp/WEB-INF/extra" />
@@ -103,7 +103,7 @@
                                 </jar>
                                 <delete dir="target/temp" />
 
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
@@ -111,9 +111,7 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
-
     </build>
 
     <dependencies>

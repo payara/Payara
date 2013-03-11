@@ -168,13 +168,13 @@ this or the downstream JARs and so attempts to find things fail.
                           <goal>run</goal>
                       </goals>
                       <configuration>
-                          <tasks>
+                          <target>
                               <property name="output.file" value="${project.build.finalName}.jar"/>
                               <property name="output.dir" value="${project.build.directory}"/>
                               <property name="stage.dir" value="${project.build.directory}/stage"/>
                               <property name="classpath.file" value="${classpath.file}"/>
                               <ant antfile="${basedir}/fixup.xml"/>
-                          </tasks>
+                          </target>
                       </configuration>
                   </execution>
               </executions>
