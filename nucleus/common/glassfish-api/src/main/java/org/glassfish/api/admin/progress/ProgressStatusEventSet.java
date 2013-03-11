@@ -104,10 +104,10 @@ public class ProgressStatusEventSet extends ProgressStatusEvent {
             return false;
         }
         final ProgressStatusEventSet other = (ProgressStatusEventSet) obj;
-        if (this.totalStepCount != other.totalStepCount && (this.totalStepCount == null || !this.totalStepCount.equals(other.totalStepCount))) {
+        if ((this.totalStepCount == null) ? (other.totalStepCount != null) : !this.totalStepCount.equals(other.totalStepCount)) {
             return false;
         }
-        if (this.currentStepCount != other.currentStepCount && (this.currentStepCount == null || !this.currentStepCount.equals(other.currentStepCount))) {
+        if ((this.currentStepCount == null) ? (other.currentStepCount != null) : !this.currentStepCount.equals(other.currentStepCount)) {
             return false;
         }
         return true;
