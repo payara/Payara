@@ -44,44 +44,30 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
 	setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="TBD"  >
+<!composition template="/templates/default.layout"  guiTitle="AAA$resource{i18nc.batch.configurationTitle}"  >
 
 <!define name="content">
     <event>
     <!beforeCreate
         setSessionAttribute(key="batchTabs" value="batchConfig");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration" method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="tmpMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
         createMap(result="#{pageSession.valueMap}");
-        mapPut(map="#{pageSession.valueMap}"  key="minThreadPoolSize" value="");
-        mapPut(map="#{pageSession.valueMap}"  key="maxThreadPoolSize" value="");
-        mapPut(map="#{pageSession.valueMap}"  key="maxIdleThreadTimeoutInSecond" value="");
-        mapPut(map="#{pageSession.valueMap}"  key="maxQueueSize" value="");
-        mapPut(map="#{pageSession.valueMap}"  key="dataSourceName" value="");
-        mapPut(map="#{pageSession.valueMap}"  key="maxDataRetentionTimeInSeconds" value="");
-        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/batch/batchConfiguration.jsf");
-        <!--
-        createMap(result="#{requestScope.attrsMap}");
-        mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
-        mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-executions" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchJobExecutions[0]}");
-        gf.convertMapToListOfMap(map="#{pageSession.valueMap.jobParameters}"  keyName="key" valueName="value" result="#{requestScope.listOfRows}");
-        setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.jobParametersTableTitle}");
-        setPageSessionAttribute(key="listPageLink" value="#{request.contextPath}/common/batch/batchJobs.jsf");
-        -->
+        mapPut(map="#{pageSession.valueMap}"  key="executorServiceLookupName" value="#{pageSession.tmpMap['executor-service-lookup-name']}");
+        mapPut(map="#{pageSession.valueMap}"  key="dataSourceLookupName" value="#{pageSession.tmpMap['data-source-lookup-name']}");
     />
     </event>
-"   <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":batchJobs");</script>
-
 <sun:form id="propertyForm">
 #include "/common/batch/batchTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
 
-    <sun:title id="propertyContentPage" title="TBD" helpText="" >
+    <sun:title id="propertyContentPage" title="$resource{i18nc.batch.configurationTitle}" helpText="$resource{i18nc.batch.configurationTitleHelp}" >
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="saveButton" immediate="#{true}" primary="#{false}"  text="$resource{i18n.button.Save}" >
                 <!command
                     prepareSuccessfulMsg();
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/configure-batch-runtime" method="POST" attrs="#{pageSession.valueMap}");
                 />
             </sun:button>
         </sun:panelGroup>
@@ -90,22 +76,18 @@
 
     <sun:propertySheet id="propertySheet">
         <sun:propertySheetSection >
-
-            <sun:property id="minThreadPoolSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.minThreadPoolSize}" helpText="$resource{i18nc.batch.minThreadPoolSizeHelp}">
-                <sun:textField id="minThreadPoolSize" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}"  text="#{pageSession.valueMap['minThreadPoolSize']}" />
+            <sun:property id="executorServiceLookupName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.executorServiceLookupName}" helpText="$resource{i18nc.batch.configuration.executorServiceLookupNameHelp}">
+                <sun:textField id="executorServiceLookupName"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}"  text="#{pageSession.valueMap['executorServiceLookupName']}" />
             </sun:property>
-
-            <sun:property id="maxThreadPoolSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.maxThreadPoolSize}" helpText="$resource{i18nc.batch.maxThreadPoolSizeHelp}">
-                <sun:textField id="maxThreadPoolSize" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['maxThreadPoolSize']}" />
-            </sun:property>
-
-            <sun:property id="maxIdleThreadTimeoutInSecond"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.maxIdleThreadTimeoutInSecond}" helpText="$resource{i18nc.batch.maxIdleThreadTimeoutInSecondHelp}">
-                <sun:textField id="maxIdleThreadTimeoutInSecond" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['maxIdleThreadTimeoutInSecond']}" />
-                <sun:staticText id="secs" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
-            </sun:property>
+            <sun:property id="poolNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.dataSourceLookupName}"  helpText="$resource{i18nc.batch.configuration.dataSourceLookupNameHelp}">
+                <sun:dropDown id="PoolName" selected="#{pageSession.valueMap['dataSourceLookupName']}" labels="$pageSession{jdbcList}"  values="$pageSession{jdbcList}" >
+                <!beforeCreate
+                    gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/resources/jdbc-resource", result="#{pageSession.jdbcList}");
+                />
+               </sun:dropDown>
+           </sun:property>
         </sun:propertySheetSection>
     </sun:propertySheet>
-
     <sun:hidden id="helpKey" value="$resource{help_common.batchConfiguration}" />
 </sun:form>
 </define>
