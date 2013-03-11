@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.apache.naming.resources.FileDirContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -94,6 +95,8 @@ public class WarHandler extends AbstractArchiveHandler {
     private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
     private static final Logger logger = WebappClassLoader.logger;
     private static final ResourceBundle rb = logger.getResourceBundle();
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WarHandler.class);
+
 
     @LogMessageInfo(
             message = "extra-class-path component [{0}] is not a valid pathname",
@@ -483,6 +486,9 @@ public class WarHandler extends AbstractArchiveHandler {
             if (archive.exists(getXmlFileName())) {
                 try (InputStream is = archive.getEntry(getXmlFileName())) {
                     init(is);
+                } catch (Throwable t) {
+                    String msg = localStrings.getLocalString("web.deployment.exception_parsing_webxml", "Error in parsing {0} for archive [{1}]: {2}", getXmlFileName(), archive.getURI(), t.getMessage());
+                    throw new RuntimeException(msg);
                 }
             }
         }

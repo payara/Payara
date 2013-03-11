@@ -43,6 +43,7 @@ package org.glassfish.ejb.deployment;
 
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.loader.ASURLClassLoader;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -72,6 +73,9 @@ import static javax.xml.stream.XMLStreamConstants.*;
  */
 @Service(name = EjbJarDetector.ARCHIVE_TYPE)
 public class EjbJarHandler extends AbstractArchiveHandler {
+
+    private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EjbJarHandler.class);
+
     @Inject @Named(EjbJarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
 
@@ -177,7 +181,11 @@ public class EjbJarHandler extends AbstractArchiveHandler {
             if (input != null) {
                 try {
                     read(input);
-                } finally {
+                } catch (Throwable t) {
+                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_glassfishejbjarxml", "Error in parsing glassfish-ejb-jar.xml for archive [{0}]: {1}", archive.getURI(), t.getMessage());
+                    throw new RuntimeException(msg);
+                }
+                finally {
                     if (parser != null) {
                         try {
                             parser.close();
@@ -310,6 +318,9 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                 input = new FileInputStream(f);
                 try {
                     read(input);
+                } catch (Throwable t) {
+                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_sunejbjarxml", "Error in parsing sun-ejb-jar.xml for archive [{0}]: {1}", baseDir, t.getMessage());
+                    throw new RuntimeException(msg);
                 } finally {
                     if (parser != null) {
                         try {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,6 +74,7 @@ import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.io.*;
 import java.util.logging.Level;
 import java.net.URLClassLoader;
@@ -108,7 +109,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     private static final String EAR_LIB = "ear_lib";
     private static final String EMBEDDED_RAR = "embedded_rar";
 
-    private static LocalStringsImpl strings = new LocalStringsImpl(EarHandler.class);;
+    private static LocalStringsImpl strings = new LocalStringsImpl(EarHandler.class);
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarHandler.class);
+
 
 
     public String getArchiveType() {
@@ -528,6 +531,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             if (input != null) {
                 try {
                     read(input);
+                } catch (Throwable t) {
+                    String msg = localStrings.getLocalString("exception_parsing_glassfishapplicationxml", "Error in parsing sun-application.xml for archive [{0}]: {1}", archive.getURI(), t.getMessage());
+                    throw new RuntimeException(msg);
                 } finally {
                     if (parser != null) {
                         try {
@@ -654,6 +660,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                 input = new FileInputStream(f);
                 try {
                     read(input);
+                } catch (Throwable t) {
+                    String msg = localStrings.getLocalString("exception_parsing_sunapplicationxml", "Error in parsing glassfish-application.xml for archive [{0}]: {1}", baseDir.getPath(), t.getMessage());
+                    throw new RuntimeException(msg);
                 } finally {
                     if (parser != null) {
                         try {
