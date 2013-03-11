@@ -51,6 +51,7 @@
     </parent>
     <artifactId>test-progress-status-commands</artifactId>
     <name>Progress status - Test Commands</name>
+    <packaging>glassfish-jar</packaging>
 
     <properties>
     </properties>
