@@ -309,9 +309,9 @@ public class RestUtil {
         for (Map.Entry<String, Object> e : attrs.entrySet()) {
             String key = e.getKey().toLowerCase(GuiUtil.guiLocale);
             if (pswdAttrList.contains(key)) {
-                masked.put(key, "*******");
+                masked.put(e.getKey(), "*******");
             } else {
-                masked.put(key, e.getValue());
+                masked.put(e.getKey(), e.getValue());
             }
         }
         return masked;
