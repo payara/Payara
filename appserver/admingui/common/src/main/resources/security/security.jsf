@@ -48,7 +48,7 @@
 <!define name="content">
     <event>
         <!beforeCreate
-        getRequestValue(key="configName" value=>"#{pageSession.configName}" );
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
         gf.isConfigName(configName="#{pageSession.configName}" exists="#{requestScope.exists}" );
         if (! #{requestScope.exists}){
             gf.redirect("#{request.contextPath}/common/configuration/configurations.jsf");
