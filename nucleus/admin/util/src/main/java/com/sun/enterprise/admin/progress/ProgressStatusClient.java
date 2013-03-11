@@ -48,6 +48,7 @@ import org.glassfish.api.admin.ProgressStatus;
 import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusDTO;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
+import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
 
 /** Provides mirroring of events into given ProgressStatus substructure.
  * Never rewrites name in base ProgressStatus (i.e. only children will have copied
@@ -133,50 +134,10 @@ public class ProgressStatusClient {
         if (event == null) {
             return;
         }
-        ProgressStatus effected = map.get(event.getSource().getId());
-        boolean msgChanged = false;
-        if (event.getChanged() != null && event.getChanged().size() > 0) {
-            for (ProgressStatusEvent.Changed chng : event.getChanged()) {
-                switch (chng) {
-                    case NEW_CHILD:
-                        effected = map.get(event.getParentSourceId());
-                        if (effected != null) {
-                            ProgressStatus child = effected.createChild(event.getSource().getName(), event.getAllocatedSteps());
-                            map.put(event.getSource().getId(), child);
-                            child.setTotalStepCount(event.getSource().getTotalStepCount());
-                            child.setCurrentStepCount(event.getSource().getCurrentStepCount());
-                            if (event.getSource().isCompleted()) {
-                                child.complete();
-                            }
-                        }
-                        break;
-                    case COMPLETED:
-                        effected.complete(event.getMessage());
-                        msgChanged = true;
-                        break;
-                    case STEPS:
-                        effected.setCurrentStepCount(event.getSource().getCurrentStepCount());
-                        if (StringUtils.ok(event.getMessage())) {
-                            effected.progress(0, event.getMessage(), event.isSpinner());
-                            msgChanged = true;
-                        }
-                        break;
-                    case TOTAL_STEPS:
-                        effected.setTotalStepCount(event.getSource().getTotalStepCount());
-                        if (StringUtils.ok(event.getMessage())) {
-                            effected.progress(0, event.getMessage(), event.isSpinner());
-                            msgChanged = true;
-                        }
-                        break;
-                    case SPINNER:
-                        break;
-                    default:
-                        throw new AssertionError();
-                }
-            }
-        }
-        if (!msgChanged && StringUtils.ok(event.getMessage())) {
-            effected.progress(0, event.getMessage(), event.isSpinner());
+        ProgressStatus effected = map.get(event.getSourceId());
+        ProgressStatus result = event.apply(effected);
+        if (event instanceof ProgressStatusEventCreateChild) {
+            map.put(((ProgressStatusEventCreateChild) event).getChildId(), result);
         }
     }
 

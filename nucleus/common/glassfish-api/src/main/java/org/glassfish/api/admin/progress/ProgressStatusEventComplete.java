@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,26 +41,59 @@ package org.glassfish.api.admin.progress;
 
 import org.glassfish.api.admin.ProgressStatus;
 
-/** {@code ProgressStatus} is changed
+/** Progress method was called.
  *
- * @author mmares
+ * @author martinmares
  */
-//TODO: Move to AdminUtil if possible. It is now in API only because ProgressStatusImpl is here, too
-public abstract class ProgressStatusEvent {
-    
-    private final String sourceId;
+public class ProgressStatusEventComplete extends ProgressStatusEvent implements ProgressStatusMessage {
 
-    public ProgressStatusEvent(String sourceId) {
-        if (sourceId == null) {
-            throw new IllegalArgumentException("id == null");
+    private String message;
+
+    public ProgressStatusEventComplete(String progressStatusId, String message) {
+        super(progressStatusId);
+        this.message = message;
+    }
+
+    public ProgressStatusEventComplete(String sourceId) {
+        super(sourceId);
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public ProgressStatus apply(ProgressStatus ps) {
+        ps.complete(message);
+        return ps;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + (this.message != null ? this.message.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        this.sourceId = sourceId;
-    }
-
-    public String getSourceId() {
-        return sourceId;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ProgressStatusEventComplete other = (ProgressStatusEventComplete) obj;
+        if ((this.message == null) ? (other.message != null) : !this.message.equals(other.message)) {
+            return false;
+        }
+        return true;
     }
     
-    public abstract ProgressStatus apply(ProgressStatus ps);
     
 }

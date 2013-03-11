@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest.provider;
 
+import com.sun.enterprise.util.StringUtils;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
@@ -51,8 +52,11 @@ import javax.ws.rs.ext.Provider;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonGenerator;
-import org.glassfish.api.admin.progress.ProgressStatusDTO;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
+import org.glassfish.api.admin.progress.ProgressStatusEventComplete;
+import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
+import org.glassfish.api.admin.progress.ProgressStatusEventProgress;
+import org.glassfish.api.admin.progress.ProgressStatusEventSet;
 
 /**
  *
@@ -78,62 +82,71 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
         JsonGenerator out = factory.createJsonGenerator(entityStream, JsonEncoding.UTF8);
         out.writeStartObject();
-        writeJson("progress-status-event", proxy, out);
+        writePSEvent(proxy, out);
         out.writeEndObject();
         out.flush();
     }
     
-    public void writeJson(String name, ProgressStatusEvent event, JsonGenerator out) throws IOException {
+    private void writePSEvent(ProgressStatusEvent event, JsonGenerator out) throws IOException {
         if (event == null) {
             return;
         }
-        if (name != null) {
-            out.writeObjectFieldStart(name);
-        } else {
-            out.writeStartObject();
+        out.writeObjectFieldStart("progress-status-event");
+        out.writeStringField("id", event.getSourceId());
+        if (event instanceof ProgressStatusEventProgress) {
+            writePSEventProgress((ProgressStatusEventProgress) event, out);
+        } else if (event instanceof ProgressStatusEventSet) {
+            writePSEventSet((ProgressStatusEventSet) event, out);
+        } else if (event instanceof ProgressStatusEventComplete) {
+            writePSEventComplete((ProgressStatusEventComplete) event, out);
+        } else if (event instanceof ProgressStatusEventCreateChild) {
+            writePSEventCreateChild((ProgressStatusEventCreateChild) event, out);
+        } else 
+        out.writeEndObject();
+    }
+    
+    private void writePSEventSet(ProgressStatusEventSet event, JsonGenerator out) throws IOException {
+        out.writeObjectFieldStart("set");
+        if (event.getTotalStepCount() != null) {
+            out.writeNumberField("total-step-count", event.getTotalStepCount());
         }
-        if (event.getChanged() != null && event.getChanged().size() > 0) {
-            out.writeArrayFieldStart("changed");
-            for (ProgressStatusEvent.Changed chng : event.getChanged()) {
-                if (chng != null) {
-                    out.writeString(chng.name());
-                }
-            }
-            out.writeEndArray();
+        if (event.getCurrentStepCount() != null) {
+            out.writeNumberField("current-step-count", event.getCurrentStepCount());
         }
-        if (event.getMessage() != null && !event.getMessage().isEmpty()) {
+        out.writeEndObject();
+    }
+    
+    private void writePSEventProgress(ProgressStatusEventProgress event, JsonGenerator out) throws IOException {
+        out.writeObjectFieldStart("progres");
+        out.writeNumberField("steps", event.getSteps());
+        if (StringUtils.ok(event.getMessage())) {
             out.writeStringField("message", event.getMessage());
         }
         if (event.isSpinner()) {
             out.writeBooleanField("spinner", event.isSpinner());
         }
-        if (event.getAllocatedSteps() > 0) {
-            out.writeNumberField("allocated-steps", event.getAllocatedSteps());
-        }
-        if (event.getParentSourceId() != null) {
-            out.writeStringField("parent-id", event.getParentSourceId());
-        }
-        writeJson("progress-status", event.getSource(), out);
         out.writeEndObject();
     }
     
-    public void writeJson(String name, ProgressStatusDTO ps, JsonGenerator out) throws IOException {
-        if (ps == null) {
-            return;
+    private void writePSEventComplete(ProgressStatusEventComplete event, JsonGenerator out) throws IOException {
+        out.writeObjectFieldStart("complete");
+        if (StringUtils.ok(event.getMessage())) {
+            out.writeStringField("message", event.getMessage());
         }
-        if (name != null) {
-            out.writeObjectFieldStart(name);
-        } else {
-            out.writeStartObject();
-        }
-        out.writeStringField("name", ps.getName());
-        out.writeStringField("id", ps.getId());
-        out.writeNumberField("total-step-count", ps.getTotalStepCount());
-        out.writeNumberField("current-step-count", ps.getCurrentStepCount());
-        out.writeBooleanField("complete", ps.isCompleted());
         out.writeEndObject();
     }
-
+    
+    private void writePSEventCreateChild(ProgressStatusEventCreateChild event, JsonGenerator out) throws IOException {
+        out.writeObjectFieldStart("create-child");
+        out.writeStringField("id", event.getChildId());
+        out.writeNumberField("allocated-steps", event.getAllocatedSteps());
+        out.writeNumberField("total-step-count", event.getTotalSteps());
+        if (StringUtils.ok(event.getName())) {
+            out.writeStringField("name", event.getName());
+        }
+        out.writeEndObject();
+    }
+    
     @Override
     public String getContent(ProgressStatusEvent proxy) {
         throw new UnsupportedOperationException("Not supported yet.");

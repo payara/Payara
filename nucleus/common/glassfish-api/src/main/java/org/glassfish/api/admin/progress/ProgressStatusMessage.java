@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,28 +39,14 @@
  */
 package org.glassfish.api.admin.progress;
 
-import org.glassfish.api.admin.ProgressStatus;
-
-/** {@code ProgressStatus} is changed
+/**
  *
- * @author mmares
+ * @author martinmares
  */
-//TODO: Move to AdminUtil if possible. It is now in API only because ProgressStatusImpl is here, too
-public abstract class ProgressStatusEvent {
+public interface ProgressStatusMessage {
     
-    private final String sourceId;
-
-    public ProgressStatusEvent(String sourceId) {
-        if (sourceId == null) {
-            throw new IllegalArgumentException("id == null");
-        }
-        this.sourceId = sourceId;
-    }
-
-    public String getSourceId() {
-        return sourceId;
-    }
+    public String getSourceId();
     
-    public abstract ProgressStatus apply(ProgressStatus ps);
+    public String getMessage();
     
 }

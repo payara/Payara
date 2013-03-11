@@ -42,14 +42,14 @@ package com.sun.enterprise.admin.remote.reader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
-import java.util.List;
 import org.codehaus.jackson.JsonFactory;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
-import org.glassfish.api.admin.progress.ProgressStatusDTO;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
-import org.glassfish.api.admin.progress.ProgressStatusEvent.Changed;
+import org.glassfish.api.admin.progress.ProgressStatusEventComplete;
+import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
+import org.glassfish.api.admin.progress.ProgressStatusEventProgress;
+import org.glassfish.api.admin.progress.ProgressStatusEventSet;
 
 /**
  *
@@ -87,32 +87,85 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
     }
     
     public static ProgressStatusEvent readProgressStatusEvent(JsonParser jp) throws IOException {
-        ProgressStatusDTO source = null;
-        List<Changed> changed = new ArrayList<Changed>();
-        String message = null;
-        boolean spinner = false;
-        int allocatedSteps = 0;
-        String parentId = null;
+        String id = null;
+        JsonToken token = null;
+        ProgressStatusEvent result = null;
+        while ((token = jp.nextToken()) != JsonToken.END_OBJECT) {
+            if (token == JsonToken.START_OBJECT) {
+                String nm = jp.getCurrentName();
+                if ("set".equals(nm)) {
+                    result = new ProgressStatusEventSet(id);
+                    readToPSEventSet((ProgressStatusEventSet) result, jp);
+                } else if ("progres".equals(nm)) {
+                    result = new ProgressStatusEventProgress(id);
+                    readToPSEventProgress((ProgressStatusEventProgress) result, jp);
+                } else if ("complete".equals(nm)) {
+                    result = new ProgressStatusEventComplete(id);
+                    readToPSEventComplete((ProgressStatusEventComplete) result, jp);
+                } else if ("create-child".equals(nm)) {
+                    result = new ProgressStatusEventCreateChild(id);
+                    readToPSEventCreateChild((ProgressStatusEventCreateChild) result, jp);
+                }
+            } else {
+                String fieldname = jp.getCurrentName();
+                if ("id".equals(fieldname)) {
+                    jp.nextToken(); // move to value
+                    id = jp.getText();
+                }
+            }
+        }
+        return result;
+    }
+    
+    public static void readToPSEventSet(ProgressStatusEventSet event, JsonParser jp) throws IOException {
+        while (jp.nextToken() != JsonToken.END_OBJECT) {
+            String fieldname = jp.getCurrentName();
+            jp.nextToken(); // move to value
+            if ("total-step-count".equals(fieldname)) {
+                event.setTotalStepCount(jp.getIntValue());
+            } else if ("current-step-count".equals(fieldname)) {
+                event.setCurrentStepCount(jp.getIntValue());
+            }
+        }
+    }
+    
+    public static void readToPSEventProgress(ProgressStatusEventProgress event, JsonParser jp) throws IOException {
+        while (jp.nextToken() != JsonToken.END_OBJECT) {
+            String fieldname = jp.getCurrentName();
+            jp.nextToken(); // move to value
+            if ("steps".equals(fieldname)) {
+                event.setSteps(jp.getIntValue());
+            } else if ("message".equals(fieldname)) {
+                event.setMessage(jp.getText());
+            } else if ("spinner".equals(fieldname)) {
+                event.setSpinner(jp.getBooleanValue());
+            }
+        }
+    }
+    
+    public static void readToPSEventComplete(ProgressStatusEventComplete event, JsonParser jp) throws IOException {
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
             jp.nextToken(); // move to value
             if ("message".equals(fieldname)) {
-                message = jp.getText();
-            } else if ("spinner".equals(fieldname)) {
-                spinner = jp.getBooleanValue();
-            } else if ("allocated-steps".equals(fieldname)) {
-                allocatedSteps = jp.getIntValue();
-            } else if ("parent-id".equals(fieldname)) {
-                parentId = jp.getText();
-            } else if ("changed".equals(fieldname)) {
-                while (jp.nextToken() != JsonToken.END_ARRAY) {
-                    changed.add(Changed.valueOf(jp.getText()));
-                }
-            } else if ("progress-status".equals(fieldname)) {
-                source = ProgressStatusDTOJsonProprietaryReader.readProgressStatus(jp);
+                event.setMessage(jp.getText());
             }
         }
-        return new ProgressStatusEvent(source, parentId, message, spinner, allocatedSteps, changed.toArray(new Changed[changed.size()]));
     }
-
+    
+    public static void readToPSEventCreateChild(ProgressStatusEventCreateChild event, JsonParser jp) throws IOException {
+        while (jp.nextToken() != JsonToken.END_OBJECT) {
+            String fieldname = jp.getCurrentName();
+            jp.nextToken(); // move to value
+            if ("id".equals(fieldname)) {
+                event.setChildId(jp.getText());
+            } else if ("allocated-steps".equals(fieldname)) {
+                event.setAllocatedSteps(jp.getIntValue());
+            } else if ("total-step-count".equals(fieldname)) {
+                event.setTotalSteps(jp.getIntValue());
+            } else if ("name".equals(fieldname)) {
+                event.setName(jp.getText());
+            }
+        }
+    }
 }

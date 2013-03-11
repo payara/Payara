@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 package org.glassfish.api.admin.progress;
 
 import java.util.*;
+import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.ProgressStatus;
 
 /** Basic <i>abstract</i> implementation of {@code ProgressStatus}.
@@ -158,10 +159,6 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         }
     }
     
-    protected final void fireEvent(String message, boolean spinner, ProgressStatusEvent.Changed... changed) {
-        fireEvent(new ProgressStatusEvent(this, message, spinner, changed));
-    }
-    
     @Override
     public synchronized void setTotalStepCount(int totalStepCount) {
         if (completed || this.totalStepCount == totalStepCount) {
@@ -171,7 +168,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         if (totalStepCount >= 0 && this.currentStepCount > totalStepCount) {
             this.currentStepCount = totalStepCount;
         }
-        fireEvent(null, false, ProgressStatusEvent.Changed.TOTAL_STEPS);
+        fireEvent(new ProgressStatusEventSet(id, totalStepCount, null));
     }
 
     @Override
@@ -193,23 +190,19 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         if (completed) {
             return;
         }
-        boolean stepsChanged = false;
+        int lastCurrentStepCount = this.currentStepCount;
         if (steps > 0) {
             if (totalStepCount < 0) {
                 currentStepCount += steps;
-                stepsChanged = true;
             } else if (currentStepCount < totalStepCount) {
                 currentStepCount += steps;
                 if (currentStepCount > totalStepCount) {
                     currentStepCount = totalStepCount;
                 }
-                stepsChanged = true;
             }
         }
-        if (stepsChanged) {
-            fireEvent(message, spinner, ProgressStatusEvent.Changed.SPINNER, ProgressStatusEvent.Changed.STEPS);
-        } else if (message != null && !message.isEmpty()) {
-            fireEvent(message, spinner, ProgressStatusEvent.Changed.SPINNER);
+        if (currentStepCount != lastCurrentStepCount || message != null || (getSpinnerStatus() != null && spinner != getSpinnerStatus())) {
+            fireEvent(new ProgressStatusEventProgress(id, steps, message, spinner));
         }
     }
     
@@ -244,14 +237,14 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             }
         }
         if (stepsChanged) {
-            fireEvent(null, false, ProgressStatusEvent.Changed.STEPS);
+            fireEvent(new ProgressStatusEventSet(id, null, stepCount));
         }
     }
 
     @Override
     public void complete(String message) {
         if (completeSilently()) {
-            fireEvent(message, false, ProgressStatusEvent.Changed.COMPLETED);
+            fireEvent(new ProgressStatusEventComplete(id, message));
         }
     }
     
@@ -297,9 +290,6 @@ public abstract class ProgressStatusBase implements ProgressStatus {
                 if (currentStepCount < 0) {
                     currentStepCount = 0;
                     totalStepCount = allocatedSteps;
-                    fireEvent(null, false, ProgressStatusEvent.Changed.STEPS, ProgressStatusEvent.Changed.TOTAL_STEPS);
-                } else {
-                    fireEvent(null, false, ProgressStatusEvent.Changed.STEPS);
                 }
             }
         }
@@ -313,7 +303,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
         allocateStapsForChildProcess(allocatedSteps);
         ProgressStatusBase result = doCreateChild(name, totalStepCount);
         children.add(new ChildProgressStatus(allocatedSteps, result));
-        fireEvent(new ProgressStatusEvent(result, allocatedSteps));
+        fireEvent(new ProgressStatusEventCreateChild(id, name, result.getId(), allocatedSteps, totalStepCount));
         return result;
     }
 
@@ -437,6 +427,21 @@ public abstract class ProgressStatusBase implements ProgressStatus {
             if (result != null) {
                 return result;
             }
+        }
+        return null;
+    }
+    
+    /** Returns spinner status or null if status was not possible to check.
+     */
+    private Boolean getSpinnerStatus() {
+        if (parent == null) {
+            return null;
+        }
+        if (parent instanceof CommandProgress) {
+            return ((CommandProgress) parent).isSpinnerActive();
+        }
+        if (parent instanceof ProgressStatusBase) {
+            return ((ProgressStatusBase) parent).getSpinnerStatus();
         }
         return null;
     }

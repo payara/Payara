@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -87,7 +87,7 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
             int allocatedSteps, int totalStepCount) {
         ProgressStatusBase result = doCreateChild(name, totalStepCount);
         children.add(new ChildProgressStatus(allocatedSteps, result));
-        fireEvent(new ProgressStatusEvent(result, 0));
+        fireEvent(new ProgressStatusEventCreateChild(id, name, result.getId(), 0, totalStepCount));
         return result;
     }
     
@@ -115,17 +115,17 @@ public class ProgressStatusMirroringImpl extends ProgressStatusBase {
             newCurrentStepCount += mirr.getCurrentStepCount();
         }
         //Event
-        List<ProgressStatusEvent.Changed> changed = new ArrayList<ProgressStatusEvent.Changed>(2);
+        ProgressStatusEventSet event = new ProgressStatusEventSet(id);
         if (newCurrentStepCount != currentStepCount) {
             currentStepCount = newCurrentStepCount;
-            changed.add(ProgressStatusEvent.Changed.STEPS);
+            event.setCurrentStepCount(currentStepCount);
         }
         if (newTotalStepCount != totalStepCount) {
             totalStepCount = newTotalStepCount;
-            changed.add(ProgressStatusEvent.Changed.TOTAL_STEPS);
+            event.setTotalStepCount(totalStepCount);
         }
-        if (!changed.isEmpty()) {
-            super.fireEvent(null, false, changed.toArray(new ProgressStatusEvent.Changed[changed.size()]));
+        if (event.getCurrentStepCount() != null || event.getTotalStepCount() != null) {
+            super.fireEvent(event);
         }
     }
     

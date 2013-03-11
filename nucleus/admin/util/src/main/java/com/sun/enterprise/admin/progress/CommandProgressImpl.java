@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,7 +45,10 @@ import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
+import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
+import org.glassfish.api.admin.progress.ProgressStatusEventProgress;
 import org.glassfish.api.admin.progress.ProgressStatusImpl;
+import org.glassfish.api.admin.progress.ProgressStatusMessage;
 import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
 
 /** Basic and probably only implementation of {@code CommandProgress}.
@@ -54,7 +57,7 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
  */
 public class CommandProgressImpl extends ProgressStatusImpl implements CommandProgress {
 
-    public class LastChangedMessage {
+    public class LastChangedMessage implements ProgressStatusMessage {
         
         private String sourceId;
         private String message;
@@ -68,10 +71,12 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
             this.message = message;
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
 
+        @Override
         public String getSourceId() {
             return sourceId;
         }
@@ -117,18 +122,14 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
         if (event == null) {
             return;
         }
-        boolean messageChanged = false;
-        if (event.getMessage() != null && !event.getMessage().isEmpty()) {
-            lastMessage = new LastChangedMessage(event.getSource().getId(), event.getMessage());
-            messageChanged = true;
-        }
-        if (event.getChanged() != null && event.getChanged().contains(ProgressStatusEvent.Changed.SPINNER)) {
-            if (!messageChanged && event.isSpinner() == spinner && event.getChanged().size() == 1) {
-                //Just spinner change but no change at all
-                return;
-            } else {
-                this.spinner = event.isSpinner();
+        if (event instanceof ProgressStatusMessage) {
+            ProgressStatusMessage msgEvent = (ProgressStatusMessage) event;
+            if (StringUtils.ok(msgEvent.getMessage())) {
+                lastMessage = new LastChangedMessage(msgEvent.getSourceId(), msgEvent.getMessage());
             }
+        }
+        if (event instanceof ProgressStatusEventProgress) {
+            this.spinner = ((ProgressStatusEventProgress) event).isSpinner();
         }
         eTag++;
         if (eventBroker != null) {
@@ -150,7 +151,7 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
         String childId = (id == null ? "" : id) + "." + (children.size() + 1);
         ProgressStatusMirroringImpl result = new ProgressStatusMirroringImpl(null, this, childId);
         children.add(new ChildProgressStatus(allocatedSteps, result));
-        fireEvent(new ProgressStatusEvent(result, allocatedSteps));
+        fireEvent(new ProgressStatusEventCreateChild(id, null, result.getId(), allocatedSteps, -1));
         return result;
     }
 
