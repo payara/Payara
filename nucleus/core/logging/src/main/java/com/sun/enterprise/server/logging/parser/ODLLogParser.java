@@ -152,14 +152,21 @@ final class ODLLogParser implements LogParser {
         String msg = logRecord.substring(end);
         // System.out.println("Indexof=" + msg.indexOf("[["));
         msg = msg.trim();
+        boolean multiLineBegin = false;
         if (msg.startsWith("[[")) {
             msg = msg.replaceFirst("\\[\\[", "");
+            multiLineBegin = true;
         }
-        msg = msg.trim();
+        if (multiLineBegin && msg.endsWith("]]")) {
+            int endIndex = msg.length() - 2;
+            if (endIndex > 0) {
+                msg = msg.substring(0, endIndex);
+            }
+        }
         parsedLogRecord.setFieldValue(ParsedLogRecord.LOG_MESSAGE, msg);
         if (fieldIndex < ODL_FIXED_FIELD_COUNT) {
             return false;
-        }
+        }        
         return true;
     }
 
