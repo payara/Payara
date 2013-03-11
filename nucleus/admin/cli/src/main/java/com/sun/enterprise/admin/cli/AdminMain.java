@@ -66,8 +66,11 @@ import com.sun.enterprise.util.JDK;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * The admin main program (nadmin).
@@ -105,6 +108,31 @@ public class AdminMain {
             }
         }
     }
+    
+        /**
+     * Get the class loader that is used to load local commands.
+     *
+     * @return a class loader used to load local commands
+     */
+    private ClassLoader getExtensionClassLoader(final Set<File> extensions) {
+        final ClassLoader ecl = AdminMain.class.getClassLoader();
+        if (extensions != null && !extensions.isEmpty()) {
+            return (ClassLoader) AccessController.doPrivileged(
+                    new PrivilegedAction() {
+                        @Override
+                        public Object run() {
+                            try {
+                                return new DirectoryClassLoader(extensions, ecl);
+                            } catch (IOException ex) {
+                                // any failure here is fatal
+                                logger.info(strings.get("ExtDirFailed", ex));
+                            }
+                            return ecl;
+                        }
+                    });
+        }
+        return ecl;
+    }
 
     /*
      * Skinning Methods
@@ -113,45 +141,27 @@ public class AdminMain {
      * for different products. Skinning is achieved by extending AdminMain and
      * redefining the methods in this section.
      */
-
-    /**
-     * Get the class loader that is used to load local commands.
-     *
-     * @return a class loader used to load local commands
+    
+    /** Get set of JAR files that is used to locate local commands (CLICommand).
+     * Results can contain JAR files or directories where all JAR files are 
+     * used. It must return all JARs or directories
+     * with acceptable CLICommands excluding admin-cli.jar.
+     * Default implementation returns INSTALL_ROOT_PROPERTY/lib/asadmin
+     * 
+     * @return set of JAR files or directories with JAR files
      */
-    protected ClassLoader getExtensionClassLoader() {
-        /*
-         * Create a ClassLoader to load from all the jar files in the
-         * lib/asadmin directory. This directory can contain extension jar files
-         * with new local asadmin commands.
-         */
-        final ClassLoader ecl = AdminMain.class.getClassLoader();
-
-        File inst = new File(System.getProperty(
-                SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+    protected Set<File> getExtensions() {
+        Set<File> result = new HashSet<File>();
+        final File inst = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
         final File ext = new File(new File(inst, "lib"), "asadmin");
-        logger.log(Level.FINER, "asadmin extension directory: {0}", ext);
-        if (ext.isDirectory()) {
-            return (ClassLoader) AccessController.doPrivileged(
-                    new PrivilegedAction() {
-                        @Override
-                        public Object run() {
-                            try {
-                                return new DirectoryClassLoader(ext, ecl);
-                            } catch (IOException ex) {
-                                // any failure here is fatal
-                                logger.info(strings.get("ExtDirFailed", ex));
-                            }
-                            return ecl;
-                        }
-                    });
+        if (ext.exists() && ext.isDirectory()) {
+            result.add(ext);
         } else {
             logger.finer(strings.get("ExtDirMissing", ext));
         }
-        
-        return ecl;
+        result.add(new File(new File(inst, "modules"), "admin-cli.jar"));
+        return result;
     }
-    
 
     protected String getCommandName() {
         return "nadmin";
@@ -243,13 +253,12 @@ public class AdminMain {
                     new Object[]{System.getProperty("java.class.path"),
                         Arrays.toString(args)});
         }
-        
-        ClassLoader ecl = getExtensionClassLoader();
-        
         /*
          * Set the thread's context class laoder so that everyone can load from
          * our extension directory.
          */
+        Set<File> extensions = getExtensions();
+        ClassLoader ecl = getExtensionClassLoader(extensions);
         Thread.currentThread().setContextClassLoader(ecl);
         
         /*
@@ -265,7 +274,7 @@ public class AdminMain {
         thread.setDaemon(true);
         thread.start();
 
-        cliContainer = new CLIContainer(ecl, logger);
+        cliContainer = new CLIContainer(ecl, extensions, logger);
         
         classPath =
                 SmartFile.sanitizePaths(System.getProperty("java.class.path"));
@@ -425,4 +434,16 @@ public class AdminMain {
     private static boolean ok(String s) {
         return s != null && s.length() > 0;
     }
+    
+    /** Returns source JAR file for given class. 
+     * 
+     * @param cls Must be classic class - NOT inner class
+     */
+    public static File getJarForClass(Class cls) {
+        URL resource = cls.getResource("/" + cls.getName().replace('.', '/') + ".class");
+        String filename = resource.getFile();
+        filename = filename.substring(5, filename.indexOf('!'));
+        return new File(filename);
+    }
+    
 }

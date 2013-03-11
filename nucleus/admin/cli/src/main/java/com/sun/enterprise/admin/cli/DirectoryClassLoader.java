@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,9 +62,12 @@ public class DirectoryClassLoader extends URLClassLoader {
      * @param parent the parent class loader
      * @throws IOException if the directory can't be accessed
      */
-    public DirectoryClassLoader(String dir, ClassLoader parent)
-                        throws IOException {
+    public DirectoryClassLoader(String dir, ClassLoader parent) throws IOException {
         super(getJars(new File(dir)), parent);
+    }
+    
+    public DirectoryClassLoader(Set<File> jarsAndDirs, ClassLoader parent) throws IOException {
+        super(getJars(jarsAndDirs), parent);
     }
 
     /**
@@ -78,6 +81,21 @@ public class DirectoryClassLoader extends URLClassLoader {
     public DirectoryClassLoader(File dir, ClassLoader parent)
                         throws IOException {
         super(getJars(dir), parent);
+    }
+    
+    private static URL[] getJars(Set<File> jarsAndDirs) throws IOException {
+        if (jarsAndDirs == null) {
+            throw new IOException(strings.get("DirError", ""));
+        }
+        Set<URL> result = new HashSet<URL>();
+        for (File jd : jarsAndDirs) {
+            if (jd.isDirectory()) {
+                result.addAll(Arrays.asList(getJars(jd)));
+            } else {
+                result.add(jd.toURI().toURL());
+            }
+        }
+        return result.toArray(new URL[result.size()]);
     }
 
     private static URL[] getJars(File dir) throws IOException {

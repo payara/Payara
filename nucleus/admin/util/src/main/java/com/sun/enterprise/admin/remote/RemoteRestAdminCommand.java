@@ -1385,31 +1385,6 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         }
     }
 
-    private void handleResponse(ParameterMap params,
-            InputStream in, int code) throws IOException, CommandException {
-        RemoteResponseManager rrm = null;
-
-        try {
-            rrm = new RemoteResponseManager(in, code, logger);
-            rrm.process();
-        } catch (RemoteSuccessException rse) {
-            // save results
-            output = rse.getMessage();
-	    assert rrm != null;
-	    attrs = rrm.getMainAtts();
-            return;
-        } catch (RemoteException rfe) {
-            // XXX - gross
-            if (rfe.getRemoteCause().indexOf("CommandNotFoundException") >= 0) {
-                // CommandNotFoundException from the server, then display
-                // the closest matching commands
-                throw new InvalidCommandException(rfe.getMessage());
-            }
-            throw new CommandException(
-                        "remote failure: " + rfe.getMessage(), rfe);
-        }
-    }
-    
     /**
      * Fetch the command metadata from the remote server.
      */

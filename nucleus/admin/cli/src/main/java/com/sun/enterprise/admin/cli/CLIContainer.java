@@ -42,18 +42,24 @@ package com.sun.enterprise.admin.cli;
 import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
-import java.net.URL;
-import java.util.Enumeration;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
 import javax.inject.Inject;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PerLookup;
@@ -74,7 +80,7 @@ import org.jvnet.hk2.config.InjectionResolver;
  *
  * @author martinmares
  */
-public class CLIContainer {
+public final class CLIContainer {
     
     class SimpleInjectionResolver extends InjectionResolver<Inject> {
 
@@ -100,7 +106,8 @@ public class CLIContainer {
     
     private static final InjectionManager injectionMgr = new InjectionManager();
     
-    protected final ClassLoader classLoader;
+    protected final Set<File> extensions;
+    private final ClassLoader classLoader;
     protected final Logger logger;
     
     protected ServiceLocator serviceLocator;
@@ -109,25 +116,16 @@ public class CLIContainer {
     
     
     private Map<String, String> cliCommandsNames;
-    private final CountDownLatch initLatch = new CountDownLatch(1);
 
-    public CLIContainer(final ClassLoader classLoader, final Logger logger) {
+    public CLIContainer(final ClassLoader classLoader, final Set<File> extensions, final Logger logger) {
         this.classLoader = classLoader;
+        this.extensions = extensions;
         this.logger = logger;
-        final Thread th = new Thread (new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        cliCommandsNames = parseHk2Locators();
-                    } catch (IOException ex) {
-                        logger.log(Level.FINER, "Can't fast parse hk2 locators! HK2 ServiceLocator must be used");
-                    } finally {
-                        initLatch.countDown();
-                    }
-                }
-            });
-        th.setDaemon(true);
-        th.start();
+        try {
+            cliCommandsNames = parseHk2Locators();
+        } catch (IOException ex) {
+            logger.log(Level.FINER, "Can't fast parse hk2 locators! HK2 ServiceLocator must be used");
+        }
      }
     
     private Object createInstance(String name) 
@@ -155,17 +153,47 @@ public class CLIContainer {
         }
     }
     
+    private Set<File> expandExtensions() throws IOException {
+        Set<File> result = new HashSet<File>();
+        for (File file : extensions) {
+            if (file.isDirectory()) {
+                File[] lf = file.listFiles(new FilenameFilter() {
+                                @Override
+                                public boolean accept(File dir, String name) {
+                                    return name.toLowerCase().endsWith(".jar");
+                                }
+                            });
+                result.addAll(Arrays.asList(lf));
+            } else {
+                result.add(file);
+            }
+        }
+        File inst = new File(System.getProperty(SystemPropertyConstants.INSTALL_ROOT_PROPERTY));
+        File adminCliJar = new File(new File(inst, "modules"), "admin-cli.jar");
+        if (!adminCliJar.exists()) {
+            throw new IOException(adminCliJar.getCanonicalPath());
+        }
+        result.add(adminCliJar);
+        return result;
+    }
+    
     private Map<String, String> parseHk2Locators() throws IOException {
         Map<String, String> result = new HashMap<String, String>();
-        Enumeration<URL> locators = classLoader.getResources("META-INF/hk2-locator/default");
-        while (locators.hasMoreElements()) {
+        Set<File> extFiles = expandExtensions();
+        for (File file : extFiles) {
             BufferedReader reader = null;
+            JarFile jar = null;
             try {
-                URL locator = locators.nextElement();
-                reader = new BufferedReader(new InputStreamReader(locator.openStream()));
-                parseInHk2LocatorOrig(reader, result);
+                jar = new JarFile(file);
+                ZipEntry entry = jar.getEntry("META-INF/hk2-locator/default");
+                if (entry != null) {
+                    reader = new BufferedReader(new InputStreamReader(jar.getInputStream(entry)));
+                    parseInHk2LocatorOrig(reader, result);
+                }
             } finally {
                 try { reader.close(); } catch (Exception ex) {
+                }
+                try { jar.close(); } catch (Exception ex) {
                 }
             }
         }
@@ -173,7 +201,6 @@ public class CLIContainer {
     }
     
     private String getCommandClassName(String name) throws InterruptedException, IllegalStateException {
-        initLatch.await();
         if (cliCommandsNames == null) {
             throw new IllegalStateException();
         } else {
