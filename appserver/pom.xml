@@ -573,7 +573,7 @@
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-ee-resources</artifactId>
-                <version>1.0.1</version>
+                <version>2.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.ha</groupId>

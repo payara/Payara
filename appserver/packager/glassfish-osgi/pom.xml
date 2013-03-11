@@ -181,6 +181,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>org.glassfish.fighterfish</groupId>
+            <artifactId>osgi-ee-resources</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <!-- Add the dependency here so that packager bundles this as well. 
                  This is needed by osgi-web-container to function correctly -->
             <groupId>org.apache.felix</groupId>
