@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,14 +61,18 @@ import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.DuckTyped;
 import org.jvnet.hk2.config.Element;
 
+import com.sun.enterprise.config.serverbeans.customvalidators.ContextRootCheck;
+
+
 @Configured
 @RestRedirects({
     @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "undeploy"),
     @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "redeploy")
 })
+@ContextRootCheck(message="{contextroot.duplicate}", payload=Application.class)
 public interface Application extends ApplicationName, PropertyBag {
 
-    public static final String APP_LOCATION_PROP_NAME = "appLocation";
+    public static final String APP_LOCATION_PROP_NAME = "appLocation";           
     public static final String DEPLOYMENT_PLAN_LOCATION_PROP_NAME = "deploymentPlanLocation";
     public static final String ARCHIVE_TYPE_PROP_NAME = "archiveType";
     public static final String ALT_DD_LOCATION_PROP_NAME = "altDDLocation";
