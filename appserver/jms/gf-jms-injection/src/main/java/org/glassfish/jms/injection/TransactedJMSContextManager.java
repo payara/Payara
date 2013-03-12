@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
- 
- package org.glassfish.jms.injection;
 
+package org.glassfish.jms.injection;
+
+import java.util.UUID;
+import javax.enterprise.inject.spi.PassivationCapable;
 import javax.transaction.TransactionScoped;
 
 /**
@@ -49,12 +51,19 @@ import javax.transaction.TransactionScoped;
  * instance in a request.
  */
 @TransactionScoped
-public class TransactedJMSContextManager extends AbstractJMSContextManager {
+public class TransactedJMSContextManager extends AbstractJMSContextManager implements PassivationCapable {
+    private String id = UUID.randomUUID().toString();
+
     public TransactedJMSContextManager() {
         super();
     }
 
     public String getType() {
         return "TransactionScoped";
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 }

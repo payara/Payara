@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,12 @@
 
 package org.glassfish.jms.injection;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import javax.enterprise.context.*;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Observes;
@@ -47,34 +53,40 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.AnnotationLiteral;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-import org.glassfish.weld.WeldGFExtension;
+import javax.transaction.TransactionScoped;
 
 /*
  * This CDI portable extension can register JMSContext beans to be system-level
  * that can be injected into all applications.
  */
-@WeldGFExtension(beans={RequestedJMSContextManager.class, TransactedJMSContextManager.class, InjectableJMSContext.class})
 public class JMSCDIExtension implements Extension {
     public JMSCDIExtension() {
     }
-/*
+
     private Bean createLocalBean(BeanManager beanManager, Class beanClass) {
         AnnotatedType annotatedType = beanManager.createAnnotatedType(beanClass);
-        final InjectionTarget injectionTarget = beanManager.createInjectionTarget(annotatedType);
-        return new LocalBean(beanClass, injectionTarget);
+        boolean isPassivationCapable = false;
+        try {
+            beanClass.asSubclass(PassivationCapable.class);
+            isPassivationCapable = true;
+        } catch (ClassCastException cce) {}
+        LocalBean localBean = null;
+        if (isPassivationCapable)
+            localBean = new LocalPassivationCapableBean(beanClass);
+        else
+            localBean = new LocalBean(beanClass);
+        InjectionTargetFactory injectionTargetFactory = beanManager.getInjectionTargetFactory(annotatedType);
+        localBean.setInjectionTarget(injectionTargetFactory.createInjectionTarget(localBean));
+        return localBean;
     }
-*/
+
     public void afterBeanDiscovery(@Observes AfterBeanDiscovery afterBeanDiscoveryEvent, BeanManager beanManager) {
-// Workaround for WELD-1182. uncomment the following lines once the defect is addressed.
-//        Bean managerBean = createLocalBean(beanManager, InjectableJMSContext.class);
-//        Bean contextBean = createLocalBean(beanManager, JMSContextManager.class);
-//        afterBeanDiscoveryEvent.addBean(managerBean);
-//        afterBeanDiscoveryEvent.addBean(contextBean);
+        Bean requestManagerBean = createLocalBean(beanManager, RequestedJMSContextManager.class);
+        afterBeanDiscoveryEvent.addBean(requestManagerBean);
+        Bean transactionManagerBean = createLocalBean(beanManager, TransactedJMSContextManager.class);
+        afterBeanDiscoveryEvent.addBean(transactionManagerBean);
+        Bean contextBean = createLocalBean(beanManager, InjectableJMSContext.class);
+        afterBeanDiscoveryEvent.addBean(contextBean);
     }
 
     void addScope(@Observes final BeforeBeanDiscovery event) {
@@ -104,12 +116,20 @@ public class JMSCDIExtension implements Extension {
     public <T, X> void processProducer(@Observes ProcessProducer<T, X> event) {
     }
 
-    private static class LocalBean implements Bean {
+    public class LocalBean implements Bean {
         private Class beanClass;
         private InjectionTarget injectionTarget;
 
+        public LocalBean(Class beanClass) {
+            this.beanClass = beanClass;
+        }
+
         public LocalBean(Class beanClass, InjectionTarget injectionTarget) {
             this.beanClass = beanClass;
+            this.injectionTarget = injectionTarget;
+        }
+
+        public void setInjectionTarget(InjectionTarget injectionTarget) {
             this.injectionTarget = injectionTarget;
         }
 
@@ -131,8 +151,8 @@ public class JMSCDIExtension implements Extension {
         @Override
         public Set<Annotation> getQualifiers() {
             Set<Annotation> qualifiers = new HashSet<Annotation>();
-            qualifiers.add(new StaticAnnotation<Default>());
-            qualifiers.add(new StaticAnnotation<Any>());
+            qualifiers.add(new AnnotationLiteral<Default>() {});
+            qualifiers.add(new AnnotationLiteral<Any>() {});
             return qualifiers;
         }
 
@@ -140,6 +160,8 @@ public class JMSCDIExtension implements Extension {
         public Class<? extends Annotation> getScope() {
             if (beanClass.isAnnotationPresent(RequestScoped.class))
                 return RequestScoped.class;
+            else if (beanClass.isAnnotationPresent(TransactionScoped.class))
+                return TransactionScoped.class;
             else
                 return Dependent.class;
         }
@@ -191,12 +213,26 @@ public class JMSCDIExtension implements Extension {
 
         @Override
         public void destroy(Object instance, CreationalContext ctx) {
-            injectionTarget.preDestroy( instance );
-            injectionTarget.dispose( instance );
+            injectionTarget.preDestroy(instance);
+            injectionTarget.dispose(instance);
             ctx.release();
         }
+    }
 
-        private static class StaticAnnotation<T extends java.lang.annotation.Annotation> extends AnnotationLiteral<T> {
+    public class LocalPassivationCapableBean extends LocalBean implements PassivationCapable {
+        private String id = UUID.randomUUID().toString();
+
+        public LocalPassivationCapableBean(Class beanClass) {
+            super(beanClass);
+        }
+
+        public LocalPassivationCapableBean(Class beanClass, InjectionTarget injectionTarget) {
+            super(beanClass, injectionTarget);
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }
