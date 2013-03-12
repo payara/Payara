@@ -63,6 +63,7 @@ import org.glassfish.api.admin.*;
 import static com.sun.enterprise.admin.cli.CLIConstants.*;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FileInputStream;
+import java.util.logging.Logger;
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.admin.payload.PayloadFilesManager.Perm;
 import org.glassfish.hk2.api.PerLookup;
@@ -127,7 +128,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private File dasPropsFile;
     private Properties dasProperties;
 
-    protected boolean setDasDefaultsOnly = false;
     private File syncBundleFile = null;
     private File agentConfigDir;
     private File backupDir;
@@ -158,19 +158,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         }
         node = _node;
 
-        //isDasRunning = rendezvousWithDAS() ? true : false;
-
-        //Should we validate node and instance if das is running? No validation for now.
-        //setDasDefaultsOnly = true; //Issue 12847 - Call super.validate to setDasDefaults only
-        //super.validate();          //so _validate-node uses das host from das.properties. No dirs created.
-
-        //init();
-
-        //if (node != null && isDasRunning) {
-        //    validateNode(node, getInstallRootPath(), getInstanceHostName(true));
-        //}
-
-        //setDasDefaultsOnly = false;
         super.validate(); // set ServerDirs
         init();
     }
@@ -228,8 +215,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                         }
                     }
                 }
-                if (input != null) input.close();
-                if (reader != null) reader.close();
             } else {
                 throw new CommandException(Strings.get("import.sync.bundle.domainXmlNotFound",
                     syncBundle));
@@ -244,6 +229,21 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                     syncBundle, xe.getLocalizedMessage()), xe);
             throw new CommandException(Strings.get("import.sync.bundle.inboundPayloadFailed",
                     syncBundle, xe.getLocalizedMessage()), xe);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException ex) {
+                    // ignored
+                }
+            }
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (XMLStreamException ex) {
+                    // ignored
+                }
+            }
         }
 
         return isRegisteredOnDAS;
@@ -397,95 +397,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         }
     }
 
-    /*private boolean rendezvousWithDAS() {
-        try {
-            getUptime();
-            return true;
-        } catch (CommandException ex) {
-            return false;
-        }
-    }
-
-    private String getInstanceHostName(boolean isCanonical) throws CommandException {
-        String instanceHostName = null;
-        InetAddress localHost = null;
-        try {
-            localHost = InetAddress.getLocalHost();
-        } catch (UnknownHostException ex) {
-            throw new CommandException(Strings.get("cantGetHostName", ex));
-        }
-        if (localHost != null) {
-            if (isCanonical) {
-                instanceHostName = localHost.getCanonicalHostName();
-            } else {
-                instanceHostName = localHost.getHostName();
-            }
-        }
-        return instanceHostName;
-    }
-
-    private int validateNode(String name, String installdir, String nodeHost) throws CommandException {
-        ArrayList<String> argsList = new ArrayList<String>();
-        argsList.add(0, "_validate-node");
-
-        if (nodeDir != null) {
-            argsList.add("--nodedir");
-            argsList.add(nodeDir);
-        }
-        if (nodeHost != null) {
-            argsList.add("--nodehost");
-            argsList.add(nodeHost);
-        }
-        if (installdir != null) {
-            argsList.add("--installdir");
-            argsList.add(installdir);
-        }
-
-        argsList.add(name);
-
-        String[] argsArray = new String[argsList.size()];
-        argsArray = argsList.toArray(argsArray);
-
-        RemoteCLICommand rc = new RemoteCLICommand("_validate-node", this.programOpts, this.env);
-        return rc.execute(argsArray);
-    }
-
-    private boolean isRegisteredToDAS() {
-        boolean isRegistered = true;
-        try {
-            RemoteCLICommand rc = new RemoteCLICommand("get", this.programOpts, this.env);
-            rc.executeAndReturnOutput("get", INSTANCE_DOTTED_NAME);
-        } catch (CommandException ex) {
-            isRegistered = false;
-        }
-        return isRegistered;
-    }
-
-    @Override
-    protected boolean mkdirs(File f) {
-        if (setDasDefaultsOnly) {
-            return true;
-        } else {
-            return f.mkdirs();
-        }
-    }
-
-    @Override
-    protected boolean isDirectory(File f) {
-        if (setDasDefaultsOnly) {
-            return true;
-        } else {
-            return f.isDirectory();
-        }
-    }
-
-    @Override
-    protected boolean setServerDirs() {
-        if (setDasDefaultsOnly) {
-            return false;
-        } else {
-            return true;
-        }
-    }*/
+    
 
 }

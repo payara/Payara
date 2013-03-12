@@ -52,6 +52,7 @@ import org.glassfish.hk2.bootstrap.impl.Hk2LoaderPopulatorPostProcessor;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
@@ -128,16 +129,25 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
         if(installRoot == null) {
             return new ArrayList();
         }
+        JarFile jarfile = null;
         try {
             // When running off the uber jar don't add extras module URLs to classpath.
-            JarFile jarfile = new JarFile(Which.jarFile(getClass()));
+            jarfile = new JarFile(Which.jarFile(getClass()));
             String mainClassName = jarfile.getManifest().
                     getMainAttributes().getValue("Main-Class");
-            if(UberMain.class.getName().equals(mainClassName)) {
+            if (UberMain.class.getName().equals(mainClassName)) {
                 return new ArrayList();
             }
         } catch (Exception ex) {
             logger.warning(ex.getMessage());
+        } finally {
+            if (jarfile != null) {
+                try {
+                    jarfile.close();
+                } catch (IOException ex) {
+                    // ignored
+                }
+            }
         }
         
         File modulesDir = new File(installRoot, "modules/");
