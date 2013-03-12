@@ -67,8 +67,7 @@ public class CookiePersistentManager extends StandardManager {
     private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
-            message = "setAttribute: Session attribute with name {0} has value " +
-                      "that is not of type String (required for cookie-based persistence)",
+            message = "setAttribute: Session attribute with name {0} has value that is not of type String (required for cookie-based persistence)",
             level = "WARNING"
     )
     public static final String SET_SESSION_ATTRIBUTE_EXCEPTION = "AS-WEB-CORE-00337";

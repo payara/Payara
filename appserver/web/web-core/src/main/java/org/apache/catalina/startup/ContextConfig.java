@@ -227,22 +227,19 @@ public class ContextConfig
     public static final String PROCESSING_STOP_FINEST = "AS-WEB-CORE-00426";
 
     @LogMessageInfo(
-            message = "Security role name {0} used in an <auth-constraint> " +
-                      "without being defined in a <security-role> in context [{1}]",
+            message = "Security role name {0} used in an <auth-constraint> without being defined in a <security-role> in context [{1}]",
             level = "INFO"
     )
     public static final String SECURITY_ROLE_NAME_USED_IN_AUTH_WITHOUT_DEFINITION = "AS-WEB-CORE-00427";
 
     @LogMessageInfo(
-            message = "Security role name {0} used in a <run-as> " +
-                      "without being defined in a <security-role> in context [{1}]",
+            message = "Security role name {0} used in a <run-as> without being defined in a <security-role> in context [{1}]",
             level = "INFO"
     )
     public static final String SECURITY_ROLE_NAME_USED_IN_RUNAS_WITHOUT_DEFINITION = "AS-WEB-CORE-00428";
 
     @LogMessageInfo(
-            message = "Security role name {0} used in a <role-link> " +
-                      "without being defined in a <security-role> in context [{1}]",
+            message = "Security role name {0} used in a <role-link> without being defined in a <security-role> in context [{1}]",
             level = "INFO"
     )
     public static final String SECURITY_ROLE_NAME_USED_IN_LINK_WITHOUT_DEFINITION = "AS-WEB-CORE-00429";
