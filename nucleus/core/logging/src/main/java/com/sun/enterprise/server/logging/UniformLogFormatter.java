@@ -124,9 +124,7 @@ public class UniformLogFormatter extends Formatter implements LogEventBroadcaste
 
     private long recordNumber = 0;
 
-    private static final String LINE_SEPARATOR =
-            (String) java.security.AccessController.doPrivileged(
-                    new sun.security.action.GetPropertyAction("line.separator"));
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     private String recordBeginMarker;
     private String recordEndMarker;

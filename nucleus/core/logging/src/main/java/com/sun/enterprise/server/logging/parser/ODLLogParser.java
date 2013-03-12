@@ -154,7 +154,8 @@ final class ODLLogParser implements LogParser {
         msg = msg.trim();
         boolean multiLineBegin = false;
         if (msg.startsWith("[[")) {
-            msg = msg.replaceFirst("\\[\\[", "");
+            msg = msg.replaceFirst("\\[\\[", "").trim();
+            multiLineBegin = true;
             multiLineBegin = true;
         }
         if (multiLineBegin && msg.endsWith("]]")) {

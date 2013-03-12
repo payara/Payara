@@ -88,9 +88,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
     
     private UniformLogFormatter uniformLogFormatter = new UniformLogFormatter();
 
-    private static final String LINE_SEPARATOR =
-        (String) java.security.AccessController.doPrivileged(
-                new sun.security.action.GetPropertyAction("line.separator"));
+    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
     static {
         String logSource = System.getProperty(
@@ -130,6 +128,8 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
 
     private static final String RFC_3339_DATE_FORMAT =
             "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
+    private static final String INDENT = "  ";
     
     public ODLLogFormatter() {
         super();
@@ -348,6 +348,7 @@ public class ODLLogFormatter extends Formatter implements LogEventBroadcaster {
             if (multiLine) {
                 recordBuffer.append(FIELD_BEGIN_MARKER).append(FIELD_BEGIN_MARKER);
                 recordBuffer.append(LINE_SEPARATOR);
+                recordBuffer.append(INDENT);
             }
             recordBuffer.append(message);
             logEvent.setMessage(message);
