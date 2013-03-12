@@ -155,6 +155,11 @@
             <artifactId>web-naming-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.web</groupId>
+            <artifactId>war-util-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
