@@ -197,8 +197,7 @@ public class WebappClassLoader
     public static final String UNABLE_TO_LOAD_CLASS = "AS-WEB-UTIL-00006";
 
     @LogMessageInfo(
-            message = "The web application [{0}] registered the JDBC driver [{1}] but failed to unregister it when the web application was stopped. " +
-                    "To prevent a memory leak, the JDBC Driver has been forcibly unregistered.",
+            message = "The web application [{0}] registered the JDBC driver [{1}] but failed to unregister it when the web application was stopped. To prevent a memory leak, the JDBC Driver has been forcibly unregistered.",
             level = "WARNING")
     public static final String CLEAR_JDBC = "AS-WEB-UTIL-00007";
 
@@ -254,8 +253,7 @@ public class WebappClassLoader
     public static final String CHECK_THREAD_LOCALS_FOR_LEAKS = "AS-WEB-UTIL-00016";
 
     @LogMessageInfo(
-            message = "Failed to find class sun.rmi.transport.Target to clear context class loader " +
-                    "for web application [{0}]. This is expected on non-Sun JVMs.",
+            message = "Failed to find class sun.rmi.transport.Target to clear context class loader for web application [{0}]. This is expected on non-Sun JVMs.",
             level = "INFO")
     public static final String CLEAR_RMI_INFO = "AS-WEB-UTIL-00017";
 
