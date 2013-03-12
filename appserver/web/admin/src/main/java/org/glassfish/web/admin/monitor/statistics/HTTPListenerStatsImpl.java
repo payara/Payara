@@ -77,8 +77,7 @@ public class HTTPListenerStatsImpl implements MonitorContract {
     private static final ResourceBundle rb = logger.getResourceBundle();
 
     @LogMessageInfo(
-            message = "Monitoring Registry does not exist. Possible causes are 1) Monitoring is not turned " +
-                    "on or at a lower level 2) The corresponding container (web, ejb, etc.) is not loaded yet",
+            message = "Monitoring Registry does not exist. Possible causes are 1) Monitoring is not turned on or at a lower level 2) The corresponding container (web, ejb, etc.) is not loaded yet",
             level = "INFO")
     protected static final String MRDR_NULL = "AS-WEB-ADMIN-00046";
 

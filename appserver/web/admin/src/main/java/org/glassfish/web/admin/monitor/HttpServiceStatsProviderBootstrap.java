@@ -89,8 +89,7 @@ public class HttpServiceStatsProviderBootstrap implements PostConstruct {
     public static final ResourceBundle rb = logger.getResourceBundle();
 
     @LogMessageInfo(
-            message = "Unable to register StatsProvider {0} with Monitoring Infrastructure. " +
-                    "No monitoring data will be collected for {1} and {2}",
+            message = "Unable to register StatsProvider {0} with Monitoring Infrastructure. No monitoring data will be collected for {1} and {2}",
             level = "SEVERE",
             cause = "Current server config is null",
             action = "Verify if the server instance is started correctly")
