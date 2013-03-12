@@ -78,6 +78,25 @@ import java.util.List;
 public interface ContextService extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload  {
 
+    public static final String CONTEXT_INFO_DEFAULT_VALUE = "Classloader,JNDI,Security,WorkArea";
+
+    /**
+     * Gets the value of the contextInfoEnabled property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="true", dataType=Boolean.class)
+    String getContextInfoEnabled();
+
+    /**
+     * Sets the value of the contextInfoEnabled property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setContextInfoEnabled(String value) throws PropertyVetoException;
+
     /**
      * Gets the value of the contextInfo property.
      *
@@ -85,7 +104,7 @@ public interface ContextService extends ConfigBeanProxy, Resource,
      *         {@link String }
      *        
      */
-    @Attribute
+    @Attribute(defaultValue=CONTEXT_INFO_DEFAULT_VALUE)
     String getContextInfo();
 
     /**

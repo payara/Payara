@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.concurrent.config.ContextService;
 import org.glassfish.concurrent.config.ManagedThreadFactory;
 import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
@@ -85,7 +86,8 @@ public class ManagedThreadFactoryManager implements ResourceManager {
     private String jndiName = null;
     private String description = null;
     private String threadPriority = ""+Thread.NORM_PRIORITY;
-    private String contextInfo = null;
+    private String contextInfoEnabled = Boolean.TRUE.toString();
+    private String contextInfo = ContextService.CONTEXT_INFO_DEFAULT_VALUE;
     private String enabled = Boolean.TRUE.toString();
     private String enabledValueForTarget = Boolean.TRUE.toString();
 
@@ -148,6 +150,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
     private void setAttributes(HashMap attributes, String target) {
         jndiName = (String) attributes.get(JNDI_NAME);
         description = (String) attributes.get(DESCRIPTION);
+        contextInfoEnabled = (String) attributes.get(CONTEXT_INFO_ENABLED);
         contextInfo = (String) attributes.get(CONTEXT_INFO);
         threadPriority = (String) attributes.get(THREAD_PRIORITY);
         if(target != null){
@@ -172,9 +175,8 @@ public class ManagedThreadFactoryManager implements ResourceManager {
         if (description != null) {
             managedThreadFactory.setDescription(description);
         }
-        if (contextInfo != null) {
-            managedThreadFactory.setContextInfo(contextInfo);
-        }
+        managedThreadFactory.setContextInfoEnabled(contextInfoEnabled);
+        managedThreadFactory.setContextInfo(contextInfo);
         managedThreadFactory.setThreadPriority(threadPriority);
         managedThreadFactory.setEnabled(enabled);
         if (properties != null) {

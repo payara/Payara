@@ -80,13 +80,30 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
         PropertyBag, BindableResource, Payload  {
 
     /**
+     * Gets the value of the contextInfoEnabled property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="true", dataType=Boolean.class)
+    String getContextInfoEnabled();
+
+    /**
+     * Sets the value of the contextInfoEnabled property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setContextInfoEnabled(String value) throws PropertyVetoException;
+
+    /**
      * Gets the value of the contextInfo property.
      *
      * @return possible object is
      *         {@link String }
      *
      */
-    @Attribute
+    @Attribute(defaultValue=ContextService.CONTEXT_INFO_DEFAULT_VALUE)
     String getContextInfo();
 
     /**

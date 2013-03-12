@@ -55,6 +55,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.glassfish.concurrent.config.ContextService;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -77,7 +78,10 @@ public class CreateManagedExecutorServiceBase {
     @Param(optional=true, defaultValue="true")
     protected Boolean enabled;
 
-    @Param(name="contextinfo", optional=true)
+    @Param(name="contextinfoenabled", alias="contextInfoEnabled", defaultValue="true", optional=true)
+    private Boolean contextinfoenabled;
+
+    @Param(name="contextinfo", alias="contextInfo", defaultValue=ContextService.CONTEXT_INFO_DEFAULT_VALUE, optional=true)
     protected String contextinfo;
 
     @Param(name="threadpriority", alias="threadPriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
@@ -115,6 +119,7 @@ public class CreateManagedExecutorServiceBase {
 
     protected void setAttributeList(HashMap attrList) {
         attrList.put(ResourceConstants.JNDI_NAME, jndiName);
+        attrList.put(ResourceConstants.CONTEXT_INFO_ENABLED, contextinfoenabled.toString());
         attrList.put(ResourceConstants.CONTEXT_INFO, contextinfo);
         attrList.put(ResourceConstants.THREAD_PRIORITY, 
             threadpriority.toString());

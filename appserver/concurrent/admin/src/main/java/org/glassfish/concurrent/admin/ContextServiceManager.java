@@ -84,7 +84,8 @@ public class ContextServiceManager implements ResourceManager {
 
     private String jndiName = null;
     private String description = null;
-    private String contextInfo = null;
+    private String contextInfoEnabled = Boolean.TRUE.toString();
+    private String contextInfo = ContextService.CONTEXT_INFO_DEFAULT_VALUE;
     private String enabled = Boolean.TRUE.toString();
     private String enabledValueForTarget = Boolean.TRUE.toString();
 
@@ -147,6 +148,7 @@ public class ContextServiceManager implements ResourceManager {
     private void setAttributes(HashMap attributes, String target) {
         jndiName = (String) attributes.get(JNDI_NAME);
         description = (String) attributes.get(DESCRIPTION);
+        contextInfoEnabled = (String) attributes.get(CONTEXT_INFO_ENABLED);
         contextInfo = (String) attributes.get(CONTEXT_INFO);
         if(target != null){
             enabled = resourceUtil.computeEnabledValueForResourceBasedOnTarget((String)attributes.get(ENABLED), target);
@@ -170,9 +172,8 @@ public class ContextServiceManager implements ResourceManager {
         if (description != null) {
             contextService.setDescription(description);
         }
-        if (contextInfo != null) {
-            contextService.setContextInfo(contextInfo);
-        }
+        contextService.setContextInfoEnabled(contextInfoEnabled);
+        contextService.setContextInfo(contextInfo);
         contextService.setEnabled(enabled);
         if (properties != null) {
             for ( Map.Entry e : properties.entrySet()) {

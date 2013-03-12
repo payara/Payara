@@ -242,6 +242,7 @@ public final class ResourceConstants {
 
     // concurrent resource objects
     public static final String CONTEXT_INFO = "context-info";
+    public static final String CONTEXT_INFO_ENABLED = "context-info-enabled";
     public static final String THREAD_PRIORITY = "thread-priority";
     public static final String LONG_RUNNING_TASKS = "long-runnings-tasks";
     public static final String HUNG_AFTER_SECONDS = "hung-after-seconds";

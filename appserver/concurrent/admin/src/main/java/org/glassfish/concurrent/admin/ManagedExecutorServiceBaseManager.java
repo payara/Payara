@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.concurrent.config.ContextService;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resources.admin.cli.ResourceManager;
@@ -82,7 +83,8 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected String jndiName = null;
     protected String description = null;
     protected String threadPriority = ""+Thread.NORM_PRIORITY;
-    protected String contextInfo = null;
+    protected String contextInfoEnabled = Boolean.TRUE.toString();
+    protected String contextInfo = ContextService.CONTEXT_INFO_DEFAULT_VALUE;
     protected String longRunningTasks = Boolean.FALSE.toString();
     protected String hungAfterSeconds = "0";
     protected String corePoolSize = "0";
@@ -176,6 +178,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         jndiName = (String) attributes.get(JNDI_NAME);
         description = (String) attributes.get(DESCRIPTION);
         contextInfo = (String) attributes.get(CONTEXT_INFO);
+        contextInfoEnabled = (String) attributes.get(CONTEXT_INFO_ENABLED);
         threadPriority = (String) attributes.get(THREAD_PRIORITY);
         longRunningTasks = (String) attributes.get(LONG_RUNNING_TASKS);
         hungAfterSeconds = (String) attributes.get(HUNG_AFTER_SECONDS);
@@ -211,9 +214,8 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         if (description != null) {
             managedExecutorService.setDescription(description);
         }
-        if (contextInfo != null) {
-            managedExecutorService.setContextInfo(contextInfo);
-        }
+        managedExecutorService.setContextInfoEnabled(contextInfoEnabled);
+        managedExecutorService.setContextInfo(contextInfo);
         managedExecutorService.setThreadPriority(threadPriority);
         managedExecutorService.setHungAfterSeconds(hungAfterSeconds);
         managedExecutorService.setCorePoolSize(corePoolSize);
