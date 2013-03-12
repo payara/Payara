@@ -201,9 +201,7 @@ public class Request
     public static final String UNABLE_DETERMINE_CANONICAL_NAME = "AS-WEB-CORE-00058";
 
     @LogMessageInfo(
-            message = "Unable to set request character encoding to {0} from context {1}, " +
-                      "because request parameters have already been read, or ServletRequest.getReader() " +
-                      "has already been called",
+            message = "Unable to set request character encoding to {0} from context {1}, because request parameters have already been read, or ServletRequest.getReader() has already been called",
             level = "WARNING"
     )
     public static final String UNABLE_SET_REQUEST_CHARS = "AS-WEB-CORE-00059";
@@ -251,9 +249,7 @@ public class Request
     public static final String REQUEST_WITHIN_SCOPE_OF_FILTER_OR_SERVLET_EXCEPTION = "AS-WEB-CORE-00065";
 
     @LogMessageInfo(
-            message = "ServletRequest.startAsync called again without any asynchronous dispatch, " +
-                      "or called outside the scope of any such dispatch, or called again within the " +
-                      "scope of the same dispatch",
+            message = "ServletRequest.startAsync called again without any asynchronous dispatch, or called outside the scope of any such dispatch, or called again within the scope of the same dispatch",
             level = "WARNING"
     )
     public static final String START_ASYNC_CALLED_AGAIN_EXCEPTION = "AS-WEB-CORE-00066";
@@ -291,9 +287,7 @@ public class Request
     public static final String UNABLE_PERFORM_ERROR_DISPATCH = "AS-WEB-CORE-00071";
 
     @LogMessageInfo(
-            message = "Request.{0} is called without multipart configuration.  " +
-                      "Either add a @MultipartConfig to the servlet, or a " +
-                      "multipart-config element to web.xml",
+            message = "Request.{0} is called without multipart configuration. Either add a @MultipartConfig to the servlet, or a multipart-config element to web.xml",
             level = "WARNING"
     )
     public static final String REQUEST_CALLED_WITHOUT_MULTIPART_CONFIG_EXCEPTION = "AS-WEB-CORE-00072";

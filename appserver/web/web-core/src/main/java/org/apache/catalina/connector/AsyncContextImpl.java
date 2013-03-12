@@ -111,15 +111,13 @@ class AsyncContextImpl implements AsyncContext {
     public static final String ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION = "AS-WEB-CORE-00025";
 
     @LogMessageInfo(
-            message = "Must not call AsyncContext.addListener after the container-initiated dispatch during " +
-                    "which ServletRequest.startAsync was called has returned to the container",
+            message = "Must not call AsyncContext.addListener after the container-initiated dispatch during which ServletRequest.startAsync was called has returned to the container",
             level = "WARNING"
     )
     public static final String ASYNC_CONTEXT_ADD_LISTENER_EXCEPTION = "AS-WEB-CORE-00026";
 
     @LogMessageInfo(
-            message = "Must not call AsyncContext.setTimeout after the container-initiated dispatch during " +
-                    "which ServletRequest.startAsync was called has returned to the container",
+            message = "Must not call AsyncContext.setTimeout after the container-initiated dispatch during which ServletRequest.startAsync was called has returned to the container",
             level = "WARNING"
     )
     public static final String ASYNC_CONTEXT_SET_TIMEOUT_EXCEPTION = "AS-WEB-CORE-00027";

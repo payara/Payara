@@ -93,10 +93,7 @@ public class ApplicationContext implements ServletContext {
     private static final ResourceBundle rb = log.getResourceBundle();
 
     @LogMessageInfo(
-        message = "Not allowed to call this javax.servlet.ServletContext " +
-                  "method from a ServletContextListener that was neither " +
-                  "declared in the application's deployment descriptor nor " +
-                  "annotated with WebListener",
+        message = "Not allowed to call this javax.servlet.ServletContext method from a ServletContextListener that was neither declared in the application's deployment descriptor nor annotated with WebListener",
         level = "INFO"
     )
     public static final String UNSUPPORTED_OPERATION_EXCEPTION = "AS-WEB-CORE-00083";

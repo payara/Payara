@@ -58,8 +58,7 @@ public class ServletRegistrationImpl implements ServletRegistration {
     private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
-        message = "Unable to configure {0} for servlet {1} of servlet context {2}, " +
-                   "because this servlet context has already been initialized",
+        message = "Unable to configure {0} for servlet {1} of servlet context {2}, because this servlet context has already been initialized",
         level = "WARNING"
     )
     public static final String SERVLET_REGISTRATION_ALREADY_INIT = "AS-WEB-CORE-00127";

@@ -91,9 +91,7 @@ public class RequestFacade
     private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
-            message = " Must not use request object outside the " +
-                      "scope of a servlet's service or a filter's " +
-                      "doFilter method",
+            message = " Must not use request object outside the scope of a servlet's service or a filter's doFilter method",
             level = "WARNING"
     )
     public static final String CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION = "AS-WEB-CORE-00074";

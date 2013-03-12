@@ -66,8 +66,7 @@ public class SessionCookieConfigImpl implements SessionCookieConfig {
     private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
 
     @LogMessageInfo(
-        message = "Unable to configure {0} session tracking cookie property for servlet context {1}, " +
-                  "because this servlet context has already been initialized",
+        message = "Unable to configure {0} session tracking cookie property for servlet context {1}, because this servlet context has already been initialized",
         level = "WARNING"
     )
     public static final String SESSION_COOKIE_CONFIG_ALREADY_INIT = "AS-WEB-CORE-00129";
