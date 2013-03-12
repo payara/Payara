@@ -187,8 +187,7 @@ public class WebappClassLoader
     public static final String SECURITY_EXCEPTION = "AS-WEB-UTIL-00004";
 
     @LogMessageInfo(
-            message = "Class {0} has unsupported major or minor version numbers, which are greater than " + "" +
-                    "those found in the Java Runtime Environment version {1}",
+            message = "Class {0} has unsupported major or minor version numbers, which are greater than those found in the Java Runtime Environment version {1}",
             level = "WARNING")
     public static final String UNSUPPORTED_VERSION = "AS-WEB-UTIL-00005";
 
@@ -198,8 +197,7 @@ public class WebappClassLoader
     public static final String UNABLE_TO_LOAD_CLASS = "AS-WEB-UTIL-00006";
 
     @LogMessageInfo(
-            message = "The web application [{0}] registered the JDBC driver [{1}] but failed to unregister it " + "" +
-                    "when the web application was stopped. " +
+            message = "The web application [{0}] registered the JDBC driver [{1}] but failed to unregister it when the web application was stopped. " +
                     "To prevent a memory leak, the JDBC Driver has been forcibly unregistered.",
             level = "WARNING")
     public static final String CLEAR_JDBC = "AS-WEB-UTIL-00007";
@@ -244,15 +242,12 @@ public class WebappClassLoader
     public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_BAD_VALUE = "AS-WEB-UTIL-00014";
 
     @LogMessageInfo(
-            message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]). " +
-                    "The ThreadLocal has been correctly set to null and the key will be removed by GC.",
+            message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]). The ThreadLocal has been correctly set to null and the key will be removed by GC.",
             level = "FINE")
     public static final String CHECK_THREAD_LOCALS_FOR_LEAKS_DEBUG = "AS-WEB-UTIL-00015";
 
     @LogMessageInfo(
-            message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]) and " +
-                    "a value of type [{3}] (value [{4}]) but failed to remove it when the web application was stopped. " +
-                    "Threads are going to be renewed over time to try and avoid a probable memory leak.",
+            message = "The web application [{0}] created a ThreadLocal with key of type [{1}] (value [{2}]) and a value of type [{3}] (value [{4}]) but failed to remove it when the web application was stopped. Threads are going to be renewed over time to try and avoid a probable memory leak.",
             level = "SEVERE",
             cause = "Failed to remove a ThreadLocal when the web application was stopped",
             action = "Threads are going to be renewed over time to try and avoid a probable memory leak.")
@@ -317,8 +312,7 @@ public class WebappClassLoader
     public static final String TLD_PROVIDER_IGNORE_URL = "AS-WEB-UTIL-00038";
 
     @LogMessageInfo(
-            message = "Unable to determine TLD resources for [{0}] tag library, " +
-                    "because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
+            message = "Unable to determine TLD resources for [{0}] tag library, because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
             level = "WARNING")
     public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = "AS-WEB-UTIL-00039";
 
