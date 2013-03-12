@@ -86,8 +86,7 @@ public class WebApplication implements ApplicationContainer<WebBundleDescriptorI
     public static final String LOADING_APP = "AS-WEB-GLUE-00172";
 
     @LogMessageInfo(
-            message = "App config customization specified to ignore descriptor's {0} {1} " +
-                    "so it will not be present for the application",
+            message = "App config customization specified to ignore descriptor's {0} {1} so it will not be present for the application",
             level = "FINER")
     public static final String IGNORE_DESCRIPTOR = "AS-WEB-GLUE-00173";
 

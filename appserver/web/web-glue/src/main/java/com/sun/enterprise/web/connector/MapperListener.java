@@ -123,9 +123,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
     public static final String ERROR_REGISTERING_CONTEXTS = "AS-WEB-GLUE-00086";
 
     @LogMessageInfo(
-            message = "HTTP listener with network listener name {0} ignoring registration of host " +
-                    "with object name {1}, because none of the host's associated HTTP listeners matches " +
-                    "this network listener name",
+            message = "HTTP listener with network listener name {0} ignoring registration of host with object name {1}, because none of the host's associated HTTP listeners matches this network listener name",
             level = "FINE")
     public static final String IGNORE_HOST_REGISTRATIONS = "AS-WEB-GLUE-00087";
 

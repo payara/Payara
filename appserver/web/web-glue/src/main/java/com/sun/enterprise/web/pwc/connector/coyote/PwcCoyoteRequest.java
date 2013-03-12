@@ -75,8 +75,7 @@ public class PwcCoyoteRequest extends Request {
     private static final ResourceBundle rb = logger.getResourceBundle();
 
     @LogMessageInfo(
-            message = "Unable to set request encoding [{0}] determined from sun-web.xml " +
-                    "deployment descriptor of web application [{1}]",
+            message = "Unable to set request encoding [{0}] determined from sun-web.xml deployment descriptor of web application [{1}]",
             level = "WARNING")
     public static final String UNABLE_TO_SET_ENCODING = "AS-WEB-GLUE-00112";
 

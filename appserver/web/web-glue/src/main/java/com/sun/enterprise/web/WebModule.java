@@ -268,10 +268,7 @@ public class WebModule extends PwcWebModule implements Context {
     public static final String DYNAMIC_RELOAD_INTERVAL = "AS-WEB-GLUE-00248";
 
     @LogMessageInfo(
-            message = "IN WebContainer>>ConfigureSessionManager before builder factory " +
-                    "FINAL_PERSISTENCE-TYPE IS = {0} " +
-                    "FINAL_PERSISTENCE_FREQUENCY IS = {1} " +
-                    "FINAL_PERSISTENCE_SCOPE IS = {2}",
+            message = "IN WebContainer>>ConfigureSessionManager before builder factory FINAL_PERSISTENCE-TYPE IS = {0} FINAL_PERSISTENCE_FREQUENCY IS = {1} FINAL_PERSISTENCE_SCOPE IS = {2}",
             level = "FINEST")
     public static final String CONFIGURE_SESSION_MANAGER = "AS-WEB-GLUE-00249";
 
@@ -291,9 +288,7 @@ public class WebModule extends PwcWebModule implements Context {
     public static final String CONFIGURE_COOKIE_PROPERTIES = "AS-WEB-GLUE-00252";
 
     @LogMessageInfo(
-            message = "Unable to add listener of type: {0}, because it does not implement any of the required " +
-                    "ServletContextListener, ServletContextAttributeListener, ServletRequestListener, " +
-                    "ServletRequestAttributeListener, HttpSessionListener, or HttpSessionAttributeListener interfaces",
+            message = "Unable to add listener of type: {0}, because it does not implement any of the required ServletContextListener, ServletContextAttributeListener, ServletRequestListener, ServletRequestAttributeListener, HttpSessionListener, or HttpSessionAttributeListener interfaces",
             level = "WARNING")
     public static final String INVALID_LISTENER_TYPE = "AS-WEB-GLUE-00253";
 

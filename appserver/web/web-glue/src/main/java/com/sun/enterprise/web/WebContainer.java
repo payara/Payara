@@ -218,8 +218,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     public static final String PROPERTY_NOT_YET_SUPPORTED = "AS-WEB-GLUE-00179";
 
     @LogMessageInfo(
-            message = "Virtual server {0} already has a web module {1} loaded at {2} " +
-                    "therefore web module {3} cannot be loaded at this context path on this virtual server",
+            message = "Virtual server {0} already has a web module {1} loaded at {2} therefore web module {3} cannot be loaded at this context path on this virtual server",
             level = "INFO")
     public static final String DUPLICATE_CONTEXT_ROOT = "AS-WEB-GLUE-00180";
 
@@ -250,8 +249,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     public static final String WEB_MODULE_NOT_LOADED_TO_VS = "AS-WEB-GLUE-00184";
 
     @LogMessageInfo(
-            message = "Unable to deploy web module {0} at root context of virtual server {1}, " +
-                    "because this virtual server declares a default-web-module",
+            message = "Unable to deploy web module {0} at root context of virtual server {1}, because this virtual server declares a default-web-module",
             level = "INFO")
     public static final String DEFAULT_WEB_MODULE_CONFLICT = "AS-WEB-GLUE-00185";
 
@@ -360,8 +358,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     public static final String INVALID_HTTP_SERVICE_PROPERTY = "AS-WEB-GLUE-00203";
 
     @LogMessageInfo(
-            message = "The host name {0} is shared by virtual servers {1} and {2}, " +
-                    "which are both associated with the same HTTP listener {3}",
+            message = "The host name {0} is shared by virtual servers {1} and {2}, which are both associated with the same HTTP listener {3}",
             level = "SEVERE",
             cause = "The host name is not unique",
             action = "Verify that the host name is unique")

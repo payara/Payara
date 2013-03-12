@@ -90,8 +90,7 @@ public final class CacheModule {
     public static final String CONSTRAINT_ADDED = "AS-WEB-GLUE-00065";
 
     @LogMessageInfo(
-            message = "Added a constraint-field name = {0} scope = {1}" +
-                    "cache-on-match = {2} cache-on-match-failure = {3}",
+            message = "Added a constraint-field name = {0} scope = {1} cache-on-match = {2} cache-on-match-failure = {3}",
             level = "FINE")
     public static final String CONSTRAINT_FIELD_ADDED = "AS-WEB-GLUE-00066";
 

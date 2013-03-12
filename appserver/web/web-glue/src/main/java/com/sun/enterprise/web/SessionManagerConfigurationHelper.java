@@ -71,22 +71,17 @@ public class SessionManagerConfigurationHelper {
     public static final String AVAILABILITY_GLOBALLY_ENABLED = "AS-WEB-GLUE-00124";
 
     @LogMessageInfo(
-            message = "instance-level persistence-type = {0} instance-level persistenceFrequency = {1} " +
-                    "instance-level persistenceScope = {2}",
+            message = "instance-level persistence-type = {0} instance-level persistenceFrequency = {1} instance-level persistenceScope = {2}",
             level = "FINEST")
     public static final String INSTANCE_LEVEL_INFO = "AS-WEB-GLUE-00125";
 
     @LogMessageInfo(
-            message = "webAppLevelPersistenceType = {0} webAppLevelPersistenceFrequency = {1} " +
-                    "webAppLevelPersistenceScope = {2}",
+            message = "webAppLevelPersistenceType = {0} webAppLevelPersistenceFrequency = {1} webAppLevelPersistenceScope = {2}",
             level = "FINEST")
     public static final String WEB_APP_LEVEL_INFO = "AS-WEB-GLUE-00126";
 
     @LogMessageInfo(
-            message = "IN WebContainer>>ConfigureSessionManager after web level check" +
-                    "AFTER_WEB_PERSISTENCE-TYPE IS = {0} " +
-                    "AFTER_WEB_PERSISTENCE_FREQUENCY IS = {1} " +
-                    "AFTER_WEB_PERSISTENCE_SCOPE IS = {2}",
+            message = "IN WebContainer>>ConfigureSessionManager after web level check AFTER_WEB_PERSISTENCE-TYPE IS = {0} AFTER_WEB_PERSISTENCE_FREQUENCY IS = {1} AFTER_WEB_PERSISTENCE_SCOPE IS = {2}",
             level = "FINEST")
     public static final String AFTER_WEB_LEVEL_CHECK_INFO = "AS-WEB-GLUE-00127";
 
@@ -101,17 +96,12 @@ public class SessionManagerConfigurationHelper {
     public static final String IS_APP_DISTRIBUTABLE = "AS-WEB-GLUE-00129";
 
     @LogMessageInfo(
-            message = "Invalid Session Management Configuration for non-distributable app [{0}] - " +
-                    "defaulting to memory: persistence-type = [{1}] / persistenceFrequency = [{2}] / " +
-                    "persistenceScope = [{3}]",
+            message = "Invalid Session Management Configuration for non-distributable app [{0}] - defaulting to memory: persistence-type = [{1}] / persistenceFrequency = [{2}] / persistenceScope = [{3}]",
             level = "INFO")
     public static final String INVALID_SESSION_MANAGER_CONFIG = "AS-WEB-GLUE-00130";
 
     @LogMessageInfo(
-            message = "IN WebContainer>>ConfigureSessionManager before builder factory" +
-                    "FINAL_PERSISTENCE-TYPE IS = {0} " +
-                    "FINAL_PERSISTENCE_FREQUENCY IS = {1} " +
-                    "FINAL_PERSISTENCE_SCOPE IS = {2}",
+            message = "IN WebContainer>>ConfigureSessionManager before builder factory FINAL_PERSISTENCE-TYPE IS = {0} FINAL_PERSISTENCE_FREQUENCY IS = {1} FINAL_PERSISTENCE_SCOPE IS = {2}",
             level = "FINEST")
     public static final String CONFIGURE_SESSION_MANAGER_FINAL = "AS-WEB-GLUE-00131";
 

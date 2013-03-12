@@ -59,9 +59,7 @@ public class PersistenceStrategyBuilderFactory {
     private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     @LogMessageInfo(
-            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: " +
-                    "resolvedPersistenceType = {0}, resolvedPersistenceFrequency = {1} " +
-                    "resolvedPersistenceScope = {2}",
+            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: resolvedPersistenceType = {0}, resolvedPersistenceFrequency = {1} resolvedPersistenceScope = {2}",
             level = "FINEST")
     public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO = "AS-WEB-GLUE-00108";
 
@@ -71,8 +69,7 @@ public class PersistenceStrategyBuilderFactory {
     public static final String PERSISTENT_STRATEGY_BUILDER_NOT_FOUND = "AS-WEB-GLUE-00109";
 
     @LogMessageInfo(
-            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: " +
-                    "CandidateBuilderClassName = {0}",
+            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: CandidateBuilderClassName = {0}",
             level = "FINEST")
     public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME = "AS-WEB-GLUE-00110";
 

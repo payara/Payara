@@ -144,14 +144,12 @@ public class PECoyoteConnector extends Connector {
     public static final String PROXY_HANDLER_CLASS_INVALID = "AS-WEB-GLUE-00077";
 
     @LogMessageInfo(
-            message = "All SSL protocol variants disabled for network-listener {0}, " +
-                    "using SSL implementation specific defaults",
+            message = "All SSL protocol variants disabled for network-listener {0}, using SSL implementation specific defaults",
             level = "WARNING")
     public static final String ALL_SSL_PROTOCOLS_DISABLED = "AS-WEB-GLUE-00078";
 
     @LogMessageInfo(
-            message = "All SSL cipher suites disabled for network-listener(s) {0}. " +
-                    "Using SSL implementation specific defaults",
+            message = "All SSL cipher suites disabled for network-listener(s) {0}. Using SSL implementation specific defaults",
             level = "FINE")
     public static final String ALL_CIPHERS_DISABLED  = "AS-WEB-GLUE-00079";
 
