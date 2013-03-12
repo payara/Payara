@@ -947,6 +947,12 @@
                 <artifactId>org.apache.felix.bundlerepository</artifactId>
                 <version>1.6.6</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs.man</groupId>
+                <artifactId>osgi-cli-remote-manpage</artifactId>
+                <version>${v3-docs.version}</version>
+                <type>zip</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
