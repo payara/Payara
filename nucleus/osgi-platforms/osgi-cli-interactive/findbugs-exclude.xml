@@ -50,10 +50,13 @@
         findbugs reported erros in it. So, we skip scanning all jline classes.
     -->
     <Match>
-        <Package name="jline"/>
+        <Class name="~jline\..*"/>
     </Match>
     <Match>
-        <Package name="org.fusesource.jansi.internal"/>
+        <Class name="~org\.fusesource\.hawtjni\..*"/>
+    </Match>
+    <Match>
+        <Class name="~org\.fusesource\.jansi\..*"/>
     </Match>
 
 </FindBugsFilter>
