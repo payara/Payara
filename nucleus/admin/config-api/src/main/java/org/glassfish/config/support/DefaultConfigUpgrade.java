@@ -40,6 +40,7 @@
 
 package org.glassfish.config.support;
 
+import com.sun.appserv.server.util.Version;
 import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -67,6 +68,11 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
  import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 /**
  * Upgrade service to add the default-config if it doesn't exist.
@@ -91,7 +97,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
     @Inject
     ServiceLocator habitat;
-
+    
     private static final String DEFAULT_CONFIG = "default-config";
     private static final String INSTALL_ROOT = "com.sun.aas.installRoot";
     private static final LocalStringManagerImpl localStrings =
@@ -118,9 +124,10 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         logger.log(
                 Level.INFO, runningDefaultConfigUpgrade);
 
-        String template = getDomainXmlTemplate();
-
+        InputStream template = null;
         try {
+            template = getDomainXmlTemplate();
+
             ConfigSupport.apply(new MinDefaultConfigCode(), configs);
             defaultConfig = configs.getConfigByName(DEFAULT_CONFIG);
 
@@ -170,22 +177,37 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             } catch (Exception e) {
                 // ignore
             }
+            try {
+                if (template != null) {
+                    template.close();
+                }
+            } catch (Exception e) {
+                // ignore
+            }
         }
     }
 
-    private String getDomainXmlTemplate() {
+    private InputStream getDomainXmlTemplate() {
         String installRoot = System.getProperty(INSTALL_ROOT);
-        String template = installRoot + File.separator + "lib" + File.separator + "templates" + File.separator + "domain.xml";
-        File f = new File(template);
-        if (!f.exists()) {
+        String templatefilename = Version.getDefaultDomainTemplate();
+        File templatefile = new File(new File(new File(
+                    new File(installRoot, "common"), "templates"), "gf"), templatefilename);
+        try {
+            ZipFile template = new ZipFile(templatefile);
+            ZipEntry domEnt = template.getEntry("config/domain.xml");
+            if (domEnt != null) {
+                return template.getInputStream(domEnt);
+            }
+        } catch (IOException ex) {
             throw new RuntimeException(localStrings.getLocalString(
-                    "DefaultConfigUpgrade.missingDomainXmlTemplate",
-                    "DefaultConfigUpgrade failed. Missing domain.xml template here " + template, template));
-        } else {
-            logger.log(
-                    Level.INFO, foundDomainXmlTemaplate, new Object[]{template, template});
+                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
+                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
+                    templatefile.getAbsolutePath()), ex);
         }
-        return template;
+        throw new RuntimeException(localStrings.getLocalString(
+                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
+                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
+                    templatefile.getAbsolutePath()));
     }
 
     private void createDefaultConfigAttr(Config defaultConfig) throws TransactionFailure, XMLStreamException {
@@ -1554,11 +1576,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         }
     }
 
-    private void createParser(String template) throws FileNotFoundException, XMLStreamException {
+    private void createParser(InputStream template) throws FileNotFoundException, XMLStreamException {
         if (template != null) {
-            reader = new InputStreamReader(new FileInputStream(template));
+            reader = new InputStreamReader(template);
             parser = XMLInputFactory.newInstance().createXMLStreamReader(
-                    template, reader);
+                    "domain.xml", reader);
         }
     }
     private XMLStreamReader parser;

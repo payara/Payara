@@ -252,14 +252,6 @@ public class ConfigApiLoggerInfo {
             level = "SEVERE")
     public final static String defaultConfigUpgradeFailure = LOGMSG_PREFIX + "-0025";
 
-
-    @LogMessageInfo(
-            message = "DefaultConfigUpgrade failed. Missing domain.xml template here {0} {1}",
-            publish = true,
-            level = "INFO")
-    public final static String foundDomainXmlTemaplate = LOGMSG_PREFIX + "-0026";
-
-
     @LogMessageInfo(
             message = "Failure creating SecurityService Config",
             cause = "unknown",
