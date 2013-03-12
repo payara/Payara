@@ -226,7 +226,7 @@ public class DomainBuilder {
             for (Enumeration<JarEntry> entry = _templateJar.entries(); entry.hasMoreElements();) {
                 JarEntry jarEntry = (JarEntry)entry.nextElement();
                 String entryName = jarEntry.getName();
-                if (entryName.toUpperCase().startsWith(META_DIR_NAME)) {
+                if (entryName.startsWith(META_DIR_NAME)) {
                     // Skipping the extraction of jar meta data.
                     continue;
                 }
