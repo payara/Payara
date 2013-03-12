@@ -85,6 +85,8 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
 
     private static final Logger logger = LogDomains.getLogger(StandaloneAppClientDeployerHelper.class, LogDomains.ACC_LOGGER);
+    
+    private Set<FullAndPartURIs> clientLevelDownloads = null;
 
     StandaloneAppClientDeployerHelper(final DeploymentContext dc, 
             final ApplicationClientDescriptor bundleDesc,
@@ -263,29 +265,27 @@ public class StandaloneAppClientDeployerHelper extends AppClientDeployerHelper {
 
     @Override
     protected Set<FullAndPartURIs> clientLevelDownloads() throws IOException {
-        /*
-         * Stand-alone client deployments involve these downloads:
-         * 1. the original app client JAR,
-         * 2. the facade JAR 
-         */
-        Set<FullAndPartURIs> downloads = new HashSet<FullAndPartURIs>();
-        downloads.add(new Artifacts.FullAndPartURIs(
-                appClientServerURI(dc()),
-                appClientUserURI(dc())));
-        downloads.add(new Artifacts.FullAndPartURIs(
-                facadeServerURI(dc()),
-                facadeUserURI(dc())));
-        return downloads;
+        if (clientLevelDownloads == null) {
+            /*
+             * Stand-alone client deployments involve these downloads:
+             * 1. the original app client JAR,
+             * 2. the facade JAR 
+             */
+            Set<FullAndPartURIs> downloads = new HashSet<FullAndPartURIs>();
+            downloads.add(new Artifacts.FullAndPartURIs(
+                    appClientServerURI(dc()),
+                    appClientUserURI(dc())));
+            downloads.add(new Artifacts.FullAndPartURIs(
+                    facadeServerURI(dc()),
+                    facadeUserURI(dc())));
+            clientLevelDownloads = downloads;
+        }
+        return clientLevelDownloads;
     }
 
     @Override
     public Set<FullAndPartURIs> earLevelDownloads() throws IOException {
         return Collections.EMPTY_SET;
-    }
-
-    @Override
-    public Set<FullAndPartURIs> topLevelDownloads() throws IOException {
-        return clientLevelDownloads();
     }
 
     @Override

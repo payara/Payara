@@ -96,7 +96,6 @@ import org.glassfish.internal.api.ServerContext;
 public abstract class AppClientDeployerHelper {
 
     private final static String PERSISTENCE_XML_PATH = "META-INF/persistence.xml";
-    private static final String PERMISSIONS_XML_PATH = "META-INF/permissions.xml";
     
     final static String GF_CLIENT_MODULE_PATH ="gf-client-module.jar";
     
@@ -145,7 +144,6 @@ public abstract class AppClientDeployerHelper {
                                     gfClientModuleLoader,
                                     application,
                                     habitat));
-        helper.completeInit();
         return helper;
     }
 
@@ -642,24 +640,6 @@ public abstract class AppClientDeployerHelper {
     protected abstract Set<Artifacts.FullAndPartURIs> clientLevelDownloads() throws IOException;
 
     public abstract Set<Artifacts.FullAndPartURIs> earLevelDownloads() throws IOException;
-    
-    public abstract Set<Artifacts.FullAndPartURIs> topLevelDownloads() throws IOException;
-
-    private void completeInit() throws IOException {
-        processPermissionsFile();
-    }
-    
-    private void processPermissionsFile() throws IOException {
-        /*
-         * If the archive contains a permissions file then add it to the 
-         * downloads.
-         */
-        final File permissions = new File(dc().getSourceDir(), PERMISSIONS_XML_PATH);
-        if (permissions.canRead()) {
-            topLevelDownloads().add(new Artifacts.FullAndPartURIs(permissions.toURI(),
-                PERMISSIONS_XML_PATH));
-        }
-    }
     
     Proxy proxy() {
         return new Proxy(this);

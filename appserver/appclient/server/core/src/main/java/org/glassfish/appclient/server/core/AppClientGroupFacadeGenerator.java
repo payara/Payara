@@ -43,7 +43,6 @@ package org.glassfish.appclient.server.core;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
-import com.sun.enterprise.module.ModulesRegistry;
 import java.io.*;
 import java.util.Collection;
 import java.util.Iterator;
@@ -67,7 +66,6 @@ import org.glassfish.deployment.versioning.VersioningUtils;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.ServerContext;
 
 /**
  * Generates the app client group (EAR-level) facade JAR.
@@ -89,7 +87,8 @@ public class AppClientGroupFacadeGenerator {
     private static final String GF_CLIENT_MODULE_NAME = "org.glassfish.main.appclient.gf-client-module";
 
     private static final String GROUP_FACADE_ALREADY_GENERATED = "groupFacadeAlreadyGenerated";
-
+    private static final String PERMISSIONS_XML_PATH = "META-INF/permissions.xml";
+    
     private DeploymentContext dc;
     private AppClientDeployerHelper helper;
 
@@ -217,6 +216,15 @@ public class AppClientGroupFacadeGenerator {
         
 
         writeMainClass(clientArtifactsManager);
+        
+        /*
+         * If the EAR contains a permissions file we need to make sure it's added
+         * to the group-level generated facade JAR.
+         */
+        final File permissionsFile = getPermissionsFile();
+        if (permissionsFile.canRead()) {
+            clientArtifactsManager.add(permissionsFile, PERMISSIONS_XML_PATH, false /* isTemp */);
+        }
 
         /*
          * Higher-level code will copy the files generated here plus other deployers' 
@@ -231,6 +239,10 @@ public class AppClientGroupFacadeGenerator {
         
     }
 
+    private File getPermissionsFile() {
+        return new File(new File(dc.getSource().getParentArchive().getURI()), PERMISSIONS_XML_PATH);
+    }
+    
     private void writeMainClass(final ClientArtifactsManager clientArtifactsManager) throws IOException {
         final String mainClassResourceName =
                 GLASSFISH_APPCLIENT_GROUP_FACADE_CLASS_NAME.replace('.', '/') +
