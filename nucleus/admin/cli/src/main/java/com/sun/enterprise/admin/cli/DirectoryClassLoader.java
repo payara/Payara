@@ -87,7 +87,7 @@ public class DirectoryClassLoader extends URLClassLoader {
         if (jarsAndDirs == null) {
             throw new IOException(strings.get("DirError", ""));
         }
-        Set<URL> result = new HashSet<URL>();
+        Collection<URL> result = new ArrayList<URL>();
         for (File jd : jarsAndDirs) {
             if (jd.isDirectory()) {
                 result.addAll(Arrays.asList(getJars(jd)));
