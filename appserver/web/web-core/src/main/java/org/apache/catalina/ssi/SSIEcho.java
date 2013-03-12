@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,8 @@
 package org.apache.catalina.ssi;
 
 
+import org.glassfish.web.util.HtmlEntityEncoder;
+
 import java.io.PrintWriter;
 /**
  * Return the result associated with the supplied Server Variable.
@@ -72,7 +74,11 @@ import java.io.PrintWriter;
 public class SSIEcho implements SSICommand {
     protected final static String DEFAULT_ENCODING = "entity";
     protected final static String MISSING_VARIABLE_VALUE = "(none)";
+    protected HtmlEntityEncoder htmlEntityEncoder;
 
+    public SSIEcho(HtmlEntityEncoder htmlEntityEncoder) {
+        this.htmlEntityEncoder = htmlEntityEncoder;
+    }
 
     /**
      * @see SSICommand
@@ -81,7 +87,7 @@ public class SSIEcho implements SSICommand {
             String[] paramNames, String[] paramValues, PrintWriter writer) {
         String encoding = DEFAULT_ENCODING;
         String originalValue = null;
-        String errorMessage = ssiMediator.getConfigErrMsg();
+        String errorMessage = null; // delay the call of HtmlEntityEncoder.encode
         for (int i = 0; i < paramNames.length; i++) {
             String paramName = paramNames[i];
             String paramValue = paramValues[i];
@@ -92,10 +98,16 @@ public class SSIEcho implements SSICommand {
                     encoding = paramValue;
                 } else {
                     ssiMediator.log("#echo--Invalid encoding: " + paramValue);
+                    if (errorMessage == null) {
+                        errorMessage = getEncodedConfigErrorMessage(ssiMediator);
+                    }
                     writer.write(errorMessage);
                 }
             } else {
                 ssiMediator.log("#echo--Invalid attribute: " + paramName);
+                if (errorMessage == null) {
+                    errorMessage = getEncodedConfigErrorMessage(ssiMediator);
+                }
                 writer.write(errorMessage);
             }
         }
@@ -113,5 +125,13 @@ public class SSIEcho implements SSICommand {
         return encoding.equalsIgnoreCase("url")
                 || encoding.equalsIgnoreCase("entity")
                 || encoding.equalsIgnoreCase("none");
+    }
+
+    private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
+        String errorMessage = ssiMediator.getConfigErrMsg();
+        if (errorMessage != null && errorMessage.length() > 0) {
+            errorMessage = htmlEntityEncoder.encode(errorMessage);
+        }
+        return errorMessage;
     }
 }

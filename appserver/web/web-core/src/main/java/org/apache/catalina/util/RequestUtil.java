@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -133,44 +133,6 @@ public final class RequestUtil {
         }
 
         return (buf.toString());
-    }
-
-
-    /**
-     * Filter the specified message string for characters that are sensitive
-     * in HTML.  This avoids potential attacks caused by including JavaScript
-     * codes in the request URL that is often reported in error messages.
-     *
-     * @param message The message string to be filtered
-     */
-    public static String filter(String message) {
-
-        if (message == null)
-            return (null);
-
-        char content[] = new char[message.length()];
-        message.getChars(0, message.length(), content, 0);
-        StringBuilder result = new StringBuilder(content.length + 50);
-        for (int i = 0; i < content.length; i++) {
-            switch (content[i]) {
-            case '<':
-                result.append("&lt;");
-                break;
-            case '>':
-                result.append("&gt;");
-                break;
-            case '&':
-                result.append("&amp;");
-                break;
-            case '"':
-                result.append("&quot;");
-                break;
-            default:
-                result.append(content[i]);
-            }
-        }
-        return (result.toString());
-
     }
 
 

@@ -61,10 +61,10 @@ package org.apache.catalina.core;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.deploy.ErrorPage;
-import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResponseUtil;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.util.HtmlEntityEncoder;
 import org.glassfish.web.valve.GlassFishValve;
 
 
@@ -683,10 +683,12 @@ final class StandardHostValve
         } else {
             sreq.setAttribute(RequestDispatcher.ERROR_STATUS_CODE,
                               Integer.valueOf(statusCode));
-            String message = RequestUtil.filter(
-                ((HttpResponse) response).getMessage());
+            String message = ((HttpResponse) response).getMessage();
             if (message == null) {
                 message = "";
+            } else {
+                HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
+                message = htmlEntityEncoder.encode(message);
             }
             sreq.setAttribute(RequestDispatcher.ERROR_MESSAGE, message);
         }

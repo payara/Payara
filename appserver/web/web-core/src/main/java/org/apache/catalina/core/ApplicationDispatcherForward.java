@@ -62,11 +62,11 @@ import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Wrapper;
 import org.apache.catalina.deploy.ErrorPage;
-import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ResponseUtil;
 import org.apache.catalina.util.StringManager;
 import org.apache.catalina.valves.ErrorReportValve;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.util.HtmlEntityEncoder;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -209,9 +209,12 @@ class ApplicationDispatcherForward {
                 Globals.DISPATCHER_REQUEST_PATH_ATTR);
             if (requestPath == null
                     || !requestPath.equals(errorPage.getLocation())) {
-                String message = RequestUtil.filter(reqFacHelper.getResponseMessage());
+                String message = reqFacHelper.getResponseMessage();
                 if (message == null) {
                     message = "";
+                } else {
+                    HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
+                    message = htmlEntityEncoder.encode(message);
                 }
                 prepareRequestForDispatch(request,
                                           wrapper,
@@ -373,10 +376,13 @@ class ApplicationDispatcherForward {
 
         String message = null;
         if (reqFacHelper != null) {
-            message = RequestUtil.filter(reqFacHelper.getResponseMessage());
+            message = reqFacHelper.getResponseMessage();
         }
         if (message == null) {
             message = "";
+        } else {
+            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
+            message = htmlEntityEncoder.encode(message);
         }
 
         // Do nothing if there is no report for the specified status code

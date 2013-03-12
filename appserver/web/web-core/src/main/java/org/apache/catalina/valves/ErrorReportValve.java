@@ -63,10 +63,10 @@ import org.apache.catalina.HttpResponse;
 import org.apache.catalina.Logger;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
-import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.StringManager;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.util.HtmlEntityEncoder;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -353,16 +353,19 @@ public class ErrorReportValve
 
         }
 
-        String message = RequestUtil.filter(hresponse.getMessage());
+        String message = hresponse.getMessage();
         /* S1AS 4878272
         if (message == null)
             message = "";
         */
         // BEGIN S1AS 4878272
         if (message == null) {
-            message = RequestUtil.filter(hresponse.getDetailMessage());
+            message = hresponse.getDetailMessage();
             if (message == null) {
                 message = "";
+            } else {
+                HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
+                message = htmlEntityEncoder.encode(message);
             }
         }
         // END S1AS 4878272
@@ -559,7 +562,8 @@ public class ErrorReportValve
             // END SJSAS 6387790
             */
             // START GlassFish 823
-            sb.append(RequestUtil.filter(String.valueOf(throwable)));
+            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
+            sb.append(htmlEntityEncoder.encode(String.valueOf(throwable)));
             // END GlassFish 823
             sb.append("</pre></p>");
 
@@ -583,7 +587,7 @@ public class ErrorReportValve
                 // END SJSAS 6387790
                 */
                 // START GlassFish 823
-                sb.append(RequestUtil.filter(String.valueOf(rootCause)));
+                sb.append(htmlEntityEncoder.encode(String.valueOf(rootCause)));
                 // END GlassFish 823
                 sb.append("</pre></p>");
 

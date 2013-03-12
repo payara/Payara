@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ package org.apache.catalina.ssi;
 
 
 import org.apache.catalina.Globals;
+import org.glassfish.web.util.HtmlEntityEncoder;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -155,7 +156,7 @@ public class SSIFilter implements Filter {
                 new SSIServletExternalResolver(config.getServletContext(), req,
                         res, isVirtualWebappRelative, debug, encoding);
             SSIProcessor ssiProcessor = new SSIProcessor(ssiExternalResolver,
-                    debug);
+                    debug, new HtmlEntityEncoder());
             
             // prepare readers/writers
             Reader reader =
