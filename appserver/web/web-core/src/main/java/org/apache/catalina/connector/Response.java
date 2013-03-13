@@ -2021,9 +2021,7 @@ public class Response
             cc.setEnd(cc.getStart() + truncate);
         }
 
-        //XXX org.glassfish.grizzly.http.util.CharChunk does not have endsWith
-        //if (cc.endsWith("/.") || cc.endsWith("/..")) {
-        if (endsWith(cc, "/.") || endsWith(cc, "/..")) {
+        if (cc.endsWith("/.") || cc.endsWith("/..")) {
             try {
                 cc.append('/');
             } catch (IOException e) {
@@ -2130,23 +2128,6 @@ public class Response
 
     public void setUpgrade(boolean upgrade) {
         this.upgrade = upgrade;
-    }
-
-
-    //XXX org.glassfish.grizzly.http.util.CharChunk does not have endsWith
-    private boolean endsWith(CharChunk cc, String s) {
-        char[] c = cc.getBuffer();
-        int len = s.length();
-        if (c == null || len > cc.getEnd()-cc.getStart()) {
-            return false;
-        }
-        int off = cc.getEnd() - len;
-        for (int i = 0; i < len; i++) {
-            if (c[off++] != s.charAt(i)) {
-                return false;
-            }
-        }
-        return true;
     }
 }
 
