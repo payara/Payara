@@ -45,6 +45,7 @@
     <import file="../distributions.xml" />
     
     <target name="install-packages">
+        <install.package name="json"/>
         <install.package name="glassfish-registration"/>
         <install.package name="glassfish-jpa"/>
         <install.package name="glassfish-jts"/>

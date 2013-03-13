@@ -51,7 +51,6 @@
         <install.package name="glassfish-cmp"/>
         <install.package name="glassfish-entitybeans-container"/>
         <install.package name="metro"/>
-        <install.package name="json"/>
         <install.package name="glassfish-appclient"/>
         <install.package name="mq-core"/>
         <install.package name="mq-server"/>

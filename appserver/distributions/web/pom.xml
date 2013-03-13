@@ -169,7 +169,15 @@
             <artifactId>glassfish-jcdi</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency>      
+        </dependency>
+
+        <!-- json package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>json</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>            
 
         <!-- admin ui package -->
         <dependency>

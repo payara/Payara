@@ -161,14 +161,6 @@
             <type>zip</type>
         </dependency>
 
-        <!-- json package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>json</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-
         <!-- appclient package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
