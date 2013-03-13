@@ -59,15 +59,14 @@ import org.w3c.dom.Node;
 public class CacheNode extends RuntimeDescriptorNode<Cache> {
     
     public CacheNode() {
-	
-	registerElementHandler(new XMLElement(RuntimeTagNames.CACHE_HELPER), 
-				CacheHelperNode.class, "addNewCacheHelper"); 	
-	registerElementHandler(new XMLElement(RuntimeTagNames.DEFAULT_HELPER), 
-				WebPropertyNode.class, "setDefaultHelper");
-	registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY), 
-				WebPropertyNode.class, "addWebProperty"); 	
-	registerElementHandler(new XMLElement(RuntimeTagNames.CACHE_MAPPING), 
-				CacheMappingNode.class, "addNewCacheMapping"); 							
+        registerElementHandler(new XMLElement(RuntimeTagNames.CACHE_HELPER),
+                CacheHelperNode.class, "addNewCacheHelper");
+        registerElementHandler(new XMLElement(RuntimeTagNames.DEFAULT_HELPER),
+                DefaultHelperNode.class, "setDefaultHelper");
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                WebPropertyNode.class, "addWebProperty");
+        registerElementHandler(new XMLElement(RuntimeTagNames.CACHE_MAPPING),
+                CacheMappingNode.class, "addNewCacheMapping");
     }
 
     protected Cache descriptor = null;
