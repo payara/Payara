@@ -48,7 +48,6 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -86,29 +85,14 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     private final static Charset utf8 = Charset.forName("UTF-8");
     
     private PasswordAdapter pa = null;
-    private String pathToAliasStore;
-    private char[] storePassword;
     
-    protected final void init(final String pathToAliasStore, final char[] storePassword) {
-        this.pathToAliasStore = pathToAliasStore;
-        this.storePassword = storePassword;
+    protected final void init(final String pathToAliasStore, final char[] storePassword) 
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
+        pa = new PasswordAdapter(pathToAliasStore, storePassword);
     }
     
-    private synchronized PasswordAdapter pa() {
-        if (pa == null) {
-            try {
-                pa = new PasswordAdapter(pathToAliasStore, storePassword);
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            } finally {
-                Arrays.fill(storePassword, 0, storePassword.length, '\0');
-                storePassword = null;
-            }
-        }
-        return pa;
-    }
-    
-    public static JCEKSPasswordAliasStore newInstance(final String pathToAliasStore, final char[] storePassword) {
+    public static JCEKSPasswordAliasStore newInstance(final String pathToAliasStore, final char[] storePassword) 
+            throws CertificateException, IOException, KeyStoreException, NoSuchAlgorithmException {
         final JCEKSPasswordAliasStore result = new JCEKSPasswordAliasStore();
         result.init(pathToAliasStore, storePassword);
         return result;
@@ -117,8 +101,8 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     @Override
     public void clear() {
         try {
-            for (Enumeration<String> aliasEnum = pa().getAliases(); aliasEnum.hasMoreElements(); ) {
-                pa().removeAlias(aliasEnum.nextElement());
+            for (Enumeration<String> aliasEnum = pa.getAliases(); aliasEnum.hasMoreElements(); ) {
+                pa.removeAlias(aliasEnum.nextElement());
             }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -130,7 +114,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
         final CharBuffer charBuffer = CharBuffer.wrap(password);
         final ByteBuffer byteBuffer = utf8.encode(charBuffer);
         try {
-            pa().setPasswordForAlias(alias, byteBuffer.array());
+            pa.setPasswordForAlias(alias, byteBuffer.array());
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -157,7 +141,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     @Override
     public void remove(String alias) {
         try {
-            pa().removeAlias(alias);
+            pa.removeAlias(alias);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -166,7 +150,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     @Override
     public boolean containsKey(String alias) {
         try {
-            return pa().aliasExists(alias);
+            return pa.aliasExists(alias);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -175,7 +159,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     @Override
     public char[] get(String alias) {
         try {
-            final SecretKey secretKey = pa().getPasswordSecretKeyForAlias(alias);
+            final SecretKey secretKey = pa.getPasswordSecretKeyForAlias(alias);
             final ByteBuffer byteBuffer = ByteBuffer.wrap(secretKey.getEncoded());
             return utf8.decode(byteBuffer).array();
         } catch (Exception ex) {
@@ -192,7 +176,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     public Iterator<String> keys() {
         final List<String> keys = new ArrayList<String>();
         try {
-            for (Enumeration<String> aliases = pa().getAliases(); aliases.hasMoreElements(); keys.add(aliases.nextElement())) {}
+            for (Enumeration<String> aliases = pa.getAliases(); aliases.hasMoreElements(); keys.add(aliases.nextElement())) {}
             return keys.iterator();
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -203,7 +187,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
     public int size() {
         try {
             int size = 0;
-            for (Enumeration<String> aliases = pa().getAliases(); aliases.hasMoreElements(); size++, aliases.nextElement() ) {}
+            for (Enumeration<String> aliases = pa.getAliases(); aliases.hasMoreElements(); size++, aliases.nextElement() ) {}
             return size;
         } catch (Exception ex) {
             throw new RuntimeException(ex);
