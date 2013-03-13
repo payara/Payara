@@ -50,7 +50,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import org.glassfish.admingui.common.util.RestUtil;
 
@@ -96,9 +95,8 @@ public class ClientStubsContentSource  implements DownloadServlet.ContentSource 
             Map attrsMap = new HashMap();
             String tempDir = System.getProperty("java.io.tmpdir");
             String fileName = "client-stubs-" + appName + "-" + dateFormat.format(date) + ".zip";
-            String filePath = tempDir + System.getProperty("file.separator") + fileName;
-            File file = new File(filePath);
-            attrsMap.put("localDir", filePath); // CAUTION: file instead of dir
+            File file = new File(tempDir, fileName);
+            attrsMap.put("localDir", file.getAbsolutePath()); // CAUTION: file instead of dir
             RestUtil.getRestRequestFromServlet(request, endpoint, attrsMap, true, true);
             tmpFile = new FileInputStream(file);
             file.delete();
