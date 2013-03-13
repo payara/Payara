@@ -47,7 +47,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
 
-import mockit.Deencapsulation;
+//import mockit.Deencapsulation;
 
 import org.glassfish.contextpropagation.ContextMap;
 import org.glassfish.contextpropagation.ContextViewFactory;
@@ -104,24 +104,24 @@ public class BootstrapUtils {
     wcMap.get("ascii");
   }
 
-  public static void bootstrap(WireAdapter wireAdapter) {
-    reset();
-    /*ThreadLocalAccessor tla = Deencapsulation.getField(ContextBootstrap.class, "threadLocalAccessor");
-    tla.set(null);*/
-    ContextBootstrap.configure(new MockLoggerAdapter(), 
-        wireAdapter, new MockThreadLocalAccessor(), 
-        new MockContextAccessController(), "guid");   
-  }
+//  public static void bootstrap(WireAdapter wireAdapter) {
+//    reset();
+//    /*ThreadLocalAccessor tla = Deencapsulation.getField(ContextBootstrap.class, "threadLocalAccessor");
+//    tla.set(null);*/
+//    ContextBootstrap.configure(new MockLoggerAdapter(), 
+//        wireAdapter, new MockThreadLocalAccessor(), 
+//        new MockContextAccessController(), "guid");   
+//  }
 
-  public static void reset() {
-    Deencapsulation.setField(ContextBootstrap.class, "isConfigured", false);
-    try {
-      ContextMapHelper.getScopeAwareContextMap().get("true");
-      fail("Should get IllegalStateException");
-    } catch (InsufficientCredentialException e) {
-      fail(e.toString());
-    } catch (IllegalStateException ignoreThisIsExpected) {}
-  }
+//  public static void reset() {
+//    Deencapsulation.setField(ContextBootstrap.class, "isConfigured", false);
+//    try {
+//      ContextMapHelper.getScopeAwareContextMap().get("true");
+//      fail("Should get IllegalStateException");
+//    } catch (InsufficientCredentialException e) {
+//      fail(e.toString());
+//    } catch (IllegalStateException ignoreThisIsExpected) {}
+//  }
 
 
 
