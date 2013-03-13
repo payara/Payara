@@ -54,7 +54,7 @@
         urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
         urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
         gf.createAttributeMap(keys={"appname", "modulename" }, values={"$pageSession{encodedAppName}" , "$pageSession{encodedModuleName}"}, map="#{requestScope.attrsMap}")
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/_get-relative-jws-uri", attrs="#{requestScope.attrsMap}" method="get", result="#{requestScope.result}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/_get-relative-jws-uri", attrs="#{requestScope.attrsMap}" method="get", result="#{requestScope.result}");
         if ("!(#{requestScope.result.data}=#{null})") {
             mapGet(Map="#{requestScope.result.data}" Key="properties" Value="#{requestScope.propMap}");
         }
