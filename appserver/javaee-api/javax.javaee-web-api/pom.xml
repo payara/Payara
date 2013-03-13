@@ -136,6 +136,10 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
+        </dependency>
+        <dependency>
             <groupId>javax.faces</groupId>
             <artifactId>javax.faces-api</artifactId>
             <optional>true</optional>

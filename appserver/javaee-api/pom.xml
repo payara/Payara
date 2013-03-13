@@ -147,7 +147,7 @@
                             <phase>process-resources</phase>
                             <configuration>
                                 <attachSources>true</attachSources>
-                                <excludeArtifactIds>tools-jar,servlet-api</excludeArtifactIds>
+                                <excludeArtifactIds>tools-jar,servlet-api,javax.faces</excludeArtifactIds>
                                 <excludes>javax/help/**</excludes>
                                 <includes>javax/**</includes>
                                 <excludeTransitive>true</excludeTransitive>
