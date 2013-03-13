@@ -119,7 +119,12 @@ public class JobManagerService implements JobManager,PostConstruct {
     private JobLocatorService jobLocatorService;
 
     @Inject
-    ServiceLocator serviceLocator;
+    private ServiceLocator serviceLocator;
+
+    @Inject
+    private JobFileScanner jobFileScanner;
+
+
 
     // This will store the data related to completed jobs so that unique ids
     // can be generated for new jobs. This is populated lazily the first
@@ -129,27 +134,35 @@ public class JobManagerService implements JobManager,PostConstruct {
 
 
     /**
+     * This method will locate all the job files and add to the completedJobs
+     * so that unique ids get generated without interfering with existing completed jobs
+     * and also cleanup occurs for all the jobs
+     *//*
+    public synchronized void locateJobFiles() {
+
+        HashSet<File> persistedJobFiles = jobFileScanner.getJobFiles();
+
+        if (persistedJobFiles.size() > 0) {
+            // Check if there are jobs.xml files which have completed jobs so that
+            // unique ids get generated
+            for  (File jobfile : persistedJobFiles)   {
+
+                reapCompletedJobs(jobfile);
+            }
+
+        }
+    }*/
+
+
+    /**
      * This will return a new id which is unused
      * @return
      */
     public synchronized String getNewId() {
 
-        if (lastId.get() == 0 )  {
-            Collection<JobLocator> services = serviceLocator.getAllServices(JobLocator.class);
-            List<File> persistedJobFiles = new ArrayList<File>();
-            for (JobLocator locator: services) {
-                persistedJobFiles.addAll(locator.locateJobXmlFiles());
-            }
-            if (persistedJobFiles.size() >0) {
-                // Check if there are jobs.xml files which have completed jobs so that
-                // unique ids get generated
-                for  (File jobfile : persistedJobFiles)   {
-
-                    reapCompletedJobs(jobfile);
-                }
-
-            }
-        }
+        /*if (lastId.get() == 0 )  {
+            locateJobFiles();
+        }*/
         int nextId = lastId.incrementAndGet();
         if (nextId > MAX_SIZE) {
             reset();
@@ -158,14 +171,18 @@ public class JobManagerService implements JobManager,PostConstruct {
         return !idInUse(nextIdToUse) ? String.valueOf(nextId): getNewId();
     }
 
-    public JobInfo getCompletedJobForId(String id) {
-        for (JobInfo jobInfo: getCompletedJobs(getJobsFile()).getJobInfoList()) {
+    public JobInfo getCompletedJobForId(String id, File file) {
+        for (JobInfo jobInfo: getCompletedJobs(file).getJobInfoList()) {
             if (jobInfo.jobId.equals(id)) {
                 return jobInfo;
             }
 
         }
         return null;
+    }
+
+    public JobInfo getCompletedJobForId(String id) {
+         return getCompletedJobForId(id,getJobsFile());
     }
 
 
@@ -237,9 +254,9 @@ public class JobManagerService implements JobManager,PostConstruct {
      * and need to be purged
      * @return  list of jobs to be purged
      */
-    public synchronized ArrayList<JobInfo> getExpiredJobs() {
+    public synchronized ArrayList<JobInfo> getExpiredJobs(File file) {
         ArrayList<JobInfo> expiredJobs = new ArrayList<JobInfo>();
-        JobInfos jobInfos = getCompletedJobs(getJobsFile());
+        JobInfos jobInfos = getCompletedJobs(file);
         for(JobInfo job:jobInfos.getJobInfoList()) {
 
             long executedTime = job.commandExecutionDate;
@@ -327,10 +344,10 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @param jobId the job to purge
      * @return  the new list of completed jobs
      */
-    @Override
-    public  JobInfos purgeCompletedJobForId(String jobId) {
-        JobInfos completedJobInfos = getCompletedJobs(getJobsFile());
-        synchronized (jobsFile) {
+
+    public  JobInfos purgeCompletedJobForId(String jobId, File file) {
+        JobInfos completedJobInfos = getCompletedJobs(file);
+        synchronized (file) {
             CopyOnWriteArrayList<JobInfo> jobList = new CopyOnWriteArrayList<JobInfo>();
 
             if (completedJobInfos != null)   {
@@ -345,19 +362,26 @@ public class JobManagerService implements JobManager,PostConstruct {
             }
 
             JobInfos jobInfos = new JobInfos();
-            try {
-                if (jaxbContext == null)
-                    jaxbContext = JAXBContext.newInstance(JobInfos.class);
+           // if (jobList.size() > 0)    {
+                try {
+                    if (jaxbContext == null)
+                        jaxbContext = JAXBContext.newInstance(JobInfos.class);
 
-                jobInfos.setJobInfoList(jobList);
-                Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-                jaxbMarshaller.marshal(jobInfos, jobsFile);
-            } catch (JAXBException e) {
-                throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()), e);
-            }
+                    jobInfos.setJobInfoList(jobList);
+                    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+                    jaxbMarshaller.marshal(jobInfos, file);
+                } catch (JAXBException e) {
+                    throw new RuntimeException(adminStrings.getLocalString("error.purging.completed.job","Error purging completed job ", jobId,e.getLocalizedMessage()), e);
+                }
+            //}
             return jobInfos;
         }
 
+    }
+
+    @Override
+    public JobInfos purgeCompletedJobForId(String id) {
+         return purgeCompletedJobForId(id, getJobsFile()) ;
     }
 
 
@@ -367,7 +391,17 @@ public class JobManagerService implements JobManager,PostConstruct {
                 new File(serverEnvironment.getConfigDirPath(),JOBS_FILE);
 
         pool = executorFactory.provide();
-        jobLocatorService.addFile(jobsFile);
+
+        HashSet<File> persistedJobFiles = jobFileScanner.getJobFiles();
+        persistedJobFiles.add(jobsFile);
+
+        // Check if there are jobs.xml files which have completed jobs so that
+        // unique ids get generated
+        for  (File jobfile : persistedJobFiles)   {
+            reapCompletedJobs(jobfile);
+        }
+
+
 
     }
 
@@ -385,12 +419,16 @@ public class JobManagerService implements JobManager,PostConstruct {
         completedJobsInfo.remove(id);
     }
 
+    public ConcurrentHashMap<String, CompletedJob> getCompletedJobsInfo() {
+         return completedJobsInfo;
+    }
+
     /* This method will look for completed jobs from the jobs.xml
      * files and load the information in a local datastructure for
      * faster access
      */
     protected void reapCompletedJobs(File file) {
-        if (file !=null && file.exists()) {
+        if (file != null && file.exists()) {
             JobInfos jobInfos = getCompletedJobs(file);
             if (jobInfos != null) {
                 for (JobInfo jobInfo: jobInfos.getJobInfoList()) {

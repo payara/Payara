@@ -58,12 +58,9 @@ import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
 import javax.inject.Inject;
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.io.File;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -91,6 +88,9 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     private static final LocalStringManagerImpl adminStrings =
             new LocalStringManagerImpl(JobCleanUpService.class);
+
+
+
     @Override
     public void postConstruct() {
         logger.fine(adminStrings.getLocalString("jobcleanup.service.init", "Initializing Job Cleanup service"));
@@ -109,6 +109,8 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
                 return result;
             }
         });
+
+
         scheduleCleanUp();
     }
 
@@ -117,6 +119,7 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
      * This will schedule a cleanup of expired jobs based on configurable values
      */
     private void scheduleCleanUp() {
+
 
         logger.fine(adminStrings.getLocalString("scheduling.cleanup", "Scheduling cleanup"));
         //default values to 20 minutes for delayBetweenRuns and initialDelay
@@ -149,27 +152,37 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     private  final class JobCleanUpTask implements Runnable {
         public void run() {
             try {
-                logger.fine(adminStrings.getLocalString("cleaning.jobs","Cleaning jobs"));
-                cleanUpExpiredJobs();
+                //This can have data  when server starts up  initially or as jobs complete
+                ConcurrentHashMap<String,CompletedJob> completedJobsMap = jobManagerService.getCompletedJobsInfo();
+
+                Iterator<CompletedJob> completedJobs = new HashSet<CompletedJob>(completedJobsMap.values()).iterator();
+                while (completedJobs.hasNext()   ) {
+                    CompletedJob completedJob = completedJobs.next();
+
+                    logger.fine(adminStrings.getLocalString("cleaning.job","Cleaning job", completedJob.getId()));
+
+                    cleanUpExpiredJobs(completedJob.getJobsFile());
+                }
             } catch (Exception e ) {
                 throw new RuntimeException(adminStrings.getLocalString("error.cleaning.jobs","Error while cleaning jobs" +e));
             }
 
         }
 
+
     }
 
     /**
      * This will periodically purge expired jobs
      */
-    private void cleanUpExpiredJobs() {
-        ArrayList<JobInfo> expiredJobs = jobManagerService.getExpiredJobs();
+    private void cleanUpExpiredJobs(File file) {
+        ArrayList<JobInfo> expiredJobs = jobManagerService.getExpiredJobs(file);
         if (expiredJobs.size() > 0 ) {
             for (JobInfo job: expiredJobs) {
                 //remove from Job registy
                 jobManagerService.purgeJob(job.jobId);
                 //remove from jobs.xml file
-                jobManagerService.purgeCompletedJobForId(job.jobId);
+                jobManagerService.purgeCompletedJobForId(job.jobId,file);
                 //remove from local cache for completed jobs
                 jobManagerService.removeFromCompletedJobs(job.jobId);
                 logger.fine(adminStrings.getLocalString("cleaning.job","Cleaning job {0}", job.jobId));

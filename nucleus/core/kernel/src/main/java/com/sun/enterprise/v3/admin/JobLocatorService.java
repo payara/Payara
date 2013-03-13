@@ -49,9 +49,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * This service will look for completed jobs from the jobs.xml
@@ -62,10 +60,10 @@ import java.util.List;
 @Service(name = "job-locator")
 public class JobLocatorService implements JobLocator {
 
-    protected List<File> jobFiles = (List<File>) Collections.synchronizedList(new ArrayList<File>()) ;
+    protected Set<File> jobFiles = (Set<File>) Collections.synchronizedSet(new HashSet<File>());
 
     @Override
-    public List<File> locateJobXmlFiles() {
+    public Set<File> locateJobXmlFiles() {
         return jobFiles;
 
     }

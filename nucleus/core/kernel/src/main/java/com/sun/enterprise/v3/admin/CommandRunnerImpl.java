@@ -1735,10 +1735,10 @@ public class CommandRunnerImpl implements CommandRunner {
             }
             JobCreator jobCreator = null;
             JobManager jobManager = null;
-            if (scope() != null)   {
-                jobCreator = habitat.getService(JobCreator.class,scope+"job-creator");
-                jobManager = habitat.getService(JobManager.class,scope+"job-manager");
-            }  else  {
+
+            jobCreator = habitat.getService(JobCreator.class,scope+"job-creator");
+            jobManager = habitat.getService(JobManager.class,scope+"job-manager");
+            if (jobCreator == null && jobManager == null) {
                 jobCreator = habitat.getService(JobCreatorService.class);
                 jobManager = habitat.getService(JobManagerService.class);
             }

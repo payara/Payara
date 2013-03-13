@@ -37,25 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
+package com.sun.enterprise.v3.admin;
 
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.JobLocator;
+import javax.inject.Singleton;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+import javax.inject.Scope;
 import java.io.File;
-import java.util.List;
-import java.util.Set;
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
- * This is a contract which is used to locate all the jobs.xml files
- * on server startup
+ * This service will scan for all jobs.xml
  * @author Bhakti Mehta
  */
-@Contract
-public interface JobLocator {
+@Service (name="job-filescanner")
+@Singleton
+public class JobFileScanner implements PostConstruct {
 
-    /**
-     * This method checks if there any any persisted and completed jobs
-     * @return A list of the job files located in the system
-     */
-    public Set<File> locateJobXmlFiles();
+    @Inject
+    private ServiceLocator serviceLocator;
+
+    HashSet<File> persistedJobFiles ;
+
+    @Override
+    public void postConstruct() {
+
+        Collection<JobLocator> services = serviceLocator.getAllServices(JobLocator.class);
+        persistedJobFiles = new HashSet<File>() ;
+        for (JobLocator locator: services) {
+            persistedJobFiles.addAll(locator.locateJobXmlFiles());
+        }
+    }
+
+    public HashSet<File> getJobFiles() {
+        return persistedJobFiles;
+    }
 }
