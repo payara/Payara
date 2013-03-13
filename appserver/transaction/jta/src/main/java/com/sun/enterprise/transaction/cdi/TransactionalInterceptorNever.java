@@ -41,6 +41,8 @@
 package com.sun.enterprise.transaction.cdi;
 
 
+import com.sun.logging.LogDomains;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -61,10 +63,12 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
 public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
 
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
+
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In NEVER TransactionalInterceptor");
+        _logger.info("In NEVER TransactionalInterceptor");
         if(getTransactionManager().getTransaction() != null)
             throw new TransactionalException(
                     "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",

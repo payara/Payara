@@ -41,6 +41,8 @@
 package com.sun.enterprise.transaction.cdi;
 
 
+import com.sun.logging.LogDomains;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -60,10 +62,12 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
 public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
 
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorSupports.class, LogDomains.JTA_LOGGER);
+
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In SUPPORTS TransactionalInterceptor");
+        _logger.info("In SUPPORTS TransactionalInterceptor");
         return proceed(ctx);
     }
 }

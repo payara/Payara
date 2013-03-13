@@ -41,6 +41,8 @@
 package com.sun.enterprise.transaction.cdi;
 
 
+import com.sun.logging.LogDomains;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -63,13 +65,15 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {
 
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
+
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In NOT_SUPPORTED TransactionalInterceptor");
+        _logger.info("In NOT_SUPPORTED TransactionalInterceptor");
         Transaction transaction = null;
         if (getTransactionManager().getTransaction() != null) {
-            logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+            _logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                     "called inside a transaction context.  Suspending transaction...");
             try {
                 transaction = getTransactionManager().suspend();
@@ -78,7 +82,7 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
                         "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                 "called inside a transaction context.  Suspending transaction failed due to " +
                                 exception;
-                logger.info(messageString);
+                _logger.info(messageString);
                 throw new TransactionalException(messageString, exception);
             }
         }

@@ -41,6 +41,8 @@
 package com.sun.enterprise.transaction.cdi;
 
 
+import com.sun.logging.LogDomains;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -61,13 +63,15 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRED)
 public class TransactionalInterceptorRequired extends TransactionalInterceptorBase {
 
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorRequired.class, LogDomains.JTA_LOGGER);
+
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In REQUIRED TransactionalInterceptor");
+        _logger.info("In REQUIRED TransactionalInterceptor");
         boolean isTransactionStarted = false;
         if(getTransactionManager().getTransaction()==null) {
-            logger.info("Managed bean with Transactional annotation and TxType of REQUIRED " +
+            _logger.info("Managed bean with Transactional annotation and TxType of REQUIRED " +
                     "called outside a transaction context.  Beginning a transaction...");
             getTransactionManager().begin();
             isTransactionStarted = true;

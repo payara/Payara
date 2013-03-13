@@ -41,6 +41,8 @@
 package com.sun.enterprise.transaction.cdi;
 
 
+import com.sun.logging.LogDomains;
+
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
@@ -64,13 +66,15 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRES_NEW)
 public class TransactionalInterceptorRequiresNew extends TransactionalInterceptorBase {
 
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorRequiresNew.class, LogDomains.JTA_LOGGER);
+
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        Logger logger = Logger.getLogger(ctx.getTarget().getClass().getName());
-        logger.info("In REQUIRES_NEW TransactionalInterceptor");
+        _logger.info("In REQUIRES_NEW TransactionalInterceptor");
         Transaction suspendedTransaction = null;
         if (getTransactionManager().getTransaction() != null) {
-            logger.info("Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+            _logger.info("Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                     "called inside a transaction context.  Suspending before beginning a transaction...");
             suspendedTransaction = getTransactionManager().suspend();
             //todo catch, wrap in new transactional exception and throw
@@ -83,7 +87,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
             try {
             getTransactionManager().commit();
             } catch (Exception e) {
-            throw new RuntimeException("Exception during REQUIRES_NEW commit.",e);
+                throw new RuntimeException("Exception during REQUIRES_NEW commit.",e);
             //todo nest in transactional(runtime)exception  and check each tyoe for consideration
             }
             if (suspendedTransaction != null) getTransactionManager().resume(suspendedTransaction);

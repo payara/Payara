@@ -41,12 +41,15 @@
 package com.sun.enterprise.transaction.cdi;
 
 
+import com.sun.logging.LogDomains;
+
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.util.logging.Logger;
 
 /**
  * Base class for all interceptors providing common logic for exception handling, etc.
@@ -56,6 +59,9 @@ import javax.transaction.TransactionManager;
 public class TransactionalInterceptorBase {
     private static TransactionManager transactionManager;
     private TransactionManager testTransactionManager;
+
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorBase.class, LogDomains.JTA_LOGGER);
 
     /**
      * Must not return null
