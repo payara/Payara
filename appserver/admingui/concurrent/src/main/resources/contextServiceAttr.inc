@@ -53,21 +53,9 @@
         </sun:property>
         <sun:property id="name"  rendered="#{edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}">
             <sun:staticText id="name" text="#{pageSession.Name}"  rendered="#{Edit}" />
+        "</br>
         </sun:property>
-                
-        <sun:property id="contextInfo"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.contextInfoLabel}" helpText="$resource{i18ncon.contextInfoLabelHelp}">
-            <sun:listbox id="contextInfo" immediate="#{true}"  rows="$int{6}" multiple="#{true}"
-                labels="#{pageSession.ctxInfoOptions}" selected="#{pageSession.contextInfo}" >
-                <!beforeCreate
-                    getListBoxOptions(
-                        availableList={ "Classloader", "JNDI", "Security", "WorkArea" },
-                        selectedCommaString="#{pageSession.valueMap['contextInfo']}",
-                        availableListResult="#{pageSession.ctxInfoOptions}",
-                        selectedOptions="#{pageSession.contextInfo}"
-                        addEmptyFirstChoice="true");
-                />
-            </sun:listbox>
-        </sun:property>
+#include "/concurrent/contextInfo.inc"
         <sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  rendered="#{edit}" label="$resource{i18n.common.resource.deploymentOrder}" helpText="$resource{i18n.common.resource.deploymentOrderHelp}">
             <sun:textField id="deploymentOrder" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.common.deploymentOrder']}" text="#{pageSession.valueMap['deploymentOrder']}" />
         </sun:property>

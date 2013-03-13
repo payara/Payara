@@ -55,10 +55,9 @@
         setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/concurrent/contextServices.jsf");
         setPageSessionAttribute(key="childType" value="context-service");
         setPageSessionAttribute(key="isConcurrent" value="true");
-        setPageSessionAttribute(key="convertToFalseList" value={"enabled"});
+        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled"});
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.valueMap}");
-        mapPut(map="#{pageSession.valueMap}" key="contextInfo" value="");
         setPageSessionAttribute(key="edit" value="#{false}" );
         createMap(result="#{pageSession.valueMap2}")
         mapPut(map="#{pageSession.valueMap}" key="enabled" value="true");

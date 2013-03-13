@@ -63,7 +63,7 @@
 
     gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-    setPageSessionAttribute(key="convertToFalseList" value={"enabled"});
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled"});
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
     
     gf.restRequest(endpoint="#{pageSession.selfUrl}/property" method="GET" result="#{requestScope.propTable}");
@@ -88,7 +88,16 @@
     <sun:hidden id="helpKey" value="$resource{help_con.contextServiceEdit}" />
 </sun:form>
             "<br/>
-//#include "/common/shared/changeButtonsJS.inc"
+
+<f:verbatim>
+    <script type="text/javascript">
+    function enableCtxInform(ctxId, val){
+    alert(val);
+        webui.suntheme.dropDown.setDisabled(ctxId, val);
+    }
+    </script>
+</f:verbatim>
+
 </define>
 </composition>
 

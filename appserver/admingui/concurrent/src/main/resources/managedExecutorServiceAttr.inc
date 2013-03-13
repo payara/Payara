@@ -54,21 +54,7 @@
         <sun:property id="name"  rendered="#{edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}">
             <sun:staticText id="name" text="#{pageSession.Name}"  rendered="#{Edit}" />
         </sun:property>
-                
-        <sun:property id="contextInfo"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.contextInfoLabel}" helpText="$resource{i18ncon.contextInfoLabelHelp}">
-            <sun:listbox id="contextInfo" immediate="#{true}"  rows="$int{6}" multiple="#{true}"
-                labels="#{pageSession.ctxInfoOptions}" selected="#{pageSession.contextInfo}" >
-                <!beforeCreate
-                    getListBoxOptions(
-                        availableList={ "Classloader", "JNDI", "Security", "WorkArea" },
-                        selectedCommaString="#{pageSession.valueMap['contextInfo']}",
-                        availableListResult="#{pageSession.ctxInfoOptions}",
-                        selectedOptions="#{pageSession.contextInfo}"
-                        addEmptyFirstChoice="true");
-                />
-            </sun:listbox>
-        </sun:property>
-                
+#include "/concurrent/contextInfo.inc"
         <sun:property id="statusProp"  rendered="#{useCheckBox}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['enabled']}" selectedValue="true" visible="#{false}" />
             <sun:checkbox id="enabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap2['enabled']}" selectedValue="true" />
