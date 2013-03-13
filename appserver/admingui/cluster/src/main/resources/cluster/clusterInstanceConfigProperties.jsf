@@ -79,7 +79,7 @@
     <sun:form id="propertyForm">
 #include "/cluster/cluster/clusterInstanceTabs.inc"
 
-        <sun:title id="clusterSysPropsPage" title="AAAA $resource{i18ncs.cluster.InstanceSystemProperties}" >
+        <sun:title id="clusterSysPropsPage" title="$resource{i18ncs.cluster.InstanceSystemProperties}" >
             <!facet pageButtonsTop>
                 <sun:panelGroup id="topButtons">
 #include "/common/configuration/systemPropertiesButtons.jsf"

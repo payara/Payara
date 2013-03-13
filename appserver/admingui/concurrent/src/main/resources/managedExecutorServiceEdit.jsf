@@ -63,7 +63,6 @@
 
     gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
-    println("AAAA  #{pageSession.valueMap}");
     setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "longRunningTasks" });
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
     
