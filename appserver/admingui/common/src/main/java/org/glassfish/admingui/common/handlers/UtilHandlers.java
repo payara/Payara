@@ -606,7 +606,7 @@ public class UtilHandlers {
     input = {
         @HandlerInput(name = "availableList", type = List.class, required = true),
         @HandlerInput(name = "selectedCommaString", type = String.class, required = true),
-        @HandlerInput(name = "addEmptyFirstChoice", type = String.class)},
+        @HandlerInput(name = "addEmptyFirstChoice", type = String.class, defaultValue = "true")},
     output = {
         @HandlerOutput(name = "availableListResult", type = List.class),
         @HandlerOutput(name = "selectedOptions", type = String[].class)
@@ -617,7 +617,7 @@ public class UtilHandlers {
         String addEmptyFirstChoice = (String) handlerCtx.getInputValue("addEmptyFirstChoice");
 
         String[] selectedOptions = null;
-        if (addEmptyFirstChoice != null){
+        if ("true".equals(addEmptyFirstChoice)){
             if (availableList == null){
                 availableList = new ArrayList();
             }
