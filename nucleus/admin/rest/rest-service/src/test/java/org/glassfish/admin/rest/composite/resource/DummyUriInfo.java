@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.PathSegment;
 import javax.ws.rs.core.UriBuilder;
@@ -150,17 +151,7 @@ public class DummyUriInfo implements UriInfo {
     }
 
     @Override
-    public URI resolve(URI baseUri, URI uri) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public URI relativize(URI uri) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public URI relativize(URI from, URI uri) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

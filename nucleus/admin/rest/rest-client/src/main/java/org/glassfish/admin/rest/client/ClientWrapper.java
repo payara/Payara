@@ -43,7 +43,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import javax.net.ssl.SSLContext;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientRequestContext;
@@ -53,6 +52,9 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Configuration;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.UriBuilder;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
@@ -192,13 +194,12 @@ public class ClientWrapper implements Client {
     }
 
     @Override
-    public Client replaceWith(Configuration config) {
-        realClient.replaceWith(config);
-        return this;
+    public SSLContext getSslContext() {
+        return realClient.getSslContext();
     }
 
     @Override
-    public SSLContext getSslContext() {
-        return realClient.getSslContext();
+    public HostnameVerifier getHostnameVerifier() {
+        return realClient.getHostnameVerifier();
     }
 }

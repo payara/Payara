@@ -40,7 +40,6 @@
 
 package org.glassfish.admin.rest.utils;
 
-
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -49,6 +48,7 @@ import java.util.Properties;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -56,12 +56,12 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 
-import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.client.SslConfig;
+
+import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
@@ -83,8 +83,8 @@ public abstract class ProxyImpl implements Proxy {
             if (forwardInstance != null) {
                 UriBuilder forwardUriBuilder = constructForwardURLPath(sourceUriInfo);
                 URI forwardURI = forwardUriBuilder.scheme("https").host(forwardInstance.getAdminHost()).port(forwardInstance.getAdminPort()).build(); //Host and Port are replaced to that of forwardInstanceName
+                client = addAuthenticationInfo(client, forwardInstance, habitat);
                 WebTarget resourceBuilder = client.target(forwardURI);
-                addAuthenticationInfo(client, resourceBuilder, forwardInstance, habitat);
                 Response response = resourceBuilder.request(MediaType.APPLICATION_JSON).get(Response.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
                 Response.Status status = Response.Status.fromStatusCode(response.getStatus());
                 if (status.getFamily() == javax.ws.rs.core.Response.Status.Family.SUCCESSFUL) {
@@ -134,11 +134,21 @@ public abstract class ProxyImpl implements Proxy {
     /**
      * Use SSL to authenticate
      */
-    private void addAuthenticationInfo(Client client, WebTarget resourceBuilder, Server server, ServiceLocator habitat) {
+    private Client addAuthenticationInfo(Client client, Server server, ServiceLocator habitat) {
         SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-        //Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
-        client.property(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(server.getAdminHost()),
-                habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS" ))); //TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
+
+        // TODO need to get hardcoded "TLS" from corresponding ServerRemoteAdminCommand constant);
+        final SSLContext sslContext = habitat
+                .<SSLUtils>getService(SSLUtils.class)
+                .getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), "TLS");
+
+        // Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
+        final ClientBuilder clientBuilder = ClientBuilder.newBuilder()
+                .withConfig(client.getConfiguration())
+                .hostnameVerifier(new BasicHostnameVerifier(server.getAdminHost()))
+                .sslContext(sslContext);
+
+        return clientBuilder.build();
     }
 
     /**

@@ -123,31 +123,35 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
-       <dependency>	  
-	    <groupId>org.glassfish.main.packager</groupId>
-	    <artifactId>nucleus-jersey</artifactId>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-jersey</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.jersey.media</groupId>
-           <artifactId>jersey-media-moxy</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.jersey.containers.glassfish</groupId>
-           <artifactId>jersey-gf-ejb</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.jersey.containers</groupId>
-           <artifactId>jersey-container-servlet</artifactId>
-       </dependency>
-       <dependency>
-           <groupId>org.glassfish.jersey.containers</groupId>
-           <artifactId>jersey-container-servlet-core</artifactId>
-       </dependency>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-moxy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers.glassfish</groupId>
+            <artifactId>jersey-gf-ejb</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-processing</artifactId>
+        </dependency>
     </dependencies>
 </project>
 

@@ -41,20 +41,18 @@ package org.glassfish.admingui.common.security;
 
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.client.ClientBuilder;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -70,12 +68,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+
+import org.glassfish.hk2.api.ServiceLocator;
+
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
 import org.glassfish.admingui.common.util.RestUtil;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
@@ -235,7 +235,6 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             session.setAttribute(ORIG_REQUEST_PATH, origPath);
             RequestDispatcher rd = request.getRequestDispatcher(loginPage);
             try {
-                RestUtil.initialize(null);
                 rd.forward(request, response);
             } catch (Exception ex) {
                 AuthException ae = new AuthException();
@@ -253,8 +252,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
         // Make REST Request
 
-        Client client2 = ClientBuilder.newClient();
-        RestUtil.initialize(client2);
+        Client client2 = RestUtil.initialize(ClientBuilder.newBuilder()).build();
         WebTarget target = client2.target(restURL);
         target.register(new HttpBasicAuthFilter(username, password));
         MultivaluedMap payLoad = new MultivaluedHashMap();

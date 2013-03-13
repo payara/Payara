@@ -57,6 +57,8 @@ import java.util.logging.Logger;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.ClientRequestContext;
+import javax.ws.rs.client.ClientRequestFilter;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Cookie;
@@ -67,18 +69,21 @@ import javax.ws.rs.core.Response;
 
 import javax.faces.context.FacesContext;
 import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
-import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.jackson.JacksonFeature;
+
+import org.glassfish.hk2.api.ServiceLocator;
+
+import org.glassfish.admingui.common.security.AdminConsoleAuthModule;
+import org.glassfish.api.ActionReport.ExitCode;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -89,9 +94,6 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
-import javax.ws.rs.client.ClientRequestContext;
-import javax.ws.rs.client.ClientRequestFilter;
-import org.glassfish.jersey.client.SslConfig;
 
 /**
  *
@@ -108,9 +110,8 @@ public class RestUtil {
 
     public static Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
-            JERSEY_CLIENT = ClientBuilder.newClient();
-            JERSEY_CLIENT.register(new CsrfProtectionFilter())
-                    .register(new RequiredHeadersFilter())
+            JERSEY_CLIENT = initialize(ClientBuilder.newBuilder()).build();
+            JERSEY_CLIENT.register(new RequiredHeadersFilter())
                     .register(new JacksonFeature());
         }
 
@@ -226,7 +227,6 @@ public class RestUtil {
                     response.sendRedirect("/");
 
                     fc.responseComplete();
-                    initialize(null);
                     session.invalidate();
                 } catch (Exception ex) {
                     throw new RuntimeException(ex);
@@ -918,16 +918,20 @@ public class RestUtil {
     // Jersey client methods
     //******************************************************************************************************************
 
-    public static void initialize(Client client) {
-        if (client == null) {
-            client = getJerseyClient();
-        }
+    public static ClientBuilder initialize(ClientBuilder clientBuilder) {
         try {
             ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-            client.property(ClientProperties.SSL_CONFIG, new SslConfig(new BasicHostnameVerifier(),
-                                                                                          habitat.<SSLUtils>getService(SSLUtils.class).getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null)));
-            client.register(CsrfProtectionFilter.class);
+
+            final SSLContext sslContext = habitat
+                    .<SSLUtils>getService(SSLUtils.class)
+                    .getAdminSSLContext(SecureAdmin.Util.DASAlias(secureAdmin), null);
+
+            // Instruct Jersey to use HostNameVerifier and SSLContext provided by us.
+            clientBuilder
+                    .hostnameVerifier(new BasicHostnameVerifier())
+                    .sslContext(sslContext)
+                    .register(CsrfProtectionFilter.class);
 
         } catch (Exception ex) {
             Throwable cause = ex;
@@ -943,6 +947,7 @@ public class RestUtil {
                 ex.printStackTrace();
             }
         }
+        return clientBuilder;
     }
 
     public static void postRestRequestFromServlet(HttpServletRequest request, String endpoint, Map<String, Object> attrs, boolean quiet, boolean throwException) {
