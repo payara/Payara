@@ -123,7 +123,7 @@
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.0-rc1</websocket-api.version>
         <tyrus.version>1.0-b13</tyrus.version>
-        <jsonp.version>1.0-b04</jsonp.version>
+        <jsonp.version>1.0-b06</jsonp.version>
         <concurrent-api.version>1.0-b05</concurrent-api.version>
         <concurrent.version>1.0-b04</concurrent.version>
         <javax.batch-api.version>1.0-b13</javax.batch-api.version>
