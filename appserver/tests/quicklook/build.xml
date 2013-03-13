@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -260,6 +260,7 @@
         <ant dir="ejb/singleton" target="build-deploy"/>
         <ant dir="ejb/cmp" target="build-deploy"/>
         <ant dir="ejb/mdb" target="build"/>
+        <ant dir="jms/injection" target="build-deploy"/>
         <!-- Temporarily jruby test is commented, because we need to integrate a newer version
              for the test to pass. We are waiting for RE to release a newer version.
         <ant dir="web/jruby" target="build-deploy"/>
@@ -284,6 +285,7 @@
         <ant dir="weld/numberguess" target="undeploy"/>
         <ant dir="weld/osgiweld" target="undeploy"/>
         <ant dir="weld/extensions" target="undeploy"/>
+         <ant dir="jms/injection" target="undeploy"/>
         <record name="${basedir}/undeploy.output" action="stop"/>
     </target>
 
