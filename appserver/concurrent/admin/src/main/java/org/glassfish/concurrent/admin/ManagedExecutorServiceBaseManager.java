@@ -47,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.concurrent.config.ContextService;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resources.admin.cli.ResourceManager;
@@ -84,7 +83,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected String description = null;
     protected String threadPriority = ""+Thread.NORM_PRIORITY;
     protected String contextInfoEnabled = Boolean.TRUE.toString();
-    protected String contextInfo = ContextService.CONTEXT_INFO_DEFAULT_VALUE;
+    protected String contextInfo = CONTEXT_INFO_DEFAULT_VALUE;
     protected String longRunningTasks = Boolean.FALSE.toString();
     protected String hungAfterSeconds = "0";
     protected String corePoolSize = "0";

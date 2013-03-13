@@ -72,8 +72,7 @@ import javax.validation.Payload;
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedScheduledExecutorService.class)
 @CustomConfiguration(baseConfigurationFileName = "managed-scheduled-executor-service-conf.xml")
 public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
-        Resource, PropertyBag, BindableResource, Payload, 
-        ManagedExecutorService {
+        Resource, BindableResource, Payload, ManagedExecutorService {
 
     @DuckTyped
     String getIdentity();

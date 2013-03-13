@@ -47,7 +47,6 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.concurrent.config.ContextService;
 import org.glassfish.concurrent.config.ManagedThreadFactory;
 import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
@@ -87,7 +86,7 @@ public class ManagedThreadFactoryManager implements ResourceManager {
     private String description = null;
     private String threadPriority = ""+Thread.NORM_PRIORITY;
     private String contextInfoEnabled = Boolean.TRUE.toString();
-    private String contextInfo = ContextService.CONTEXT_INFO_DEFAULT_VALUE;
+    private String contextInfo = CONTEXT_INFO_DEFAULT_VALUE;
     private String enabled = Boolean.TRUE.toString();
     private String enabledValueForTarget = Boolean.TRUE.toString();
 

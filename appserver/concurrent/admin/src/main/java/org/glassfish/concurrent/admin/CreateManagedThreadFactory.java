@@ -56,7 +56,6 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
-import org.glassfish.concurrent.config.ContextService;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -86,7 +85,7 @@ public class CreateManagedThreadFactory implements AdminCommand {
     @Param(name="contextinfoenabled", alias="contextInfoEnabled", defaultValue="true", optional=true)
     private Boolean contextinfoenabled;
 
-    @Param(name="contextinfo", defaultValue=ContextService.CONTEXT_INFO_DEFAULT_VALUE, optional=true)
+    @Param(name="contextinfo", defaultValue=ResourceConstants.CONTEXT_INFO_DEFAULT_VALUE, optional=true)
     private String contextinfo;
 
     @Param(name="threadpriority", alias="threadPriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)

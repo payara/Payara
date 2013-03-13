@@ -40,52 +40,74 @@
 
 package org.glassfish.concurrent.config;
 
-import com.sun.enterprise.config.modularity.ConfigBeanInstaller;
-import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
-import com.sun.enterprise.config.serverbeans.BindableResource;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
-import org.glassfish.admin.cli.resources.ResourceConfigCreator;
-import org.glassfish.api.admin.RestRedirect;
-import org.glassfish.api.admin.RestRedirects;
-import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
-import org.glassfish.resourcebase.resources.ResourceTypeOrder;
-import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
-
-import javax.validation.Payload;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
+import java.beans.PropertyVetoException;
+import java.util.List;
 
 /**
- * Concurrency context service resource definition
+ * Concurrency resource base class
  */
 
 @Configured
-@ResourceConfigCreator(commandName="create-context-service")
-@RestRedirects({
- @RestRedirect(opType = RestRedirect.OpType.POST, commandName = "create-context-service"),
- @RestRedirect(opType = RestRedirect.OpType.DELETE, commandName = "delete-context-service")
-})
-@ResourceTypeOrder(deploymentOrder=ResourceDeploymentOrder.CONTEXT_SERVICE)
-@ReferenceConstraint(skipDuringCreation=true, payload=ContextService.class)
-@UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ContextService.class)
-@CustomConfiguration(baseConfigurationFileName = "context-service-conf.xml")
-public interface ContextService extends ConfigBeanProxy, Resource,
-        BindableResource, ConcurrencyResource, Payload  {
+public interface ConcurrencyResource extends PropertyBag  {
 
-    @DuckTyped
-    String getIdentity();
+    /**
+     * Gets the value of the contextInfoEnabled property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue="true", dataType=Boolean.class)
+    String getContextInfoEnabled();
 
-    class Duck {
-        public static String getIdentity(ContextService resource){
-            return resource.getJndiName();
-        }
-    }
+    /**
+     * Sets the value of the contextInfoEnabled property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setContextInfoEnabled(String value) throws PropertyVetoException;
 
-    @Service
-    @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 4)
-    public  class  ContextServiceConfigActivator extends ConfigBeanInstaller{
+    /**
+     * Gets the value of the contextInfo property.
+     *
+     * @return possible object is
+     *         {@link String }
+     *        
+     */
+    @Attribute(defaultValue="Classloader,JNDI,Security,WorkArea")
+    String getContextInfo();
 
-    }
+    /**
+     * Sets the value of the contextInfo property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setContextInfo(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the description property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute
+    String getDescription();
+
+    /**
+     * Sets the value of the description property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setDescription(String value) throws PropertyVetoException;
+
+    /**
+        Properties as per {@link PropertyBag}
+     */
+    @Element
+    List<Property> getProperty();
 }

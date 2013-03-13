@@ -52,15 +52,12 @@ import org.glassfish.admin.cli.resources.UniqueResourceNameConstraint;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
-import org.jvnet.hk2.config.types.Property;
-import org.jvnet.hk2.config.types.PropertyBag;
 import org.glassfish.resourcebase.resources.ResourceTypeOrder;
 import org.glassfish.resourcebase.resources.ResourceDeploymentOrder;
 
 import javax.validation.Payload;
 import javax.validation.constraints.Min;
 import java.beans.PropertyVetoException;
-import java.util.List;
 
 /**
  * Concurrency managed thread factory resource definition
@@ -77,42 +74,7 @@ import java.util.List;
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedThreadFactory.class)
 @CustomConfiguration(baseConfigurationFileName = "managed-thread-factory-conf.xml")
 public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
-        PropertyBag, BindableResource, Payload  {
-
-    /**
-     * Gets the value of the contextInfoEnabled property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue="true", dataType=Boolean.class)
-    String getContextInfoEnabled();
-
-    /**
-     * Sets the value of the contextInfoEnabled property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setContextInfoEnabled(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the contextInfo property.
-     *
-     * @return possible object is
-     *         {@link String }
-     *
-     */
-    @Attribute(defaultValue=ContextService.CONTEXT_INFO_DEFAULT_VALUE)
-    String getContextInfo();
-
-    /**
-     * Sets the value of the contextInfo property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setContextInfo(String value) throws PropertyVetoException;
+        BindableResource, ConcurrencyResource, Payload  {
 
     /**
      * Gets the value of the threadPriority property.
@@ -132,29 +94,6 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
      */
     void setThreadPriority(String value) throws PropertyVetoException;
     
-    /**
-     * Gets the value of the description property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute
-    String getDescription();
-
-    /**
-     * Sets the value of the description property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setDescription(String value) throws PropertyVetoException;
-
-    /**
-        Properties as per {@link PropertyBag}
-     */
-    @Element
-    List<Property> getProperty();
-
     @DuckTyped
     String getIdentity();
 

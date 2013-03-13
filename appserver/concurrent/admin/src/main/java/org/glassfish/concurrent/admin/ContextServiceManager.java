@@ -85,7 +85,7 @@ public class ContextServiceManager implements ResourceManager {
     private String jndiName = null;
     private String description = null;
     private String contextInfoEnabled = Boolean.TRUE.toString();
-    private String contextInfo = ContextService.CONTEXT_INFO_DEFAULT_VALUE;
+    private String contextInfo = CONTEXT_INFO_DEFAULT_VALUE;
     private String enabled = Boolean.TRUE.toString();
     private String enabledValueForTarget = Boolean.TRUE.toString();
 

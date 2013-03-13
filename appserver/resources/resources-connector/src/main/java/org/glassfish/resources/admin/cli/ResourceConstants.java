@@ -242,6 +242,7 @@ public final class ResourceConstants {
 
     // concurrent resource objects
     public static final String CONTEXT_INFO = "context-info";
+    public static final String CONTEXT_INFO_DEFAULT_VALUE = "Classloader,JNDI,Security,WorkArea";
     public static final String CONTEXT_INFO_ENABLED = "context-info-enabled";
     public static final String THREAD_PRIORITY = "thread-priority";
     public static final String LONG_RUNNING_TASKS = "long-runnings-tasks";
