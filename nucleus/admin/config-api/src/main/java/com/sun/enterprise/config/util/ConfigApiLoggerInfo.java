@@ -60,7 +60,7 @@ public class ConfigApiLoggerInfo {
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.config.util.LogMessages";
 
     @LoggerInfo(subsystem = "CONFIG-API", description = "Configuration API", publish = true)
-    public static final String ADMIN_LOGGER = "com.sun.enterprise.config";
+    public static final String ADMIN_LOGGER = "javax.enterprise.config.api";
     private static final Logger adminLogger = Logger.getLogger(
             ADMIN_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
@@ -77,17 +77,17 @@ public class ConfigApiLoggerInfo {
             cause = "unknown",
             action = "unknown",
             level = "WARNING")
-    public static final String noDefaultConfigFound = LOGMSG_PREFIX + "-0001";
+    public static final String noDefaultConfigFound = LOGMSG_PREFIX + "-00001";
 
     @LogMessageInfo(
             message = "cluster property GMS_DISCOVERY_URI_LIST={0}",
             level = "FINE")
-    public static final String clusterGSMBroadCast = LOGMSG_PREFIX + "-0002";
+    public static final String clusterGSMBroadCast = LOGMSG_PREFIX + "-00002";
 
     @LogMessageInfo(
             message = "cluster attribute gms broadcast={0}",
             level = "FINE")
-    public final static String clusterGSMDeliveryURI = LOGMSG_PREFIX + "-0003";
+    public final static String clusterGSMDeliveryURI = LOGMSG_PREFIX + "-00003";
 
     @LogMessageInfo(
             message = "Cluster {0} contains server instances {1} and must not contain any instances",
@@ -95,7 +95,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String clusterMustNotContainInstance = LOGMSG_PREFIX + "-0004";
+    public final static String clusterMustNotContainInstance = LOGMSG_PREFIX + "-00004";
 
     @LogMessageInfo(
             message = "Unable to remove config {0}",
@@ -103,49 +103,49 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String deleteConfigFailed = LOGMSG_PREFIX + "-0005";
+    public final static String deleteConfigFailed = LOGMSG_PREFIX + "-00005";
     @LogMessageInfo(
             message = "CopyConfig error caused by {0}",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String copyConfigError = LOGMSG_PREFIX + "-0006";
+    public final static String copyConfigError = LOGMSG_PREFIX + "-00006";
     @LogMessageInfo(
             message = "Error when getting clusters on node dues to: {0}",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String errorGettingCluster = LOGMSG_PREFIX + "-0007";
+    public final static String errorGettingCluster = LOGMSG_PREFIX + "-00007";
     @LogMessageInfo(
             message = "Error when getting servers due to: {0}",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String errorGettingServers = LOGMSG_PREFIX + "-0008";
+    public final static String errorGettingServers = LOGMSG_PREFIX + "-00008";
     @LogMessageInfo(
             message = "Unable to create default Http service configuration",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "INFO")
-    public final static String unableToCreateHttpServiceConfig = LOGMSG_PREFIX + "-0009";
+    public final static String unableToCreateHttpServiceConfig = LOGMSG_PREFIX + "-00009";
     @LogMessageInfo(
             message = "Cannot remove Node {0}.",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String cannotRemoveNode = LOGMSG_PREFIX + "-0010";
+    public final static String cannotRemoveNode = LOGMSG_PREFIX + "-00010";
     @LogMessageInfo(
             message = "Node {0} referenced in server instance(s): {1}.  Remove instances before removing node.",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String referencedByInstance = LOGMSG_PREFIX + "-0011";
+    public final static String referencedByInstance = LOGMSG_PREFIX + "-00011";
     @LogMessageInfo(
             message = "Can''t find the default config (an element named \"default-config\") "
                     + "in domain.xml.  You may specify the name of an existing config element next time.",
@@ -153,14 +153,14 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String noDefaultConfig = LOGMSG_PREFIX + "-0012";
+    public final static String noDefaultConfig = LOGMSG_PREFIX + "-00012";
     @LogMessageInfo(
             message = "Unable to remove server-ref {0} from cluster {1}",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String deleteServerRefFailed = LOGMSG_PREFIX + "-0013";
+    public final static String deleteServerRefFailed = LOGMSG_PREFIX + "-00013";
     @LogMessageInfo(
             message = "The default configuration template (named default-config) "
                     + "cannot be referenced by a server.",
@@ -168,7 +168,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configRefDefaultconfig = LOGMSG_PREFIX + "-0014";
+    public final static String configRefDefaultconfig = LOGMSG_PREFIX + "-00014";
     @LogMessageInfo(
             message = "The configuration of the Domain Administration Server "
                     + "cannot be changed from server-config.",
@@ -176,7 +176,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configRefDASconfig = LOGMSG_PREFIX + "-0015";
+    public final static String configRefDASconfig = LOGMSG_PREFIX + "-00015";
     @LogMessageInfo(
             message = "The configuration of the Domain Administration Server "
                     + "(named server-config) cannot be referenced by a server.",
@@ -184,7 +184,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configRefServerconfig = LOGMSG_PREFIX + "-0016";
+    public final static String configRefServerconfig = LOGMSG_PREFIX + "-00016";
     @LogMessageInfo(
             message = "The configuration of the Domain Administration Server "
                     + "(named server-config) cannot be referenced by a server.",
@@ -192,28 +192,28 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configRefClusteredInstance = LOGMSG_PREFIX + "-0017";
+    public final static String configRefClusteredInstance = LOGMSG_PREFIX + "-00017";
     @LogMessageInfo(
             message = "A configuration that doesn't exist cannot be referenced by a server.",
             cause = "unknown",
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String configRefNonexistent = LOGMSG_PREFIX + "-0018";
+    public final static String configRefNonexistent = LOGMSG_PREFIX + "-00018";
 
 
     @LogMessageInfo(
             message = "Port= {0}",
             publish = true,
             level = "FINER")
-    public final static String portBaseHelperPort = LOGMSG_PREFIX + "-0019";
+    public final static String portBaseHelperPort = LOGMSG_PREFIX + "-00019";
 
     @LogMessageInfo(
             message = "removing default instance index for {0}",
 
             publish = true,
             level = "FINE")
-    public final static String removingDefaultInstanceIndexFor = LOGMSG_PREFIX + "-0020";
+    public final static String removingDefaultInstanceIndexFor = LOGMSG_PREFIX + "-00020";
 
     @LogMessageInfo(
             message = "adding default instance index for {0}",
@@ -221,27 +221,27 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "FINE")
-    public final static String AddingDefaultInstanceIndexFor = LOGMSG_PREFIX + "-0021";
+    public final static String AddingDefaultInstanceIndexFor = LOGMSG_PREFIX + "-00021";
 
 
     @LogMessageInfo(
             message = "Existing default-config detected during upgrade. No need to create default-config.",
             publish = true,
             level = "INFO")
-    public final static String existingDefaultConfig = LOGMSG_PREFIX + "-0022";
+    public final static String existingDefaultConfig = LOGMSG_PREFIX + "-00022";
 
     @LogMessageInfo(
             message = "System Property com.sun.aas.installRoot is null. We could be running in unit tests."
                     + "Exiting DefaultConfigUpgrade",
             publish = true,
             level = "INFO")
-    public final static String installRootIsNull = LOGMSG_PREFIX + "-0023";
+    public final static String installRootIsNull = LOGMSG_PREFIX + "-00023";
 
     @LogMessageInfo(
             message = "default-config not detected during upgrade. Running DefaultConfigUpgrade to create default-config.",
             publish = true,
             level = "INFO")
-    public final static String runningDefaultConfigUpgrade = LOGMSG_PREFIX + "-0024";
+    public final static String runningDefaultConfigUpgrade = LOGMSG_PREFIX + "-00024";
 
 
     @LogMessageInfo(
@@ -250,7 +250,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String defaultConfigUpgradeFailure = LOGMSG_PREFIX + "-0025";
+    public final static String defaultConfigUpgradeFailure = LOGMSG_PREFIX + "-00025";
 
     @LogMessageInfo(
             message = "Failure creating SecurityService Config",
@@ -258,7 +258,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingSecurityServiceConfig = LOGMSG_PREFIX + "-0027";
+    public final static String failureCreatingSecurityServiceConfig = LOGMSG_PREFIX + "-00027";
 
     @LogMessageInfo(
             message = "Problem parsing security-service",
@@ -266,7 +266,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingSecurityServiceConfig = LOGMSG_PREFIX + "-0028";
+    public final static String problemParsingSecurityServiceConfig = LOGMSG_PREFIX + "-00028";
 
 
     @LogMessageInfo(
@@ -275,7 +275,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingHttpServiceVS = LOGMSG_PREFIX + "-0029";
+    public final static String failureCreatingHttpServiceVS = LOGMSG_PREFIX + "-00029";
 
     @LogMessageInfo(
             message = "Problem parsing http-service virtual-server in domain.xml template",
@@ -283,7 +283,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingHttpServiceVs = LOGMSG_PREFIX + "-0030";
+    public final static String problemParsingHttpServiceVs = LOGMSG_PREFIX + "-00030";
 
 
     @LogMessageInfo(
@@ -292,7 +292,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failedToCreateAdminService = LOGMSG_PREFIX + "-0031";
+    public final static String failedToCreateAdminService = LOGMSG_PREFIX + "-00031";
 
 
     @LogMessageInfo(
@@ -301,7 +301,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingAdminService = LOGMSG_PREFIX + "-0032";
+    public final static String problemParsingAdminService = LOGMSG_PREFIX + "-00032";
 
 
     @LogMessageInfo(
@@ -310,7 +310,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "WARNING")
-    public final static String failureCreatingLogService = LOGMSG_PREFIX + "-0033";
+    public final static String failureCreatingLogService = LOGMSG_PREFIX + "-00033";
 
 
     @LogMessageInfo(
@@ -319,7 +319,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreateModuleLogLevel = LOGMSG_PREFIX + "-0034";
+    public final static String failureCreateModuleLogLevel = LOGMSG_PREFIX + "-00034";
 
     @LogMessageInfo(
             message = "Problem parsing module-log-levels in domain.xml template",
@@ -327,7 +327,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingModuleLogLevel = LOGMSG_PREFIX + "-0035";
+    public final static String problemParsingModuleLogLevel = LOGMSG_PREFIX + "-00035";
 
 
     @LogMessageInfo(
@@ -336,7 +336,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingSecurityService = LOGMSG_PREFIX + "-0036";
+    public final static String failureCreatingSecurityService = LOGMSG_PREFIX + "-00036";
 
     @LogMessageInfo(
             message = "Failure creating AuthRealm",
@@ -344,7 +344,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingAuthRealm = LOGMSG_PREFIX + "-0037";
+    public final static String failureCreatingAuthRealm = LOGMSG_PREFIX + "-00037";
 
     @LogMessageInfo(
             message = "Problem parsing auth-realm",
@@ -352,7 +352,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureParsingAuthRealm = LOGMSG_PREFIX + "-0038";
+    public final static String failureParsingAuthRealm = LOGMSG_PREFIX + "-00038";
 
     @LogMessageInfo(
             message = "Create AuthRealm Property failed. Attr = {0} and Val = {1}",
@@ -360,7 +360,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingAuthRealmProperty = LOGMSG_PREFIX + "-0039";
+    public final static String failureCreatingAuthRealmProperty = LOGMSG_PREFIX + "-00039";
 
     @LogMessageInfo(
             message = "Problem parsing auth-realm property",
@@ -368,7 +368,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureParsingAuthRealmProperty = LOGMSG_PREFIX + "-0040";
+    public final static String failureParsingAuthRealmProperty = LOGMSG_PREFIX + "-00040";
 
 
     @LogMessageInfo(
@@ -377,7 +377,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingJaccProvider = LOGMSG_PREFIX + "-0041";
+    public final static String failureCreatingJaccProvider = LOGMSG_PREFIX + "-00041";
 
 
     @LogMessageInfo(
@@ -386,7 +386,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingJaacProvider = LOGMSG_PREFIX + "-0042";
+    public final static String problemParsingJaacProvider = LOGMSG_PREFIX + "-00042";
 
 
     @LogMessageInfo(
@@ -395,7 +395,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingJaccProviderAttr = LOGMSG_PREFIX + "-0043";
+    public final static String failureCreatingJaccProviderAttr = LOGMSG_PREFIX + "-00043";
 
 
     @LogMessageInfo(
@@ -404,7 +404,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingJaacProviderAttr = LOGMSG_PREFIX + "-0044";
+    public final static String problemParsingJaacProviderAttr = LOGMSG_PREFIX + "-00044";
 
     @LogMessageInfo(
             message = "Failure creating AuditModule config object",
@@ -412,7 +412,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingAuditModule = LOGMSG_PREFIX + "-0045";
+    public final static String failureCreatingAuditModule = LOGMSG_PREFIX + "-00045";
 
 
     @LogMessageInfo(
@@ -421,7 +421,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingAuditModuleAttr = LOGMSG_PREFIX + "-0046";
+    public final static String failureCreatingAuditModuleAttr = LOGMSG_PREFIX + "-00046";
 
 
     @LogMessageInfo(
@@ -430,7 +430,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureParsingAuditModuleProp = LOGMSG_PREFIX + "-0047";
+    public final static String failureParsingAuditModuleProp = LOGMSG_PREFIX + "-00047";
 
     @LogMessageInfo(
             message = "Failure creating ProviderConfig",
@@ -438,7 +438,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingProviderConfig = LOGMSG_PREFIX + "-0048";
+    public final static String failureCreatingProviderConfig = LOGMSG_PREFIX + "-00048";
 
 
     @LogMessageInfo(
@@ -447,7 +447,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String ProblemParsingProviderConfig = LOGMSG_PREFIX + "-0049";
+    public final static String ProblemParsingProviderConfig = LOGMSG_PREFIX + "-00049";
 
 
     @LogMessageInfo(
@@ -456,7 +456,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String createProviderConfigRequestPolicyFailed = LOGMSG_PREFIX + "-0050";
+    public final static String createProviderConfigRequestPolicyFailed = LOGMSG_PREFIX + "-00050";
 
 
     @LogMessageInfo(
@@ -465,7 +465,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingRequestPolicyProp = LOGMSG_PREFIX + "-0051";
+    public final static String problemParsingRequestPolicyProp = LOGMSG_PREFIX + "-00051";
 
     @LogMessageInfo(
             message = "Create ProviderConfig Property failed",
@@ -473,7 +473,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String createProviderConfigPropertyFailed = LOGMSG_PREFIX + "-0052";
+    public final static String createProviderConfigPropertyFailed = LOGMSG_PREFIX + "-00052";
 
     @LogMessageInfo(
             message = "Problem parsing provider-config property",
@@ -481,7 +481,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingProviderConfigProp = LOGMSG_PREFIX + "-0053";
+    public final static String problemParsingProviderConfigProp = LOGMSG_PREFIX + "-00053";
 
 
     @LogMessageInfo(
@@ -490,7 +490,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingJavaConfigObject = LOGMSG_PREFIX + "-0054";
+    public final static String failureCreatingJavaConfigObject = LOGMSG_PREFIX + "-00054";
 
 
     @LogMessageInfo(
@@ -499,7 +499,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingJvmOptions = LOGMSG_PREFIX + "-0055";
+    public final static String problemParsingJvmOptions = LOGMSG_PREFIX + "-00055";
 
 
     @LogMessageInfo(
@@ -508,7 +508,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingAvailabilityServiceConfig = LOGMSG_PREFIX + "-0056";
+    public final static String failureCreatingAvailabilityServiceConfig = LOGMSG_PREFIX + "-00056";
 
 
     @LogMessageInfo(
@@ -517,7 +517,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingNetworkConfig = LOGMSG_PREFIX + "-0057";
+    public final static String failureCreatingNetworkConfig = LOGMSG_PREFIX + "-00057";
 
 
     @LogMessageInfo(
@@ -526,7 +526,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingProtocolsConfig = LOGMSG_PREFIX + "-0058";
+    public final static String failureCreatingProtocolsConfig = LOGMSG_PREFIX + "-00058";
 
 
     @LogMessageInfo(
@@ -535,7 +535,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingProtocolsConfig = LOGMSG_PREFIX + "-0059";
+    public final static String problemParsingProtocolsConfig = LOGMSG_PREFIX + "-00059";
 
 
     @LogMessageInfo(
@@ -544,7 +544,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingProtocolConfig = LOGMSG_PREFIX + "-0060";
+    public final static String failureCreatingProtocolConfig = LOGMSG_PREFIX + "-00060";
 
 
     @LogMessageInfo(
@@ -553,7 +553,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingProtocolElement = LOGMSG_PREFIX + "-0091";
+    public final static String problemParsingProtocolElement = LOGMSG_PREFIX + "-00091";
 
 
     @LogMessageInfo(
@@ -562,7 +562,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingHttpConfig = LOGMSG_PREFIX + "-0061";
+    public final static String failureCreatingHttpConfig = LOGMSG_PREFIX + "-00061";
 
 
     @LogMessageInfo(
@@ -571,7 +571,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingFileCacheConfig = LOGMSG_PREFIX + "-0062";
+    public final static String failureCreatingFileCacheConfig = LOGMSG_PREFIX + "-00062";
 
 
     @LogMessageInfo(
@@ -580,7 +580,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingFileCacheElement = LOGMSG_PREFIX + "-0063";
+    public final static String problemParsingFileCacheElement = LOGMSG_PREFIX + "-00063";
 
 
     @LogMessageInfo(
@@ -589,7 +589,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingSSLConfig = LOGMSG_PREFIX + "-0064";
+    public final static String failureCreatingSSLConfig = LOGMSG_PREFIX + "-00064";
 
 
     @LogMessageInfo(
@@ -598,7 +598,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingSSlElement = LOGMSG_PREFIX + "-0065";
+    public final static String problemParsingSSlElement = LOGMSG_PREFIX + "-00065";
 
 
     @LogMessageInfo(
@@ -607,7 +607,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingHttpRedirect = LOGMSG_PREFIX + "-0066";
+    public final static String failureCreatingHttpRedirect = LOGMSG_PREFIX + "-00066";
 
 
     @LogMessageInfo(
@@ -616,7 +616,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingPortUnification = LOGMSG_PREFIX + "-0067";
+    public final static String failureCreatingPortUnification = LOGMSG_PREFIX + "-00067";
 
 
     @LogMessageInfo(
@@ -625,7 +625,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingProtocolFinder = LOGMSG_PREFIX + "-0068";
+    public final static String failureCreatingProtocolFinder = LOGMSG_PREFIX + "-00068";
 
     @LogMessageInfo(
             message = "Problem parsing protocol-finder element in domain.xml template",
@@ -633,7 +633,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingProtocolFinder = LOGMSG_PREFIX + "-0069";
+    public final static String problemParsingProtocolFinder = LOGMSG_PREFIX + "-00069";
 
     @LogMessageInfo(
             message = "Failure creating NetworkListeners config object",
@@ -641,7 +641,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingNetworkListeners = LOGMSG_PREFIX + "-0070";
+    public final static String failureCreatingNetworkListeners = LOGMSG_PREFIX + "-00070";
 
     @LogMessageInfo(
             message = "Problem parsing network-listeners element in domain.xml template",
@@ -649,7 +649,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingNetworkListeners = LOGMSG_PREFIX + "-0071";
+    public final static String problemParsingNetworkListeners = LOGMSG_PREFIX + "-00071";
 
     @LogMessageInfo(
             message = "Failure creating NetworkListener config object",
@@ -657,7 +657,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingNetworkListener = LOGMSG_PREFIX + "-0072";
+    public final static String failureCreatingNetworkListener = LOGMSG_PREFIX + "-00072";
 
     @LogMessageInfo(
             message = "Problem parsing network-listener element in domain.xml template",
@@ -665,7 +665,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String ProblemParsingNetworkListener = LOGMSG_PREFIX + "-0073";
+    public final static String ProblemParsingNetworkListener = LOGMSG_PREFIX + "-00073";
 
     @LogMessageInfo(
             message = "Failure creating Transports config object",
@@ -673,7 +673,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingTransportsConfig = LOGMSG_PREFIX + "-0074";
+    public final static String failureCreatingTransportsConfig = LOGMSG_PREFIX + "-00074";
 
     @LogMessageInfo(
             message = "Problem parsing transports element in domain.xml template",
@@ -681,7 +681,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureParsingTransportsConfig = LOGMSG_PREFIX + "-0075";
+    public final static String failureParsingTransportsConfig = LOGMSG_PREFIX + "-00075";
 
     @LogMessageInfo(
             message = "Failure creating Transport config object",
@@ -689,7 +689,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingTransportConfig = LOGMSG_PREFIX + "-0076";
+    public final static String failureCreatingTransportConfig = LOGMSG_PREFIX + "-00076";
 
     @LogMessageInfo(
             message = "Problem parsing transport element in domain.xml template",
@@ -697,7 +697,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingTransportConfig = LOGMSG_PREFIX + "-0077";
+    public final static String problemParsingTransportConfig = LOGMSG_PREFIX + "-00077";
 
     @LogMessageInfo(
             message = "Failure to create ThreadPools config object",
@@ -705,7 +705,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureToCreateThreadPoolsObject = LOGMSG_PREFIX + "-0078";
+    public final static String failureToCreateThreadPoolsObject = LOGMSG_PREFIX + "-00078";
 
     @LogMessageInfo(
             message = "Failure creating ThreadPool config object",
@@ -713,7 +713,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureToCreateThreadpoolObject = LOGMSG_PREFIX + "-0079";
+    public final static String failureToCreateThreadpoolObject = LOGMSG_PREFIX + "-00079";
 
     @LogMessageInfo(
             message = "Problem parsing thread-pool element in domain.xml template",
@@ -721,7 +721,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingThreadPoolElement = LOGMSG_PREFIX + "-0080";
+    public final static String problemParsingThreadPoolElement = LOGMSG_PREFIX + "-00080";
 
     @LogMessageInfo(
             message = "Failure creating SystemProperty config object",
@@ -729,7 +729,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failureCreatingSystemProperty = LOGMSG_PREFIX + "-0081";
+    public final static String failureCreatingSystemProperty = LOGMSG_PREFIX + "-00081";
 
     @LogMessageInfo(
             message = "Problem parsing system-property element in domain.xml template",
@@ -737,20 +737,20 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String problemParsingSystemProperty = LOGMSG_PREFIX + "-0082";
+    public final static String problemParsingSystemProperty = LOGMSG_PREFIX + "-00082";
 
 
     @LogMessageInfo(
             message = "Startup class : ",
 
             level = "FINE")
-    public final static String startupClass = LOGMSG_PREFIX + "-0083";
+    public final static String startupClass = LOGMSG_PREFIX + "-00083";
 
 
     @LogMessageInfo(
             message = "Successful cleaned domain.xml with ",
             level = "FINE")
-    public final static String successfulCleanupWith = LOGMSG_PREFIX + "-0084";
+    public final static String successfulCleanupWith = LOGMSG_PREFIX + "-00084";
 
 
     @LogMessageInfo(
@@ -759,7 +759,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String cleaningDomainXmlFailed = LOGMSG_PREFIX + "-0085";
+    public final static String cleaningDomainXmlFailed = LOGMSG_PREFIX + "-00085";
 
 
     @LogMessageInfo(
@@ -768,7 +768,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String badEnv = LOGMSG_PREFIX + "-0086";
+    public final static String badEnv = LOGMSG_PREFIX + "-00086";
 
 
     @LogMessageInfo(
@@ -776,7 +776,7 @@ public class ConfigApiLoggerInfo {
 
             publish = true,
             level = "FINE")
-    public final static String successfulUpgrade = LOGMSG_PREFIX + "-0087";
+    public final static String successfulUpgrade = LOGMSG_PREFIX + "-00087";
 
 
     @LogMessageInfo(
@@ -785,7 +785,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String failedUpgrade = LOGMSG_PREFIX + "-0088";
+    public final static String failedUpgrade = LOGMSG_PREFIX + "-00088";
 
 
     @LogMessageInfo(
@@ -794,7 +794,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String noConfigFile = LOGMSG_PREFIX + "-0089";
+    public final static String noConfigFile = LOGMSG_PREFIX + "-00089";
 
 
     @LogMessageInfo(
@@ -803,13 +803,13 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String noBackupFile = LOGMSG_PREFIX + "-0090";
+    public final static String noBackupFile = LOGMSG_PREFIX + "-00090";
 
 
     @LogMessageInfo(
             message = "Total time to parse domain.xml: ",
             level = "FINE")
-    public final static String totalTimeToParseDomain = LOGMSG_PREFIX + "-0092";
+    public final static String totalTimeToParseDomain = LOGMSG_PREFIX + "-00092";
 
     @LogMessageInfo(
             message = "Exception while creating the command model for the generic command {0} : {1}",
@@ -817,7 +817,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String commandModelException = LOGMSG_PREFIX + "-0093";
+    public final static String commandModelException = LOGMSG_PREFIX + "-00093";
 
     @LogMessageInfo(
             message = "The CrudResolver {0} could not find the configuration object of type {1} where instances of {2} should be added",
@@ -825,7 +825,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String targetObjectNotFound = LOGMSG_PREFIX + "-0094";
+    public final static String targetObjectNotFound = LOGMSG_PREFIX + "-00094";
 
     @LogMessageInfo(
             message = "A {0} instance with a {1} name already exist in the configuration",
@@ -833,7 +833,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String alreadyExistingInstance = LOGMSG_PREFIX + "-0095";
+    public final static String alreadyExistingInstance = LOGMSG_PREFIX + "-00095";
 
     @LogMessageInfo(
             message = "Exception while invoking {0} method : {1}",
@@ -841,7 +841,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String methodInvocationException = LOGMSG_PREFIX + "-0096";
+    public final static String methodInvocationException = LOGMSG_PREFIX + "-00096";
 
     @LogMessageInfo(
             message = "The CreationDecorator {0} could not be found in the habitat, is it annotated with @Service?",
@@ -849,7 +849,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String decoratorNotFound = LOGMSG_PREFIX + "-0097";
+    public final static String decoratorNotFound = LOGMSG_PREFIX + "-00097";
 
 
     @LogMessageInfo(
@@ -858,7 +858,7 @@ public class ConfigApiLoggerInfo {
             action = "unknown",
             publish = true,
             level = "SEVERE")
-    public final static String transactionException = LOGMSG_PREFIX + "-0098";
+    public final static String transactionException = LOGMSG_PREFIX + "-00098";
     //Remaining packages: The GenericCrudCommand and below in support package
     //Entire modularity package
 }
