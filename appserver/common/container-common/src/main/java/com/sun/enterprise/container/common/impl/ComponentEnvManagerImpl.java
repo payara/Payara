@@ -992,20 +992,10 @@ public class ComponentEnvManagerImpl
 
             // Phase 1, obtain a reference to the Validator
 
-            // case 1, try to look in the ctx
-            if (null == validator) {
-                try {
-                    validator = (Validator) ctx.lookup(nameForValidator);
-                } catch (NamingException ne) {
-                    exceptionMessage = "Unable to lookup " +
-                        nameForValidator + ":" + ne.toString();
-                }
-            }
-
-            // case 2, Create a new Validator instance
+            // Create a new Validator instance
             if (null == validator) {
 
-                // case 2a no validatorFactory
+                // no validatorFactory
                 if (null == validatorFactory) {
                     ValidatorFactoryProxy factoryProxy = new ValidatorFactoryProxy(_logger);
                     validatorFactory = (ValidatorFactory) factoryProxy.create(ctx);
@@ -1039,18 +1029,8 @@ public class ComponentEnvManagerImpl
         @Override
         public Object create(Context ctx)
                 throws NamingException {
-            // Phase 1, obtain a reference to the ValidatorFactory
 
-            // case 1, try to look in the ctx
-            if (null == validatorFactory) {
-                try {
-                    validatorFactory = (ValidatorFactory)
-                            ctx.lookup(nameForValidatorFactory);
-                } catch (NamingException ne) {  //ignore
-                }
-            }
-
-            // case 2, create the ValidatorFactory using the spec.
+            // create the ValidatorFactory using the spec.
             if (null == validatorFactory) {
                 try {
                     validatorFactory = Validation.buildDefaultValidatorFactory();
