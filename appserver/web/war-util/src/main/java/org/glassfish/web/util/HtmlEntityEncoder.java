@@ -70,6 +70,8 @@ public class HtmlEntityEncoder {
         addSafeCharacter('*');
         addSafeCharacter('\\');
         addSafeCharacter(',');
+        // space is ok for html entity
+        addSafeCharacter(' ');
 
         // unsafe chars for XSS
         // CR 6944384: < > " ' % ; ) ( & + - 

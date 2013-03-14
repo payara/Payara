@@ -361,12 +361,12 @@ public class ErrorReportValve
         // BEGIN S1AS 4878272
         if (message == null) {
             message = hresponse.getDetailMessage();
-            if (message == null) {
-                message = "";
-            } else {
-                HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
-                message = htmlEntityEncoder.encode(message);
-            }
+        }
+        if (message == null) {
+            message = "";
+        } else {
+            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
+            message = htmlEntityEncoder.encode(message);
         }
         // END S1AS 4878272
 

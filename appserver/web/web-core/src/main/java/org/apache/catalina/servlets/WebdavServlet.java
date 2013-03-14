@@ -97,7 +97,6 @@ import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.grizzly.http.util.FastHttpDateFormat;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.util.HtmlEntityEncoder;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -628,9 +627,7 @@ public class WebdavServlet
         }
 
         if (!exists) {
-            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
-            resp.sendError(HttpServletResponse.SC_NOT_FOUND,
-                    htmlEntityEncoder.encode(path));
+            resp.sendError(HttpServletResponse.SC_NOT_FOUND, path);
             return;
         }
 

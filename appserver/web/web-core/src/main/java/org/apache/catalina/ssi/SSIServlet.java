@@ -188,18 +188,17 @@ public class SSIServlet extends HttpServlet {
                     + (buffered?"buffered ":"unbuffered ") + "resource '"
                     + path + "'");
 
-        HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
         if (path == null || path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")
                 || path.toUpperCase(Locale.ENGLISH).startsWith("/META-INF")) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND, htmlEntityEncoder.encode(path));
+            res.sendError(HttpServletResponse.SC_NOT_FOUND, path);
             log("Can't serve file: " + path);
             return;
         }
         URL resource = servletContext.getResource(path);
         if (resource == null) {
-            res.sendError(HttpServletResponse.SC_NOT_FOUND, htmlEntityEncoder.encode(path));
+            res.sendError(HttpServletResponse.SC_NOT_FOUND, path);
             log("Can't find file: " + path);
             return;
         }
@@ -213,17 +212,17 @@ public class SSIServlet extends HttpServlet {
                     + expires.longValue() * 1000);
         }
         req.setAttribute(Globals.SSI_FLAG_ATTR, "true");
-        processSSI(req, res, resource, htmlEntityEncoder);
+        processSSI(req, res, resource);
     }
 
 
     protected void processSSI(HttpServletRequest req, HttpServletResponse res,
-            URL resource, HtmlEntityEncoder htmlEntityEncoder) throws IOException {
+            URL resource) throws IOException {
         SSIExternalResolver ssiExternalResolver =
             new SSIServletExternalResolver(getServletContext(), req, res,
                     isVirtualWebappRelative, debug, inputEncoding);
         SSIProcessor ssiProcessor = new SSIProcessor(ssiExternalResolver,
-                debug, htmlEntityEncoder);
+                debug, new HtmlEntityEncoder());
         PrintWriter printWriter = null;
         StringWriter stringWriter = null;
         if (buffered) {
