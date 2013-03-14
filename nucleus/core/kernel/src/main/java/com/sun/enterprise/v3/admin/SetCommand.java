@@ -41,8 +41,6 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
-import com.sun.enterprise.config.modularity.ConfigModularityUtils;
-import com.sun.enterprise.config.modularity.GetSetModularityHelper;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -87,8 +85,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
-
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 
@@ -115,8 +111,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
 
     @Inject
     Target targetService;
-    @Inject
-    GetSetModularityHelper modularityHelper;
 
     @Param(primary = true, multiple = true)
     String[] values;
@@ -126,7 +120,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     private HashMap<String, Integer> targetLevel = null;
 
     private final Collection<SetOperation> setOperations = new ArrayList<SetOperation>();
-
+    
     @Override
     public void postConstruct() {
         targetLevel = new HashMap<String, Integer>();
@@ -292,8 +286,6 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             pattern = parentNodes[0].relativeName;
         }
         String targetName = prefix + pattern;
-
-        modularityHelper.getLocationForDottedName(targetName);
 
         Map<Dom, String> matchingNodes;
         boolean applyOverrideRules = false;

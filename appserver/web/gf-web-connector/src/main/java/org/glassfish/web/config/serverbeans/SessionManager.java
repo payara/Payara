@@ -86,7 +86,6 @@ public interface SessionManager extends ConfigBeanProxy  {
      *         {@link StoreProperties }
      */
     @Element
-    @NotNull
     public StoreProperties getStoreProperties();
 
     /**
