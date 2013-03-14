@@ -519,10 +519,14 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 }
             }
 
-           DigestCredentials creds = new DigestCredentials(_realmName,key.getUsername(), params);     
-           LoginContextDriver.login(creds);
-           SecurityContext secCtx = SecurityContext.getCurrent();
-           return new WebPrincipal(creds.getUserName(),(char[])null, secCtx);
+           if (key != null) {
+               DigestCredentials creds = new DigestCredentials(_realmName,key.getUsername(), params);     
+               LoginContextDriver.login(creds);
+               SecurityContext secCtx = SecurityContext.getCurrent();
+               return new WebPrincipal(creds.getUserName(),(char[])null, secCtx);
+           } else {
+               throw new RuntimeException("No key found in parameters");
+           }
 
        } catch (Exception le) {
            if (_logger.isLoggable(Level.WARNING)) {

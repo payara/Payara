@@ -449,7 +449,6 @@ public class SecClientRequestInterceptor extends    org.omg.CORBA.LocalObject
 	if(_logger.isLoggable(Level.FINE)){
                 _logger.log(Level.FINE,"++++ Entered " + prname + "receive_reply");
         }
-	ORB orb = orbHelper.getORB();
 
         /** 
          * get the service context element from the reply and decode the
