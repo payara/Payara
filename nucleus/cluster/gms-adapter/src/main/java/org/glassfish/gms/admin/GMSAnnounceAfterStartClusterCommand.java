@@ -89,7 +89,7 @@ public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
     //after.start=GMSAD3001: GMSAnnounceAfterStartClusterCommand: exitCode:{0} members {1} clusterMembers:{2}
     @LogMessageInfo(message = "GMSAnnounceAfterStartClusterCommand: exitCode:{0} members {1} clusterMembers:{2}",
         level="INFO")
-    private static final String GMSADMIN_AFTER_START="NLCS-CLSTR-30001";
+    private static final String GMSADMIN_AFTER_START="NCLS-CLSTR-30001";
 
     //group.start.exception=GMSAD3002: An exception occurred while announcing GMS group startup: {0}
     //GMSAD3002.diag.cause.1=An unexpected exception occurred in the GMS implementation.
@@ -98,7 +98,7 @@ public class GMSAnnounceAfterStartClusterCommand implements AdminCommand {
         level="WARNING",
         cause="An unexpected exception occurred in the GMS implementation.",
         action="Check the server log file for more information from Shoal-GMS.")
-    private static final String GMS_START_EXCEPTION="NLCS-CLSTR-30002";
+    private static final String GMS_START_EXCEPTION="NCLS-CLSTR-30002";
 
 
     @Inject

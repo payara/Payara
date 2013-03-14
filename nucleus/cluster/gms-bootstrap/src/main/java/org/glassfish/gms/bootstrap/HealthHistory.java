@@ -83,33 +83,33 @@ public final class HealthHistory implements ConfigListener {
     static final Logger GMSBS_LOGGER = Logger.getLogger(GMSBS_LOGGER_NAME, LOG_MESSAGES_RB);
 
     @LogMessageInfo(message = "Adding instance {0} to health history table.", level="INFO")
-    private static final String GMS_ADDING_INSTANCE="NLCS-CLSTR-20001";
+    private static final String GMS_ADDING_INSTANCE="NCLS-CLSTR-20001";
 
     @LogMessageInfo(message = "Instance {0} was not in map when deleted from health history table.",
                     level="WARNING",
                     cause="More than one call may have been made to remove this instance" +
                           " from the cluster. This has no other effect on the health history information.",
                     action="No action is necessary.")
-    private static final String GMS_INSTANCE_NOT_PRESENT="NLCS-CLSTR-20002";
+    private static final String GMS_INSTANCE_NOT_PRESENT="NCLS-CLSTR-20002";
 
     // deleting_instance=GMSBS2003: Deleting instance {0} from health history table.
     @LogMessageInfo(message = "Deleting instance {0} from health history table.", level="INFO")
-    private static final String GMS_DELETE_INSTANCE="NLCS-CLSTR-20003";
+    private static final String GMS_DELETE_INSTANCE="NCLS-CLSTR-20003";
 
     // duplicate_instance=GMSBS2004: Duplicate instance {0} ignored in health history.
     @LogMessageInfo(message = "Duplicate instance {0} ignored in health history.",
                     level="WARNING",
                     cause="There may be more than one instance in the cluster with the same name.",
                     action="Check that instance names are unique within the cluster.")
-    private static final String GMS_DUPLICATE_INSTANCE="NLCS-CLSTR-20004";
+    private static final String GMS_DUPLICATE_INSTANCE="NCLS-CLSTR-20004";
 
     // key_already.present=GMSBS2005: State already known for instance {0}. Not adding to health history table.
     @LogMessageInfo(message = "State already known for instance {0}. Not adding to health history table.", level="INFO")
-    private static final String GMS_INSTANCE_ALREADY_PRESENT="NLCS-CLSTR-20005";
+    private static final String GMS_INSTANCE_ALREADY_PRESENT="NCLS-CLSTR-20005";
 
     // unknown_instance=GMSBS2006: New state {0} added for unknown instance {1}
     @LogMessageInfo(message = "New state {0} added for unknown instance {1}", level="INFO")
-    private static final String GMS_INSTANCE_UNKNOWN_STATE="NLCS-CLSTR-20006";
+    private static final String GMS_INSTANCE_UNKNOWN_STATE="NCLS-CLSTR-20006";
 
     // NOT_RUNNING means there is no time information associated
     public static enum STATE {

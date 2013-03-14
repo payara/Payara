@@ -195,7 +195,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="SEVERE",
         cause="Required information was not passed into method.",
         action="File issue with all relevant information.")
-    private static final String GMS_NO_CLUSTER_NAME="NLCS-CLSTR-10101";
+    private static final String GMS_NO_CLUSTER_NAME="NCLS-CLSTR-10101";
 
     //gmsservice.multiple.adapter=GMSAD1002: Multiple gms-adapter service for cluster {0}
     //GMSAD1002.diag.cause.1=GMs module is being initialized more than once for the same cluster.
@@ -204,7 +204,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="SEVERE",
         cause="GMs module is being initialized more than once for the same cluster.",
         action="File issue with all relevant information.")
-    private static final String GMS_MULTIPLE_ADAPTER="NLCS-CLSTR-10102";
+    private static final String GMS_MULTIPLE_ADAPTER="NCLS-CLSTR-10102";
 
     //gmsservice.nocluster.warning=GMSAD1003: GMS cannot initialize with unknown cluster
     //GMSAD1003.diag.cause.1=No cluster was found with this name in the domain configuration.
@@ -213,25 +213,25 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="WARNING",
         cause="No cluster was found with this name in the domain configuration.",
         action="Check that domain exists in domain.xml.")
-    private static final String GMS_NO_CLUSTER_WARNING="NLCS-CLSTR-10103";
+    private static final String GMS_NO_CLUSTER_WARNING="NCLS-CLSTR-10103";
 
     //gmsservice.started=GMSAD1004: Started GMS for instance {0} in group {1}
     @LogMessageInfo(message = "Started GMS for instance {0} in group {1}", level="INFO")
-    private static final String GMS_STARTED="NLCS-CLSTR-10104";
+    private static final String GMS_STARTED="NCLS-CLSTR-10104";
 
 
     //gmsservice.member.joined.group=GMSAD1005: Member {0} joined group {1}
     @LogMessageInfo(message = "Member {0} joined group {1}", level="INFO")
-    private static final String GMS_JOINED="NLCS-CLSTR-10105";
+    private static final String GMS_JOINED="NCLS-CLSTR-10105";
 
 
     //gmsservice.alive.ready.signal=GMSAD1007: AliveAndReady for signal: {0} for member: {1} of group: {2} current:[{3}] previous:[{4}]
     @LogMessageInfo(message = "AliveAndReady for signal: {0} for member: {1} of group: {2} current:[{3}] previous:[{4}]", level="INFO")
-    private static final String GMS_ALIVE_AND_READY="NLCS-CLSTR-10107";
+    private static final String GMS_ALIVE_AND_READY="NCLS-CLSTR-10107";
 
     //gmsservice.server_shutdown.received=GMSAD1008: GMSAdapter for member: {0} group: {1} received GlassfishEventType: {2}
     @LogMessageInfo(message = "GMSAdapter for member: {0} group: {1} received GlassfishEventType: {2}", level="INFO")
-    private static final String GMS_SERVER_SHUTDOWN_RECEIVED="NLCS-CLSTR-10108";
+    private static final String GMS_SERVER_SHUTDOWN_RECEIVED="NCLS-CLSTR-10108";
 
 
     //gmsexception.new.health.history=GMSAD1009: An exception occurred while creating the HealthHistory object: {0}
@@ -241,7 +241,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="WARNING",
         cause="An unexpected exception occurred.",
         action="See server log for more details.")
-    private static final String GMS_EXCEPTION_NEW_HEALTH_HISTORY="NLCS-CLSTR-10109";
+    private static final String GMS_EXCEPTION_NEW_HEALTH_HISTORY="NCLS-CLSTR-10109";
 
 
     //gmsexception.processing.config.props=GMSAD1010: An exception occurred while processing GMS configuration properties: {0}
@@ -251,7 +251,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="WARNING",
         cause="An unexpected exception occurred.",
         action="See server log for more details.")
-    private static final String GMS_EXCEPTION_PROCESSING_CONFIG="NLCS-CLSTR-10110";
+    private static final String GMS_EXCEPTION_PROCESSING_CONFIG="NCLS-CLSTR-10110";
 
 
     //gmsexception.ignoring.property=GMSAD1011: Ignoring group-management-service property {0} with value of {1} due to {2}
@@ -262,7 +262,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="WARNING",
         cause="An illegal argument was passed into the Shoal GMS implementation.",
         action="Check the server log file for more information from Shoal-GMS.")
-    private static final String GMS_EXCEPTION_IGNORING_PROPERTY="NLCS-CLSTR-10111";
+    private static final String GMS_EXCEPTION_IGNORING_PROPERTY="NCLS-CLSTR-10111";
 
     //gmsexception.cluster.property.error=GMSAD1012: Error processing cluster property:{0} value:{1} due to exception {2}
     //# todo: can we remove this try/catch?
@@ -272,7 +272,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="WARNING",
         cause="An unexpected exception occurred.",
         action="Check the server log file for more information from Shoal-GMS.")
-    private static final String GMS_EXCEPTION_CLUSTER_PROPERTY_ERROR="NLCS-CLSTR-10112";
+    private static final String GMS_EXCEPTION_CLUSTER_PROPERTY_ERROR="NCLS-CLSTR-10112";
 
     //gmsexception.cannot.get.group.module=GMSAD1013: Exception in getting GMS module for group {0}: {1}
     //GMSAD1013.diag.cause.1=There was a problem withing the GMS implementation.
@@ -281,7 +281,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="SEVERE",
         cause="An unexpected exception occurred.",
         action="Check the server log file for more information from Shoal-GMS.")
-    private static final String GMS_EXCEPTION_CANNOT_GET_GROUP_MODULE="NLCS-CLSTR-10113";
+    private static final String GMS_EXCEPTION_CANNOT_GET_GROUP_MODULE="NCLS-CLSTR-10113";
 
     //gmsexception.update.health.history=GMSAD1014: An exception occurred while updating the instance health history table: {0}
     //GMSAD1014.diag.cause.1=An unexpected exception occurred.
@@ -290,22 +290,22 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="WARNING",
         cause="An unexpected exception occurred.",
         action="Check the log file for more information from Shoal-GMS.")
-    private static final String GMS_EXCEPTION_UPDATE_HEALTH_HISTORY="NLCS-CLSTR-10114";
+    private static final String GMS_EXCEPTION_UPDATE_HEALTH_HISTORY="NCLS-CLSTR-10114";
 
     //gmsservice.failurerecovery.start.notification=GMSAD1015: start failure recovery callback for component: {0} failed member: {1}
     @LogMessageInfo(message = "start failure recovery callback for component: {0} failed member: {1}", level="INFO")
-    private static final String GMS_FAILURERECOVERY_START="NLCS-CLSTR-10115";
+    private static final String GMS_FAILURERECOVERY_START="NCLS-CLSTR-10115";
 
     //gmsservice.failurerecovery.completed.notification=GMSAD016: complete failure recovery callback for component: {0} failed member: {1}
     @LogMessageInfo(message = "complete failure recovery callback for component: {0} failed member: {1}", level="INFO")
-    private static final String GMS_FAILURE_RECOVERY_COMPLETED="NLCS-CLSTR-10116";
+    private static final String GMS_FAILURE_RECOVERY_COMPLETED="NCLS-CLSTR-10116";
 
     //gmsservice.failed.to.start=GMSAD1017: GMS failed to start. See stack trace for additional information.
     @LogMessageInfo(message = "GMS failed to start. See stack trace for additional information.",
         level="SEVERE",
         cause="An unexpected exception occurred.",
         action="Check the log file for more information")
-    private static final String GMS_FAILED_TO_START="NLCS-CLSTR-10117";
+    private static final String GMS_FAILED_TO_START="NCLS-CLSTR-10117";
 
     //gmsservice.failed.to.start.unexpected=GMSAD1018: GMS failed to start due to a runtime exception. See stack trace for additional information.
     @LogMessageInfo(message = "GMS failed to start due to a runtime exception. See stack trace for additional information.",
@@ -313,7 +313,7 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         cause="An unexpected exception occurred.",
         action="Check the log file for more information"
     )
-    private static final String GMS_FAILED_TO_START_UNEXCEPTED="NLCS-CLSTR-10118";
+    private static final String GMS_FAILED_TO_START_UNEXCEPTED="NCLS-CLSTR-10118";
 
     //gmsservice.bind.int.address.invalid=GMSAD1019: GMS bind interface address {0} is invalid. Will use default value instead.
     //GMSAD1019.diag.cause.1=The specified bind interface address is not an active local address, so it cannot be used on this node.
@@ -322,11 +322,11 @@ public class GMSAdapterImpl implements GMSAdapter, PostConstruct, CallBack {
         level="SEVERE",
         cause="The specified bind interface address is not an active local address, so it cannot be used on this node.",
         action="Check that you have specified the proper address. See server log for more details from GMS subsystem.")
-    private static final String GMS_BIND_INT_ADDRESS_INVALID="NLCS-CLSTR-10119";
+    private static final String GMS_BIND_INT_ADDRESS_INVALID="NCLS-CLSTR-10119";
 
     //gmsservice.listener.port.required=GMSAD1020: GMS listener port is required for cluster {0}. Will attempt to use default of {1}.
     @LogMessageInfo(message = "GMS listener port is required for cluster {0}. Will attempt to use default of {1}.", level="WARNING")
-    private static final String GMS_LISTENER_PORT_REQUIRED="NLCS-CLSTR-10120";
+    private static final String GMS_LISTENER_PORT_REQUIRED="NCLS-CLSTR-10120";
 
     @Override
     public void postConstruct() {

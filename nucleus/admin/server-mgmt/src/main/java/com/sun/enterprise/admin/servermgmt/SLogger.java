@@ -68,69 +68,69 @@ public class SLogger {
     cause = "see Exception message",
     action = "see Exception message",
     level = "SEVERE")
-    public static final String UNHANDLED_EXCEPTION = "SERVERMGMT0000";
+    public static final String UNHANDLED_EXCEPTION = "NCLS-SERVERMGMT-00000";
     @LogMessageInfo(message =
     "Error attemping to delete temporary certificate file: {0}",
     comment = "Delete error",
     cause = "see message",
     action = "delete the file manually",
     level = "WARNING")
-    public static final String BAD_DELETE_TEMP_CERT_FILE = "SERVERMGMT0001";
+    public static final String BAD_DELETE_TEMP_CERT_FILE = "NCLS-SERVERMGMT-00001";
     @LogMessageInfo(message =
     "Renaming {0} to {1}",
     comment = "No error",
     //cause = "No error",
     //action = "delete the file manually",
     level = "INFO")
-    public static final String RENAME_CERT_FILE = "SERVERMGMT0002";
+    public static final String RENAME_CERT_FILE = "NCLS-SERVERMGMT-00002";
     @LogMessageInfo(message =
     "Failed to rename {0} to {1}",
     comment = "File rename error",
     cause = "see message",
     action = "Check the file system",
     level = "SEVERE")
-    public static final String BAD_RENAME_CERT_FILE = "SERVERMGMT0003";
+    public static final String BAD_RENAME_CERT_FILE = "NCLS-SERVERMGMT-00003";
     @LogMessageInfo(message =
     "Failure while upgrading jvm-options from V2 to V3",
     comment = "V2 to V3 Upgrade Failure",
     cause = "see message",
     action = "Check documentation.",
     level = "SEVERE")
-    public static final String JVM_OPTION_UPGRADE_FAILURE = "SERVERMGMT0004";
+    public static final String JVM_OPTION_UPGRADE_FAILURE = "NCLS-SERVERMGMT-00004";
     @LogMessageInfo(message =
     "JVM Monitoring",
     comment = "Just a title",
     level = "INFO")
-    public static final String MONITOR_TITLE = "SERVERMGMT0005";
+    public static final String MONITOR_TITLE = "NCLS-SERVERMGMT-00005";
     @LogMessageInfo(message =
     "UpTime(ms)",
     comment = "Just a title",
     level = "INFO")
-    public static final String MONITOR_UPTIME_TITLE = "SERVERMGMT0006";
+    public static final String MONITOR_UPTIME_TITLE = "NCLS-SERVERMGMT-00006";
     @LogMessageInfo(
             message = "Heap and NonHeap Memory(bytes)",
     comment = "Just a title",
     level = "INFO")
-    public static final String MONITOR_MEMORY_TITLE = "SERVERMGMT0007";
+    public static final String MONITOR_MEMORY_TITLE = "NCLS-SERVERMGMT-00007";
     @LogMessageInfo(message =
     "Failure while upgrading log-service. Could not create logging.properties file. ",
     comment = "see message",
     cause = "see message",
     action = "Check documentation.",
     level = "SEVERE")
-    public static final String FAIL_CREATE_LOG_PROPS = "SERVERMGMT0008";
+    public static final String FAIL_CREATE_LOG_PROPS = "NCLS-SERVERMGMT-00008";
     @LogMessageInfo(message =
     "Failure while upgrading log-service. Could not update logging.properties file. ",
     comment = "see message",
     cause = "see message",
     action = "Check documentation.",
     level = "SEVERE")
-    public static final String FAIL_UPDATE_LOG_PROPS = "SERVERMGMT0009";
+    public static final String FAIL_UPDATE_LOG_PROPS = "NCLS-SERVERMGMT-00009";
     @LogMessageInfo(message =
     "Failure while upgrading log-service ",
     comment = "see message",
     cause = "see message",
     action = "Check documentation.",
     level = "SEVERE")
-    public static final String FAIL_UPGRADE_LOG_SERVICE = "SERVERMGMT0010";
+    public static final String FAIL_UPGRADE_LOG_SERVICE = "NCLS-SERVERMGMT-00010";
 }

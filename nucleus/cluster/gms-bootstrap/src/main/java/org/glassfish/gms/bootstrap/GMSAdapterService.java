@@ -111,7 +111,7 @@ public class GMSAdapterService implements PostConstruct, ConfigListener {
                     level="WARNING",
                     cause="GMS implementation classes are not present. See https://glassfish.dev.java.net/issues/show_bug.cgi?id=12850.",
                     action="Check that shoal-gms-impl.jar file is present.")
-    private static final String GMSBS_GMSADAPTER_NOT_AVAILABLE="NLCS-CLSTR-10001";
+    private static final String GMSBS_GMSADAPTER_NOT_AVAILABLE="NCLS-CLSTR-10001";
 
     private static final StringManager strings =
         StringManager.getManager(GMSAdapterService.class);

@@ -88,7 +88,7 @@ public class GMSAnnounceAfterStopClusterCommand implements AdminCommand {
         level="WARNING",
         cause="An unexpected exception occurred in the GMS implementation.",
         action="Check the server log file for more information from Shoal-GMS.")
-    private static final String GMS_GROUP_STOP_EXCEPTION="NLCS-CLSTR-30003";
+    private static final String GMS_GROUP_STOP_EXCEPTION="NCLS-CLSTR-30003";
 
     @Param(optional = false, primary = true)
     private String clusterName;

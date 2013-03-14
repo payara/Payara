@@ -69,19 +69,19 @@ public class AdminLoggerInfo {
             cause = "unknown",
             action = "unknown",
             level = "SEVERE")
-    static final String stateNotFound = LOGMSG_PREFIX + "-0001";
+    static final String stateNotFound = LOGMSG_PREFIX + "-00001";
     
     @LogMessageInfo(
             message = "Error during command replication: {0}",
             cause = "unknown",
             action = "unknown",
             level = "SEVERE")
-    static final String replicationError = LOGMSG_PREFIX + "-0002";
+    static final String replicationError = LOGMSG_PREFIX + "-00002";
     
     @LogMessageInfo(
             message = "unable to read instance state file {0}, recreating",
             level = "FINE")
-    final static String mISScannotread = LOGMSG_PREFIX + "-0003";
+    final static String mISScannotread = LOGMSG_PREFIX + "-00003";
     
     @LogMessageInfo(
             message = "unable to create instance state file: {0}, exception: {1}",
@@ -90,7 +90,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    final static String mISScannotcreate = LOGMSG_PREFIX + "-0004";
+    final static String mISScannotcreate = LOGMSG_PREFIX + "-00004";
     
     @LogMessageInfo(
             message = "error while adding new server state to instance state: {0}",
@@ -98,7 +98,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    final static String mISSaddstateerror = LOGMSG_PREFIX + "-0005";
+    final static String mISSaddstateerror = LOGMSG_PREFIX + "-00005";
     
     @LogMessageInfo(
             message = "error while adding failed command to instance state: {0}",
@@ -106,7 +106,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    final static String mISSaddcmderror = LOGMSG_PREFIX + "-0006";
+    final static String mISSaddcmderror = LOGMSG_PREFIX + "-00006";
     
     @LogMessageInfo(
             message = "error while removing failed commands from instance state: {0}",
@@ -114,7 +114,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    final static String mISSremcmderror = LOGMSG_PREFIX + "-0007";
+    final static String mISSremcmderror = LOGMSG_PREFIX + "-00007";
     
     @LogMessageInfo(
             message = "error while setting instance state: {0}",
@@ -122,7 +122,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    final static String mISSsetstateerror = LOGMSG_PREFIX + "-0008";
+    final static String mISSsetstateerror = LOGMSG_PREFIX + "-00008";
     
     @LogMessageInfo(
             message = "error while removing instance: {0}",
@@ -130,7 +130,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    final static String mISSremstateerror = LOGMSG_PREFIX + "-0009";
+    final static String mISSremstateerror = LOGMSG_PREFIX + "-00009";
 
     @LogMessageInfo(
             message = "It appears that server [{0}:{1}] does not accept secure connections. Retry with --secure=false.",
@@ -138,7 +138,7 @@ public class AdminLoggerInfo {
             action = "Check that the server is configured to accept secure connections.",
             publish = true,
             level = "SEVERE")
-    public final static String mServerIsNotSecure = LOGMSG_PREFIX + "-0010";
+    public final static String mServerIsNotSecure = LOGMSG_PREFIX + "-00010";
     
     @LogMessageInfo(
             message = "An unexpected exception occurred.",
@@ -146,7 +146,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "SEVERE")
-    public final static String mUnexpectedException = LOGMSG_PREFIX + "-0011";
+    public final static String mUnexpectedException = LOGMSG_PREFIX + "-00011";
     
     @LogMessageInfo(
             message = "The server requires a valid admin password to be set before it can start. Please set a password using the change-admin-password command.",
@@ -154,7 +154,7 @@ public class AdminLoggerInfo {
             action = "Set a password using the change-admin-password command.",
             publish = true,
             level = "SEVERE")
-    public final static String mSecureAdminEmptyPassword = LOGMSG_PREFIX + "-0012";
+    public final static String mSecureAdminEmptyPassword = LOGMSG_PREFIX + "-00012";
    
     @LogMessageInfo(
             message = "Can not put data to cache under key {0}",
@@ -163,7 +163,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "WARNING")
-    public final static String mCantPutToCache = LOGMSG_PREFIX + "-0013";
+    public final static String mCantPutToCache = LOGMSG_PREFIX + "-00013";
      
     @LogMessageInfo(
             message = "An admin request arrived from {0} with the domain identifier {1} "
@@ -173,7 +173,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "WARNING")
-    public final static String mForeignDomainID = LOGMSG_PREFIX + "-0014";
+    public final static String mForeignDomainID = LOGMSG_PREFIX + "-00014";
 
     @LogMessageInfo(
             message = "Error searching for a default admin user",
@@ -181,7 +181,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "WARNING")
-    public final static String mAdminUserSearchError = LOGMSG_PREFIX + "-0015";
+    public final static String mAdminUserSearchError = LOGMSG_PREFIX + "-00015";
     
     @LogMessageInfo(
             message = "Cannot read admin cache file for {0}",
@@ -189,7 +189,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "WARNING")
-    public final static String mCannotReadCache = LOGMSG_PREFIX + "-0016";
+    public final static String mCannotReadCache = LOGMSG_PREFIX + "-00016";
     
     @LogMessageInfo(
             message = "Cannot write data to cache file for {0}",
@@ -197,7 +197,7 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "WARNING")
-    public final static String mCannotWriteCache = LOGMSG_PREFIX + "-0017";
+    public final static String mCannotWriteCache = LOGMSG_PREFIX + "-00017";
     
     @LogMessageInfo(
             message = "Unexpected exception from command event listener.",
@@ -205,6 +205,6 @@ public class AdminLoggerInfo {
             action = "Check the server logs and contact Oracle support",
             publish = true,
             level = "WARNING")
-    public final static String mExceptionFromEventListener = LOGMSG_PREFIX + "-0018";
+    public final static String mExceptionFromEventListener = LOGMSG_PREFIX + "-00018";
 
 }

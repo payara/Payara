@@ -99,7 +99,7 @@ public class GMSAnnounceBeforeStartClusterCommand implements AdminCommand {
         level="WARNING",
         cause="An unexpected exception occurred in the GMS implementation.",
         action="Check the server log file for more information from Shoal-GMS.")
-    private static final String GMS_CLUSTER_START_EXCEPTION="NLCS-CLSTR-30004";
+    private static final String GMS_CLUSTER_START_EXCEPTION="NCLS-CLSTR-30004";
 
     @Inject
     private ServerEnvironment env;

@@ -149,7 +149,7 @@ public class GFLauncherLogger {
     action = "see message",
 
     level = "SEVERE")
-    public static final String NO_QUOTES_ALLOWED = "GFLAUNCHER-001";
+    public static final String NO_QUOTES_ALLOWED = "NCLS-GFLAUNCHER-00001";
     @LogMessageInfo(
             message =
     "Error Launching: {0}",
@@ -157,7 +157,7 @@ public class GFLauncherLogger {
     cause = "see message",
     action = "fix the CLASSPATH",
     level = "SEVERE")
-    public static final String LAUNCH_FAILURE = "GFLAUNCHER-002";
+    public static final String LAUNCH_FAILURE = "NCLS-GFLAUNCHER-00002";
 
     @LogMessageInfo(
             message =
@@ -166,7 +166,7 @@ public class GFLauncherLogger {
    cause = "see message",
     action = "Find the agent file.",
     level = "SEVERE")
-    public static final String NO_FLASHLIGHT_AGENT = "GFLAUNCHER-003";
+    public static final String NO_FLASHLIGHT_AGENT = "NCLS-GFLAUNCHER-00003";
 
     @LogMessageInfo(
             message =
@@ -174,7 +174,7 @@ public class GFLauncherLogger {
     comment = "Upgrade Information",
     level = "INFO")
 
-    public static final String copy_server_policy = "GFLAUNCHER-004";
+    public static final String copy_server_policy = "NCLS-GFLAUNCHER-00004";
 
     @LogMessageInfo(
             message =
@@ -183,5 +183,5 @@ public class GFLauncherLogger {
    cause = "NA",
     action = "NA",
     level = "INFO")
-    public static final String COMMAND_LINE = "GFLAUNCHER-005";
+    public static final String COMMAND_LINE = "NCLS-GFLAUNCHER-00005";
 }
