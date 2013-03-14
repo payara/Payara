@@ -52,7 +52,6 @@
         <install.package name="glassfish-ejb-lite"/>
         <install.package name="glassfish-jsf"/>
         <install.package name="glassfish-osgi"/>
-        <install.package name="glassfish-osgi-gui"/>
         <install.package name="glassfish-osgi-http"/>
         <install.package name="glassfish-jmx"/>
         <install.package name="glassfish-jcdi"/>
