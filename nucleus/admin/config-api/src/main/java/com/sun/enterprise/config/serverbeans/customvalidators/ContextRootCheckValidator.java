@@ -99,7 +99,7 @@ public class ContextRootCheckValidator implements ConstraintValidator<ContextRoo
                     for (Application application : domain.getApplications().getApplications()) {
                         if (isSameApp(appName, application.getName())) {
                             // skip the check if the validation is for different versions of the same application
-                        } else if (application.getContextRoot().equals(contextRoot)) {
+                        } else if ((application.getContextRoot()!=null) && application.getContextRoot().equals(contextRoot)) {
 
                             String virtualServers = applicationRef.getVirtualServers();
                             List<String> vsList = Arrays.asList(virtualServers.split(","));
