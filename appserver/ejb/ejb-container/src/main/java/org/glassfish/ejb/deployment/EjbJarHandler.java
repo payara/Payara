@@ -182,7 +182,9 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                 try {
                     read(input);
                 } catch (Throwable t) {
-                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_glassfishejbjarxml", "Error in parsing glassfish-ejb-jar.xml for archive [{0}]: {1}", archive.getURI(), t.getMessage());
+                    String msg = localStrings.getLocalString("ejb.deployment.exception_parsing_glassfishejbjarxml", 
+                            "Error in parsing glassfish-ejb-jar.xml for archive [{0}]: {1}", 
+                            archive.getURI(), t.getMessage());
                     throw new RuntimeException(msg);
                 }
                 finally {
