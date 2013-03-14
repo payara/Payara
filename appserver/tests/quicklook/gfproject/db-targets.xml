@@ -131,6 +131,7 @@
     <fileset file="${glassfish.home}/domains/domain1/config/server_policy.orig"/>
     <fileset file="${basedir}/weld/numberguess/numberguess.policy"/>   
     <fileset file="${basedir}/weld/extensions/extensions.policy"/>   
+    <fileset file="${basedir}/osgitest/basicosgi/security.policy"/>   
   </concat>
 </target>
 
