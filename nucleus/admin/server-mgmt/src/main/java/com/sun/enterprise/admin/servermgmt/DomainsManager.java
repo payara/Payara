@@ -67,21 +67,6 @@ public interface DomainsManager
            
     
     /**
-     * Creates a domain     
-     * @param domainConfig The configuration params that are required to create
-     * the domain. (eg :- domain admin port, http port, default locale, 
-     * domain root, install root etc.) The relevant keys are defined in 
-     * DomainConfig. The implementors of this class should validate the values 
-     * that are supplied.
-     * @throws DomainException  This exception is thrown if 
-     *  - the domain already exists.
-     *  - an invalid or insufficient config. is supplied.
-     *  - an exception occurred during domain creation.
-     */
-    public void createDomain(DomainConfig domainConfig) 
-        throws DomainException;
-
-    /**
      * Deletes a domain identified by the given name.
      * (Should we stop the DAS and instances administered by this domain before
      * deleting the domain?)     

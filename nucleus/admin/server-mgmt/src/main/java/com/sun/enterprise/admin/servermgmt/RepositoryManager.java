@@ -528,95 +528,6 @@ public class RepositoryManager extends MasterPasswordFileManager {
     }
 
     /**
-     * Return all repositories (domains, node agents, server instances) and
-     * their corresponding status (e.g. running or stopped)
-     */
-    /*
-     * public RuntimeStatusList getRuntimeStatus( RepositoryConfig config)
-     * throws RepositoryException { String[] repositories =
-     * listRepository(config);
-     *
-     * RuntimeStatusList result = new RuntimeStatusList(repositories.length);
-     * int status; for (int i = 0; i < repositories.length; i++) { final
-     * InstancesManager mgr = getInstancesManager(
-     * getConfigForRepositoryStatus(config, repositories[i]));
-     * result.add(RuntimeStatus.getRuntimeStatus(repositories[i], mgr)); }
-     * return result; }
-     */
-    /**
-     * This method creates a separate administrative keyfile. This is to
-     * separate the administrative users from other users. All the
-     * administrative operations will be authenticated against this file realm
-     * by default.
-     *
-     * @see PEFileLayout#ADMIN_KEY_FILE
-     */
-    protected void createAdminKeyFile(final RepositoryConfig config, final String user, final String clearPwd) throws RepositoryException {
-        final PEFileLayout layout = getFileLayout(config);
-        final File src = layout.getKeyFileTemplate();
-        final File dest = layout.getAdminKeyFile();
-        try {
-            FileUtils.copy(src, dest);
-            modifyKeyFile(dest, user, clearPwd);
-        }
-        catch (final Exception e) {
-            throw new RepositoryException(_strMgr.getString("keyFileNotCreated"), e);
-        }
-    }
-
-    /**
-     * Create the FileRealm kefile from the given user and password.
-     */
-    protected void createKeyFile(RepositoryConfig config, String user,
-            String password) throws RepositoryException {
-        final PEFileLayout layout = getFileLayout(config);
-        final File src = layout.getKeyFileTemplate();
-        final File dest = layout.getKeyFile();
-        try {
-            FileUtils.copy(src, dest);
-            /*
-             * This keyfile is simply a copy of the template as by default at
-             * the domain creation time, we do not add administrative user to
-             * it. J2EE application users will be added to this file later.
-             */
-        }
-        catch (Exception e) {
-            throw new RepositoryException(_strMgr.getString("keyFileNotCreated"), e);
-        }
-    }
-
-    /**
-     * Modifies the contents of given keyfile with administrator's user-name and
-     * password. Uses the FileRealm classes that application server's Runtime
-     * uses.
-     */
-    private void modifyKeyFile(File keyFile, String user, String password) throws
-            IOException {
-        final String keyFilePath = keyFile.getAbsolutePath();
-        final FileRealmHelper fileRealm = new FileRealmHelper(keyFilePath);
-        final String[] group =
-                new String[]{AdminConstants.DOMAIN_ADMIN_GROUP_NAME};
-        fileRealm.addUser(user, password.toCharArray(), group);
-        fileRealm.persist();
-    }
-
-    /**
-     * Create the default server.policy file.
-     */
-    protected void createServerPolicyFile(RepositoryConfig config) throws RepositoryException {
-        final PEFileLayout layout = getFileLayout(config);
-        final File src = layout.getPolicyFileTemplate();
-        final File dest = layout.getPolicyFile();
-        try {
-            FileUtils.copy(src, dest);
-        }
-        catch (IOException ioe) {
-            throw new RepositoryException(
-                    _strMgr.getString("serverPolicyNotCreated"), ioe);
-        }
-    }
-
-    /**
      * We validate the master password by trying to open the password alias
      * keystore. This means that the keystore must already exist.
      *
@@ -700,28 +611,6 @@ public class RepositoryManager extends MasterPasswordFileManager {
      * password}); } catch (Exception ex) { throw new RepositoryException(
      * _strMgr.getString("couldNotValidateMasterPassword", user), ex); } }
      */
-
-    /**
-     * Create the password alias keystore (initially empty)
-     *
-     * @param config
-     * @param password password protecting the keystore
-     * @throws RepositoryException
-     */
-    protected void createPasswordAliasKeystore(RepositoryConfig config,
-            String password) throws RepositoryException {
-        final PEFileLayout layout = getFileLayout(config);
-        final File passwordAliases = layout.getPasswordAliasKeystore();
-        try {
-            PasswordAdapter p = new PasswordAdapter(passwordAliases.getAbsolutePath(),
-                    password.toCharArray());
-            p.writeStore();
-        }
-        catch (Exception ex) {
-            throw new RepositoryException(
-                    _strMgr.getString("passwordAliasKeystoreNotCreated", passwordAliases), ex);
-        }
-    }
 
     /**
      * Change the password protecting the password alias keystore

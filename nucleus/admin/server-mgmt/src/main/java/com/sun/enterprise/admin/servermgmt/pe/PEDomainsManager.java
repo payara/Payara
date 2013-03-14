@@ -42,15 +42,10 @@ package com.sun.enterprise.admin.servermgmt.pe;
 
 //import com.sun.enterprise.admin.servermgmt.launch.LaunchConstants;
 import com.sun.enterprise.admin.servermgmt.*;
-import com.sun.enterprise.admin.servermgmt.util.DomainXmlSAXParser;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.enterprise.util.io.FileUtils;
 import java.io.File;
-import java.io.IOException;
 import java.util.BitSet;
-import java.util.Locale;
-import java.util.Map;
 
 public class PEDomainsManager extends RepositoryManager 
     implements DomainsManager
@@ -60,7 +55,6 @@ public class PEDomainsManager extends RepositoryManager
      */
     private static final StringManager strMgr = 
         StringManager.getManager(PEDomainsManager.class);
-    private static final String NAME_DELIMITER = ",";
     
     /* These properties are public interfaces, handle with care */
     public static final String PROFILEPROPERTY_DOMAINXML_STYLESHEETS = "domain.xml.style-sheets";
@@ -116,60 +110,6 @@ public class PEDomainsManager extends RepositoryManager
         }
     }
     
-    @Override
-    public void createDomain(DomainConfig domainConfig) 
-        throws DomainException
-    {
-        PEFileLayout layout = getFileLayout(domainConfig);
-        
-        try {
-            new RepositoryNameValidator(strMgr.getString("domainsRoot")).
-                    checkValidXmlToken(
-                        layout.getRepositoryRootDir().getAbsolutePath());
-            layout.createRepositoryRoot();        
-            new PEDomainConfigValidator().validate(domainConfig);
-            checkRepository(domainConfig, false);
-        } catch (Exception ex) {
-            throw new DomainException(ex);
-        }
-        
-        try {            
-            String masterPassword = getMasterPasswordClear(domainConfig);
-            layout.createRepositoryDirectories();
-            createDomainXml(domainConfig);
-            createDomainXmlEvents(domainConfig);
-            //createScripts(domainConfig);
-            createServerPolicyFile(domainConfig);
-            createAdminKeyFile(domainConfig, getDomainUser(domainConfig), 
-                getDomainPasswordClear(domainConfig));
-            createKeyFile(domainConfig, getDomainUser(domainConfig),
-                getDomainPasswordClear(domainConfig));
-            createAppClientContainerXml(domainConfig);
-            createIndexFile(domainConfig);
-            createDefaultWebXml(domainConfig);
-            createLoginConf(domainConfig);
-            createWssServerConfig(domainConfig);
-            createWssServerConfigOld(domainConfig);
-            createSSLCertificateDatabase(domainConfig, masterPassword);                                     
-            changeMasterPasswordInMasterPasswordFile(domainConfig, masterPassword, 
-                saveMasterPassword(domainConfig));
-            createPasswordAliasKeystore(domainConfig, masterPassword);
-            createLoggingProperties(domainConfig);
-            //createTimerWal(domainConfig);
-            //createTimerDbn(domainConfig);
-            //createMQInstance(domainConfig);
-            //createJBIInstance(getDefaultInstance(), domainConfig);
-            setPermissions(domainConfig);
-        } catch (DomainException de) {
-            //rollback
-            FileUtils.liquidate(getDomainDir(domainConfig));
-            throw de;
-        } catch (Exception ex) {
-            //rollback
-            FileUtils.liquidate(getDomainDir(domainConfig));
-            throw new DomainException(ex);
-        }
-    }
     /**
      */
     protected void createJBIInstance(String instanceName, 
@@ -182,23 +122,6 @@ public class PEDomainsManager extends RepositoryManager
         } catch (Exception ex) {
             throw new DomainException(ex);
         }
-    }
-    /**
-     * Sets the permissions for the domain directory, its config directory,
-     * startserv/stopserv scripts etc.
-     */
-    protected void setPermissions(DomainConfig domainConfig) throws DomainException
-    {        
-        final PEFileLayout layout = getFileLayout(domainConfig);
-        try {
-            //4958533
-            chmod("-R u+x ", layout.getBinDir());
-            chmod("-R g-rwx,o-rwx ", layout.getConfigRoot());
-            //4958533
-        } catch (Exception e) {
-            throw new DomainException(
-                strMgr.getString("setPermissionError"), e);
-        }   
     }
 
     @Override
@@ -224,64 +147,6 @@ public class PEDomainsManager extends RepositoryManager
         } catch (Exception e) {
             throw new DomainException(e);
         }        
-    }
-
-
-    protected void createDomainXmlEvents(DomainConfig domainConfig) 
-        throws DomainException {
-            try {
-                final PEFileLayout layout = getFileLayout(domainConfig);
-                final File domainXml = layout.getDomainConfigFile();
-                DomainXmlSAXParser parser = new DomainXmlSAXParser();
-                try {
-                    parser.parse(domainXml);
-                }
-                catch(Exception e) {
-                    throw new DomainException(
-                        strMgr.getString("domainXmlNotParsed"), e);
-                }
-                String className = parser.getDomainXmlEventListenerClass();
-                if(className!=null) {
-                    DomainXmlEventListener listener = (DomainXmlEventListener) Class.forName(className).newInstance();
-                    listener.handleCreateEvent(domainConfig);
-                }
-            }
-            catch(Exception e) {
-                throw new DomainException(
-                    strMgr.getString("domainXmlEventsNotCreated"), e);
-            }
-    }
-
-    /**
-     * The EEDomains manager needs to have an augmented set of tokens
-     */
-    protected TokenValueSet getDomainXmlTokens(DomainConfig domainConfig) {
-        return PEDomainXmlTokens.getTokenValueSet(domainConfig);
-    }
-    
-    protected void createDomainXml(DomainConfig domainConfig) 
-        throws DomainException
-    {
-        try
-        {
-            final PEFileLayout layout = getFileLayout(domainConfig);
-            final File dx = layout.getDomainConfigFile();
-            TokenValueSet tokens = getDomainXmlTokens(domainConfig);
-            String tn = (String)domainConfig.get(DomainConfig.K_TEMPLATE_NAME);
-            if((tn == null)||(tn.equals(""))) {
-                File tr = new File(layout.getTemplatesDir(), PEFileLayout.DOMAIN_XML_FILE);
-                generateFromTemplate(tokens, tr, dx);
-            }
-            else {
-                File dxt = layout.getDomainXmlTemplate(tn);
-                generateFromTemplate(tokens, dxt, dx);
-            }
-        }
-        catch(Exception e)
-        {
-            throw new DomainException(
-                strMgr.getString("domainXmlNotCreated"), e);
-        }
     }
 
     protected void createScripts(DomainConfig domainConfig)
@@ -328,159 +193,6 @@ public class PEDomainsManager extends RepositoryManager
                 strMgr.getString("stopServNotCreated"), e);
         }
     } 
-
-    protected void createAppClientContainerXml(
-        DomainConfig domainConfig) throws DomainException
-    {
-        try
-        {
-            final PEFileLayout layout = getFileLayout(domainConfig);
-            for (Map.Entry<File,File> accXmlTemplateFileEntry : layout.getAppClientContainerTemplateAndXml().entrySet()) {
-                final File accXmlTemplate = accXmlTemplateFileEntry.getKey();
-                final File accXml = accXmlTemplateFileEntry.getValue();
-                TokenValueSet tokens = PEAccXmlTokens.getTokenValueSet(domainConfig);
-                generateFromTemplate(tokens, accXmlTemplate, accXml);
-            }
-        }
-        catch(Exception e)
-        {
-            throw new DomainException(strMgr.getString("accXmlNotCreated"), e);
-        }
-    }
-
-    protected void createIndexFile(
-        DomainConfig domainConfig) throws DomainException
-    {
-        final PEFileLayout layout = getFileLayout(domainConfig);
-        final File src = layout.getIndexFileTemplate();
-        final File dest = layout.getIndexFile();
-        try
-        {
-            final TokenValueSet tokens = IndexHtmlTokens.getTokenValueSet(domainConfig);
-            generateFromTemplate(tokens, src, dest);
-            handleLocalizedIndexHtmls(layout, tokens);
-        }
-        catch (IOException ioe)
-        {
-            throw new DomainException(
-                strMgr.getString("indexFileNotCreated"), ioe);
-        }
-    }
-
-    protected void createLoggingProperties(DomainConfig domainConfig) 
-            throws DomainException
-    {
-        final PEFileLayout layout = getFileLayout(domainConfig);
-        final File src = layout.getLoggingPropertiesTemplate();
-        final File dest = layout.getLoggingProperties();
-        try
-        {
-            generateFromTemplate(new TokenValueSet(), src, dest);
-        }
-        catch (IOException ioe)
-        {
-            throw new DomainException(
-                strMgr.getString("loggingPropertiesNotCreated"), ioe);
-        }
-    }
-    
-    
-    private void handleLocalizedIndexHtmls(PEFileLayout layout, TokenValueSet tokens) {
-        Locale locale = Locale.getDefault();
-        if (Locale.ENGLISH.getLanguage().equals(locale.getLanguage()))
-            return; //don't do anything in the case of English "language", not just locale
-        //rename the existing index.file first
-        File src  = layout.getNonEnglishIndexFileTemplate(locale);
-        File dest = layout.getIndexFile();
-        if (src.exists()) {
-            if (!dest.renameTo(layout.getEnglishIndexFile())) {
-                String zero = strMgr.getString("problemRenaming", dest.getAbsolutePath(), 
-                        layout.getEnglishIndexFile().getAbsolutePath());
-                System.out.println(zero);
-                return;
-            }
-            dest = layout.getIndexFile();
-            try {
-                generateFromTemplate(tokens, src, dest);
-            } catch(IOException e) {
-                String one = strMgr.getString("problemCopyingIndexHtml", src.getAbsolutePath(), dest.getAbsolutePath());
-                System.out.println(one);
-            }
-        } else {
-            String two = strMgr.getString("localeFileNotFound", locale, src.getAbsolutePath());
-            System.out.println(two);
-        }
-    }
-    
-    protected void createDefaultWebXml(
-        DomainConfig domainConfig) throws DomainException
-    {
-        final PEFileLayout layout = getFileLayout(domainConfig);
-        final File src = layout.getDefaultWebXmlTemplate();
-        final File dest = layout.getDefaultWebXml();
-        try
-        {
-            FileUtils.copy(src, dest);
-        }
-        catch (IOException ioe)
-        {
-            throw new DomainException(
-                strMgr.getString("defaultWebXmlNotCreated"), ioe);
-        }
-    }
-    
-    protected void createLoginConf(
-        RepositoryConfig config) throws DomainException
-    {
-        final PEFileLayout layout = getFileLayout(config);
-        final File src = layout.getLoginConfTemplate();
-        final File dest = layout.getLoginConf();
-        try
-        {
-            FileUtils.copy(src, dest);
-        }
-        catch (IOException ioe)
-        {
-            throw new DomainException(
-                strMgr.getString("loginConfNotCreated"), ioe);
-        }
-    }    
-
-    protected void createWssServerConfigOld(RepositoryConfig config)
-        throws DomainException
-    {
-        final PEFileLayout layout = getFileLayout(config);
-        final File src = layout.getWssServerConfigOldTemplate();
-        final File dest = layout.getWssServerConfigOld();
-        try
-        {
-            FileUtils.copy(src, dest);
-        }
-        catch (IOException ioe)
-        {
-            throw new DomainException(
-                strMgr.getString("wssserverconfignotcreated"), ioe);
-        }
-
-    }
-
-    protected void createWssServerConfig(RepositoryConfig config)
-        throws DomainException
-    {
-        final PEFileLayout layout = getFileLayout(config);
-        final File src = layout.getWssServerConfigTemplate();
-        final File dest = layout.getWssServerConfig();
-        try
-        {
-            FileUtils.copy(src, dest);
-        }
-        catch (IOException ioe)
-        {
-            throw new DomainException(
-                strMgr.getString("wssserverconfignotcreated"), ioe);
-        }
-
-    }
 
     protected File getDomainDir(DomainConfig domainConfig)
     {

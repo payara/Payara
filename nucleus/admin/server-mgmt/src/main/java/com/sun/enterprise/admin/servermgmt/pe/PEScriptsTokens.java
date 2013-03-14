@@ -40,8 +40,6 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-import java.io.File;
-
 import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
