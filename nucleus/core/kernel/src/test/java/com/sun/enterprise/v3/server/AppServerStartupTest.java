@@ -95,6 +95,7 @@ import java.util.concurrent.TimeoutException;
  *
  * @author Tom Beerbower
  */
+@SuppressWarnings("deprecation")
 public class AppServerStartupTest {
 
     // ----- data members ----------------------------------------------------
@@ -129,9 +130,6 @@ public class AppServerStartupTest {
         DynamicConfiguration config = dcs.createDynamicConfiguration();
 
         config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(new TestSystemTasks()));
-        
-        // These are services that would normally be started by hk2 core
-        config.addActiveDescriptor(AppServerStartup.AppInstanceListener.class);
 
         AbstractActiveDescriptor<?> descriptor = BuilderHelper.createConstantDescriptor(new TestModulesRegistry());
         descriptor.addContractType(ModulesRegistry.class);
