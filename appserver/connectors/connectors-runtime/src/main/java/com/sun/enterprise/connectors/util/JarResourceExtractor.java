@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,14 +88,21 @@ public final class JarResourceExtractor {
     
     /** initializes internal hash tables with Jar file resources. */
     private void init(String jarFileName) {
+        ZipInputStream zis = null;
         try {
             //extract resources and put them into the hashtable.
             FileInputStream fis = new FileInputStream(jarFileName);
             BufferedInputStream bis = new BufferedInputStream(fis);
-            ZipInputStream zis = new ZipInputStream(bis);            
+            zis = new ZipInputStream(bis);
             extractResources(zis);
         } catch (Exception ex){
             ex.printStackTrace();
+        }finally{
+            if(zis != null){
+                try{
+                    zis.close();
+                }catch(Exception e){}
+            }
         }
         
     }
