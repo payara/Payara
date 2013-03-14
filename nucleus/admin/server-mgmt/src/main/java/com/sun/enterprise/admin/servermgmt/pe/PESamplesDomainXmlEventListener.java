@@ -41,52 +41,46 @@
 package com.sun.enterprise.admin.servermgmt.pe;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.OutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
-import com.sun.enterprise.admin.util.TokenValue;
-import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
+import com.sun.enterprise.admin.servermgmt.DomainException;
+import com.sun.enterprise.admin.servermgmt.DomainXmlEventListener;
 import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
+import com.sun.enterprise.admin.servermgmt.pe.PEDomainsManager;
+import com.sun.enterprise.util.zip.ZipFile;
+import com.sun.enterprise.util.zip.ZipFileException;
+import com.sun.enterprise.util.io.FileUtils;
+import com.sun.enterprise.util.i18n.StringManager;
 
-/**
- * This class defines the tokens required by the startserv & stopserv scripts.
- */
-public final class PEScriptsTokens
-{
-    public static final String CONFIG_HOME = "CONFIG_HOME";
-    public static final String INSTANCE_ROOT = "INSTANCE_ROOT";
-    public static final String SERVER_NAME = "SERVER_NAME";
-    public static final String DOMAIN_NAME = "DOMAIN_NAME";
+/** The event listener class for PE Samples domain */
+public class PESamplesDomainXmlEventListener implements DomainXmlEventListener {
+    
+    private static final StringManager strMgr =
+    StringManager.getManager(PEDomainsManager.class);
 
-    /**
-     * @return Returns the TokenValueSet that has the (token, value) pairs for
-     * startserv & stopserv scripts.     
-     * @param domainConfig
-     */
-    public static TokenValueSet getTokenValueSet(DomainConfig domainConfig)
-    {
-        final PEFileLayout layout = new PEFileLayout(domainConfig);
-
-        final TokenValueSet tokens = new TokenValueSet();
-
-        final String configRootDir = domainConfig.getConfigRoot();            
-        TokenValue tv = new TokenValue(CONFIG_HOME, configRootDir);
-        tokens.add(tv);
-
-        final String instanceRoot = 
-            layout.getRepositoryDir().getAbsolutePath();
-        tv = new TokenValue(INSTANCE_ROOT, instanceRoot);
-        tokens.add(tv);
-
-        final String instanceName = (String)domainConfig.get(DomainConfig.K_SERVERID);
-        if((instanceName == null) || (instanceName.equals("")))
-            tv = new TokenValue(SERVER_NAME, PEFileLayout.DEFAULT_INSTANCE_NAME);
-        else
-            tv = new TokenValue(SERVER_NAME, instanceName);
-        tokens.add(tv);
-
-        tv = new TokenValue(DOMAIN_NAME, domainConfig.getDomainName());
-        tokens.add(tv);
-
-        return ( tokens );
+    /** after the creation of domain.xml , unjar the bundled samples.jar. */    
+    public void handleCreateEvent(DomainConfig cfg) throws DomainException {                        
+        PEFileLayout layout = new PEFileLayout(cfg);
+        File appsDir = layout.getInstallApplicationsDir();
+        File domainDir = layout.getRepositoryDir();
+        File jarFile = new File(appsDir, "samples.jar" );
+        
+        try{
+            ZipFile file = new ZipFile(FileUtils.safeGetCanonicalPath(jarFile), 
+                                        FileUtils.safeGetCanonicalPath(domainDir));
+            file.explode();
+        }catch(ZipFileException e){
+            throw new DomainException( strMgr.getString("samplesDomainNotCreated") ,e );
+        }
+    }
+    
+    /** currently do nothing */    
+    public void handleDeleteEvent(DomainConfig cfg) throws DomainException {
     }
 }

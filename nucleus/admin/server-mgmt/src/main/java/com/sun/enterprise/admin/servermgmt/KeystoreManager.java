@@ -176,6 +176,42 @@ public class KeystoreManager {
     }
 
     /**
+     * Creates the SSL certificate database. In the case of PE this is a
+     * keystore.jks and a truststore.jks. In the case of SE/EE, this will be
+     * overridden to create the NSS certificate database.
+     *
+     * @param config
+     * @param masterPassword
+     * @throws RepositoryException
+     */
+    protected void createSSLCertificateDatabase(RepositoryConfig config,
+            String masterPassword) {
+        try {
+        	final PEFileLayout layout = getFileLayout(config);
+            final File keystore = layout.getKeyStore();
+            createKeyStore(keystore, config, masterPassword);
+            createTrustStore(config, masterPassword);
+        }
+        catch (RepositoryException re) {
+            String msg = _strMgr.getString("SomeProblemWithKeytool", re.getMessage());
+            System.err.println(msg);
+            try {
+                PEFileLayout lo = getFileLayout(config);
+                File src = lo.getKeyStoreTemplate();
+                File dest = lo.getKeyStore();
+                FileUtils.copy(src, dest); //keystore goes first
+                src = lo.getTrustStoreTemplate();
+                dest = lo.getTrustStore();
+                FileUtils.copy(src, dest); //and then cacerts with CA-signed certs
+            }
+            catch (Exception e) {
+                getLogger().log(Level.SEVERE, UNHANDLED_EXCEPTION, e);
+            }
+
+        }
+    }
+
+    /**
      * Create the default SSL key store using keytool to generate a self signed
      * certificate.
      *
@@ -273,6 +309,37 @@ public class KeystoreManager {
      }
      }
      */
+
+    /**
+     * Create the default SSL trust store. We take throws template cacerts.jks,
+     * change its password to the master password, and then add in the self
+     * signed s1as and instance certificate created earlier. All this is done my
+     * exec'ing keytool
+     *
+     * @param config
+     * @param masterPassword
+     * @throws RepositoryException
+     */
+    protected void createTrustStore(
+            RepositoryConfig config, String masterPassword) throws RepositoryException {
+        //copy the default truststore from the installation template directory
+        final PEFileLayout layout = getFileLayout(config);
+        final File src = layout.getTrustStoreTemplate();
+        final File truststore = layout.getTrustStore();
+
+        try {
+            FileUtils.copy(src, truststore);
+        }
+        catch (IOException ioe) {
+            throw new RepositoryException(
+                    _strMgr.getString("trustStoreNotCreated", truststore), ioe);
+        }
+
+        changeKeystorePassword(DEFAULT_MASTER_PASSWORD, masterPassword, truststore);
+
+        copyCert(layout.getConfigRoot(), CERTIFICATE_ALIAS, masterPassword);
+        copyCert(layout.getConfigRoot(), INSTANCE_SECURE_ADMIN_ALIAS, masterPassword);
+    }
 
     protected void copyCertificates(File configRoot, DomainConfig config, String masterPassword)
        throws DomainException 

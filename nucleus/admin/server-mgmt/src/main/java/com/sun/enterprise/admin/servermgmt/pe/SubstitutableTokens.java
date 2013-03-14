@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.admin.servermgmt.domain;
+package com.sun.enterprise.admin.servermgmt.pe;
 
 import java.io.File;
 import java.util.HashMap;
@@ -47,7 +47,6 @@ import java.util.Properties;
 
 import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.util.io.FileUtils;
 
 public class SubstitutableTokens {

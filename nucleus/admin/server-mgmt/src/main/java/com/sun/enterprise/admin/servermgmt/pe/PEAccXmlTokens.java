@@ -42,49 +42,38 @@ package com.sun.enterprise.admin.servermgmt.pe;
 
 import java.io.File;
 
+import com.sun.enterprise.util.io.FileUtils;
+
 import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 
-/**
- * This class defines the tokens required by the startserv & stopserv scripts.
- */
-public final class PEScriptsTokens
+public final class PEAccXmlTokens
 {
-    public static final String CONFIG_HOME = "CONFIG_HOME";
-    public static final String INSTANCE_ROOT = "INSTANCE_ROOT";
-    public static final String SERVER_NAME = "SERVER_NAME";
-    public static final String DOMAIN_NAME = "DOMAIN_NAME";
+    public static final String SERVER_ROOT  = "SERVER_ROOT";
 
-    /**
-     * @return Returns the TokenValueSet that has the (token, value) pairs for
-     * startserv & stopserv scripts.     
-     * @param domainConfig
-     */
+    public static final String SERVER_NAME  = "SERVER_NAME";
+
+    public static final String ORB_LISTENER1_PORT = "ORB_LISTENER1_PORT"; 
+
     public static TokenValueSet getTokenValueSet(DomainConfig domainConfig)
-    {
+    {       
         final PEFileLayout layout = new PEFileLayout(domainConfig);
 
         final TokenValueSet tokens = new TokenValueSet();
 
-        final String configRootDir = domainConfig.getConfigRoot();            
-        TokenValue tv = new TokenValue(CONFIG_HOME, configRootDir);
+        final String installDir = layout.getInstallRootDir().getAbsolutePath();
+        TokenValue tv = new TokenValue(SERVER_ROOT, 
+                            FileUtils.makeForwardSlashes(installDir));
         tokens.add(tv);
 
-        final String instanceRoot = 
-            layout.getRepositoryDir().getAbsolutePath();
-        tv = new TokenValue(INSTANCE_ROOT, instanceRoot);
+        tv = new TokenValue(SERVER_NAME, 
+                (String)domainConfig.get(DomainConfig.K_HOST_NAME));
         tokens.add(tv);
 
-        final String instanceName = (String)domainConfig.get(DomainConfig.K_SERVERID);
-        if((instanceName == null) || (instanceName.equals("")))
-            tv = new TokenValue(SERVER_NAME, PEFileLayout.DEFAULT_INSTANCE_NAME);
-        else
-            tv = new TokenValue(SERVER_NAME, instanceName);
-        tokens.add(tv);
-
-        tv = new TokenValue(DOMAIN_NAME, domainConfig.getDomainName());
+        final Integer orbPort = 
+            (Integer)domainConfig.get(DomainConfig.K_ORB_LISTENER_PORT);
+        tv = new TokenValue(ORB_LISTENER1_PORT, orbPort.toString());
         tokens.add(tv);
 
         return ( tokens );

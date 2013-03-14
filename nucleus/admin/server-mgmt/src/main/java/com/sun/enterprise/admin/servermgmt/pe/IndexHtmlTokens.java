@@ -40,53 +40,63 @@
 
 package com.sun.enterprise.admin.servermgmt.pe;
 
-import java.io.File;
 
 import com.sun.enterprise.admin.util.TokenValue;
 import com.sun.enterprise.admin.util.TokenValueSet;
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
+import com.sun.appserv.server.util.Version;
 
 /**
  * This class defines the tokens required by the startserv & stopserv scripts.
  */
-public final class PEScriptsTokens
+final class IndexHtmlTokens
 {
-    public static final String CONFIG_HOME = "CONFIG_HOME";
-    public static final String INSTANCE_ROOT = "INSTANCE_ROOT";
-    public static final String SERVER_NAME = "SERVER_NAME";
-    public static final String DOMAIN_NAME = "DOMAIN_NAME";
+    public static final String VERSION_TOKEN_NAME      = "VERSION";
+    public static final String DOMAIN_NAME_TOKEN_NAME  = "DOMAIN_NAME";
+    public static final String INSTALL_ROOT_TOKEN_NAME = "INSTALL_ROOT";
 
+    public static final String INSTALL_ROOT_DEFAULT_VALUE = "INSTALL_ROOT";
+    
+    
+
+    private IndexHtmlTokens() {
+        //disallow;
+    }
     /**
      * @return Returns the TokenValueSet that has the (token, value) pairs for
-     * startserv & stopserv scripts.     
+     * index.html file.     
      * @param domainConfig
      */
-    public static TokenValueSet getTokenValueSet(DomainConfig domainConfig)
+    final static TokenValueSet getTokenValueSet(final DomainConfig dc)
     {
-        final PEFileLayout layout = new PEFileLayout(domainConfig);
+        final PEFileLayout lo = new PEFileLayout(dc);
 
         final TokenValueSet tokens = new TokenValueSet();
 
-        final String configRootDir = domainConfig.getConfigRoot();            
-        TokenValue tv = new TokenValue(CONFIG_HOME, configRootDir);
-        tokens.add(tv);
-
-        final String instanceRoot = 
-            layout.getRepositoryDir().getAbsolutePath();
-        tv = new TokenValue(INSTANCE_ROOT, instanceRoot);
-        tokens.add(tv);
-
-        final String instanceName = (String)domainConfig.get(DomainConfig.K_SERVERID);
-        if((instanceName == null) || (instanceName.equals("")))
-            tv = new TokenValue(SERVER_NAME, PEFileLayout.DEFAULT_INSTANCE_NAME);
-        else
-            tv = new TokenValue(SERVER_NAME, instanceName);
-        tokens.add(tv);
-
-        tv = new TokenValue(DOMAIN_NAME, domainConfig.getDomainName());
-        tokens.add(tv);
-
+        tokens.add(getInstallRoot(lo));
+        tokens.add(getVersion());
+        tokens.add(getDomainName(dc));
         return ( tokens );
+    }
+    
+    private static TokenValue getInstallRoot(final PEFileLayout lo) {
+        String ir;
+        try {
+            ir = lo.getInstallRootDir().getAbsolutePath();
+        } catch(final Exception e) {
+            ir = INSTALL_ROOT_DEFAULT_VALUE;
+        }
+        final TokenValue tv = new TokenValue(INSTALL_ROOT_TOKEN_NAME, ir);
+        return ( tv );
+    }
+    private static TokenValue getVersion() {
+        final String version = Version.getFullVersion();
+        final TokenValue tv = new TokenValue(VERSION_TOKEN_NAME, version);
+        return ( tv );
+    }
+    private static TokenValue getDomainName(final DomainConfig dc) {
+        final String dn     = dc.getDomainName();
+        final TokenValue tv = new TokenValue(DOMAIN_NAME_TOKEN_NAME, dn);
+        return ( tv );
     }
 }

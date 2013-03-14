@@ -38,55 +38,21 @@
  * holder.
  */
 
-package com.sun.enterprise.admin.servermgmt.pe;
+package com.sun.enterprise.admin.servermgmt;
 
-import java.io.File;
 
-import com.sun.enterprise.admin.util.TokenValue;
-import com.sun.enterprise.admin.util.TokenValueSet;
-import com.sun.enterprise.admin.servermgmt.DomainConfig;
-import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
-
-/**
- * This class defines the tokens required by the startserv & stopserv scripts.
+/** Interface for domain.xml event listeners. The actual implementation class will
+ * be specified in the template file.
  */
-public final class PEScriptsTokens
-{
-    public static final String CONFIG_HOME = "CONFIG_HOME";
-    public static final String INSTANCE_ROOT = "INSTANCE_ROOT";
-    public static final String SERVER_NAME = "SERVER_NAME";
-    public static final String DOMAIN_NAME = "DOMAIN_NAME";
-
-    /**
-     * @return Returns the TokenValueSet that has the (token, value) pairs for
-     * startserv & stopserv scripts.     
-     * @param domainConfig
-     */
-    public static TokenValueSet getTokenValueSet(DomainConfig domainConfig)
-    {
-        final PEFileLayout layout = new PEFileLayout(domainConfig);
-
-        final TokenValueSet tokens = new TokenValueSet();
-
-        final String configRootDir = domainConfig.getConfigRoot();            
-        TokenValue tv = new TokenValue(CONFIG_HOME, configRootDir);
-        tokens.add(tv);
-
-        final String instanceRoot = 
-            layout.getRepositoryDir().getAbsolutePath();
-        tv = new TokenValue(INSTANCE_ROOT, instanceRoot);
-        tokens.add(tv);
-
-        final String instanceName = (String)domainConfig.get(DomainConfig.K_SERVERID);
-        if((instanceName == null) || (instanceName.equals("")))
-            tv = new TokenValue(SERVER_NAME, PEFileLayout.DEFAULT_INSTANCE_NAME);
-        else
-            tv = new TokenValue(SERVER_NAME, instanceName);
-        tokens.add(tv);
-
-        tv = new TokenValue(DOMAIN_NAME, domainConfig.getDomainName());
-        tokens.add(tv);
-
-        return ( tokens );
-    }
+public interface DomainXmlEventListener {
+    /** handle the creation of domain.xml. This will be called immediately after
+     * domain.xml is created.
+     * @param cfg The DomainConfig object for this domain
+     */    
+	public void handleCreateEvent(DomainConfig cfg)throws DomainException ;
+        /** handle the deletion of the domain.xml. This will be called after the deletion of
+         * domain.xml file.
+         * @param cfg The DomainConfig object for this domain
+         */        
+	public void handleDeleteEvent(DomainConfig cfg) throws DomainException ;
 }

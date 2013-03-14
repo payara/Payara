@@ -70,6 +70,42 @@ public class PEFileLayout
         _config = config;
     }
 
+    public void createRepositoryDirectories() throws RepositoryException
+    {
+        createDirectory(getRepositoryRootDir());
+        createDirectory(getRepositoryDir());
+        createDirectory(getConfigRoot());
+        createDirectory(getBinDir());
+        createDirectory(getLogsDir());
+        createDirectory(getDocRoot());
+        createDirectory(getApplicationsRootDir());
+        createDirectory(getAutoDeployDir());
+        createDirectory(getAutoDeployStatusDir());
+        createDirectory(getAutoDeployOSGiBundlesDir());
+        
+        createDirectory(getLibDir());
+        createDirectory(getClassesDir());
+        createDirectory(getExtLibDir());
+        createDirectory(getAppLibsDir());
+        createDirectory(getTimerDatabaseDir());
+        
+        /*
+        createDirectory(getAddonRoot());
+        createDirectory(getJavaWebStartRoot());
+    
+        createDirectory(getGeneratedDir());
+        createDirectory(getJspRootDir());
+        createDirectory(getEjbRootDir());
+        createDirectory(getXmlRootDir());
+        createDirectory(getJ2EEAppsDir());
+        createDirectory(getJ2EEModulesDir());
+        createDirectory(getLifecycleModulesDir());
+        createDirectory(getMbeansDir());
+        createDirectory(getSessionStore());
+        
+         */
+    }
+
     protected RepositoryConfig getConfig() {
         return _config;
     }
@@ -614,6 +650,9 @@ public class PEFileLayout
     }
 
     private static final String AUTO_DEPLOY_OSGI_BUNDLES_DIR = "bundles";
+    private File getAutoDeployOSGiBundlesDir() {
+        return new File(getAutoDeployDir(), AUTO_DEPLOY_OSGI_BUNDLES_DIR);
+    }
 
     public static final String KEY_FILE_TEMPLATE = "keyfile";
     public File getKeyFileTemplate()
