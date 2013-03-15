@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,27 +56,31 @@ public class InterceptorA implements Serializable {
     @Inject Foo foo;
 
     @AroundInvoke
-	public Object around(InvocationContext ctx) throws Exception {
+    public Object around(InvocationContext ctx) throws Exception {
 
-	System.out.println("In InterceptorA::around");
-	return ctx.proceed();
+        System.out.println("In InterceptorA::around");
+        return ctx.proceed();
 
     }
 
     @PostConstruct
-	public void init(InvocationContext ctx) throws Exception {
-	System.out.println("In InterceptorA::init()");
+    public void init(InvocationContext ctx) {
+        System.out.println("In InterceptorA::init()");
 
-	System.out.println("statelessLocal = " + statelessLocal);
-	System.out.println("foo = " + foo);
+        System.out.println("statelessLocal = " + statelessLocal);
+        System.out.println("foo = " + foo);
 
-	ctx.proceed();
+        try {
+            ctx.proceed();
+        } catch (Exception ignore ) {}
     }
 
     @PreDestroy
-	public void destroy(InvocationContext ctx) throws Exception {
-	System.out.println("In InterceptorA::destroy()");
-	ctx.proceed();
+    public void destroy(InvocationContext ctx) {
+        System.out.println("In InterceptorA::destroy()");
+        try {
+            ctx.proceed();
+        } catch (Exception ignore ) {}
     }
 
 }
