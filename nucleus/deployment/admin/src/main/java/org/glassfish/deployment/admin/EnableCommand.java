@@ -267,7 +267,7 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
                 try {
                     deployment.updateAppEnabledAttributeInDomainXML(name(), target, true);
                 } catch(TransactionFailure e) {
-                    logger.warning("failed to set enable attribute for " + name());
+                    logger.log(Level.WARNING, "failed to set enable attribute for " + name(), e);
                 }
             }
         } catch(Exception e) {
