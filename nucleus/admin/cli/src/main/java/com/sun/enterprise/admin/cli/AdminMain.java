@@ -373,7 +373,7 @@ public class AdminMain {
             logger.severe(ice.getMessage());
             try {
                 CLIUtil.displayClosestMatch(command,
-                        CLIUtil.getAllCommands(cliContainer.getServiceLocator(), po, env),
+                        CLIUtil.getAllCommands(cliContainer, po, env),
                         strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
             } catch (InvalidCommandException e) {
                 // not a big deal if we cannot help
@@ -385,7 +385,7 @@ public class AdminMain {
                 logger.severe(ce.getMessage());
                 try {
                     CLIUtil.displayClosestMatch(command,
-                            CLIUtil.getLocalCommands(cliContainer.getServiceLocator()),
+                            CLIUtil.getLocalCommands(cliContainer),
                             strings.get("ClosestMatchedLocalCommands"), logger);
                 } catch (InvalidCommandException e) {
                     logger.info(

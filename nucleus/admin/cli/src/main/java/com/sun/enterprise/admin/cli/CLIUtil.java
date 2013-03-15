@@ -186,11 +186,11 @@ public class CLIUtil {
      *
      * @return the commands as a String array, sorted
      */
-    public static String[] getAllCommands(ServiceLocator habitat, ProgramOptions po,
+    public static String[] getAllCommands(CLIContainer container, ProgramOptions po,
                                 Environment env) {
         try {
-            String[] remoteCommands = getRemoteCommands(habitat, po, env);
-            String[] localCommands = getLocalCommands(habitat);
+            String[] remoteCommands = getRemoteCommands(container, po, env);
+            String[] localCommands = getLocalCommands(container);
             String[] allCommands =
                     new String[localCommands.length + remoteCommands.length];
             System.arraycopy(localCommands, 0,
@@ -211,17 +211,8 @@ public class CLIUtil {
      *
      * @return the commands as a String array, sorted
      */
-    public static String[] getLocalCommands(ServiceLocator habitat) {
-        List<String> names = new ArrayList<String>();
-
-        for (ServiceHandle<?> command : habitat.getAllServiceHandles(CLICommand.class)) {
-
-        	String name = command.getActiveDescriptor().getName();
-            if (name != null)
-                names.add(name);
-
-        }
-        
+    public static String[] getLocalCommands(CLIContainer container) {
+        Set<String> names = container.getLocalCommandsNames();
         String[] localCommands = names.toArray(new String[names.size()]);
         Arrays.sort(localCommands);
         return localCommands;
@@ -232,20 +223,16 @@ public class CLIUtil {
      *
      * @return the commands as a String array, sorted
      */
-    public static String[] getRemoteCommands(ServiceLocator habitat,
+    public static String[] getRemoteCommands(CLIContainer container,
             ProgramOptions po, Environment env)
             throws CommandException, CommandValidationException {
         /*
          * In order to eliminate all local command names from the list
          * of remote commands, we collect the local command names into
-         * a HashSet that we check later when collecting remote command
+         * a Set that we check later when collecting remote command
          * names.
          */
-        Set<String> localnames = new HashSet<String>();
-        for (ServiceHandle<?> command : habitat.getAllServiceHandles(CLICommand.class))  {
-            String name = command.getActiveDescriptor().getName();
-            localnames.add(name);
-        }
+        Set<String> localnames = container.getLocalCommandsNames();
 
         /*
          * Now get the list of remote commands.

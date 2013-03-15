@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.cli;
 import com.sun.enterprise.admin.remote.Metrix;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.BufferedReader;
 import java.io.File;
@@ -51,6 +52,7 @@ import java.io.InputStreamReader;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -147,7 +149,7 @@ public final class CLIContainer {
     private void parseInHk2LocatorOrig(BufferedReader reader, Map<String, String> cliCommandNames) throws IOException {
         DescriptorImpl desc = new DescriptorImpl();
         while (desc.readObject(reader)) {
-            if (desc.getAdvertisedContracts().contains(CLICommand.class.getName())) {
+            if (StringUtils.ok(desc.getName()) && desc.getAdvertisedContracts().contains(CLICommand.class.getName())) {
                 cliCommandNames.put(desc.getName(), desc.getImplementation());
             }
         }
@@ -251,6 +253,10 @@ public final class CLIContainer {
             logger.log(Level.FINER, "HK2 Service locator will be used for command {0}", name);
         }
         return getServiceLocator().getService(CLICommand.class, name);
+    }
+    
+    public Set<String> getLocalCommandsNames() {
+        return cliCommandsNames.keySet();
     }
     
     public void setProgramOptions(ProgramOptions programOptions) {

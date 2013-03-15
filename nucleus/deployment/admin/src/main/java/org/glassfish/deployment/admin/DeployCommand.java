@@ -304,7 +304,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             return true;
         } catch (Exception ex) {
             events.unregister(this);
-            if (initialContext.getSource() != null) {
+            if (initialContext != null && initialContext.getSource() != null) {
                 try {
                   initialContext.getSource().close();
                 } catch (IOException ioex) {

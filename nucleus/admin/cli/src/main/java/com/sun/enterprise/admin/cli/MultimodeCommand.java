@@ -72,6 +72,9 @@ import javax.inject.Inject;
 public class MultimodeCommand extends CLICommand {
     @Inject
     private ServiceLocator habitat;
+    
+    @Inject
+    private CLIContainer container;
 
     @Param(optional = true, shortName = "f")
     private File file;
@@ -258,7 +261,7 @@ public class MultimodeCommand extends CLICommand {
                 logger.severe(ice.getMessage());
                 try {
                     CLIUtil.displayClosestMatch(command,
-                        CLIUtil.getAllCommands(habitat, po, env),
+                        CLIUtil.getAllCommands(container, po, env),
                        strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
                 } catch (InvalidCommandException e) {
                     // not a big deal if we cannot help
@@ -269,7 +272,7 @@ public class MultimodeCommand extends CLICommand {
                     logger.severe(ce.getMessage());
                     try {
                         CLIUtil.displayClosestMatch(command,
-                            CLIUtil.getLocalCommands(habitat),
+                            CLIUtil.getLocalCommands(container),
                             strings.get("ClosestMatchedLocalCommands"), logger);
                     } catch (InvalidCommandException e) {
                         logger.info(

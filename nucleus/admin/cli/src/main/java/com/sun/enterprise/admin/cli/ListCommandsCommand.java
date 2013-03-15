@@ -69,7 +69,7 @@ import static com.sun.enterprise.admin.cli.CLIConstants.EOL;
 @PerLookup
 public class ListCommandsCommand extends CLICommand {
     @Inject
-    private ServiceLocator habitat;
+    private CLIContainer container;
 
     private String[] remoteCommands;
     private String[] localCommands;
@@ -114,7 +114,7 @@ public class ListCommandsCommand extends CLICommand {
         if (!localOnly) {
             try {
                 remoteCommands = matchCommands(
-                    CLIUtil.getRemoteCommands(habitat, programOpts, env));
+                    CLIUtil.getRemoteCommands(container, programOpts, env));
             } catch (CommandException ce) {
                 /*
                  * Hide the real cause of the remote failure (almost certainly
@@ -126,7 +126,7 @@ public class ListCommandsCommand extends CLICommand {
         }
 
         if (!remoteOnly) {
-            localCommands = matchCommands(CLIUtil.getLocalCommands(habitat));
+            localCommands = matchCommands(CLIUtil.getLocalCommands(container));
             printLocalCommands();
         }
         if (!localOnly && !remoteOnly)

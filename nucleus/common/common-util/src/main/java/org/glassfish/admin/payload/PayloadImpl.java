@@ -48,6 +48,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.admin.Payload;
 
 /**
@@ -570,6 +572,7 @@ public class PayloadImpl implements Payload {
          */
         static class Streamed extends PayloadImpl.Part {
             private final InputStream is;
+            private File extractedFile;
 
             /**
              * Creates a new stream-baesd Part.
@@ -589,7 +592,24 @@ public class PayloadImpl implements Payload {
 
             @Override
             public InputStream getInputStream() {
-                return is;
+                if (extractedFile == null) {
+                    return is;
+                } else {
+                    try {
+                        return new FileInputStream(extractedFile);
+                    } catch (FileNotFoundException ex) {
+                        return is;
+                    }
+                }
+            }
+            
+            /** Some use cases need reentrantable implementation of this stream 
+             * implementation. Information about extraction can be used for it.
+             */
+            public void extracted(File extractedFile) {
+                if (extractedFile != null && extractedFile.exists() && extractedFile.isFile()) {
+                    this.extractedFile = extractedFile;
+                }
             }
         }
 
