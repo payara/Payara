@@ -47,15 +47,8 @@ import org.glassfish.concurrent.config.ContextService;
  */
 public class ContextServiceConfig extends BaseConfig {
 
-    private String contextInfo = null;
-
     public ContextServiceConfig(ContextService config) {
-        super(config.getJndiName());
-        contextInfo = config.getContextInfo();
-    }
-
-    public String getContextInfo() {
-        return contextInfo;
+        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
     }
 
     public TYPE getType() {

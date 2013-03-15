@@ -47,7 +47,6 @@ import org.glassfish.concurrent.config.ManagedExecutorService;
  */
 public class ManagedExecutorServiceConfig extends BaseConfig  {
 
-    private String contextInfo;
     private int hungAfterSeconds;
     private boolean longRunningTasks;
     private int threadPriority;
@@ -58,8 +57,7 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
     private long threadLifeTimeSeconds;
 
     public ManagedExecutorServiceConfig(ManagedExecutorService config) {
-        super(config.getJndiName());
-        contextInfo = config.getContextInfo();
+        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
         longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
@@ -68,10 +66,6 @@ public class ManagedExecutorServiceConfig extends BaseConfig  {
         maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
         taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
         threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
-    }
-
-    public String getContextInfo() {
-        return contextInfo;
     }
 
     public int getHungAfterSeconds() {

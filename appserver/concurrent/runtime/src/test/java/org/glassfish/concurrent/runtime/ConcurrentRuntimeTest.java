@@ -78,6 +78,7 @@ public class ConcurrentRuntimeTest {
     public void testParseContextInfo() throws Exception {
         expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
         expect(contextServiceConfig.getContextInfo()).andReturn("Classloader, JNDI, Security, WorkArea").anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("true");
         replay(contextServiceConfig);
 
         ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
@@ -92,9 +93,64 @@ public class ConcurrentRuntimeTest {
     }
 
     @Test
+    public void testParseContextInfo_lowerCase() throws Exception {
+        expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
+        expect(contextServiceConfig.getContextInfo()).andReturn("classloader, jndi, security, workarea").anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("true");
+        replay(contextServiceConfig);
+
+        ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
+
+        ResourceInfo resource = new ResourceInfo("test");
+        ContextServiceImpl contextService = concurrentRuntime.getContextService(resource, contextServiceConfig);
+        ContextSetupProviderImpl contextSetupProvider = (ContextSetupProviderImpl) contextService.getContextSetupProvider();
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "classloading"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "naming"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "security"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "workArea"));
+    }
+
+    @Test
+    public void testParseContextInfo_upperCase() throws Exception {
+        expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
+        expect(contextServiceConfig.getContextInfo()).andReturn("CLASSLOADER, JNDI, SECURITY, WORKAREA").anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("true");
+        replay(contextServiceConfig);
+
+        ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
+
+        ResourceInfo resource = new ResourceInfo("test");
+        ContextServiceImpl contextService = concurrentRuntime.getContextService(resource, contextServiceConfig);
+        ContextSetupProviderImpl contextSetupProvider = (ContextSetupProviderImpl) contextService.getContextSetupProvider();
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "classloading"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "naming"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "security"));
+        assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "workArea"));
+    }
+
+    @Test
+    public void testParseContextInfo_disabled() throws Exception {
+        expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
+        expect(contextServiceConfig.getContextInfo()).andReturn("Classloader, JNDI, Security, WorkArea").anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("false");
+        replay(contextServiceConfig);
+
+        ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
+
+        ResourceInfo resource = new ResourceInfo("test");
+        ContextServiceImpl contextService = concurrentRuntime.getContextService(resource, contextServiceConfig);
+        ContextSetupProviderImpl contextSetupProvider = (ContextSetupProviderImpl) contextService.getContextSetupProvider();
+        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "classloading"));
+        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "naming"));
+        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "security"));
+        assertFalse((Boolean) Util.getdFieldValue(contextSetupProvider, "workArea"));
+    }
+
+    @Test
     public void testParseContextInfo_invalid() throws Exception {
         expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
         expect(contextServiceConfig.getContextInfo()).andReturn("JNDI, blah, beh, JNDI, WorkArea, WorkArea, ").anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("true");
         replay(contextServiceConfig);
 
         ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
@@ -112,6 +168,7 @@ public class ConcurrentRuntimeTest {
     public void testParseContextInfo_null() throws Exception {
         expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
         expect(contextServiceConfig.getContextInfo()).andReturn(null).anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("true");
         replay(contextServiceConfig);
 
         ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
@@ -129,6 +186,7 @@ public class ConcurrentRuntimeTest {
     public void testParseContextInfo_empty() throws Exception {
         expect(contextServiceConfig.getJndiName()).andReturn("concurrent/ctxSrv").anyTimes();
         expect(contextServiceConfig.getContextInfo()).andReturn("").anyTimes();
+        expect(contextServiceConfig.getContextInfoEnabled()).andReturn("true");
         replay(contextServiceConfig);
 
         ConcurrentRuntime concurrentRuntime = new ConcurrentRuntime();
@@ -149,6 +207,7 @@ public class ConcurrentRuntimeTest {
 
         expect(managedThreadFactoryConfig.getJndiName()).andReturn("concurrent/mtf").anyTimes();
         expect(managedThreadFactoryConfig.getContextInfo()).andReturn("Classloader, JNDI, Security").anyTimes();
+        expect(managedThreadFactoryConfig.getContextInfoEnabled()).andReturn("true").anyTimes();
         expect(managedThreadFactoryConfig.getThreadPriority()).andReturn(THREAD_PRIORITY).anyTimes();
         replay(managedThreadFactoryConfig);
 
@@ -176,17 +235,20 @@ public class ConcurrentRuntimeTest {
         final int MAXIMUM_POOL_SIZE = 5;
         final boolean LONG_RUNNING_TASKS = true;
         final long KEEP_ALIVE_SECONDS = 88L;
+        final long THREAD_LIFE_TIME_SECONDS = 99L;
         final int TASK_QUEUE_CAPACITY = 12345;
 
 
         expect(managedExecutorServiceConfig.getJndiName()).andReturn("concurrent/mes").anyTimes();
         expect(managedExecutorServiceConfig.getContextInfo()).andReturn("Classloader, JNDI, Security").anyTimes();
+        expect(managedExecutorServiceConfig.getContextInfoEnabled()).andReturn("true").anyTimes();
         expect(managedExecutorServiceConfig.getThreadPriority()).andReturn(THREAD_PRIORITY).anyTimes();
         expect(managedExecutorServiceConfig.getHungAfterSeconds()).andReturn(HUNG_AFTER_SECONDS).anyTimes();
         expect(managedExecutorServiceConfig.getCorePoolSize()).andReturn(CORE_POOL_SIZE).anyTimes();
         expect(managedExecutorServiceConfig.getMaximumPoolSize()).andReturn(MAXIMUM_POOL_SIZE).anyTimes();
         expect(managedExecutorServiceConfig.isLongRunningTasks()).andReturn(LONG_RUNNING_TASKS).anyTimes();
         expect(managedExecutorServiceConfig.getKeepAliveSeconds()).andReturn(KEEP_ALIVE_SECONDS).anyTimes();
+        expect(managedExecutorServiceConfig.getThreadLifeTimeSeconds()).andReturn(THREAD_LIFE_TIME_SECONDS).anyTimes();
         expect(managedExecutorServiceConfig.getTaskQueueCapacity()).andReturn(TASK_QUEUE_CAPACITY).anyTimes();
         replay(managedExecutorServiceConfig);
 
@@ -204,6 +266,8 @@ public class ConcurrentRuntimeTest {
         assertEquals(KEEP_ALIVE_SECONDS, executor.getKeepAliveTime(TimeUnit.SECONDS));
         assertEquals(MAXIMUM_POOL_SIZE, executor.getMaximumPoolSize());
 
+        long threadLifeTime = (Long)Util.getdFieldValue(executor, "threadLifeTime");
+        assertEquals(THREAD_LIFE_TIME_SECONDS, threadLifeTime);
 
         ContextSetupProviderImpl contextSetupProvider = (ContextSetupProviderImpl) mes.getContextSetupProvider();
         assertTrue((Boolean) Util.getdFieldValue(contextSetupProvider, "classloading"));

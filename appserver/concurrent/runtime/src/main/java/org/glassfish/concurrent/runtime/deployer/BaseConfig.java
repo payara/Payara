@@ -75,14 +75,27 @@ public abstract class BaseConfig implements Serializable {
         MANAGED_THREAD_FACTORY,
         CONTEXT_SERVICE
     }
-    protected String jndiName = null;
 
-    public BaseConfig(String jndiName) {
+    protected String jndiName = null;
+    protected String contextInfo = null;
+    protected String contextInfoEnabled;
+
+    public BaseConfig(String jndiName, String contextInfo, String contextInfoEnabled) {
         this.jndiName = jndiName;
+        this.contextInfo = contextInfo;
+        this.contextInfoEnabled = contextInfoEnabled;
     }
 
     public String getJndiName() {
         return jndiName;
+    }
+
+    public String getContextInfo() {
+        return contextInfo;
+    }
+
+    public String getContextInfoEnabled() {
+        return contextInfoEnabled;
     }
 
     abstract TYPE getType();

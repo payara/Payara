@@ -48,20 +48,14 @@ import org.glassfish.concurrent.config.ManagedThreadFactory;
 public class ManagedThreadFactoryConfig extends BaseConfig {
 
     private int threadPriority;
-    private String contextInfo;
 
     public ManagedThreadFactoryConfig(ManagedThreadFactory config) {
-        super(config.getJndiName());
-        contextInfo = config.getContextInfo();
+        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
     }
 
     public int getThreadPriority() {
         return threadPriority;
-    }
-
-    public String getContextInfo() {
-        return contextInfo;
     }
 
     public TYPE getType() {

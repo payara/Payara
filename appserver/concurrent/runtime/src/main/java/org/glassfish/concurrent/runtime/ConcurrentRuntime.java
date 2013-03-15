@@ -128,7 +128,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {
             return contextServiceMap.get(jndiName);
         }
-        ContextServiceImpl contextService = createContextService(config.getJndiName(), config.getContextInfo(), false);
+        ContextServiceImpl contextService = createContextService(config.getJndiName(),
+                config.getContextInfo(), config.getContextInfoEnabled(), false);
         if (contextServiceMap == null) {
             contextServiceMap = new HashMap();
         }
@@ -162,7 +163,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
                 config.getTaskQueueCapacity(),
-                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
+                createContextService(config.getJndiName() + "-contextservice",
+                        config.getContextInfo(), config.getContextInfoEnabled(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
         if (managedExecutorServiceMap == null) {
             managedExecutorServiceMap = new HashMap();
@@ -202,7 +204,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
                 config.getTaskQueueCapacity(),
-                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
+                createContextService(config.getJndiName() + "-contextservice",
+                        config.getContextInfo(), config.getContextInfoEnabled(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
         if (managedScheduledExecutorServiceMap == null) {
             managedScheduledExecutorServiceMap = new HashMap();
@@ -229,7 +232,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             return managedThreadFactoryMap.get(jndiName);
         }
         ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(config.getJndiName(),
-                createContextService(config.getJndiName() + "-contextservice", config.getContextInfo(), true),
+                createContextService(config.getJndiName() + "-contextservice",
+                        config.getContextInfo(), config.getContextInfoEnabled(), true),
                 config.getThreadPriority());
         if (managedThreadFactoryMap == null) {
             managedThreadFactoryMap = new HashMap();
@@ -250,8 +254,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         }
     }
 
-    private ContextServiceImpl createContextService(String jndiName, String contextInfo, boolean cleanupTransaction) {
-        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo);
+    private ContextServiceImpl createContextService(String jndiName, String contextInfo,
+                                                    String contextInfoEnabled, boolean cleanupTransaction) {
+        boolean isContextInfoEnabled = Boolean.valueOf(contextInfoEnabled);
+        ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo, isContextInfoEnabled);
         ContextSetupProviderImpl contextSetupProvider =
                 new ContextSetupProviderImpl(invocationManager, securityContext, deployment, applications,
                                              cleanupTransaction? transactionManager: null, contextTypes);
@@ -260,7 +266,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return obj;
     }
 
-    private ContextSetupProviderImpl.CONTEXT_TYPE[] parseContextInfo(String contextInfo) {
+    private ContextSetupProviderImpl.CONTEXT_TYPE[] parseContextInfo(String contextInfo, boolean isContextInfoEnabled) {
         ArrayList<ContextSetupProviderImpl.CONTEXT_TYPE> contextTypeArray = new ArrayList<>();
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = new ContextSetupProviderImpl.CONTEXT_TYPE[] {};
         if (contextInfo == null) {
@@ -271,24 +277,19 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.WORKAREA);
             return contextTypeArray.toArray(contextTypes);
         }
+        if (isContextInfoEnabled) {
         StringTokenizer st = new StringTokenizer(contextInfo, ",", false);
-        while(st.hasMoreTokens()) {
-            String token = st.nextToken().trim();
-            switch(token) {
-                case CONTEXT_INFO_CLASSLOADER:
+            while(st.hasMoreTokens()) {
+                String token = st.nextToken().trim();
+                if (CONTEXT_INFO_CLASSLOADER.equalsIgnoreCase(token)) {
                     contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.CLASSLOADING);
-                    break;
-                case CONTEXT_INFO_JNDI:
+                } else if (CONTEXT_INFO_JNDI.equalsIgnoreCase(token)) {
                     contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.NAMING);
-                    break;
-                case CONTEXT_INFO_SECURITY:
+                } else if (CONTEXT_INFO_SECURITY.equalsIgnoreCase(token)) {
                     contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.SECURITY);
-                    break;
-                case CONTEXT_INFO_WORKAREA:
+                } else if (CONTEXT_INFO_WORKAREA.equalsIgnoreCase(token)) {
                     contextTypeArray.add(ContextSetupProviderImpl.CONTEXT_TYPE.WORKAREA);
-                    break;
-                default:
-                    break;
+                }
             }
         }
         return contextTypeArray.toArray(contextTypes);
