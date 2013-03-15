@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -128,29 +128,29 @@ public final class JMXStartupService implements PostConstruct {
     static final Logger JMX_LOGGER = Logger.getLogger(JMX_LOGGER_NAME, LOG_MESSAGES_RB);
     
     @LogMessageInfo(message = "JMXStartupService and JMXConnectors have been shut down.", level="INFO")
-    private static final String JMX_STARTUPSERVICE_SHUTDOWN="AS-JMX-00001";
+    private static final String JMX_STARTUPSERVICE_SHUTDOWN="NCLS-JMX-00001";
     
     @LogMessageInfo(message="JMXStartupService: Stopped JMXConnectorServer: {0}", level="INFO")
-    private static final String JMX_STARTUPSERVICE_STOPPED_JMX_CONNECTOR="AS-JMX-00002";
+    private static final String JMX_STARTUPSERVICE_STOPPED_JMX_CONNECTOR="NCLS-JMX-00002";
     
     @LogMessageInfo(message="MBean Registration Exception thrown {0}", level="SEVERE", 
             cause="JMX Connector Server MBean could not be unregistered.", 
             action="Take appropriate action based on the exception message.")
-    private static final String JMX_MBEAN_REG_EXCEPTION="AS-JMX-00003";
+    private static final String JMX_MBEAN_REG_EXCEPTION="NCLS-JMX-00003";
 
     @LogMessageInfo(message="Instance Not Found Exception thrown {0}", level="SEVERE", 
             cause="JMX Connector Server MBean instance not found.", 
             action="Take appropriate action based on the exception message.")
-    private static final String JMX_INSTANCE_NOT_FOUND_EXCEPTION="AS-JMX-00004";
+    private static final String JMX_INSTANCE_NOT_FOUND_EXCEPTION="NCLS-JMX-00004";
 
     @LogMessageInfo(message = "JMXStartupService has started JMXConnector on JMXService URL {0}", level="INFO")
-    private static final String JMX_STARTED_SERVICE="AS-JMX-00005";
+    private static final String JMX_STARTED_SERVICE="NCLS-JMX-00005";
 
     @LogMessageInfo(message = "JMXStartupService has disabled JMXConnector {0}", level="INFO")
-    private static final String JMX_STARTED_SERVICE_DISABLED="AS-JMX-00006";
+    private static final String JMX_STARTED_SERVICE_DISABLED="NCLS-JMX-00006";
 
     @LogMessageInfo(message = "Cannot start JMX connector {0} due to exception {1}", level="WARNING")
-    private static final String JMX_CANNOT_START_CONNECTOR="AS-JMX-00007";
+    private static final String JMX_CANNOT_START_CONNECTOR="NCLS-JMX-00007";
 
     public JMXStartupService() {
         mMBeanServer = ManagementFactory.getPlatformMBeanServer();

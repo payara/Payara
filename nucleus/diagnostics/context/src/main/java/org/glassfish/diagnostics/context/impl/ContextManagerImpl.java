@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -128,7 +128,7 @@ public class ContextManagerImpl
     cause   = "",
     action  = "",
     level   ="WARNING")
-  private static final String CAN_NOT_GET_CONTEXT_AS_DIAG_3000 = "AS-DIAG-3000";
+  private static final String CAN_NOT_GET_CONTEXT_AS_DIAG_3000 = "NCLS-DIAG-03000";
 
   @LogMessageInfo(
     message = "An exception has prevented a diagnostics context from being created.",
@@ -136,7 +136,7 @@ public class ContextManagerImpl
     cause   = "(see underlying exception)",
     action  = "(see underlying exception)",
     level   = "WARNING")
-  private static final String EXCEPTION_CREATING_CONTEXT_AS_DIAG_3001 = "AS-DIAG-3001";
+  private static final String EXCEPTION_CREATING_CONTEXT_AS_DIAG_3001 = "NCLS-DIAG-03001";
 
   /**
    *  Propagation modes for data that is set as propagates in the put

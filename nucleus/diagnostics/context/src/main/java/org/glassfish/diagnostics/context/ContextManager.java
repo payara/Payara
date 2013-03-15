@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,8 +71,8 @@ public interface ContextManager
   //
   // Logging metadata for this module.
   //
-  // Message ids must be of the form AS-DIAG-#### where #### is an
-  // integer in the range reserved for this module: [3000, 3999].
+  // Message ids must be of the form NCLS-DIAG-##### where ##### is an
+  // integer in the range reserved for this module: [03000, 03999].
   //
   // Message ids are to be explicit in code (rather than generated) to
   // facilitate fast locating by developers.

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,94 +69,94 @@ public class FlashlightLoggerInfo {
             cause = "Possible syntax error in the ProbeProvider XML",
             action = "Check the syntax of ProbeProvider XML",
             level = "SEVERE")
-    public static final String CANNOT_PROCESS_XML_PROBE_PROVIDER = LOGMSG_PREFIX + "-0301";
+    public static final String CANNOT_PROCESS_XML_PROBE_PROVIDER = LOGMSG_PREFIX + "-00301";
     
     @LogMessageInfo(
             message = "Cannot resolve the paramTypes, unable to create this probe - {0}",
             cause = "Unknown Java type for the param",
             action = "Try giving a fully qualified name for the type",
             level = "SEVERE")
-    public static final String CANNOT_RESOLVE_PROBE_PARAM_TYPES_FOR_PROBE = LOGMSG_PREFIX + "-0302";
+    public static final String CANNOT_RESOLVE_PROBE_PARAM_TYPES_FOR_PROBE = LOGMSG_PREFIX + "-00302";
     
     @LogMessageInfo(
             message = "Cannot resolve the paramTypes of the probe - {0}, ",
             cause = "Unknown Java type for the param",
             action = "Try giving a fully qualified name for the type",
             level = "SEVERE")
-    public static final String CANNOT_RESOLVE_PROBE_PARAM_TYPES = LOGMSG_PREFIX + "-0303";
+    public static final String CANNOT_RESOLVE_PROBE_PARAM_TYPES = LOGMSG_PREFIX + "-00303";
     
     @LogMessageInfo(
             message = "Can not match the Probe method ({0}) with any method in the DTrace object",
             level = "WARNING")
-    public static final String DTRACE_CANT_FIND = LOGMSG_PREFIX + "-0304";
+    public static final String DTRACE_CANT_FIND = LOGMSG_PREFIX + "-00304";
     
     @LogMessageInfo(
             message = "Invalid parameters for ProbeProvider, ignoring {0}",
             level = "WARNING")
-    public static final String INVALID_PROBE_PROVIDER = LOGMSG_PREFIX + "-0305";
+    public static final String INVALID_PROBE_PROVIDER = LOGMSG_PREFIX + "-00305";
     
     @LogMessageInfo(
             message = "No Probe Provider found in Probe Provider XML",
             cause = "Invalid Probe Provider XML",
             action = "Check Probe Provider XML syntax",
             level = "SEVERE")
-    public static final String NO_PROVIDER_IDENTIFIED_FROM_XML = LOGMSG_PREFIX + "-0306";
+    public static final String NO_PROVIDER_IDENTIFIED_FROM_XML = LOGMSG_PREFIX + "-00306";
     
     @LogMessageInfo(
             message = "invalid pid, start flashlight-agent using asadmin enable-monitoring with --pid option, you may get pid using jps command",
             level = "WARNING")
-    public static final String INVALID_PID = LOGMSG_PREFIX + "-0501";
+    public static final String INVALID_PID = LOGMSG_PREFIX + "-00501";
     
     @LogMessageInfo(
             message = "flashlight-agent.jar does not exist under {0}",
             level = "WARNING")
-    public static final String MISSING_AGENT_JAR = LOGMSG_PREFIX + "-0502";
+    public static final String MISSING_AGENT_JAR = LOGMSG_PREFIX + "-00502";
     
     @LogMessageInfo(
             message = "flashlight-agent.jar directory {0} does not exist",
             level = "WARNING")
-    public static final String MISSING_AGENT_JAR_DIR = LOGMSG_PREFIX + "-0503";
+    public static final String MISSING_AGENT_JAR_DIR = LOGMSG_PREFIX + "-00503";
     
     @LogMessageInfo(
             message = "Encountered exception during agent attach",
             level = "WARNING")
-    public static final String ATTACH_AGENT_EXCEPTION = LOGMSG_PREFIX + "-0504";
+    public static final String ATTACH_AGENT_EXCEPTION = LOGMSG_PREFIX + "-00504";
     
     @LogMessageInfo(
             message = "Error transforming Probe: {0}",
             cause = "Exception - see message",
             action = "Check probe syntax",
             level = "SEVERE")
-    public static final String BAD_TRANSFORM = LOGMSG_PREFIX + "-0505";
+    public static final String BAD_TRANSFORM = LOGMSG_PREFIX + "-00505";
     
     @LogMessageInfo(
             message = "Error unregistering ProbeProvider",
             level = "WARNING")
-    public static final String UNREGISTER_PROBE_PROVIDER_EXCEPTION = LOGMSG_PREFIX + "-0506";
+    public static final String UNREGISTER_PROBE_PROVIDER_EXCEPTION = LOGMSG_PREFIX + "-00506";
     
     @LogMessageInfo(
             message = "Error during re-transformation",
             level = "WARNING")
-    public static final String RETRANSFORMATION_ERROR = LOGMSG_PREFIX + "-0507";
+    public static final String RETRANSFORMATION_ERROR = LOGMSG_PREFIX + "-00507";
     
     @LogMessageInfo(
             message = "Error during registration of FlashlightProbe",
             level = "WARNING")
-    public static final String REGISTRATION_ERROR = LOGMSG_PREFIX + "-0508";
+    public static final String REGISTRATION_ERROR = LOGMSG_PREFIX + "-00508";
     
     @LogMessageInfo(
             message = "Error attempting to write the re-transformed class data",
             level = "WARNING")
-    public static final String WRITE_ERROR = LOGMSG_PREFIX + "-0509";
+    public static final String WRITE_ERROR = LOGMSG_PREFIX + "-00509";
     
     @LogMessageInfo(
             message = "Monitoring is disabled because there is no Attach API from the JVM available",
             level = "WARNING")
-    public static final String NO_ATTACH_API = LOGMSG_PREFIX + "-0510";
+    public static final String NO_ATTACH_API = LOGMSG_PREFIX + "-00510";
     
     @LogMessageInfo(
             message = "Error while getting Instrumentation object from ProbeAgentMain", 
             level = "WARNING")
-    public static final String NO_ATTACH_GET = LOGMSG_PREFIX + "-0511";
+    public static final String NO_ATTACH_GET = LOGMSG_PREFIX + "-00511";
     
 }

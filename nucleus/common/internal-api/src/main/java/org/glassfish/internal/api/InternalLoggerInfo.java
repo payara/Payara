@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,27 +67,27 @@ public class InternalLoggerInfo {
     @LogMessageInfo(
             message = "Exception {0} resolving password alias {1} in property {2}.",
             level = "WARNING")
-    public static final String exceptionResolvingAlias = LOGMSG_PREFIX + "-1001";
+    public static final String exceptionResolvingAlias = LOGMSG_PREFIX + "-01001";
 
     @LogMessageInfo(
             message = "Unknown property {0} found unresolving {1}.",
             cause = "No value was found for a property. This indicates a software problem.", 
             action = "Check the server logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String unknownProperty = LOGMSG_PREFIX + "-1002";
+    public static final String unknownProperty = LOGMSG_PREFIX + "-01002";
 
     @LogMessageInfo(
             message = "System property reference missing trailing \"'}'\" at {0} in domain.xml.",
             cause = "A system property reference in domain.xml is invalid.", 
             action = "Check the domain.xml file for an invalid system property reference.",
             level = "SEVERE")
-    public static final String referenceMissingTrailingDelim = LOGMSG_PREFIX + "-1003";
+    public static final String referenceMissingTrailingDelim = LOGMSG_PREFIX + "-01003";
 
     @LogMessageInfo(
             message = "System property reference missing starting \"$'{'\" at {0} in domain.xml.",
             cause = "A system property reference in domain.xml is invalid.", 
             action = "Check the domain.xml file for an invalid system property reference.",
             level = "SEVERE")
-    public static final String referenceMissingStartingDelim = LOGMSG_PREFIX + "-1004";
+    public static final String referenceMissingStartingDelim = LOGMSG_PREFIX + "-01004";
 
 }

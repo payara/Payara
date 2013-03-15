@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -78,232 +78,232 @@ public class CULoggerInfo {
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String preprocessFailed = LOGMSG_PREFIX + "-0001";
+    public static final String preprocessFailed = LOGMSG_PREFIX + "-00001";
     
     @LogMessageInfo(
             message = "Class {0} is being reset to its original state",
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String resettingOriginal = LOGMSG_PREFIX + "-0002";
+    public static final String resettingOriginal = LOGMSG_PREFIX + "-00002";
     
     @LogMessageInfo(
             message = "Class {0} is being reset to the last successful preprocessor",
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String resettingLastGood = LOGMSG_PREFIX + "-0003";
+    public static final String resettingLastGood = LOGMSG_PREFIX + "-00003";
     
     @LogMessageInfo(
             message = "The supplied preprocessor class {0} is not an instance of org.glassfish.api.BytecodePreprocessor",
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String invalidType = LOGMSG_PREFIX + "-0004";
+    public static final String invalidType = LOGMSG_PREFIX + "-00004";
     
     @LogMessageInfo(
             message = "Bytecode preprocessor disabled",
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String disabled = LOGMSG_PREFIX + "-0005";
+    public static final String disabled = LOGMSG_PREFIX + "-00005";
     
     @LogMessageInfo(
             message = "Initialization failed for bytecode preprocessor {0}",
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String failedInit = LOGMSG_PREFIX + "-0006";
+    public static final String failedInit = LOGMSG_PREFIX + "-00006";
     
     @LogMessageInfo(
             message = "Error setting up preprocessor",
             cause = "Unknown",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String setupEx = LOGMSG_PREFIX + "-0007";
+    public static final String setupEx = LOGMSG_PREFIX + "-00007";
     
     @LogMessageInfo(
             message = "Illegal max-entries [{0}]; please check your cache configuration.")
-    public static final String illegalMaxEntries = LOGMSG_PREFIX + "-0008";
+    public static final String illegalMaxEntries = LOGMSG_PREFIX + "-00008";
     
     @LogMessageInfo(
             message = "Illegal MaxSize value [{0}]")
-    public static final String boundedMultiLruCacheIllegalMaxSize = LOGMSG_PREFIX + "-0009";
+    public static final String boundedMultiLruCacheIllegalMaxSize = LOGMSG_PREFIX + "-00009";
     
     @LogMessageInfo(
             message = "Error closing zip file for class path entry {0}",
             level = "INFO")
-    public static final String exceptionClosingURLEntry = LOGMSG_PREFIX + "-0010";
+    public static final String exceptionClosingURLEntry = LOGMSG_PREFIX + "-00010";
     
     @LogMessageInfo(
             message = "An error occurred while adding URL [{0}] to the EJB class loader. Please check the content of this URL.",
             cause = "An unexpected exception occurred while processing a URL.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String badUrlEntry = LOGMSG_PREFIX + "-0011";
+    public static final String badUrlEntry = LOGMSG_PREFIX + "-00011";
     
     @LogMessageInfo(
             message = "The URL entry is missing while contructing the classpath.",
             level = "INFO")
-    public static final String missingURLEntry = LOGMSG_PREFIX + "-0012";
+    public static final String missingURLEntry = LOGMSG_PREFIX + "-00012";
     
     @LogMessageInfo(
             message = "Error closing zip file for duplicate class path entry {0}",
             level = "INFO")
-    public static final String exceptionClosingDupUrlEntry = LOGMSG_PREFIX + "-0013";
+    public static final String exceptionClosingDupUrlEntry = LOGMSG_PREFIX + "-00013";
     
     @LogMessageInfo(
             message = "Exception in ASURLClassLoader",
             level = "INFO")
-    public static final String exceptionInASURLClassLoader = LOGMSG_PREFIX + "-0014";
+    public static final String exceptionInASURLClassLoader = LOGMSG_PREFIX + "-00014";
     
     @LogMessageInfo(
             message = "ASURLClassLoader {1} was requested to find resource {0} after done was invoked from the following stack trace",
             level = "WARNING")
-    public static final String findResourceAfterDone = LOGMSG_PREFIX + "-0015";
+    public static final String findResourceAfterDone = LOGMSG_PREFIX + "-00015";
     
     @LogMessageInfo(
             message = "Error: Request made to load class or resource [{0}] on an ASURLClassLoader instance that has already been shutdown. [{1}]",
             level = "WARNING")
-    public static final String doneAlreadyCalled = LOGMSG_PREFIX + "-0016";
+    public static final String doneAlreadyCalled = LOGMSG_PREFIX + "-00016";
     
     @LogMessageInfo(
             message = "{0} actually got transformed",
             level = "INFO")
-    public static final String actuallyTransformed = LOGMSG_PREFIX + "-0017";
+    public static final String actuallyTransformed = LOGMSG_PREFIX + "-00017";
     
     @LogMessageInfo(
             message = "ASURLClassLoader {1} was requested to find class {0} after done was invoked from the following stack trace",
             level = "WARNING")
-    public static final String findClassAfterDone = LOGMSG_PREFIX + "-0018";
+    public static final String findClassAfterDone = LOGMSG_PREFIX + "-00018";
     
     @LogMessageInfo(
             message = "Illegal call to close() detected",
             level = "WARNING")
-    public static final String illegalCloseCall = LOGMSG_PREFIX + "-0019";
+    public static final String illegalCloseCall = LOGMSG_PREFIX + "-00019";
     
     @LogMessageInfo(
             message = "Error processing file with path {0} in {1}",
             cause = "An unexpected exception occurred while processing a file.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionProcessingFile = LOGMSG_PREFIX + "-0020";
+    public static final String exceptionProcessingFile = LOGMSG_PREFIX + "-00020";
     
     @LogMessageInfo(
             message = "Error checking for existing of {0} in {1}",
             cause = "An unexpected exception occurred while checking for the existence of a file.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionCheckingFile = LOGMSG_PREFIX + "-0021";
+    public static final String exceptionCheckingFile = LOGMSG_PREFIX + "-00021";
     
     @LogMessageInfo(
             message = "Error closing an open stream during loader clean-up",
             level = "WARNING")
-    public static final String exceptionClosingStream = LOGMSG_PREFIX + "-0022";
+    public static final String exceptionClosingStream = LOGMSG_PREFIX + "-00022";
     
     @LogMessageInfo(
             message = "Input stream has been finalized or forced closed without being explicitly closed; stream instantiation reported in following stack trace",
             level = "WARNING")
-    public static final String inputStreamFinalized = LOGMSG_PREFIX + "-0023";
+    public static final String inputStreamFinalized = LOGMSG_PREFIX + "-00023";
     
     @LogMessageInfo(
             message = "Unable to create client data directory: {0}",
             cause = "An unexpected failure occurred while creating the directory for the file.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String errorCreatingDirectory = LOGMSG_PREFIX + "-0024";
+    public static final String errorCreatingDirectory = LOGMSG_PREFIX + "-00024";
     
     @LogMessageInfo(
             message = "Exception in invokeApplicationMain [{0}].",
             cause = "An unexpected exception occurred.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionInUtility = LOGMSG_PREFIX + "-0025";
+    public static final String exceptionInUtility = LOGMSG_PREFIX + "-00025";
     
     @LogMessageInfo(
             message = "The main method signature is invalid.",
             cause = "While invoking a main class, an invalid method was found.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String mainNotValid = LOGMSG_PREFIX + "-0026";
+    public static final String mainNotValid = LOGMSG_PREFIX + "-00026";
     
     @LogMessageInfo(
             message = "Error while caching the local string manager - package name may be null.",
             cause = "An unexpected exception occurred.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionCachingStringManager = LOGMSG_PREFIX + "-0027";
+    public static final String exceptionCachingStringManager = LOGMSG_PREFIX + "-00027";
     
     @LogMessageInfo(
             message = "Error while constructing the local string manager object.",
             cause = "An unexpected exception occurred.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionConstructingStringManager = LOGMSG_PREFIX + "-0028";
+    public static final String exceptionConstructingStringManager = LOGMSG_PREFIX + "-00028";
     
     @LogMessageInfo(
             message = "Error in local string manager - resource bundle is probably missing.",
             cause = "An unexpected exception occurred.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionResourceBundle = LOGMSG_PREFIX + "-0029";
+    public static final String exceptionResourceBundle = LOGMSG_PREFIX + "-00029";
     
     @LogMessageInfo(
             message = "Error while formating the local string.",
             level = "WARNING")
-    public static final String exceptionWhileFormating = LOGMSG_PREFIX + "-0030";
+    public static final String exceptionWhileFormating = LOGMSG_PREFIX + "-00030";
     
     @LogMessageInfo(
             message = "Some IOException occurred",
             cause = "An unexpected exception occurred.",
             action = "Check the system logs and contact Oracle support.",
             level = "SEVERE")
-    public static final String exceptionIO = LOGMSG_PREFIX + "-0031";
+    public static final String exceptionIO = LOGMSG_PREFIX + "-00031";
     
     @LogMessageInfo(
             message = "Attempt to delete {0} failed; the file is reported as non-existent",
             level = "FINE")
-    public static final String deleteFailedAbsent = LOGMSG_PREFIX + "-0032";
+    public static final String deleteFailedAbsent = LOGMSG_PREFIX + "-00032";
     
     @LogMessageInfo(
             message = "Error attempting to delete {0}",
             level = "FINE")
-    public static final String deleteFailed = LOGMSG_PREFIX + "-0033";
+    public static final String deleteFailed = LOGMSG_PREFIX + "-00033";
     
     @LogMessageInfo(
             message = "Performing gc to try to force file closures",
             level = "FINE")
-    public static final String performGC = LOGMSG_PREFIX + "-0034";
+    public static final String performGC = LOGMSG_PREFIX + "-00034";
     
     @LogMessageInfo(
             message = "Attempt to rename {0} to {1} succeeded after {2} retries",
             level = "FINE")
-    public static final String retryRenameSuccess = LOGMSG_PREFIX + "-0035";
+    public static final String retryRenameSuccess = LOGMSG_PREFIX + "-00035";
     
     @LogMessageInfo(
             message = "Attempt to rename {0} to {1} succeeded without any retries",
             level = "FINE")
-    public static final String renameInitialSuccess = LOGMSG_PREFIX + "-0036";
+    public static final String renameInitialSuccess = LOGMSG_PREFIX + "-00036";
     
     @LogMessageInfo(
             message = "Attempt to rename {0} to {1} failed after {2} retries",
             level = "WARNING")
-    public static final String retryRenameFailure = LOGMSG_PREFIX + "-0037";
+    public static final String retryRenameFailure = LOGMSG_PREFIX + "-00037";
 
     @LogMessageInfo(
             message = "Failed to open jar file: {0}",
             level = "WARNING")
-    public static final String exceptionJarOpen = LOGMSG_PREFIX + "-0038";
+    public static final String exceptionJarOpen = LOGMSG_PREFIX + "-00038";
 
     @LogMessageInfo(
             message = "Attempt to use non-existent auth token {0}",
             level = "WARNING")
-    public static final String useNonexistentToken = LOGMSG_PREFIX + "-0039";
+    public static final String useNonexistentToken = LOGMSG_PREFIX + "-00039";
 
     @LogMessageInfo(
             message = "File Lock not released on {0}",
             level = "WARNING")
-    public static final String fileLockNotReleased = LOGMSG_PREFIX + "-0040";
+    public static final String fileLockNotReleased = LOGMSG_PREFIX + "-00040";
 
 
 /*

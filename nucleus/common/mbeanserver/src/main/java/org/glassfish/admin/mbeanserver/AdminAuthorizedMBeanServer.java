@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,7 +79,7 @@ public class AdminAuthorizedMBeanServer {
     private final static Logger mLogger = JMXStartupService.JMX_LOGGER;
     
     @LogMessageInfo(message = "Attempted access to method {0} on object {1} rejected; user was granted {2} but the operation reports its impact as \"{3}\"", level="FINE")
-    private final static String JMX_NOACCESS="AS_JMX_00008";
+    private final static String JMX_NOACCESS="NCLS-JMX-00010";
     
     private static final Set<String> RESTRICTED_METHOD_NAMES = new HashSet<String>(Arrays.asList(
             "setAttribute",
