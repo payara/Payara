@@ -77,7 +77,7 @@
                         <sun:property>
                             <sun:hyperlink 
                                 toolTip="$resource{i18ncon.tree.ManagedExecutorServices.tooltip}"
-                                url="/concurrent/ManagedExecutorServices.jsf" >
+                                url="/concurrent/managedExecutorServices.jsf" >
                                 <sun:image url="/resource/jdbc/images/JDBC.gif" />
                                 <sun:staticText text="$resource{i18ncon.tree.ManagedExecutorServices}" />
                             </sun:hyperlink>
