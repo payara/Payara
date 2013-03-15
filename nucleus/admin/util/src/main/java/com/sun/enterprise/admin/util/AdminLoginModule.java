@@ -530,7 +530,6 @@ public class AdminLoginModule implements LoginModule {
                 if (s != null) {
                     result = true;
                     updateFromSubject(subject, s);
-                    subject.getPrincipals().add(new RestTokenPrincipal(token));
                     logger.log(PROGRESS_LEVEL, "Detected ReST token");
                 }
             }
