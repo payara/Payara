@@ -69,7 +69,7 @@
        </sun:property>
                 
        <sun:property id="threadPriorityProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.threadPriorityLabel}"  helpText="$resource{i18ncon.threadPriorityLabelHelp}">
-            <sun:textField id="threadPriorityProp" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['threadPriority']}" />      
+            <sun:textField id="threadPriorityProp" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['threadPriority']}" />
        </sun:property>
        
        <sun:property id="longrunningtasks"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.longRunningTasks}">
@@ -77,7 +77,7 @@
        </sun:property>
        
        <sun:property id="hungafter" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.hungAfterSeconds}"  helpText="$resource{i18ncon.hungAfterSecondsHelp}">
-            <sun:textField id="hungafter" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['hungAfterSeconds']}" />      
+            <sun:textField id="hungafter" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['hungAfterSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>
        <sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" rendered="#{edit}" label="$resource{i18n.common.resource.deploymentOrder}"  helpText="$resource{i18n.common.resource.deploymentOrderHelp}">
@@ -90,25 +90,25 @@
                 
    <sun:propertySheetSection id="poolSettingsPropertySheet" label="$resource{i18ncon.propertySheetSection.poolSettings}">         
        <sun:property id="coresize" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.corePoolSize}"  helpText="$resource{i18ncon.corePoolSizeHelp}">
-            <sun:textField id="coresize" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['corePoolSize']}" />      
+            <sun:textField id="coresize" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['corePoolSize']}" />
        </sun:property>
                 
        <sun:property id="maximumPoolSize" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.maximumPoolSize}"  helpText="$resource{i18ncon.maximumPoolSizeHelp}">
-            <sun:textField id="maximumSize" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['maximumPoolSize']}" />      
+            <sun:textField id="maximumSize" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['maximumPoolSize']}" />
        </sun:property>
                 
        <sun:property id="keepAlive" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.keepAliveSeconds}"  helpText="$resource{i18ncon.keepAliveSecondsHelp}">
-            <sun:textField id="keepAlive" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['keepAliveSeconds']}" />      
+            <sun:textField id="keepAlive" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['keepAliveSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>
                 
        <sun:property id="threadLifetime" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.threadLifetimeSeconds}"  helpText="$resource{i18ncon.threadLifetimeSecondsHelp}">
-            <sun:textField id="threadLifetime" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['threadLifetimeSeconds']}" />      
+            <sun:textField id="threadLifetime" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['threadLifetimeSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>
                 
        <sun:property id="taskQueueCapacity" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.taskQueueCapacity}"  helpText="$resource{i18ncon.taskQueueCapacityHelp}">
-            <sun:textField id="taskQueueCapacity" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['taskQueueCapacity']}" />      
+            <sun:textField id="taskQueueCapacity" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['taskQueueCapacity']}" />
        </sun:property>   
 
         "<br /><br />
