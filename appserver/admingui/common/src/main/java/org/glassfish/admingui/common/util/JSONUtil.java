@@ -657,6 +657,9 @@ public class JSONUtil {
 	    if (loc < 0) {
 		loc = 0;
 	    }
+        if (before < 0) {
+            before = 0;
+        }
 	    int after = loc + width;
 	    if (after > len) {
 		after = len;
