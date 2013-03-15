@@ -50,7 +50,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
-import javax.batch.operations.exception.*;
+import javax.batch.operations.JobSecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -127,10 +127,10 @@ public class ListBatchJobSteps
     }
 
     private List<StepExecution> findStepExecutions()
-        throws javax.batch.operations.exception.SecurityException {
+        throws JobSecurityException {
         List<StepExecution> stepExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        List<StepExecution> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
+        List<StepExecution<?>> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
         if (jobExecution != null)
             stepExecutions.addAll(jobExecution);
 
@@ -147,10 +147,10 @@ public class ListBatchJobSteps
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case NAME:
-                    data = stepExecution.getName();
+                    data = stepExecution.getStepName();
                     break;
                 case STEP_ID:
-                    data = "" + stepExecution.getStepId();
+                    data = stepExecution.getExecutionId();
                     break;
                 case BATCH_STATUS:
                     data = stepExecution.getBatchStatus();
@@ -172,8 +172,8 @@ public class ListBatchJobSteps
                     if (stepExecution.getMetrics() != null) {
                         ColumnFormatter cf = new ColumnFormatter(new String[]{"METRICNAME", "VALUE"});
                         for (Metric metric : stepExecution.getMetrics()) {
-                            metricMap.put(metric.getName().name(), metric.getValue());
-                            cf.addRow(new Object[] {metric.getName().name(), metric.getValue()});
+                            metricMap.put(metric.getType().name(), metric.getValue());
+                            cf.addRow(new Object[] {metric.getType().name(), metric.getValue()});
                         }
                         st = new StringTokenizer(cf.toString(), "\n");
                     }

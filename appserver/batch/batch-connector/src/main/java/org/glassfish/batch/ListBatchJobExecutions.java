@@ -50,8 +50,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
-import javax.batch.operations.exception.*;
-import javax.batch.operations.exception.SecurityException;
+import javax.batch.operations.JobSecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -152,7 +151,7 @@ public class ListBatchJobExecutions
     }
 
     private List<JobExecution> findJobExecutions(long exeId)
-        throws javax.batch.operations.exception.SecurityException {
+        throws JobSecurityException {
         List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobExecution jobExecution = jobOperator.getJobExecution(exeId);
@@ -163,7 +162,7 @@ public class ListBatchJobExecutions
     }
 
     private static List<JobExecution> getJobExecutionForInstance(long instId)
-            throws javax.batch.operations.exception.SecurityException {
+            throws JobSecurityException {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobInstance jobInstance = null;
         for (String jn : jobOperator.getJobNames()) {
@@ -190,7 +189,7 @@ public class ListBatchJobExecutions
     }
 
     private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
-        throws javax.batch.operations.exception.SecurityException {
+        throws JobSecurityException {
 
         Map<String, Object> jobInfo = new HashMap<>();
 
@@ -202,8 +201,7 @@ public class ListBatchJobExecutions
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
-                    data = jobOperator.getJobInstance(
-                            je.getInstanceId() <= 0 ? Long.valueOf(instanceId) : je.getInstanceId()).getJobName();
+                    data = " " + je.getJobName();
                     break;
                 case EXECUTION_ID:
                     data = "" + je.getExecutionId();

@@ -50,8 +50,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
-import javax.batch.operations.exception.*;
-import javax.batch.operations.exception.SecurityException;
+import javax.batch.operations.JobSecurityException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -147,7 +146,7 @@ public class ListBatchJobs
     }
 
     private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter)
-        throws javax.batch.operations.exception.SecurityException {
+        throws JobSecurityException {
 
         Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
         Set<String> jobNames = new HashSet<>();
@@ -181,14 +180,14 @@ public class ListBatchJobs
     }
 
     private List<JobExecution> findJobExecutions()
-        throws SecurityException {
+        throws JobSecurityException {
         List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         if (jobName != null) {
             List<JobInstance> exe = jobOperator.getJobInstances(jobName, 0, Integer.MAX_VALUE - 1);
             if (exe != null) {
                 for (JobInstance ji : exe) {
-                    jobExecutions.addAll(jobOperator.getExecutions(ji));
+                    jobExecutions.addAll(jobOperator.getJobExecutions(ji));
                 }
             }
         } else {
@@ -198,7 +197,7 @@ public class ListBatchJobs
                     List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
                     if (exe != null) {
                         for (JobInstance ji : exe) {
-                            jobExecutions.addAll(jobOperator.getExecutions(ji));
+                            jobExecutions.addAll(jobOperator.getJobExecutions(ji));
                         }
                     }
                 }
@@ -209,7 +208,7 @@ public class ListBatchJobs
     }
 
     private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
-        throws  SecurityException {
+        throws  JobSecurityException {
         Map<String, Object> jobInfo = new HashMap<>();
 
         String[] cfData = new String[getOutputHeaders().length];
@@ -218,13 +217,13 @@ public class ListBatchJobs
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
-                    data = jobOperator.getJobInstance(je.getInstanceId()).getJobName();
+                    data = "" + je.getJobName();
                     break;
                 case INSTANCE_COUNT:
-                    data = jobOperator.getJobInstanceCount(jobOperator.getJobInstance(je.getInstanceId()).getJobName());
+                    data = "";//jobOperator.getJobInstanceCount(je.getJobName());
                     break;
                 case INSTANCE_ID:
-                    data = je.getInstanceId();
+                    data = jobOperator.getJobInstance(je.getExecutionId()).getInstanceId();
                     break;
                 case EXECUTION_ID:
                     data = je.getExecutionId();
