@@ -141,6 +141,8 @@ public class AppClientGroupFacadeGenerator {
         }
 
         try {
+            addTopLevelContentToGroupFacade();
+        
             /*
              * Pass the EAR's generated/xml directory for where to generated the
              * group facade.  Because the directories are flattened, even if the
@@ -156,6 +158,10 @@ public class AppClientGroupFacadeGenerator {
         }
     }
 
+    private void addTopLevelContentToGroupFacade() throws IOException {
+        helper.addClientPolicyFiles(null);
+    }
+    
     private String earDirUserURIText(final DeploymentContext dc)  {
         final DeployCommandParameters deployParams = dc.getCommandParameters(DeployCommandParameters.class);
         final String appName = deployParams.name();

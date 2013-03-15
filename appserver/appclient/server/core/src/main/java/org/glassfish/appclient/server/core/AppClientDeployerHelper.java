@@ -45,9 +45,12 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
 import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.shared.ArchivistUtils;
 import com.sun.logging.LogDomains;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,6 +68,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
+import javax.inject.Inject;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -99,6 +103,9 @@ public abstract class AppClientDeployerHelper {
     
     final static String GF_CLIENT_MODULE_PATH ="gf-client-module.jar";
     
+    final static String[] CLIENT_POLICY_FILE_NAMES = {"javaee.client.policy","restrict.client.policy"};
+    final static String CLIENT_POLICY_PATH_IN_JAR = "META-INF/";
+    
     private final DeploymentContext dc;
     private final ApplicationClientDescriptor appClientDesc;
     protected final AppClientArchivist archivist;
@@ -112,7 +119,7 @@ public abstract class AppClientDeployerHelper {
     private final ServiceLocator habitat;
 
     private static final Logger logger = LogDomains.getLogger(AppClientDeployerHelper.class, LogDomains.ACC_LOGGER);
-
+    
     /**
      * Returns the correct concrete implementation of Helper.
      * @param dc the DeploymentContext for this deployment
@@ -167,6 +174,14 @@ public abstract class AppClientDeployerHelper {
     
     static File getModulesDir(final ServiceLocator habitat) {
         return new File(habitat.getService(ServerContext.class).getInstallRoot(), "modules/");
+    }
+    
+    static File getLibDir(final ServiceLocator locator) {
+        return new File(locator.getService(ServerContext.class).getInstallRoot(), "lib/");
+    }
+    
+    static File getAppClientLibDir(final ServiceLocator locator) {
+        return new File(getLibDir(locator), "appclient/");
     }
 
     /**
@@ -468,7 +483,28 @@ public abstract class AppClientDeployerHelper {
         generateAppClientFacade();
     }
 
-
+    protected abstract void addTopLevelContentToClientFacade(final OutputJarArchive facadeArchive) throws IOException;
+    
+    /**
+     * Adds the client policy files to the top-level generated JAR.
+     * <p>
+     * For a stand-alone client (not in an EAR) this implementation adds the
+     * policy files to the generated app client facade JAR.  
+     * 
+     * @param clientFacadeArchive the generated app client facade JAR
+     * @throws IOException 
+     */
+    protected void addClientPolicyFiles(final OutputJarArchive clientFacadeArchive) throws IOException {
+        for (String policyFileName : CLIENT_POLICY_FILE_NAMES) {
+            final File policyFile = new File(getAppClientLibDir(habitat), policyFileName);
+            if (policyFile.canRead()) {
+                copyFileToTopLevelJAR(clientFacadeArchive, policyFile, CLIENT_POLICY_PATH_IN_JAR + policyFileName);
+            }
+        }
+    }
+    
+    protected abstract void copyFileToTopLevelJAR(final OutputJarArchive clientFacadeArchive, final File f, final String path) throws IOException;
+    
     protected final void generateAppClientFacade() throws IOException, URISyntaxException {
         OutputJarArchive facadeArchive = new OutputJarArchive();
         /*
@@ -529,7 +565,9 @@ public abstract class AppClientDeployerHelper {
         copyPersistenceUnitXML(source, facadeArchive);
 
         copyMainClass(facadeArchive);
-
+        
+        addTopLevelContentToClientFacade(facadeArchive);
+        
         facadeArchive.close();
     }
 

@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.archivist.AppClientArchivist;
+import com.sun.enterprise.deployment.deploy.shared.OutputJarArchive;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import com.sun.logging.LogDomains;
@@ -76,10 +77,12 @@ import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.Artifacts;
 import org.glassfish.deployment.common.Artifacts.FullAndPartURIs;
+import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.ServiceLocator;
+
 
 public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
@@ -121,6 +124,10 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
     /** recognizes expanded directory names for submodules */
     private static final Pattern submoduleURIPattern = Pattern.compile("(.*)__([wcrj]ar)$");
+    
+    private final ClientArtifactsManager clientArtifactsManager;
+
+    private boolean isTopLevelPopulated = false;
 
     NestedAppClientDeployerHelper(
             final DeploymentContext dc,
@@ -132,6 +139,7 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
             final ASJarSigner jarSigner) throws IOException {
         super(dc, bundleDesc, archivist, gfClientModuleClassLoader, application, habitat);
         this.habitat = habitat;
+        clientArtifactsManager = ClientArtifactsManager.get(dc);
         groupFacadeGenerator = habitat.getService(AppClientGroupFacadeGenerator.class);
         this.jarSigner = jarSigner;
         isDirectoryDeployed = Boolean.valueOf(dc.getAppProps().getProperty(ServerTags.DIRECTORY_DEPLOYED));
@@ -152,6 +160,10 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
 
     }
 
+    @Override
+    protected void addTopLevelContentToClientFacade(OutputJarArchive facadeArchive) throws IOException {
+        // no-op for nested app clients
+    }
 
     @Override
     public FixedContent fixedContentWithinEAR(String uriString) {
@@ -230,7 +242,26 @@ public class NestedAppClientDeployerHelper extends AppClientDeployerHelper {
         return signedJARManager;
     }
 
+    /**
+     * Adds a file to the EAR-level group facade JAR.
+     * 
+     * @param clientFacadeArchive - ignored for nested app clients
+     * @throws IOException 
+     */
+    @Override
+    protected void copyFileToTopLevelJAR(OutputJarArchive clientFacadeArchive, File f, String path) throws IOException {
+        clientArtifactsManager.add(f, path, false /* isTemporary */);
+    }
 
+    @Override
+    protected void addClientPolicyFiles(OutputJarArchive clientFacadeArchive) throws IOException {
+        if ( ! isTopLevelPopulated) {
+            super.addClientPolicyFiles(clientFacadeArchive);
+            isTopLevelPopulated = true;
+        }
+    }
+    
+    
     private String libJARRelPath(final URI absURI) {
         return JavaWebStartInfo.relativeURIForProvidedOrGeneratedAppFile(dc(), absURI, this).toASCIIString();
     }
