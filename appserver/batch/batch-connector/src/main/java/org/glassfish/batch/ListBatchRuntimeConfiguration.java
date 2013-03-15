@@ -39,9 +39,12 @@
  */
 package org.glassfish.batch;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.config.support.CommandTarget;
@@ -79,16 +82,23 @@ public class ListBatchRuntimeConfiguration
     private static final String EXECUTOR_SERVICE_NAME = "executor-service-lookup-name";
 
     @Inject
-    @Optional
-    BatchRuntimeConfiguration batchRuntimeConfiguration;
+    private Configs configs;
+
+    @Param(name = "config", optional = true)
+    protected String configName;
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
 
+        Config config = configs.getConfigByName(
+                configName == null ? "default-config" : configName);
+
+        BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
+
         Map<String, Object> map = new HashMap<>();
 
-        map.put(DATA_SOURCE_NAME, helper.getDataSourceLookupName());
-        map.put(EXECUTOR_SERVICE_NAME, helper.getExecutorServiceLookupName());
+        map.put(DATA_SOURCE_NAME, batchRuntimeConfiguration.getDataSourceLookupName());
+        map.put(EXECUTOR_SERVICE_NAME, batchRuntimeConfiguration.getExecutorServiceLookupName());
         extraProps.put("listBatchRuntimeConfiguration", map);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
@@ -96,10 +106,10 @@ public class ListBatchRuntimeConfiguration
         for (int index=0; index<getOutputHeaders().length; index++) {
             switch (getOutputHeaders()[index]) {
                 case DATA_SOURCE_NAME:
-                    data[index] = helper.getDataSourceLookupName();
+                    data[index] = batchRuntimeConfiguration.getDataSourceLookupName();
                     break;
                 case EXECUTOR_SERVICE_NAME:
-                    data[index] = helper.getExecutorServiceLookupName();
+                    data[index] = batchRuntimeConfiguration.getExecutorServiceLookupName();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);

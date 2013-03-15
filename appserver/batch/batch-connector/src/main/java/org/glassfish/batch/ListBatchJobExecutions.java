@@ -155,7 +155,7 @@ public class ListBatchJobExecutions
         throws javax.batch.operations.exception.SecurityException {
         List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        JobExecution jobExecution = jobOperator.getJobExecution(Long.valueOf(exeId));
+        JobExecution jobExecution = jobOperator.getJobExecution(exeId);
         if (jobExecution != null)
             jobExecutions.add(jobExecution);
 

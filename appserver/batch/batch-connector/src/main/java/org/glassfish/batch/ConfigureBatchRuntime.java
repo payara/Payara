@@ -70,10 +70,11 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("configure.batch.runtime")
-@ExecuteOn(value = {RuntimeType.DAS})@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.GET,
+                opType = RestEndpoint.OpType.POST,
                 path = "configure-batch-runtime",
                 description = "Configure Batch Runtime")
 })
@@ -93,10 +94,10 @@ public class ConfigureBatchRuntime
     protected String configName;
 
     @Param(name = "dataSourceLookupName", shortName = "d", optional = true)
-    protected String dataSourceLookupName;
+    private String dataSourceLookupName;
 
     @Param(name = "executorServiceLookupName", shortName = "x", optional = true)
-    protected String executorServiceLookupName;
+    private String executorServiceLookupName;
 
 
     @Override
