@@ -77,18 +77,6 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
     @Inject
     private Domain domain;
 
-    private static final List<String> supportedTypes = new ArrayList<String>();
-
-    public ConfigModularityJustInTimeInjectionResolver() {
-        supportedTypes.add("com.sun.enterprise.connectors.jms.config.JmsService");
-        supportedTypes.add("org.glassfish.ejb.config.EjbContainer");
-        supportedTypes.add("org.glassfish.web.config.serverbeans.WebContainer");
-        supportedTypes.add("org.glassfish.orb.admin.config.IiopService");
-        supportedTypes.add("com.sun.enterprise.config.serverbeans.ManagedJobConfig");
-        supportedTypes.add("org.glassfish.paas.maintenance.configbeans.PatchingServiceConfig");
-        supportedTypes.add("com.oracle.cloudlogic.sdp.config.ServiceDefinitionPackages");
-    }
-
     @Override
     public boolean justInTimeResolution(Injectee injectee) {
         if (injectee == null || injectee.isOptional()) return false;
@@ -124,6 +112,6 @@ public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeIn
     //Let's check if we support automatic creation of this type or not.
     //This method will go away eventually when we are done with supporting all types.
     private boolean isInjectionSupported(Class c) {
-        return supportedTypes.contains(c.getName());
+        return true;
     }
 }
