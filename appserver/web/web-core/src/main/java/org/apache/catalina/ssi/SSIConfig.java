@@ -71,12 +71,6 @@ import java.io.PrintWriter;
  * @version $Revision: 1.4 $, $Date: 2007/05/05 05:32:19 $
  */
 public final class SSIConfig implements SSICommand {
-    protected HtmlEntityEncoder htmlEntityEncoder;
-
-    public SSIConfig(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-    }
-
     /**
      * @see SSICommand
      */
@@ -99,7 +93,7 @@ public final class SSIConfig implements SSICommand {
                 // during the
                 // loop
                 String configErrMsg = ssiMediator.getConfigErrMsg();
-                writer.write(htmlEntityEncoder.encode(configErrMsg));
+                writer.write(HtmlEntityEncoder.encodeXSS(configErrMsg));
             }
         }
         // Setting config options doesn't really change the page

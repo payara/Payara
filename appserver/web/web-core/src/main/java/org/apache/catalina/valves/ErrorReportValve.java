@@ -365,8 +365,7 @@ public class ErrorReportValve
         if (message == null) {
             message = "";
         } else {
-            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
-            message = htmlEntityEncoder.encode(message);
+            message = HtmlEntityEncoder.encodeXSS(message);
         }
         // END S1AS 4878272
 
@@ -562,8 +561,7 @@ public class ErrorReportValve
             // END SJSAS 6387790
             */
             // START GlassFish 823
-            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
-            sb.append(htmlEntityEncoder.encode(String.valueOf(throwable)));
+            sb.append(HtmlEntityEncoder.encodeXSS(String.valueOf(throwable)));
             // END GlassFish 823
             sb.append("</pre></p>");
 
@@ -587,7 +585,7 @@ public class ErrorReportValve
                 // END SJSAS 6387790
                 */
                 // START GlassFish 823
-                sb.append(htmlEntityEncoder.encode(String.valueOf(rootCause)));
+                sb.append(HtmlEntityEncoder.encodeXSS(String.valueOf(rootCause)));
                 // END GlassFish 823
                 sb.append("</pre></p>");
 

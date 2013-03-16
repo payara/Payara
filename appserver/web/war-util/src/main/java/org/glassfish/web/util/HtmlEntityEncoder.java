@@ -40,100 +40,114 @@
 
 package org.glassfish.web.util;
 
-import java.util.BitSet;
-
 /**
  * This class encodes HTML display content for preventing XSS.
  */
 public class HtmlEntityEncoder {
+    /**
+     * xssStrings:
+     *     " => 34, % => 37, & => 38, ' => 39, ( => 40,
+     *     ) => 41, + => 43, ; => 59, < => 60, > => 62
+     */
+    private static String[] xssStrings = {  //34-62
+        "&quot;", null,
+        null, "&#37;", "&amp;", "&#39;", "&#40;",
+        "&#41;", null, "&#43;", null, null,
+        null, null, null, null, null,
+        null, null, null, null, null,
+        null, null, null, "&#59;", "&lt;",
+        null, "&gt;"
+    };
 
-    //Array containing the safe characters set.
-    protected BitSet safeCharacters = new BitSet(256);
+    private static final int START = 34;
+    private static final char DEFAULT_CHAR = ' ';
 
-    public HtmlEntityEncoder() {
-        for (char i = 'a'; i <= 'z'; i++) {
-            addSafeCharacter(i);
-        }
-        for (char i = 'A'; i <= 'Z'; i++) {
-            addSafeCharacter(i);
-        }
-        for (char i = '0'; i <= '9'; i++) {
-            addSafeCharacter(i);
-        }
-        
-        // Grizzly UEncode includes ) ( -
-        addSafeCharacter('$');
-        addSafeCharacter('_');
-        addSafeCharacter('.');
-
-        addSafeCharacter('!');
-        addSafeCharacter('*');
-        addSafeCharacter('\\');
-        addSafeCharacter(',');
-        // space is ok for html entity
-        addSafeCharacter(' ');
-
-        // unsafe chars for XSS
-        // CR 6944384: < > " ' % ; ) ( & + - 
-    }
-
-    public void addSafeCharacter(char c) {
-        safeCharacters.set(c);
-    }
-
-    public String encode(Object obj) {
+    public static String encodeXSS(Object obj) {
         if (obj == null) {
             return null;
         } else {
-            return encode(obj.toString());
+            return encodeXSS(obj.toString());
         }
     }
 
-    public String encode(String s) {
+    /**
+     * Encode
+     * a) the following visible characters:
+     *     " => 34, % => 37, & => 38, ' => 39, ( => 40,
+     *     ) => 41, + => 43,
+     *     ; => 59, < => 60,
+     *     > => 62,
+     * b) ignore control characters
+     * c) ignore undefined characters
+     */
+    public static String encodeXSS(String s) {
         if (s == null) {
             return null;
         }
 
-        StringBuilder sb = new StringBuilder(s.length());
+        int len = s.length();
+        if (len == 0) {
+            return s;
+        }
 
-        for (int i = 0; i < s.length(); i++) {
+        StringBuilder sb = null;
+        for (int i = 0; i < len; i++) {
             char c = s.charAt(i);
-
-            if (safeCharacters.get(c)) {
-                sb.append(c);
-            } else if (Character.isWhitespace(c)) {
-                sb.append("&#").append((int)c).append(";");
-            } else if (Character.isISOControl(c)) {
-                // ignore
+            int ind =(int)c - START;
+            if (ind > -1 && ind < xssStrings.length && xssStrings[ind] != null) {
+                if (sb == null) {
+                    sb = new StringBuilder(len);
+                    sb.append(s.substring(0, i));
+                }
+                sb.append(xssStrings[ind]);
+            } else if (32 <= c && c <= 126 || 128 <= c && c <= 255 || c == 9
+                    || Character.isWhitespace(c)) {
+                 if (sb != null) {
+                     sb.append(c);
+                 }
+            } else if (Character.isISOControl(c)) { // skip
+                if (sb == null) {
+                    sb = new StringBuilder(len);
+                    sb.append(s.substring(0, i));
+                }
+                sb.append(DEFAULT_CHAR);
             } else if (Character.isHighSurrogate(c)) {
-                if (i + 1 < s.length() && Character.isLowSurrogate(s.charAt(i + 1))) {
-                    int codePoint = Character.toCodePoint(c, s.charAt(i + 1));
-                    if (Character.isDefined(codePoint)) {
-                        sb.append("&#").append(codePoint).append(";");
+                boolean valid = false;
+                if (i + 1 < len) {
+                    char nextC = s.charAt(i + 1);
+                    if (Character.isLowSurrogate(nextC)) {
+                        valid = true;
+                        if (sb != null) {
+                            sb.append(c);
+                            sb.append(nextC);
+                        }
                     }
                 }
-                // else ignore this pair of chars
-                i++;
-            } else if (Character.isDefined(c)) {
-                switch(c) {
-                    case '&':
-                        sb.append("&amp;");
-                        break;
-                    case '<':
-                        sb.append("&lt;");
-                        break;
-                    case '>':
-                        sb.append("&gt;");
-                        break;
-                    case '"':
-                        sb.append("&quot;");
-                        break;
-                    default:
-                        sb.append("&#").append((int)c).append(";");
-                        break;
+                if (!valid) {
+                    if (sb == null) {
+                        sb = new StringBuilder(len);
+                        sb.append(s.substring(0, i));
+                    }
+                    sb.append(DEFAULT_CHAR);
                 }
+                i++; // a pair
+            } else if (Character.isDefined(c)) {
+                if (sb != null) {
+                    sb.append(c);
+                }
+            } else { // skip
+                if (sb == null) {
+                    sb = new StringBuilder(len);
+                    sb.append(s.substring(0, i));
+                }
+                sb.append(DEFAULT_CHAR);
             }
         }
-        return sb.toString();
+
+        if (sb != null) {
+            return sb.toString();
+        } else {
+            return s;
+        }
     }
 }

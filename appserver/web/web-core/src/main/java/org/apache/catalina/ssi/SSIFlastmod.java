@@ -76,12 +76,6 @@ import java.util.Locale;
  * @version $Revision: 1.5 $, $Date: 2007/05/05 05:32:20 $
  */
 public final class SSIFlastmod implements SSICommand {
-    protected HtmlEntityEncoder htmlEntityEncoder;
-
-    public SSIFlastmod(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-    }
-
     /**
      * @see SSICommand
      */
@@ -133,7 +127,7 @@ public final class SSIFlastmod implements SSICommand {
     private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
         String configErrMsg = ssiMediator.getConfigErrMsg();
         if (configErrMsg != null && configErrMsg.length() > 0) {
-            configErrMsg = htmlEntityEncoder.encode(configErrMsg);
+            configErrMsg = HtmlEntityEncoder.encodeXSS(configErrMsg);
         }
         return configErrMsg;
     }

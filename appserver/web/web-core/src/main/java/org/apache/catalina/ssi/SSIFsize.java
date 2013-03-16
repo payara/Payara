@@ -76,12 +76,6 @@ public final class SSIFsize implements SSICommand {
     private final static int ONE_KILOBYTE = 1024;
     private final static int ONE_MEGABYTE = 1024 * 1024;
 
-    protected HtmlEntityEncoder htmlEntityEncoder;
-
-    public SSIFsize(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-    }
-
     /**
      * @see SSICommand
      */
@@ -179,7 +173,7 @@ public final class SSIFsize implements SSICommand {
     private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
         String errorMessage = ssiMediator.getConfigErrMsg();
         if (errorMessage != null && errorMessage.length() > 0) {
-            errorMessage = htmlEntityEncoder.encode(errorMessage);
+            errorMessage = HtmlEntityEncoder.encodeXSS(errorMessage);
         }
         return errorMessage;
     }

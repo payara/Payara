@@ -390,63 +390,40 @@ public final class CGIServlet extends HttpServlet {
     protected void printServletEnvironment(ServletOutputStream out,
         HttpServletRequest req, HttpServletResponse res) throws IOException {
 
-        printServletEnvironment(out, req, res, new HtmlEntityEncoder());
-    }
-
-    /**
-     * Prints out important Servlet API and container information
-     *
-     * <p>
-     * Copied from SnoopAllServlet by Craig R. McClanahan
-     * </p>
-     *
-     * @param  out    ServletOutputStream as target of the information
-     * @param  req    HttpServletRequest object used as source of information
-     * @param  res    HttpServletResponse object currently not used but could
-     *                provide future information
-     * @param  htmlEntityEncoder
-     *
-     * @exception  IOException  if a write operation exception occurs
-     *
-     */
-    protected void printServletEnvironment(ServletOutputStream out,
-        HttpServletRequest req, HttpServletResponse res,
-        HtmlEntityEncoder htmlEntityEncoder) throws IOException {
-
         // Document the properties from ServletRequest
         out.println("<h1>ServletRequest Properties</h1>");
         out.println("<ul>");
         Enumeration<String> attrs = req.getAttributeNames();
         while (attrs.hasMoreElements()) {
             String attr = attrs.nextElement();
-            out.println("<li><b>attribute</b> " + htmlEntityEncoder.encode(attr) + " = " +
-                           htmlEntityEncoder.encode(req.getAttribute(attr)));
+            out.println("<li><b>attribute</b> " + HtmlEntityEncoder.encodeXSS(attr) + " = " +
+                           HtmlEntityEncoder.encodeXSS(req.getAttribute(attr)));
         }
         out.println("<li><b>characterEncoding</b> = " +
-                       htmlEntityEncoder.encode(req.getCharacterEncoding()));
+                       HtmlEntityEncoder.encodeXSS(req.getCharacterEncoding()));
         out.println("<li><b>contentLength</b> = " +
                        req.getContentLength());
         out.println("<li><b>contentType</b> = " +
-                       htmlEntityEncoder.encode(req.getContentType()));
+                       HtmlEntityEncoder.encodeXSS(req.getContentType()));
         Enumeration<Locale> locales = req.getLocales();
         while (locales.hasMoreElements()) {
             Locale locale = locales.nextElement();
-            out.println("<li><b>locale</b> = " + htmlEntityEncoder.encode(locale));
+            out.println("<li><b>locale</b> = " + HtmlEntityEncoder.encodeXSS(locale));
         }
         Enumeration<String> params = req.getParameterNames();
         while (params.hasMoreElements()) {
             String param = params.nextElement();
             String values[] = req.getParameterValues(param);
             for (int i = 0; i < values.length; i++)
-                out.println("<li><b>parameter</b> " + htmlEntityEncoder.encode(param) + " = " +
-                               htmlEntityEncoder.encode(values[i]));
+                out.println("<li><b>parameter</b> " + HtmlEntityEncoder.encodeXSS(param) + " = " +
+                               HtmlEntityEncoder.encodeXSS(values[i]));
         }
         out.println("<li><b>protocol</b> = " + req.getProtocol());
         out.println("<li><b>remoteAddr</b> = " + req.getRemoteAddr());
         out.println("<li><b>remoteHost</b> = " + req.getRemoteHost());
         out.println("<li><b>scheme</b> = " + req.getScheme());
         out.println("<li><b>secure</b> = " + req.isSecure());
-        out.println("<li><b>serverName</b> = " + htmlEntityEncoder.encode(req.getServerName()));
+        out.println("<li><b>serverName</b> = " + HtmlEntityEncoder.encodeXSS(req.getServerName()));
         out.println("<li><b>serverPort</b> = " + req.getServerPort());
         out.println("</ul>");
         out.println("<hr>");
@@ -460,26 +437,26 @@ public final class CGIServlet extends HttpServlet {
         Cookie cookies[] = req.getCookies();
         if (cookies!=null) {
             for (int i = 0; i < cookies.length; i++)
-                out.println("<li><b>cookie</b> " + htmlEntityEncoder.encode(cookies[i].getName())
-                       +" = " +htmlEntityEncoder.encode(cookies[i].getValue()));
+                out.println("<li><b>cookie</b> " + HtmlEntityEncoder.encodeXSS(cookies[i].getName())
+                       +" = " +HtmlEntityEncoder.encodeXSS(cookies[i].getValue()));
         }
         Enumeration<String> headers = req.getHeaderNames();
         while (headers.hasMoreElements()) {
             String header = headers.nextElement();
-            out.println("<li><b>header</b> " + htmlEntityEncoder.encode(header) + " = " +
-                           htmlEntityEncoder.encode(req.getHeader(header)));
+            out.println("<li><b>header</b> " + HtmlEntityEncoder.encodeXSS(header) + " = " +
+                           HtmlEntityEncoder.encodeXSS(req.getHeader(header)));
         }
-        out.println("<li><b>method</b> = " + htmlEntityEncoder.encode(req.getMethod()));
+        out.println("<li><b>method</b> = " + HtmlEntityEncoder.encodeXSS(req.getMethod()));
         out.println("<li><a name=\"pathInfo\"><b>pathInfo</b></a> = "
-                    + htmlEntityEncoder.encode(req.getPathInfo()));
+                    + HtmlEntityEncoder.encodeXSS(req.getPathInfo()));
         out.println("<li><b>pathTranslated</b> = " +
-                       htmlEntityEncoder.encode(req.getPathTranslated()));
+                       HtmlEntityEncoder.encodeXSS(req.getPathTranslated()));
         out.println("<li><b>queryString</b> = " +
-                       htmlEntityEncoder.encode(req.getQueryString()));
+                       HtmlEntityEncoder.encodeXSS(req.getQueryString()));
         out.println("<li><b>remoteUser</b> = " +
-                       htmlEntityEncoder.encode(req.getRemoteUser()));
+                       HtmlEntityEncoder.encodeXSS(req.getRemoteUser()));
         out.println("<li><b>requestedSessionId</b> = " +
-                       htmlEntityEncoder.encode(req.getRequestedSessionId()));
+                       HtmlEntityEncoder.encodeXSS(req.getRequestedSessionId()));
         out.println("<li><b>requestedSessionIdFromCookie</b> = " +
                        req.isRequestedSessionIdFromCookie());
         out.println("<li><b>requestedSessionIdFromURL</b> = " +
@@ -487,11 +464,11 @@ public final class CGIServlet extends HttpServlet {
         out.println("<li><b>requestedSessionIdValid</b> = " +
                        req.isRequestedSessionIdValid());
         out.println("<li><b>requestURI</b> = " +
-                       htmlEntityEncoder.encode(req.getRequestURI()));
+                       HtmlEntityEncoder.encodeXSS(req.getRequestURI()));
         out.println("<li><b>servletPath</b> = " +
                        req.getServletPath());
         out.println("<li><b>userPrincipal</b> = " +
-                       htmlEntityEncoder.encode(req.getUserPrincipal()));
+                       HtmlEntityEncoder.encodeXSS(req.getUserPrincipal()));
         out.println("</ul>");
         out.println("<hr>");
 
@@ -501,8 +478,8 @@ public final class CGIServlet extends HttpServlet {
         attrs = req.getAttributeNames();
         while (attrs.hasMoreElements()) {
             String attr = attrs.nextElement();
-            out.println("<li><b>" + htmlEntityEncoder.encode(attr) + "</b> = " +
-                           htmlEntityEncoder.encode(req.getAttribute(attr)));
+            out.println("<li><b>" + HtmlEntityEncoder.encodeXSS(attr) + "</b> = " +
+                           HtmlEntityEncoder.encodeXSS(req.getAttribute(attr)));
         }
         out.println("</ul>");
         out.println("<hr>");
@@ -515,7 +492,7 @@ public final class CGIServlet extends HttpServlet {
             out.println("<h1>HttpSession Properties</h1>");
             out.println("<ul>");
             out.println("<li><b>id</b> = " +
-                           htmlEntityEncoder.encode(session.getId()));
+                           HtmlEntityEncoder.encodeXSS(session.getId()));
             out.println("<li><b>creationTime</b> = " +
                            new Date(session.getCreationTime()));
             out.println("<li><b>lastAccessedTime</b> = " +
@@ -531,8 +508,8 @@ public final class CGIServlet extends HttpServlet {
             attrs = session.getAttributeNames();
             while (attrs.hasMoreElements()) {
                 String attr = attrs.nextElement();
-                out.println("<li><b>" + htmlEntityEncoder.encode(attr) + "</b> = " +
-                               htmlEntityEncoder.encode(session.getAttribute(attr)));
+                out.println("<li><b>" + HtmlEntityEncoder.encodeXSS(attr) + "</b> = " +
+                               HtmlEntityEncoder.encodeXSS(session.getAttribute(attr)));
             }
             out.println("</ul>");
             out.println("<hr>");
@@ -663,13 +640,12 @@ public final class CGIServlet extends HttpServlet {
         }
  
         if (debug >= 10) {
-            HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
             ServletOutputStream out = res.getOutputStream();
             out.println("<HTML><HEAD><TITLE>$Name:  $</TITLE></HEAD>");
             out.println("<BODY>$Header$<p>");
 
             if (cgiEnv.isValid()) {
-                out.println(cgiEnv.toString(htmlEntityEncoder));
+                out.println(cgiEnv.toString());
             } else {
                 out.println("<H3>");
                 out.println("CGI script not found or not specified.");
@@ -692,7 +668,7 @@ public final class CGIServlet extends HttpServlet {
 
             }
 
-            printServletEnvironment(out, req, res, htmlEntityEncoder);
+            printServletEnvironment(out, req, res);
 
             out.println("</BODY></HTML>");
         } //debugging
@@ -1290,10 +1266,6 @@ public final class CGIServlet extends HttpServlet {
          *
          */
         public String toString() {
-            return toString(new HtmlEntityEncoder());
-        }
-
-        public String toString(HtmlEntityEncoder htmlEntityEncoder) {
 
             StringBuilder sb = new StringBuilder();
 
@@ -1315,9 +1287,9 @@ public final class CGIServlet extends HttpServlet {
                 while (envk.hasMoreElements()) {
                     String s = envk.nextElement();
                     sb.append("<tr><td>");
-                    sb.append(htmlEntityEncoder.encode(s));
+                    sb.append(HtmlEntityEncoder.encodeXSS(s));
                     sb.append("</td><td>");
-                    sb.append(blanksToString(htmlEntityEncoder.encode(env.get(s)),
+                    sb.append(blanksToString(HtmlEntityEncoder.encodeXSS(env.get(s)),
                                              "[will be set to blank]"));
                     sb.append("</td></tr>");
                 }
@@ -1331,7 +1303,7 @@ public final class CGIServlet extends HttpServlet {
 
             sb.append("<tr><td>Working Directory</td><td>");
             if (workingDirectory != null) {
-                sb.append(htmlEntityEncoder.encode(workingDirectory.toString()));
+                sb.append(HtmlEntityEncoder.encodeXSS(workingDirectory.toString()));
             }
             sb.append("</td></tr>");
 
@@ -1339,7 +1311,7 @@ public final class CGIServlet extends HttpServlet {
             for (int i=0; i < cmdLineParameters.size(); i++) {
                 String param = cmdLineParameters.get(i);
                 sb.append("<p>");
-                sb.append(htmlEntityEncoder.encode(param));
+                sb.append(HtmlEntityEncoder.encodeXSS(param));
                 sb.append("</p>");
             }
             sb.append("</td></tr>");

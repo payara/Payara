@@ -74,11 +74,6 @@ import java.io.PrintWriter;
 public class SSIEcho implements SSICommand {
     protected final static String DEFAULT_ENCODING = "entity";
     protected final static String MISSING_VARIABLE_VALUE = "(none)";
-    protected HtmlEntityEncoder htmlEntityEncoder;
-
-    public SSIEcho(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-    }
 
     /**
      * @see SSICommand
@@ -130,7 +125,7 @@ public class SSIEcho implements SSICommand {
     private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
         String errorMessage = ssiMediator.getConfigErrMsg();
         if (errorMessage != null && errorMessage.length() > 0) {
-            errorMessage = htmlEntityEncoder.encode(errorMessage);
+            errorMessage = HtmlEntityEncoder.encodeXSS(errorMessage);
         }
         return errorMessage;
     }

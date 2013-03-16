@@ -75,7 +75,6 @@ import java.io.*;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.text.MessageFormat;
 import java.util.ResourceBundle;
 // END SJSAS 6374691
 
@@ -687,8 +686,7 @@ final class StandardHostValve
             if (message == null) {
                 message = "";
             } else {
-                HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
-                message = htmlEntityEncoder.encode(message);
+                message = HtmlEntityEncoder.encodeXSS(message);
             }
             sreq.setAttribute(RequestDispatcher.ERROR_MESSAGE, message);
         }

@@ -140,7 +140,6 @@ public class WsUtil {
         "schemaIncludeLocationParam";    
 
     private Config config = null;
-    private HtmlEntityEncoder htmlEntityEncoder = new HtmlEntityEncoder();
     private List<NetworkListener> networkListeners = null;
 
     public WsUtil() {
@@ -1408,7 +1407,7 @@ public class WsUtil {
         out.println("Invalid Method Type");
         out.println("</title></head>");
         out.println("<body>");
-        out.println(htmlEntityEncoder.encode(message));
+        out.println(HtmlEntityEncoder.encodeXSS(message));
         out.println("</body>");
         out.println("</html>");
         

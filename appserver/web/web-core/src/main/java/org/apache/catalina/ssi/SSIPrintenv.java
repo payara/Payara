@@ -72,12 +72,6 @@ import java.util.Iterator;
  * @version $Revision: 1.3 $, $Date: 2007/02/13 19:16:21 $
  */
 public class SSIPrintenv implements SSICommand {
-    protected HtmlEntityEncoder htmlEntityEncoder;
-
-    public SSIPrintenv(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-    }
-
     /**
      * @see SSICommand
      */
@@ -88,7 +82,7 @@ public class SSIPrintenv implements SSICommand {
         if (paramNames.length > 0) {
             String errorMessage = ssiMediator.getConfigErrMsg();
             if (errorMessage != null && errorMessage.length() > 0) {
-                errorMessage = htmlEntityEncoder.encode(errorMessage);
+                errorMessage = HtmlEntityEncoder.encodeXSS(errorMessage);
             }
             writer.write(errorMessage);
         } else {

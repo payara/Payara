@@ -79,11 +79,9 @@ import java.io.PrintWriter;
 public class SSIExec implements SSICommand {
     protected SSIInclude ssiInclude;
     protected final static int BUFFER_SIZE = 1024;
-    protected HtmlEntityEncoder htmlEntityEncoder;
 
-    public SSIExec(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-        this.ssiInclude = new SSIInclude(htmlEntityEncoder);
+    public SSIExec() {
+        this.ssiInclude = new SSIInclude();
     }
 
     /**
@@ -117,7 +115,7 @@ public class SSIExec implements SSICommand {
                 lastModified = System.currentTimeMillis();                
             } catch (InterruptedException e) {
                 ssiMediator.log("Couldn't exec file: " + substitutedValue, e);
-                writer.write(htmlEntityEncoder.encode(configErrMsg));
+                writer.write(HtmlEntityEncoder.encodeXSS(configErrMsg));
             } catch (IOException e) {
                 //if (!foundProgram) {
                     //apache doesn't output an error message if it can't find

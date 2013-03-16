@@ -70,12 +70,6 @@ import java.io.PrintWriter;
  * @version $Revision: 1.4 $, $Date: 2007/05/05 05:32:20 $
  */
 public class SSISet implements SSICommand {
-    protected HtmlEntityEncoder htmlEntityEncoder;
-
-    public SSISet(HtmlEntityEncoder htmlEntityEncoder) {
-        this.htmlEntityEncoder = htmlEntityEncoder;
-    }
-
     /**
      * @see SSICommand
      */
@@ -120,7 +114,7 @@ public class SSISet implements SSICommand {
     private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
         String errorMessage = ssiMediator.getConfigErrMsg();
         if (errorMessage != null && errorMessage.length() > 0) {
-            errorMessage = htmlEntityEncoder.encode(errorMessage);
+            errorMessage = HtmlEntityEncoder.encodeXSS(errorMessage);
         }
         return errorMessage;
     }
