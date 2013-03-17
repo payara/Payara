@@ -135,9 +135,11 @@
             <artifactId>javax.servlet.jsp.jstl-api</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- work around for GLASSFISH-19861  -->
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.faces</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.faces</groupId>

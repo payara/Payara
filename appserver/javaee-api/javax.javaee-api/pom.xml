@@ -107,7 +107,15 @@
             <groupId>javax</groupId>
             <artifactId>javaee-web-api</artifactId>
             <version>${javaee.version}</version>
+            <optional>true</optional>
         </dependency>
+        
+        <!-- work around for GLASSFISH-19861  -->
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
+            <optional>true</optional>
+        </dependency>        
         
         <!-- full profile api dependencies -->
         <dependency>
