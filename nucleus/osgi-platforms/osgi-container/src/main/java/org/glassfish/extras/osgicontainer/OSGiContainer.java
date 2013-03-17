@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,16 +42,9 @@ package org.glassfish.extras.osgicontainer;
 
 import org.glassfish.api.container.Container;
 import org.glassfish.api.deployment.Deployer;
-import org.glassfish.internal.deployment.GenericDeployer;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.lang.ref.WeakReference;
-
-import com.sun.enterprise.module.Module;
 
 /**
  * OSGi container, will just be used to manage OSGi bundles through deployment
