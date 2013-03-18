@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,42 +68,6 @@ public class PEFileLayout
 
     public PEFileLayout(RepositoryConfig config) {
         _config = config;
-    }
-
-    public void createRepositoryDirectories() throws RepositoryException
-    {
-        createDirectory(getRepositoryRootDir());
-        createDirectory(getRepositoryDir());
-        createDirectory(getConfigRoot());
-        createDirectory(getBinDir());
-        createDirectory(getLogsDir());
-        createDirectory(getDocRoot());
-        createDirectory(getApplicationsRootDir());
-        createDirectory(getAutoDeployDir());
-        createDirectory(getAutoDeployStatusDir());
-        createDirectory(getAutoDeployOSGiBundlesDir());
-        
-        createDirectory(getLibDir());
-        createDirectory(getClassesDir());
-        createDirectory(getExtLibDir());
-        createDirectory(getAppLibsDir());
-        createDirectory(getTimerDatabaseDir());
-        
-        /*
-        createDirectory(getAddonRoot());
-        createDirectory(getJavaWebStartRoot());
-    
-        createDirectory(getGeneratedDir());
-        createDirectory(getJspRootDir());
-        createDirectory(getEjbRootDir());
-        createDirectory(getXmlRootDir());
-        createDirectory(getJ2EEAppsDir());
-        createDirectory(getJ2EEModulesDir());
-        createDirectory(getLifecycleModulesDir());
-        createDirectory(getMbeansDir());
-        createDirectory(getSessionStore());
-        
-         */
     }
 
     protected RepositoryConfig getConfig() {
@@ -650,9 +614,6 @@ public class PEFileLayout
     }
 
     private static final String AUTO_DEPLOY_OSGI_BUNDLES_DIR = "bundles";
-    private File getAutoDeployOSGiBundlesDir() {
-        return new File(getAutoDeployDir(), AUTO_DEPLOY_OSGI_BUNDLES_DIR);
-    }
 
     public static final String KEY_FILE_TEMPLATE = "keyfile";
     public File getKeyFileTemplate()

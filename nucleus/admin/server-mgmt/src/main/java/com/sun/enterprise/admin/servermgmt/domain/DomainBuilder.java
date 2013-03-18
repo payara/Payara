@@ -64,7 +64,6 @@ import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.servermgmt.RepositoryManager;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainConfigValidator;
-import com.sun.enterprise.admin.servermgmt.pe.SubstitutableTokens;
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionFactory;
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutor;
 import com.sun.enterprise.admin.servermgmt.stringsubs.impl.AttributePreprocessorImpl;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,21 +66,6 @@ public interface DomainsManager
         throws DomainException;
            
     
-    /**
-     * Creates a domain     
-     * @param domainConfig The configuration params that are required to create
-     * the domain. (eg :- domain admin port, http port, default locale, 
-     * domain root, install root etc.) The relevant keys are defined in 
-     * DomainConfig. The implementors of this class should validate the values 
-     * that are supplied.
-     * @throws DomainException  This exception is thrown if 
-     *  - the domain already exists.
-     *  - an invalid or insufficient config. is supplied.
-     *  - an exception occurred during domain creation.
-     */
-    public void createDomain(DomainConfig domainConfig) 
-        throws DomainException;
-
     /**
      * Deletes a domain identified by the given name.
      * (Should we stop the DAS and instances administered by this domain before
