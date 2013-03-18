@@ -1,4 +1,3 @@
-<?xml version="1.0"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -44,40 +43,62 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.main.concurrent</groupId>
+        <artifactId>concurrent</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.glassfish.main.concurrent</groupId>
-    <artifactId>concurrent</artifactId>
-    <name>Concurrency Utilities Modules</name>
-    <packaging>pom</packaging>
-    <version>4.0-SNAPSHOT</version>
-
-    <developers>
-        <developer>
-            <id>anthony.lai</id>
-            <name>Anthony Lai</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-        <developer>
-            <id>hzhang_jn</id>
-            <name>Hong Zhang</name>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <modules>
-	<module>concurrent-impl</module>
-	<module>concurrent-impl-l10n</module>
-    </modules>
+    <artifactId>concurrent-impl-l10n</artifactId>
+    
+    <name>Concurrent Implementation Module l10n</name>
+    
+    <properties>
+        <javadoc.skip>true</javadoc.skip>
+        <deploy.skip>true</deploy.skip>
+    </properties>
+    
+    <build>
+        <plugins>
+            <plugin>
+              <groupId>org.glassfish.hk2</groupId>
+              <artifactId>osgiversion-maven-plugin</artifactId>            
+              <executions>
+                  <execution>
+                      <id>compute-osgi-version</id>
+                      <goals>
+                          <goal>compute-osgi-version</goal>
+                      </goals>
+                  </execution>
+              </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bundle-manifest</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
+                        <configuration>
+                            <instructions>
+                                <Export-Package />
+                            </instructions>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <excludes>
+                    <exclude>**/*.jar</exclude>
+                </excludes>
+            </resource>
+        </resources>
+    </build>
 </project>
+

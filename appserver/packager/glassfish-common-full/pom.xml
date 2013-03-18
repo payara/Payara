@@ -191,19 +191,9 @@
        </dependency> 
        <dependency>
            <groupId>org.glassfish.main.concurrent</groupId>
-	   <artifactId>concurrent-admin</artifactId>
+	   <artifactId>concurrent-impl</artifactId>
            <version>${project.version}</version>
        </dependency> 
-       <dependency>
-           <groupId>org.glassfish.main.concurrent</groupId>
-	   <artifactId>concurrent-config</artifactId>
-           <version>${project.version}</version>
-       </dependency> 
-       <dependency>
-           <groupId>org.glassfish.main.concurrent</groupId>
-	   <artifactId>concurrent-runtime</artifactId>
-           <version>${project.version}</version>
-       </dependency>
        <dependency>
             <groupId>javax.enterprise.concurrent</groupId>
             <artifactId>javax.enterprise.concurrent-api</artifactId>
