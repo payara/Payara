@@ -99,7 +99,7 @@ public class ListBatchJobs
 
     private static final String END_TIME = "endTime";
 
-    @Param(name = "jobname", optional = true, primary = true)
+    @Param(name = "jobname", shortName = "j", optional = true)
     String jobName;
 
 

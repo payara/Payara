@@ -93,7 +93,7 @@ public class ListBatchJobSteps
 
     private static final String STEP_METRICS = "stepMetrics";
 
-    @Param(name = "executionid", primary = true)
+    @Param(name = "executionid", shortName = "x")
     String executionId;
 
     @Override

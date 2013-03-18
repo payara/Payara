@@ -105,9 +105,6 @@ public class ListBatchJobExecutions
     protected void executeCommand(AdminCommandContext context, Properties extraProps)
         throws Exception {
 
-        if (executionId == null && instanceId == null) {
-            context.getActionReport().setMessage("Either executionid OR instanceid is required");
-        }
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
         extraProps.put("listBatchJobExecutions", jobExecutions);
@@ -118,6 +115,21 @@ public class ListBatchJobExecutions
         } else if (instanceId != null) {
             for (JobExecution je : getJobExecutionForInstance(Long.valueOf(instanceId))) {
                 jobExecutions.add(handleJob(je, columnFormatter));
+            }
+        } else {
+            JobOperator jobOperator = BatchRuntime.getJobOperator();
+            Set<String> jobNames = jobOperator.getJobNames();
+            if (jobNames != null) {
+                for (String jn : jobOperator.getJobNames()) {
+                    List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
+                    if (exe != null) {
+                        for (JobInstance ji : exe) {
+                            for (JobExecution je : jobOperator.getJobExecutions(ji)) {
+                                jobExecutions.add(handleJob(je, columnFormatter));
+                            }
+                        }
+                    }
+                }
             }
         }
         context.getActionReport().setMessage(columnFormatter.toString());
