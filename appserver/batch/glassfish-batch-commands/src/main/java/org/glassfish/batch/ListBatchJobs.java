@@ -39,6 +39,7 @@
  */
 package org.glassfish.batch;
 
+import com.ibm.jbatch.spi.TaggedJobExecution;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import org.glassfish.api.I18n;
@@ -55,6 +56,7 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Command to list batch jobs info
@@ -80,6 +82,8 @@ public class ListBatchJobs
         extends AbstractListCommand {
 
     private static final String JOB_NAME = "jobName";
+
+    private static final String APP_NAME = "appName";
 
     private static final String INSTANCE_COUNT = "instanceCount";
 
@@ -121,7 +125,7 @@ public class ListBatchJobs
     @Override
     protected final String[] getSupportedHeaders() {
         return new String[]{
-                JOB_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
+                JOB_NAME, APP_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
                 START_TIME, END_TIME, EXIT_STATUS
         };
     }
@@ -218,6 +222,14 @@ public class ListBatchJobs
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
                     data = "" + je.getJobName();
+                    break;
+                case APP_NAME:
+                    try {
+                        data = "" + ((TaggedJobExecution) je).getTagName();
+                    } catch (Exception ex) {
+                        logger.log(Level.FINE, "Error while calling ((TaggedJobExecution) je).getTagName() ", ex);
+                        data = "null";//ex.toString();
+                    }
                     break;
                 case INSTANCE_COUNT:
                     data = "";//jobOperator.getJobInstanceCount(je.getJobName());
