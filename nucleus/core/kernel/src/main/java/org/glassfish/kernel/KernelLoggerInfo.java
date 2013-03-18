@@ -490,5 +490,40 @@ public class KernelLoggerInfo {
             level = "SEVERE")
     public static final String exceptionDuringShutdown = LOGMSG_PREFIX + "-00070";    
 
+    @LogMessageInfo(
+            message = "The ManagedJobConfig bean {0} was changed by {1}",
+            level = "FINE")
+    public static final String changeManagedJobConfig = LOGMSG_PREFIX + "-00071";
+
+    @LogMessageInfo(
+                message = "Cleaning Job {0}",
+                level = "FINE")
+    public static final String cleaningJob = LOGMSG_PREFIX + "-00072";
+
+    @LogMessageInfo(
+            message = "Initializing Job Cleanup service",
+            level = "FINE")
+    public static final String initializingJobCleanup = LOGMSG_PREFIX + "-00073";
+
+    @LogMessageInfo(
+                message = "Initializing Managed Config bean",
+                level = "FINE")
+    public static final String initializingManagedConfigBean = LOGMSG_PREFIX + "-00074";
+
+    @LogMessageInfo(
+            message = "Scheduling Cleanup",
+            level = "FINE")
+    public static final String schedulingCleanup = LOGMSG_PREFIX + "-00075";
+
+    @LogMessageInfo(
+            message = "Exception when cleaning jobs caused",
+            cause="An exception occured when cleaning the managed jobs",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String exceptionCleaningJobs = LOGMSG_PREFIX + "-00076";
+
+
+
+
     
 }

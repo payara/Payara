@@ -133,25 +133,6 @@ public class JobManagerService implements JobManager,PostConstruct {
     protected ConcurrentHashMap<String,CompletedJob> completedJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
 
 
-    /**
-     * This method will locate all the job files and add to the completedJobs
-     * so that unique ids get generated without interfering with existing completed jobs
-     * and also cleanup occurs for all the jobs
-     *//*
-    public synchronized void locateJobFiles() {
-
-        HashSet<File> persistedJobFiles = jobFileScanner.getJobFiles();
-
-        if (persistedJobFiles.size() > 0) {
-            // Check if there are jobs.xml files which have completed jobs so that
-            // unique ids get generated
-            for  (File jobfile : persistedJobFiles)   {
-
-                reapCompletedJobs(jobfile);
-            }
-
-        }
-    }*/
 
 
     /**
@@ -160,9 +141,6 @@ public class JobManagerService implements JobManager,PostConstruct {
      */
     public synchronized String getNewId() {
 
-        /*if (lastId.get() == 0 )  {
-            locateJobFiles();
-        }*/
         int nextId = lastId.incrementAndGet();
         if (nextId > MAX_SIZE) {
             reset();

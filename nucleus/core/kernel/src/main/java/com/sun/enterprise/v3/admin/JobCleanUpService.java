@@ -93,11 +93,11 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     @Override
     public void postConstruct() {
-        logger.fine(adminStrings.getLocalString("jobcleanup.service.init", "Initializing Job Cleanup service"));
+        logger.log(Level.FINE,KernelLoggerInfo.initializingJobCleanup);
 
         managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
-        logger.fine(adminStrings.getLocalString("init.managed.config.bean", "Initializing ManagedJobConfig bean"));
+        logger.fine(KernelLoggerInfo.initializingManagedConfigBean);
         bean.addListener(this);
 
 
@@ -121,7 +121,7 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     private void scheduleCleanUp() {
 
 
-        logger.fine(adminStrings.getLocalString("scheduling.cleanup", "Scheduling cleanup"));
+        logger.fine(KernelLoggerInfo.schedulingCleanup);
         //default values to 20 minutes for delayBetweenRuns and initialDelay
         long delayBetweenRuns = 1200000;
         long initialDelay = 1200000;
@@ -159,12 +159,12 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
                 while (completedJobs.hasNext()   ) {
                     CompletedJob completedJob = completedJobs.next();
 
-                    logger.fine(adminStrings.getLocalString("cleaning.job","Cleaning job", completedJob.getId()));
+                    logger.log(Level.FINE,KernelLoggerInfo.cleaningJob, new Object[]{completedJob.getId()});
 
                     cleanUpExpiredJobs(completedJob.getJobsFile());
                 }
             } catch (Exception e ) {
-                throw new RuntimeException(adminStrings.getLocalString("error.cleaning.jobs","Error while cleaning jobs" +e));
+                throw new RuntimeException(KernelLoggerInfo.exceptionCleaningJobs,e);
             }
 
         }
@@ -185,7 +185,9 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
                 jobManagerService.purgeCompletedJobForId(job.jobId,file);
                 //remove from local cache for completed jobs
                 jobManagerService.removeFromCompletedJobs(job.jobId);
-                logger.fine(adminStrings.getLocalString("cleaning.job","Cleaning job {0}", job.jobId));
+                if(logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE,KernelLoggerInfo.cleaningJob, job.jobId);
+                }
             }
         }
 
@@ -200,7 +202,10 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
             switch (type) {
                 case CHANGE:
                     if(logger.isLoggable(Level.FINE)) {
-                        logger.fine(adminStrings.getLocalString("managedJobConfig.change","ManagedJobConfig {0} was changed by {1} " , changedType.getName() , changedInstance));
+
+                       logger.log(Level.FINE, KernelLoggerInfo.changeManagedJobConfig, new Object[]{
+                               changedType.getName()
+                       ,changedInstance.toString()});
                     }
                     np = handleChangeEvent(changedInstance);
                     break;
