@@ -156,4 +156,6 @@ public interface WebTagNames extends TagNames {
     public static final String MAX_FILE_SIZE = "max-file-size";
     public static final String MAX_REQUEST_SIZE = "max-request-size";
     public static final String FILE_SIZE_THRESHOLD = "file-size-threshold";
+
+    public static final String DENY_UNCOVERED_HTTP_METHODS = "deny-uncovered-http-methods";
 }

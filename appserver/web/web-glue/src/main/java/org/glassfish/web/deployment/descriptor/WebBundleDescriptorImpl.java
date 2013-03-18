@@ -104,6 +104,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             new HashSet<EntityManagerReferenceDescriptor>();
 
     private Boolean isDistributable;
+    private boolean denyUncoveredHttpMethods = false;
     private Set<SecurityRoleDescriptor> securityRoles;
     private Set<SecurityConstraint> securityConstraints;
     private String contextRoot;
@@ -214,6 +215,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             addErrorPageDescriptor(errPageDesc);
         }
         getAppListeners().addAll(webBundleDescriptor.getAppListeners());
+
+        if (webBundleDescriptor.isDenyUncoveredHttpMethods()) {
+            setDenyUncoveredHttpMethods(true);
+        }
         combineSecurityConstraints(getSecurityConstraintsSet(), webBundleDescriptor.getSecurityConstraintsSet());
 
         // ServletFilters
@@ -1844,6 +1849,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         this.absOrdering = absOrdering;
     }
 
+    public boolean isDenyUncoveredHttpMethods() {
+        return denyUncoveredHttpMethods;
+    }
+
+    public void setDenyUncoveredHttpMethods(boolean denyUncoveredHttpMethods) {
+        this.denyUncoveredHttpMethods = denyUncoveredHttpMethods;
+    }
+
     public boolean isShowArchivedRealPathEnabled() {
         return showArchivedRealPathEnabled;
     }
@@ -2060,6 +2073,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         if (serviceReferences != null)
             printDescriptorSet(serviceReferences, toStringBuffer);
         toStringBuffer.append("\n isDistributable ").append(isDistributable);
+        toStringBuffer.append("\n denyUncoveredHttpMethods ").append(denyUncoveredHttpMethods);
         toStringBuffer.append("\n securityRoles ").append(securityRoles);
         toStringBuffer.append("\n securityConstraints ").append(securityConstraints);
         toStringBuffer.append("\n contextRoot ").append(contextRoot);

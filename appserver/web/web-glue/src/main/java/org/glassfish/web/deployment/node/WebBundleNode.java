@@ -149,6 +149,15 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         }
     }
 
+    @Override
+    public boolean endElement(XMLElement element) {
+        if (WebTagNames.DENY_UNCOVERED_HTTP_METHODS.equals(element.getQName())) {
+            descriptor.setDenyUncoveredHttpMethods(true);
+            return false;
+        } else {
+            return super.endElement(element);
+        }
+    }
     
    /**
     * @return the descriptor instance to associate with this XMLNode
@@ -205,6 +214,9 @@ public class WebBundleNode extends WebCommonNode<WebBundleDescriptorImpl> {
         WebBundleDescriptorImpl webBundleDesc) {
 
         Node jarNode = super.writeDescriptor(parent, webBundleDesc);
+        if (webBundleDesc.isDenyUncoveredHttpMethods()) {
+            appendChild(jarNode, WebTagNames.DENY_UNCOVERED_HTTP_METHODS);
+        }
         if (webBundleDesc.getAbsoluteOrderingDescriptor() != null) {
             AbsoluteOrderingNode absOrderingNode = new AbsoluteOrderingNode();
             absOrderingNode.writeDescriptor(jarNode, WebTagNames.ABSOLUTE_ORDERING,
