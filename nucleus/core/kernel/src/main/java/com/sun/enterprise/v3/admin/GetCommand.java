@@ -40,6 +40,10 @@
 package com.sun.enterprise.v3.admin;
 
 import java.util.*;
+import java.util.logging.Logger;
+
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
+import com.sun.enterprise.config.modularity.GetSetModularityHelper;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
@@ -105,7 +109,11 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     private List<Map.Entry> matchingNodesSorted;
     
     private String prefix;
-    
+
+    @Inject
+    @Optional
+    GetSetModularityHelper modularityHelper;
+
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         if (monitor) {
@@ -163,7 +171,8 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
             //report.setMessage(old == null ? append : old + append);
             return;
         }
-        
+
+
         boolean foundMatch = false;
         for (Map.Entry<Dom, String> node : matchingNodesSorted) {
             // if we get more of these special cases, we should switch to a Renderer pattern
@@ -211,6 +220,12 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
     }
     
     private List<Map.Entry> findSortedMatchingNodes() {
+
+        if (!monitor) {
+            if (modularityHelper != null) {
+                modularityHelper.getLocationForDottedName(pattern);
+            }
+        }
         // check for logging patterns
         if (pattern.contains(".log-service")) {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);

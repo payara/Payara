@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,7 +74,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
 
     @Override
     public ConfigBeanProxy handleExtension(Object owner, Class ownerType, Object[] params) {
-
+        if(((Class) params[0]).getName().equals("com.sun.enterprise.config.serverbeans.SystemProperty")) return null;
         ConfigBeanProxy configExtension = null;
         List<ConfigBeanProxy> extensions = configModularityUtils.getExtensions(((ConfigBean) owner).createProxy(ownerType));
         for (ConfigBeanProxy extension : extensions) {
@@ -92,7 +92,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
             return returnValue;
         } catch (TransactionFailure transactionFailure) {
             LOG.log(Level.INFO, "Cannot get extension type {0} for {1} due to {2}", new Object[]{
-                    owner.getClass().getName(), ownerType.getClass().getName(),
+                    owner.getClass().getName(), ownerType.getName(),
                     transactionFailure.getMessage()});
             return null;
         }

@@ -42,9 +42,7 @@ package com.sun.enterprise.config.modularity;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.DomainExtension;
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.config.support.Singleton;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -59,15 +57,16 @@ import java.util.logging.Logger;
  * @author Masoud Kalali
  */
 @Service
+@Singleton
 public class GetSetModularityHelper {
 
     private static final Logger LOG = Logger.getLogger(GetSetModularityHelper.class.getName());
 
     @Inject
-    private ServiceLocator serviceLocator;
+    private ConfigModularityUtils configModularityUtils;
 
     @Inject
-    private ConfigModularityUtils configModularityUtils;
+    private Domain domain;
 
     /**
      * checks and see if a class has an attribute with he specified name or not.
@@ -76,7 +75,7 @@ public class GetSetModularityHelper {
      * @param attributeName the attribute to check its presence in the class.
      * @return true if present and false if not.
      */
-    public boolean checkAttributePresence(Class classToQuery, String attributeName) {
+    private boolean checkAttributePresence(Class classToQuery, String attributeName) {
         String fieldName = convertAttributeToPropertyName(attributeName);
         String methodName = "set" + fieldName.replaceFirst(fieldName.substring(0, 1), String.valueOf(Character.toUpperCase(fieldName.charAt(0))));
         Method[] methods = classToQuery.getMethods();
@@ -110,30 +109,85 @@ public class GetSetModularityHelper {
         return propertyName.toString();
     }
 
-    public boolean isConfigElementPresent(String serviceName, String target) {
-        Class configBeanType = configModularityUtils.getClassFor(serviceName);
-        Domain domain = serviceLocator.getService(Domain.class);
-        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            Config c = domain.getConfigNamed(target);
-            if (c.checkIfExtensionExists(configBeanType)) {
-                return true;
-            }
-        } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            if (domain.checkIfExtensionExists(configBeanType)) {
-                return true;
+    /**
+     * @param prefix   the entire . separated string
+     * @param position starts with one
+     * @return the configbean class matching the element in the given position or null
+     */
+    private Class getElementClass(String prefix, int position) {
+
+        StringTokenizer tokenizer = new StringTokenizer(prefix, ".");
+        String token = null;
+        for (int i = 0; i < position; i++) {
+            if (tokenizer.hasMoreTokens()) {
+                token = tokenizer.nextToken();
+            } else {
+                return null;
             }
         }
-        return false;
+        if (token != null) {
+            return configModularityUtils.getClassFor(token);
+        }
+        return null;
     }
 
-    public void addBeanToDomainXml(String serviceName, String target) {
-        Class configBeanType = configModularityUtils.getClassFor(serviceName);
-        Domain domain = serviceLocator.getService(Domain.class);
-        if (ConfigExtension.class.isAssignableFrom(configBeanType)) {
-            Config c = domain.getConfigNamed(target);
-            c.getExtensionByType(configBeanType);
-        } else if (configBeanType.isAssignableFrom(DomainExtension.class)) {
-            domain.getExtensionByType(configBeanType);
+    /**
+     * @param string   the entire . separated string
+     * @param position starts with one
+     * @return String in that position
+     */
+    private String getElement(String string, int position) {
+
+        StringTokenizer tokenizer = new StringTokenizer(string, ".");
+        String token = null;
+        for (int i = 0; i < position; i++) {
+            if (tokenizer.hasMoreTokens()) {
+                token = tokenizer.nextToken();
+            } else {
+                return null;
+            }
         }
+        return token;
+    }
+
+    public void getLocationForDottedName(String dottedName) {
+        //TODO temporary till all elements are supported
+        if (!dottedName.contains("mdb-container") ||
+                !dottedName.contains("ejb-container") ||
+                !dottedName.contains("web-container")
+                )
+            return;
+        //TODO improve performance to improve command execution time
+        checkForDependentElements(dottedName);
+        if (dottedName.startsWith("configs.config.")) {
+            Config c = null;
+            if ((getElement(dottedName, 3) != null)) {
+                c = getConfigForName(getElement(dottedName, 3));
+
+            }
+            if (c != null && getElementClass(dottedName, 4) != null) {
+                c.getExtensionByType(getElementClass(dottedName, 4));
+            }
+
+        } else if (!dottedName.startsWith("domain.")) {
+            Config c = null;
+            if ((getElement(dottedName, 1) != null)) {
+                c = getConfigForName(getElement(dottedName, 1));
+
+            }
+            if (c != null && getElementClass(dottedName, 2) != null) {
+                c.getExtensionByType(getElementClass(dottedName, 2));
+            }
+        }
+    }
+
+    private void checkForDependentElements(String dottedName) {
+        //Go over the dependent elements of a given config bean and try finding if the dependent elements match the dottedName
+    }
+
+    private Config getConfigForName(String name) {
+        if (domain.getConfigNamed(name) != null) return domain.getConfigNamed(name);
+        if (domain.getServerNamed(name) != null) return domain.getServerNamed(name).getConfig();
+        return null;
     }
 }
