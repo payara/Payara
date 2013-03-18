@@ -77,9 +77,9 @@ import java.util.*;
 public class ListBatchRuntimeConfiguration
     extends AbstractListCommand {
 
-    private static final String DATA_SOURCE_NAME = "data-source-lookup-name";
+    private static final String DATA_SOURCE_NAME = "dataSourceLookupName";
 
-    private static final String EXECUTOR_SERVICE_NAME = "executor-service-lookup-name";
+    private static final String EXECUTOR_SERVICE_NAME = "executorServiceLookupName";
 
     @Inject
     private Configs configs;
@@ -91,7 +91,7 @@ public class ListBatchRuntimeConfiguration
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
 
         Config config = configs.getConfigByName(
-                configName == null ? "default-config" : configName);
+                configName == null ? "server-config" : configName);
 
         BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
 

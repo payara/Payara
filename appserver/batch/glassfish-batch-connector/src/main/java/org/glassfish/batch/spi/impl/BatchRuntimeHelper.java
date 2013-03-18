@@ -41,9 +41,12 @@ package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.spi.*;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
@@ -65,7 +68,7 @@ import java.util.logging.Logger;
 @Service
 @RunLevel(StartupRunLevel.VAL)
 public class BatchRuntimeHelper
-    implements PostConstruct {
+    implements PostConstruct, EventListener {
 
     @Inject
     @Optional
@@ -79,6 +82,9 @@ public class BatchRuntimeHelper
 
     @Inject
     private Logger logger;
+
+    @Inject
+    Events events;
 
     private static final String DEFAULT_DATA_SOURCE_LOOKUP_NAME = "jdbc/__TimerPool";
 
@@ -117,6 +123,8 @@ public class BatchRuntimeHelper
     @Override
     public void postConstruct() {
         System.out.println("** GlassFishBatchExecutorServiceProvider.postConstruct() called");
+        events.register(this);
+
         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
         batchSPIManager.registerExecutorServiceProvider(new GlassFishBatchExecutorServiceProvider());
         batchSPIManager.registerBatchSecurityHelper(glassFishBatchSecurityHelper);
@@ -128,6 +136,14 @@ public class BatchRuntimeHelper
             batchSPIManager.registerDatabaseConfigurationBean(databaseConfigurationBean);
         } catch (DatabaseAlreadyInitializedException daiEx) {
             daiEx.printStackTrace();
+        }
+    }
+
+    @Override
+    public void event(Event event) {
+        if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
+            System.out.println("** GlassFishBatchExecutorServiceProvider.onEvent() called: "
+                + event.toString());
         }
     }
 

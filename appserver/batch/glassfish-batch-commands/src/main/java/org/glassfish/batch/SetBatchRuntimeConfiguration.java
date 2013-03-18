@@ -66,19 +66,19 @@ import java.util.logging.Logger;
  * @author Mahesh Kannan
  *
  */
-@Service(name = "configure-batch-runtime")
+@Service(name = "set-batch-runtime-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("configure.batch.runtime")
+@I18n("set.batch.runtime.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.POST,
-                path = "configure-batch-runtime",
-                description = "Configure Batch Runtime")
+                path = "set-batch-runtime-configuration",
+                description = "Set Batch Runtime Configuration")
 })
-public class ConfigureBatchRuntime
+public class SetBatchRuntimeConfiguration
     implements AdminCommand {
 
     @Inject
@@ -111,7 +111,7 @@ public class ConfigureBatchRuntime
 
         try {
             Config config = configs.getConfigByName(
-                    configName == null ? "default-config" : configName);
+                    configName == null ? "server-config" : configName);
 
 
             BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
