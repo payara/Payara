@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.annotation.context.*;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
@@ -221,12 +222,6 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
                     }
                 }
 
-                if (desc.getResourceAdapter() == null) {
-                    if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
-                        desc.setResourceAdapter(defn.resourceAdapter());
-                    }
-                }
-
                 if (desc.getDestinationName() == null) {
                     if (defn.destinationName() != null && !defn.destinationName().equals("")) {
                         desc.setDestinationName(defn.destinationName());
@@ -270,6 +265,8 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
         if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
             desc.setResourceAdapter(defn.resourceAdapter());
+        } else {
+            desc.setResourceAdapter(ConnectorConstants.DEFAULT_JMS_ADAPTER);
         }
 
         if (defn.destinationName() != null && !defn.destinationName().equals("")) {

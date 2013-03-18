@@ -72,6 +72,13 @@ public class JMSConnectionFactoryDefinitionDescriptor extends AbstractConnectorR
         this.className = className;
     }
 
+    public String getResourceAdapter() {
+        if (resourceAdapter != null && !"".equals(resourceAdapter))
+            return resourceAdapter;
+        else
+            return DEFAULT_JMS_ADAPTER;
+    }
+
     public String getUser() {
         return user;
     }
