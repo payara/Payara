@@ -38,8 +38,50 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.REQUIRED)
-public class BeanRequired extends BeanBase {
+import javax.transaction.*;
+
+
+
+public class TransactionManager implements javax.transaction.TransactionManager {
+    ThreadLocal transactionThreadLocal = new ThreadLocal();
+
+    public void begin() throws NotSupportedException, SystemException {
+        transactionThreadLocal.set(new Transaction());
+    }
+
+    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
+        suspend();
+    }
+
+    public int getStatus() throws SystemException {
+        return 0;  
+    }
+
+    public javax.transaction.Transaction getTransaction() throws SystemException {
+        return (javax.transaction.Transaction) transactionThreadLocal.get();
+    }
+
+    public void resume(javax.transaction.Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
+        transactionThreadLocal.set(transaction);
+    }
+
+    public void rollback() throws IllegalStateException, SecurityException, SystemException {
+        suspend();
+    }
+
+    public void setRollbackOnly() throws IllegalStateException, SystemException {
+        
+    }
+
+    public void setTransactionTimeout(int seconds) throws SystemException {
+        
+    }
+
+    public javax.transaction.Transaction suspend() throws SystemException {
+        javax.transaction.Transaction transaction = (javax.transaction.Transaction)transactionThreadLocal.get();
+        transactionThreadLocal.set(null);
+        return transaction;
+    }
 }

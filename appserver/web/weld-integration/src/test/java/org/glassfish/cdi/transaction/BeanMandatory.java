@@ -38,36 +38,8 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
-
-/**
- * Transactional annotation Interceptor class for Supports transaction type,
- *  ie javax.transaction.Transactional.TxType.SUPPORT
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
- */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
-public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
-
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorSupports.class, LogDomains.JTA_LOGGER);
-
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In SUPPORTS TransactionalInterceptor");
-        return proceed(ctx);
-    }
-}
+@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.MANDATORY)
+public class BeanMandatory extends BeanBase {
+}      

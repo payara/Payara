@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
 
 import com.sun.logging.LogDomains;
@@ -77,7 +77,9 @@ public class TransactionalInterceptorBase {
                                 new InitialContext().lookup("java:appserver/TransactionManager");
                 }
             } catch (NamingException e) {
-                e.printStackTrace(); //todo log
+                _logger.severe(
+                        "Encountered NamingException while attempting to acquire transaction manager for " +
+                                "Transactional annotation interceptors " + e);
             }
         }
         return transactionManager;

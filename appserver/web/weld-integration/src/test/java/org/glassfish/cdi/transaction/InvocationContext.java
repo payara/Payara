@@ -38,43 +38,61 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import javax.transaction.TransactionRequiredException;
-import javax.transaction.TransactionalException;
-import java.util.logging.Logger;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
- * Transactional annotation Interceptor class for Mandatory transaction type,
- *  ie javax.transaction.Transactional.TxType.MANDATORY
- * If called outside a transaction context, TransactionRequiredException will be thrown
- * If called inside a transaction context, managed bean method execution will then
- *  continue under that context.
- *
- * @author Paul Parkinson
+ * User: paulparkinson
+ * Date: 12/12/12
+ * Time: 1:12 PM
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.MANDATORY)
-public class TransactionalInterceptorMandatory extends TransactionalInterceptorBase {
+public class InvocationContext implements javax.interceptor.InvocationContext {
+    Method method;
+    Exception exceptionFromProceed;
+    TestInvocationContextTarget testInvocationContextTarget = new TestInvocationContextTarget();
 
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
-
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In MANDATORY TransactionalInterceptor");
-        if(getTransactionManager().getTransaction() == null)
-            throw new TransactionalException(
-                    "TransactionRequiredException thrown from TxType.MANDATORY transactional interceptor.",
-                    new TransactionRequiredException("Managed bean with Transactional annotation and TxType of " +
-                                        "MANDATORY called outside of a transaction context"));
-        return proceed(ctx);
+    public InvocationContext(Method method, Exception exceptionFromProceed) {
+        this.method = method;
+        this.exceptionFromProceed = exceptionFromProceed;
     }
 
+    public Object getTarget() {
+        return testInvocationContextTarget;
+    }
+
+    class TestInvocationContextTarget {
+
+    }
+
+    public Object getTimer() {
+        return null;
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public Constructor getConstructor() {
+        return null;
+    }
+
+    public Object[] getParameters() {
+        return new Object[0];
+    }
+
+    public void setParameters(Object[] params) {
+
+    }
+
+    public Map<String, Object> getContextData() {
+        return null;
+    }
+
+    public Object proceed() throws Exception {
+        if (exceptionFromProceed != null) throw exceptionFromProceed;
+        return null;
+    }
 }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
 import junit.framework.TestCase;
 

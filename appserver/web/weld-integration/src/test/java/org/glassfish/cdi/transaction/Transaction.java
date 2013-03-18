@@ -38,50 +38,54 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
 import javax.transaction.*;
+import javax.transaction.xa.XAResource;
 
+/**
+ * User: paulparkinson
+ * Date: 12/18/12
+ * Time: 11:50 AM
+ */
+public class Transaction implements javax.transaction.Transaction {
+    private static int counter;
+    private int txid;
 
+    public Transaction() {
+        txid = counter++;
+    }
 
-public class TransactionManager implements javax.transaction.TransactionManager {
-    ThreadLocal transactionThreadLocal = new ThreadLocal();
-
-    public void begin() throws NotSupportedException, SystemException {
-        transactionThreadLocal.set(new Transaction());
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Transaction &&  ((Transaction)o).txid == this.txid;
     }
 
     public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
-        suspend();
+        
+    }
+
+    public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
+        return false;  
+    }
+
+    public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
+        return false;  
     }
 
     public int getStatus() throws SystemException {
         return 0;  
     }
 
-    public javax.transaction.Transaction getTransaction() throws SystemException {
-        return (javax.transaction.Transaction) transactionThreadLocal.get();
+    public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
+        
     }
 
-    public void resume(javax.transaction.Transaction transaction) throws InvalidTransactionException, IllegalStateException, SystemException {
-        transactionThreadLocal.set(transaction);
-    }
-
-    public void rollback() throws IllegalStateException, SecurityException, SystemException {
-        suspend();
+    public void rollback() throws IllegalStateException, SystemException {
+        
     }
 
     public void setRollbackOnly() throws IllegalStateException, SystemException {
         
-    }
-
-    public void setTransactionTimeout(int seconds) throws SystemException {
-        
-    }
-
-    public javax.transaction.Transaction suspend() throws SystemException {
-        javax.transaction.Transaction transaction = (javax.transaction.Transaction)transactionThreadLocal.get();
-        transactionThreadLocal.set(null);
-        return transaction;
     }
 }

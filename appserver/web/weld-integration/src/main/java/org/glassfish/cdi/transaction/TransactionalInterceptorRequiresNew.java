@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
 
 import com.sun.logging.LogDomains;
@@ -47,6 +47,7 @@ import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import javax.transaction.Transaction;
+import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
 
 /**
@@ -62,6 +63,7 @@ import java.util.logging.Logger;
  *
  * @author Paul Parkinson
  */
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRES_NEW)
 public class TransactionalInterceptorRequiresNew extends TransactionalInterceptorBase {
@@ -79,19 +81,42 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
             suspendedTransaction = getTransactionManager().suspend();
             //todo catch, wrap in new transactional exception and throw
         }
-        getTransactionManager().begin();
+        try {
+            getTransactionManager().begin();
+        } catch (Exception exception) {
+            String messageString =
+                    "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                            "encountered exception during begin " +
+                            exception;
+            _logger.info(messageString);
+            throw new TransactionalException(messageString, exception);
+        }
         Object proceed = null;
         try {
             proceed = proceed(ctx);
         } finally {
             try {
-            getTransactionManager().commit();
-            } catch (Exception e) {
-                throw new RuntimeException("Exception during REQUIRES_NEW commit.",e);
-            //todo nest in transactional(runtime)exception  and check each tyoe for consideration
+                getTransactionManager().commit();
+            } catch (Exception exception) {
+                String messageString =
+                        "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                                "encountered exception during commit " +
+                                exception;
+                _logger.info(messageString);
+                throw new TransactionalException(messageString, exception);
             }
-            if (suspendedTransaction != null) getTransactionManager().resume(suspendedTransaction);
-            //todo catch, wrap in new transactional exception and throw
+            if (suspendedTransaction != null) {
+                try {
+                    getTransactionManager().resume(suspendedTransaction);
+                } catch (Exception exception) {
+                    String messageString =
+                            "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                                    "encountered exception during resume " +
+                                    exception;
+                    _logger.info(messageString);
+                    throw new TransactionalException(messageString, exception);
+                }
+            }
         }
         return proceed;
     }

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
 
 import com.sun.logging.LogDomains;
@@ -61,6 +61,7 @@ import java.util.logging.Logger;
  *
  * @author Paul Parkinson
  */
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {
@@ -90,7 +91,17 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
         try {
             proceed = proceed(ctx);
         } finally {
-            if (transaction != null) getTransactionManager().resume(transaction); //todo wrap in new transactional exception and throw
+            if (transaction != null) {
+                try {
+                    getTransactionManager().resume(transaction);
+                } catch (Exception exception ) {
+                    String messageString =
+                            "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+                                    "encountered exception during resume " +
+                                    exception;
+                    throw new TransactionalException(messageString, exception);
+                }
+            }
         }
         return proceed;
     }

@@ -38,61 +38,17 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
- * User: paulparkinson
- * Date: 12/12/12
- * Time: 1:12 PM
+ *
  */
-public class InvocationContext implements javax.interceptor.InvocationContext {
-    Method method;
-    Exception exceptionFromProceed;
-    TestInvocationContextTarget testInvocationContextTarget = new TestInvocationContextTarget();
-
-    public InvocationContext(Method method, Exception exceptionFromProceed) {
-        this.method = method;
-        this.exceptionFromProceed = exceptionFromProceed;
-    }
-
-    public Object getTarget() {
-        return testInvocationContextTarget;
-    }
-
-    class TestInvocationContextTarget {
-
-    }
-
-    public Object getTimer() {
-        return null;
-    }
-
-    public Method getMethod() {
-        return method;
-    }
-
-    public Constructor getConstructor() {
-        return null;
-    }
-
-    public Object[] getParameters() {
-        return new Object[0];
-    }
-
-    public void setParameters(Object[] params) {
-
-    }
-
-    public Map<String, Object> getContextData() {
-        return null;
-    }
-
-    public Object proceed() throws Exception {
-        if (exceptionFromProceed != null) throw exceptionFromProceed;
-        return null;
-    }
+public class BeanBase {
+  public String foo() {
+    return "In " + this + ".foo()";
+  }
+  public String foo(String s) {
+    return "In " + this + ".foo() s:"+s;
+  }
 }

@@ -38,8 +38,43 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.NOT_SUPPORTED)
-public class BeanNotSupported extends BeanBase {
+
+import com.sun.logging.LogDomains;
+
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import javax.transaction.InvalidTransactionException;
+import javax.transaction.TransactionalException;
+import java.util.logging.Logger;
+
+/**
+ * Transactional annotation Interceptor class for Never transaction type,
+ *  ie javax.transaction.Transactional.TxType.NEVER
+ * If called outside a transaction context, managed bean method execution will then
+ *  continue outside a transaction context.
+ * If called inside a transaction context, InvalidTransactionException will be thrown
+ *
+ * @author Paul Parkinson
+ */
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@Interceptor
+@javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
+public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
+
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
+
+    @AroundInvoke
+    public Object transactional(InvocationContext ctx) throws Exception {
+        _logger.info("In NEVER TransactionalInterceptor");
+        if(getTransactionManager().getTransaction() != null)
+            throw new TransactionalException(
+                    "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",
+                    new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
+                    "called inside a transaction context"));
+        return proceed(ctx);
+    }
 }

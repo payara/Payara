@@ -38,54 +38,39 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-import javax.transaction.*;
-import javax.transaction.xa.XAResource;
+
+import com.sun.logging.LogDomains;
+
+import javax.interceptor.AroundInvoke;
+//import javax.interceptor.Interceptor;
+//import javax.interceptor.Interceptor.Priority;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import java.util.logging.Logger;
 
 /**
- * User: paulparkinson
- * Date: 12/18/12
- * Time: 11:50 AM
+ * Transactional annotation Interceptor class for Supports transaction type,
+ *  ie javax.transaction.Transactional.TxType.SUPPORT
+ * If called outside a transaction context, managed bean method execution will then
+ *  continue outside a transaction context.
+ * If called inside a transaction context, the managed bean method execution will then continue
+ *  inside this transaction context.
+ *
+ * @author Paul Parkinson
  */
-public class Transaction implements javax.transaction.Transaction {
-    private static int counter;
-    private int txid;
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@Interceptor
+@javax.transaction.Transactional(javax.transaction.Transactional.TxType.SUPPORTS)
+public class TransactionalInterceptorSupports extends TransactionalInterceptorBase {
 
-    public Transaction() {
-        txid = counter++;
-    }
+    private static Logger _logger = LogDomains.getLogger(
+            TransactionalInterceptorSupports.class, LogDomains.JTA_LOGGER);
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof Transaction &&  ((Transaction)o).txid == this.txid;
-    }
-
-    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
-        
-    }
-
-    public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-        return false;  
-    }
-
-    public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
-        return false;  
-    }
-
-    public int getStatus() throws SystemException {
-        return 0;  
-    }
-
-    public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
-        
-    }
-
-    public void rollback() throws IllegalStateException, SystemException {
-        
-    }
-
-    public void setRollbackOnly() throws IllegalStateException, SystemException {
-        
+    @AroundInvoke
+    public Object transactional(InvocationContext ctx) throws Exception {
+        _logger.info("In SUPPORTS TransactionalInterceptor");
+        return proceed(ctx);
     }
 }

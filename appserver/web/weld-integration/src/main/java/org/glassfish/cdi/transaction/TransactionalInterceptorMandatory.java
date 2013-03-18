@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
 
 import com.sun.logging.LogDomains;
@@ -46,34 +46,36 @@ import com.sun.logging.LogDomains;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import javax.transaction.InvalidTransactionException;
+import javax.transaction.TransactionRequiredException;
 import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
 
 /**
- * Transactional annotation Interceptor class for Never transaction type,
- *  ie javax.transaction.Transactional.TxType.NEVER
- * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
- * If called inside a transaction context, InvalidTransactionException will be thrown
+ * Transactional annotation Interceptor class for Mandatory transaction type,
+ *  ie javax.transaction.Transactional.TxType.MANDATORY
+ * If called outside a transaction context, TransactionRequiredException will be thrown
+ * If called inside a transaction context, managed bean method execution will then
+ *  continue under that context.
  *
  * @author Paul Parkinson
  */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
-public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@Interceptor()
+@javax.transaction.Transactional(javax.transaction.Transactional.TxType.MANDATORY)
+public class TransactionalInterceptorMandatory extends TransactionalInterceptorBase {
 
     private static Logger _logger = LogDomains.getLogger(
             TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In NEVER TransactionalInterceptor");
-        if(getTransactionManager().getTransaction() != null)
+        _logger.info("In MANDATORY TransactionalInterceptor");
+        if(getTransactionManager().getTransaction() == null)
             throw new TransactionalException(
-                    "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",
-                    new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
-                    "called inside a transaction context"));
+                    "TransactionRequiredException thrown from TxType.MANDATORY transactional interceptor.",
+                    new TransactionRequiredException("Managed bean with Transactional annotation and TxType of " +
+                                        "MANDATORY called outside of a transaction context"));
         return proceed(ctx);
     }
+
 }

@@ -38,8 +38,8 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.NEVER)
-public class BeanNever extends BeanBase {
+@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.REQUIRES_NEW)
+public class BeanRequiresNew extends BeanBase {
 }

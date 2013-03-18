@@ -38,50 +38,8 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
-
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
-import javax.interceptor.InvocationContext;
-import java.util.logging.Logger;
-
-/**
- * Transactional annotation Interceptor class for Required transaction type,
- *  ie javax.transaction.Transactional.TxType.REQUIRED
- * If called outside a transaction context, a new JTA transaction will begin,
- *  the managed bean method execution will then continue inside this transaction context,
- *  and the transaction will be committed.
- * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
- *
- * @author Paul Parkinson
- */
-@Interceptor
-@javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRED)
-public class TransactionalInterceptorRequired extends TransactionalInterceptorBase {
-
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorRequired.class, LogDomains.JTA_LOGGER);
-
-    @AroundInvoke
-    public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In REQUIRED TransactionalInterceptor");
-        boolean isTransactionStarted = false;
-        if(getTransactionManager().getTransaction()==null) {
-            _logger.info("Managed bean with Transactional annotation and TxType of REQUIRED " +
-                    "called outside a transaction context.  Beginning a transaction...");
-            getTransactionManager().begin();
-            isTransactionStarted = true;
-        }
-        Object proceed = null;
-        try {
-            proceed = proceed(ctx);
-        } finally {
-            if (isTransactionStarted) getTransactionManager().commit();
-        }
-        return proceed;
-    }
+@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.NEVER)
+public class BeanNever extends BeanBase {
 }

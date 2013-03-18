@@ -38,8 +38,8 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.SUPPORTS)
-public class BeanSupports extends BeanBase {
+@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.NOT_SUPPORTED)
+public class BeanNotSupported extends BeanBase {
 }

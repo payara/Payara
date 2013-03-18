@@ -38,17 +38,8 @@
  * holder.
  */
 
-package com.sun.enterprise.transaction.cdi;
+package org.glassfish.cdi.transaction;
 
-
-/**
- *
- */
-public class BeanBase {
-  public String foo() {
-    return "In " + this + ".foo()";
-  }
-  public String foo(String s) {
-    return "In " + this + ".foo() s:"+s;
-  }
+@javax.transaction.Transactional(value = javax.transaction.Transactional.TxType.SUPPORTS)
+public class BeanSupports extends BeanBase {
 }
