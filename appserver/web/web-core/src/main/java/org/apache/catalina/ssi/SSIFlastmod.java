@@ -110,7 +110,7 @@ public final class SSIFlastmod implements SSICommand {
                         "#flastmod--Couldn't get last modified for file: "
                                 + substitutedValue, e);
                 if (configErrMsg == null) {
-                        configErrMsg = getEncodedConfigErrorMessage(ssiMediator);
+                    configErrMsg = getEncodedConfigErrorMessage(ssiMediator);
                 }
                 writer.write(configErrMsg);
             }
@@ -126,9 +126,6 @@ public final class SSIFlastmod implements SSICommand {
 
     private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
         String configErrMsg = ssiMediator.getConfigErrMsg();
-        if (configErrMsg != null && configErrMsg.length() > 0) {
-            configErrMsg = HtmlEntityEncoder.encodeXSS(configErrMsg);
-        }
-        return configErrMsg;
+        return HtmlEntityEncoder.encodeXSS(configErrMsg);
     }
 }

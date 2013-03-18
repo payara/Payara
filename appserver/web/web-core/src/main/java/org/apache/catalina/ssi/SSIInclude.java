@@ -115,9 +115,6 @@ public final class SSIInclude implements SSICommand {
 
     private String getEncodedConfigErrorMessage(SSIMediator ssiMediator) {
         String errorMessage = ssiMediator.getConfigErrMsg();
-        if (errorMessage != null && errorMessage.length() > 0) {
-            errorMessage = HtmlEntityEncoder.encodeXSS(errorMessage);
-        }
-        return errorMessage;
+        return HtmlEntityEncoder.encodeXSS(errorMessage);
     }
 }

@@ -81,10 +81,7 @@ public class SSIPrintenv implements SSICommand {
         //any arguments should produce an error
         if (paramNames.length > 0) {
             String errorMessage = ssiMediator.getConfigErrMsg();
-            if (errorMessage != null && errorMessage.length() > 0) {
-                errorMessage = HtmlEntityEncoder.encodeXSS(errorMessage);
-            }
-            writer.write(errorMessage);
+            writer.write(HtmlEntityEncoder.encodeXSS(errorMessage));
         } else {
             Collection<String> variableNames = ssiMediator.getVariableNames();
             Iterator<String> iter = variableNames.iterator();
