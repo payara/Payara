@@ -50,13 +50,23 @@ import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 
 /**
  * @author Jagadish Ramu
  */
 public class ResourceUtil {
 
-    private static Logger _logger= LogDomains.getLogger(ResourceUtil.class, LogDomains.RSR_LOGGER);
+    @LogMessagesResourceBundle
+    public static final String LOGMESSAGE_RESOURCE = "org.glassfish.resourcebase.resources.LogMessages";
+
+    @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
+
+    public static final String LOGGER = "org.glassfish.resourcebase.resources.util";
+    private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     private static final String RESOURCES_XML_META_INF = "META-INF/glassfish-resources.xml";
     private static final String RESOURCES_XML_WEB_INF = "WEB-INF/glassfish-resources.xml";
@@ -189,8 +199,8 @@ public class ResourceUtil {
             c = Thread.currentThread().getContextClassLoader().loadClass(className);
             obj = c.newInstance();
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, "classloader.load_class_fail", className);
-            _logger.log(Level.SEVERE, "classloader.load_class_fail_excp", ex.getMessage());
+            _logger.log(Level.SEVERE, ResourceLoggingConstansts.LOAD_CLASS_FAIL, className);
+            _logger.log(Level.SEVERE, ResourceLoggingConstansts.LOAD_CLASS_FAIL_EXCEP, ex.getMessage());
         }
         return obj;
     }

@@ -49,6 +49,10 @@ import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 
 /**
  * Binds proxy objects in the jndi namespace for all the resources and pools defined in the
@@ -63,8 +67,13 @@ public class ResourcesBinder {
     @Inject
     private GlassfishNamingManager manager;
 
-    @Inject
-    private Logger logger;
+    @LogMessagesResourceBundle
+    public static final String LOGMESSAGE_RESOURCE = "org.glassfish.resourcebase.resources.LogMessages";
+
+    @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
+
+    public static final String LOGGER = "org.glassfish.resourcebase.resources.api";
+    private static final Logger logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     @Inject
     private Provider<org.glassfish.resourcebase.resources.api.ResourceProxy> resourceProxyProvider;
@@ -82,7 +91,7 @@ public class ResourcesBinder {
             bindResource(resourceInfo, resource);
         }catch(NamingException ne){
             Object[] params = {resourceInfo, ne};
-            logger.log(Level.SEVERE,"resources.resources-binder.bind-resource-failed", params);            
+            logger.log(Level.SEVERE,ResourceLoggingConstansts.BIND_RESOURCE_FAILED, params);
         }
     }
 

@@ -66,6 +66,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
 
 /**
  * Resource manager to bind various resources during start-up, create/update/delete of resource/pool
@@ -76,8 +80,13 @@ import java.util.logging.Logger;
 @Service(name="ResourceManager") // this name is used in ApplicationLoaderService
 public class ResourceManager implements PostConstruct, PreDestroy, ConfigListener {
 
-  private static final Logger logger =
-            LogDomains.getLogger(ResourceManager.class, LogDomains.RESOURCE_BUNDLE);
+    @LogMessagesResourceBundle
+    public static final String LOGMESSAGE_RESOURCE = "org.glassfish.resourcebase.resources.LogMessages";
+
+    @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
+
+    public static final String LOGGER = "org.glassfish.resourcebase.resources.listener";
+    private static final Logger logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ResourceManager.class);
@@ -168,7 +177,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                         deployer.deployResource(resource);
                 } catch (Exception e) {
                     Object[] params = {ResourceUtil.getGenericResourceInfo(resource), e};
-                    logger.log(Level.WARNING, "resources.resource-manager.deploy-resource-failed", params);
+                    logger.log(Level.WARNING, ResourceLoggingConstansts.UNABLE_TO_DEPLOY, params);
                 }
             }
         }
@@ -223,12 +232,12 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                 else {
                     Object[] params = {resource.getIdentity()};
                     logger.log(Level.WARNING, 
-                            "resources.resource-manager.undeploy-no-resource-deployer", 
+                            ResourceLoggingConstansts.UNABLE_TO_UNDEPLOY,
                             params);
                 }
             } catch (Exception e) {
                 Object[] params = {org.glassfish.resourcebase.resources.util.ResourceUtil.getGenericResourceInfo(resource), e};
-                logger.log(Level.WARNING, "resources.resource-manager.undeploy-resource-failed", params);
+                logger.log(Level.WARNING, ResourceLoggingConstansts.UNABLE_TO_UNDEPLOY_EXCEPTION, params);
             } finally {
                 removeListenerForResource(resource);
             }
@@ -404,7 +413,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     }
                 }
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, "resources.resource-manager.change-event-failed", ex);
+                logger.log(Level.WARNING, ResourceLoggingConstansts.ERROR_HANDLE_CHANGE_EVENT, ex);
                 np = new NotProcessed(
                         localStrings.getLocalString(
                                 "resources.resource-manager.change-event-failed",
@@ -432,7 +441,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                         deployer.deployResource(instance);
                 } catch (Exception e) {
                     Object params[] = {ResourceUtil.getGenericResourceInfo((Resource) instance), e};
-                    logger.log(Level.WARNING, "resources.resource-manager.deploy-resource-failed", params);
+                    logger.log(Level.WARNING, ResourceLoggingConstansts.UNABLE_TO_DEPLOY, params);
                 }
             } else if (instance instanceof Property) {
                 //Property is not handled here. It is handled as part of the
@@ -456,7 +465,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                                         (Resource) instance), e };
                         logger.log(
                                 Level.WARNING,
-                                "resources.resource-manager.deploy-resource-failed",
+                                ResourceLoggingConstansts.UNABLE_TO_DEPLOY,
                                 params);
                     }
                 }
@@ -514,7 +523,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     ResourceManager.this.removeListenerForResource(instance);
                 }
             } catch (Exception ex) {
-                logger.log(Level.SEVERE, "resources.resource-manager.remove-event-failed");
+                logger.log(Level.WARNING,ResourceLoggingConstansts.ERROR_HANDLE_REMOVE_EVENT,ex);
                 np = new NotProcessed(
                         localStrings.getLocalString(
                                 "resources.resource-manager.remove-event-failed",
@@ -673,7 +682,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
         if (deployer == null) {
             logger.log(
                     Level.WARNING,
-                    "resources.resource-manager.no-resource-deployer",
+                    ResourceLoggingConstansts.UNABLE_TO_FIND_RESOURCEDEPLOYER,
                     new Object[] { resource.getIdentity() }
                     );
             return;
@@ -689,16 +698,17 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     ResourceUtil.getGenericResourceInfo(resource), e };
             logger.log(
                     Level.WARNING,
-                    "resources.resource-manager.deploy-resource-failed",
+                    ResourceLoggingConstansts.UNABLE_TO_DEPLOY,
                     params);
         }
     }
 
     private void undeployServerResource(Resource resource) {
         ResourceDeployer deployer = getResourceDeployer(resource);
-        if (deployer == null) {            logger.log(
+        if (deployer == null) {
+            logger.log(
                     Level.WARNING,
-                    "resources.resource-manager.no-resource-deployer",
+                    ResourceLoggingConstansts.UNABLE_TO_FIND_RESOURCEDEPLOYER,
                     new Object[] { resource.getIdentity() }
                     );
             return;
@@ -729,7 +739,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
                     ResourceUtil.getGenericResourceInfo(resource), e };
             logger.log(
                     Level.WARNING,
-                    "resources.resource-manager.deploy-resource-failed",
+                    ResourceLoggingConstansts.UNABLE_TO_DEPLOY,
                     params);
         }
     }

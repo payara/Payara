@@ -59,6 +59,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+
+
 /**
  * Resource naming service which helps to bind resources and internal resource objects
  * to appropriate namespace in JNDI. Supports "java:app", "java:module" and normal(physical)
@@ -79,7 +84,13 @@ public class ResourceNamingService {
     @Inject
     private ProcessEnvironment pe;
 
-    private static final Logger _logger = LogDomains.getLogger(ResourceNamingService.class, LogDomains.RSR_LOGGER);
+    @LogMessagesResourceBundle
+    public static final String LOGMESSAGE_RESOURCE = "org.glassfish.resourcebase.resources.LogMessages";
+
+    @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
+
+    public static final String LOGGER = "org.glassfish.resourcebase.resources.naming";
+    private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";
     public static final String JAVA_COMP_SCOPE_PREFIX = "java:comp/";

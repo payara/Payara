@@ -53,6 +53,9 @@ import java.lang.reflect.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 
 /**
@@ -69,7 +72,14 @@ public class BindableResourcesHelper {
 
     private final static String DOMAIN = "domain";
 
-    private static Logger _logger= LogDomains.getLogger(ResourceUtil.class, LogDomains.RSR_LOGGER);
+    @LogMessagesResourceBundle
+    public static final String LOGMESSAGE_RESOURCE = "org.glassfish.resourcebase.resources.LogMessages";
+
+    @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
+
+    public static final String LOGGER = "org.glassfish.resourcebase.resources.util";
+
+    private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(BindableResourcesHelper.class);
