@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,7 +60,7 @@ import org.jvnet.hk2.annotations.Service;
  * @author Jerome Dochez
  * 
  */
-@Service(name="list-descriptors", metadata="mode=debug")
+@Service(name="_list-descriptors")
 @PerLookup
 @I18n("list.commands")
 @AccessRequired(resource="domain", action="dump")
