@@ -52,12 +52,11 @@ import java.io.InputStreamReader;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,11 +107,11 @@ public final class CLIContainer {
     
     private static final InjectionManager injectionMgr = new InjectionManager();
     
-    protected final Set<File> extensions;
+    private final Set<File> extensions;
     private final ClassLoader classLoader;
-    protected final Logger logger;
+    private final Logger logger;
     
-    protected ServiceLocator serviceLocator;
+    private ServiceLocator serviceLocator;
     private ProgramOptions programOptions;
     private Environment environment;
     
@@ -162,7 +161,7 @@ public final class CLIContainer {
                 File[] lf = file.listFiles(new FilenameFilter() {
                                 @Override
                                 public boolean accept(File dir, String name) {
-                                    return name.toLowerCase().endsWith(".jar");
+                                    return name.toLowerCase(Locale.ENGLISH).endsWith(".jar");
                                 }
                             });
                 result.addAll(Arrays.asList(lf));

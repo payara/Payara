@@ -201,7 +201,7 @@ public abstract class ProgressStatusBase implements ProgressStatus {
                 }
             }
         }
-        if (currentStepCount != lastCurrentStepCount || message != null || (getSpinnerStatus() != null && spinner != getSpinnerStatus())) {
+        if (currentStepCount != lastCurrentStepCount || message != null || spinner != getSpinnerStatus()) {
             fireEvent(new ProgressStatusEventProgress(id, steps, message, spinner));
         }
     }
@@ -433,17 +433,14 @@ public abstract class ProgressStatusBase implements ProgressStatus {
     
     /** Returns spinner status or null if status was not possible to check.
      */
-    private Boolean getSpinnerStatus() {
+    private boolean getSpinnerStatus() {
         if (parent == null) {
-            return null;
+            return false;
         }
         if (parent instanceof CommandProgress) {
             return ((CommandProgress) parent).isSpinnerActive();
         }
-        if (parent instanceof ProgressStatusBase) {
-            return ((ProgressStatusBase) parent).getSpinnerStatus();
-        }
-        return null;
+        return ((ProgressStatusBase) parent).getSpinnerStatus();
     }
     
 }
