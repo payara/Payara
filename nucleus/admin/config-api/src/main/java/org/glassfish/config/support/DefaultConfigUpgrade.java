@@ -125,9 +125,21 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
                 Level.INFO, runningDefaultConfigUpgrade);
 
         InputStream template = null;
+        ZipFile templatezip = null;
+        String templatefilename = Version.getDefaultDomainTemplate();
+        File templatefile = new File(new File(new File(
+                new File(installRoot, "common"), "templates"), "gf"), templatefilename);    
         try {
-            template = getDomainXmlTemplate();
-
+            templatezip = new ZipFile(templatefile);
+            ZipEntry domEnt = templatezip.getEntry("config/domain.xml");
+            if (domEnt == null) {
+                throw new RuntimeException(localStrings.getLocalString(
+                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
+                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
+                    templatefile.getAbsolutePath()));
+            }
+            template = templatezip.getInputStream(domEnt);
+            
             ConfigSupport.apply(new MinDefaultConfigCode(), configs);
             defaultConfig = configs.getConfigByName(DEFAULT_CONFIG);
 
@@ -162,6 +174,11 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
         } catch (XMLStreamException ex) {
             logger.log(
                     Level.SEVERE, defaultConfigUpgradeFailure, ex);
+        } catch (IOException ex) {
+            throw new RuntimeException(localStrings.getLocalString(
+                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
+                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
+                    templatefile.getAbsolutePath()), ex);
         } finally {
             try {
                 if (parser != null) {
@@ -184,30 +201,14 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
             } catch (Exception e) {
                 // ignore
             }
-        }
-    }
-
-    private InputStream getDomainXmlTemplate() {
-        String installRoot = System.getProperty(INSTALL_ROOT);
-        String templatefilename = Version.getDefaultDomainTemplate();
-        File templatefile = new File(new File(new File(
-                    new File(installRoot, "common"), "templates"), "gf"), templatefilename);
-        try {
-            ZipFile template = new ZipFile(templatefile);
-            ZipEntry domEnt = template.getEntry("config/domain.xml");
-            if (domEnt != null) {
-                return template.getInputStream(domEnt);
+            try {
+                if (templatezip != null) {
+                    templatezip.close();
+                }
+            } catch (Exception e) {
+                // ignore
             }
-        } catch (IOException ex) {
-            throw new RuntimeException(localStrings.getLocalString(
-                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
-                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
-                    templatefile.getAbsolutePath()), ex);
         }
-        throw new RuntimeException(localStrings.getLocalString(
-                    "DefaultConfigUpgrade.cannotGetDomainXmlTemplate", 
-                    "DefaultConfigUpgrade failed. Cannot get default domain.xml from {0)",
-                    templatefile.getAbsolutePath()));
     }
 
     private void createDefaultConfigAttr(Config defaultConfig) throws TransactionFailure, XMLStreamException {
