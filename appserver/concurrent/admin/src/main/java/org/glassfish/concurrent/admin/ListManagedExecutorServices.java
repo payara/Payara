@@ -52,6 +52,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.concurrent.config.ManagedExecutorService;
+import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 
@@ -100,10 +101,13 @@ public class ListManagedExecutorServices implements AdminCommand {
         try {
             Collection<ManagedExecutorService> managedExecutorServices = domain.getResources().getResources(ManagedExecutorService.class);
             for (ManagedExecutorService managedExecutorService : managedExecutorServices) {
-                String jndiName = managedExecutorService.getJndiName();
-                if(bindableResourcesHelper.resourceExists(jndiName, target)){
-                    ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                    part.setMessage(jndiName);
+                // filter out the managed scheduled executor services
+                if (!(managedExecutorService instanceof ManagedScheduledExecutorService)) {
+                    String jndiName = managedExecutorService.getJndiName();
+                    if(bindableResourcesHelper.resourceExists(jndiName, target)){
+                        ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+                        part.setMessage(jndiName);
+                    }
                 }
             }
         } catch (Exception e) {
