@@ -57,7 +57,7 @@
 
     <modules>
         <module>batch-database</module>
-        <module>batch-connector</module>
-        <module>batch-spi-impl</module>
+        <module>glassfish-batch-connector</module>
+        <module>glassfish-batch-commands</module>
     </modules>
 </project>

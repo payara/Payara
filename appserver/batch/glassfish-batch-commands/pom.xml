@@ -49,23 +49,56 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>batch-spi-impl</artifactId>
+    <artifactId>glassfish-batch-commands</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Batch SPI Implementation for Glassfish</name>
+    <name>Batch Commands for Glassfish</name>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.glassfish.docs.man</groupId>
+                                    <artifactId>batch-connector-manpage</artifactId>
+                                    <version>${v3-docs.version}</version>
+                                    <type>zip</type>
+                                    <overWrite>true</overWrite>
+                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.batch</groupId>
+            <artifactId>javax.batch-api-all</artifactId>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
-            <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+            <artifactId>com.ibm.jbatch-runtime-all</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.persistence</groupId>
-            <artifactId>persistence-common</artifactId>
+            <groupId>org.glassfish.main.batch</groupId>
+            <artifactId>batch-spi-impl</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

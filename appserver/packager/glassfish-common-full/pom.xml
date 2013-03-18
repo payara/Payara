@@ -160,12 +160,12 @@
        -->
        <dependency>
            <groupId>org.glassfish.main.batch</groupId>
-           <artifactId>batch-connector</artifactId>
+           <artifactId>glassfish-batch-connector</artifactId>
            <version>${project.version}</version>
        </dependency>
        <dependency>
            <groupId>org.glassfish.main.batch</groupId>
-           <artifactId>batch-spi-impl</artifactId>
+           <artifactId>glassfish-batch-commands</artifactId>
            <version>${project.version}</version>
        </dependency>
         <dependency>

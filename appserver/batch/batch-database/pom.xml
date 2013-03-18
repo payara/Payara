@@ -52,7 +52,7 @@
     </parent>
 
     <artifactId>batch-databases</artifactId>
-    <name>GlassFish Batch database init scripts</name>
+    <name>Batch database init scripts for GlassFish</name>
     <!--
       This packaging specifies that it's a package that contains files to be added to
       the distribution.
