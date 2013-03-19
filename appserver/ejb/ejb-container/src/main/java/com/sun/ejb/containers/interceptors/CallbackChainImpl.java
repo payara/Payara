@@ -40,6 +40,7 @@
 
 package com.sun.ejb.containers.interceptors;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 /**
@@ -50,6 +51,7 @@ class CallbackChainImpl {
 
     protected CallbackInterceptor[] interceptors;
     protected int size;
+    private Method method = null;
 
     CallbackChainImpl(CallbackInterceptor[] interceptors) {
         this.interceptors = interceptors;
@@ -59,8 +61,12 @@ class CallbackChainImpl {
     public Object invokeNext(int index, CallbackInvocationContext invContext)
             throws Throwable {
 
-        Object result = null;
+        // set invocation method if there is one on the bean class
+        if (size > 0 && interceptors[size-1].isBeanCallback()) {
+            invContext.method = interceptors[size-1].method;
+        }
 
+        Object result = null;
         if (index < size) {
             result = interceptors[index].intercept(invContext);
         } else {

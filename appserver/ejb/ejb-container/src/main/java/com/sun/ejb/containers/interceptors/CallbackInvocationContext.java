@@ -66,10 +66,11 @@ public class CallbackInvocationContext implements InvocationContext {
     private Object[] interceptorInstances;
     private Object targetObjectInstance;
     private CallbackType eventType;
+    Method method;
 
     // For AroundConstruct callback
     private Class targetObjectClass;
-    private Constructor ctor = null;
+    private Constructor<?> ctor = null;
     private Class[] ctorParamTypes = null;
     private Object[] ctorParams = null;
     private BaseContainer container = null;
@@ -105,8 +106,8 @@ public class CallbackInvocationContext implements InvocationContext {
 
         this.targetObjectClass = targetObjectClass;
 
-        Constructor[] ctors = targetObjectClass.getConstructors();
-        for(Constructor ctor0 : ctors) {
+        Constructor<?>[] ctors = targetObjectClass.getConstructors();
+        for(Constructor<?> ctor0 : ctors) {
             ctor = ctor0;
             if(ctor0.getParameterTypes().length > 0) {
                 break;
@@ -136,6 +137,7 @@ public class CallbackInvocationContext implements InvocationContext {
 
     // InvocationContext methods
 
+    @Override
     public Object getTarget() {
         return targetObjectInstance;
     }
@@ -144,22 +146,29 @@ public class CallbackInvocationContext implements InvocationContext {
         return interceptorInstances;
     }
 
+    @Override
     public Object getTimer() {
         return null;
     }
 
-    public Constructor getConstructor() {
+    @Override
+    public Constructor<?> getConstructor() {
         if (eventType == CallbackType.AROUND_CONSTRUCT) {
             return ctor;
         }
         return null;
     }
 
+    @Override
     public Method getMethod() {
-        return null;
+        if (eventType == CallbackType.AROUND_CONSTRUCT) {
+            return null;
+        }
+        return method;
     }
 
     
+    @Override
     public Object[] getParameters() {
         if (eventType == CallbackType.AROUND_CONSTRUCT) {
             return ctorParams;
@@ -168,6 +177,7 @@ public class CallbackInvocationContext implements InvocationContext {
         }
     }
 
+    @Override
     public void setParameters(Object[] params) {
         if (eventType == CallbackType.AROUND_CONSTRUCT) {
             checkSetParameters(params);
@@ -178,6 +188,7 @@ public class CallbackInvocationContext implements InvocationContext {
     }
 
 
+    @Override
     public Map<String, Object> getContextData() {
         if( contextData == null ) {
             contextData = new HashMap();
@@ -186,6 +197,7 @@ public class CallbackInvocationContext implements InvocationContext {
         return contextData;
     }
     
+    @Override
     public Object proceed() throws Exception {
         try {
             callbackIndex++;

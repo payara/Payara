@@ -997,6 +997,10 @@ class CallbackInterceptor {
         }
     }
 
+    boolean isBeanCallback() {
+        return false;
+    }
+
     public String toString() {
         return "callback[" + index + "]: " + method;
     }
@@ -1042,6 +1046,10 @@ class BeanCallbackInterceptor
             }
             throw th;
         }
+    }
+
+    boolean isBeanCallback() {
+        return true;
     }
 
     public String toString() {

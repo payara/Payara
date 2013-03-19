@@ -75,8 +75,8 @@ public class AroundInvokeInvocationContext extends CallbackInvocationContext
         parameters = params;
     }
 
-    //@Override
-    public Constructor getConstructor() {
+    @Override
+    public Constructor<?> getConstructor() {
         return null;
     }
 
