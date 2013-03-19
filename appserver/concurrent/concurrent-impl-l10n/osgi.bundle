@@ -38,5 +38,4 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.concurrent.config;\
-               org.glassfish.concurrent.admin; bundle-version=${project.osgi.version} 
+Fragment-Host: org.glassfish.concurrent.admin; bundle-version=${project.osgi.version} 

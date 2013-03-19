@@ -48,25 +48,15 @@
         <artifactId>concurrent</artifactId>
         <version>4.0-SNAPSHOT</version>
     </parent>    
-    <artifactId>concurrent-impl</artifactId>
+    <artifactId>concurrent-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Concurrent Implementation Module</name>
+    <name>Concurrent Connector Module</name>
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.concurrent</groupId>
-            <artifactId>concurrent-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>config-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.transaction</groupId>
-            <artifactId>jts</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -78,39 +68,15 @@
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
+         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
+         </dependency>
+       <dependency>
             <groupId>org.glassfish.main.resourcebase.resources</groupId>
             <artifactId>nucleus-resources</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
-            <artifactId>resources-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.connectors</groupId>
-            <artifactId>connectors-internal-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-       <dependency>
-            <groupId>javax.enterprise.concurrent</groupId>
-            <artifactId>javax.enterprise.concurrent-api</artifactId>
-        </dependency>
-       <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.enterprise.concurrent</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
-            <version>3.0</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

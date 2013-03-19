@@ -38,6 +38,4 @@
 # holder.
 #
 
--exportcontents: org.glassfish.concurrent.admin;\
-                 org.glassfish.concurrent.runtime;\
-                 org.glassfish.concurrent.runtime.deployer; version=${project.osgi.version}
+-exportcontents: org.glassfish.concurrent.config; version=${project.osgi.version}
