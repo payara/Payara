@@ -71,6 +71,8 @@
     setPageSessionAttribute(key="edit" value="#{true}" );
 
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
+    setPageSessionAttribute(key="showMaxPoolSize" value="#{false}");
+    setPageSessionAttribute(key="showTaskQueue" value="#{false}");
 
     />
 </event>
