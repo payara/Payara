@@ -123,7 +123,7 @@ public class CustomTokenClient {
                             } else {
                                 if (portBase != null && token.getTokenTypeDetails() instanceof PortTypeDetails) {
                                     PortTypeDetails portTypeDetails = (PortTypeDetails)token.getTokenTypeDetails();
-                                    port = Integer.valueOf(domainProps.getProperty(token.getName())) + Integer.valueOf(portTypeDetails.getBaseOffset());
+                                    port = Integer.valueOf(portBase) + Integer.valueOf(portTypeDetails.getBaseOffset());
                                     if (!generatedTokens.containsKey(PORTBASE_PLACE_HOLDER)) {
                                         // Adding a token to persist port base value as a system tag
                                         generatedTokens.put(PORTBASE_PLACE_HOLDER, SystemPropertyTagBuilder.buildSystemTag(
