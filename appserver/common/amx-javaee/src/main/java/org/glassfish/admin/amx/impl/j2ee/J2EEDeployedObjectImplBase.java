@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,11 @@ public class J2EEDeployedObjectImplBase extends J2EEManagedObjectImplBase // imp
     }
 
     public String getdeploymentDescriptor() {
+        /*
+         * FindBugs warns about the confusing mismatch between this method's
+         * name and the name of the method it invokes.  This method - and
+         * getserver below - are intended this way.
+         */
         return metadata().getDeploymentDescriptor();
     }
 

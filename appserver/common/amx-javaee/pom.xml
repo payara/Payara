@@ -67,6 +67,10 @@
         </developer>
     </developers>
 
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>javax.management.j2ee</groupId>
