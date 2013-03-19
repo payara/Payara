@@ -62,7 +62,7 @@
 
     <profiles>
         <profile>
-            <id>release-phase2</id>
+            <id>embedded</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
                 <property>
