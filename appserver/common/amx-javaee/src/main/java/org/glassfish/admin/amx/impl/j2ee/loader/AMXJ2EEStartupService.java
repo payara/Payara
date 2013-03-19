@@ -223,7 +223,6 @@ public final class AMXJ2EEStartupService
         final DomainRoot domainRootProxy = ProxyFactory.getInstance(mMBeanServer).getDomainRootProxy(false);
         final ObjectName domainRoot = domainRootProxy.objectName();
         final ObjectNameBuilder objectNames = new ObjectNameBuilder(mMBeanServer, domainRoot);
-        final String domainName = Util.getNameProp(domainRoot);
 
         final Metadata metadata = new MetadataImpl();
         metadata.add(Metadata.CORRESPONDING_CONFIG, ConfigBeanRegistry.getInstance().getObjectNameForProxy(domain));

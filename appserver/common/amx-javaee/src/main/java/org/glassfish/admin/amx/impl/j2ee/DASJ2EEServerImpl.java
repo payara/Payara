@@ -104,9 +104,6 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
     }
 
      */
-    private boolean remoteServerIsRunning() {
-        return (STATE_RUNNING == getstate());
-    }
 
     private boolean remoteServerIsStartable() {
         final int cState = getstate();
@@ -128,8 +125,6 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
     }
 
     public void handleNotification(final Notification notif, final Object ignore) {
-        final String notifType = notif.getType();
-
     }
 
     protected String getServerName() {
@@ -223,9 +218,6 @@ public class DASJ2EEServerImpl extends J2EEServerImpl
         Issues.getAMXIssues().notDone("DASJ2EEServerImpl.startRemoteServer");
     }
 
-    private void stopRemoteServer() {
-        Issues.getAMXIssues().notDone("DASJ2EEServerImpl.stopRemoteServer");
-    }
 }
 
 

@@ -60,7 +60,7 @@ public class J2EEServerImpl extends J2EELogicalServerImplBase
 {
     public static final Class<J2EEServer> INTF = J2EEServer.class;
 
-    private volatile RegistrationSupport mRegistrationSupport;
+    private volatile RegistrationSupport mRegistrationSupport = null;
 
     public J2EEServerImpl(final ObjectName parentObjectName, final Metadata meta)
     {
@@ -125,7 +125,9 @@ public class J2EEServerImpl extends J2EELogicalServerImplBase
     @Override
     protected void unregisterChildren()
     {
-        mRegistrationSupport.cleanup();
+        if (mRegistrationSupport != null) {
+            mRegistrationSupport.cleanup();
+        }
         super.unregisterChildren();
     }
 

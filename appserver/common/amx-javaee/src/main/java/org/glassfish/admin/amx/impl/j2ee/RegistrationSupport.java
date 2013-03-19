@@ -116,8 +116,6 @@ final class RegistrationSupport
         mApplicationRefType = Util.deduceType(ApplicationRef.class);
         mServer = getDomain().getServers().getServer( mJ2EEServer.getName() );
 
-        final ObjectName test = mJ2EEServer.objectName();
-
         mResourceRefListener = new RefListener();
 
         registerApplications();
@@ -275,7 +273,6 @@ final class RegistrationSupport
             meta.setDeploymentDescriptor( xmlDesc );
         }
         final String moduleName = ejbBundleDescriptor.getModuleName();
-        final String appLocation = appConfig.getLocation();
         
         final com.sun.enterprise.config.serverbeans.Module moduleConfig = getModuleConfig(appConfig, moduleName );
         meta.setCorrespondingConfig(getObjectName(moduleConfig));
@@ -286,7 +283,7 @@ final class RegistrationSupport
         meta.remove( Metadata.DEPLOYMENT_DESCRIPTOR );   // none for an EJB MBean
         for (final EjbDescriptor desc : ejbBundleDescriptor.getEjbs())
         {
-            final ObjectName ejbObjectName = createEJBMBean(ejbModuleObjectName, meta, desc);
+            createEJBMBean(ejbModuleObjectName, meta, desc);
         }
         return ejbModuleObjectName;
     }
@@ -352,7 +349,6 @@ final class RegistrationSupport
         }
         
         final String moduleName = webBundleDescriptor.getModuleName();
-        final String appLocation = appConfig.getLocation();
         
         final com.sun.enterprise.config.serverbeans.Module moduleConfig = getModuleConfig(appConfig, moduleName );
         meta.setCorrespondingConfig(getObjectName(moduleConfig));
@@ -365,7 +361,7 @@ final class RegistrationSupport
         {
             final String servletName = desc.getCanonicalName();
             
-            final ObjectName on = registerJ2EEChild(webModuleObjectName, meta, Servlet.class, ServletImpl.class, servletName);
+            registerJ2EEChild(webModuleObjectName, meta, Servlet.class, ServletImpl.class, servletName);
         }
 
         return webModuleObjectName;
@@ -384,7 +380,7 @@ final class RegistrationSupport
         final com.sun.enterprise.config.serverbeans.Module moduleConfig = getModuleConfig(appConfig, bundleDesc.getModuleName() );
         meta.setCorrespondingConfig(getObjectName(moduleConfig));
         
-        final ObjectName rarObjectName = registerJ2EEChild(objectName, meta, ResourceAdapter.class, ResourceAdapterImpl.class, bundleDesc.getName());
+        registerJ2EEChild(objectName, meta, ResourceAdapter.class, ResourceAdapterImpl.class, bundleDesc.getName());
 
         return objectName;
     }
@@ -395,8 +391,6 @@ final class RegistrationSupport
             final com.sun.enterprise.config.serverbeans.Application appConfig,
             final ConnectorDescriptor bundleDesc )
     {
-        final String appLocation = appConfig.getLocation();
-        
         final String xmlDesc = getDeploymentDescriptor(bundleDesc);
         if ( xmlDesc != null )
         {
@@ -416,7 +410,6 @@ final class RegistrationSupport
             final com.sun.enterprise.config.serverbeans.Application appConfig,
             final ApplicationClientDescriptor bundleDesc)
     {
-        final String appLocation = appConfig.getLocation();
         final String xmlDesc = getDeploymentDescriptor(bundleDesc);
         if ( xmlDesc != null )
         {
@@ -436,7 +429,7 @@ final class RegistrationSupport
         {
             try
             {
-                final ObjectName objectName = processApplicationRef(ref);
+                processApplicationRef(ref);
             }
             catch( final Exception e )
             {
@@ -572,7 +565,6 @@ final class RegistrationSupport
             return null;
         }
         final Class<J2EEManagedObject> intf = (Class) ClassUtil.getFieldValue(implClass, "INTF");
-        final String j2eeType = Util.deduceType(intf);
 
         ObjectName mbean77 = null;
         try
