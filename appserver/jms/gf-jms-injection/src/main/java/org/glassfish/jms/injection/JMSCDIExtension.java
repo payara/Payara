@@ -116,6 +116,14 @@ public class JMSCDIExtension implements Extension {
     public <T, X> void processProducer(@Observes ProcessProducer<T, X> event) {
     }
 
+    static AnnotationLiteral<Default> getDefaultAnnotationLiteral() {
+        return new AnnotationLiteral<Default>() {};
+    }
+
+    static AnnotationLiteral<Any> getAnyAnnotationLiteral() {
+        return new AnnotationLiteral<Any>() {};
+    }
+
     public class LocalBean implements Bean {
         private Class beanClass;
         private InjectionTarget injectionTarget;
@@ -151,8 +159,8 @@ public class JMSCDIExtension implements Extension {
         @Override
         public Set<Annotation> getQualifiers() {
             Set<Annotation> qualifiers = new HashSet<Annotation>();
-            qualifiers.add(new AnnotationLiteral<Default>() {});
-            qualifiers.add(new AnnotationLiteral<Any>() {});
+            qualifiers.add(JMSCDIExtension.getDefaultAnnotationLiteral());
+            qualifiers.add(JMSCDIExtension.getAnyAnnotationLiteral());
             return qualifiers;
         }
 
