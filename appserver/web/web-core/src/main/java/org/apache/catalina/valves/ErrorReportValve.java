@@ -104,67 +104,6 @@ public class ErrorReportValve
     )
     public static final String SET_CONTENT_TYPE_EXCEPTION = "AS-WEB-CORE-00492";
 
-    @LogMessageInfo(
-            message = "Error report",
-            level = "INFO"
-    )
-    public static final String ERROR_REPORT_INFO = "AS-WEB-CORE-00493";
-
-    @LogMessageInfo(
-            message = "HTTP Status {0} - {1}",
-            level = "INFO"
-    )
-    public static final String HTTP_STATUS_INFO = "AS-WEB-CORE-00494";
-
-    @LogMessageInfo(
-            message = "Exception report",
-            level = "INFO"
-    )
-    public static final String EXCEPTION_REPORT_INFO = "AS-WEB-CORE-00495";
-
-    @LogMessageInfo(
-            message = "Status report",
-            level = "INFO"
-    )
-    public static final String STATUS_REPORT_INFO = "AS-WEB-CORE-00496";
-
-    @LogMessageInfo(
-            message = "Message",
-            level = "INFO"
-    )
-    public static final String MESSAGE_INFO = "AS-WEB-CORE-00497";
-
-    @LogMessageInfo(
-            message = "Description",
-            level = "INFO"
-    )
-    public static final String DESCRIPTION_INFO = "AS-WEB-CORE-00498";
-
-    @LogMessageInfo(
-            message = "Exception",
-            level = "INFO"
-    )
-    public static final String EXCEPTION_INFO = "AS-WEB-CORE-00499";
-
-    @LogMessageInfo(
-            message = "Root cause",
-            level = "INFO"
-    )
-    public static final String ROOT_CAUSE_INFO = "AS-WEB-CORE-00500";
-
-    @LogMessageInfo(
-            message = "Note",
-            level = "INFO"
-    )
-    public static final String NOTE_INFO = "AS-WEB-CORE-00501";
-
-    @LogMessageInfo(
-            message = "The full stack traces of the exception and its root causes are available in the {0} logs.",
-            level = "INFO"
-    )
-    public static final String EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO = "AS-WEB-CORE-00502";
-
-
     /**
      * The descriptive information related to this implementation.
      */
@@ -487,10 +426,8 @@ public class ErrorReportValve
             sb.append(serverInfo).append(" - ");
         }
         // START SJSAS 6412710
-
-        String errorReport = rb.getString(ERROR_REPORT_INFO);
-
-        sb.append(errorReport);
+        sb.append(sm.getString("errorReportValve.errorReport",
+                responseLocale));
         // END SJSAS 6412710
         sb.append("</title>");
         sb.append("<style type=\"text/css\"><!--");
@@ -499,41 +436,36 @@ public class ErrorReportValve
         sb.append("</head><body>");
         sb.append("<h1>");
         // START SJSAS 6412710
-
-        mf.applyPattern(rb.getString(HTTP_STATUS_INFO));
-        String statusHeader = mf.format(new Object[] {statusCode, message});
-
-        sb.append(statusHeader).append("</h1>");
+        sb.append(sm.getString("errorReportValve.statusHeader",
+                "" + String.valueOf(statusCode), message,
+                responseLocale)).append("</h1>");
         // END SJSAS 6412710
         sb.append("<hr/>");
         sb.append("<p><b>type</b> ");
         if (throwable != null) {
             // START SJJAS 6412710
-
-            String exceptionReport = rb.getString(EXCEPTION_REPORT_INFO);
-
-            sb.append(exceptionReport);
+            sb.append(sm.getString("errorReportValve.exceptionReport",
+                    responseLocale));
             // END SJSAS 6412710
         } else {
             // START SJSAS 6412710
-            String statusReport = rb.getString(STATUS_REPORT_INFO);
-
-            sb.append(statusReport);
+            sb.append(sm.getString("errorReportValve.statusReport",
+                    responseLocale));
             // END SJSAS 6412710
         }
         sb.append("</p>");
         sb.append("<p><b>");
 
         // START SJSAS 6412710
-        String messageInfo = rb.getString(MESSAGE_INFO);
-        sb.append(messageInfo);
+        sb.append(sm.getString("errorReportValve.message",
+                responseLocale));
         // END SJSAS 6412710
         sb.append("</b>");
         sb.append(message).append("</p>");
         sb.append("<p><b>");
         // START SJSAS 6412710
-        String description = rb.getString(DESCRIPTION_INFO);
-        sb.append(description);
+        sb.append(sm.getString("errorReportValve.description",
+                responseLocale));
         // END SJSAS 6412710
         sb.append("</b>");
         sb.append(report);
@@ -548,8 +480,8 @@ public class ErrorReportValve
             */
             sb.append("<p><b>");
             // START SJSAS 6412710
-            String exception = rb.getString(EXCEPTION_INFO);
-            sb.append(exception);
+            sb.append(sm.getString("errorReportValve.exception",
+                    responseLocale));
             // END SJSAS 6412710
             sb.append("</b> <pre>");
             /* SJSAS 6387790
@@ -572,8 +504,8 @@ public class ErrorReportValve
                 */
                 sb.append("<p><b>");
                 // START SJSAS 6412710
-                String rootCauseInfo = rb.getString(ROOT_CAUSE_INFO);
-                sb.append(rootCauseInfo);
+                sb.append(sm.getString("errorReportValve.rootCause",
+                        responseLocale));
                 // END SJSAS 6412710
                 sb.append("</b> <pre>");
                 /* SJSAS 6387790
@@ -611,14 +543,13 @@ public class ErrorReportValve
 
             sb.append("<p><b>");
             // START SJSAS 6412710
-            String note = rb.getString(NOTE_INFO);
-            sb.append(note);
+            sb.append(sm.getString("errorReportValve.note",
+                    responseLocale));
             // END SJAS 6412710
             sb.append("</b> <u>");
             // START SJSAS 6412710
-            mf.applyPattern(rb.getString(EXCEPTION_AND_ROOT_CAUSE_AVAILABLE_INFO));
-            String rootCauseInLog = mf.format(new Object[] {serverInfo});
-            sb.append(rootCauseInLog);
+            sb.append(sm.getString("errorReportValve.rootCauseInLogs",
+                    serverInfo, responseLocale));
             // END SJSAS 6412710
             sb.append("</u></p>");
 
