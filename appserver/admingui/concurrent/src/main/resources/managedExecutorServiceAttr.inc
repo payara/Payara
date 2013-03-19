@@ -92,25 +92,15 @@
        <sun:property id="coresize" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.corePoolSize}"  helpText="$resource{i18ncon.corePoolSizeHelp}">
             <sun:textField id="coresize" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['corePoolSize']}" />
        </sun:property>
-                
-       <sun:property id="maximumPoolSize" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.maximumPoolSize}"  helpText="$resource{i18ncon.maximumPoolSizeHelp}">
-            <sun:textField id="maximumSize" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['maximumPoolSize']}" />
-       </sun:property>
-                
        <sun:property id="keepAlive" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.keepAliveSeconds}"  helpText="$resource{i18ncon.keepAliveSecondsHelp}">
             <sun:textField id="keepAlive" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['keepAliveSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
        </sun:property>
-                
        <sun:property id="threadLifetime" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.threadLifetimeSeconds}"  helpText="$resource{i18ncon.threadLifetimeSecondsHelp}">
             <sun:textField id="threadLifetime" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['threadLifetimeSeconds']}" />
             <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
-       </sun:property>
-                
-       <sun:property id="taskQueueCapacity" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncon.taskQueueCapacity}"  helpText="$resource{i18ncon.taskQueueCapacityHelp}">
-            <sun:textField id="taskQueueCapacity" styleClass="integer" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['taskQueueCapacity']}" />
-       </sun:property>   
 
-        "<br /><br />
+       </sun:property>
     </sun:propertySheetSection>
+    "</br/></br>
 </sun:propertySheet>
