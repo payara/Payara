@@ -50,14 +50,19 @@
 
 <sun:page id="page1">
 <ui:event type="beforeCreate">
-    <!-- setPageSessionAttribute(key="instanceName" value="server"); -->
-    getRequestValue(key="instanceName" value=>$attribute{instanceName});
+    getRequestValue(key="instanceName" value="#{pageSession.instanceName}");
+    urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
+    gf.isInstanceName(instanceName="#{pageSession.instanceName}" exists="#{requestScope.exists}" );
+    if (! #{requestScope.exists}){
+        gf.redirect("#{request.contextPath}/common/index.jsf");
+    }
+
 </ui:event>
 <sun:html id="html2">
 <sun:head id="propertyhead" title="$resource{i18nc.logViewerRaw.PageTitle}" debug="false" parseOnLoad="false">
     <sun:script url="/resource/common/js/adminjsf.js" />
 </sun:head>
-<sun:body onLoad="javascript: logViewerRaw('/download/log/?contentSourceId=LogViewer&start=0&instanceName=' + encodeURIComponent('#{instanceName}') + '&restUrl=' + encodeURIComponent('#{sessionScope.REST_URL}'))" id="body3">
+<sun:body onLoad="javascript: logViewerRaw('/download/log/?contentSourceId=LogViewer&start=0&instanceName=#{pageSession.encodedInstanceName}&restUrl=' + encodeURIComponent('#{sessionScope.REST_URL}'))" id="body3">
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
     <!-- Page Title -->
