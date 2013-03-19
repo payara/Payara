@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,9 +58,9 @@ import org.osgi.framework.Constants;
  */
 class Jar
 {
-    private URI uri;
-    private long lastModified = -1;
-    private long bundleId = -1;
+    private final URI uri;
+    private final long lastModified;
+    private final long bundleId;
 
     Jar(File file)
     {
@@ -71,6 +71,7 @@ class Jar
         // /tmp/foo and /tmp//foo differently.
         uri = file.toURI();
         lastModified = file.lastModified();
+        bundleId = -1L;
     }
 
     Jar(Bundle b) throws URISyntaxException
@@ -86,18 +87,27 @@ class Jar
         {
             uri = new URI(b.getLocation()).normalize();
         }
+        else {
+            uri = null;
+        }
+        
         lastModified = b.getLastModified();
         bundleId = b.getBundleId();
     }
 
     public Jar(URI uri) {
         this.uri = uri.normalize();
+        long localLastModified = -1L;
+        bundleId = -1L;
+        
         try {
             File f = new File(uri);
-            this.lastModified = f.lastModified();
+            localLastModified = f.lastModified();
         } catch (Exception e) {
             // can't help
         }
+        
+        lastModified = localLastModified;
     }
 
     public URI getURI()
@@ -114,11 +124,6 @@ class Jar
         return lastModified;
     }
 
-    public void setLastModified(long lastModified)
-    {
-        this.lastModified = lastModified;
-    }
-
     public long getBundleId()
     {
         return bundleId;
@@ -132,17 +137,23 @@ class Jar
     // Override hashCode and equals as this object is used in Set
     public int hashCode()
     {
-        return uri.hashCode();
+        return uri == null ? 0 : uri.hashCode();
     }
 
     public boolean equals(Object obj)
     {
-        if (obj instanceof Jar)
-        {
-            // For optimization reason, we use toString.
-            // It works, as we anyway use normalize()
-            return this.uri.toString().equals(((Jar) obj).uri.toString());
+        if (obj == null || !(obj instanceof Jar)) return false;
+        
+        Jar other = (Jar) obj;
+        
+        if (uri == null) {
+            if (other.uri == null) return true;
+            return false;
         }
-        return false;
+        if (other.uri == null) return false;
+            
+        // For optimization reason, we use toString.
+        // It works, as we anyway use normalize()
+        return uri.toString().equals(other.uri.toString());
     }
 }
