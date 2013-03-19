@@ -368,13 +368,13 @@
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
-      <xsd:element name="class-name"
+      <xsd:element name="interface-name"
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
 
-            The fully qualified domain name of the connection factory 
-            interface class. 
+            The fully qualified class name of the connection factory 
+            interface. 
             
           </xsd:documentation>
         </xsd:annotation>
