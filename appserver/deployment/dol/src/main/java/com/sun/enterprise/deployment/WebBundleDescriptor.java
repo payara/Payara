@@ -288,6 +288,8 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract SecurityRoleReference getSecurityRoleReferenceByName(String compName, String roleName);
 
+    public abstract boolean isDenyUncoveredHttpMethods();
+
     protected abstract void combineSecurityConstraints(Set<SecurityConstraint> firstScSet, Set<SecurityConstraint> secondScSet);
 
     public abstract Set<SecurityConstraint> getSecurityConstraintsSet();
