@@ -40,7 +40,9 @@
 
 package org.glassfish.weld.services;
 
-import org.glassfish.api.naming.GlassfishNamingManager;
+import com.sun.enterprise.deployment.*;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
 import org.jboss.weld.injection.spi.InjectionContext;
@@ -50,13 +52,17 @@ import org.glassfish.hk2.api.ServiceLocator;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.EjbBundleDescriptor;
-import com.sun.enterprise.deployment.EjbDescriptor;
-import com.sun.enterprise.deployment.JndiNameEnvironment;
-import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 
-import javax.enterprise.inject.spi.InjectionPoint;
+import javax.annotation.Resource;
+import javax.ejb.EJB;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.*;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.naming.InitialContext;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceUnit;
+import javax.xml.ws.WebServiceRef;
+import java.util.List;
 
 
 public class InjectionServicesImpl implements InjectionServices {
@@ -73,10 +79,9 @@ public class InjectionServicesImpl implements InjectionServices {
 
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
         try {
-            ServiceLocator h = Globals.getDefaultHabitat();
-            ComponentEnvManager compEnvManager = (ComponentEnvManager) h.getService(ComponentEnvManager.class);
-
-            EjbContainerServices containerServices = h.getService(EjbContainerServices.class);
+            ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+            ComponentEnvManager compEnvManager = serviceLocator.getService(ComponentEnvManager.class);
+            EjbContainerServices containerServices = serviceLocator.getService(EjbContainerServices.class);
 
             JndiNameEnvironment componentEnv = compEnvManager.getCurrentJndiNameEnvironment();
 
@@ -135,32 +140,177 @@ public class InjectionServicesImpl implements InjectionServices {
         } catch(InjectionException ie) {
             throw new IllegalStateException(ie.getMessage(), ie);
         }
-
-        
     }
 
-    public void validateResourceInjectionPoint(InjectionPoint injectionPoint) {
-//        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
-//        GlassfishNamingManager glassfishNamingManager = serviceLocator.getService(GlassfishNamingManager.class);
-//        try {
-//            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/BeanManager");
-//            System.out.println( "junk");
-//        } catch ( Exception exc ) {
-//
-//        }
-//
-//        try {
-//            Object obj = glassfishNamingManager.getInitialContext().lookup("java:comp/UserTransaction");
-//            System.out.println( "junk");
-//        } catch ( Exception exc ) {
-//
-//        }
-//
-//
+    public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
+        // We are only validating producer fields of resources.  See spec section 3.7.1
+        // Not doing this for ejbs either.
 
+
+        Class annotatedClass = annotatedType.getJavaClass();
+        JndiNameEnvironment jndiNameEnvironment = (JndiNameEnvironment) bundleContext;
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
+        ComponentEnvManager compEnvManager = serviceLocator.getService(ComponentEnvManager.class);
+        String componentId = compEnvManager.getComponentEnvId(jndiNameEnvironment);
+        String appName = bundleContext.getApplication().getAppName();
+        String moduleName = bundleContext.getModuleName();
+
+        ComponentInvocation componentInvocation = null;
+
+        InjectionInfo injectionInfo = jndiNameEnvironment.getInjectionInfoByClass(annotatedClass);
+        List<InjectionCapable> injectionResources = injectionInfo.getInjectionResources();
+        if ( injectionResources.size() > 0 ) {
+        }
+
+        boolean lookupsWillWork = true;
+        for (AnnotatedField<? super T> annotatedField : annotatedType.getFields()) {
+            if ( lookupsWillWork && annotatedField.isAnnotationPresent( Produces.class ) ) {
+                if ( componentInvocation == null ) {
+                    componentInvocation = createComponentInvocation( componentId,
+                                                                     appName,
+                                                                     moduleName);
+                    try {
+                        invocationManager.preInvoke(componentInvocation);
+                    } catch ( Exception preInvokeException ) {
+                        lookupsWillWork = false;
+                    }
+                }
+
+                if ( lookupsWillWork ) {
+                    String lookupName = getLookupName( annotatedClass,
+                                                       annotatedField,
+                                                       injectionResources );
+                    Object resource = getResource( lookupName );
+                    if ( resource == null ) {
+                        // we have to retry using the component environment name because it could be a env entry with a
+                        // name specified in the annotation but getLookupName returned that instead of the
+                        // field's component env entry name...convoluted but necessary
+                        lookupName = getComponentEnvName( annotatedClass,
+                                                          annotatedField.getJavaMember().getName(),
+                                                          injectionResources );
+                        resource = getResource( lookupName );
+                    }
+                    if ( resource != null ) {
+                        validateResource( annotatedField, resource);
+                    }
+                }
+            }
+        }
+
+        if ( componentInvocation != null ) {
+            try {
+                invocationManager.postInvoke(componentInvocation);
+            } catch ( Exception ignore ) {
+            }
+        }
     }
+
+    private void validateResource( AnnotatedField annotatedField, Object resource) {
+        if ( ! annotatedField.getJavaMember().getType().isAssignableFrom( resource.getClass() ) ) {
+            throw new DefinitionException( "The type of the injection point " +
+                                               annotatedField.getJavaMember().getName() +
+                                               "is " +
+                                               annotatedField.getJavaMember().getType().getName() +
+                                               ".  The type of the physical resource is " +
+                                               resource.getClass().getName() +
+                                               " They are incompatible. ");
+        }
+    }
+
+
+    private Object getResource( String lookupName ) {
+        try {
+            InitialContext initialContext = new InitialContext();
+            return initialContext.lookup( lookupName );
+        } catch ( Exception ignore ) {
+        }
+
+        return null;
+    }
+
+    private String getComponentEnvName( Class annotatedClass, String fieldName, List<InjectionCapable> injectionResources ) {
+        for (InjectionCapable injectionCapable : injectionResources) {
+            for (com.sun.enterprise.deployment.InjectionTarget target : injectionCapable.getInjectionTargets()) {
+                if( target.isFieldInjectable() ) {  // make sure it's a field and not a method
+                    if ( annotatedClass.getName().equals(target.getClassName() ) &&
+                         target.getFieldName().equals( fieldName ) ) {
+                        String name = injectionCapable.getComponentEnvName();
+                        if ( ! name.startsWith("java:") ) {
+                            name = "java:comp/env/" + name;
+                        }
+
+                        return name;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private ComponentInvocation createComponentInvocation( String componentId,
+                                                           String appName,
+                                                           String moduleName) {
+        ComponentInvocation.ComponentInvocationType componentInvocationType =
+            ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
+
+        ComponentInvocation componentInvocation =
+            new ComponentInvocation( componentId,
+                                     componentInvocationType,
+                                     null,
+                                     appName,
+                                     moduleName);
+        componentInvocation.setJNDIEnvironment( bundleContext );
+        return componentInvocation;
+    }
+
+    private String getLookupName( Class annotatedClass, AnnotatedField annotatedField, List<InjectionCapable> injectionResources ) {
+        String lookupName = null;
+        if ( annotatedField.isAnnotationPresent( Resource.class ) ) {
+            Resource resource = annotatedField.getAnnotation( Resource.class );
+            lookupName = getJndiName( resource.lookup(), resource.mappedName(), resource.name() );
+        } else if ( annotatedField.isAnnotationPresent( EJB.class ) ) {
+            EJB ejb = annotatedField.getAnnotation( EJB.class );
+            lookupName = getJndiName(ejb.lookup(), ejb.mappedName(), ejb.name());
+        } else if ( annotatedField.isAnnotationPresent( WebServiceRef.class ) ) {
+            WebServiceRef webServiceRef = annotatedField.getAnnotation( WebServiceRef.class );
+            lookupName = getJndiName(webServiceRef.lookup(), webServiceRef.mappedName(), webServiceRef.name());
+        } else if ( annotatedField.isAnnotationPresent( PersistenceUnit.class ) ) {
+            PersistenceUnit persistenceUnit = annotatedField.getAnnotation( PersistenceUnit.class );
+            lookupName = getJndiName( persistenceUnit.unitName(), null, persistenceUnit.name() );
+        } else if ( annotatedField.isAnnotationPresent( PersistenceUnit.class ) ) {
+            PersistenceUnit persistenceUnit = annotatedField.getAnnotation( PersistenceUnit.class );
+            lookupName = getJndiName( persistenceUnit.unitName(), null, persistenceUnit.name() );
+        } else if ( annotatedField.isAnnotationPresent( PersistenceContext.class ) ) {
+            PersistenceContext persistenceContext = annotatedField.getAnnotation( PersistenceContext.class );
+            lookupName = getJndiName( persistenceContext.unitName(), null, persistenceContext.name() );
+        }
+
+        if ( lookupName == null || lookupName.trim().length() == 0 ) {
+            lookupName = getComponentEnvName( annotatedClass,
+                                              annotatedField.getJavaMember().getName(),
+                                              injectionResources );
+        }
+        return lookupName;
+    }
+
+    private String getJndiName( String lookup, String mappedName, String name ) {
+        String jndiName = lookup;
+        if ( jndiName == null || jndiName.length() == 0 ) {
+            jndiName = mappedName;
+            if ( jndiName == null || jndiName.length() == 0 ) {
+                jndiName = name;
+            }
+        }
+
+        return jndiName;
+    }
+
+
 
     public void cleanup() {
 
     }
+
 }
