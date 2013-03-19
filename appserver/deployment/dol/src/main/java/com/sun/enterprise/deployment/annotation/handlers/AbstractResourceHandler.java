@@ -186,11 +186,10 @@ public abstract class AbstractResourceHandler extends AbstractHandler {
                      throw new IllegalArgumentException(localStrings.getLocalString("lifecycle_method_no_checked_exception", "The lifecycle method [{0}] must not throw a checked exception", method.getName()));
                  }
             }
-        }
-
-        Class returnType = method.getReturnType();
-        if (!returnType.equals(Void.TYPE)) {
-            throw new IllegalArgumentException(localStrings.getLocalString("lifecycle_method_return_type_void", "The return type of the lifecycle method [{0}] must be void", method.getName()));
+            Class returnType = method.getReturnType();
+            if (!returnType.equals(Void.TYPE)) {
+                throw new IllegalArgumentException(localStrings.getLocalString("lifecycle_method_return_type_void", "The return type of the lifecycle method [{0}] must be void", method.getName()));
+            }
         }
     }
 }
