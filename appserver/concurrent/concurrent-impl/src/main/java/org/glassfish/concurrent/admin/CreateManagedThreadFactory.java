@@ -85,7 +85,7 @@ public class CreateManagedThreadFactory implements AdminCommand {
     @Param(name="contextinfoenabled", alias="contextInfoEnabled", defaultValue="true", optional=true)
     private Boolean contextinfoenabled;
 
-    @Param(name="contextinfo", defaultValue=ResourceConstants.CONTEXT_INFO_DEFAULT_VALUE, optional=true)
+    @Param(name="contextinfo", alias="contextInfo", defaultValue=ResourceConstants.CONTEXT_INFO_DEFAULT_VALUE, optional=true)
     private String contextinfo;
 
     @Param(name="threadpriority", alias="threadPriority", defaultValue=""+Thread.NORM_PRIORITY, optional=true)
