@@ -51,10 +51,8 @@
     <!beforeCreate
         setSessionAttribute(key="batchTabs" value="batchConfig");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration" method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="tmpMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
-        createMap(result="#{pageSession.valueMap}");
-        mapPut(map="#{pageSession.valueMap}"  key="executorServiceLookupName" value="#{pageSession.tmpMap['executor-service-lookup-name']}");
-        mapPut(map="#{pageSession.valueMap}"  key="dataSourceLookupName" value="#{pageSession.tmpMap['data-source-lookup-name']}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
+        println("----------- beforeCreate valueMap=#{pageSession.valueMap}");
     />
     </event>
 <sun:form id="propertyForm">
@@ -64,10 +62,12 @@
     <sun:title id="propertyContentPage" title="$resource{i18nc.batch.configurationTitle}" helpText="$resource{i18nc.batch.configurationTitleHelp}" >
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
-            <sun:button id="saveButton" immediate="#{true}" primary="#{false}"  text="$resource{i18n.button.Save}" >
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                                onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
                 <!command
+                    println( "=========== valueMap= #{pageSession.valueMap}");
                     prepareSuccessfulMsg();
-                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/configure-batch-runtime" method="POST" attrs="#{pageSession.valueMap}");
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/set-batch-runtime-configuration" method="POST" attrs="#{pageSession.valueMap}");
                 />
             </sun:button>
         </sun:panelGroup>
@@ -77,8 +77,13 @@
     <sun:propertySheet id="propertySheet">
         <sun:propertySheetSection >
             <sun:property id="executorServiceLookupName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.executorServiceLookupName}" helpText="$resource{i18nc.batch.configuration.executorServiceLookupNameHelp}">
-                <sun:textField id="executorServiceLookupName"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}"  text="#{pageSession.valueMap['executorServiceLookupName']}" />
+                <sun:dropDown id="executorServiceLookupName" selected="#{pageSession.valueMap['executorServiceLookupName']}" labels="$pageSession{mesList}"  values="$pageSession{mesList}"  >
+                    <!beforeCreate
+                        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/resources/managed-executor-service", result="#{pageSession.mesList}");
+                    />
+                </sun:dropDown>
             </sun:property>
+
             <sun:property id="poolNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.dataSourceLookupName}"  helpText="$resource{i18nc.batch.configuration.dataSourceLookupNameHelp}">
                 <sun:dropDown id="PoolName" selected="#{pageSession.valueMap['dataSourceLookupName']}" labels="$pageSession{jdbcList}"  values="$pageSession{jdbcList}" >
                 <!beforeCreate
@@ -86,6 +91,7 @@
                 />
                </sun:dropDown>
            </sun:property>
+
         </sun:propertySheetSection>
     </sun:propertySheet>
     <sun:hidden id="helpKey" value="$resource{help_common.batchConfiguration}" />
