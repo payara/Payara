@@ -121,7 +121,9 @@ abstract class ConnectorStarter {
 
     public synchronized void stop() {
         try {
-            mConnectorServer.stop();
+            if (mConnectorServer != null) {
+                mConnectorServer.stop();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
