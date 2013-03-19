@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package com.sun.enterprise.admin.cli;
 
 import java.io.*;
@@ -68,32 +67,26 @@ import javax.inject.Inject;
 @Service(name = "multimode")
 @PerLookup
 public class MultimodeCommand extends CLICommand {
+
     @Inject
     private ServiceLocator habitat;
-    
     @Inject
     private CLIContainer container;
-
     @Param(optional = true, shortName = "f")
     private File file;
-
     @Param(name = "printprompt", optional = true)
     private Boolean printPromptOpt;
     private boolean printPrompt;
-
     @Param(optional = true)
     private String encoding;
-
     private boolean echo;       // saved echo flag
-
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(MultimodeCommand.class);
 
     /**
-     * The validate method validates that the type and quantity of
-     * parameters and operands matches the requirements for this
-     * command.  The validate method supplies missing options from
-     * the environment.
+     * The validate method validates that the type and quantity of parameters
+     * and operands matches the requirements for this command. The validate
+     * method supplies missing options from the environment.
      */
     @Override
     protected void validate()
@@ -111,20 +104,20 @@ public class MultimodeCommand extends CLICommand {
     }
 
     /**
-     * In the usage message modify the --printprompt option to have a
-     * default based on the --interactive option.
+     * In the usage message modify the --printprompt option to have a default
+     * based on the --interactive option.
      */
     protected Collection<ParamModel> usageOptions() {
         Collection<ParamModel> opts = commandModel.getParameters();
         Set<ParamModel> uopts = new LinkedHashSet<ParamModel>();
-	ParamModel p = new CommandModelData.ParamModelData("printprompt",
-	    boolean.class, true, Boolean.toString(programOpts.isInteractive()));
-	for (ParamModel pm : opts) {
-	    if (pm.getName().equals("printprompt"))
+        ParamModel p = new CommandModelData.ParamModelData("printprompt",
+                boolean.class, true, Boolean.toString(programOpts.isInteractive()));
+        for (ParamModel pm : opts) {
+            if (pm.getName().equals("printprompt"))
                 uopts.add(p);
             else
                 uopts.add(pm);
-	}
+        }
         return uopts;
     }
 
@@ -138,49 +131,53 @@ public class MultimodeCommand extends CLICommand {
                 System.out.println(strings.get("multimodeIntro"));
                 if (encoding != null)
                     reader = new BufferedReader(
-                                new InputStreamReader(System.in, encoding));
-                    reader = new BufferedReader(
-                                new InputStreamReader(System.in));
-            } else {
+                            new InputStreamReader(System.in, encoding));
+                reader = new BufferedReader(
+                        new InputStreamReader(System.in));
+            }
+            else {
                 printPrompt = false;
                 if (!file.canRead()) {
-                    throw new CommandException("File: " + file +
-                                                " can not be read");
+                    throw new CommandException("File: " + file
+                            + " can not be read");
                 }
                 if (encoding != null)
                     reader = new BufferedReader(new InputStreamReader(
-                                    new FileInputStream(file), encoding));
+                            new FileInputStream(file), encoding));
                 else
                     reader = new BufferedReader(new FileReader(file));
             }
             return executeCommands(reader);
-        } catch(IOException e) {
+        }
+        catch (IOException e) {
             throw new CommandException(e);
-        } finally {
+        }
+        finally {
             try {
                 if (file != null && reader != null)
                     reader.close();
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 // ignore it
             }
         }
     }
-    
+
     private static void atomicReplace(ServiceLocator locator, ProgramOptions options) {
         DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
         DynamicConfiguration config = dcs.createDynamicConfiguration();
-        
+
         config.addUnbindFilter(BuilderHelper.createContractFilter(ProgramOptions.class.getName()));
         ActiveDescriptor<ProgramOptions> desc = BuilderHelper.createConstantDescriptor(
                 options, null, ProgramOptions.class);
         config.addActiveDescriptor(desc);
-        
+
         config.commit();
     }
 
     /**
-     * Read commands from the specified BufferedReader
-     * and execute them.  If printPrompt is set, prompt first.
+     * Read commands from the specified BufferedReader and execute them. If
+     * printPrompt is set, prompt first.
      *
      * @return the exit code of the last command executed
      */
@@ -213,7 +210,8 @@ public class MultimodeCommand extends CLICommand {
             String[] args;
             try {
                 args = getArgs(line);
-            } catch (ArgumentTokenizer.ArgumentException ex) {
+            }
+            catch (ArgumentTokenizer.ArgumentException ex) {
                 logger.info(ex.getMessage());
                 continue;
             }
@@ -246,40 +244,47 @@ public class MultimodeCommand extends CLICommand {
                 po.setCommandName(programOpts.getCommandName());
                 // remove the old one and replace it
                 atomicReplace(habitat, po);
-                
+
                 cmd = CLICommand.getCommand(habitat, command);
                 rc = cmd.execute(args);
-            } catch (CommandValidationException cve) {
+            }
+            catch (CommandValidationException cve) {
                 logger.severe(cve.getMessage());
-		if (cmd != null)
-		    logger.severe(cmd.getUsage());
+                if (cmd != null)
+                    logger.severe(cmd.getUsage());
                 rc = ERROR;
-            } catch (InvalidCommandException ice) {
+            }
+            catch (InvalidCommandException ice) {
                 // find closest match with local or remote commands
                 logger.severe(ice.getMessage());
                 try {
                     CLIUtil.displayClosestMatch(command,
-                        CLIUtil.getAllCommands(container, po, env),
-                       strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
-                } catch (InvalidCommandException e) {
+                            CLIUtil.getAllCommands(container, po, env),
+                            strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
+                }
+                catch (InvalidCommandException e) {
                     // not a big deal if we cannot help
                 }
-            } catch (CommandException ce) {
+            }
+            catch (CommandException ce) {
                 if (ce.getCause() instanceof java.net.ConnectException) {
                     // find closest match with local commands
                     logger.severe(ce.getMessage());
                     try {
                         CLIUtil.displayClosestMatch(command,
-                            CLIUtil.getLocalCommands(container),
-                            strings.get("ClosestMatchedLocalCommands"), logger);
-                    } catch (InvalidCommandException e) {
+                                CLIUtil.getLocalCommands(container),
+                                strings.get("ClosestMatchedLocalCommands"), logger);
+                    }
+                    catch (InvalidCommandException e) {
                         logger.info(
                                 strings.get("InvalidRemoteCommand", command));
                     }
-                } else
+                }
+                else
                     logger.severe(ce.getMessage());
                 rc = ERROR;
-            } finally {
+            }
+            finally {
                 // restore the original program options
                 // XXX - is this necessary?
                 atomicReplace(habitat, programOpts);
@@ -287,19 +292,19 @@ public class MultimodeCommand extends CLICommand {
 
             // XXX - this duplicates code in AsadminMain, refactor it
             switch (rc) {
-            case SUCCESS:
-                if (!programOpts.isTerse())
-                    logger.fine(
-                        strings.get("CommandSuccessful", command));
-                break;
+                case SUCCESS:
+                    if (!programOpts.isTerse())
+                        logger.fine(
+                                strings.get("CommandSuccessful", command));
+                    break;
 
-            case ERROR:
-            case INVALID_COMMAND_ERROR:
-            case CONNECTION_ERROR:
-            default:
-                logger.fine(
-                    strings.get("CommandUnSuccessful", command));
-                break;
+                case ERROR:
+                case INVALID_COMMAND_ERROR:
+                case CONNECTION_ERROR:
+                default:
+                    logger.fine(
+                            strings.get("CommandUnSuccessful", command));
+                    break;
             }
             CLIUtil.writeCommandToDebugLog(programOpts.getCommandName() + "[multimode]", env, args, rc);
         }
@@ -307,7 +312,7 @@ public class MultimodeCommand extends CLICommand {
     }
 
     private String[] getArgs(String line)
-                                throws ArgumentTokenizer.ArgumentException {
+            throws ArgumentTokenizer.ArgumentException {
         List<String> args = new ArrayList<String>();
         ArgumentTokenizer t = new ArgumentTokenizer(line);
         while (t.hasMoreTokens())
