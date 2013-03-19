@@ -1057,22 +1057,4 @@ public class RemoteCLICommand extends CLICommand {
             return null;
         }
     }
-
-    private static boolean equalsStrIgnoreCase(String s, String t) {
-        if (s == null && t == null)
-            return true;
-        if ((s != null) && (t != null)) {
-            return s.equalsIgnoreCase(t);
-        }
-        return false;
-    }
-
-    private static boolean equalsStr(String s, String t) {
-        if (s == null && t == null)
-            return true;
-        if ((s != null) && (t != null)) {
-            return s.equals(t);
-        }
-        return false;
-    }
 }

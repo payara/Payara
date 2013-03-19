@@ -258,7 +258,8 @@ public class MultimodeCommand extends CLICommand {
                 // find closest match with local or remote commands
                 logger.severe(ice.getMessage());
                 try {
-                    CLIUtil.displayClosestMatch(command,
+                    if(po != null)  // many layers below, null WILL be de-referenced.
+                        CLIUtil.displayClosestMatch(command,
                             CLIUtil.getAllCommands(container, po, env),
                             strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
                 }
