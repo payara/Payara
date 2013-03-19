@@ -71,21 +71,21 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
         EventTypes.create("After_Servlet_Context_Initialized",
                           WebBundleDescriptor.class);
 
-    public boolean conflictLoginConfig = false;
-    public boolean conflictDataSourceDefinition = false;
-    public boolean conflictMailSessionDefinition = false;
-    public boolean conflictConnectionFactoryDefinition = false;
-    public boolean conflictAdminObjectDefinition = false;
-    public boolean conflictJMSConnectionFactoryDefinition = false;
-    public boolean conflictJMSDestinationDefinition = false;
-    public boolean conflictEnvironmentEntry = false;
-    public boolean conflictEjbReference = false;
-    public boolean conflictServiceReference = false;
-    public boolean conflictResourceReference = false;
-    public boolean conflictResourceEnvReference = false;
-    public boolean conflictMessageDestinationReference = false;
-    public boolean conflictEntityManagerReference = false;
-    public boolean conflictEntityManagerFactoryReference = false;
+    protected boolean conflictLoginConfig = false;
+    protected boolean conflictDataSourceDefinition = false;
+    protected boolean conflictMailSessionDefinition = false;
+    protected boolean conflictConnectionFactoryDefinition = false;
+    protected boolean conflictAdminObjectDefinition = false;
+    protected boolean conflictJMSConnectionFactoryDefinition = false;
+    protected boolean conflictJMSDestinationDefinition = false;
+    protected boolean conflictEnvironmentEntry = false;
+    protected boolean conflictEjbReference = false;
+    protected boolean conflictServiceReference = false;
+    protected boolean conflictResourceReference = false;
+    protected boolean conflictResourceEnvReference = false;
+    protected boolean conflictMessageDestinationReference = false;
+    protected boolean conflictEntityManagerReference = false;
+    protected boolean conflictEntityManagerFactoryReference = false;
 
     public abstract void addWebBundleDescriptor(WebBundleDescriptor webBundleDescriptor);
 
@@ -415,5 +415,65 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract void setExtensionProperty(String key, String value);
 
     public abstract boolean hasExtensionProperty(String key);
+
+    public boolean isConflictLoginConfig() {
+        return conflictLoginConfig;
+    }
+
+    public boolean isConflictDataSourceDefinition() {
+        return conflictDataSourceDefinition;
+    }
+
+    public boolean isConflictMailSessionDefinition() {
+        return conflictMailSessionDefinition;
+    }
+
+    public boolean isConflictConnectionFactoryDefinition() {
+        return conflictConnectionFactoryDefinition;
+    }
+
+    public boolean isConflictAdminObjectDefinition() {
+        return conflictAdminObjectDefinition;
+    }
+
+    public boolean isConflictJMSConnectionFactoryDefinition() {
+        return conflictJMSConnectionFactoryDefinition;
+    }
+
+    public boolean isConflictJMSDestinationDefinition() {
+        return conflictJMSDestinationDefinition;
+    }
+
+    public boolean isConflictEnvironmentEntry() {
+        return conflictEnvironmentEntry;
+    }
+
+    public boolean isConflictEjbReference() {
+        return conflictEjbReference;
+    }
+
+    public boolean isConflictServiceReference() {
+        return conflictServiceReference;
+    }
+
+    public boolean isConflictResourceReference() {
+        return conflictResourceReference;
+    }
+
+    public boolean isConflictResourceEnvReference() {
+        return conflictResourceEnvReference;
+    }
+
+    public boolean isConflictMessageDestinationReference() {
+        return conflictMessageDestinationReference;
+    }
+
+    public boolean isConflictEntityManagerReference() {
+        return conflictEntityManagerReference;
+    }
+
+    public boolean isConflictEntityManagerFactoryReference() {
+        return conflictEntityManagerFactoryReference;
+    }
 }
     
