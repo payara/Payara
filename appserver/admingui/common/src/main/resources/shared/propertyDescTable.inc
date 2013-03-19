@@ -115,7 +115,7 @@
         <sun:tableColumn headerText="$resource{i18n.common.PropertyValue}" sort="value" rowHeader="$boolean{false}" id="col3">
             <sun:textField columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.PropertyValue']}" id="col1St" value="#{td.value.value}" />
         </sun:tableColumn>
-        <sun:tableColumn headerText="$resource{i18n.common.description}" sort="value" rowHeader="$boolean{false}" id="col4" rendered="#{pageSession.showDescCol != 'false'}">
+        <sun:tableColumn headerText="$resource{i18n.common.description.header}" sort="value" rowHeader="$boolean{false}" id="col4" rendered="#{pageSession.showDescCol != 'false'}">
             <sun:textField columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}"  id="col1St" value="#{td.value.description}" />
         </sun:tableColumn>
         "<br/>
