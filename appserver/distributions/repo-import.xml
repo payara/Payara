@@ -106,19 +106,34 @@
                 <package name="mq-branding"/>                
             </packages>
         </repo>
-        <repo groupId="javadb" artifactId="javadb-common" classifier="ips">
+        <repo groupId="javadb" artifactId="javadb-common">
             <packages>
                 <package name="javadb-common" />
             </packages>
         </repo>
-        <repo groupId="javadb" artifactId="javadb-client" classifier="ips">
+        <repo groupId="javadb" artifactId="javadb-client">
             <packages>
                 <package name="javadb-client" />
             </packages> 
         </repo>
-        <repo groupId="javadb" artifactId="javadb-core" classifier="ips">
+        <repo groupId="javadb" artifactId="javadb-core">
             <packages>
                 <package name="javadb-core" />
+            </packages>  
+        </repo>
+        <repo groupId="javadb" artifactId="javadb-demo">
+            <packages>
+                <package name="javadb-demo" />
+            </packages>  
+        </repo>
+        <repo groupId="javadb" artifactId="javadb-doc">
+            <packages>
+                <package name="javadb-doc" />
+            </packages>  
+        </repo>
+        <repo groupId="javadb" artifactId="javadb-javadoc">
+            <packages>
+                <package name="javadb-javadoc" />
             </packages>  
         </repo>
         <repo groupId="org.glassfish.l10n" artifactId="l10n-distribution">

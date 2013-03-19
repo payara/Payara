@@ -238,21 +238,36 @@
                     <groupId>javadb</groupId>
                     <artifactId>javadb-common</artifactId>
                     <version>${javadb.version}</version>
-                    <classifier>ips</classifier>
                     <type>zip</type>
                 </dependency>
                 <dependency>
                     <groupId>javadb</groupId>
                     <artifactId>javadb-core</artifactId>
                     <version>${javadb.version}</version>
-                    <classifier>ips</classifier>
                     <type>zip</type>
                 </dependency>
                 <dependency>
                     <groupId>javadb</groupId>
                     <artifactId>javadb-client</artifactId>
                     <version>${javadb.version}</version>
-                    <classifier>ips</classifier>
+                    <type>zip</type>
+                </dependency>
+                <dependency>
+                    <groupId>javadb</groupId>
+                    <artifactId>javadb-demo</artifactId>
+                    <version>${javadb.version}</version>
+                    <type>zip</type>
+                </dependency>
+                <dependency>
+                    <groupId>javadb</groupId>
+                    <artifactId>javadb-doc</artifactId>
+                    <version>${javadb.version}</version>
+                    <type>zip</type>
+                </dependency>
+                <dependency>
+                    <groupId>javadb</groupId>
+                    <artifactId>javadb-javadoc</artifactId>
+                    <version>${javadb.version}</version>
                     <type>zip</type>
                 </dependency>
                 <dependency>
