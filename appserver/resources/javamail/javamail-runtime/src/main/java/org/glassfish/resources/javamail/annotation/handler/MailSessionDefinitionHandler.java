@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,12 +50,12 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
-import org.glassfish.resources.javamail.annotation.MailSessionDefinition;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.AroundTimeout;
 import javax.interceptor.Interceptors;
+import javax.mail.MailSessionDefinition;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
@@ -210,16 +210,8 @@ public class MailSessionDefinitionHandler extends AbstractResourceHandler {
             desc.setStoreProtocol(defn.storeProtocol());
         }
 
-        if (defn.storeProtocolClass() != null && !defn.storeProtocolClass().equals("")) {
-            desc.setStoreProtocolClass(defn.storeProtocolClass());
-        }
-
         if (defn.transportProtocol() != null && !defn.transportProtocol().equals("")) {
             desc.setTransportProtocol(defn.transportProtocol());
-        }
-
-        if (defn.transportProtocolClass() != null && !defn.transportProtocolClass().equals("")) {
-            desc.setTransportProtocolClass(defn.transportProtocolClass());
         }
 
         if (defn.host() != null && !defn.host().equals("")) {
@@ -286,16 +278,8 @@ public class MailSessionDefinitionHandler extends AbstractResourceHandler {
                     desc.setStoreProtocol(mailSessionDefn.storeProtocol());
                 }
 
-                if (desc.getStoreProtocolClass() == null) {
-                    desc.setStoreProtocolClass(mailSessionDefn.storeProtocolClass());
-                }
-
                 if (desc.getTransportProtocol() == null) {
                     desc.setTransportProtocol(mailSessionDefn.transportProtocol());
-                }
-
-                if (desc.getTransportProtocolClass() == null) {
-                    desc.setTransportProtocolClass(mailSessionDefn.transportProtocolClass());
                 }
 
                 if (desc.getHost() == null) {
