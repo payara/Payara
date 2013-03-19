@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -83,8 +83,8 @@ locate_java() {
             minor=`echo $version | cut -d'.' -f2`
         fi
 
-        # We want 1.6 or newer
-        if [ "$major" -eq "1" -a "$minor" -ge "6" ];  then
+        # We want 1.7 or newer
+        if [ "$major" -eq "1" -a "$minor" -ge "7" ];  then
             echo "$j/java"
             return
         fi
@@ -117,7 +117,7 @@ locate_jar() {
 flag_jdk_error() {
  echo
  echo "Could not locate a suitable Java runtime."
- echo "Please ensure that you have Java 6 or newer installed on your system"
+ echo "Please ensure that you have Java 7 or newer installed on your system"
  echo "and accessible in your PATH or by setting JAVA_HOME"
  exit 105
 }
@@ -132,7 +132,7 @@ my_jar=`locate_jar`
 if [ -z "$my_jar" ]; then
     echo
     echo "Could not locate a suitable jar utility."
-    echo "Please ensure that you have Java 6 or newer installed on your system"
+    echo "Please ensure that you have Java 7 or newer installed on your system"
     echo "and accessible in your PATH or by setting JAVA_HOME"
     exit 105
 fi

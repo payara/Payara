@@ -348,7 +348,7 @@ while getopts "${OPTSTRING}" opt ; do
 done
 
 ${ECHO}
-echo "Welcome to GlassFish V3 installer"
+echo "Welcome to GlassFish installer"
 ${ECHO}
 
 # check user for access privileges
