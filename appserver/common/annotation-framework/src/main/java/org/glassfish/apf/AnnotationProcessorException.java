@@ -40,6 +40,8 @@
 
 package org.glassfish.apf;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
 /**
  * Exception that denotes a warning or error condition in the 
  * annotation procesing tool
@@ -53,7 +55,10 @@ public class AnnotationProcessorException extends Exception {
     transient final private AnnotationInfo locator; // TODO if this class is meant for serialization, make sure all its constituents are serializable.
     
     boolean isFatal = false;
-    
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationProcessorException.class);
+
+
     /** 
      * Creats a new annotation exception
      * @param message describing the exception cause
@@ -95,7 +100,11 @@ public class AnnotationProcessorException extends Exception {
      * @return a meaningful description
      */
     public String toString() {
-        return (locator==null?message:message + "at " + locator);
+        if (locator == null) {
+            return message;
+        } else {
+            return localStrings.getLocalString("annotationprocessorexception.with.locator", "{0}. Related annotation information: {1}", message, locator);
+        }
     }
     
     /**

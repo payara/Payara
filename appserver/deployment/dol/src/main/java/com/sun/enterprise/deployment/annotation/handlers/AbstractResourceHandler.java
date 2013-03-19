@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,6 +53,7 @@ import org.glassfish.apf.AnnotationProcessorException;
 import org.glassfish.apf.HandlerProcessingResult;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 /**
  * This is an abstract class encapsulate generic behaviour of resource
@@ -170,4 +171,26 @@ public abstract class AbstractResourceHandler extends AbstractHandler {
         return false;
     }
 
+    // validate methods that are annotated with @PostConstruct and @PreDestroy
+    // to conform the spec
+    protected void validateAnnotatedLifecycleMethod(Method method) {
+        Class[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length > 1) {
+            throw new IllegalArgumentException(localStrings.getLocalString("lifecycle_method_invalid_param_size", "The lifecycle method [{0}] must not have more than one parameter", method.getName()));
+        }
+
+        if (parameterTypes.length == 0) {
+            Class[] exceptionTypes = method.getExceptionTypes();
+            for (Class exception : exceptionTypes) {
+                 if (!RuntimeException.class.isAssignableFrom(exception)) {
+                     throw new IllegalArgumentException(localStrings.getLocalString("lifecycle_method_no_checked_exception", "The lifecycle method [{0}] must not throw a checked exception", method.getName()));
+                 }
+            }
+        }
+
+        Class returnType = method.getReturnType();
+        if (!returnType.equals(Void.TYPE)) {
+            throw new IllegalArgumentException(localStrings.getLocalString("lifecycle_method_return_type_void", "The return type of the lifecycle method [{0}] must be void", method.getName()));
+        }
+    }
 }

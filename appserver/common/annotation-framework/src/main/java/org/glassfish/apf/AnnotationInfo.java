@@ -44,6 +44,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
+
 /**
  * Instances encapsulate all information necessary for an AnnotationHandler 
  * to process an annotation. In particular, instances of this class provide 
@@ -62,6 +64,8 @@ import java.lang.annotation.ElementType;
  *
  */
 public class AnnotationInfo {
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AnnotationInfo.class);
 
     // the annotated element 
     final private AnnotatedElement annotatedElement;
@@ -107,7 +111,6 @@ public class AnnotationInfo {
         return annotation;
     }
 
-    
     /**
      * @return the processing context
      */
@@ -120,5 +123,9 @@ public class AnnotationInfo {
      */
     public ElementType getElementType() {
         return type;
+    }
+
+    public String toString() {
+        return localStrings.getLocalString("annotatedinfo.string", "annotation [{0}] on annotated element [{1}] of type [{2}]", annotation, annotatedElement, type); 
     }
 }
