@@ -144,7 +144,7 @@
                                     setAttribute(key="connectionDefinitions" value="#{requestScope.result.data.extraProperties.defnNames}");
                                 }
                             />
-                            <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njca.poolName}" helpText="$resource{i18n.common.jndiNameHelp}">
+                            <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njca.poolName}" >
                                 <sun:textField id="name" styleClass="required" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.poolName']}" text="#{wizardPoolExtra.name}" required="#{true}" >
                                 <!afterCreate
                                      getClientId(component="$this{component}" clientId=>$page{jndiNameId});

@@ -51,7 +51,7 @@
             <sun:staticText id="Jndi" text="#{pageSession.Name}"/> 
         </sun:property>   
 
-        <sun:property id="jndiTextProp" rendered="#{!edit}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}" helpText="$resource{i18n.common.jndiNameHelp}" >
+        <sun:property id="jndiTextProp" rendered="#{!edit}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}"  >
             <sun:textField id="jnditext" styleClass="required" maxLength="#{sessionScope.fieldLengths['maxLength.common.jndiName']}" text="#{pageSession.valueMap['name']}" required="#{true}">
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{jndiNameId});

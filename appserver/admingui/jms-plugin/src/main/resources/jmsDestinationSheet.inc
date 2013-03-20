@@ -49,7 +49,7 @@
             setAttribute(key="enabled" value="#{true}");
         />
         </event>
-        <sun:property id="jndiProp" rendered="#{!edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}" helpText="$resource{i18n.common.jndiNameHelp}" >
+        <sun:property id="jndiProp" rendered="#{!edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}" >
             <sun:textField id="jndi" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.common.jndiName']}" text="#{pageSession.valueMap['name']}" styleClass="required" required="#{true}" >
                 <!afterCreate
                     getClientId(component="$this{component}" clientId=>$page{resCompId});
