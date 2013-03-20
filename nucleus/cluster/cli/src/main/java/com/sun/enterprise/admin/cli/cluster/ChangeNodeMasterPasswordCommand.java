@@ -46,6 +46,8 @@ import com.sun.enterprise.admin.servermgmt.RepositoryConfig;
 import com.sun.enterprise.admin.util.CommandModelData.ParamModelData;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.universal.xml.MiniXmlParser;
+import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
@@ -56,6 +58,7 @@ import org.glassfish.hk2.api.PerLookup;
 import java.io.File;
 import java.io.FileFilter;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The change-master-password command for a node.
@@ -98,12 +101,10 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             }
             
             ArrayList<String> serverNames = getInstanceDirs(serverDir);
-            for (String serverName: serverNames) {
-                HostAndPort adminAddress = getAdminAddress(serverName);
-                if (isRunning(adminAddress.getHost(), adminAddress.getPort()))
+            for (String serverName: serverNames) 
+                if (isRunning(serverDir, serverName))
                     throw new CommandException(strings.get("instance.is.running",
                             serverName));
-            }
 
             oldPassword = passwords.get("AS_ADMIN_MASTERPASSWORD");
             if (oldPassword == null) {
@@ -231,5 +232,23 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
      }
 
-
+    private boolean isRunning(File nodeDirChild, String serverName)
+            throws CommandException {
+        try {
+            File serverDir = new File(nodeDirChild, serverName);
+            File configDir = new File(serverDir, "config");
+            File domainXml = new File(configDir, "domain.xml");
+            if (!domainXml.exists())
+                return false;
+            MiniXmlParser parser = new MiniXmlParser(domainXml, serverName);
+            List<HostAndPort> addrSet = parser.getAdminAddresses();
+            if (addrSet.size() <= 0)
+                throw new CommandException(strings.get("NoAdminPort"));
+            HostAndPort addr = addrSet.get(0);
+            return isRunning(addr.getHost(), addr.getPort());
+        } catch (MiniXmlParserException ex) {
+            throw new CommandException(strings.get("NoAdminPortEx", ex), ex);
+        }
+    }
+    
 }
