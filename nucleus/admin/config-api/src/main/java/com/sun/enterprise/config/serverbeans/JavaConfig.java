@@ -57,8 +57,6 @@ import org.glassfish.api.admin.RestRedirect;
 
 import org.glassfish.quality.ToDo;
 
-import javax.validation.constraints.NotNull;
-
 /**
  * Java Runtime environment configuration
  */
@@ -349,7 +347,6 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      *         {@link Profiler }
      */
     @Element
-    @NotNull
     Profiler getProfiler();
 
     /**
