@@ -183,7 +183,7 @@ public final class WebContainerListener
      */
     private void preDestroy(ContainerEvent event) {
         try {
-            injectionMgr.destroyManagedObject(event.getData());
+            injectionMgr.destroyManagedObject(event.getData(), false);
         } catch (Throwable t) {
             String msg = rb.getString(EXCEPTION_DURING_DESTROY_MANAGED_OBJECT);
             msg = MessageFormat.format(msg,
