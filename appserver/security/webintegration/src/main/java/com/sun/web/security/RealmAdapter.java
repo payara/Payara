@@ -1704,6 +1704,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                     this.principal.getName(), null);
             return true;
         }
+
+        @Override
+        public String getAuthMethod() {
+            return authType;
+        }
     }
 
     private static class HttpMessageInfo implements MessageInfo {

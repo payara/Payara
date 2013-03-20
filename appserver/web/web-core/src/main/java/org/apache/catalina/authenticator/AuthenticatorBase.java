@@ -113,7 +113,7 @@ public abstract class AuthenticatorBase
     // ----------------------------------------------------- Static Variables
 
     protected static final Logger log = StandardServer.log;
-    protected  static final ResourceBundle rb = log.getResourceBundle();
+    protected static final ResourceBundle rb = log.getResourceBundle();
 
     @LogMessageInfo(
             message = "Configuration error:  Must be attached to a Context",
@@ -135,7 +135,12 @@ public abstract class AuthenticatorBase
     )
     public static final String GETTING_DEBUG_VALUE_EXCEPTION = "AS-WEB-CORE-00003";
 
+    @LogMessageInfo(
+            message = "Login failed",
+            level = "WARNING"
+    )
 
+    public static final String LOGIN_FAIL = "AS-WEB-CORE-000535";
 
     /**
      * Descriptive information about this implementation.
@@ -926,6 +931,34 @@ public abstract class AuthenticatorBase
             request.setNote(Constants.REQ_SSO_VERSION_NOTE, Long.valueOf(0));
         }
         
+    }
+
+    @Override
+    public void login(String username, char[] password, HttpRequest request)
+            throws ServletException {
+        Principal principal = doLogin(request, username, password);
+        register(request, (HttpResponse)request.getResponse(), principal,
+                getAuthMethod(), username, password);
+    }
+
+    protected abstract String getAuthMethod();
+
+    /**
+     * Process the login request.
+     *
+     * @param request   Associated request
+     * @param username  The user
+     * @param password  The password
+     * @return          The authenticated Principal
+     * @throws ServletException
+     */
+    protected Principal doLogin(HttpRequest request, String username,
+                                char[] password) throws ServletException {
+        Principal p = context.getRealm().authenticate(username, password);
+        if (p == null) {
+            throw new ServletException(rb.getString(LOGIN_FAIL));
+        }
+        return p;
     }
     
     // ------------------------------------------------------ Private Methods

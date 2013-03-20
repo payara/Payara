@@ -340,6 +340,10 @@ public class FormAuthenticator
 
     // ------------------------------------------------------ Protected Methods
 
+    @Override
+    protected String getAuthMethod() {
+        return HttpServletRequest.FORM_AUTH;
+    }
 
     /**
      * Does this request match the saved one (so that it must be the redirect

@@ -153,5 +153,12 @@ public final class NonLoginAuthenticator
 
     }
 
-
+    /**
+     * Return the authentication method, which is vendor-specific and
+     * not defined by HttpServletRequest.
+     */
+    @Override
+    protected String getAuthMethod() {
+        return "NONE";
+    }
 }

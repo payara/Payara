@@ -248,6 +248,8 @@ public class BasicAuthenticator
 
     }
 
-
-
+    @Override
+    protected String getAuthMethod() {
+        return HttpServletRequest.BASIC_AUTH;
+    }
 }

@@ -298,6 +298,18 @@ public class Request
     )
     public static final String BREAKING_BACKGROUND_LOCK_EXCEPTION = "AS-WEB-CORE-00073";
 
+    @LogMessageInfo(
+            message = "This is request has already been authenticated",
+            level = "WARNING"
+    )
+    public static final String ALREADY_AUTHENTICATED = "AS-WEB-CORE-00536";
+
+    @LogMessageInfo(
+            message = "No authenticator",
+            level = "WARNING"
+    )
+    public static final String NO_AUTHENTICATOR = "AS-WEB-CORE-00537";
+
     // ----------------------------------------------------------- Statics
     /**
      * Descriptive information about this Request implementation.
@@ -2193,79 +2205,17 @@ public class Request
 
     public void login(final String username, final char[] password)
             throws ServletException {
-        if (getUserPrincipal() != null) {
-
-            log.log(Level.SEVERE, ATTEMPT_RELOGIN_EXCEPTION);
-
-            throw new ServletException("Attempt to re-login while the " +
-                    "user identity already exists");
-        }
-        if (context == null) {
-            return;
-        }
-
-        LoginConfig loginConfig = context.getLoginConfig();
-        String authMethod = loginConfig != null ? loginConfig.getAuthMethod() : "";
-        final Realm realm = context.getRealm();
-        if (realm == null) {
-            return;
-        }
-        try {
-            //Support only BASIC and FORM  auth methods            
-            if ("CLIENT-CERT".equals(authMethod) || "NONE".equals(authMethod)) {
-                throw new ServletException(
-                        "Invalid LoginConfig, Auth Method " +
-                        "Required is BASIC or FORM, but found  " + authMethod);
-
-            }
-            Principal webPrincipal = null;
-            if (Globals.IS_SECURITY_ENABLED) {
-                webPrincipal = AccessController.doPrivileged(new PrivilegedAction<Principal>() {
-                    @Override
-                    public Principal run() {
-                        return realm.authenticate(username, password);
-                    }
-                });
-            } else {
-                webPrincipal = realm.authenticate(username, password);
-            }
-            if (webPrincipal == null) {
-                throw new ServletException(
-                        "Failed login while attempting to authenticate " +
-                        "user: " + username);
-            }
-
-            setUserPrincipal(webPrincipal);
-            setAuthType("LOGIN");
-
-            Session session = getSessionInternal(true);
-            session.setAuthType(authType);
-            session.setPrincipal(webPrincipal);
-
-            AuthenticatorBase authenticator = (AuthenticatorBase) context.getAuthenticator();
-            boolean noCache = (authenticator != null && !authenticator.getCache());
-            if (noCache) {
-                if (username != null) {
-                    session.setNote(SESS_USERNAME_NOTE, username);
-                } else {
-                    session.removeNote(SESS_USERNAME_NOTE);
-                }
-                if (password != null) {
-                    session.setNote(SESS_PASSWORD_NOTE, password);
-                } else {
-                    session.removeNote(SESS_PASSWORD_NOTE);
-                }
-
-            }
-
-        } catch (Exception ex) {
+        if (getAuthType() != null || getRemoteUser() != null ||
+                getUserPrincipal() != null) {
             throw new ServletException(
-                    "Exception thrown while attempting to authenticate " +
-                    "for user: " + username, ex);
-
+                    rb.getString(ALREADY_AUTHENTICATED));
         }
 
-       
+        if (context.getAuthenticator() == null) {
+            throw new ServletException(rb.getString(NO_AUTHENTICATOR));
+        }
+
+        context.getAuthenticator().login(username, password, this);
     }
 
     @Override

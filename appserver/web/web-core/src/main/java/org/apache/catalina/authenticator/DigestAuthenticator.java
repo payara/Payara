@@ -371,6 +371,10 @@ public class DigestAuthenticator
 
     }
 
+    @Override
+    protected String getAuthMethod() {
+        return HttpServletRequest.DIGEST_AUTH;
+    }
 
     /**
      * Removes the quotes on a string.

@@ -210,4 +210,8 @@ public class SSLAuthenticator
 
     }
 
+    @Override
+    protected String getAuthMethod() {
+        return HttpServletRequest.CLIENT_CERT_AUTH;
+    }
 }
