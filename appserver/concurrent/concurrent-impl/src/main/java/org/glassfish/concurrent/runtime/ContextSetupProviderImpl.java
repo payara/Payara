@@ -65,7 +65,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private transient Applications applications;
     private transient JavaEETransactionManager transactionManager;
 
-    static final long serialVersionUID = 1L;
+    static final long serialVersionUID = -1095988075917755802L;
 
     static enum CONTEXT_TYPE {CLASSLOADING, SECURITY, NAMING, WORKAREA}
 

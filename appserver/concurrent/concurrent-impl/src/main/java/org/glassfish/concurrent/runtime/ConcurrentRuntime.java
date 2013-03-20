@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.runtime.deployer.ContextServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedExecutorServiceConfig;
 import org.glassfish.concurrent.runtime.deployer.ManagedScheduledExecutorServiceConfig;
@@ -57,11 +58,11 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.StringTokenizer;
+import java.util.*;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class provides API to create various Concurrency Utilities objects
@@ -81,6 +82,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     public static final String CONTEXT_INFO_JNDI = "JNDI";
     public static final String CONTEXT_INFO_SECURITY = "Security";
     public static final String CONTEXT_INFO_WORKAREA = "WorkArea";
+
+    private ScheduledExecutorService internalScheduler;
+    private static final Logger logger  = LogFacade.getLogger();
 
     @Inject
     AppServSecurityContext securityContext;
@@ -170,6 +174,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             managedExecutorServiceMap = new HashMap();
         }
         managedExecutorServiceMap.put(jndiName, mes);
+        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
+            scheduleInternalTimer();
+        }
         return mes;
     }
 
@@ -200,10 +207,8 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 config.getHungAfterSeconds() * 1000L, // in millseconds
                 config.isLongRunningTasks(),
                 config.getCorePoolSize(),
-                config.getMaximumPoolSize(),
                 config.getKeepAliveSeconds(), TimeUnit.SECONDS,
                 config.getThreadLifeTimeSeconds(),
-                config.getTaskQueueCapacity(),
                 createContextService(config.getJndiName() + "-contextservice",
                         config.getContextInfo(), config.getContextInfoEnabled(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
@@ -211,6 +216,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
             managedScheduledExecutorServiceMap = new HashMap();
         }
         managedScheduledExecutorServiceMap.put(jndiName, mes);
+        if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
+            scheduleInternalTimer();
+        }
         return mes;
     }
 
@@ -295,6 +303,27 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         return contextTypeArray.toArray(contextTypes);
     }
 
+    private void scheduleInternalTimer() {
+        if (internalScheduler == null) {
+            String name = "glassfish-internal";
+            ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
+                    name + "-managedThreadFactory",
+                    null,
+                    Thread.NORM_PRIORITY);
+            internalScheduler = new ManagedScheduledExecutorServiceImpl(name,
+                    managedThreadFactory,
+                    0L,
+                    false,
+                    1,
+                    60, TimeUnit.SECONDS,
+                    0L,
+                    createContextService(name + "-contextservice",
+                            CONTEXT_INFO_CLASSLOADER, "true", false),
+                    AbstractManagedExecutorService.RejectPolicy.ABORT);
+            internalScheduler.scheduleAtFixedRate(new HungTasksLogger(), 1L, 1L, TimeUnit.MINUTES);
+        }
+    }
+
     @Override
     public void postConstruct() {
     }
@@ -303,4 +332,46 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     public void preDestroy() {
         // TODO shut down objects here
     }
+
+    class HungTasksLogger implements Runnable {
+
+        public void run() {
+            ArrayList<ManagedExecutorServiceImpl> executorServices = new ArrayList();
+            ArrayList<ManagedScheduledExecutorServiceImpl> scheduledExecutorServices = new ArrayList();
+            synchronized (ConcurrentRuntime.this) {
+                if (managedExecutorServiceMap != null) {
+                    Collection<ManagedExecutorServiceImpl> mesColl = managedExecutorServiceMap.values();
+                    executorServices.addAll(mesColl);
+                }
+            }
+            synchronized (ConcurrentRuntime.this) {
+                if (managedScheduledExecutorServiceMap != null) {
+                    Collection<ManagedScheduledExecutorServiceImpl> msesColl = managedScheduledExecutorServiceMap.values();
+                    scheduledExecutorServices.addAll(msesColl);
+                }
+            }
+            for (ManagedExecutorServiceImpl mes: executorServices) {
+                Collection<AbstractManagedThread> hungThreads = mes.getHungThreads();
+                logHungThreads(hungThreads, mes.getManagedThreadFactory(), mes.getName());
+            }
+            for (ManagedScheduledExecutorServiceImpl mses: scheduledExecutorServices) {
+                Collection<AbstractManagedThread> hungThreads = mses.getHungThreads();
+                logHungThreads(hungThreads, mses.getManagedThreadFactory(), mses.getName());
+            }
+        }
+
+        private void logHungThreads(Collection<AbstractManagedThread> hungThreads, ManagedThreadFactoryImpl mtf, String mesName) {
+            if (hungThreads != null) {
+                for (AbstractManagedThread hungThread: hungThreads) {
+                    Object[] params = {hungThread.getTaskIdentityName(),
+                                       hungThread.getName(),
+                                       hungThread.getTaskRunTime(System.currentTimeMillis()) / 1000,
+                                       mtf.getHungTaskThreshold() / 1000,
+                                       mesName};
+                    logger.log(Level.WARNING, LogFacade.UNRESPONSIVE_TASK, params);
+                }
+            }
+        }
+    }
+
 }

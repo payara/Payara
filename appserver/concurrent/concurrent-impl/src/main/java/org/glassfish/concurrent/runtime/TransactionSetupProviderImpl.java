@@ -59,6 +59,8 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
     private transient JavaEETransactionManager transactionManager;
 
+    static final long serialVersionUID = -856400645253308289L;
+
     public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager) {
         this.transactionManager = transactionManager;
     }

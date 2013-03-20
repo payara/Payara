@@ -37,44 +37,42 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+package org.glassfish.concurrent;
 
-package org.glassfish.concurrent.runtime;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import java.util.logging.Logger;
 
-import com.sun.enterprise.security.integration.AppServSecurityContext;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+public class LogFacade {
 
-public class InvocationContext implements ContextHandle {
+    @LoggerInfo(subsystem = "GlassFish-Concurrency", description = "GlassFish Concurrency Logger", publish = true)
+    private static final String LOGGER_NAME = "javax.enterprise.concurrent";
 
-    private transient ComponentInvocation invocation;
-    private transient ClassLoader contextClassLoader;
-    private transient AppServSecurityContext securityContext;
+    @LogMessagesResourceBundle
+    private static final String LOGGER_RB = "org.glassfish.concurrent.LogMessages";
 
-    static final long serialVersionUID = 268374345047242571L;
+    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME, LOGGER_RB);
 
-    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, AppServSecurityContext securityContext) {
-        this.invocation = invocation;
-        this.contextClassLoader = contextClassLoader;
-        this.securityContext = securityContext;
+    private LogFacade() {}
+
+    public static Logger getLogger() {
+        return LOGGER;
     }
 
-    public ComponentInvocation getInvocation() {
-        return invocation;
-    }
+    private static final String prefix = "AS-CNCRT-";
 
-    public ClassLoader getContextClassLoader() {
-        return contextClassLoader;
-    }
+    @LogMessageInfo(
+            message = "Task [{0}] has been running on thread [{1}] for {2} seconds, which is more than the configured " +
+                    "hung task threshold of {3} seconds in [{4}].",
+            comment = "A task has been running for longer time than the configured hung task threshold setting.",
+            level = "WARNING",
+            cause = "A task has been running for longer time than the configured hung task threshold setting.",
+            action = "Monitor the task to find out why it is running for a long time. " +
+                     "If this is normal, consider setting a higher hung task threshold or setting the " +
+                     "\"Long-Running Tasks\" configuration attribute to true. "
+    )
 
-    public AppServSecurityContext getSecurityContext() {
-        return securityContext;
-    }
-
-    private void readObject(java.io.ObjectInputStream in) {
-        //TODO- re-initialize these fields
-        invocation = null;
-        contextClassLoader = null;
-        securityContext = null;
-    }
+    public static final String UNRESPONSIVE_TASK = prefix + "00001";
 
 }
