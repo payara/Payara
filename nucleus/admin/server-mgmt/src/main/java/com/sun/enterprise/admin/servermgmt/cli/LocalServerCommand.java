@@ -149,6 +149,9 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     protected final void resetServerDirs() throws IOException {
+        if(serverDirs == null)
+            throw new RuntimeException(Strings.get("NoServerDirs"));
+
         serverDirs = serverDirs.refresh();
     }
 
@@ -157,6 +160,9 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     protected final File getDomainXml() {
+        if(serverDirs == null)
+            throw new RuntimeException(Strings.get("NoServerDirs"));
+
         return serverDirs.getDomainXml();
     }
 
@@ -414,7 +420,7 @@ public abstract class LocalServerCommand extends CLICommand {
             // Careful -- there is a slice of time where the file does not exist!
             try {
                 long newTimeStamp = pwFile.lastModified(); // could be 0L
-                logger.log(Level.FINER,"Checking timestamp of local-password. old: {0}, new: {1}", 
+                logger.log(Level.FINER,"Checking timestamp of local-password. old: {0}, new: {1}",
                         new Object[]{oldTimeStamp, newTimeStamp});
 
                 if (newTimeStamp > oldTimeStamp) {
@@ -447,7 +453,7 @@ public abstract class LocalServerCommand extends CLICommand {
             try {
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
                 long up = getUptime();
-                logger.log(Level.FINER, "oldserver-uptime, newserver-uptime = {0} --- {1}", 
+                logger.log(Level.FINER, "oldserver-uptime, newserver-uptime = {0} --- {1}",
                         new Object[]{uptimeOldServer, up});
 
                 if (up > 0 && up < uptimeOldServer) {
@@ -571,6 +577,7 @@ public abstract class LocalServerCommand extends CLICommand {
         }
         return f;
     }
+
     ////////////////////////////////////////////////////////////////
     /// Section:  private variables
     ////////////////////////////////////////////////////////////////

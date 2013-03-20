@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,16 +54,16 @@ import java.util.StringTokenizer;
  * @author  kedar
  */
 public class TokenReplacementTester {
-    
+
     /** Creates a new instance of TokenReplacementTester */
     private final LineTokenReplacer replacer;
-    
+
     public TokenReplacementTester(String tokensFileName, String fromFile, String toFile) {
         final TokenValueSet tokens = getTokensFromFile(tokensFileName);
         replacer = new LineTokenReplacer(tokens);
         replacer.replace(fromFile, toFile);
     }
-    
+
     private TokenValueSet getTokensFromFile(String fileName) {
         final TokenValueSet tokens  = new TokenValueSet();
         BufferedReader reader = null;
@@ -75,7 +75,6 @@ public class TokenReplacementTester {
                 tokens.add(tv);
             }
             reader.close();
-            reader = null;
         }
         catch(Exception e) {
             e.printStackTrace();
@@ -84,9 +83,9 @@ public class TokenReplacementTester {
                     reader.close();
                 } catch (Exception ex) {}
             }
-        } 
+        }
         return tokens;
-    } 
+    }
 
     private TokenValue getTokenValue(String line) {
         final String delim = "=";
@@ -114,7 +113,7 @@ public class TokenReplacementTester {
         final String toFile = fromFile + ".out";
         new TokenReplacementTester(tokensFile, fromFile, toFile);
     }
-    
+
     private static void usage() {
         System.out.println("java TokenReplacementTester <tokens-file> <template-file>");
     }

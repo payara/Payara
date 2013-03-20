@@ -264,6 +264,8 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                 l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, Arrays.asList("read")));
             }
             return l;
+        } else if(serviceName == null) {
+            return Collections.emptyList();
         } else {
             configBeanType = configModularityUtils.getClassFor(serviceName);
             if (configBeanType == null) {

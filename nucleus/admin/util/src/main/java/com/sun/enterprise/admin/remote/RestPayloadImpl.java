@@ -62,10 +62,8 @@ public class RestPayloadImpl extends PayloadImpl {
     public static class Outbound extends PayloadImpl.Outbound {
 
         private String complexType;
-        private boolean client2Server;
 
         public Outbound(boolean client2Server) {
-            this.client2Server = client2Server;
             if (client2Server) {
                 complexType = "multipart/form-data";
             } else {
@@ -143,21 +141,21 @@ public class RestPayloadImpl extends PayloadImpl {
 //            return mp;
 //        }
 
-        private static String addContentPrefix(String key) {
-            if (key == null) {
-                return null;
-            }
-            String lKey = key.toLowerCase(Locale.ENGLISH);
-            //todo: JDK7: convert to String switch-case
-            if ("content-disposition".equals(lKey) ||
-                    "content-type".equals(lKey) ||
-                    "content-transfer-encoding".equals(lKey)) {
-                return key;
-            } else {
-                return "Content-" + key;
-            }
-        }
-
+//        private static String addContentPrefix(String key) {
+//            if (key == null) {
+//                return null;
+//            }
+//            String lKey = key.toLowerCase(Locale.ENGLISH);
+//            //todo: JDK7: convert to String switch-case
+//            if ("content-disposition".equals(lKey) ||
+//                    "content-type".equals(lKey) ||
+//                    "content-transfer-encoding".equals(lKey)) {
+//                return key;
+//            } else {
+//                return "Content-" + key;
+//            }
+//        }
+//
     }
 
     public static class Inbound extends PayloadImpl.Inbound {
@@ -186,17 +184,17 @@ public class RestPayloadImpl extends PayloadImpl {
 //                throw new WebApplicationException(new Exception("Unsupported entity " + entity.getClass().getName()), Response.Status.BAD_REQUEST);
 //            }
 //        }
-        
+
         public void add(String name, InputStream is, String mimeType, List<? extends Header> headers) {
             Properties props = headers2Properties(headers);
             parts.add(PayloadImpl.Part.newInstance(mimeType, name, props, is));
         }
-        
+
         public void add(String name, String text,  List<? extends Header> headers) {
             Properties props = headers2Properties(headers);
             parts.add(PayloadImpl.Part.newInstance("text/plain", name, props, text));
         }
-        
+
         private Properties headers2Properties(List<? extends Header> headers) {
             Properties result = new Properties();
             for (Header header : headers) {

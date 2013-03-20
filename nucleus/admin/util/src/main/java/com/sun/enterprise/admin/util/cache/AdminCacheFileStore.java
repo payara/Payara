@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@ package com.sun.enterprise.admin.util.cache;
 
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
+import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
 import java.util.Date;
 import java.util.logging.Level;
@@ -52,17 +53,17 @@ import java.util.logging.Logger;
  * @author mmares
  */
 public class AdminCacheFileStore implements AdminCache {
-    
+
     private static final String DEFAULT_FILENAME = "#default#.cache";
     private static final AdminCacheFileStore instance = new AdminCacheFileStore();
-    
+
     private static final Logger logger = AdminLoggerInfo.getLogger();
-    
+
     private AdminCacheUtils adminCahceUtils = AdminCacheUtils.getInstance();
-    
+
     private AdminCacheFileStore() {
     }
-    
+
     @Override
     public <A> A get(String key, Class<A> clazz) {
         if (key == null || key.isEmpty()) {
@@ -84,21 +85,21 @@ public class AdminCacheFileStore implements AdminCache {
             return null;
         } catch (IOException ex) {
             if (logger.isLoggable(Level.WARNING)) {
-                logger.log(Level.WARNING, AdminLoggerInfo.mCannotReadCache, 
+                logger.log(Level.WARNING, AdminLoggerInfo.mCannotReadCache,
                         new Object[] { key });
             }
             return null;
         } finally {
             if (is != null) {
-                try { 
-                    is.close(); 
+                try {
+                    is.close();
                 } catch (Exception ex) {}
             }
         }
-            
+
     }
-    
-    private InputStream getInputStream(String key) throws FileNotFoundException {
+
+    private InputStream getInputStream(String key) throws IOException {
         if (key == null || key.isEmpty()) {
             throw new IllegalArgumentException("Attribute key must be unempty.");
         }
@@ -108,15 +109,15 @@ public class AdminCacheFileStore implements AdminCache {
         File f = getCacheFile(key);
         return new BufferedInputStream(new FileInputStream(f));
     }
-    
-    private File getCacheFile(String key) {
+
+    private File getCacheFile(String key) throws IOException{
         File dir = AsadminSecurityUtil.getDefaultClientDir();
         int idx = key.lastIndexOf('/');
         if (idx > 0) {
             dir = new File(dir, key.substring(0, idx));
-            if (!dir.exists()) {
-                dir.mkdirs();
-            }
+
+            if(!FileUtils.mkdirsMaybe(dir))
+                throw new IOException("Can't create directory: " + dir);
             key = key.substring(idx + 1);
             if (key.isEmpty()) {
                 key = DEFAULT_FILENAME;
@@ -140,7 +141,13 @@ public class AdminCacheFileStore implements AdminCache {
         if (provider == null) {
             throw new IllegalStateException("There is no data provider for " + data.getClass());
         }
-        File cacheFile = getCacheFile(key);
+        File cacheFile;
+        try {
+            cacheFile = getCacheFile(key);
+        }
+        catch (IOException ex) {
+            return;
+        }
         // @todo Java SE 7 - use try with resources
         OutputStream os = null;
         try {
@@ -148,13 +155,17 @@ public class AdminCacheFileStore implements AdminCache {
             os = new BufferedOutputStream(new FileOutputStream(tempFile));
             provider.writeToStream(data, os);
             os.close();
-            cacheFile.delete();
-            if (!tempFile.renameTo(cacheFile)) {
+
+            if (!FileUtils.deleteFileMaybe(cacheFile) || !tempFile.renameTo(cacheFile)) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING, AdminLoggerInfo.mCannotWriteCache,
                             new Object[] { cacheFile.getPath() });
                 }
-                tempFile.delete();
+                if(!FileUtils.deleteFileMaybe(tempFile)) {
+                    logger.log(Level.FINE, "can't delete file: {0}", tempFile);
+                }
+
+
             }
         } catch (IOException e) {
             if (logger.isLoggable(Level.WARNING)) {
@@ -174,7 +185,13 @@ public class AdminCacheFileStore implements AdminCache {
         if (!adminCahceUtils.validateKey(key)) {
             throw new IllegalArgumentException("Attribute key must be in form (([-_.a-zA-Z0-9]+/?)+)");
         }
-        File cacheFile = getCacheFile(key);
+        File cacheFile;
+        try {
+            cacheFile = getCacheFile(key);
+        }
+        catch (IOException ex) {
+            return false;
+        }
         return cacheFile.exists() && cacheFile.isFile();
     }
 
@@ -186,15 +203,21 @@ public class AdminCacheFileStore implements AdminCache {
         if (!adminCahceUtils.validateKey(key)) {
             throw new IllegalArgumentException("Attribute key must be in form (([-_.a-zA-Z0-9]+/?)+)");
         }
-        File cacheFile = getCacheFile(key);
+        File cacheFile;
+        try {
+            cacheFile = getCacheFile(key);
+        }
+        catch (IOException ex) {
+            return null;
+        }
         if (!cacheFile.exists() || !cacheFile.isFile()) {
             return null;
         }
         return new Date(cacheFile.lastModified());
     }
-    
+
     public static AdminCacheFileStore getInstance() {
         return instance;
     }
-    
+
 }

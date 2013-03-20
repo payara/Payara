@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,35 +44,35 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-/** {@link AdminCache} based on week references and backgrounded by 
+/** {@link AdminCache} based on week references and backgrounded by
  * {@link AdminCacheFileStore} layer. <br/>
- * Max one object representation of cached data are stored by this 
+ * Max one object representation of cached data are stored by this
  * implementation. If different type is requested, it will be reloaded from
  * file store using {@code AdminCacheFileStore}.<br/>
  *
  * @author mmares
  */
 public class AdminCacheWeakReference implements AdminCache {
-    
-    private final class CachedItem {
-        
+
+    private final static class CachedItem {
+
         private WeakReference item;
         private long updated = -1;
         private Date lastUpdateInStore;
-        
+
         private CachedItem(final Object item) {
             setItem(item);
         }
-        
+
         private CachedItem(final Object item, final Date lastUpdateInStore) {
             setItem(item);
             this.lastUpdateInStore = lastUpdateInStore;
         }
-        
+
         private CachedItem(final Date lastUpdateInStore) {
             this.lastUpdateInStore = lastUpdateInStore;
         }
-        
+
         public Object getItem() {
             if (item == null) {
                 return null;
@@ -80,7 +80,7 @@ public class AdminCacheWeakReference implements AdminCache {
                 return item.get();
             }
         }
-        
+
         public void setItem(Object item) {
             if (item == null) {
                 this.item = null;
@@ -101,14 +101,14 @@ public class AdminCacheWeakReference implements AdminCache {
         public long getUpdated() {
             return updated;
         }
-        
+
     }
-    
+
     private static final AdminCacheWeakReference instance = new AdminCacheWeakReference();
-    
+
     private AdminCacheFileStore fileCache = AdminCacheFileStore.getInstance();
     private final Map<String, CachedItem> cache = new HashMap<String, CachedItem>();
-    
+
     private AdminCacheWeakReference() {
     }
 
@@ -188,9 +188,9 @@ public class AdminCacheWeakReference implements AdminCache {
         }
         return result;
     }
-    
+
     public static AdminCacheWeakReference getInstance() {
         return instance;
     }
-    
+
 }

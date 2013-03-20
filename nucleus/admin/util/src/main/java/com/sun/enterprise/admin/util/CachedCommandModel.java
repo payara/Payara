@@ -52,15 +52,15 @@ import org.glassfish.api.admin.CommandModel;
  * @author mmares
  */
 public class CachedCommandModel extends CommandModelData {
-    
+
     private String eTag;
     private String usage;
     private boolean addedUploadOption = false;
-    
+
     public CachedCommandModel(String name) {
         super(name);
     }
-    
+
     public CachedCommandModel(String name, String eTag) {
         super(name);
         this.eTag = eTag;
@@ -75,14 +75,6 @@ public class CachedCommandModel extends CommandModelData {
 
     public void setETag(String eTag) {
         this.eTag = eTag;
-    }
-    
-    private static int strLen(String str) {
-        if (str == null) {
-            return 0;
-        } else {
-            return str.length();
-        }
     }
 
     public String geteTag() {
@@ -108,7 +100,7 @@ public class CachedCommandModel extends CommandModelData {
     public void setAddedUploadOption(boolean addedUploadOption) {
         this.addedUploadOption = addedUploadOption;
     }
-    
+
     public static String computeETag(CommandModel cm) {
         if (cm instanceof CachedCommandModel) {
             String result = ((CachedCommandModel) cm).eTag;
@@ -173,5 +165,5 @@ public class CachedCommandModel extends CommandModelData {
             return "v2" + tag.toString();
         }
     }
-    
+
 }

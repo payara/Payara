@@ -307,7 +307,11 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, Arrays.asList("read", "create", "delete")));
             }
             return l;
-        } else {
+        }
+        else if(serviceName == null) {
+            return Collections.emptyList();
+        }
+        else {
             configBeanType = configModularityUtils.getClassFor(serviceName);
             if (configBeanType == null) {
                 //TODO check if this is the correct course of action.

@@ -797,7 +797,7 @@ public final class ConfigModularityUtils {
                 col.remove(itemToRemove);
                 return true;
             }
-            if (itemToRemove == null && name == null) {
+            if (name == null) {
                 col.remove(configBean);
                 return true;
             }

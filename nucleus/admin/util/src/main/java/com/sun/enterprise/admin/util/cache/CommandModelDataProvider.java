@@ -49,11 +49,11 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandModel;
 import org.jvnet.hk2.annotations.Service;
 
-/** 
+/**
  * Works with {@link com.sun.enterprise.admin.util.CachedCommandModel} and
  * {@link com.sun.enterprise.admin.util.CommandModelData).<br/>
  * This is <i>hand made</i> implementation which is focused on human readability
- * and fastness. 
+ * and fastness.
  *
  * @author mmares
  */
@@ -70,8 +70,6 @@ public class CommandModelDataProvider implements DataProvider {
     private static final String NAME_ELEMENT = "name";
     private static final String OBSOLETE_ELEMENT = "obsolete";
     private static final String OPTIONAL_ELEMENT = "optional";
-    private static final String PARAMETERS_ELEMENT = "parameters";
-    private static final String PARAMETER_ELEMENT = "parameter";
     private static final String PASSWORD_ELEMENT = "password";
     private static final String SHORTNAME_ELEMENT = "short-name";
     private static final String UNKNOWN_ARE_OPERANDS_ELEMENT = "unknown-are-operands";
@@ -79,12 +77,9 @@ public class CommandModelDataProvider implements DataProvider {
     private static final String PRIMARY_ELEMENT = "primary";
     private static final String MULTIPLE_ELEMENT = "multiple";
     private static final String USAGE_ELEMENT = "usage";
-    
-    private XMLOutputFactory outputFactory = XMLOutputFactory.newInstance();
-    private XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-    
+
     private Charset charset;
-    
+
     public CommandModelDataProvider() {
         try {
             charset = Charset.forName("UTF-8");
@@ -92,14 +87,14 @@ public class CommandModelDataProvider implements DataProvider {
             charset = Charset.defaultCharset();
         }
     }
-    
+
     @Override
     public boolean accept(Class clazz) {
-        return clazz == CommandModel.class || 
-                clazz == CachedCommandModel.class || 
+        return clazz == CommandModel.class ||
+                clazz == CachedCommandModel.class ||
                 clazz == CommandModelData.class;
     }
-    
+
     @Override
     public void writeToStream(Object o, OutputStream stream) throws IOException {
         if (o == null) {
@@ -107,12 +102,12 @@ public class CommandModelDataProvider implements DataProvider {
         }
         writeToStreamSimpleFormat((CommandModel) o, stream);
     }
-    
+
     /** Super simple format possible because there can't be any problematic
      * symbol like EOL in attributes.
-     * 
-     * @throws IOException 
-     */ 
+     *
+     * @throws IOException
+     */
     public void writeToStreamSimpleFormat(CommandModel cm, OutputStream stream) throws IOException {
         if (cm == null) {
             return;
@@ -253,26 +248,26 @@ public class CommandModelDataProvider implements DataProvider {
             try { writer.close(); } catch (Exception ex) {}
         }
     }
-    
+
     private String escapeEndLines(String str) {
         if (str == null) {
             return null;
         }
         return str.replace("\n", "${NL}").replace("\r", "${RC}");
     }
-    
+
     private String resolveEndLines(String str) {
         if (str == null) {
             return null;
         }
         return str.replace("${NL}", "\n").replace("${RC}", "\r");
     }
-    
+
     @Override
     public Object toInstance(InputStream stream, Class clazz) throws IOException {
         return toInstanceSimpleFormat(stream);
     }
-    
+
     private CommandModel toInstanceSimpleFormat(InputStream stream) throws IOException {
         CachedCommandModel result = null;
         InputStreamReader isr = null;
@@ -306,13 +301,13 @@ public class CommandModelDataProvider implements DataProvider {
                 }
                 String key = line.substring(0, ind);
                 String value = line.substring(ind + 1).trim();
-                // @todo Java SE 7: String switch-case 
+                // @todo Java SE 7: String switch-case
                 if (inParam) {
                     if (NAME_ELEMENT.equals(key)) {
                         //Add before parameter
-                        CommandModelData.ParamModelData pmd = 
-                                new CommandModelData.ParamModelData(pName, 
-                                pCls, pOptional, pDefaultValue, pShortName, 
+                        CommandModelData.ParamModelData pmd =
+                                new CommandModelData.ParamModelData(pName,
+                                pCls, pOptional, pDefaultValue, pShortName,
                                 pObsolete, pAlias);
                         pmd.param._primary = pPrimary;
                         pmd.param._multiple = pMultiple;
@@ -387,9 +382,9 @@ public class CommandModelDataProvider implements DataProvider {
             }
             if (inParam) {
                 //Add parameter
-                CommandModelData.ParamModelData pmd = 
-                        new CommandModelData.ParamModelData(pName, 
-                        pCls, pOptional, pDefaultValue, pShortName, 
+                CommandModelData.ParamModelData pmd =
+                        new CommandModelData.ParamModelData(pName,
+                        pCls, pOptional, pDefaultValue, pShortName,
                         pObsolete, pAlias);
                 pmd.param._primary = pPrimary;
                 pmd.param._multiple = pMultiple;
@@ -410,5 +405,5 @@ public class CommandModelDataProvider implements DataProvider {
         return result;
     }
 
-    
+
 }
