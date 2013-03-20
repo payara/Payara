@@ -44,9 +44,59 @@ import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 /**
  * Contains configuration information for a ManagedScheduledExecutorService object
  */
-public class ManagedScheduledExecutorServiceConfig extends ManagedExecutorServiceConfig {
+public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
+
+    private int hungAfterSeconds;
+    private boolean longRunningTasks;
+    private int threadPriority;
+    private int corePoolSize;
+    private long keepAliveSeconds;
+    private int maximumPoolSize;
+    private int taskQueueCapacity;
+    private long threadLifeTimeSeconds;
+
     public ManagedScheduledExecutorServiceConfig(ManagedScheduledExecutorService config) {
-        super(config);
+        super(config.getJndiName(), config.getContextInfo(), config.getContextInfoEnabled());
+        hungAfterSeconds = parseInt(config.getHungAfterSeconds(), 0);
+        longRunningTasks = Boolean.valueOf(config.getLongRunningTasks());
+        threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
+        corePoolSize = parseInt(config.getCorePoolSize(), 0);
+        keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
+        maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
+        taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
+        threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
+    }
+
+    public int getHungAfterSeconds() {
+        return hungAfterSeconds;
+    }
+
+    public boolean isLongRunningTasks() {
+        return longRunningTasks;
+    }
+
+    public int getThreadPriority() {
+        return threadPriority;
+    }
+
+    public int getCorePoolSize() {
+        return corePoolSize;
+    }
+
+    public long getKeepAliveSeconds() {
+        return keepAliveSeconds;
+    }
+
+    public int getMaximumPoolSize() {
+        return maximumPoolSize;
+    }
+
+    public int getTaskQueueCapacity() {
+        return taskQueueCapacity;
+    }
+    
+    public long getThreadLifeTimeSeconds() {
+        return threadLifeTimeSeconds;
     }
 
     @Override
