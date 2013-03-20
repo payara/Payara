@@ -1617,29 +1617,13 @@ public abstract class BaseContainer
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
-	JCDIService.JCDIInjectionContext jcdiCtx = null;
-	Object instance = null;
+        JCDIService.JCDIInjectionContext jcdiCtx = null;
+        Object instance = null;
 
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
-
-	   
-	    Constructor[] ctors = ejbClass.getConstructors();
-	    boolean hasCtorWithArgs = false;
-	    for(Constructor ctor : ctors) {
-		if( ctor.getParameterTypes().length > 0 ) {
-		    hasCtorWithArgs = true;
-		    break;
-		}
-	    }
-
-	    // If constructor injection is being used, let CDI create the instance. 
-	    // Either way, instance will be part of JCDI injection context.
-	    jcdiCtx = hasCtorWithArgs ? 
-		jcdiService.createJCDIInjectionContext(ejbDescriptor) :
-		jcdiService.createJCDIInjectionContext(ejbDescriptor, _constructEJBInstance());
-
+	    // If injection is being used, let CDI create the instance.
+	    jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
 	    instance = jcdiCtx.getInstance();
-
 	} else {
             EJBContextImpl ctx = _constructEJBContextImpl(null); 
 
