@@ -56,16 +56,17 @@ class CallbackChainImpl {
     CallbackChainImpl(CallbackInterceptor[] interceptors) {
         this.interceptors = interceptors;
         this.size = (interceptors == null) ? 0 : interceptors.length;
+
+        // set invocation method if there is one on the bean class
+        if (size > 0 && interceptors[size-1].isBeanCallback()) {
+            method = interceptors[size-1].method;
+        }
     }
 
     public Object invokeNext(int index, CallbackInvocationContext invContext)
             throws Throwable {
 
-        // set invocation method if there is one on the bean class
-        if (size > 0 && interceptors[size-1].isBeanCallback()) {
-            invContext.method = interceptors[size-1].method;
-        }
-
+        invContext.method = method;
         Object result = null;
         if (index < size) {
             result = interceptors[index].intercept(invContext);

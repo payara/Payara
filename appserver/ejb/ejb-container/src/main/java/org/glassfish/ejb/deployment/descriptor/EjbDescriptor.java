@@ -681,8 +681,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         }
     }
 
-    public LifecycleCallbackDescriptor
-    getAroundInvokeDescriptorByClass(String className) {
+    public LifecycleCallbackDescriptor getAroundInvokeDescriptorByClass(String className) {
 
         for (LifecycleCallbackDescriptor next :
                 getAroundInvokeDescriptors()) {
@@ -903,10 +902,8 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         return classNames;
     }
 
-    public Map<MethodDescriptor, List<EjbInterceptor>>
-    getMethodInterceptorsMap() {
-        return new HashMap<MethodDescriptor, List<EjbInterceptor>>
-                (methodInterceptorsMap);
+    public Map<MethodDescriptor, List<EjbInterceptor>> getMethodInterceptorsMap() {
+        return new HashMap<MethodDescriptor, List<EjbInterceptor>>(methodInterceptorsMap);
     }
 
     public List<EjbInterceptor> getInterceptorChain() {
@@ -919,8 +916,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * on any bean class interceptor.  If present, this would always be the
      * last element in the list because of the precedence defined by the spec.
      */
-    public List<EjbInterceptor> getAroundInvokeInterceptors
-            (MethodDescriptor businessMethod) {
+    public List<EjbInterceptor> getAroundInvokeInterceptors(MethodDescriptor businessMethod) {
 
         LinkedList<EjbInterceptor> aroundInvokeInterceptors =
                 new LinkedList<EjbInterceptor>();
@@ -1015,8 +1011,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         }
     }
 
-    private List<EjbInterceptor> getClassOrMethodInterceptors
-            (MethodDescriptor businessMethod) {
+    private List<EjbInterceptor> getClassOrMethodInterceptors(MethodDescriptor businessMethod) {
 
         List<EjbInterceptor> classOrMethodInterceptors = null;
 
@@ -1042,61 +1037,29 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      */
     public List<EjbInterceptor> getCallbackInterceptors(CallbackType type) {
 
-        LinkedList<EjbInterceptor> callbackInterceptors =
-                new LinkedList<EjbInterceptor>();
-
-        for (EjbInterceptor next : interceptorChain) {
-            if (next.getCallbackDescriptors(type).size() > 0) {
-                callbackInterceptors.add(next);
-            }
-        }
-
-        EjbInterceptor beanClassCallbackInfo = null;
-
+        Set<LifecycleCallbackDescriptor> callbackDescriptors = null;
         switch (type) {
             case AROUND_CONSTRUCT:
                 break;
 
             case POST_CONSTRUCT:
 
-                if (hasPostConstructMethod()) {
-                    beanClassCallbackInfo = new EjbInterceptor();
-                    beanClassCallbackInfo.setFromBeanClass(true);
-                    beanClassCallbackInfo.addCallbackDescriptors
-                            (type, getPostConstructDescriptors());
-                }
+                callbackDescriptors = getPostConstructDescriptors();
                 break;
 
             case PRE_DESTROY:
 
-                if (hasPreDestroyMethod()) {
-                    beanClassCallbackInfo = new EjbInterceptor();
-                    beanClassCallbackInfo.setFromBeanClass(true);
-                    beanClassCallbackInfo.addCallbackDescriptors
-                            (type, getPreDestroyDescriptors());
-                }
+                callbackDescriptors = getPreDestroyDescriptors();
                 break;
 
             case PRE_PASSIVATE:
 
-                if (((EjbSessionDescriptor) this).hasPrePassivateMethod()) {
-                    beanClassCallbackInfo = new EjbInterceptor();
-                    beanClassCallbackInfo.setFromBeanClass(true);
-                    beanClassCallbackInfo.addCallbackDescriptors(type,
-                            ((EjbSessionDescriptor) this).getPrePassivateDescriptors());
-                }
-
+                callbackDescriptors = ((EjbSessionDescriptor) this).getPrePassivateDescriptors();
                 break;
 
             case POST_ACTIVATE:
 
-                if (((EjbSessionDescriptor) this).hasPostActivateMethod()) {
-                    beanClassCallbackInfo = new EjbInterceptor();
-                    beanClassCallbackInfo.setFromBeanClass(true);
-                    beanClassCallbackInfo.addCallbackDescriptors(type,
-                            ((EjbSessionDescriptor) this).getPostActivateDescriptors());
-                }
-
+                callbackDescriptors = ((EjbSessionDescriptor) this).getPostActivateDescriptors();
                 break;
                 
             default:
@@ -1105,17 +1068,63 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                     "Invalid callback type: [{0}]", type));
         }
 
-        if (beanClassCallbackInfo != null) {
+        return getCallbackInterceptors(type, callbackDescriptors);
+    }
 
-            beanClassCallbackInfo.setInterceptorClassName
-                    (getEjbImplClassName());
+    /** 
+     * Common code to add the bean class as a LC interceptor
+     */
+    private LinkedList<EjbInterceptor> getCallbackInterceptors(CallbackType type, 
+            Set<LifecycleCallbackDescriptor> callbackDescriptors) {
+
+        LinkedList<EjbInterceptor> callbackInterceptors = 
+                new LinkedList<EjbInterceptor>();
+
+        MethodDescriptor callbackMethod = getBeanCallbackMethod(callbackDescriptors);
+
+        List<EjbInterceptor> classOrMethodInterceptors = 
+                (callbackMethod == null)? interceptorChain :
+                         getClassOrMethodInterceptors(callbackMethod);
+
+        for (EjbInterceptor next : classOrMethodInterceptors) {
+            if (next.getCallbackDescriptors(type).size() > 0) {
+                callbackInterceptors.add(next);
+            }
+        }
+
+        if (callbackDescriptors != null && callbackDescriptors.size() > 0) {
+            EjbInterceptor beanClassCallbackInfo = new EjbInterceptor();
+            beanClassCallbackInfo.setFromBeanClass(true);
+            beanClassCallbackInfo.addCallbackDescriptors(type, callbackDescriptors);
+            beanClassCallbackInfo.setInterceptorClassName(getEjbImplClassName());
             callbackInterceptors.add(beanClassCallbackInfo);
-
         }
 
         return callbackInterceptors;
     }
 
+    /**
+     */
+    private MethodDescriptor getBeanCallbackMethod(Set<LifecycleCallbackDescriptor> callbackDescriptors) {
+        MethodDescriptor md = null;
+
+        if (callbackDescriptors != null) {
+            ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
+            for (LifecycleCallbackDescriptor callbackDesc : callbackDescriptors) {
+                if( callbackDesc.getLifecycleCallbackClass().equals(getEjbClassName())) {
+                    try {
+                        Method method = callbackDesc.getLifecycleCallbackMethodObject(classLoader);
+                        md = new MethodDescriptor(method, MethodDescriptor.LIFECYCLE_CALLBACK);
+                    } catch(Exception e) {
+                        // no method on class
+                    }
+                }
+            }
+        }
+
+        return md;
+
+    }
 
     /**
      * Gets the transaction scope of this ejb.
