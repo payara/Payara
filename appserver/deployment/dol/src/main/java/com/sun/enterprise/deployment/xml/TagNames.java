@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.deployment.xml;
 
-/** 
+/**
  * I hold the XML tag names common to the dtds across the J2EE platform.
  * @author Jerome Dochez
  */
@@ -53,7 +53,7 @@ public interface TagNames {
     public static final String DESCRIPTION = "description";
     public static final String VERSION = "version";
     public static final String METADATA_COMPLETE = "metadata-complete";
- 
+
     public static final String ICON = "icon";
     public static final String LARGE_ICON = "large-icon";
     public static final String SMALL_ICON = "small-icon";
@@ -67,7 +67,7 @@ public interface TagNames {
     public static final String EJB_REFERENCE_NAME = "ejb-ref-name";
     public static final String EJB_REFERENCE_TYPE = "ejb-ref-type";
     public static final String EJB_LINK = "ejb-link";
-    
+
     public static final String EJB_LOCAL_REFERENCE = "ejb-local-ref";
 
     public final static String EJB_NAME = "ejb-name";
@@ -77,7 +77,7 @@ public interface TagNames {
     public final static String LOCAL = "local";
 
     public static final String LOOKUP_NAME = "lookup-name";
-    
+
     public static final String RESOURCE_REFERENCE = "resource-ref";
     public static final String RESOURCE_REFERENCE_NAME = "res-ref-name";
     public static final String RESOURCE_SHARING_SCOPE = "res-sharing-scope";
@@ -139,6 +139,7 @@ public interface TagNames {
     public static final String JMS_CONNECTION_FACTORY = "jms-connection-factory";
     public static final String JMS_CONNECTION_FACTORY_DESCRIPTION = "description";
     public static final String JMS_CONNECTION_FACTORY_NAME = "name";
+    public static final String JMS_CONNECTION_FACTORY_INTERFACE_NAME = "interface-name";
     public static final String JMS_CONNECTION_FACTORY_CLASS_NAME = "class-name";
     public static final String JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER = "resource-adapter";
     public static final String JMS_CONNECTION_FACTORY_USER = "user";
@@ -154,6 +155,7 @@ public interface TagNames {
     public static final String JMS_DESTINATION = "jms-destination";
     public static final String JMS_DESTINATION_DESCRIPTION = "description";
     public static final String JMS_DESTINATION_NAME = "name";
+    public static final String JMS_DESTINATION_INTERFACE_NAME = "interface-name";
     public static final String JMS_DESTINATION_CLASS_NAME = "class-name";
     public static final String JMS_DESTINATION_RESOURCE_ADAPTER = "resource-adapter";
     public static final String JMS_DESTINATION_DESTINATION_NAME = "destination-name";
@@ -177,11 +179,11 @@ public interface TagNames {
 
     public static final String RESOURCE_TYPE = "res-type";
     public static final String RESOURCE_AUTHORIZATION = "res-auth";
-    
+
     public static final String ROLE = "security-role";
-    public static final String ROLE_NAME = "role-name";    
+    public static final String ROLE_NAME = "role-name";
     public static final String ROLE_REFERENCE = "security-role-ref";
-    public static final String ROLE_LINK = "role-link";    
+    public static final String ROLE_LINK = "role-link";
     public static final String RUNAS_SPECIFIED_IDENTITY = "run-as";
 
     public static final String ENCODING_STYLE = "encoding-style";
@@ -219,8 +221,8 @@ public interface TagNames {
 
     public static final String POST_CONSTRUCT = "post-construct";
     public static final String PRE_DESTROY = "pre-destroy";
-    public static final String LIFECYCLE_CALLBACK_CLASS = "lifecycle-callback-class";  
-    public static final String LIFECYCLE_CALLBACK_METHOD = "lifecycle-callback-method";  
+    public static final String LIFECYCLE_CALLBACK_CLASS = "lifecycle-callback-class";
+    public static final String LIFECYCLE_CALLBACK_METHOD = "lifecycle-callback-method";
 
     public static final String J2EE_DEFAULTNAMESPACEPREFIX = "j2ee";
     public static final String J2EE_NAMESPACE = "http://java.sun.com/xml/ns/j2ee";
@@ -232,8 +234,8 @@ public interface TagNames {
     public static final String WLS_EJB_JAR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-ejb-jar";
     public static final String WLS_WEBSERVICES_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-webservices";
     public static final String WLS_CONNECTOR_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-connector";
-    public static final String WLS_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application"; 
-    public static final String WLS_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client"; 
+    public static final String WLS_APPLICATION_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application";
+    public static final String WLS_APPLICATION_CLIENT_NAMESPACE = "http://xmlns.oracle.com/weblogic/weblogic-application-client";
     public final static String WLS_APPLICATION_SCHEMA_LOCATION = "http://xmlns.oracle.com/weblogic/weblogic-application http://xmlns.oracle.com/weblogic/weblogic-application/1.5/weblogic-application.xsd";
 
     public static final String PERSISTENCE_XML_NAMESPACE = "urn:ejb3-namespace";

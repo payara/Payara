@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.resource.deployer;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
@@ -444,7 +445,7 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
             if (isValidProperty(resourceAdapter)) {
                 return resourceAdapter;
             } else {
-                return null;
+                return ConnectorConstants.DEFAULT_JMS_ADAPTER;
             }
         }
 
@@ -453,7 +454,12 @@ public class JMSConnectionFactoryDefinitionDeployer implements ResourceDeployer 
         }
 
         public String getConnectionDefinitionName() {
-            return desc.getClassName();
+            String interfaceName = desc.getInterfaceName();
+            if (isValidProperty(interfaceName)) {
+                return interfaceName;
+            } else {
+                return "javax.jms.ConnectionFactory";
+            }
         }
 
         public void setConnectionDefinitionName(String value)  throws PropertyVetoException {

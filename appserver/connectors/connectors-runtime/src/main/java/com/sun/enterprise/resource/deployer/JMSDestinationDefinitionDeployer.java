@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.resource.deployer;
 
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
@@ -265,7 +266,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
             if (resourceAdapter != null && !resourceAdapter.equals("")) {
                 return resourceAdapter;
             }
-            return null;
+            return ConnectorConstants.DEFAULT_JMS_ADAPTER;
         }
 
         public void setResAdapter(String value) throws PropertyVetoException {
@@ -292,7 +293,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getResType() {
-            return desc.getClassName();
+            return desc.getInterfaceName();
         }
 
         @Override
@@ -302,11 +303,7 @@ public class JMSDestinationDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getClassName() {
-            String resType = desc.getProperty(PROPERTY_PREFIX + "class-name");
-            if (resType != null && !resType.equals("")) {
-                return resType;
-            }
-            return null;
+            return desc.getClassName();
         }
 
         @Override

@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.annotation.context.*;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
@@ -72,7 +71,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-    	JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn =
+        JMSConnectionFactoryDefinition jmsConnectionFactoryDefnAn =
                 (JMSConnectionFactoryDefinition)ainfo.getAnnotation();
         return processAnnotation(jmsConnectionFactoryDefnAn, ainfo, rcContexts);
     }
@@ -212,18 +211,30 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 
+                if (desc.getInterfaceName() == null) {
+                    desc.setInterfaceName(defn.interfaceName());
+                }
+
                 if (desc.getClassName() == null) {
-                    desc.setClassName(defn.className());
+                    if (isValid(defn.className())) {
+                        desc.setClassName(defn.className());
+                    }
                 }
 
                 if (desc.getDescription() == null) {
-                    if (defn.description() != null && !defn.description().equals("")) {
+                    if (isValid(defn.description())) {
                         desc.setDescription(defn.description());
                     }
                 }
 
+                if (desc.getResourceAdapter() == null) {
+                    if (isValid(defn.resourceAdapter())) {
+                        desc.setResourceAdapter(defn.resourceAdapter());
+                    }
+                }
+
                 if (desc.getUser() == null) {
-                    if (defn.user() != null && !defn.user().equals("")) {
+                    if (isValid(defn.user())) {
                         desc.setUser(defn.user());
                     }
                 }
@@ -235,7 +246,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
                 }
 
                 if (desc.getClientId() == null) {
-                    if (defn.clientId() != null && !defn.clientId().equals("")) {
+                    if (isValid(defn.clientId())) {
                         desc.setClientId(defn.clientId());
                     }
                 }
@@ -281,23 +292,25 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
     private JMSConnectionFactoryDefinitionDescriptor createDescriptor(JMSConnectionFactoryDefinition defn) {
 
-    	JMSConnectionFactoryDefinitionDescriptor desc = new JMSConnectionFactoryDefinitionDescriptor();
+        JMSConnectionFactoryDefinitionDescriptor desc = new JMSConnectionFactoryDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
-        desc.setClassName(defn.className());
+        desc.setInterfaceName(defn.interfaceName());
 
-        if (defn.description() != null && !defn.description().equals("")) {
+        if (isValid(defn.className())) {
+            desc.setClassName(defn.className());
+        }
+
+        if (isValid(defn.description())) {
             desc.setDescription(defn.description());
         }
 
-        if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
+        if (isValid(defn.resourceAdapter())) {
             desc.setResourceAdapter(defn.resourceAdapter());
-        } else {
-            desc.setResourceAdapter(ConnectorConstants.DEFAULT_JMS_ADAPTER);
         }
 
-        if (defn.user() != null && !defn.user().equals("")) {
+        if (isValid(defn.user())) {
             desc.setUser(defn.user());
         }
 
@@ -305,7 +318,7 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             desc.setPassword(defn.password());
         }
 
-        if (defn.clientId() != null && !defn.clientId().equals("")) {
+        if (isValid(defn.clientId())) {
             desc.setClientId(defn.clientId());
         }
 
@@ -337,5 +350,8 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
 
         return desc;
     }
-}
 
+    private boolean isValid(String s) {
+        return (s != null) && !s.equals("");
+    }
+}

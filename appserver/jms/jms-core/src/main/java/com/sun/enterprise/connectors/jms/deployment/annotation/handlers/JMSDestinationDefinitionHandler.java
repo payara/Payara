@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.connectors.jms.deployment.annotation.handlers;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.annotation.context.*;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
@@ -72,7 +71,7 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
-    	JMSDestinationDefinition jmsDestinationDefnAn =
+        JMSDestinationDefinition jmsDestinationDefnAn =
                 (JMSDestinationDefinition)ainfo.getAnnotation();
         return processAnnotation(jmsDestinationDefnAn, ainfo, rcContexts);
     }
@@ -212,18 +211,30 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
             JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)descriptor;
             if (desc.getName().equals(defn.name())) {
 
+                if (desc.getInterfaceName() == null) {
+                    desc.setInterfaceName(defn.interfaceName());
+                }
+
                 if (desc.getClassName() == null) {
-                    desc.setClassName(defn.className());
+                    if (isValid(defn.className())) {
+                        desc.setClassName(defn.className());
+                    }
                 }
 
                 if (desc.getDescription() == null) {
-                    if (defn.description() != null && !defn.description().equals("")) {
+                    if (isValid(defn.description())) {
                         desc.setDescription(defn.description());
                     }
                 }
 
+                if (desc.getResourceAdapter() == null) {
+                    if (isValid(defn.resourceAdapter())) {
+                        desc.setResourceAdapter(defn.resourceAdapter());
+                    }
+                }
+
                 if (desc.getDestinationName() == null) {
-                    if (defn.destinationName() != null && !defn.destinationName().equals("")) {
+                    if (isValid(defn.destinationName())) {
                         desc.setDestinationName(defn.destinationName());
                     }
                 }
@@ -253,23 +264,25 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
     private JMSDestinationDefinitionDescriptor createDescriptor(JMSDestinationDefinition defn) {
 
-    	JMSDestinationDefinitionDescriptor desc = new JMSDestinationDefinitionDescriptor();
+        JMSDestinationDefinitionDescriptor desc = new JMSDestinationDefinitionDescriptor();
         desc.setMetadataSource(MetadataSource.ANNOTATION);
 
         desc.setName(defn.name());
-        desc.setClassName(defn.className());
+        desc.setInterfaceName(defn.interfaceName());
 
-        if (defn.description() != null && !defn.description().equals("")) {
+        if (isValid(defn.className())) {
+            desc.setClassName(defn.className());
+        }
+
+        if (isValid(defn.description())) {
             desc.setDescription(defn.description());
         }
 
-        if (defn.resourceAdapter() != null && !defn.resourceAdapter().equals("")) {
+        if (isValid(defn.resourceAdapter())) {
             desc.setResourceAdapter(defn.resourceAdapter());
-        } else {
-            desc.setResourceAdapter(ConnectorConstants.DEFAULT_JMS_ADAPTER);
         }
 
-        if (defn.destinationName() != null && !defn.destinationName().equals("")) {
+        if (isValid(defn.destinationName())) {
             desc.setDestinationName(defn.destinationName());
         }
 
@@ -292,5 +305,8 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
 
         return desc;
     }
-}
 
+    private boolean isValid(String s) {
+        return (s != null) && !s.equals("");
+    }
+}

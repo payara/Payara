@@ -46,11 +46,9 @@ import java.util.Properties;
  */
 public abstract class AbstractConnectorResourceDescriptor extends ResourceDescriptor {
 
-    public static final String DEFAULT_JMS_ADAPTER = "jmsra";
-
     private static final long serialVersionUID = -4452926772142887844L;
     private String name ;
-    protected String resourceAdapter;
+    private String resourceAdapter;
     private Properties properties = new Properties();
 
     private static final String JAVA_URL = "java:";

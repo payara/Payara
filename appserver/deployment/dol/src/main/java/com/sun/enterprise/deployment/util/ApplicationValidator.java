@@ -428,6 +428,9 @@ public class ApplicationValidator extends ComponentValidator
             Descriptor desc = rv.getDescriptor();
             if(desc instanceof AbstractConnectorResourceDescriptor){
                 AbstractConnectorResourceDescriptor acrd = (AbstractConnectorResourceDescriptor)desc;
+                if (acrd.getResourceAdapter() == null) {
+                    continue;
+                }
                 int poundIndex = acrd.getResourceAdapter().indexOf("#");
                 
                 if( poundIndex == 0 ){

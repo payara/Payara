@@ -49,6 +49,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends AbstractConnectorR
     private static final long serialVersionUID = 794492878801534084L;
 
     // the <description> element will be processed by base class
+    private String interfaceName;
     private String className;
     private String user;
     private String password;
@@ -64,19 +65,20 @@ public class JMSConnectionFactoryDefinitionDescriptor extends AbstractConnectorR
         super.setResourceType(JMSCFDD);
     }
 
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
     public String getClassName() {
         return className;
     }
 
     public void setClassName(String className) {
         this.className = className;
-    }
-
-    public String getResourceAdapter() {
-        if (resourceAdapter != null && !"".equals(resourceAdapter))
-            return resourceAdapter;
-        else
-            return DEFAULT_JMS_ADAPTER;
     }
 
     public String getUser() {
@@ -143,6 +145,7 @@ public class JMSConnectionFactoryDefinitionDescriptor extends AbstractConnectorR
     public boolean isConflict(JMSConnectionFactoryDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
+                DOLUtils.equals(getInterfaceName(), other.getInterfaceName()) &&
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
                 DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 DOLUtils.equals(getUser(), other.getUser()) &&

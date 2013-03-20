@@ -66,6 +66,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
 
         table.put(TagNames.JMS_CONNECTION_FACTORY_DESCRIPTION, "setDescription");
         table.put(TagNames.JMS_CONNECTION_FACTORY_NAME, "setName");
+        table.put(TagNames.JMS_CONNECTION_FACTORY_INTERFACE_NAME, "setInterfaceName");
         table.put(TagNames.JMS_CONNECTION_FACTORY_CLASS_NAME, "setClassName");
         table.put(TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER, "setResourceAdapter");
         table.put(TagNames.JMS_CONNECTION_FACTORY_USER, "setUser");
@@ -91,6 +92,7 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_NAME, desc.getName());
+        appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_INTERFACE_NAME, desc.getInterfaceName());
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_CLASS_NAME, desc.getClassName());
 
         // change the resource adapter name from internal format to standard format

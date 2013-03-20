@@ -66,6 +66,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
 
         table.put(TagNames.JMS_DESTINATION_DESCRIPTION, "setDescription");
         table.put(TagNames.JMS_DESTINATION_NAME, "setName");
+        table.put(TagNames.JMS_DESTINATION_INTERFACE_NAME, "setInterfaceName");
         table.put(TagNames.JMS_DESTINATION_CLASS_NAME, "setClassName");
         table.put(TagNames.JMS_DESTINATION_RESOURCE_ADAPTER, "setResourceAdapter");
         table.put(TagNames.JMS_DESTINATION_DESTINATION_NAME, "setDestinationName");
@@ -85,6 +86,7 @@ public class JMSDestinationDefinitionNode extends DeploymentDescriptorNode<JMSDe
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.JMS_DESTINATION_DESCRIPTION, desc.getDescription());
         appendTextChild(node, TagNames.JMS_DESTINATION_NAME, desc.getName());
+        appendTextChild(node, TagNames.JMS_DESTINATION_INTERFACE_NAME, desc.getInterfaceName());
         appendTextChild(node, TagNames.JMS_DESTINATION_CLASS_NAME, desc.getClassName());
 
         // change the resource adapter name from internal format to standard format

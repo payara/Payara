@@ -49,6 +49,7 @@ public class JMSDestinationDefinitionDescriptor extends AbstractConnectorResourc
     private static final long serialVersionUID = 6874534064049457633L;
 
     // the <description> element will be processed by base class
+    private String interfaceName;
     private String className;
     private String destinationName;
 
@@ -57,19 +58,20 @@ public class JMSDestinationDefinitionDescriptor extends AbstractConnectorResourc
         super.setResourceType(JMSDD);
     }
 
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
+    }
+
     public String getClassName() {
         return className;
     }
 
     public void setClassName(String className) {
         this.className = className;
-    }
-
-    public String getResourceAdapter() {
-        if (resourceAdapter != null && !"".equals(resourceAdapter))
-            return resourceAdapter;
-        else
-            return DEFAULT_JMS_ADAPTER;
     }
 
     public String getDestinationName() {
@@ -87,6 +89,7 @@ public class JMSDestinationDefinitionDescriptor extends AbstractConnectorResourc
     public boolean isConflict(JMSDestinationDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
+                DOLUtils.equals(getInterfaceName(), other.getInterfaceName()) &&
                 DOLUtils.equals(getClassName(), other.getClassName()) &&
                 DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 DOLUtils.equals(getDestinationName(), other.getDestinationName()) &&
