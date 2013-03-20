@@ -138,6 +138,10 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.containers.glassfish</groupId>
+            <artifactId>jersey-gf-cdi</artifactId>
+        </dependency>
+         <dependency>
+            <groupId>org.glassfish.jersey.containers.glassfish</groupId>
             <artifactId>jersey-gf-ejb</artifactId>
         </dependency>
         <dependency>
@@ -151,6 +155,14 @@
         <dependency>
             <groupId>org.glassfish.jersey.media</groupId>
             <artifactId>jersey-media-json-processing</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-mvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-mvc-jsp</artifactId>
         </dependency>
     </dependencies>
 </project>
