@@ -321,7 +321,13 @@ public final class ConfigModularityUtils {
             location = location.substring(location.indexOf("/", "domain/configs".length()) + 1);
             tokenizer = new StringTokenizer(location, "/", false);
             String curLevel = tokenizer.nextToken();
-            String expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length() - 1);
+            String expression;
+            if (curLevel.contains("[")) {
+                expression = curLevel.substring(curLevel.lastIndexOf("[") + 1, curLevel.length() - 1);
+            } else {
+                expression = curLevel;
+            }
+
             String configName = resolveExpression(expression);
             ConfigBeanProxy parent = serviceLocator.<Domain>getService(Domain.class).getConfigNamed(configName);
 

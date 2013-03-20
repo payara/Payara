@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,8 @@ import org.glassfish.api.admin.RestRedirects;
 import org.glassfish.api.admin.RestRedirect;
 
 import org.glassfish.quality.ToDo;
+
+import javax.validation.constraints.NotNull;
 
 /**
  * Java Runtime environment configuration
@@ -347,6 +349,7 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      *         {@link Profiler }
      */
     @Element
+    @NotNull
     Profiler getProfiler();
 
     /**
