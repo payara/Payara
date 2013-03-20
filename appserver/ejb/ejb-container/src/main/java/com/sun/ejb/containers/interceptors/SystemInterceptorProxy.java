@@ -140,23 +140,28 @@ public class SystemInterceptorProxy
     }
 
     @AroundInvoke
-    public Object aroundInvoke(InvocationContext ctx) throws Throwable {
+    public Object aroundInvoke(InvocationContext ctx) throws Exception {
         return doAround(ctx, aroundInvoke);
     }
 
     @AroundTimeout
-    public Object aroundTimeout(InvocationContext ctx) throws Throwable {
+    public Object aroundTimeout(InvocationContext ctx) throws Exception {
         return doAround(ctx, aroundTimeout);
     }
 
-    private Object doAround(InvocationContext ctx, Method m) throws Throwable {
+    private Object doAround(InvocationContext ctx, Method m) throws Exception {
         Object returnValue = null;
 
         if( (delegate != null) && (m != null) ) {
             try {
                 returnValue = m.invoke(delegate, ctx);
             } catch(InvocationTargetException ite) {
-                throw ite.getCause();
+                Throwable cause = ite.getCause();
+                if (cause instanceof Exception) {
+                    throw (Exception) cause;
+                }
+                
+                throw new Exception(cause);
             }
         } else {
             returnValue = ctx.proceed();

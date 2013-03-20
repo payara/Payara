@@ -68,6 +68,20 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.oracle.hk2.devtest.Main</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+           </plugin>
         </plugins>
     </build>
 
@@ -76,7 +90,6 @@
             <groupId>org.glassfish.tests.hk2.cdi.basic</groupId>
             <artifactId>ejb1</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -94,7 +107,6 @@
             <groupId>org.glassfish.main.appclient</groupId>
             <artifactId>gf-client</artifactId>
             <version>${project.version}</version>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

@@ -57,6 +57,8 @@ import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.api.WeldManager;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.ConversationScoped;
 import javax.enterprise.context.Dependent;
@@ -64,6 +66,9 @@ import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.AnnotatedConstructor;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
@@ -73,7 +78,11 @@ import javax.inject.Scope;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -296,6 +305,10 @@ public class JCDIServiceImpl implements JCDIService {
         BeanManager beanManager = bootstrap.getManager(bda);
 
         AnnotatedType annotatedType = beanManager.createAnnotatedType(managedClass);
+        if (!invokePostConstruct) {
+            annotatedType = new NoPostConstructPreDestroyAnnotatedType(annotatedType);
+        }
+        
         InjectionTarget it = ((BeanDeploymentArchiveImpl)bda).getInjectionTarget(annotatedType);
         if (it == null) {
             it = beanManager.createInjectionTarget(annotatedType);
@@ -313,6 +326,83 @@ public class JCDIServiceImpl implements JCDIService {
 
         return new JCDIInjectionContextImpl(it, cc, managedObject);
 
+    }
+    
+    /**
+     * This class is here to exclude the post-construct and pre-destroy methods from the AnnotatedType.
+     * This is done in cases where Weld will not be calling those methods and we therefore do NOT want
+     * Weld to validate them, as they may be of the form required for interceptors rather than
+     * Managed objects
+     * 
+     * @author jwells
+     *
+     * @param <X>
+     */
+    private static class NoPostConstructPreDestroyAnnotatedType<X> implements AnnotatedType<X> {
+        private final AnnotatedType<X> delegate;
+        
+        private NoPostConstructPreDestroyAnnotatedType(AnnotatedType<X> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Type getBaseType() {
+            return delegate.getBaseType();
+        }
+
+        @Override
+        public Set<Type> getTypeClosure() {
+            return delegate.getTypeClosure();
+        }
+
+        @Override
+        public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
+            return delegate.getAnnotation(annotationType);
+        }
+
+        @Override
+        public Set<Annotation> getAnnotations() {
+            return delegate.getAnnotations();
+        }
+
+        @Override
+        public boolean isAnnotationPresent(
+                Class<? extends Annotation> annotationType) {
+            return delegate.isAnnotationPresent(annotationType);
+        }
+
+        @Override
+        public Class<X> getJavaClass() {
+            return delegate.getJavaClass();
+        }
+
+        @Override
+        public Set<AnnotatedConstructor<X>> getConstructors() {
+            return delegate.getConstructors();
+        }
+
+        @Override
+        public Set<AnnotatedMethod<? super X>> getMethods() {
+            HashSet<AnnotatedMethod<? super X>> retVal = new HashSet<AnnotatedMethod<? super X>>();
+            for (AnnotatedMethod<? super X> m : delegate.getMethods()) {
+                if (m.isAnnotationPresent(PostConstruct.class) ||
+                        m.isAnnotationPresent(PreDestroy.class)) {
+                    // Do not include the post-construct or pre-destroy
+                    continue;
+                }
+                
+                retVal.add(m);
+            }
+            return retVal;
+        }
+
+        @Override
+        public Set<AnnotatedField<? super X>> getFields() {
+            return delegate.getFields();
+        }
+
+        
+        
     }
 
     @SuppressWarnings("rawtypes")
