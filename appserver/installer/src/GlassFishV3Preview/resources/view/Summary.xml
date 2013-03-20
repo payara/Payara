@@ -145,7 +145,7 @@ void run ()  {
     theContent.append("<tr>");
     String productDescription = "";
     if (sum.getProductName().equals("Domain")) {
-        productDescription = "GlassFish V3";
+        productDescription = "GlassFish Server";
     }
     if (sum.getProductName().equals("UpdateTool")) {
         productDescription = "Update Tool Bootstrap";
