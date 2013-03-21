@@ -41,7 +41,6 @@
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.util.DOLUtils;
-import java.util.Properties;
 import javax.resource.spi.TransactionSupport.TransactionSupportLevel;
 
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
@@ -53,7 +52,7 @@ public class ConnectionFactoryDefinitionDescriptor extends AbstractConnectorReso
     private static final long serialVersionUID = 9173518958930316558L;
 
     // the <description> element will be processed by base class
-    private String className;
+    private String interfaceName;
     private String transactionSupport=TransactionSupportLevel.NoTransaction.toString();
     private boolean isTransactionSupportSet = false;
     private int maxPoolSize=-1;
@@ -64,12 +63,12 @@ public class ConnectionFactoryDefinitionDescriptor extends AbstractConnectorReso
         setResourceType(CFD);
 	}
 	
-	public String getClassName() {
-		return className;
+	public String getInterfaceName() {
+		return interfaceName;
 	}
 
-	public void setClassName(String className) {
-		this.className = className;
+	public void setInterfaceName(String interfaceName) {
+		this.interfaceName = interfaceName;
     }
 
     public String getTransactionSupport() {
@@ -108,7 +107,7 @@ public class ConnectionFactoryDefinitionDescriptor extends AbstractConnectorReso
     public boolean isConflict(ConnectionFactoryDefinitionDescriptor other) {
         return (getName().equals(other.getName())) &&
             !(
-                DOLUtils.equals(getClassName(), other.getClassName()) &&
+                DOLUtils.equals(getInterfaceName(), other.getInterfaceName()) &&
                 DOLUtils.equals(getResourceAdapter(), other.getResourceAdapter()) &&
                 DOLUtils.equals(getTransactionSupport(), other.getTransactionSupport()) &&
                 DOLUtils.equals(getMaxPoolSize(), other.getMaxPoolSize()) &&

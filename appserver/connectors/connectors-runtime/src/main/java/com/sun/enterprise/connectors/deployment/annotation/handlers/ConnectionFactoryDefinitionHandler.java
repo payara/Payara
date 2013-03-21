@@ -222,8 +222,8 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
                     }
                 }
 
-                if (desc.getClassName() == null || desc.getClassName().trim().equals("")) {
-                    desc.setClassName(defn.className());
+                if (desc.getInterfaceName() == null || desc.getInterfaceName().trim().equals("")) {
+                    desc.setInterfaceName(defn.interfaceName());
                 }
 
                 if (desc.getResourceAdapter() == null || desc.getResourceAdapter().trim().equals("")) {
@@ -272,7 +272,7 @@ public class ConnectionFactoryDefinitionHandler extends AbstractResourceHandler 
 
         desc.setName(defn.name());
         desc.setResourceAdapter(defn.resourceAdapter());
-        desc.setClassName(defn.className());
+        desc.setInterfaceName(defn.interfaceName());
         desc.setTransactionSupport(defn.transactionSupport().toString());
         desc.setMaxPoolSize(defn.maxPoolSize());
         desc.setMinPoolSize(defn.minPoolSize());

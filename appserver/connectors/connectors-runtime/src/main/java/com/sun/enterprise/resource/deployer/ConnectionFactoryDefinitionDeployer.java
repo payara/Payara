@@ -444,7 +444,7 @@ public class ConnectionFactoryDefinitionDeployer implements ResourceDeployer {
         }
 
         public String getConnectionDefinitionName() {
-            return desc.getClassName();
+            return desc.getInterfaceName();
         }
 
         public void setConnectionDefinitionName(String value)  throws PropertyVetoException {

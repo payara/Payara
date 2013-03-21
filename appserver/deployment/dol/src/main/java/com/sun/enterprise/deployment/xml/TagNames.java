@@ -120,7 +120,7 @@ public interface TagNames {
     public static final String CONNECTION_FACTORY = "connection-factory";
     public static final String CONNECTION_FACTORY_DESCRIPTION = "description";
     public static final String CONNECTION_FACTORY_NAME = "name";
-    public static final String CONNECTION_FACTORY_CLASS_NAME = "class-name";
+    public static final String CONNECTION_FACTORY_INTERFACE_NAME = "interface-name";
     public static final String CONNECTION_FACTORY_ADAPTER = "resource-adapter";
     public static final String CONNECTION_FACTORY_TRANSACTION_SUPPORT = "transaction-support";
     public static final String CONNECTION_FACTORY_MAX_POOL_SIZE = "max-pool-size";

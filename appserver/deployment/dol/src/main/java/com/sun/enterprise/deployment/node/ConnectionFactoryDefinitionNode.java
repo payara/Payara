@@ -63,7 +63,7 @@ public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<Co
         // no need to be synchronized for now
         Map<String, String> table = super.getDispatchTable();
         table.put(TagNames.CONNECTION_FACTORY_NAME, "setName");
-        table.put(TagNames.CONNECTION_FACTORY_CLASS_NAME, "setClassName");
+        table.put(TagNames.CONNECTION_FACTORY_INTERFACE_NAME, "setInterfaceName");
         table.put(TagNames.CONNECTION_FACTORY_ADAPTER, "setResourceAdapter");
         table.put(TagNames.CONNECTION_FACTORY_TRANSACTION_SUPPORT, "setTransactionSupport");
         table.put(TagNames.CONNECTION_FACTORY_MAX_POOL_SIZE, "setMaxPoolSize");
@@ -84,7 +84,7 @@ public class ConnectionFactoryDefinitionNode extends DeploymentDescriptorNode<Co
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.CONNECTION_FACTORY_DESCRIPTION, desc.getDescription());
         appendTextChild(node, TagNames.CONNECTION_FACTORY_NAME, desc.getName());
-        appendTextChild(node, TagNames.CONNECTION_FACTORY_CLASS_NAME, desc.getClassName());
+        appendTextChild(node, TagNames.CONNECTION_FACTORY_INTERFACE_NAME, desc.getInterfaceName());
 
         // change the resource adapter name from internal format to standard format
         String resourceAdapterName = desc.getResourceAdapter();
