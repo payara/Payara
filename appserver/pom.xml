@@ -75,7 +75,7 @@
         <javax.xml.rpc-api.version>1.1</javax.xml.rpc-api.version>
         <javax.transaction-api.version>1.2-b03</javax.transaction-api.version>
         <jaxws-api.version>2.2.8</jaxws-api.version>
-        <javax.faces-api.version>2.2-m11</javax.faces-api.version>
+        <javax.faces-api.version>2.2-m12</javax.faces-api.version>
         <cdi-api.version>1.1-PRD</cdi-api.version>
         <javax.inject.version>1</javax.inject.version>
         <javax.resource-api.version>1.7-b04</javax.resource-api.version>
