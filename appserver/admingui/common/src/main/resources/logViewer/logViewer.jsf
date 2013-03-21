@@ -57,7 +57,7 @@
     getRequestValue(key="logFile" value=>$attribute{reqLogFile});
     getRequestValue(key="timestamp" value=>$attribute{timestamp});
     getRequestValue(key="onlyLevel" value=>$attribute{reqOnlyLevel});
-    getRequestValue(key="loglevel" value=>$attribute{reqLogLevel}, default="INFO" );
+    getRequestValue(key="logLevel" value=>$attribute{reqLogLevel}, default="INFO" );
     getRequestValue(key="logger" value=>$attribute{reqCustomLogger});
     if($attribute{reqLogFile}) {
 	setAttribute(key="logFile" value="$attribute{reqLogFile}" );
@@ -357,8 +357,8 @@
 		</ui:event>
 	    </sun:dropDown>
 	</sun:property>
-	<sun:property id="levelProp" labelAlign="left" noWrap="true" overlapLabel="false" label="$resource{i18nc.logViewer.logFile}">
-	    <sun:dropDown id="logLevel" selected="#{logFile}" labels="#{pageSession.logFiles}" submitForm="true">
+	<sun:property id="logfileProp" labelAlign="left" noWrap="true" overlapLabel="false" label="$resource{i18nc.logViewer.logFile}">
+	    <sun:dropDown id="logFile" selected="#{logFile}" labels="#{pageSession.logFiles}" submitForm="true">
 		<ui:event type="command">
 		    gf.navigate(page="#{request.contextPath}/common/logViewer/logViewer.jsf");
 		</ui:event>
