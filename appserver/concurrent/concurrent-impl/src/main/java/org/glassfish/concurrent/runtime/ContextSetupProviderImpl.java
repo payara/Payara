@@ -120,12 +120,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation != null) {
-            savedInvocation = currentInvocation.clone();
-            savedInvocation.instance = currentInvocation.instance;
-            savedInvocation.setResourceTableKey(null);
-            if (!naming) {
-                savedInvocation.setJNDIEnvironment(null);
-            }
+            savedInvocation = createComponentInvocation(currentInvocation);
         }
         // TODO - support workarea propagation
         return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext);
@@ -213,6 +208,21 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
                 return deployment.isAppEnabled(app);
         }
         return false;
+    }
+
+    private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
+        ComponentInvocation newInv = new ComponentInvocation(
+                currInv.getComponentId(),
+                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
+                currInv.getContainer(),
+                currInv.getAppName(),
+                currInv.getModuleName()
+        );
+        newInv.instance = currInv.getInstance();
+        if (naming) {
+            newInv.setJNDIEnvironment(currInv.getJNDIEnvironment());
+        }
+        return newInv;
     }
 
     private void readObject(java.io.ObjectInputStream in) {
