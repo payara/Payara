@@ -61,19 +61,19 @@ public interface JCDIService {
 
     public void setELResolver(ServletContext servletContext) throws NamingException;
 
-    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle);
-    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle,
+    public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle);
+    public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle,
                                                     boolean invokePostConstruct);
 
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle);
 
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejbDesc);
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejbDesc, Object instance);
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc);
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance);
 
-    public void injectEJBInstance(JCDIInjectionContext injectionCtx);
+    public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx);
 
-    public interface JCDIInjectionContext {
-        public Object getInstance();
+    public interface JCDIInjectionContext<T> {
+        public T getInstance();
         public void cleanup(boolean callPreDestroy);
     }
 

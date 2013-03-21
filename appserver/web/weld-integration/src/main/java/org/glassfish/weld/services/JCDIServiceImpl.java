@@ -172,18 +172,18 @@ public class JCDIServiceImpl implements JCDIService {
         }
     }
 
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejb, Object instance) {
-	return _createJCDIInjectionContext(ejb, instance);
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb, T instance) {
+	    return _createJCDIInjectionContext(ejb, instance);
     }
 
-    public JCDIInjectionContext createJCDIInjectionContext(EjbDescriptor ejb) {
-	return _createJCDIInjectionContext(ejb, null);
+    public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejb) {
+	    return _createJCDIInjectionContext(ejb, null);
     }
 
     // instance could be null. If null, create a new one
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private JCDIInjectionContext _createJCDIInjectionContext(EjbDescriptor ejb, 
-							     Object instance) {
+    private <T> JCDIInjectionContext<T> _createJCDIInjectionContext(EjbDescriptor ejb, 
+							     T instance) {
 
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor)
                 ejb.getEjbBundleDescriptor().getModuleDescriptor().getDescriptor();
@@ -252,9 +252,9 @@ public class JCDIServiceImpl implements JCDIService {
     
 
     @SuppressWarnings("unchecked")
-    public void injectEJBInstance(JCDIInjectionContext injectionCtx) {
-    	JCDIInjectionContextImpl injectionCtxImpl = 
-    	    (JCDIInjectionContextImpl) injectionCtx;
+    public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
+    	JCDIInjectionContextImpl<T> injectionCtxImpl = 
+    	    (JCDIInjectionContextImpl<T>) injectionCtx;
     
     	// Perform injection and call initializers
     	injectionCtxImpl.it.inject(injectionCtxImpl.instance, injectionCtxImpl.cc);
@@ -262,7 +262,7 @@ public class JCDIServiceImpl implements JCDIService {
     	// NOTE : PostConstruct is handled by ejb container
     }
 
-    public JCDIInjectionContext createManagedObject(@SuppressWarnings("rawtypes") Class managedClass, BundleDescriptor bundle) {
+    public <T>JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle) {
         return createManagedObject(managedClass, bundle, true);
     }
 
@@ -289,7 +289,7 @@ public class JCDIServiceImpl implements JCDIService {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public JCDIInjectionContext createManagedObject(Class managedClass, BundleDescriptor bundle,
+    public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle,
                                                     boolean invokePostConstruct) {
 
         Object managedObject = null;
@@ -406,20 +406,20 @@ public class JCDIServiceImpl implements JCDIService {
     }
 
     @SuppressWarnings("rawtypes")
-    private static class JCDIInjectionContextImpl implements JCDIInjectionContext {
+    private static class JCDIInjectionContextImpl<T> implements JCDIInjectionContext<T> {
 
         InjectionTarget it;
         CreationalContext cc;
-        Object instance;
+        T instance;
 
-        JCDIInjectionContextImpl(InjectionTarget it, CreationalContext cc, Object i) {
+        JCDIInjectionContextImpl(InjectionTarget it, CreationalContext cc, T i) {
             this.it = it;
             this.cc = cc;
             this.instance = i;
         }
 
 
-        public Object getInstance() {
+        public T getInstance() {
             return instance;
         }
 
