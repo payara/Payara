@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import com.sun.web.security.RealmAdapter;
+import org.apache.catalina.Realm;
 
 /**
  * Pipeline whose invoke logic checks if a given request path represents
@@ -90,9 +91,9 @@ public class WebPipeline extends StandardPipeline {
                 webModule.getAdHocServletName(hreq.getServletPath()) != null) {
             webModule.getAdHocPipeline().invoke(request, response);
         } else if (webModule != null) {
-            RealmAdapter realmAdapter = (RealmAdapter)webModule.getRealm();
-            if (realmAdapter != null &&
-                    realmAdapter.isSecurityExtensionEnabled()){
+            final Realm realm = webModule.getRealm();
+            if (realm != null &&
+                    realm.isSecurityExtensionEnabled(hreq.getServletContext())){
                 super.doChainInvoke(request, response);
             } else {
                 super.invoke(request, response);

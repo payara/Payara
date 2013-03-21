@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,8 @@ public class HttpServletConstants {
     public static final String WEB_BUNDLE = "WEB_BUNDLE";
     public static final String POLICY_CONTEXT = "javax.security.jacc.PolicyContext";
     public static final String IS_MANDATORY = "javax.security.auth.message.MessagePolicy.isMandatory";
-    public static final String REGISTER_WITH_AUTHENTICATOR = "com.sun.web.RealmAdapter.register";
+    public static final String REGISTER_SESSION = "javax.servlet.http.registerSession";
+    @Deprecated public static final String REGISTER_WITH_AUTHENTICATOR = "com.sun.web.RealmAdapter.register";
 
     private HttpServletConstants() {
     }

@@ -396,11 +396,16 @@ public final class J2EEInstanceListener implements InstanceListener {
                 // END IASRI# 4646060
                     try {
                         // clear security context
-                        Realm ra = context.getRealm();
-                        if (ra != null && (ra instanceof RealmInitializer)) {
-                            //cleanup not only securitycontext but also PolicyContext
-                            ((RealmInitializer)ra).logout();
-                            //securityContext.setCurrentSecurityContext(null);
+                        final ServletRequest req = event.getRequest();
+                        if (req instanceof HttpServletRequest) {
+                            final Realm realm = context.getRealm();
+                            if (realm != null) {
+                                final ServletResponse resp = event.getResponse();
+                                final HttpServletResponse httpResp = (resp instanceof HttpServletResponse ? (HttpServletResponse) resp : null);
+                                //cleanup not only securitycontext but also PolicyContext
+                                realm.logout((HttpServletRequest) req, httpResp);
+                                //securityContext.setCurrentSecurityContext(null);
+                            }
                         }
                     } catch (Exception ex) {
                         String msg = _rb.getString(EXCEPTION_DURING_HANDLE_EVENT);

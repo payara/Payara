@@ -309,6 +309,17 @@ public class Request
             level = "WARNING"
     )
     public static final String NO_AUTHENTICATOR = "AS-WEB-CORE-00537";
+    
+    @LogMessageInfo(
+            message = "Invalid call to login while pluggable authentication method is configured",
+            level = "WARNING"
+    )
+    public static final String LOGIN_WITH_AUTH_CONFIG = "AS-WEB-CORE-00538";
+    
+    @LogMessageInfo(
+            message = "Internal logout error",
+            level = "WARNING")
+    public static final String INTERNAL_LOGOUT_ERROR = "AS-WEB-CORE-00539";
 
     // ----------------------------------------------------------- Statics
     /**
@@ -2205,6 +2216,12 @@ public class Request
 
     public void login(final String username, final char[] password)
             throws ServletException {
+        final Realm realm = context.getRealm();
+        if (realm != null && realm.isSecurityExtensionEnabled(getServletContext())) {
+            throw new ServletException
+               (rb.getString(LOGIN_WITH_AUTH_CONFIG));
+ 	}
+        
         if (getAuthType() != null || getRemoteUser() != null ||
                 getUserPrincipal() != null) {
             throw new ServletException(
@@ -2221,17 +2238,20 @@ public class Request
     @Override
     public void logout() throws ServletException {
 
-        if (context == null) {
-            //Should an exception be thrown here?
-            return;
-        }
-        //TODO : Change the name of the Interface to RealmExtenstion
-        RealmInitializer realm = (RealmInitializer) context.getRealm();
+        Realm realm = (context == null ? null : context.getRealm());
         if (realm == null) {
-            //Should an exception be thrown here?
+            if (getUserPrincipal() != null || getAuthType() != null) {
+                throw new ServletException(
+                        rb.getString(INTERNAL_LOGOUT_ERROR));
+            }
             return;
         }
-        realm.logout();
+        /*
+         * Pass the request (this) and, if it's an HttpServletResponse, the response.
+         */
+        if (realm.isSecurityExtensionEnabled(getServletContext())) {
+            realm.logout(this, (response instanceof HttpServletResponse ? (HttpServletResponse) response : null));
+        }
         setUserPrincipal(null);
         setAuthType(null);
 

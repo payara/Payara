@@ -127,6 +127,8 @@ import com.sun.enterprise.util.net.NetUtils;
 
 import javax.inject.Inject;
 import javax.security.jacc.PolicyContext;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -238,7 +240,23 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
    
     private NetworkListeners nwListeners;
     
+/**
+     * ThreadLocal object to keep track of the reentrancy status of each thread.
+     * It contains a byte[] object whose single element is either 0 (initial
+     * value or no reentrancy), or 1 (current thread is reentrant). When a
+     * thread exits the implies method, byte[0] is always reset to 0.
+     */
+    private static ThreadLocal reentrancyStatus;
 
+    static {
+        reentrancyStatus = new ThreadLocal() {
+
+            @Override
+            protected synchronized Object initialValue() {
+                return new byte[]{0};
+            }
+        };
+    }
     
     public RealmAdapter() {
         //used during Injection in WebContainer (glue code)
@@ -425,7 +443,48 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         return secMgr.hasRoleRefPermission(servletName, role, principal);
     }
 
-    public void logout() {
+    @Override
+    public void logout(final HttpServletRequest req, final HttpServletResponse resp) {
+        byte[] alreadyCalled = (byte[]) reentrancyStatus.get();
+        if (helper != null && alreadyCalled[0] == 0) {
+            alreadyCalled[0] = 1;
+            MessageInfo messageInfo = (MessageInfo) req.getAttribute(MESSAGE_INFO);
+            if (messageInfo == null) {
+                messageInfo = new HttpMessageInfo((HttpServletRequest) req, (HttpServletResponse) resp);
+            }
+            messageInfo.getMap().put(HttpServletConstants.IS_MANDATORY,
+                        Boolean.TRUE.toString());
+            try {
+                ServerAuthContext sAC = helper.getServerAuthContext(messageInfo,null);
+                if (sAC != null) {
+                    /*
+                     * Check for the default/server-generated/unauthenticated
+                     * security context.
+                     */
+                    final SecurityContext securityContext = SecurityContext.getCurrent();
+                    Subject subject = securityContext.didServerGenerateCredentials() ?
+                            new Subject() : securityContext.getSubject();
+                    
+                    if (subject == null) {
+                        subject = new Subject();
+                    }
+                    if (subject.isReadOnly()) {
+                        _logger.log(Level.WARNING, "Read-only subject found during logout processing");
+                    }
+                    sAC.cleanSubject(messageInfo, subject);
+                }
+            } catch (AuthException ex) {
+                throw new RuntimeException(ex);
+            } finally {
+                doLogout();
+                alreadyCalled[0] = 0;
+            }
+        } else {
+            doLogout();
+        }
+    }
+    
+    private void doLogout() {
         setSecurityContext(null);
         resetPolicyContext();
     }
@@ -1270,12 +1329,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public SecurityConstraint[] findSecurityConstraints(HttpRequest request,
             Context context) {
        if (this.helper == null) {
-            initConfigHelper();
+            initConfigHelper(context.getServletContext());
         }
         WebSecurityManager secMgr = getWebSecurityManager(false);
 
         if (secMgr != null && secMgr.hasNoConstrainedResources() &&
- 	    !isSecurityExtensionEnabled()) {
+ 	    !isSecurityExtensionEnabled(context.getServletContext())) {
             return null;
         }
         SecurityConstraint[] constraints = RealmAdapter.emptyConstraints;
@@ -1294,12 +1353,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     public SecurityConstraint[] findSecurityConstraints(String requestPathMB,
             String httpMethod, Context context) {
         if (this.helper == null) {
-            initConfigHelper();
+            initConfigHelper(context.getServletContext());
         }
         WebSecurityManager secMgr = getWebSecurityManager(false);
 
         if (secMgr != null && secMgr.hasNoConstrainedResources() &&
- 	    !isSecurityExtensionEnabled()) {
+ 	    !isSecurityExtensionEnabled(context.getServletContext())) {
             return null;
         }
 
@@ -1495,10 +1554,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
      * Return <tt>true</tt> if a Security Extension is available.
      * @return <tt>true</tt> if a Security Extension is available. 1171
      */
-    public boolean isSecurityExtensionEnabled() {
+    @Override
+    public boolean isSecurityExtensionEnabled(final ServletContext context) {
 
         if (helper == null) {
-            initConfigHelper();
+            initConfigHelper(context);
         }
         try {
            return (helper.getServerAuthConfig() != null);
@@ -1511,10 +1571,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     /**
      * This must be invoked after virtualServer is set.
      */
-    private HttpServletHelper getConfigHelper() {
+    private HttpServletHelper getConfigHelper(final ServletContext servletContext) {
         Map map = new HashMap();
         map.put(HttpServletConstants.WEB_BUNDLE, webDesc);
-        return new HttpServletHelper(getAppContextID(),
+        return new HttpServletHelper(getAppContextID(servletContext),
                 map, null, // null handler
                 _realmName, isSystemApp, defaultSystemProviderID);
     }
@@ -1522,8 +1582,18 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     /**
      * This must be invoked after virtualServer is set.
      */
-    private String getAppContextID() {
-        return this.virtualServer.getName() + " " + webDesc.getContextRoot();
+    private String getAppContextID(final ServletContext servletContext) {
+        if (!servletContext.getVirtualServerName().equals( this.virtualServer.getName())) {
+            _logger.log(Level.WARNING, 
+                    "Virtual server name from ServletContext: {0} differs from name from virtual.getName(): {1}", 
+                    new Object[]{servletContext.getVirtualServerName(), virtualServer.getName()});
+        }
+        if (!servletContext.getContextPath().equals(webDesc.getContextRoot())) {
+            _logger.log(Level.WARNING, 
+                    "Context path from ServletContext: {0} differs from path from bundle: {1}", 
+                    new Object[]{servletContext.getContextPath(), webDesc.getContextRoot()});
+        }
+        return servletContext.getVirtualServerName() + " " + servletContext.getContextPath();
     }
 
     private boolean validate(HttpRequest request,
@@ -1602,15 +1672,13 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                      */
                     String authType = (String) messageInfo.getMap().get(
                             HttpServletConstants.AUTH_TYPE);
-                    boolean register = messageInfo.getMap().containsKey(
-                            HttpServletConstants.REGISTER_WITH_AUTHENTICATOR);
-
+                    
                     if (authType == null && config != null &&
                             config.getAuthMethod() != null) {
                         authType = config.getAuthMethod();
                     }
 
-                    if (register) {
+                    if (shouldRegister(messageInfo.getMap())) {
                         AuthenticatorProxy proxy = new AuthenticatorProxy(authenticator, wp, authType);
                         proxy.authenticate(request, response, config);
                     } else {
@@ -1639,6 +1707,24 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             }
         }
         return rvalue;
+    }
+    
+    private boolean shouldRegister(Map map) {
+        /*
+         * Detect both the proprietary property and the standard one.
+         */
+        return map.containsKey(HttpServletConstants.REGISTER_WITH_AUTHENTICATOR)
+                || mapEntryToBoolean(HttpServletConstants.REGISTER_SESSION, map);
+    }
+    
+    private boolean mapEntryToBoolean(final String propName, final Map map) {
+        if (map.containsKey(propName)) {
+            Object value = map.get(propName);
+            if (value != null && value instanceof String) {
+                return Boolean.valueOf((String) value);
+            }
+        }
+        return false;
     }
 
     /**
@@ -1853,11 +1939,11 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     //TODO: reexamine this after TP2
-    public synchronized void initConfigHelper() {
+    public synchronized void initConfigHelper(final ServletContext servletContext) {
         if (this.helper != null) {
             return;
         }
-        this.helper = getConfigHelper();
+        this.helper = getConfigHelper(servletContext);
     }
 
     public void postConstruct() {
