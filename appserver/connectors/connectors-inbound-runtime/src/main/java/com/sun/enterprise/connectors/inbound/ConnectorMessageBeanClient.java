@@ -686,6 +686,12 @@ public final class ConnectorMessageBeanClient
         return sb.toString();
     }
 
+    @Override
+    public Class<?> getEndpointClass() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 //    private String computeMD5(String message){
 //        StringBuilder sb = new StringBuilder(32);
 //        try {
