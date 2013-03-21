@@ -74,12 +74,25 @@ import java.util.Properties;
 @I18n("create.managed.executor.service")
 public class CreateManagedExecutorService extends CreateManagedExecutorServiceBase implements AdminCommand {
 
+    @Param(name="maximumpoolsize", alias="maximumPoolSize", defaultValue=""+Integer.MAX_VALUE, optional=true)
+    private Integer maximumpoolsize;
+
+    @Param(name="taskqueuecapacity", alias="taskQueueCapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
+    private Integer taskqueuecapacity;
+
     @Inject
     private Domain domain;
 
     @Inject
     private ManagedExecutorServiceManager managedExecutorServiceMgr;
 
+    protected void setAttributeList(HashMap attrList) {
+        super.setAttributeList(attrList); 
+        attrList.put(ResourceConstants.MAXIMUM_POOL_SIZE,
+            maximumpoolsize.toString());
+        attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY,
+            taskqueuecapacity.toString());
+    }
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the paramter names and the values the parameter values

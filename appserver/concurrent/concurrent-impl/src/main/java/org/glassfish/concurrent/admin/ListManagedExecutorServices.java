@@ -101,13 +101,10 @@ public class ListManagedExecutorServices implements AdminCommand {
         try {
             Collection<ManagedExecutorService> managedExecutorServices = domain.getResources().getResources(ManagedExecutorService.class);
             for (ManagedExecutorService managedExecutorService : managedExecutorServices) {
-                // filter out the managed scheduled executor services
-                if (!(managedExecutorService instanceof ManagedScheduledExecutorService)) {
-                    String jndiName = managedExecutorService.getJndiName();
-                    if(bindableResourcesHelper.resourceExists(jndiName, target)){
-                        ActionReport.MessagePart part = report.getTopMessagePart().addChild();
-                        part.setMessage(jndiName);
-                    }
+                String jndiName = managedExecutorService.getJndiName();
+                if(bindableResourcesHelper.resourceExists(jndiName, target)){
+                    ActionReport.MessagePart part = report.getTopMessagePart().addChild();
+                    part.setMessage(jndiName);
                 }
             }
         } catch (Exception e) {

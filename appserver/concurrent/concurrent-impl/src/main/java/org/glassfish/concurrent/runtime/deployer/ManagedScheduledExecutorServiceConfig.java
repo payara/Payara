@@ -62,8 +62,6 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
         threadPriority = parseInt(config.getThreadPriority(), Thread.NORM_PRIORITY);
         corePoolSize = parseInt(config.getCorePoolSize(), 0);
         keepAliveSeconds = parseLong(config.getKeepAliveSeconds(), 60);
-        maximumPoolSize = parseInt(config.getMaximumPoolSize(), Integer.MAX_VALUE);
-        taskQueueCapacity = parseInt(config.getTaskQueueCapacity(), Integer.MAX_VALUE);
         threadLifeTimeSeconds = parseLong(config.getThreadLifetimeSeconds(), 0L);
     }
 

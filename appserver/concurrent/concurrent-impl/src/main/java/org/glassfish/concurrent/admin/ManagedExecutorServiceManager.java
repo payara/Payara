@@ -46,6 +46,16 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfiguredBy;
+import org.jvnet.hk2.config.TransactionFailure;
+import org.glassfish.resourcebase.resources.api.ResourceStatus;
+import org.glassfish.concurrent.config.ManagedExecutorServiceBase;
+import org.glassfish.concurrent.config.ManagedExecutorService;
+
+import static org.glassfish.resources.admin.cli.ResourceConstants.*;
+
+import java.util.HashMap;
+import java.util.Properties;
+import java.beans.PropertyVetoException;
 
 /**
  *
@@ -56,6 +66,41 @@ import org.jvnet.hk2.config.ConfiguredBy;
 @I18n("managed.executor.service.manager")
 @ConfiguredBy(Resources.class)
 public class ManagedExecutorServiceManager extends ManagedExecutorServiceBaseManager {
+
+    private String maximumPoolSize = ""+Integer.MAX_VALUE;
+    private String taskQueueCapacity = ""+Integer.MAX_VALUE;
+
+    @Override
+    protected void setAttributes(HashMap attributes, String target) {
+        super.setAttributes(attributes, target);
+        maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);
+        taskQueueCapacity = (String) attributes.get(TASK_QUEUE_CAPACITY);
+    }
+
+    @Override
+    protected ResourceStatus isValid(Resources resources, boolean validateResourceRef, String target){
+        if (Integer.parseInt(corePoolSize) == 0 &&
+            Integer.parseInt(maximumPoolSize) == 0) {
+            String msg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
+        if (Integer.parseInt(corePoolSize) >
+            Integer.parseInt(maximumPoolSize)) {
+            String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize.");
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
+        return super.isValid(resources, validateResourceRef, target); 
+    }
+
+    protected ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
+        ManagedExecutorService managedExecutorService = param.createChild(ManagedExecutorService.class);
+        setAttributesOnConfigBean(managedExecutorService, properties); 
+        managedExecutorService.setMaximumPoolSize(maximumPoolSize);
+        managedExecutorService.setTaskQueueCapacity(taskQueueCapacity);
+        return managedExecutorService;
+    }
 
     public String getResourceType () {
         return ServerTags.MANAGED_EXECUTOR_SERVICE;

@@ -95,17 +95,11 @@ public class CreateManagedExecutorServiceBase {
     @Param(name="corepoolsize", alias="corePoolSize", defaultValue="0", optional=true)
     protected Integer corepoolsize;
 
-    @Param(name="maximumpoolsize", alias="maximumPoolSize", defaultValue=""+Integer.MAX_VALUE, optional=true)
-    protected Integer maximumpoolsize;
-
     @Param(name="keepaliveseconds", alias="keepAliveSeconds", defaultValue="60", optional=true)
     protected Integer keepaliveseconds;
 
     @Param(name="threadlifetimeseconds", alias="threadLifetimeSeconds", defaultValue="0", optional=true)
     protected Integer threadlifetimeseconds;
-
-    @Param(name="taskqueuecapacity", alias="taskQueueCapacity", defaultValue=""+Integer.MAX_VALUE, optional=true)
-    protected Integer taskqueuecapacity;
 
     @Param(optional=true)
     protected String description;
@@ -128,14 +122,10 @@ public class CreateManagedExecutorServiceBase {
             hungafterseconds.toString());
         attrList.put(ResourceConstants.CORE_POOL_SIZE, 
             corepoolsize.toString());
-        attrList.put(ResourceConstants.MAXIMUM_POOL_SIZE, 
-            maximumpoolsize.toString());
         attrList.put(ResourceConstants.KEEP_ALIVE_SECONDS, 
             keepaliveseconds.toString());
         attrList.put(ResourceConstants.THREAD_LIFETIME_SECONDS, 
             threadlifetimeseconds.toString());
-        attrList.put(ResourceConstants.TASK_QUEUE_CAPACITY, 
-            taskqueuecapacity.toString());
         attrList.put(ServerTags.DESCRIPTION, description);
         attrList.put(ResourceConstants.ENABLED, enabled.toString());
     }

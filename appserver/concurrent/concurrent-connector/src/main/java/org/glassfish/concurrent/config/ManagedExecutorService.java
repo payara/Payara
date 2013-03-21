@@ -74,77 +74,8 @@ import java.beans.PropertyVetoException;
 @UniqueResourceNameConstraint(message="{resourcename.isnot.unique}", payload=ManagedExecutorService.class)
 @CustomConfiguration(baseConfigurationFileName = "managed-executor-service-conf.xml")
 public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
-        BindableResource, ConcurrencyResource, Payload {
-
-    /**
-     * Gets the value of the threadPriority property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue=""+Thread.NORM_PRIORITY, dataType=Integer.class)
-    @Min(value=0)
-    String getThreadPriority();
-
-
-    /**
-     * Sets the value of the threadPriority property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setThreadPriority(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the longRunningTasks property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue="false", dataType=Boolean.class)
-    String getLongRunningTasks();
-
-    /**
-     * Sets the value of the longRunningTasks property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setLongRunningTasks(String value) throws PropertyVetoException;
-    
-    /**
-     * Gets the value of the hungAfterSeconds property.
-     *
-     * @return possible object is
-     *         {@link String }
-     */
-    @Attribute(defaultValue = "0", dataType = Integer.class)
-    @Min(value=0)
-    String getHungAfterSeconds();
-
-    /**
-     * Sets the value of the hungAfterSeconds property.
-     *
-     * @param value allowed object is
-     *              {@link String }
-     */
-    void setHungAfterSeconds(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the corePoolSize property.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "0", dataType = Integer.class)
-    @Min(value=0)
-    String getCorePoolSize();
-
-    /**
-     * Sets the value of the coreSize property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    void setCorePoolSize(String value) throws PropertyVetoException;
+        BindableResource, ConcurrencyResource, ManagedExecutorServiceBase, 
+        Payload {
 
     /**
      * Gets the value of the maximumPoolSize property.
@@ -161,38 +92,6 @@ public interface ManagedExecutorService extends ConfigBeanProxy, Resource,
      * @param value allowed object is {@link String }
      */
     void setMaximumPoolSize(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the keepAlivesSeconds property.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "60", dataType = Integer.class)
-    @Min(value=0)
-    String getKeepAliveSeconds();
-
-    /**
-     * Sets the value of the keepAliveSeconds property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    void setKeepAliveSeconds(String value) throws PropertyVetoException;
-
-    /**
-     * Gets the value of the threadLifetimeSeconds property.
-     *
-     * @return possible object is {@link String }
-     */
-    @Attribute(defaultValue = "0", dataType = Integer.class)
-    @Min(value=0)
-    String getThreadLifetimeSeconds();
-
-    /**
-     * Sets the value of the threadLifetimeSeconds property.
-     *
-     * @param value allowed object is {@link String }
-     */
-    void setThreadLifetimeSeconds(String value) throws PropertyVetoException;
 
     /**
      * Gets the value of the threadLifetimeSeconds property.

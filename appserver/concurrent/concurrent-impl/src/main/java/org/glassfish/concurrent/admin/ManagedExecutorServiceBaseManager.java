@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.ServerTags;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.concurrent.config.ManagedExecutorServiceBase;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resources.admin.cli.ResourceManager;
@@ -76,7 +77,7 @@ import static org.glassfish.resources.admin.cli.ResourceConstants.*;
  */
 public abstract class ManagedExecutorServiceBaseManager implements ResourceManager {
 
-    private final static LocalStringManagerImpl localStrings =
+    protected final static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(ManagedExecutorServiceBaseManager.class);
     protected static final String DESCRIPTION = ServerTags.DESCRIPTION;
     protected String jndiName = null;
@@ -87,10 +88,8 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
     protected String longRunningTasks = Boolean.FALSE.toString();
     protected String hungAfterSeconds = "0";
     protected String corePoolSize = "0";
-    protected String maximumPoolSize = ""+Integer.MAX_VALUE;
     protected String keepAliveSeconds = "60";
     protected String threadLifetimeSeconds = "0";
-    protected String taskQueueCapacity = ""+Integer.MAX_VALUE;
     protected String enabled = Boolean.TRUE.toString();
     protected String enabledValueForTarget = Boolean.TRUE.toString();
 
@@ -152,18 +151,6 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
-        if (Integer.parseInt(corePoolSize) == 0 && 
-            Integer.parseInt(maximumPoolSize) == 0) {
-            String msg = localStrings.getLocalString("coresize.maxsize.both.zero", "Options corepoolsize and maximumpoolsize cannot both have value 0.");
-            return new ResourceStatus(ResourceStatus.FAILURE, msg);
-        }
-
-        if (Integer.parseInt(corePoolSize) > 
-            Integer.parseInt(maximumPoolSize)) {
-            String msg = localStrings.getLocalString("coresize.biggerthan.maxsize", "Option corepoolsize cannot have a bigger value than option maximumpoolsize."); 
-            return new ResourceStatus(ResourceStatus.FAILURE, msg);
-        }
-
         Class clazz = ManagedExecutorService.class;
         if (getResourceType().equals(ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
             clazz = ManagedScheduledExecutorService.class;
@@ -182,10 +169,8 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         longRunningTasks = (String) attributes.get(LONG_RUNNING_TASKS);
         hungAfterSeconds = (String) attributes.get(HUNG_AFTER_SECONDS);
         corePoolSize = (String) attributes.get(CORE_POOL_SIZE);
-        maximumPoolSize = (String) attributes.get(MAXIMUM_POOL_SIZE);
         keepAliveSeconds = (String) attributes.get(KEEP_ALIVE_SECONDS);
         threadLifetimeSeconds = (String) attributes.get(THREAD_LIFETIME_SECONDS);
-        taskQueueCapacity = (String) attributes.get(TASK_QUEUE_CAPACITY);
         if(target != null){
             enabled = resourceUtil.computeEnabledValueForResourceBasedOnTarget((String)attributes.get(ENABLED), target);
         }else{
@@ -194,21 +179,15 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         enabledValueForTarget = (String) attributes.get(ENABLED); 
     }
 
-    protected ManagedExecutorService createResource(Resources param, Properties properties) throws PropertyVetoException,
-            TransactionFailure {
-        ManagedExecutorService newResource = createConfigBean(param, properties);
+    protected ManagedExecutorServiceBase createResource(Resources param, Properties properties) throws PropertyVetoException, TransactionFailure {
+        ManagedExecutorServiceBase newResource = createConfigBean(param, properties);
         param.getResources().add(newResource);
         return newResource;
     }
 
-    protected ManagedExecutorService createConfigBean(Resources param, Properties properties) throws PropertyVetoException,
-            TransactionFailure {
-        ManagedExecutorService managedExecutorService = null;
-        if (getResourceType().equals(ServerTags.MANAGED_EXECUTOR_SERVICE)) {
-            managedExecutorService = param.createChild(ManagedExecutorService.class);
-        } else {
-            managedExecutorService = param.createChild(ManagedScheduledExecutorService.class);
-        }
+    protected abstract ManagedExecutorServiceBase createConfigBean(Resources param, Properties properties) throws PropertyVetoException,TransactionFailure;
+
+    protected void setAttributesOnConfigBean(ManagedExecutorServiceBase managedExecutorService, Properties properties) throws PropertyVetoException, TransactionFailure {
         managedExecutorService.setJndiName(jndiName);
         if (description != null) {
             managedExecutorService.setDescription(description);
@@ -218,10 +197,8 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         managedExecutorService.setThreadPriority(threadPriority);
         managedExecutorService.setHungAfterSeconds(hungAfterSeconds);
         managedExecutorService.setCorePoolSize(corePoolSize);
-        managedExecutorService.setMaximumPoolSize(maximumPoolSize);
         managedExecutorService.setKeepAliveSeconds(keepAliveSeconds);
         managedExecutorService.setThreadLifetimeSeconds(threadLifetimeSeconds);
-        managedExecutorService.setTaskQueueCapacity(taskQueueCapacity);
         managedExecutorService.setEnabled(enabled);
         if (properties != null) {
             for ( Map.Entry e : properties.entrySet()) {
@@ -231,7 +208,6 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
                 managedExecutorService.getProperty().add(prop);
             }
         }
-        return managedExecutorService;
     }
 
     public Resource createConfigBean(final Resources resources, HashMap attributes, final Properties properties, boolean validate) throws Exception{
@@ -306,7 +282,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             // delete managed executor service
             if (ConfigSupport.apply(new SingleConfigCode<Resources>() {
                 public Object run(Resources param) throws PropertyVetoException, TransactionFailure {
-                    ManagedExecutorService resource = null;
+                    ManagedExecutorServiceBase resource = null;
                     if (getResourceType().equals(ServerTags.MANAGED_EXECUTOR_SERVICE)) {
                         resource = (ManagedExecutorService) ConnectorsUtil.getResourceByName(resources, ManagedExecutorService.class, jndiName);
                     } else {
