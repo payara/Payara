@@ -40,6 +40,7 @@
 
 package org.glassfish.ejb.deployment.descriptor;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -95,6 +96,8 @@ import org.glassfish.ejb.deployment.util.EjbVisitor;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator.TranslationResults;
 import org.glassfish.security.common.Role;
+import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.enterprise.container.common.spi.JCDIService;
 
 /**
  * This abstract class encapsulates the meta-information describing
@@ -243,6 +246,9 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     static Logger _logger = DOLUtils.getDefaultLogger();
 
     private IASEjbExtraDescriptors iASEjbExtraDescriptors = new IASEjbExtraDescriptors();  // Ludo 12/10/2001 extra DTD info only for iAS
+
+    private final JCDIService jcdiService = EjbContainerUtilImpl.getInstance().
+            getServices().getService(JCDIService.class);
 
     /**
      * returns the extra iAS specific info (not in the RI DID) in the iAS DTD.
@@ -1080,11 +1086,10 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         LinkedList<EjbInterceptor> callbackInterceptors = 
                 new LinkedList<EjbInterceptor>();
 
-        MethodDescriptor callbackMethod = getBeanCallbackMethod(callbackDescriptors);
-
-        List<EjbInterceptor> classOrMethodInterceptors = 
-                (callbackMethod == null)? interceptorChain :
-                         getClassOrMethodInterceptors(callbackMethod);
+        ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
+        List<EjbInterceptor> classOrMethodInterceptors = (type.equals(CallbackType.AROUND_CONSTRUCT))?
+                getConstructorInterceptors(classLoader) :
+                getCallbackMethodInterceptors(callbackDescriptors, classLoader);
 
         for (EjbInterceptor next : classOrMethodInterceptors) {
             if (next.getCallbackDescriptors(type).size() > 0) {
@@ -1104,17 +1109,20 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     /**
+     * Return bean method if this callback type is defined on the bean class or null if it is not
      */
-    private MethodDescriptor getBeanCallbackMethod(Set<LifecycleCallbackDescriptor> callbackDescriptors) {
-        MethodDescriptor md = null;
+    private List<EjbInterceptor> getCallbackMethodInterceptors(
+            Set<LifecycleCallbackDescriptor> callbackDescriptors, ClassLoader classLoader) {
 
+        List<EjbInterceptor> callbackInterceptors = interceptorChain;
         if (callbackDescriptors != null) {
-            ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
             for (LifecycleCallbackDescriptor callbackDesc : callbackDescriptors) {
                 if( callbackDesc.getLifecycleCallbackClass().equals(getEjbClassName())) {
                     try {
                         Method method = callbackDesc.getLifecycleCallbackMethodObject(classLoader);
-                        md = new MethodDescriptor(method, MethodDescriptor.LIFECYCLE_CALLBACK);
+                        MethodDescriptor md = new MethodDescriptor(method, MethodDescriptor.LIFECYCLE_CALLBACK);
+                        callbackInterceptors = getClassOrMethodInterceptors(md);
+                        break;
                     } catch(Exception e) {
                         // no method on class
                     }
@@ -1122,8 +1130,54 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             }
         }
 
-        return md;
+        return callbackInterceptors;
+    }
 
+    /**
+     * Return bean constructor for AroundConstruct interceptors
+     */
+    private List<EjbInterceptor> getConstructorInterceptors(ClassLoader classLoader) {
+
+        List<EjbInterceptor> callbackInterceptors = null;
+        String shortClassName = ejbClassName;
+        int i = ejbClassName.lastIndexOf('.');
+        if (i > -1) {
+            shortClassName = ejbClassName.substring(i + 1);
+        }
+
+        if (jcdiService != null && jcdiService.isJCDIEnabled(getEjbBundleDescriptor())) {
+            try {
+                Class beanClass = classLoader.loadClass(getEjbClassName());
+                Constructor<?>[] ctors = beanClass.getDeclaredConstructors();
+
+                String[] parameterClassNames = null;
+                MethodDescriptor dummy = new MethodDescriptor();
+                for(Constructor<?> ctor : ctors) {
+                    Class[] ctorParamTypes = ctor.getParameterTypes();
+                    if (ctorParamTypes.length > 0) {
+                        parameterClassNames = dummy.getParameterClassNamesFor(null, ctorParamTypes);
+                        callbackInterceptors = getClassOrMethodInterceptors(
+                                new MethodDescriptor(shortClassName, null,
+                                              parameterClassNames, ejbClassName));
+                        if (callbackInterceptors != interceptorChain) {
+                            // constructor-level interceptors can be only on one
+                            // constructor with args
+                            break;
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                _logger.log(Level.SEVERE, "enterprise.deployment.backend.methodClassLoadFailure", new Object[]{this.getEjbClassName()});
+                throw new RuntimeException(t);
+            }
+        } 
+        if (callbackInterceptors == null) {
+            // non-CDI or nothing found - use no-arg constructor
+            callbackInterceptors = getClassOrMethodInterceptors(
+                    new MethodDescriptor(shortClassName, null, new String[0], ejbClassName));
+        }
+
+        return callbackInterceptors;
     }
 
     /**

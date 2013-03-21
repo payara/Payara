@@ -41,6 +41,8 @@
 package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
+import java.lang.annotation.ElementType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import javax.interceptor.ExcludeClassInterceptors;
 
@@ -86,12 +88,22 @@ public class ExcludeClassInterceptorsHandler
             binding.setEjbName(ejbDescriptor.getName());
             binding.setExcludeClassInterceptors(true);
 
-            // Annotation can only be defined at the method level.
-            Method m = (Method) ainfo.getAnnotatedElement();
-            MethodDescriptor md = 
-                new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
-            binding.setBusinessMethod(md);
+            // Annotation can be defined at a method level or constructor level.
+            MethodDescriptor md = null;
+            if(ElementType.METHOD.equals(ainfo.getElementType())) {
+                Method m = (Method) ainfo.getAnnotatedElement();
+                md = new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+            } else if(ElementType.CONSTRUCTOR.equals(ainfo.getElementType())) {
+                Constructor c = (Constructor) ainfo.getAnnotatedElement();
+                Class cl = c.getDeclaringClass();
+                Class[] ctorParamTypes = c.getParameterTypes();
+                String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
 
+                md = new MethodDescriptor(cl.getSimpleName(), null,
+                        parameterClassNames, cl.getName());
+            } // else throw Exception?
+
+            binding.setBusinessMethod(md);
             ejbBundle.prependInterceptorBinding(binding);
         }
 

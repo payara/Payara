@@ -109,13 +109,14 @@ public class CallbackInvocationContext implements InvocationContext {
         Constructor<?>[] ctors = targetObjectClass.getConstructors();
         for(Constructor<?> ctor0 : ctors) {
             ctor = ctor0;
-            if(ctor0.getParameterTypes().length > 0) {
+            if(ctor0.getParameterTypes().length == 0) {
+                // We are looking for a no-arg constructor
                 break;
             }
         }
 
         ctorParamTypes = ctor.getParameterTypes();
-        ctorParams = new Object[ctorParamTypes.length]; // XXXX
+        ctorParams = new Object[ctorParamTypes.length]; 
 
         this.interceptorInfo = interceptorInfo;
     }

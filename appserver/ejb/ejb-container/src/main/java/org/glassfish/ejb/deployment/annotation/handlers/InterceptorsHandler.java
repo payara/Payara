@@ -42,6 +42,7 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
@@ -117,6 +118,14 @@ public class InterceptorsHandler extends AbstractAttributeHandler {
                 Method m = (Method) ainfo.getAnnotatedElement();
                 MethodDescriptor md = 
                     new MethodDescriptor(m, MethodDescriptor.EJB_BEAN);
+                binding.setBusinessMethod(md);
+            } else if(ElementType.CONSTRUCTOR.equals(ainfo.getElementType())) {
+                                Constructor c = (Constructor) ainfo.getAnnotatedElement();
+                Class cl = c.getDeclaringClass();
+                Class[] ctorParamTypes = c.getParameterTypes();
+                String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
+                MethodDescriptor md = new MethodDescriptor(cl.getSimpleName(), null,
+                        parameterClassNames, cl.getName());
                 binding.setBusinessMethod(md);
             }
 
