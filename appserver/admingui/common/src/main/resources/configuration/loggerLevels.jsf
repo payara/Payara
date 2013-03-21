@@ -68,7 +68,7 @@
             loggerLevels="#{requestScope.loggerLevels.data.extraProperties.logLevels}"
             loggerList="#{requestScope.tableList}");
 
-        getValidLogLevels(loggerList="#{pageSession.levelList}")
+        setPageSessionAttribute(key="levelList" value={"OFF" "FINEST" "FINE" "FINER" "CONFIG" "INFO" "WARNING" "SEVERE" "ALERT" "EMERGENCY"})
 		gf.isConfigName(configName="#{pageSession.configName}" );
     />
 </event>

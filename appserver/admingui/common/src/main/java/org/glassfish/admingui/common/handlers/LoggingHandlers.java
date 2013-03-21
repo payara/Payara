@@ -215,26 +215,6 @@ public class LoggingHandlers {
         }
      }
 
-    @Handler(id = "getValidLogLevels",
-    output = {
-        @HandlerOutput(name = "loggerList", type = List.class)
-    })
-    public static void getValidLogLevels(HandlerContext handlerCtx) {
-        handlerCtx.setOutputValue("loggerList",  levels);
-     }
-
-    final private static List<String> levels= new ArrayList();
-    static{
-        levels.add("OFF");
-        levels.add("SEVERE");
-        levels.add("WARNING");
-        levels.add("INFO");
-        levels.add("CONFIG");
-        levels.add("FINE");
-        levels.add("FINER");
-        levels.add("FINEST");
-        levels.add("ALL");
-    }
 }
 
 
