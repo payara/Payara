@@ -91,6 +91,7 @@
                                 org.jboss.weld.proxy.util,
                                 org.jboss.weld.bean.proxy.util,
                                 org.jboss.weld.context.http,
+                                org.jboss.weld.context.bound,
                                 org.jboss.weld.context.cache,
                                 org.jboss.weld.bean.builtin.ee,
                                 javassist.util.proxy,
