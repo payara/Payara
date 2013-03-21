@@ -493,7 +493,7 @@ public final class CreateDomainCommand extends CLICommand {
         }
         logger.info(strings.get("DomainCreated", domainName));
         Integer adminPort = (Integer)domainConfig.get(DomainConfig.K_ADMIN_PORT);
-        logger.info(strings.get("DomainPort", domainName, adminPort));
+        logger.info(strings.get("DomainPort", domainName, Integer.toString(adminPort)));
         if (adminPassword.equals(
                 SystemPropertyConstants.DEFAULT_ADMIN_PASSWORD))
             logger.info(strings.get("DomainAllowsUnauth", domainName,
