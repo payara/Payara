@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,10 @@ import java.util.jar.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
+
 /**
  * Archive Handler for OSGi modules.
  * This understands a special deployment property called UriScheme.
@@ -77,7 +81,18 @@ import java.util.logging.Logger;
 @Singleton
 public class OSGiArchiveHandler extends GenericHandler implements CompositeHandler {
 
-    private static Logger logger = Logger.getLogger(OSGiArchiveHandler.class.getPackage().getName());
+    @LoggerInfo(subsystem = "OSGI", description="OSGI container logger", publish=true)
+    private static final String LOGGER_NAME = "javax.enterprise.osgi.container";
+
+    @LogMessagesResourceBundle()
+    public static final String RB_NAME = "org.glassfish.extras.osgicontainer.LogMessages";
+
+    private static Logger logger = Logger.getLogger(LOGGER_NAME, RB_NAME);
+
+    @LogMessageInfo(message = "Decorated url = {0}", level="INFO")
+    public static final String DECORATED_URL = "NCLS-OSGI-00001";
+
+
     @Inject
     private OSGiArchiveDetector detector;
     private String URI_SCHEME_PROP_NAME = "UriScheme";
@@ -131,7 +146,7 @@ public class OSGiArchiveHandler extends GenericHandler implements CompositeHandl
             // if UriScheme is specified, we need to construct a new URL based on user's input
             // and souce parameter and call openConnection() and getInputStream() on it.
             URL url = prepareUrl(context, props);
-            logger.logp(Level.INFO, "OSGiArchiveHandler", "expand", "Decorated url = {0}", new Object[]{url});
+            logger.log(Level.INFO, DECORATED_URL, new Object[]{url});
             final JarInputStream jis = new JarInputStream(url.openStream());
             expandJar(jis, target);
         } else {
