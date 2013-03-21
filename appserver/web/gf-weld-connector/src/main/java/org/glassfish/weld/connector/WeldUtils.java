@@ -247,7 +247,7 @@ public class WeldUtils {
             // types, less itself (to avoid infinite recursion)
             exclusions.add(annotationTypeName);
             for (AnnotationModel parent : annotationType.getAnnotations()) {
-                if (isCDIEnablingAnnotation(parent.getType())) {
+                if (isCDIEnablingAnnotation(parent.getType(), exclusions)) {
                     result = true;
                     break;
                 }
