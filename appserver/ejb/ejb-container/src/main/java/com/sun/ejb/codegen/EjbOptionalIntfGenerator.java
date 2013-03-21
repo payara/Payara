@@ -115,6 +115,15 @@ public class EjbOptionalIntfGenerator
     public void generateOptionalLocalInterface(Class ejbClass, String intfClassName)
         throws Exception {
 
+        generateInterface(ejbClass, intfClassName, Serializable.class);
+    }
+
+    public void generateInterface(Class ejbClass, String intfClassName, final Class... interfaces) throws Exception {
+        String[] interfaceNames = new String[interfaces.length];
+        for (int i = 0; i < interfaces.length; i++) {
+            interfaceNames[i] = Type.getType(interfaces[i]).getInternalName();
+        }
+
         if( protectionDomain == null ) {
             protectionDomain = ejbClass.getProtectionDomain();
         }
@@ -128,7 +137,7 @@ public class EjbOptionalIntfGenerator
         tv.visit(V1_1, ACC_PUBLIC + ACC_ABSTRACT + ACC_INTERFACE,
                 intfInternalName, null,
                 Type.getType(Object.class).getInternalName(), 
-                (new String[] {Type.getType(Serializable.class).getInternalName()}) );
+                interfaceNames );
 
         for (java.lang.reflect.Method m : ejbClass.getMethods()) {
             if (qualifiedAsBeanMethod(m)) {
@@ -172,6 +181,13 @@ public class EjbOptionalIntfGenerator
                                                        Class delegateClass)
         throws Exception {
 
+        generateSubclass(superClass, subClassName, delegateClass, IndirectlySerializable.class);
+    }
+
+    public void generateSubclass(Class superClass, String subClassName, Class delegateClass, Class... interfaces)
+            throws Exception {
+
+
         if( protectionDomain == null ) {
             protectionDomain = superClass.getProtectionDomain();
         }
@@ -182,13 +198,14 @@ public class EjbOptionalIntfGenerator
 //        ClassVisitor tv = (_debug)
 //                ? new TraceClassVisitor(cw, new PrintWriter(System.out)) : cw;
         
-        String[] interfaces = new String[] {
-                OptionalLocalInterfaceProvider.class.getName().replace('.', '/'),
-                IndirectlySerializable.class.getName().replace('.', '/')
-        };
+        String[] interfaceNames = new String[interfaces.length + 1];
+        interfaceNames[0] = OptionalLocalInterfaceProvider.class.getName().replace('.', '/');
+        for (int i = 0; i < interfaces.length; i++) {
+            interfaceNames[i+1] = interfaces[i].getName().replace('.', '/');
+        }
 
         tv.visit(V1_1, ACC_PUBLIC, subClassName.replace('.', '/'), null,
-                Type.getType(superClass).getInternalName(), interfaces);
+                Type.getType(superClass).getInternalName(), interfaceNames);
 
         String fldDesc = Type.getDescriptor(delegateClass);
         FieldVisitor fv = tv.visitField(ACC_PRIVATE, DELEGATE_FIELD_NAME,
@@ -233,7 +250,23 @@ public class EjbOptionalIntfGenerator
 
         generateSetDelegateMethod(tv, delegateClass, subClassName);
 
-        generateGetSerializableObjectFactoryMethod(tv, fldDesc, subClassName.replace('.', '/'));
+        for (Class anInterface : interfaces) {
+
+            // dblevins: Don't think we need this special case.
+            // Should be covered by letting generateBeanMethod
+            // handle the methods on IndirectlySerializable.
+            //
+            // Not sure where the related tests are to verify.
+            if (anInterface.equals(IndirectlySerializable.class)) {
+                generateGetSerializableObjectFactoryMethod(tv, fldDesc, subClassName.replace('.', '/'));
+                continue;
+            }
+
+            for (java.lang.reflect.Method method : anInterface.getMethods()) {
+                generateBeanMethod(tv, subClassName, method, delegateClass);
+            }
+        }
+
 
         Set<java.lang.reflect.Method> allMethods = new HashSet<java.lang.reflect.Method>();
         
@@ -264,7 +297,7 @@ public class EjbOptionalIntfGenerator
         }
 
         // add toString() method if it was not overridden
-        java.lang.reflect.Method mth = Object.class.getDeclaredMethod("toString", emptyClassArray);
+        java.lang.reflect.Method mth = Object.class.getDeclaredMethod("toString");
         if( !hasSameSignatureAsExisting(mth, allMethods)) {
                         //generateBeanMethod(tv, subClassName, mth, delegateClass);
             generateToStringBeanMethod(tv, superClass);
@@ -312,7 +345,7 @@ public class EjbOptionalIntfGenerator
 
     }
 
-    private static void generateToStringBeanMethod(ClassVisitor cv, Class superClass) 
+    private static void generateToStringBeanMethod(ClassVisitor cv, Class superClass)
         throws Exception {
 
         String toStringMethodName = "toString";

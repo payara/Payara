@@ -41,10 +41,12 @@
 package org.glassfish.ejb.deployment.descriptor;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -201,6 +203,10 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
                 (methods, classLoader.loadClass(messageListenerType), 
                  MethodDescriptor.EJB_BEAN);
 
+            addAllInterfaceMethodsIn
+                (methods, classLoader.loadClass(getEjbClassName()),
+                MethodDescriptor.EJB_BEAN);
+
             if (isTimedObject()) {
                 if( getEjbTimeoutMethod() != null) {
                     methods.add(getEjbTimeoutMethod());
@@ -232,23 +238,25 @@ public final class EjbMessageBeanDescriptor extends EjbDescriptor
      */
     public Method[] getMessageListenerInterfaceMethods(ClassLoader classLoader)
         throws NoSuchMethodException {
-                             
-        Method[] methods; 
+
+        List<Method> methods = new ArrayList<Method>();
+
         try {
             Class messageListenerClass = 
                 classLoader.loadClass(messageListenerType);
-            methods = messageListenerClass.getDeclaredMethods();
-            if( methods.length == 0 ) {
-                throw new NoSuchMethodException
-                    ("MessageListener interface " + messageListenerType + 
-                     " must declare at least one method");
+            for (Method method : messageListenerClass.getDeclaredMethods()) {
+                methods.add(method);
+            }
+            final Class<?> ejbClass = classLoader.loadClass(getEjbClassName());
+            for (Method method : ejbClass.getMethods()) {
+                methods.add(method);
             }
         } catch(Exception e) {
             NoSuchMethodException nsme = new NoSuchMethodException();
             nsme.initCause(e);
             throw nsme;
         }
-        return methods;
+        return methods.toArray(new Method[methods.size()]);
     }
 
     public Vector getPossibleTransactionAttributes() {

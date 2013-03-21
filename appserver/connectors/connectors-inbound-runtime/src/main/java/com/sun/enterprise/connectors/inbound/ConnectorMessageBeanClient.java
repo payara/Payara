@@ -41,7 +41,6 @@
 package com.sun.enterprise.connectors.inbound;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.security.AccessController;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -67,7 +66,6 @@ import com.sun.enterprise.connectors.BootstrapContextImpl;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.SetMethodAction;
-import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
 import com.sun.enterprise.deployment.EjbMessageBeanDescriptor;
 import com.sun.enterprise.deployment.MessageListener;
@@ -90,8 +88,6 @@ import org.glassfish.server.ServerEnvironmentImpl;
 public final class ConnectorMessageBeanClient
         implements MessageBeanClient, MessageEndpointFactory {
 
-    private static final String MESSAGE_ENDPOINT =
-            "javax.resource.spi.endpoint.MessageEndpoint";
     private String activationName;
     
     private ConnectorRegistry registry_;
@@ -99,6 +95,7 @@ public final class ConnectorMessageBeanClient
     private MessageBeanProtocolManager messageBeanPM_;
     private final EjbMessageBeanDescriptor descriptor_;
     private final BasicResourceAllocator allocator_;
+    private Class beanClass_;
     private boolean started_ = false;
 
     private final int CREATED = 0;
@@ -154,6 +151,14 @@ public final class ConnectorMessageBeanClient
      * @param messageBeanPM <code>MessageBeanProtocolManager</code> object.
      */
     public void setup(MessageBeanProtocolManager messageBeanPM) throws Exception {
+
+        ClassLoader loader = descriptor_.getEjbBundleDescriptor().getClassLoader();
+
+        if (loader == null) {
+            loader = Thread.currentThread().getContextClassLoader();
+        }
+
+        beanClass_ = loader.loadClass(descriptor_.getEjbClassName());
 
         messageBeanPM_ = messageBeanPM;
 
@@ -430,47 +435,16 @@ public final class ConnectorMessageBeanClient
             MessageBeanListener listener =
                     messageBeanPM_.createMessageBeanListener(resourceHandle);
 
-            //Use the MDB's application classloader to load the
-            //message listener class.  If it is generic listener
-            //class, it is expected to be packaged with the MDB application
-            //or in the system classpath.
-            String moduleID = getDescriptor().getApplication().getModuleID();
-            Class endpointClass = null;
-            ClassLoader loader = null;
-            try {
-                BundleDescriptor moduleDesc =
-                        getDescriptor().getEjbBundleDescriptor();
-                loader = moduleDesc.getClassLoader();
-            } catch (Exception e) {
-                logger.log(Level.WARNING, "endpointfactory.loader_not_found", e);
-            }
-
-            if (loader == null) {
-                loader = Thread.currentThread().getContextClassLoader();
-            }
-
-            endpointClass = loader.loadClass(MESSAGE_ENDPOINT);
-
-
-            String msgListenerType = getDescriptor().getMessageListenerType();
-            if (msgListenerType == null || "".equals(msgListenerType))
-                msgListenerType = "javax.jms.MessageListener";
-
-            Class listenerClass = loader.loadClass(msgListenerType);
-
             MessageEndpointInvocationHandler handler =
                     new MessageEndpointInvocationHandler(listener, messageBeanPM_);
-            endpoint = (MessageEndpoint) Proxy.newProxyInstance
-                    (loader, new Class[]{endpointClass, listenerClass}, handler);
-
+            endpoint = (MessageEndpoint) messageBeanPM_.createMessageBeanProxy(handler);
         } catch (Exception ex) {
             throw (UnavailableException)
                     (new UnavailableException()).initCause(ex);
         }
         return endpoint;
     }
-    
-    /** 
+    /**
      * {@inheritDoc}
      * @Override
      */
@@ -688,8 +662,7 @@ public final class ConnectorMessageBeanClient
 
     @Override
     public Class<?> getEndpointClass() {
-        // TODO Auto-generated method stub
-        return null;
+        return beanClass_;
     }
 
 //    private String computeMD5(String message){

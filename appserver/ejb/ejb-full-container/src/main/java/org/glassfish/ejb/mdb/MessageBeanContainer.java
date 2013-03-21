@@ -40,8 +40,11 @@
 
 package org.glassfish.ejb.mdb;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -50,11 +53,11 @@ import javax.ejb.EJBException;
 import javax.ejb.EJBHome;
 import javax.ejb.MessageDrivenBean;
 import javax.ejb.RemoveException;
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.transaction.Status;
 import javax.transaction.xa.XAResource;
 
+import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -130,6 +133,8 @@ public final class MessageBeanContainer extends BaseContainer implements
     private BeanPoolDescriptor beanPoolDesc_ = null;
     private int maxMessageBeanListeners_;
     private int numMessageBeanListeners_;
+    private Class messageBeanInterface_;
+    private Class messageBeanSubClass_;
 
     // Property used to bootstrap message bean client factory for inbound
     // message delivery.
@@ -150,6 +155,7 @@ public final class MessageBeanContainer extends BaseContainer implements
     private int statMessageCount = 0;
 
     private TransactedPoolManager poolMgr;
+    private final Class<?> messageListenerType_;
 
     MessageBeanContainer(EjbDescriptor desc, ClassLoader loader, SecurityManager sm)
             throws Exception {
@@ -171,6 +177,17 @@ public final class MessageBeanContainer extends BaseContainer implements
 
         EjbInvocation ejbInvocation = null;
         try {
+
+            Class<?> beanClass = loader.loadClass(desc.getEjbClassName());
+            messageListenerType_ = loader.loadClass(msgBeanDesc.getMessageListenerType());
+
+            Class<?> messageListenerType_1 = messageListenerType_;
+            if (isModernMessageListener(messageListenerType_1)) {
+                // Generate interface and subclass for EJB 3.2 No-interface MDB VIew
+                MessageBeanInterfaceGenerator generator = new MessageBeanInterfaceGenerator(loader);
+                messageBeanInterface_ = generator.generateMessageBeanInterface(beanClass);
+                messageBeanSubClass_ = generator.generateMessageBeanSubClass(beanClass, messageBeanInterface_);
+            }
 
             // Register the tx attribute for each method on MessageListener
             // interface. NOTE : These method objects MUST come from the
@@ -700,6 +717,48 @@ public final class MessageBeanContainer extends BaseContainer implements
 
     public BeanPoolDescriptor getPoolDescriptor() {
         return beanPoolDesc_;
+    }
+
+    /**
+     * Generates the appropriate Proxy based on the message listener type.
+     *
+     * @param handler InvocationHandler responsible for calls on the proxy
+     * @return an object implementing MessageEndpoint and the appropriate MDB view
+     * @throws Exception
+     */
+    public Object createMessageBeanProxy(InvocationHandler handler) throws Exception {
+
+        if (isModernMessageListener(messageListenerType_)) {
+            // EJB 3.2 No-interface MDB View
+
+            Proxy proxy = (Proxy) Proxy.newProxyInstance(loader, new Class[]{messageBeanInterface_}, handler);
+            OptionalLocalInterfaceProvider provider = (OptionalLocalInterfaceProvider) messageBeanSubClass_.newInstance();
+            provider.setOptionalLocalIntfProxy(proxy);
+
+            return provider;
+        } else {
+
+            // EJB 3.1 - 2.0 Interface View
+            return Proxy.newProxyInstance(loader, new Class[]{messageListenerType_, MessageEndpoint.class}, handler);
+        }
+    }
+
+    /**
+     * Detects if the message-listener type indicates an EJB 3.2 MDB No-Interface View
+     *
+     * In the future this method could potentially just return:
+     *
+     *   <pre>
+     *     return Annotation.class.isAssignableFrom(messageListenerType)
+     *   </pre>
+     *
+     * @param messageListenerType
+     * @return true of the specified interface has no methods
+     */
+    private static boolean isModernMessageListener(Class<?> messageListenerType) {
+        // DMB: In the future, this can just return 'Annotation.class.isAssignableFrom(messageListenerType)'
+
+        return messageListenerType.getMethods().length == 0;
     }
 
     @Override

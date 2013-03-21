@@ -40,6 +40,7 @@
 
 package org.glassfish.ejb.api;
 
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
@@ -77,6 +78,7 @@ public interface MessageBeanProtocolManager {
      */ 
     void destroyMessageBeanListener(MessageBeanListener listener);
 
+    Object createMessageBeanProxy(InvocationHandler handler) throws Exception;
 
     /**
      * This is used by the message provider to find out whether message 
@@ -97,6 +99,6 @@ public interface MessageBeanProtocolManager {
     /**
      * Returns the message-bean container's pool properties. 
      */
-    BeanPoolDescriptor getPoolDescriptor();  
+    BeanPoolDescriptor getPoolDescriptor();
 
 }
