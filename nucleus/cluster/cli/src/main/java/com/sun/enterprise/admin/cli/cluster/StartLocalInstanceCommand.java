@@ -93,7 +93,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
 
     @Override
     public List<String> getLauncherArgs() {
-        return launcher.getCommandLine();
+        return getLauncher().getCommandLine();
     }
 
     @Override
@@ -158,7 +158,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
 
             if(dry_run) {
                 logger.fine(Strings.get("dry_run_msg"));
-                List<String> cmd = launcher.getCommandLine();
+                List<String> cmd = getLauncher().getCommandLine();
                 StringBuilder sb = new StringBuilder();
                 for (String s : cmd) {
                     sb.append(s);
@@ -168,11 +168,11 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                 return SUCCESS;
             }
 
-            launcher.launch();
+            getLauncher().launch();
 
             if (verbose || watchdog) { // we can potentially loop forever here...
                 while (true) {
-                    int returnValue = launcher.getExitValue();
+                    int returnValue = getLauncher().getExitValue();
 
                     switch (returnValue) {
                         case RESTART_NORMAL:
@@ -180,11 +180,11 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                             break;
                         case RESTART_DEBUG_ON:
                             logger.info(Strings.get("restartChangeDebug", "on"));
-                            info.setDebug(true);
+                            getInfo().setDebug(true);
                             break;
                         case RESTART_DEBUG_OFF:
                             logger.info(Strings.get("restartChangeDebug", "off"));
-                            info.setDebug(false);
+                            getInfo().setDebug(false);
                             break;
                         default:
                             return returnValue;
@@ -193,7 +193,7 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                     if (env.debug())
                         System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                                             "" + System.currentTimeMillis());
-                    launcher.relaunch();
+                    getLauncher().relaunch();
                 }
 
             } else {
@@ -216,18 +216,18 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
     @Override
     public void createLauncher()
                         throws GFLauncherException, MiniXmlParserException {
-            launcher = GFLauncherFactory.getInstance(getType());
-            info = launcher.getInfo();
-            info.setInstanceName(instanceName);
-            info.setInstanceRootDir(instanceDir);
-            info.setVerbose(verbose);
-            info.setWatchdog(watchdog);
-            info.setDebug(debug);
-            info.setRespawnInfo(programOpts.getClassName(),
+            setLauncher(GFLauncherFactory.getInstance(getType()));
+            setInfo(getLauncher().getInfo());
+            getInfo().setInstanceName(instanceName);
+            getInfo().setInstanceRootDir(instanceDir);
+            getInfo().setVerbose(verbose);
+            getInfo().setWatchdog(watchdog);
+            getInfo().setDebug(debug);
+            getInfo().setRespawnInfo(programOpts.getClassName(),
                             programOpts.getClassPath(),
                             respawnArgs());
 
-            launcher.setup();
+            getLauncher().setup();
     }
 
     /**
@@ -267,10 +267,32 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
         return a;
     }
 
+    private GFLauncher getLauncher() {
+        if(launcher == null)
+            throw new RuntimeException(Strings.get("internal.error", "GFLauncher was not initialized"));
+
+        return launcher;
+    }
+    private void setLauncher(GFLauncher gfl) {
+        launcher = gfl;
+    }
+
+    private GFLauncherInfo getInfo() {
+        if(info == null)
+            throw new RuntimeException(Strings.get("internal.error", "GFLauncherInfo was not initialized"));
+
+            return info;
+    }
+
+    private void setInfo(GFLauncherInfo inf) {
+            info = inf;
+    }
+
     public String toString() {
         return ObjectAnalyzer.toStringWithSuper(this);
     }
 
     private GFLauncherInfo info;
     private GFLauncher launcher;
+
 }

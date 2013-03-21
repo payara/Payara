@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -117,6 +117,9 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     }
     final int getRemotePort() {
         return remotePort;
+    }
+    final void setRemotePort(int newPort) {
+        remotePort = newPort;
     }
 
     /**
@@ -326,15 +329,15 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                                 }
                             }
                         );
-                 
+
                     ServiceLocator serviceLocator = ServiceLocatorFactory.getInstance().create("default");
-                    
+
                     try {
                     	HK2Populator.populate(serviceLocator, new ClasspathDescriptorFileFinder(cl), null);
                     } catch (IOException e) {
                     	logger.log(Level.SEVERE, "Error initializing HK2", e);
                     }
-                    
+
                     ConfigParser parser = new ConfigParser(serviceLocator);
                     URL domainURL = domainXMLFile.toURI().toURL();
                     DomDocument doc = parser.parse(domainURL);

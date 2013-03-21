@@ -184,9 +184,10 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         boolean isRegisteredOnDAS = false;
         InputStream input = null;
         XMLStreamReader reader = null;
+        ZipFile zip = null;
         try {
             //find node from domain.xml
-            ZipFile zip = new ZipFile(syncBundleFile);
+            zip = new ZipFile(syncBundleFile);
             ZipEntry entry = zip.getEntry("config/domain.xml");
             if (entry != null) {
                 input = zip.getInputStream(entry);
@@ -207,7 +208,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                             map.put(reader.getAttributeName(i).getLocalPart(), reader.getAttributeValue(i));
                         }
                         String thisName = map.get("name");
-                        if (instanceName.equals(thisName)) {
+                        if (instanceName != null && instanceName.equals(thisName)) {
                             isRegisteredOnDAS = true;
                             if (_node == null) {  // if node not specified
                                 _node = map.get("node"); // find it in domain.xml
@@ -244,6 +245,13 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                     // ignored
                 }
             }
+            if (zip != null) {
+                try {
+                    zip.close();
+                } catch (Exception ex) {
+                    // ignored
+                }
+            }
         }
 
         return isRegisteredOnDAS;
@@ -267,9 +275,9 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                 throw new CommandException(Strings.get("import.sync.bundle.createDirectoryFailed", agentConfigDir.getPath()));
             }
         }
-        
+
         writeProperties();
-        
+
         FileInputStream in = null;
         Payload.Inbound payload = null;
         try {
@@ -290,7 +298,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         if (!targetDir.mkdirs()) {
             restoreInstanceDir();
             throw new CommandException(Strings.get("import.sync.bundle.createDirectoryFailed", targetDir.getPath()));
-            
+
         }
         Perm perm = new Perm(targetDir, null, logger);
 
@@ -311,7 +319,7 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
                             syncBundle, ex.getLocalizedMessage()));
             }
         }
-        
+
         deleteBackupDir();
         return SUCCESS;
     }
@@ -373,8 +381,9 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
     private void restoreInstanceDir() {
         File backup = getBackupDir();
         if (backup != null && backup.isDirectory()) {
-            getServerDirs().getServerDir().delete();
-            if (!backup.renameTo(getServerDirs().getServerDir())) {
+            File dir = getServerDirs().getServerDir();
+            boolean gone = ! FileUtils.deleteFileMaybe(getServerDirs().getServerDir());
+            if (!gone || !backup.renameTo(dir)) {
                 logger.warning(Strings.get("import.sync.bundle.restoreInstanceDirFailed", backup.getAbsolutePath(), getServerDirs().getServerDir().getAbsolutePath()));
             }
         }
@@ -397,6 +406,6 @@ public class ImportSyncBundleCommand extends LocalInstanceCommand {
         }
     }
 
-    
+
 
 }

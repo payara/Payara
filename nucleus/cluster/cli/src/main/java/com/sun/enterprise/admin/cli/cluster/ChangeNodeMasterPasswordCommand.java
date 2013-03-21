@@ -72,10 +72,10 @@ import java.util.List;
 public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
 
     @Param(name = "nodedir", optional = true)
-    protected String nodeDir;           // nodeDirRoot
-    
+    protected String nodeDir0;           // nodeDirRoot
+
     @Param(name = "node", primary = true)
-    protected String node;
+    protected String node0;
 
     @Param(name = "savemasterpassword", optional = true, defaultValue = "false")
     protected boolean savemp;
@@ -94,12 +94,14 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     protected int executeCommand() throws CommandException {
 
         try {
+            nodeDir = nodeDir0;
+            node = node0;
             File serverDir = new File(nodeDir,node);
 
             if (serverDir == null || !serverDir.isDirectory()) {
                 throw new CommandException(strings.get("bad.node.dir",serverDir));
             }
-            
+
             ArrayList<String> serverNames = getInstanceDirs(serverDir);
             for (String serverName: serverNames) 
                 if (isRunning(serverDir, serverName))
@@ -117,8 +119,8 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             // read each keystore with the old password,
             // only then should it save the new master password.
             boolean valid = true;
-            for(String instanceDir: getInstanceDirs(nodeDirChild)) {
-               valid &= verifyInstancePassword(new File(nodeDirChild,instanceDir));
+            for(String instanceDir0: getInstanceDirs(nodeDirChild)) {
+               valid &= verifyInstancePassword(new File(nodeDirChild,instanceDir0));
            }
            if (!valid) {
                throw new CommandException(strings.get("incorrect.old.mp"));
@@ -131,11 +133,11 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             newPassword = super.getPassword(nmpo, null, true);
 
             // for each instance encrypt the keystore
-            for(String instanceDir: getInstanceDirs(nodeDirChild)) {
-               encryptKeystore(instanceDir);
+            for(String instanceDir2: getInstanceDirs(nodeDirChild)) {
+               encryptKeystore(instanceDir2);
            }
             if (savemp) {
-                createMasterPasswordFile();               
+                createMasterPasswordFile();
             }
             return 0;
         } catch(Exception e) {
@@ -146,7 +148,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
     /**
      * This will load and verify the keystore for each of the instances
      * in a node
-     * @param instanceDir The instance directory
+     * @param instanceDir0 The instance directory
      * @return  if the password is valid for the instance keystore
      */
     private boolean verifyInstancePassword(File instanceDir) {
@@ -191,12 +193,12 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
      */
     public void encryptKeystore(String f) throws CommandException {
 
-        RepositoryConfig nodeConfig = new RepositoryConfig(f, 
+        RepositoryConfig nodeConfig = new RepositoryConfig(f,
                 new File(nodeDir, node).toString(), f);
         NodeKeystoreManager km = new NodeKeystoreManager();
         try {
             km.encryptKeystore(nodeConfig,oldPassword,newPassword);
-           
+
         } catch (Exception e) {
              throw new CommandException(strings.get("Keystore.not.encrypted"),
                 e);

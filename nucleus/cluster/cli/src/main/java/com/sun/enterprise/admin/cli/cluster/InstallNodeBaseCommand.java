@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -223,7 +223,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
      * @param file path to the file
      * @return true if file is under "bin" dir, false otherwise
      */
-    private static boolean isFileWithinBinDirectory(String file) { 
+    private static boolean isFileWithinBinDirectory(String file) {
         String parent = null;
         //for top-level files, parent would be null
         String pFile = new File(file).getParent();
@@ -243,14 +243,5 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             sw.write(buffer, 0, n);
 
         return sw.toString();
-    }
-
-    private String getIP(String host) throws CommandException {
-        try {
-            return InetAddress.getByName(host).getHostAddress();
-        }
-        catch (UnknownHostException e) {
-            throw new CommandException(Strings.get("cantResolveIpAddress", host));
-        }
     }
 }

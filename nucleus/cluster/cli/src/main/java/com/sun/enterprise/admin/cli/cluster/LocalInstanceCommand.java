@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -120,7 +120,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
 // -----------------------------------------------------------------------
 // -------- protected methods where overriding is allowed here -----------
 // -----------------------------------------------------------------------
-    /** 
+    /**
      * Override this method if your class does NOT want to create directories
      * @param f the directory to create
      */
@@ -176,13 +176,13 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         }
 
         /* <node_dir>/<node>/<instance name> */
-        if (instanceName != null) {
-            instanceDir = new File(nodeDirChild, instanceName);
+        if (getInstanceName() != null) {
+            instanceDir = new File(nodeDirChild, getInstanceName());
             mkdirs(instanceDir);
         }
         else {
             instanceDir = getTheOneAndOnlyInstance(nodeDirChild);
-            instanceName = instanceDir.getName();
+            setInstanceName(instanceDir.getName());
         }
 
         if (!isDirectory(instanceDir)) {
@@ -202,7 +202,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         catch (IOException e) {
             throw new CommandException(e);
         }
-        
+
         logger.log(Level.FINER, "nodeDirChild: {0}", nodeDirChild);
         logger.log(Level.FINER, "instanceDir: {0}", instanceDir);
     }
@@ -290,10 +290,10 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
      * Check if two hostnames refer to the same host. We start with a cheap
      * string comparison. If that fails we see if the hostnames refer to the
      * same host.
-     * 
+     *
      * @param host1
      * @param host2
-     * @return 
+     * @return
      */
     private boolean matchingHostnames(String host1, String host2) {
 
@@ -361,7 +361,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
                     whackee));
         }
 
-        // IT 12680 -- perhaps a new empty dir was created.  Get rid of it and 
+        // IT 12680 -- perhaps a new empty dir was created.  Get rid of it and
         // make this an error.
         File[] files = whackee.listFiles();
 
@@ -478,7 +478,7 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
         }
         return productRootPath;
     }
-    
+
     protected String getNodeInstallDir() throws CommandException {
         String installDir = null;
         try {
@@ -677,5 +677,19 @@ public abstract class LocalInstanceCommand extends LocalServerCommand {
             return null;
 
         return mp;
+    }
+
+    /**
+     * @return the instanceName
+     */
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    /**
+     * @param instanceName the instanceName to set
+     */
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
     }
 }

@@ -36,7 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */     
+ */
 
 package com.sun.enterprise.admin.cli.cluster;
 
@@ -138,7 +138,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         super.validate();          //so _validate-node uses das host from das.properties. No dirs created.
         if (node != null) {
             //BugDB 13431949 - If installdir is not specified on node, call _validate-node on DAS to populate installdir.
-            //If installdir is specified on node, validate installdir locally so we can take advantage of java path processing to 
+            //If installdir is specified on node, validate installdir locally so we can take advantage of java path processing to
             //normalize the installdir from the node.
             //If installdir has tokens, call _validate-node on DAS to have DAS resolve the tokens
             //If we are on Windows, call _validate-node on DAS instead of relying on the path processing in the local validation.
@@ -149,14 +149,14 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
                 validateNodeInstallDirLocal(nodeInstallDir, getProductRootPath());
                 validateNode(node, null, getInstanceHostName(true));
             }
-            
+
         }
 
         if (!rendezvousWithDAS()) {
             throw new CommandException(
                     Strings.get("Instance.rendezvousFailed", DASHost, "" + DASPort));
         }
-        if (instanceName.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
+        if (instanceName != null && instanceName.equals(SystemPropertyConstants.DAS_SERVER_NAME)) {
             throw new CommandException(
                     Strings.get("Instance.alreadyExists", SystemPropertyConstants.DAS_SERVER_NAME));
         }
@@ -181,13 +181,17 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         int exitCode = -1;
 
         if (node == null) {
+            if(nodeDirChild == null)
+                throw new CommandException(Strings.get("internal.error",
+                        "nodeDirChild was null.  The Base Class is supposed to "
+                        + "guarantee that this won't happen"));
             _node = nodeDirChild.getName();
             String nodeHost = getInstanceHostName(true);
             createNodeImplicit(_node, getProductRootPath(), nodeHost);
         } else {
             _node = node;
         }
-        
+
         if (isRegisteredToDAS()) {
             if (!_rendezvousOccurred) {
                 setRendezvousOccurred("true");
@@ -199,7 +203,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
                 registerToDAS();
                 _rendezvousOccurred = true;
             } catch (CommandException ce) {
-                instanceDir.delete();
+                FileUtils.deleteFileNowOrLater(instanceDir);
                 throw ce;
             }
         }
@@ -217,7 +221,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             logger.severe(msg);
             setRendezvousOccurred("false");
             _rendezvousOccurred = false;
-            
+
             throw new CommandException(msg, ce);
         }
         return exitCode;
@@ -255,7 +259,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         masterPasswordOption.param._password = true;
         if (saveMasterPassword)
             useMasterPassword = true;
-        if (useMasterPassword)  
+        if (useMasterPassword)
             masterPassword = getPassword(masterPasswordOption,
                 DEFAULT_MASTER_PASSWORD, true);
         if (masterPassword == null)
@@ -370,7 +374,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             rc.executeAndReturnOutput("get", INSTANCE_DOTTED_NAME);
             isRegistered = true;
         } catch (CommandException ex) {
-            logger.finer(instanceName +" is not yet registered to DAS.");
+            logger.log(Level.FINER, "{0} is not yet registered to DAS.", instanceName);
             isRegistered=false;
         }
         return isRegistered;
@@ -394,7 +398,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private void setRendezvousOccurred(String rendezVal) throws CommandException {
         String dottedName = RENDEZVOUS_DOTTED_NAME + "=" + rendezVal;
         RemoteCLICommand rc = new RemoteCLICommand("set", this.programOpts, this.env);
-        logger.finer("Setting rendezvousOccurred to " + rendezVal + " for instance " + instanceName);
+        logger.log(Level.FINER, "Setting rendezvousOccurred to {0} for instance {1}", new Object[]{rendezVal, instanceName});
         rc.executeAndReturnOutput("set", dottedName);
     }
 
@@ -427,7 +431,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
     private int validateNode(String name, String installdir, String nodeHost) throws CommandException {
         ArrayList<String> argsList = new ArrayList<String>();
         argsList.add(0, "_validate-node");
-                
+
         if (nodeDir != null) {
             argsList.add("--nodedir");
             argsList.add(nodeDir);
@@ -444,12 +448,12 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         argsList.add(name);
 
         String[] argsArray = new String[argsList.size()];
-        argsArray = argsList.toArray(argsArray);    
+        argsArray = argsList.toArray(argsArray);
 
         RemoteCLICommand rc = new RemoteCLICommand("_validate-node", this.programOpts, this.env);
         return rc.execute(argsArray);
     }
-    
+
     private void validateNodeInstallDirLocal(String nodeInstallDir, String installDir) throws CommandValidationException {
         String canonicalNodeInstallDir = FileUtils.safeGetCanonicalPath(new File(nodeInstallDir));
         String canonicalInstallDir = FileUtils.safeGetCanonicalPath(new File(installDir));

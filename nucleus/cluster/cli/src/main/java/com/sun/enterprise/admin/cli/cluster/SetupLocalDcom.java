@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import org.glassfish.hk2.api.PerLookup;
 
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.util.OS;
+import com.sun.enterprise.util.io.FileUtils;
 
 /*
  * @author Byron Nevins
@@ -150,27 +151,42 @@ public final class SetupLocalDcom extends CLICommand {
         if (!TMPDIR.isDirectory())
             throw exceptionMaker("internal.error", Strings.get("vld.badtempdir", TMPDIR));
 
-        if (CPP_APP.exists()) {
-            CPP_APP.delete();
+        if (!FileUtils.deleteFileMaybe(CPP_APP))
+            throw exceptionMaker("vld.app.exists", CPP_APP);
 
-            if (CPP_APP.exists())
-                throw exceptionMaker("vld.app.exists", CPP_APP);
-
-            finer("vld.app.deleted", CPP_APP);
-        }
+        finer("vld.app.deleted", CPP_APP);
 
         CPP_APP.deleteOnExit();
 
         // copy it from inside this jar to the file system
-        InputStream in = getClass().getResourceAsStream("/lib/" + CPP_APP_FILENAME);
-        FileOutputStream out;
+        InputStream in = null;
+        FileOutputStream out = null;
 
         try {
+            in = getClass().getResourceAsStream("/lib/" + CPP_APP_FILENAME);
             out = new FileOutputStream(CPP_APP);
             copyStream(in, out);
         }
         catch (IOException ex) {
             throw exceptionMaker("vld.error.extracting.ex", CPP_APP, ex);
+        }
+        finally {
+            if (out != null) {
+                try {
+                    out.close();
+                }
+                catch (Exception e) {
+                    // ignore
+                }
+            }
+            if (in != null) {
+                try {
+                    in.close();
+                }
+                catch (Exception e) {
+                    // ignore
+                }
+            }
         }
 
         if (!CPP_APP.canExecute())
@@ -187,9 +203,6 @@ public final class SetupLocalDcom extends CLICommand {
         while ((len = in.read(buf)) >= 0) {
             out.write(buf, 0, len);
         }
-
-        in.close();
-        out.close();
     }
     /*
      * note how this method will likely be inlined by the compiler since it is tiny
