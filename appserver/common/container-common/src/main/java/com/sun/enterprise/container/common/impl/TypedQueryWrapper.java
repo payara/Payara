@@ -153,16 +153,14 @@ public class TypedQueryWrapper<X> extends QueryWrapper<TypedQuery <X> > implemen
        return this;
    }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> Parameter<T> getParameter(String name, Class<T> type) {
-       return (Parameter<T>) super.getParameter(name);
+       return super.getParameter(name, type);
    }
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> Parameter<T> getParameter(int position, Class<T> type) {
-       return (Parameter<T>) super.getParameter(position);
+       return super.getParameter(position, type);
    }
 
     @Override
