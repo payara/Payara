@@ -125,7 +125,7 @@ public class InterceptorsHandler extends AbstractAttributeHandler {
                 Class[] ctorParamTypes = c.getParameterTypes();
                 String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
                 MethodDescriptor md = new MethodDescriptor(cl.getSimpleName(), null,
-                        parameterClassNames, cl.getName());
+                        parameterClassNames, MethodDescriptor.EJB_BEAN);
                 binding.setBusinessMethod(md);
             }
 

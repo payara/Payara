@@ -100,7 +100,7 @@ public class ExcludeClassInterceptorsHandler
                 String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
 
                 md = new MethodDescriptor(cl.getSimpleName(), null,
-                        parameterClassNames, cl.getName());
+                        parameterClassNames, MethodDescriptor.EJB_BEAN);
             } // else throw Exception?
 
             binding.setBusinessMethod(md);

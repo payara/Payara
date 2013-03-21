@@ -96,8 +96,9 @@ import org.glassfish.ejb.deployment.util.EjbVisitor;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator;
 import org.glassfish.ejb.deployment.util.InterceptorBindingTranslator.TranslationResults;
 import org.glassfish.security.common.Role;
-import com.sun.ejb.containers.EjbContainerUtilImpl;
+import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.container.common.spi.JCDIService;
+import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * This abstract class encapsulates the meta-information describing
@@ -247,8 +248,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
 
     private IASEjbExtraDescriptors iASEjbExtraDescriptors = new IASEjbExtraDescriptors();  // Ludo 12/10/2001 extra DTD info only for iAS
 
-    private final JCDIService jcdiService = EjbContainerUtilImpl.getInstance().
-            getServices().getService(JCDIService.class);
+    private final ServiceLocator sl = Globals.getDefaultHabitat();
 
     /**
      * returns the extra iAS specific info (not in the RI DID) in the iAS DTD.
@@ -1145,6 +1145,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             shortClassName = ejbClassName.substring(i + 1);
         }
 
+        JCDIService jcdiService = (sl == null)? null : sl.getService(JCDIService.class);
         if (jcdiService != null && jcdiService.isJCDIEnabled(getEjbBundleDescriptor())) {
             try {
                 Class beanClass = classLoader.loadClass(getEjbClassName());
@@ -1158,7 +1159,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                         parameterClassNames = dummy.getParameterClassNamesFor(null, ctorParamTypes);
                         callbackInterceptors = getClassOrMethodInterceptors(
                                 new MethodDescriptor(shortClassName, null,
-                                              parameterClassNames, ejbClassName));
+                                              parameterClassNames, MethodDescriptor.EJB_BEAN));
                         if (callbackInterceptors != interceptorChain) {
                             // constructor-level interceptors can be only on one
                             // constructor with args
@@ -1174,7 +1175,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         if (callbackInterceptors == null) {
             // non-CDI or nothing found - use no-arg constructor
             callbackInterceptors = getClassOrMethodInterceptors(
-                    new MethodDescriptor(shortClassName, null, new String[0], ejbClassName));
+                    new MethodDescriptor(shortClassName, null, new String[0], MethodDescriptor.EJB_BEAN));
         }
 
         return callbackInterceptors;
