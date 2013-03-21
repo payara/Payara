@@ -2010,9 +2010,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                     ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(destination.getResourceAdapter())) {
                 descriptor_.putRuntimeActivationConfigProperty(
                         new EnvironmentProperty(DESTINATION_TYPE,
-                                destination.getClassName(), null));
+                                destination.getInterfaceName(), null));
                 _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                        Object[]{destination.getClassName(), destination.getName(), descriptor_.getName()});
+                        Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
             } else {
                 /*
                  * If destination type is not provided by the MDB component
