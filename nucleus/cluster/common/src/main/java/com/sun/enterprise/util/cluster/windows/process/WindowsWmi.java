@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,6 @@ import org.jinterop.dcom.impls.automation.IJIEnumVariant;
  * @author bnevins
  */
 public class WindowsWmi {
-    private WindowsCredentials bonafides;
     private IJIDispatch dispatch;
     private JIComServer comStub;
     private IJIComObject unknown;
@@ -80,7 +79,6 @@ public class WindowsWmi {
 
     public WindowsWmi(WindowsCredentials bonafides) throws WindowsException {
         try {
-            this.bonafides = bonafides;
             JISystem.getLogger().setLevel(Level.INFO);
             JISystem.setInBuiltLogHandler(false);
             JISystem.setAutoRegisteration(true);
@@ -92,7 +90,7 @@ public class WindowsWmi {
                 JIVariant.OPTIONAL_PARAM(),
                 JIVariant.OPTIONAL_PARAM(),
                 JIVariant.OPTIONAL_PARAM(),
-                new Integer(0),
+                Integer.valueOf(0),
                 JIVariant.OPTIONAL_PARAM()};
 
             session = JISession.createSession(bonafides.getDomain(),
@@ -136,7 +134,7 @@ public class WindowsWmi {
         try {
             JIVariant[] results = dispatch.callMethodA("ConnectServer", crazyLongMicrosoftArgs);
             IJIDispatch wbemServices_dispatch = (IJIDispatch) JIObjectFactory.narrowObject((results[0]).getObjectAsComObject());
-            JIVariant[] results2 = wbemServices_dispatch.callMethodA("InstancesOf", new Object[]{new JIString("Win32_Process"), new Integer(0), JIVariant.OPTIONAL_PARAM()});
+            JIVariant[] results2 = wbemServices_dispatch.callMethodA("InstancesOf", new Object[]{new JIString("Win32_Process"), Integer.valueOf(0), JIVariant.OPTIONAL_PARAM()});
             IJIDispatch wbemObjectSet_dispatch = (IJIDispatch) JIObjectFactory.narrowObject((results2[0]).getObjectAsComObject());
             variant = wbemObjectSet_dispatch.get("_NewEnum");
             JIVariant Count = wbemObjectSet_dispatch.get("Count");
@@ -172,7 +170,7 @@ public class WindowsWmi {
                 Object[] arrayObj = (Object[]) array.getArrayInstance();
                 for (int j = 0; j < arrayObj.length; j++) {
                     IJIDispatch wbemObject_dispatch = (IJIDispatch) JIObjectFactory.narrowObject(((JIVariant) arrayObj[j]).getObjectAsComObject());
-                    JIVariant variant2 = (JIVariant) (wbemObject_dispatch.callMethodA("GetObjectText_", new Object[]{new Integer(1)}))[0];
+                    JIVariant variant2 = (JIVariant) (wbemObject_dispatch.callMethodA("GetObjectText_", new Object[]{Integer.valueOf(1)}))[0];
 
                     // normally arrayObj.length is 1
                     if (j == 0)
@@ -191,9 +189,5 @@ public class WindowsWmi {
 
     private boolean initialized() {
         return dispatch != null;
-    }
-
-    private boolean runWasAlreadyRun() {
-        return variant != null;
     }
 }
