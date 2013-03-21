@@ -237,12 +237,24 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
+        Resource resource = null;
+        if (getResourceType().equals(ServerTags.MANAGED_EXECUTOR_SERVICE)) {
+            resource = ConnectorsUtil.getResourceByName(resources, ManagedExecutorService.class, jndiName);
+        } else if (getResourceType().equals(ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
+            resource = ConnectorsUtil.getResourceByName(resources, ManagedScheduledExecutorService.class, jndiName);
+        }
+
         // ensure we already have this resource
-        if(ConnectorsUtil.getResourceByName(resources, ManagedExecutorService.class, jndiName) == null){
+        if (resource == null){
             String msg = localStrings.getLocalString("delete.managed.executor.service.notfound", "A managed executor service named {0} does not exist.", jndiName);
             if (getResourceType().equals(ServerTags.MANAGED_SCHEDULED_EXECUTOR_SERVICE)) {
                 msg = localStrings.getLocalString("delete.managed.scheduled.executor.service.notfound", "A managed scheduled executor service named {0} does not exist.", jndiName);
             }
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
+        if (SYSTEM_ALL_REQ.equals(resource.getObjectType())) {
+            String msg = localStrings.getLocalString("delete.concurrent.resource.notAllowed", "The {0} resource cannot be deleted as it is required to be configured in the system.", jndiName);
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 

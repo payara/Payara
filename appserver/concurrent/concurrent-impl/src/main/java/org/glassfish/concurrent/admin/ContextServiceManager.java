@@ -209,9 +209,16 @@ public class ContextServiceManager implements ResourceManager {
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
+        Resource resource = ConnectorsUtil.getResourceByName(resources, ContextService.class, jndiName);
+
         // ensure we already have this resource
-        if(ConnectorsUtil.getResourceByName(resources, ContextService.class, jndiName) == null){
+        if (resource == null){
             String msg = localStrings.getLocalString("delete.context.service.notfound", "A context service named {0} does not exist.", jndiName);
+            return new ResourceStatus(ResourceStatus.FAILURE, msg);
+        }
+
+        if (SYSTEM_ALL_REQ.equals(resource.getObjectType())) {
+            String msg = localStrings.getLocalString("delete.concurrent.resource.notAllowed", "The {0} resource cannot be deleted as it is required to be configured in the system.", jndiName);
             return new ResourceStatus(ResourceStatus.FAILURE, msg);
         }
 
