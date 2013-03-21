@@ -99,6 +99,7 @@ import org.glassfish.security.common.Role;
 import org.glassfish.internal.api.Globals;
 import com.sun.enterprise.container.common.spi.JCDIService;
 import org.glassfish.hk2.api.ServiceLocator;
+import javax.inject.Inject;
 
 /**
  * This abstract class encapsulates the meta-information describing
@@ -1154,17 +1155,14 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                 String[] parameterClassNames = null;
                 MethodDescriptor dummy = new MethodDescriptor();
                 for(Constructor<?> ctor : ctors) {
-                    Class[] ctorParamTypes = ctor.getParameterTypes();
-                    if (ctorParamTypes.length > 0) {
+                    if (ctor.getAnnotation(Inject.class) != null) {
+                        // @Inject constructor
+                        Class[] ctorParamTypes = ctor.getParameterTypes();
                         parameterClassNames = dummy.getParameterClassNamesFor(null, ctorParamTypes);
                         callbackInterceptors = getClassOrMethodInterceptors(
                                 new MethodDescriptor(shortClassName, null,
                                               parameterClassNames, MethodDescriptor.EJB_BEAN));
-                        if (callbackInterceptors != interceptorChain) {
-                            // constructor-level interceptors can be only on one
-                            // constructor with args
-                            break;
-                        }
+                        break;
                     }
                 }
             } catch (Throwable t) {
@@ -1173,7 +1171,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             }
         } 
         if (callbackInterceptors == null) {
-            // non-CDI or nothing found - use no-arg constructor
+            // non-CDI or no @Inject constructor - use no-arg constructor
             callbackInterceptors = getClassOrMethodInterceptors(
                     new MethodDescriptor(shortClassName, null, new String[0], MethodDescriptor.EJB_BEAN));
         }
