@@ -62,7 +62,7 @@
         </sun:property>
 
         <sun:property id="enableLog"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.sso}">
-            <sun:dropDown id="state"  selected="#{pageSession.valueMap['ssoEnabled']}" labels={"$resource{i18n_web.vs.controlByHS","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"inherit","true","false"} />
+            <sun:dropDown id="state"  selected="#{pageSession.valueMap['ssoEnabled']}" labels={"$resource{i18n_web.vs.controlByHS}","$resource{i18n_web.vs.alwaysEnable}","$resource{i18n_web.vs.alwaysDisable}"} values={"inherit","true","false"} />
         </sun:property>
 
         <sun:property id="ssoCookieHttpOnly"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.ssoCookieHttpOnly}" helpText="$resource{i18n_web.vs.ssoCookieHttpOnlyHelp}">
