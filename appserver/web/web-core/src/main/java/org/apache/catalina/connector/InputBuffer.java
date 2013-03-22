@@ -67,9 +67,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ReadListener;
-import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.WebConnection;
 
-import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.StandardServer;
 import org.glassfish.grizzly.ReadHandler;
@@ -568,23 +567,18 @@ public class InputBuffer extends Reader
 
                 synchronized(lk) {
                     if (request.isUpgrade()) {
-                        HttpUpgradeHandler httpUpgradeHandler =
-                                request.getHttpUpgradeHandler();
+                        final WebConnection wc = request.getWebConnection();
                         try {
-                            httpUpgradeHandler.destroy();
-                            request.setUpgrade(false);
-                            if (request.getResponse() instanceof Response) {
-                                ((Response)request.getResponse()).setUpgrade(false);
-                            }
+                            readListener.onError(t);
                         } finally {
-                            (request.getContext()).fireContainerEvent(
-                                ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
-                        }
-                        if (grizzlyRequest.getResponse().isSuspended()) {
-                            grizzlyRequest.getResponse().resume();
+                            if (wc != null) {
+                                try {
+                                    wc.close();
+                                } catch (Exception ignored) {
+                                }
+                            }
                         }
                     }
-                    readListener.onError(t);
                 }
             } finally {
                 if (Globals.IS_SECURITY_ENABLED) {

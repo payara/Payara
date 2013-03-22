@@ -767,6 +767,7 @@ public class StandardPipeline
                                     req.getInputStream(),
                                     ((org.apache.catalina.connector.Response)req.getResponse()).getOutputStream());
                     wc.setRequest(req);
+                    req.setWebConnection(wc);
                     if (response instanceof org.apache.catalina.connector.Response) {
                         wc.setResponse((org.apache.catalina.connector.Response) response);
                     }

@@ -114,9 +114,7 @@ public class WebConnectionImpl implements WebConnection {
                 } finally {
                     (request.getContext()).fireContainerEvent(
                         ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
-                    if (request.getCoyoteRequest().getResponse().isSuspended()) {
-                        request.getCoyoteRequest().getResponse().resume();
-                    }
+                    request.getCoyoteRequest().getResponse().resume();
                 }
                 Exception exception = null;
                 try {

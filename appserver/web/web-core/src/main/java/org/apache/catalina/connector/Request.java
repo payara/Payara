@@ -98,8 +98,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 import javax.servlet.http.HttpUpgradeHandler;
+import javax.servlet.http.Part;
+import javax.servlet.http.WebConnection;
 
 import com.sun.appserv.ProxyHandler;
 import com.sun.enterprise.security.integration.RealmInitializer;
@@ -670,6 +671,12 @@ public class Request
      * The HttpUpgradeHandler to be used for upgrade request
      */
     private HttpUpgradeHandler httpUpgradeHandler;
+
+    /*
+     * The WebConnection associated with upgraded request
+     */
+    private WebConnection webConnection;
+
 
     // ----------------------------------------------------------- Constructor
     public Request() {
@@ -3164,6 +3171,14 @@ public class Request
         httpUpgradeHandler = handler;
         coyoteRequest.getResponse().suspend();
         return handler;
+    }
+
+    public WebConnection getWebConnection() {
+        return webConnection;
+    }
+
+    public void setWebConnection(WebConnection wc) {
+        webConnection = wc;
     }
 
     // ------------------------------------------------------ Protected Methods
