@@ -51,8 +51,6 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
     private int threadPriority;
     private int corePoolSize;
     private long keepAliveSeconds;
-    private int maximumPoolSize;
-    private int taskQueueCapacity;
     private long threadLifeTimeSeconds;
 
     public ManagedScheduledExecutorServiceConfig(ManagedScheduledExecutorService config) {
@@ -85,14 +83,6 @@ public class ManagedScheduledExecutorServiceConfig extends BaseConfig {
         return keepAliveSeconds;
     }
 
-    public int getMaximumPoolSize() {
-        return maximumPoolSize;
-    }
-
-    public int getTaskQueueCapacity() {
-        return taskQueueCapacity;
-    }
-    
     public long getThreadLifeTimeSeconds() {
         return threadLifeTimeSeconds;
     }

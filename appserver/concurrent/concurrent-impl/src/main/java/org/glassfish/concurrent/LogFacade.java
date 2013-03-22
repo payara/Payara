@@ -60,7 +60,7 @@ public class LogFacade {
         return LOGGER;
     }
 
-    private static final String prefix = "AS-CNCRT-";
+    private static final String prefix = "AS-CONCURRENT-";
 
     @LogMessageInfo(
             message = "Task [{0}] has been running on thread [{1}] for {2} seconds, which is more than the configured " +
@@ -72,7 +72,33 @@ public class LogFacade {
                      "If this is normal, consider setting a higher hung task threshold or setting the " +
                      "\"Long-Running Tasks\" configuration attribute to true. "
     )
-
     public static final String UNRESPONSIVE_TASK = prefix + "00001";
+
+    @LogMessageInfo(
+            message = "Unable to setup or reset runtime context for a task because an invalid context handle is being passed.",
+            comment = "When trying to setup and runtime context for a task, an invalid context handle is being passed",
+            level = "SEVERE",
+            cause = "An invalid context handle is being passed.",
+            action = "Contact Glassfish support. "
+    )
+    public static final String UNKNOWN_CONTEXT_HANDLE = prefix + "00002";
+
+    @LogMessageInfo(
+            message = "Unable to bind {0} to JNDI location [{1}].",
+            comment = "An unexpected exception occurred when trying to bind a managed object to JNDI namespace.",
+            level = "SEVERE",
+            cause = "An unexpected exception occurred when trying to bind a managed object to JNDI namespace",
+            action = "Review the exception message to determine the cause of the failure and take appropriate action. "
+    )
+    public static final String UNABLE_TO_BIND_OBJECT = prefix + "00003";
+
+    @LogMessageInfo(
+            message = "Unable to deploy {0}.",
+            comment = "Unable to deploy a managed object because the configuration information is missing",
+            level = "WARNING",
+            cause = "No configuration information is provided when trying to deploy a managed object.",
+            action = "Contact Glassfish support. "
+    )
+    public static final String DEPLOY_ERROR_NULL_CONFIG = prefix + "00004";
 
 }

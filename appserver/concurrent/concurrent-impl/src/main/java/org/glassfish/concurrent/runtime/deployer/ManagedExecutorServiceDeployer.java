@@ -44,7 +44,8 @@ package org.glassfish.concurrent.runtime.deployer;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.logging.LogDomains;
+import org.glassfish.api.logging.LogHelper;
+import org.glassfish.concurrent.LogFacade;
 import org.glassfish.concurrent.config.ManagedExecutorService;
 import org.glassfish.concurrent.runtime.ConcurrentRuntime;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
@@ -58,6 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.naming.NamingException;
 import javax.naming.RefAddr;
 import java.util.Collection;
 import java.util.logging.Level;
@@ -75,23 +77,21 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
     ConcurrentRuntime concurrentRuntime;
 
     // logger for this deployer
-    private static Logger _logger = LogDomains.getLogger(ManagedExecutorServiceDeployer.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LogFacade.getLogger();
 
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         ManagedExecutorService managedExecutorServiceRes = (ManagedExecutorService) resource;
 
         if (managedExecutorServiceRes == null) {
-            _logger.log(Level.INFO, "core.resourcedeploy_error");
+            _logger.log(Level.WARNING, LogFacade.DEPLOY_ERROR_NULL_CONFIG, "ManagedExecutorService");
             return;
         }
 
         String jndiName = managedExecutorServiceRes.getJndiName();
-        String contextInfo = managedExecutorServiceRes.getContextInfo();
 
         if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "ManagedExecutorServiceDeployer.deployResource() : jndi-name ["+jndiName+"], " +
-                    " context-info ["+contextInfo+"]");
+            _logger.log(Level.FINE, "ManagedExecutorServiceDeployer.deployResource() : jndi-name ["+jndiName+"], ");
         }
 
 
@@ -110,10 +110,8 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
         try {
             // Publish the object ref
             namingService.publishObject(resourceInfo, ref, true);
-        } catch (Exception ex) {
-            // TODO add log message
-//            _logger.log(Level.SEVERE, "mailrsrc.create_obj_error", resourceInfo);
-//            _logger.log(Level.SEVERE, "mailrsrc.create_obj_error_excp", ex);
+        } catch (NamingException ex) {
+            LogHelper.log(_logger, Level.SEVERE, LogFacade.UNABLE_TO_BIND_OBJECT, ex, "ManagedExecutorService", jndiName);
         }
     }
 

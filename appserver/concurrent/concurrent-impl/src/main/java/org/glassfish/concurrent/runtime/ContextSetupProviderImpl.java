@@ -47,6 +47,7 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.concurrent.LogFacade;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.glassfish.internal.deployment.Deployment;
@@ -64,6 +65,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private transient Deployment deployment;
     private transient Applications applications;
     private transient JavaEETransactionManager transactionManager;
+
+    private static final Logger logger  = LogFacade.getLogger();
 
     static final long serialVersionUID = -1095988075917755802L;
 
@@ -129,7 +132,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     @Override
     public ContextHandle setup(ContextHandle contextHandle) throws IllegalStateException {
         if (! (contextHandle instanceof InvocationContext)) {
-            // TODO: log a warning message saying that we got passed an unknown ContextHandle
+            logger.log(Level.SEVERE, LogFacade.UNKNOWN_CONTEXT_HANDLE);
             return null;
         }
         InvocationContext handle = (InvocationContext) contextHandle;
@@ -168,7 +171,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     @Override
     public void reset(ContextHandle contextHandle) {
         if (! (contextHandle instanceof InvocationContext)) {
-            // TODO: log a warning message saying that we got passed an unknown ContextHandle
+            logger.log(Level.SEVERE, LogFacade.UNKNOWN_CONTEXT_HANDLE);
             return;
         }
         InvocationContext handle = (InvocationContext) contextHandle;
