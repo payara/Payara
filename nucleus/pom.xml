@@ -154,7 +154,7 @@
         <module>packager</module>
         <module>distributions</module>
         <module>security</module>
-        <module>tests</module>
+        <module>test-utils</module>
         <module>diagnostics</module>
 	<module>resources</module>
 	<module>resources-l10n</module>
