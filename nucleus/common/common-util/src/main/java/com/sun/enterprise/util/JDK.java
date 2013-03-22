@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,11 +49,32 @@ package com.sun.enterprise.util;
  * @author bnevins
  */
 public final class JDK {
+    
+    private JDK(String string) {
+        String[] split = string.split("[\\._\\-]+");
 
-    private JDK() {
-        // no instances allowed!
+        if (split.length > 0) {
+            major = new Integer(split[0]);
+        }
+        if (split.length > 1) {
+            minor = new Integer(split[1]);
+        }
+        if (split.length > 2) {
+            subminor = new Integer(split[2]);
+        }
+        if (split.length > 3) {
+            update = new Integer(split[3]);
+        }
     }
+    
 
+    public static JDK getVersion(String string) {
+        if (string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
+            return new JDK(string);
+        } else {
+            return null;
+        }
+    }
     /**
      * See if the current JDK is legal for running GlassFish
      * @return true if the JDK is >= 1.6.0
@@ -77,6 +98,38 @@ public final class JDK {
         return update;
     }
 
+    public boolean newerThan(JDK version) {
+        if (major > version.getMajor()) {
+            return true;
+        } else if (major == version.getMajor()) {
+            if (minor > version.getMinor()) {
+                return true;
+            } else if (minor == version.getMinor()) {
+                if (subminor > version.getSubMinor()) {
+                    return true;
+                } else if (subminor == version.getSubMinor()) {
+                    if (update > version.getUpdate()) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public boolean newerOrEquals(JDK version) {
+        return newerThan(version) || equals(version);
+    }
+
+    public boolean olderThan(JDK version) {
+        return !newerOrEquals(version);
+    }
+
+    public boolean olderOrEquals(JDK version) {
+        return !newerThan(version);
+    }
+    
     /**
      * No instances are allowed so it is pointless to override toString
      * @return Parsed version numbers
