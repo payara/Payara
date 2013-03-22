@@ -41,7 +41,7 @@
 
 -->
 
-<console-config id="orb">
+<console-config id="corba">
         <integration-point 
                 id="corba_container"
                 type="org.glassfish.admingui:navNode" 
