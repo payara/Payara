@@ -40,17 +40,13 @@
 
 package org.glassfish.admingui.common.handlers;
 
+import java.util.*;
 import java.util.logging.Logger;
 import com.sun.jsftemplating.annotation.Handler;
 import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestResponse;
@@ -368,16 +364,51 @@ public class RestApiHandlers {
         }
     }
 
+
+    @Handler(id = "gf.getChildrenNameFromListCmd",
+            input = {
+                    @HandlerInput(name = "endpoint", type = String.class, required = true),
+                    @HandlerInput(name = "attrs", type = Map.class),
+                    @HandlerInput(name = "id", type = String.class, defaultValue = "message")},
+            output = {
+                    @HandlerOutput(name = "result", type = java.util.List.class)
+            })
+    public static void getChildrenNameFromListCmd(HandlerContext handlerCtx) {
+        try {
+            String endpoint = (String)handlerCtx.getInputValue("endpoint");
+            Map attrs = (Map) handlerCtx.getInputValue("attrs");
+            String id =  (String)handlerCtx.getInputValue("id");
+            List result = new ArrayList();
+            if (RestUtil.doesProxyExist(endpoint)) {
+                Map responseMap = RestUtil.restRequest(endpoint, attrs, "get", null, false);
+                Map data = (Map) responseMap.get("data");
+                if (data != null) {
+                    List<Map> children = (List<Map>) data.get("children");
+                    if (children != null) {
+                        for(Map oneChild : children){
+                            result.add(oneChild.get(id));
+                        }
+                    }
+                }
+            }
+            Collections.sort(result);
+            handlerCtx.setOutputValue("result", result);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
+    }
+
     @Handler(id = "gf.getChildrenNamesList",
         input = {
             @HandlerInput(name = "endpoint", type = String.class, required = true),
+            @HandlerInput(name = "attrs", type = Map.class),
             @HandlerInput(name = "id", type = String.class, defaultValue = "name")},
         output = {
             @HandlerOutput(name = "result", type = java.util.List.class)
     })
     public static void getChildrenNamesList(HandlerContext handlerCtx) {
         try {
-            List list = new ArrayList(getChildMap((String)handlerCtx.getInputValue("endpoint")).keySet());
+            List list = new ArrayList(getChildMap((String)handlerCtx.getInputValue("endpoint"), (Map)handlerCtx.getInputValue("attrs")).keySet());
             Collections.sort(list);
             handlerCtx.setOutputValue("result", list);
         } catch (Exception ex) {

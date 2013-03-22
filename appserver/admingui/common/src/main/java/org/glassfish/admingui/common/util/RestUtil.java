@@ -753,9 +753,17 @@ public class RestUtil {
     }
 
     public static Map<String, String> getChildMap(String endpoint) throws Exception {
+        return getChildMap(endpoint, null);
+    }
+
+
+    public static Map<String, String> getChildMap(String endpoint, Map attrs) throws Exception {
         Map<String, String> childElements = new TreeMap<String, String>();
+        if (attrs == null){
+            attrs = new HashMap<String, Object>();
+        }
         if (doesProxyExist(endpoint)) {
-            Map responseMap = restRequest(endpoint, new HashMap<String, Object>(), "get", null, false);
+            Map responseMap = restRequest(endpoint, attrs, "get", null, false);
             Map data = (Map) responseMap.get("data");
             if (data != null) {
                 Map extraProperties = (Map) data.get("extraProperties");

@@ -176,6 +176,12 @@
                 parentId="#{configNameId}"
                 content="pluginTreeNodeAdminService.jsf" />
         <integration-point
+            id="common_batch_config"
+            type="org.glassfish.admingui:navNode"
+            priority="260"
+            parentId="#{configNameId}"
+            content="pluginTreeNodeBatchConfig.jsf" />
+        <integration-point
                 id="monitor"
                 type="org.glassfish.admingui:navNode"
                 priority="800"
