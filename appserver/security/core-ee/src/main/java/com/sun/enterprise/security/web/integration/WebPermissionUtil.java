@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -132,7 +132,11 @@ public class WebPermissionUtil {
 
       HashMap<String, MapValue> qpMap = new HashMap();
 
-      // bootstrap the map with the default pattern;
+      /*
+       * bootstrap the map with the default pattern; the default pattern will
+       * not be "committed", unless a constraint is defined on "\". This will
+       * ensure that a more restrictive constraint can be assigned to it
+       */
       qpMap.put("/", new MapValue("/"));
 
       //Enumerate over security constraints
@@ -271,6 +275,7 @@ public class WebPermissionUtil {
 			  MethodValue.methodArrayToSet(omittedNames);
 		  }
 
+		  // set and commit the method outcomes on the pattern
 		  // note that an empty omitted method set is used to represent
 		  // the set of all http methods
 
@@ -493,11 +498,13 @@ public class WebPermissionUtil {
 	Permissions excluded = new Permissions();
 	Permissions unchecked = new Permissions();
 
-	// for each urlPatternSpec in the map
+	boolean deny = wbd.isDenyUncoveredHttpMethods();
 	if (logger.isLoggable(Level.FINE)){
-	    logger.log(Level.FINE,"JACC: constraint capture: begin processing qualified url patterns");
+	    logger.log(Level.FINE,"JACC: constraint capture: begin processing qualified url patterns"
+	    		+ " - uncovered http methods will be " + (deny ? "denied" : "permitted"));
 	}
-
+ 
+	// for each urlPatternSpec in the map
 	Iterator it = qpMap.values().iterator();
 	while (it.hasNext()) {
 	    MapValue m = (MapValue) it.next();
@@ -508,6 +515,9 @@ public class WebPermissionUtil {
 		if (logger.isLoggable(Level.FINE)){
 		    logger.log(Level.FINE,"JACC: constraint capture: urlPattern: "+ name);
 		}
+
+		// handle Uncovered Methods
+		m.handleUncoveredMethods(deny);
 
 		// handle excluded methods
 		handleExcluded(excluded,m,name);
@@ -577,6 +587,8 @@ public class WebPermissionUtil {
 	}
 	List role = new ArrayList();
 	Set roleset = wbd.getRoles();
+	Role anyAuthUserRole = new Role("**");
+	boolean rolesetContainsAnyAuthUserRole = roleset.contains(anyAuthUserRole);
         Set<WebComponentDescriptor> descs = wbd.getWebComponentDescriptors();
 	//V3 Commented for(Enumeration e = wbd.getWebComponentDescriptors(); e.hasMoreElements();){
         for (WebComponentDescriptor comp : descs) {
@@ -619,6 +631,12 @@ public class WebPermissionUtil {
 		    }
 		}
 	    }
+        /**
+         * JACC MR8 add WebRoleRefPermission for the any authenticated user role '**'
+         */
+        if ((!role.contains(anyAuthUserRole)) && !rolesetContainsAnyAuthUserRole) {
+            addAnyAuthenticatedUserRoleRef(pc, name);
+        }
 	}
 	if (logger.isLoggable(Level.FINE)){
 	    logger.exiting("WebPermissionUtil", "createWebRoleRefPermission");
@@ -655,9 +673,28 @@ public class WebPermissionUtil {
             }
         }
         // END S1AS8PE 4966609
-                
+        /**
+         * JACC MR8 add WebRoleRefPermission for the any authenticated user role '**'
+         */
+        if (!rolesetContainsAnyAuthUserRole) {
+            addAnyAuthenticatedUserRoleRef(pc, "");
+        }
     }
-    
+
+    /**
+     * JACC MR8 add WebRoleRefPermission for the any authenticated user role '**'
+     */
+    private static void addAnyAuthenticatedUserRoleRef(PolicyConfiguration pc, String name)
+    		throws javax.security.jacc.PolicyContextException {
+    	String action = "**";
+    	WebRoleRefPermission wrrp = new WebRoleRefPermission(name, action);
+    	pc.addToRole(action ,wrrp);
+    	if (logger.isLoggable(Level.FINE)){
+    		logger.log(Level.FINE, 
+    				"JACC: any authenticated user role-reference translation: Permission added for role-ref =" 
+    						+ wrrp.getName() +" "+ wrrp.getActions());
+    	}
+    }
 }
 
 class ConstraintValue {
@@ -696,6 +733,14 @@ class ConstraintValue {
 	synchronized(roleList) {
 	    if (!roleList.contains(role)) {
 		roleList.add(role);
+	    }
+	}
+    }   
+
+    void removeRole(String role) {
+	synchronized(roleList) {
+	    if (roleList.contains(role)) {
+		roleList.remove(role);
 	    }
 	}
     }   
@@ -760,6 +805,7 @@ class ConstraintValue {
 	if (ac == null) {
 	    setPredefinedOutcome(true);
 	} else {
+	    boolean containsAllRoles = false;
 	    Enumeration eroles = ac.getSecurityRoles();
 	    if (!eroles.hasMoreElements()) {
 		setPredefinedOutcome(false);
@@ -769,13 +815,21 @@ class ConstraintValue {
 		    (SecurityRoleDescriptor)eroles.nextElement();
 		String roleName = srd.getName();
 		if ("*".equals(roleName)) {
+			containsAllRoles = true;
+		} else {
+		    setRole(roleName);
+		}
+	    }
+	    /**
+	     * JACC MR8  When role '*' named, do not include any authenticated user
+	     * role '**' unless an application defined a role named '**'
+	     */
+	    if (containsAllRoles) {
+		    removeRole("**");
 		    Iterator it = roleSet.iterator();
 		    while(it.hasNext()) {
 			setRole(((Role)it.next()).getName());
 		    }
-		} else {
-		    setRole(roleName);
-		}
 	    }
 	}
 	addConnectType(udc == null? null :  udc.getTransportGuarantee());
@@ -814,6 +868,14 @@ class ConstraintValue {
 	return " ConstraintValue ( " + 
 	    " excluded: " + excluded +
 	    " ignoreRoleList: " + ignoreRoleList + roles + transports + " ) ";
+    }
+
+    /* ignoreRoleList is true if there was a security-constraint
+     * without an auth-constraint; such a constraint combines to 
+     * allow access without authentication.
+     */
+    boolean isUncovered() {
+        return (!excluded && !ignoreRoleList && roleList.isEmpty() && connectSet == 0);
     }
 }
 
@@ -908,6 +970,8 @@ class MethodValue extends ConstraintValue {
 
 class MapValue {
 
+    boolean committed;
+ 
     int patternType;
 
     int patternLength;
@@ -922,6 +986,7 @@ class MapValue {
     ConstraintValue otherConstraint; 
 
     MapValue (String urlPattern) {
+	this.committed = false;
 	this.patternType = WebPermissionUtil.patternType(urlPattern);
 	this.patternLength = urlPattern.length();
 	this.irrelevantByQualifier = false;
@@ -1093,6 +1158,8 @@ class MapValue {
 			   AuthorizationConstraint ac, UserDataConstraint udc, 
 			   BitSet methods,BitSet omittedMethods) {
 
+	committed = true;
+
 	if (omittedMethods != null) {
 	    
 	    // get the ommitted methodSet
@@ -1126,6 +1193,105 @@ class MapValue {
 		getMethodValue(i).setOutcome(roleSet,ac,udc);
 	    }
 	}
+    }
+
+    void handleUncoveredMethods(boolean deny) {
+    	/*
+    	 * bypass any uncommitted patterns (e.g. the default pattern) which were
+    	 * entered in the map, but that were not named in a security constraint
+    	 */
+    	if (!committed) {
+    		return;
+    	}
+
+    	boolean otherIsUncovered = false;
+    	synchronized (methodValues) {
+    		BitSet uncoveredMethodSet = new BitSet();
+    		BitSet deniedMethodSet = new BitSet();
+    		// for all the methods in the mapValue
+    		for (MethodValue v : methodValues.values()) {
+    			// if the method is uncovered add its id to the uncovered set
+    			if (v.isUncovered()) {
+    				if (deny) {
+    					v.setPredefinedOutcome(false);
+    					deniedMethodSet.set(v.index);
+    				}
+    				uncoveredMethodSet.set(v.index);
+    			}
+    		}
+    		// if the constraint on all other methods is uncovered
+    		if (otherConstraint.isUncovered()) {
+    			/*
+    			 * this is the case where the problem is most severe, since
+    			 * a non-enumerble set of http methods has been left uncovered.
+    			 * the set of method  will be logged and denied.
+    			 */
+    			otherIsUncovered = true;
+    			if (deny) {
+    				otherConstraint.setPredefinedOutcome(false);
+    			}
+    			/*
+    			 * ensure that the methods that are reported as uncovered
+    			 * includes any enumerated methods that were found to be uncovered.
+    			 */
+    			BitSet otherMethodSet = getMethodSet();
+    			if (!uncoveredMethodSet.isEmpty()) {
+    				/*
+    				 * uncoveredMethodSet contains methods that otherConstraint
+    				 * pertains to, so remove them from otherMethodSet which 
+    				 * is the set to which the otherConstraint does not apply
+    				 */
+    				otherMethodSet.andNot(uncoveredMethodSet);
+    			}
+    			/*
+    			 * when otherIsUncovered, uncoveredMethodSet contains methods to
+    			 * which otherConstraint does NOT apply
+    			 */
+    			uncoveredMethodSet = otherMethodSet;
+
+    			otherMethodSet = getMethodSet();
+    			if (!deniedMethodSet.isEmpty()) {
+    				/*
+    				 * deniedMethodSet contains methods that otherConstraint
+    				 * pertains to, so remove them from deniedMethodSet which 
+    				 * is the set to which the otherConstraint does not apply
+    				 */
+    				otherMethodSet.andNot(deniedMethodSet);
+    			}
+    			/*
+    			 * when otherIsUncovered, deniedMethodSet contains methods to
+    			 * which otherConstraint does NOT apply
+    			 */
+    			deniedMethodSet = otherMethodSet;
+    		}
+    		if (otherIsUncovered || !uncoveredMethodSet.isEmpty()) {
+    			if (WebPermissionUtil.logger.isLoggable(Level.FINE)) {
+        			StringBuilder msg = new StringBuilder();
+        			msg.append(otherIsUncovered 
+        					? " all but the following methods were uncovered: "
+        							: " the following methods were uncovered: ");
+        			msg.append(MethodValue.getActions(uncoveredMethodSet));
+
+        			WebPermissionUtil.logger.log(Level.FINE,
+        					"JACC: constraint capture: {0}{1}",
+        					new Object[]{urlPatternSpec, msg});
+
+        			if (deny && !deniedMethodSet.isEmpty()) {
+        				msg = new StringBuilder();
+        				msg.append(otherIsUncovered
+        						? " all but the following methods have been excluded: "
+        								: " the following methods have beem excluded: ");
+        				msg.append(otherIsUncovered
+        						? MethodValue.getActions(deniedMethodSet)
+        								: MethodValue.getActions(deniedMethodSet));
+
+        				WebPermissionUtil.logger.log(Level.FINE,
+        						"JACC: constraint capture: {0}{1}",
+        						new Object[]{urlPatternSpec, msg});
+        			}
+    			}
+    		}
+    	}
     }
 }
 

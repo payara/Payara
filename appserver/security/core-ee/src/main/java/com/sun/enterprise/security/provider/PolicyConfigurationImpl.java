@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1243,6 +1243,29 @@ public class PolicyConfigurationImpl implements PolicyConfiguration {
 			}
 		    }
 		} 
+		/**
+		 * JACC MR8 add grant for the any authenticated user role '**'
+		 */
+		if (!withPrincipals && ("**".equals(roleName))) {
+			withPrincipals = true;
+			PrincipalEntry prinEntry = new PrincipalEntry(
+					PrincipalEntry.WILDCARD_CLASS,PrincipalEntry.WILDCARD_NAME);
+			GrantEntry grant = new GrantEntry();
+			grant.principals.add(prinEntry);
+			Enumeration pEnum = rolePerms.elements();
+			while (pEnum.hasMoreElements()) {
+				Permission perm = (Permission) pEnum.nextElement();
+				PermissionEntry permEntry = 
+						new PermissionEntry(perm.getClass().getName(),
+								perm.getName(),
+								perm.getActions());
+				grant.add(permEntry);
+			}
+			parser.add(grant);
+			if(logger.isLoggable (Level.FINE)){
+				logger.fine("JACC Policy Provider: added role grant for any authenticated user");
+			}
+		}
 		if (!withPrincipals) {
                     String msg = localStrings.getLocalString("pc.no_principals_mapped_to_role",
                                   "no principals mapped to role "+roleName, new Object []{ roleName});

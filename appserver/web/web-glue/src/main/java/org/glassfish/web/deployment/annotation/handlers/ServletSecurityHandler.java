@@ -131,18 +131,6 @@ public class ServletSecurityHandler extends AbstractWebHandler {
         if (urlPatterns != null && urlPatterns.size() > 0) {
             WebBundleDescriptor webBundleDesc = webCompDesc.getWebBundleDescriptor();
             ServletSecurity servletSecurityAn = (ServletSecurity)ainfo.getAnnotation();
-            HttpConstraint httpConstraint = servletSecurityAn.value();
-
-            SecurityConstraint securityConstraint =
-                    createSecurityConstraint(webBundleDesc,
-                    urlPatterns, httpConstraint.rolesAllowed(),
-                    httpConstraint.value(),
-                    httpConstraint.transportGuarantee(),
-                    null);
-
-            // we know there is one WebResourceCollection there
-            WebResourceCollection webResColl =
-                    securityConstraint.getWebResourceCollections().iterator().next();
             HttpMethodConstraint[] httpMethodConstraints = servletSecurityAn.httpMethodConstraints();
             for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
                 String httpMethod = httpMethodConstraint.value();
@@ -155,13 +143,50 @@ public class ServletSecurityHandler extends AbstractWebHandler {
                         httpMethodConstraint.emptyRoleSemantic(),
                         httpMethodConstraint.transportGuarantee(),
                         httpMethod);
+            }
+            HttpConstraint httpConstraint = servletSecurityAn.value();
+            boolean isDefault = isDefaultHttpConstraint(httpConstraint);
+            boolean deny = webBundleDesc.isDenyUncoveredHttpMethods();
+            if (isDefault && httpMethodConstraints.length > 0) { 
+                if (logger.isLoggable(Level.FINER)) {
+                    StringBuilder methodString = new StringBuilder();
+                    for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
+                        methodString.append(" ");
+                        methodString.append(httpMethodConstraint.value());
+                    }
+                    for (String pattern : urlPatterns) {
+                        logger.finer(
+                                "Pattern: " + pattern + 
+                                " assumes default unprotected configuration for all methods except:" 
+                                + methodString);
+                    }
+                }
+            }
+            if (!isDefault || httpMethodConstraints.length == 0 || !deny) {
+                SecurityConstraint securityConstraint =
+                        createSecurityConstraint(webBundleDesc,
+                        urlPatterns, httpConstraint.rolesAllowed(),
+                        httpConstraint.value(),
+                        httpConstraint.transportGuarantee(),
+                        null);
 
-                //exclude this from the top level constraint
-                webResColl.addHttpMethodOmission(httpMethod);
+                // we know there is one WebResourceCollection there
+                WebResourceCollection webResColl =
+                        securityConstraint.getWebResourceCollections().iterator().next();
+                for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
+                    //exclude constrained httpMethod from the top level constraint
+                    webResColl.addHttpMethodOmission(httpMethodConstraint.value());                
+                }
             }
         }
 
         return getDefaultProcessedResult();
+    }
+
+    private static boolean isDefaultHttpConstraint(HttpConstraint httpConstraint) {
+        return httpConstraint.value() == EmptyRoleSemantic.PERMIT
+                && (httpConstraint.rolesAllowed() == null || httpConstraint.rolesAllowed().length == 0)
+                && httpConstraint.transportGuarantee() == TransportGuarantee.NONE;
     }
 
     /**

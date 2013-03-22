@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -664,10 +664,11 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
             }
         }
 
+        // Do not map '**' to a Principal as this represents the any authenticated user role
         public Subject get(Object key) {
             synchronized (roleMap) {
                 Subject s = roleMap.get((String)key);
-                if (s == null && key instanceof String) {
+                if ((s == null) && (key instanceof String) && (!"**".equals((String)key))) {
                     final Subject fs = new Subject();
                     final String roleName = (String) key;
                     AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {

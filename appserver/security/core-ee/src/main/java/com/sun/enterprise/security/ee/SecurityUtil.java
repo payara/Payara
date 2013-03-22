@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -420,11 +420,16 @@ public class SecurityUtil{
             return;
         }
         String appName = params.name();
-        SecurityRoleMapperFactory factory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
-        if (factory == null) {
-            throw new IllegalArgumentException("This application has no role mapper factory defined");
-        }
+        SecurityRoleMapperFactory factory = getRoleMapperFactory();
         factory.removeRoleMapper(appName);
 
     }
+    
+   public static SecurityRoleMapperFactory getRoleMapperFactory() {
+       SecurityRoleMapperFactory factory = SecurityRoleMapperFactoryGen.getSecurityRoleMapperFactory();
+       if (factory == null) {
+           throw new IllegalArgumentException("This application has no role mapper factory defined");
+       }
+       return factory;
+   }
 }

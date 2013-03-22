@@ -57,6 +57,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -172,7 +173,7 @@ public final class EJBSecurityManager
 
         this.deploymentDescriptor = (EjbDescriptor) ejbDescriptor;
         this.invMgr = invMgr;
-        roleMapperFactory = Globals.get(SecurityRoleMapperFactory.class);
+        roleMapperFactory = SecurityUtil.getRoleMapperFactory();
         // get the default policy
         policy = Policy.getPolicy();
         ejbSFM = fact;
@@ -349,6 +350,7 @@ public final class EJBSecurityManager
         // pc will always has a value which is provided by implementation
         // of PolicyConfigurationFactory
         assert pc != null;
+        List<String> role = new ArrayList<String>();
         String eName = eDescriptor.getName();
         for (RoleReference roleRef : eDescriptor.getRoleReferences()) {
             String rolename = roleRef.getRoleName();
@@ -356,6 +358,7 @@ public final class EJBSecurityManager
                     new EJBRoleRefPermission(eName, rolename);
             String rolelink = roleRef.getSecurityRoleLink().getName();
 
+            role.add(rolename);
             pc.addToRole(rolelink, ejbrr);
 
             if (_logger.isLoggable(Level.FINE)) {
@@ -364,6 +367,22 @@ public final class EJBSecurityManager
                         ") and actions (" + ejbrr.getActions() +
                         ")" + "mapped to role (" + rolelink + ")");
             }
+        }
+        /**
+         * JACC MR8 add EJBRoleRefPermission for the any authenticated user role '**'
+         */
+        if (!role.contains("**")) {
+            String rolename = "**";
+            EJBRoleRefPermission ejbrr =
+                    new EJBRoleRefPermission(eName, rolename);
+            pc.addToRole(rolename, ejbrr);
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("JACC: adding any authenticated user role-ref " +
+                        " to permission with name(" + ejbrr.getName() +
+                        ") and actions (" + ejbrr.getActions() +
+                        ")" + "mapped to role (" + rolename + ")");
+            }
+        	
         }
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -851,6 +851,15 @@ public class SimplePolicyConfiguration implements PolicyConfiguration {
             if (roleTable != null) {
                 for (Role role : roleTable) {
                     role.setPrincipals(roleMapper.getPrincipalsInRole(id, role.getName()));
+                }
+                /**
+                 * JACC MR8 add handling for the any authenticated user role '**'
+                 */
+                Role rvalue = new Role("**");
+                int index = roleTable.indexOf(rvalue);
+                if (index != -1) {
+                    rvalue = roleTable.get(index);
+                    rvalue.determineAnyAuthenticatedUserRole();
                 }
             }
         } finally {

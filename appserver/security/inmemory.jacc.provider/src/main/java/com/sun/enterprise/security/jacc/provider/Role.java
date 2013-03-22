@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -56,6 +56,7 @@ public class Role {
     String roleName;
     Permissions permissions;
     Set<Principal> principals;
+    private boolean isAnyAuthenticatedUserRole = false;
 
     public Role(String name) {
         roleName = name;
@@ -119,7 +120,23 @@ public class Role {
         return rvalue;
     }
 
+    void determineAnyAuthenticatedUserRole() {
+        isAnyAuthenticatedUserRole = false;
+        // If no princiapls are present then any authenticated user is possible
+        if ((principals == null) || principals.isEmpty()) {
+        	isAnyAuthenticatedUserRole = true;
+        }
+    }
+
+    boolean isAnyAuthenticatedUserRole() {
+        return isAnyAuthenticatedUserRole;
+    }
+
     boolean isPrincipalInRole(Principal p) {
+        if (isAnyAuthenticatedUserRole && (p != null)) {
+            return true;
+        }
+
         boolean rvalue = false;
         if (principals != null) {
             rvalue = principals.contains(p);
@@ -130,6 +147,9 @@ public class Role {
     boolean arePrincipalsInRole(Principal subject[]) {
         if (subject == null || subject.length == 0) {
             return false;
+        }
+        if (isAnyAuthenticatedUserRole) {
+            return true;
         }
         if (principals == null || principals.isEmpty()) {
             return false;
