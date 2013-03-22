@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.util.ManagedBeanVisitor;
 import com.sun.enterprise.deployment.util.ApplicationValidator;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
+import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 import java.util.*;
 
@@ -203,29 +204,54 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
      * on any bean class callback.  If present, this would always be the
      * last element in the list because of the precedence defined by the spec.
      */
-    public List<InterceptorDescriptor> getCallbackInterceptors(LifecycleCallbackDescriptor.CallbackType type) {
+    public List<InterceptorDescriptor> getCallbackInterceptors(CallbackType type) {
 
         LinkedList<InterceptorDescriptor> callbackInterceptors =
                 new LinkedList<InterceptorDescriptor>();
 
-        for (InterceptorDescriptor next : classInterceptorChain) {
+        List<InterceptorDescriptor> interceptors = classInterceptorChain;
+
+        // Check if any interceptors were specified on the method or a constructor
+        LifecycleCallbackDescriptor lcDesc = null;
+        if (type.equals(CallbackType.AROUND_CONSTRUCT)) {
+            // XXX
+        } else if (type.equals(CallbackType.POST_CONSTRUCT)) {
+            lcDesc = getPostConstructDescriptorByClass(getBeanClassName());
+        } else if (type.equals(CallbackType.PRE_DESTROY)) {
+            lcDesc = getPreDestroyDescriptorByClass(getBeanClassName());
+        }
+
+        if (lcDesc != null) {
+            String methodName = lcDesc.getLifecycleCallbackMethod();
+            // See if there's any method-level setting (either a chain
+            // or a empty list ).  If not, use class-level chain
+            for(MethodDescriptor mDesc : methodInterceptorsMap.keySet()) {
+                if (methodName.equals(mDesc.getName()) && 
+                        mDesc.getParameterClassNames().length == 0) {
+
+                    interceptors = methodInterceptorsMap.get(mDesc);
+                    break;
+                }
+            }
+        } 
+
+        for (InterceptorDescriptor next : interceptors) {
             if (next.getCallbackDescriptors(type).size() > 0) {
                 callbackInterceptors.add(next);
             }
         }
-      
+
         if (this.hasCallbackDescriptor(type)) {
-            InterceptorDescriptor beanClassCallbackInfo =
-                    new InterceptorDescriptor();
+            InterceptorDescriptor beanClassCallbackInfo = new InterceptorDescriptor();
             beanClassCallbackInfo.setFromBeanClass(true);
             beanClassCallbackInfo.addCallbackDescriptors(type,
-                    this.getCallbackDescriptors(type));
+                 this.getCallbackDescriptors(type));
 
 
             beanClassCallbackInfo.setInterceptorClassName(getBeanClassName());
             callbackInterceptors.add(beanClassCallbackInfo);
         }
-
+      
         return callbackInterceptors;
     }
 

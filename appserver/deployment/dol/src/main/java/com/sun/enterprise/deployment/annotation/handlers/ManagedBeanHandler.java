@@ -51,6 +51,8 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.ManagedBean;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Method;
@@ -96,7 +98,7 @@ public class ManagedBeanHandler extends AbstractHandler {
 
 
         Class[] classInterceptors = null;
-        Map<Method, Class[]> methodLevelInterceptors = new HashMap<Method, Class[]>();
+        Map<AccessibleObject, Class[]> methodLevelInterceptors = new HashMap<AccessibleObject, Class[]>();
         Map<String, InterceptorDescriptor> interceptorDescs = new HashMap<String, InterceptorDescriptor>();
 
 
@@ -140,33 +142,13 @@ public class ManagedBeanHandler extends AbstractHandler {
         }
 
 
-        for(Method m : managedBeanClass.getMethods()) {
-            Annotation ann = getMethodAnnotation(m, "javax.interceptor.Interceptors");
-            if(ann != null) {
-                try {
-                    Method valueM = ann.annotationType().getDeclaredMethod("value");
-                    methodLevelInterceptors.put(m, (Class[]) valueM.invoke(ann));
-                } catch(Exception e) {
-                    AnnotationProcessorException ape = new AnnotationProcessorException(e.getMessage(), element);
-                    ape.initCause(e);
-                    throw ape;
-                }
-            } else {
-                // If the method doesn't declare any method-level interceptors but it excludes
-                // class-level interceptors, explicitly set method-level to an empty list.
-                boolean excludeClassInterceptors =
-                        ( getMethodAnnotation(m, "javax.interceptor.ExcludeClassInterceptors")
-                            != null );
-                if( excludeClassInterceptors ) {
-                    MethodDescriptor mDesc = new MethodDescriptor(m);
-                    managedBeanDesc.setMethodLevelInterceptorChain(mDesc,
-                            new LinkedList<InterceptorDescriptor>());
-                }
-
-            }
-
+        for(Method m : managedBeanClass.getDeclaredMethods()) {
+            processForAnnotations(element, m, methodLevelInterceptors, managedBeanDesc, managedBeanClass);
         }
 
+        for(Constructor c : managedBeanClass.getDeclaredConstructors()) {
+            processForAnnotations(element, c, methodLevelInterceptors, managedBeanDesc, managedBeanClass);
+        }
 
         if( aeHandler instanceof ResourceContainerContext ) {
             ((ResourceContainerContext) aeHandler).addManagedBean(managedBeanDesc);            
@@ -201,13 +183,13 @@ public class ManagedBeanHandler extends AbstractHandler {
 
             }
 
-            for(Map.Entry<Method, Class[]> next : methodLevelInterceptors.entrySet()) {
+            for(Map.Entry<AccessibleObject, Class[]> next : methodLevelInterceptors.entrySet()) {
 
-                Method m = next.getKey();
+                AccessibleObject o = next.getKey();
                 Class[] interceptors = next.getValue();
 
                 boolean excludeClassInterceptors =
-                        ( getMethodAnnotation(m, "javax.interceptor.ExcludeClassInterceptors")
+                        ( getMethodAnnotation(o, "javax.interceptor.ExcludeClassInterceptors")
                             != null );
 
                 List<InterceptorDescriptor> methodInterceptorChain = excludeClassInterceptors ?
@@ -225,13 +207,55 @@ public class ManagedBeanHandler extends AbstractHandler {
                     methodInterceptorChain.add(interceptorDesc);
                 }
 
-                MethodDescriptor mDesc = new MethodDescriptor(m);
+                MethodDescriptor mDesc = getMethodDescriptor(o, managedBeanClass);
                 managedBeanDesc.setMethodLevelInterceptorChain(mDesc, methodInterceptorChain);
             }
            
         }
 
         return getDefaultProcessedResult();
+    }
+
+    private void processForAnnotations(AnnotationInfo element, AccessibleObject o, 
+                 Map<AccessibleObject, Class[]> methodLevelInterceptors, 
+                 ManagedBeanDescriptor managedBeanDesc, Class managedBeanClass) 
+                 throws AnnotationProcessorException {
+
+        Annotation ann = getMethodAnnotation(o, "javax.interceptor.Interceptors");
+        if(ann != null) {
+            try {
+                Method valueM = ann.annotationType().getDeclaredMethod("value");
+                methodLevelInterceptors.put(o, (Class[]) valueM.invoke(ann));
+            } catch(Exception e) {
+                AnnotationProcessorException ape = new AnnotationProcessorException(e.getMessage(), element);
+                ape.initCause(e);
+                throw ape;
+            }
+        } else {
+            // If the method or constructor excludes
+            // class-level interceptors, explicitly set method-level to an empty list.
+            boolean excludeClassInterceptors =
+                    ( getMethodAnnotation(o, "javax.interceptor.ExcludeClassInterceptors") != null );
+            if( excludeClassInterceptors ) {
+                MethodDescriptor mDesc = getMethodDescriptor(o, managedBeanClass);
+                managedBeanDesc.setMethodLevelInterceptorChain(mDesc,
+                        new LinkedList<InterceptorDescriptor>());
+            }
+        }
+    }
+
+    private MethodDescriptor getMethodDescriptor(AccessibleObject o, Class managedBeanClass) {
+        MethodDescriptor mDesc = null;
+        if (o instanceof Method) {
+            mDesc = new MethodDescriptor((Method)o);
+        } else if (o instanceof Constructor) {
+            Class[] ctorParamTypes = ((Constructor)o).getParameterTypes();
+            String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
+            mDesc = new MethodDescriptor(managedBeanClass.getSimpleName(), null, 
+                    parameterClassNames, MethodDescriptor.EJB_BEAN);
+        }
+
+        return mDesc;
     }
 
     private InterceptorDescriptor processInterceptor(Class interceptorClass, ManagedBeanContext managedBeanCtx,
@@ -305,9 +329,9 @@ public class ManagedBeanHandler extends AbstractHandler {
         return null;
     }
 
-    private Annotation getMethodAnnotation(Method m, String annotationClassName) {
+    private Annotation getMethodAnnotation(AccessibleObject o, String annotationClassName) {
 
-        for(Annotation next : m.getDeclaredAnnotations()) {
+        for(Annotation next : o.getDeclaredAnnotations()) {
 
             if( next.annotationType().getName().equals(annotationClassName)) {
                 return next;
