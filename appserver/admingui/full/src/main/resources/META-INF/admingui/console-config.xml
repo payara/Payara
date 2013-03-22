@@ -45,10 +45,19 @@
     <integration-point
         id="full_jmailNodes"
         type="org.glassfish.admingui:navNode"
-        priority="400"
+        priority="600"
         parentId="resources"
         content="jmailTreeNode.jsf"
     />
+
+    <integration-point
+        id="full_jndiNodes"
+        type="org.glassfish.admingui:navNode"
+        priority="500"
+        parentId="resources"
+        content="jndiTreeNode.jsf"
+    />
+
     <integration-point
                 id="fullResourceLink"
                 parentId="propSheetSection"

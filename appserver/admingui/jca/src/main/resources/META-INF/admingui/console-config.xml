@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@
     <integration-point
             id="raconfigNode"
             type="org.glassfish.admingui:navNode"
-            priority="220"
+            priority="700"
             parentId="resources"
             content="raconfigTreeNode.jsf"
     />
@@ -60,7 +60,7 @@
     <integration-point
             id="jca_connectorService"
             type="org.glassfish.admingui:navNode"
-            priority="750"
+            priority="200"
             parentId="#{configNameId}"
             content="pluginTreeNodeConnectorService.jsf"
     />

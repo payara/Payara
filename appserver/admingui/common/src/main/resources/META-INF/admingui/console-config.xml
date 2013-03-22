@@ -154,43 +154,43 @@
         <integration-point
                 id="common_jvm"
                 type="org.glassfish.admingui:navNode"
-                priority="100"
+                priority="350"
                 parentId="#{configNameId}"
                 content="pluginTreeNodeJVM.jsf" />
         <integration-point
                 id="common_logger"
                 type="org.glassfish.admingui:navNode"
-                priority="150"
+                priority="450"
                 parentId="#{configNameId}"
                 content="pluginTreeNodeLogger.jsf" />
         <integration-point
                 id="common_security"
                 type="org.glassfish.admingui:navNode"
-                priority="350"
+                priority="650"
                 parentId="#{configNameId}"
                 content="pluginTreeNodeSecurity.jsf" />
         <integration-point
                 id="common_adminService"
                 type="org.glassfish.admingui:navNode"
-                priority="700"
+                priority="50"
                 parentId="#{configNameId}"
                 content="pluginTreeNodeAdminService.jsf" />
         <integration-point
-            id="common_batch_config"
-            type="org.glassfish.admingui:navNode"
-            priority="260"
-            parentId="#{configNameId}"
-            content="pluginTreeNodeBatchConfig.jsf" />
+                id="common_batch_config"
+                type="org.glassfish.admingui:navNode"
+                priority="150"
+                parentId="#{configNameId}"
+                content="pluginTreeNodeBatchConfig.jsf" />
         <integration-point
                 id="monitor"
                 type="org.glassfish.admingui:navNode"
-                priority="800"
+                priority="500"
                 parentId="#{configNameId}"
                 content="monitor/monitoringNode.jsf" />
         <integration-point
                 id="sysprops_node"
                 type="org.glassfish.admingui:navNode"
-                priority="900"
+                priority="700"
                 parentId="#{configNameId}"
                 content="configuration/pluginTreeNodeConfigSysProps.jsf"/>
 

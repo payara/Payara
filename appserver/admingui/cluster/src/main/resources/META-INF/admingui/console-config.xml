@@ -69,13 +69,13 @@
     <integration-point
             id="availability_service"
             type="org.glassfish.admingui:navNode"
-            priority="375"
+            priority="100"
             parentId="#{configNameId}"
             content="/availability/pluginTreeNodeAvailSvc.jsf"/>
     <integration-point
             id="gms_node"
             type="org.glassfish.admingui:navNode"
-            priority="850"
+            priority="280"
             parentId="#{configNameId}"
             content="/configuration/pluginTreeNodeGms.inc"/>
     <integration-point

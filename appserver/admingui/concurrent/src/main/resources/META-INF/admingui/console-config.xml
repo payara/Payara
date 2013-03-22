@@ -46,7 +46,7 @@
     <integration-point
         id="concurrent-Nodes"
         type="org.glassfish.admingui:navNode"
-        priority="450"
+        priority="100"
         parentId="resources"
         content="concurrentNode.jsf"
     />

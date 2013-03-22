@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -55,43 +55,3 @@
     </ui:event>
 </dynamicTreeNode>
 
-<sun:treeNode id="jndi"
-    text="$resource{i18n.tree.jndi}"
-    toolTip="$resource{i18n.tree.jndi}"
-    url="/full/jndi.jsf"
-    imageURL="/resource/full/images/jndi.gif"
-    >
-
-    <dynamicTreeNode id="customResources"
-	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
-	    children="#{requestScope.children}"
-	    childImageURL="/resource/full/images/jndi.gif"
-	    childExpanded="false"
-	    childURL="/full/customResourceEdit.jsf?name=#{$this{valueBinding}.text}"
-	    text="$resource{i18n.tree.customResources}"
-	    url="/full/customResources.jsf">
-	<ui:event type="beforeCreate">
-	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/custom-resource.json" method="get" result="#{requestScope.resp}");
-	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
-	</ui:event>
-        <!facet image>
-            <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/full/customResources.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.customResources}"/>
-        </facet>
-    </dynamicTreeNode>
-    <dynamicTreeNode id="externalResources"
-	    treeAdaptorClass="org.glassfish.admingui.common.tree.ListTreeAdaptor"
-	    children="#{requestScope.children}"
-	    childImageURL="/resource/full/images/jndi.gif"
-	    childExpanded="false"
-	    childURL="/full/externalResourceEdit.jsf?name=#{$this{valueBinding}.text}"
-	    text="$resource{i18n.tree.externalResources}"
-	    url="/full/externalResources.jsf">
-	<ui:event type="beforeCreate">
-	    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/external-jndi-resource.json" method="get" result="#{requestScope.resp}");
-	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
-	</ui:event>
-        <!facet image>
-            <sun:iconHyperlink id="treeIcon" icon="TREE_FOLDER" url="/full/externalResources.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.externalResources}"/>
-        </facet>
-    </dynamicTreeNode>
- </sun:treeNode> 
