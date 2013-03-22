@@ -223,9 +223,13 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
                     throw re;
                 }
 
+                boolean isMethod = false;
+
                 for(Method ejbClassMethod : ejbClass.getDeclaredMethods()) {
 
                     if( ejbClassMethod.getName().equals(methodName) ) {
+
+                        isMethod = true;
 
                         InterceptorBindingDescriptor newInterceptorBinding =
                             new InterceptorBindingDescriptor();
@@ -254,6 +258,13 @@ public class EjbBundleValidator extends ComponentValidator implements EjbBundleV
 
                 }
                 
+                // We didn't find a method with this name in class methods,
+                // check if it's a constructor
+                if (!isMethod && methodName.equals(ejbClass.getSimpleName())) {
+                    // Constructor - will resolve via implicit comparison
+                    newBindings.add(next);
+                    continue;                   
+                }
 
             } else {
 
