@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.container.common.impl.managedbean;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
@@ -208,6 +209,7 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
     
     public void loadManagedBeans(Application app) {
 
+        JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         for(BundleDescriptor bundle : app.getBundleDescriptors()) {
 
@@ -217,6 +219,8 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
 
             boolean validationRequired  = (bundle instanceof EjbBundleDescriptor)
                     || (bundle instanceof ApplicationClientDescriptor);
+
+            boolean isCDIBundle = (jcdiService != null && jcdiService.isJCDIEnabled(bundle));
 
             for(ManagedBeanDescriptor next : bundle.getManagedBeans()) {
 
@@ -235,7 +239,8 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                     interceptorInfo.setTargetClass(targetClass);
                     interceptorInfo.setInterceptorClassNames(interceptorClasses);
                     interceptorInfo.setAroundConstructInterceptors
-                            (next.getCallbackInterceptors(LifecycleCallbackDescriptor.CallbackType.AROUND_CONSTRUCT));
+                            (next.getAroundConstructCallbackInterceptors(targetClass, 
+                                     getConstructor(targetClass, isCDIBundle)));
                     interceptorInfo.setPostConstructInterceptors
                             (next.getCallbackInterceptors(LifecycleCallbackDescriptor.CallbackType.POST_CONSTRUCT));
                       interceptorInfo.setPreDestroyInterceptors
@@ -287,6 +292,20 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
                 Collections.synchronizedMap(new HashMap<Object, JCDIService.JCDIInjectionContext>()));
         }
 
+    }
+
+    private Constructor getConstructor(Class clz, boolean isCDIBundle) throws Exception {
+        if (isCDIBundle) {
+            Constructor<?>[] ctors = clz.getDeclaredConstructors();
+            for(Constructor<?> ctor : ctors) {
+                if (ctor.getAnnotation(javax.inject.Inject.class) != null) {
+                    // @Inject constructor
+                    return ctor;
+                }
+            }
+        }
+        // Not a CDI bundle or no @Inject constructor - use no-arg constructor
+        return clz.getConstructor();
     }
 
     public Object getManagedBean(String globalJndiName) throws Exception {

@@ -59,7 +59,6 @@ import java.lang.reflect.Method;
 
 import java.util.List;
 import java.util.LinkedList;
-import java.util.logging.Level;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -208,7 +207,9 @@ public class ManagedBeanHandler extends AbstractHandler {
                 }
 
                 MethodDescriptor mDesc = getMethodDescriptor(o, managedBeanClass);
-                managedBeanDesc.setMethodLevelInterceptorChain(mDesc, methodInterceptorChain);
+                if (mDesc != null) {
+                    managedBeanDesc.setMethodLevelInterceptorChain(mDesc, methodInterceptorChain);
+                }
             }
            
         }
@@ -238,8 +239,10 @@ public class ManagedBeanHandler extends AbstractHandler {
                     ( getMethodAnnotation(o, "javax.interceptor.ExcludeClassInterceptors") != null );
             if( excludeClassInterceptors ) {
                 MethodDescriptor mDesc = getMethodDescriptor(o, managedBeanClass);
-                managedBeanDesc.setMethodLevelInterceptorChain(mDesc,
-                        new LinkedList<InterceptorDescriptor>());
+                if (mDesc != null) {
+                    managedBeanDesc.setMethodLevelInterceptorChain(mDesc,
+                            new LinkedList<InterceptorDescriptor>());
+                }
             }
         }
     }
@@ -251,6 +254,7 @@ public class ManagedBeanHandler extends AbstractHandler {
         } else if (o instanceof Constructor) {
             Class[] ctorParamTypes = ((Constructor)o).getParameterTypes();
             String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
+            // MethodDescriptor.EJB_BEAN is just a tag, not to add a new one
             mDesc = new MethodDescriptor(managedBeanClass.getSimpleName(), null, 
                     parameterClassNames, MethodDescriptor.EJB_BEAN);
         }

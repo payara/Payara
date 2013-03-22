@@ -47,6 +47,7 @@ import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 
 import java.util.*;
+import java.lang.reflect.Constructor;
 
 import java.lang.reflect.Method;
 
@@ -199,6 +200,34 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
     }
 
      /**
+     * Return the ordered list of AroundConstruct interceptors 
+     */
+    public List<InterceptorDescriptor> getAroundConstructCallbackInterceptors(Class clz, Constructor ctor) {
+        LinkedList<InterceptorDescriptor> callbackInterceptors =
+                new LinkedList<InterceptorDescriptor>();
+
+        Class[] ctorParamTypes = ctor.getParameterTypes();
+        String[] parameterClassNames = (new MethodDescriptor()).getParameterClassNamesFor(null, ctorParamTypes);
+        MethodDescriptor mDesc = new MethodDescriptor(clz.getSimpleName(), null, 
+                parameterClassNames, MethodDescriptor.EJB_BEAN);
+
+        List<InterceptorDescriptor> interceptors = methodInterceptorsMap.get(mDesc);
+        if (interceptors == null) {
+            interceptors = classInterceptorChain;
+        }
+
+        for (InterceptorDescriptor next : interceptors) {
+            if (next.getCallbackDescriptors(CallbackType.AROUND_CONSTRUCT).size() > 0) {
+                callbackInterceptors.add(next);
+            }
+        }
+
+        // There are no bean-level AroundConstruct interceptors
+
+        return callbackInterceptors;
+    }
+
+     /**
      * Return the ordered list of interceptor info for a particular
      * callback event type.  This list *does* include the info
      * on any bean class callback.  If present, this would always be the
@@ -213,9 +242,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
 
         // Check if any interceptors were specified on the method or a constructor
         LifecycleCallbackDescriptor lcDesc = null;
-        if (type.equals(CallbackType.AROUND_CONSTRUCT)) {
-            // XXX
-        } else if (type.equals(CallbackType.POST_CONSTRUCT)) {
+        if (type.equals(CallbackType.POST_CONSTRUCT)) {
             lcDesc = getPostConstructDescriptorByClass(getBeanClassName());
         } else if (type.equals(CallbackType.PRE_DESTROY)) {
             lcDesc = getPreDestroyDescriptorByClass(getBeanClassName());
