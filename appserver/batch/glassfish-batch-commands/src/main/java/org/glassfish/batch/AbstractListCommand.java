@@ -43,8 +43,10 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.batch.spi.impl.GlassFishBatchSecurityHelper;
+import org.glassfish.internal.api.Target;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -64,9 +66,6 @@ public abstract class AbstractListCommand
     @Inject
     protected Logger logger;
 
-    @Param(name = "long", shortName = "l", optional = true)
-    protected boolean useLongFormat;
-
     @Param(name = "terse", optional=true, defaultValue="false", shortName="t")
     public boolean isTerse = false;
 
@@ -75,6 +74,12 @@ public abstract class AbstractListCommand
 
     @Param(name = "header", shortName = "h", optional = true)
     protected boolean header;
+
+    @Param(name = "target", optional = true, defaultValue = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    protected String target;
+
+    @Inject
+    protected Target targetUtil;
 
     protected String[] outputHeaders;
 
@@ -107,17 +112,17 @@ public abstract class AbstractListCommand
         }
     }
 
-    protected void calculateHeaders() {
-        String[] headers = getTerseHeaders();
+    private void calculateHeaders() {
+        String[] headers = getDefaultHeaders();
         if (outputHeaderList != null) {
             headers = outputHeaderList.split("[,]");
             if (headers.length == 0)
-                headers = getTerseHeaders();
-        } else if (useLongFormat)
-            headers = getLongHeaders();
+                headers = getDefaultHeaders();
+        } else if (supportsLongFormat())
+            headers = getAllHeaders();
 
         Map<String, String> validHeaders = new HashMap<>();
-        for (String h : getSupportedHeaders())
+        for (String h : getAllHeaders())
             validHeaders.put(h.toLowerCase(Locale.US), h);
         for (int i=0; i<headers.length; i++) {
             headers[i] = validHeaders.get(headers[i].toLowerCase(Locale.US));
@@ -136,14 +141,16 @@ public abstract class AbstractListCommand
         return !isTerse || header;
     }
 
+    protected boolean supportsLongFormat() {
+        return true;
+    }
+
     protected abstract void executeCommand(AdminCommandContext context, Properties extraProps)
                 throws Exception;
 
-    protected abstract String[] getSupportedHeaders();
+    protected abstract String[] getAllHeaders();
 
-    protected abstract String[] getTerseHeaders();
-
-    protected abstract String[] getLongHeaders();
+    protected abstract String[] getDefaultHeaders();
 
     protected String[] getOutputHeaders() {
         return outputHeaders;

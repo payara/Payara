@@ -43,6 +43,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -50,7 +51,7 @@ import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Optional;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -81,17 +82,15 @@ public class ListBatchRuntimeConfiguration
 
     private static final String EXECUTOR_SERVICE_NAME = "executorServiceLookupName";
 
-    @Inject
-    private Configs configs;
-
-    @Param(name = "config", optional = true)
-    protected String configName;
-
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
 
-        Config config = configs.getConfigByName(
-                configName == null ? "server-config" : configName);
+        Config config = targetUtil.getConfig(target);
+        if (config == null) {
+            context.getActionReport().setMessage("No such config named: " + target);
+            context.getActionReport().setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
         BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
 
@@ -121,19 +120,14 @@ public class ListBatchRuntimeConfiguration
 
 
     @Override
-    protected final String[] getSupportedHeaders() {
+    protected final String[] getAllHeaders() {
         return new String[] {
                 DATA_SOURCE_NAME, EXECUTOR_SERVICE_NAME
         };
     }
 
     @Override
-    protected final String[] getTerseHeaders() {
-        return getSupportedHeaders();
-    }
-
-    @Override
-    protected String[] getLongHeaders() {
-        return getSupportedHeaders();
+    protected final String[] getDefaultHeaders() {
+        return getAllHeaders();
     }
 }

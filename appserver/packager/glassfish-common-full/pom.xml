@@ -170,7 +170,7 @@
        </dependency>
         <dependency>
             <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api-all</artifactId>
+            <artifactId>javax.batch-api</artifactId>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>

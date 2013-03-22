@@ -50,8 +50,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.*;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -70,8 +69,7 @@ import java.util.logging.Level;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.jobs")
-@ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
@@ -79,7 +77,7 @@ import java.util.logging.Level;
                 description = "List Batch Jobs")
 })
 public class ListBatchJobs
-        extends AbstractListCommand {
+    extends AbstractLongListCommand {
 
     private static final String JOB_NAME = "jobName";
 
@@ -99,7 +97,7 @@ public class ListBatchJobs
 
     private static final String END_TIME = "endTime";
 
-    @Param(name = "jobname", shortName = "j", optional = true)
+    @Param(primary = true, optional = true)
     String jobName;
 
 
@@ -123,7 +121,7 @@ public class ListBatchJobs
     }
 
     @Override
-    protected final String[] getSupportedHeaders() {
+    protected final String[] getAllHeaders() {
         return new String[]{
                 JOB_NAME, APP_NAME, INSTANCE_COUNT, INSTANCE_ID, EXECUTION_ID, BATCH_STATUS,
                 START_TIME, END_TIME, EXIT_STATUS
@@ -131,13 +129,8 @@ public class ListBatchJobs
     }
 
     @Override
-    protected final String[] getTerseHeaders() {
+    protected final String[] getDefaultHeaders() {
         return new String[]{JOB_NAME, INSTANCE_COUNT};
-    }
-
-    @Override
-    protected String[] getLongHeaders() {
-        return getSupportedHeaders();
     }
 
     private boolean isSimpleMode() {
@@ -150,7 +143,7 @@ public class ListBatchJobs
     }
 
     private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter)
-        throws JobSecurityException {
+        throws JobSecurityException, NoSuchJobException {
 
         Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
         Set<String> jobNames = new HashSet<>();
@@ -184,7 +177,7 @@ public class ListBatchJobs
     }
 
     private List<JobExecution> findJobExecutions()
-        throws JobSecurityException {
+        throws JobSecurityException, NoSuchJobException, NoSuchJobInstanceException {
         List<JobExecution> jobExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         if (jobName != null) {
@@ -212,7 +205,7 @@ public class ListBatchJobs
     }
 
     private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
-        throws  JobSecurityException {
+        throws  JobSecurityException, NoSuchJobExecutionException {
         Map<String, Object> jobInfo = new HashMap<>();
 
         String[] cfData = new String[getOutputHeaders().length];

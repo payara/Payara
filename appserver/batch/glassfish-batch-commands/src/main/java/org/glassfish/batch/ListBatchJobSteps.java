@@ -51,6 +51,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -68,8 +69,7 @@ import java.util.*;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.job.steps")
-@ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
@@ -77,7 +77,7 @@ import java.util.*;
                 description = "List Batch Job Steps")
 })
 public class ListBatchJobSteps
-        extends AbstractListCommand {
+    extends AbstractLongListCommand {
 
     private static final String NAME = "stepName";
 
@@ -93,7 +93,7 @@ public class ListBatchJobSteps
 
     private static final String STEP_METRICS = "stepMetrics";
 
-    @Param(name = "executionid", shortName = "x")
+    @Param(primary = true)
     String executionId;
 
     @Override
@@ -110,27 +110,22 @@ public class ListBatchJobSteps
     }
 
     @Override
-    protected final String[] getSupportedHeaders() {
+    protected final String[] getAllHeaders() {
         return new String[] {
                 NAME, STEP_ID, START_TIME, END_TIME, BATCH_STATUS, EXIT_STATUS, STEP_METRICS
         };
     }
 
     @Override
-    protected final String[] getTerseHeaders() {
+    protected final String[] getDefaultHeaders() {
         return new String[] {NAME, STEP_ID, START_TIME, END_TIME, BATCH_STATUS, EXIT_STATUS};
     }
 
-    @Override
-    protected String[] getLongHeaders() {
-        return getSupportedHeaders();
-    }
-
     private List<StepExecution> findStepExecutions()
-        throws JobSecurityException {
+        throws JobSecurityException, NoSuchJobExecutionException {
         List<StepExecution> stepExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        List<StepExecution<?>> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
+        List<StepExecution> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
         if (jobExecution != null)
             stepExecutions.addAll(jobExecution);
 
@@ -150,7 +145,7 @@ public class ListBatchJobSteps
                     data = stepExecution.getStepName();
                     break;
                 case STEP_ID:
-                    data = stepExecution.getExecutionId();
+                    data = stepExecution.getStepExecutionId();
                     break;
                 case BATCH_STATUS:
                     data = stepExecution.getBatchStatus();
@@ -199,4 +194,5 @@ public class ListBatchJobSteps
 
         return jobInfo;
     }
+
 }

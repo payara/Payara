@@ -49,8 +49,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.operations.JobOperator;
-import javax.batch.operations.JobSecurityException;
+import javax.batch.operations.*;
 import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
@@ -68,8 +67,7 @@ import java.util.*;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.job.executions")
-@ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
@@ -77,7 +75,7 @@ import java.util.*;
                 description = "List Batch Job Executions")
 })
 public class ListBatchJobExecutions
-        extends AbstractListCommand {
+    extends AbstractLongListCommand {
 
     private static final String JOB_NAME = "jobName";
 
@@ -98,7 +96,7 @@ public class ListBatchJobExecutions
     @Param(name = "instanceid", shortName = "i", optional = true)
     String instanceId;
 
-    @Param(name = "executionid", shortName = "x", optional = true)
+    @Param(primary = true, optional = true)
     String executionId;
 
     @Override
@@ -109,9 +107,17 @@ public class ListBatchJobExecutions
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
         extraProps.put("listBatchJobExecutions", jobExecutions);
         if (executionId != null) {
-            for (JobExecution je : findJobExecutions(Long.valueOf(executionId))) {
-                jobExecutions.add(handleJob(je, columnFormatter));
+            JobOperator jobOperator = BatchRuntime.getJobOperator();
+            JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
+            if (instanceId != null) {
+                JobInstance ji = jobOperator.getJobInstance(Long.valueOf(executionId));
+                if (ji.getInstanceId() != Long.valueOf(instanceId)) {
+                    throw new RuntimeException("executionid " + executionId
+                    + " is not associated with the specified instanceid (" + instanceId + ")"
+                    + "; did you mean " + ji.getInstanceId() + " ?");
+                }
             }
+            jobExecutions.add(handleJob(je, columnFormatter));
         } else if (instanceId != null) {
             for (JobExecution je : getJobExecutionForInstance(Long.valueOf(instanceId))) {
                 jobExecutions.add(handleJob(je, columnFormatter));
@@ -125,7 +131,7 @@ public class ListBatchJobExecutions
                     if (exe != null) {
                         for (JobInstance ji : exe) {
                             for (JobExecution je : jobOperator.getJobExecutions(ji)) {
-                                jobExecutions.add(handleJob(je, columnFormatter));
+                                jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
                             }
                         }
                     }
@@ -137,20 +143,15 @@ public class ListBatchJobExecutions
     }
 
     @Override
-    protected final String[] getSupportedHeaders() {
+    protected final String[] getAllHeaders() {
         return new String[]{
                 JOB_NAME, EXECUTION_ID, START_TIME, END_TIME, BATCH_STATUS, EXIT_STATUS, JOB_PARAMETERS, STEP_COUNT
         };
     }
 
     @Override
-    protected final String[] getTerseHeaders() {
+    protected final String[] getDefaultHeaders() {
         return new String[]{JOB_NAME, EXECUTION_ID, START_TIME, END_TIME, BATCH_STATUS, EXIT_STATUS};
-    }
-
-    @Override
-    protected String[] getLongHeaders() {
-        return getSupportedHeaders();
     }
 
     private boolean isSimpleMode() {
@@ -162,19 +163,8 @@ public class ListBatchJobExecutions
         return true;
     }
 
-    private List<JobExecution> findJobExecutions(long exeId)
-        throws JobSecurityException {
-        List<JobExecution> jobExecutions = new ArrayList<>();
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
-        JobExecution jobExecution = jobOperator.getJobExecution(exeId);
-        if (jobExecution != null)
-            jobExecutions.add(jobExecution);
-
-        return jobExecutions;
-    }
-
     private static List<JobExecution> getJobExecutionForInstance(long instId)
-            throws JobSecurityException {
+            throws JobSecurityException, NoSuchJobException, NoSuchJobInstanceException, NoSuchJobExecutionException {
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         JobInstance jobInstance = null;
         for (String jn : jobOperator.getJobNames()) {
@@ -201,7 +191,7 @@ public class ListBatchJobExecutions
     }
 
     private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
-        throws JobSecurityException {
+        throws JobSecurityException, NoSuchJobExecutionException {
 
         Map<String, Object> jobInfo = new HashMap<>();
 

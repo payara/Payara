@@ -182,7 +182,7 @@
         </dependency>
        <dependency>
             <groupId>javax.batch</groupId>
-            <artifactId>javax.batch-api-all</artifactId>
+            <artifactId>javax.batch-api</artifactId>
             <optional>true</optional>
         </dependency>
         

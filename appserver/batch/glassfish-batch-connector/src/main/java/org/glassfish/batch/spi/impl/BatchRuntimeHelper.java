@@ -41,6 +41,7 @@ package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.spi.*;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.api.PostConstruct;
@@ -51,6 +52,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.concurrent.ExecutorService;
@@ -71,7 +73,7 @@ public class BatchRuntimeHelper
     implements PostConstruct, EventListener {
 
     @Inject
-    @Optional
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private BatchRuntimeConfiguration batchRuntimeConfiguration;
 
     @Inject
@@ -85,10 +87,6 @@ public class BatchRuntimeHelper
 
     @Inject
     Events events;
-
-    private static final String DEFAULT_DATA_SOURCE_LOOKUP_NAME = "jdbc/__TimerPool";
-
-    private static final String DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME = "java:comp/DefaultManagedExecutorService";
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -148,8 +146,8 @@ public class BatchRuntimeHelper
     }
 
     public String getDataSourceLookupName() {
-        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getDataSourceLookupName() != null)
-                    ? batchRuntimeConfiguration.getDataSourceLookupName() : DEFAULT_DATA_SOURCE_LOOKUP_NAME;
+//        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getDataSourceLookupName() != n
+        return batchRuntimeConfiguration.getDataSourceLookupName();
     }
 
     private String getSchemaName() {
@@ -157,8 +155,9 @@ public class BatchRuntimeHelper
     }
 
     public String getExecutorServiceLookupName() {
-        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getExecutorServiceLookupName() != null)
-                    ? batchRuntimeConfiguration.getExecutorServiceLookupName() : DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME;
+//        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getExecutorServiceLookupName() != null)
+//                    ? batchRuntimeConfiguration.getExecutorServiceLookupName() : DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME;
+        return batchRuntimeConfiguration.getExecutorServiceLookupName();
     }
 
     private class GlassFishBatchExecutorServiceProvider

@@ -37,30 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.batch.spi.impl;
+package org.glassfish.batch;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
+import org.glassfish.api.Param;
 
 /**
  * @author Mahesh Kannan
  *
  */
-@Configured
-public interface BatchRuntimeConfiguration
-    extends ConfigBeanProxy, ConfigExtension {
+public abstract class AbstractLongListCommand
+    extends AbstractListCommand {
 
-    @Attribute(defaultValue = "jdbc/__TimerPool")
-    String getDataSourceLookupName();
+    @Param(name = "long", shortName = "l", optional = true)
+    protected boolean useLongFormat;
 
-    @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService")
-    String getExecutorServiceLookupName();
-
-    public void setDataSourceLookupName(String value);
-
-    public void setExecutorServiceLookupName(String value);
-
+    @Override
+    protected final boolean supportsLongFormat() {
+        return useLongFormat;
+    }
 }
