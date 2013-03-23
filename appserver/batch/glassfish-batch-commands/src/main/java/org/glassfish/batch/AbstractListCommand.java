@@ -75,11 +75,8 @@ public abstract class AbstractListCommand
     @Param(name = "header", shortName = "h", optional = true)
     protected boolean header;
 
-    @Param(name = "target", optional = true, defaultValue = ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
-
-    @Inject
-    protected Target targetUtil;
 
     protected String[] outputHeaders;
 

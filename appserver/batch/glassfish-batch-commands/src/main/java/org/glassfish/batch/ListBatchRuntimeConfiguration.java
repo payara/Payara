@@ -82,6 +82,9 @@ public class ListBatchRuntimeConfiguration
 
     private static final String EXECUTOR_SERVICE_NAME = "executorServiceLookupName";
 
+    @Inject
+    protected Target targetUtil;
+
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
 

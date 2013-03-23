@@ -51,12 +51,15 @@ import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -87,11 +90,11 @@ public class SetBatchRuntimeConfiguration
     @Inject
     protected Logger logger;
 
-    @Inject
-    private Configs configs;
+    @Param(name = "target", optional = true, defaultValue = "server")
+    protected String target;
 
-    @Param(name = "config", optional = true)
-    protected String configName;
+    @Inject
+    protected Target targetUtil;
 
     @Param(name = "dataSourceLookupName", shortName = "d", optional = true)
     private String dataSourceLookupName;
@@ -102,7 +105,7 @@ public class SetBatchRuntimeConfiguration
 
     @Override
     public void execute(AdminCommandContext context) {
-        ActionReport actionReport = context.getActionReport();
+        final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -110,8 +113,7 @@ public class SetBatchRuntimeConfiguration
         }
 
         try {
-            Config config = configs.getConfigByName(
-                    configName == null ? "server-config" : configName);
+            Config config = targetUtil.getConfig(target);
 
 
             BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
@@ -120,10 +122,30 @@ public class SetBatchRuntimeConfiguration
                     @Override
                     public Object run(final BatchRuntimeConfiguration batchRuntimeConfigurationProxy)
                             throws PropertyVetoException, TransactionFailure {
-                        if (dataSourceLookupName != null)
-                            batchRuntimeConfigurationProxy.setDataSourceLookupName(dataSourceLookupName);
-                        if (executorServiceLookupName != null)
-                            batchRuntimeConfigurationProxy.setExecutorServiceLookupName(executorServiceLookupName);
+                        boolean encounteredError = false;
+                        if (dataSourceLookupName != null) {
+                            try {
+                                InitialContext ctx = new InitialContext();
+                                ctx.lookup(dataSourceLookupName);
+                                batchRuntimeConfigurationProxy.setDataSourceLookupName(dataSourceLookupName);
+                            } catch (NamingException nmEx) {
+                                logger.log(Level.FINE, "Exception during command ", nmEx);
+                                actionReport.setMessage("No datasource bound to name = " + dataSourceLookupName);
+                                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                encounteredError = true;
+                            }
+                        }
+                        if (executorServiceLookupName != null && !encounteredError) {
+                            try {
+                                InitialContext ctx = new InitialContext();
+                                ctx.lookup(executorServiceLookupName);
+                                batchRuntimeConfigurationProxy.setExecutorServiceLookupName(executorServiceLookupName);
+                            } catch (NamingException nmEx) {
+                                logger.log(Level.FINE, "Exception during command ", nmEx);
+                                actionReport.setMessage("No executor service bound to name = " + executorServiceLookupName);
+                                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            }
+                        }
                         return null;
                     }
                 }, batchRuntimeConfiguration);
