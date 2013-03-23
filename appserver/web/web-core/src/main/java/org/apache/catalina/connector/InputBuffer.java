@@ -566,9 +566,14 @@ public class InputBuffer extends Reader
                 }
 
                 synchronized(lk) {
+                    // Get isUpgrade and WebConnection before calling onError
+                    // Just in case onError will complete the async processing.
+                    final boolean isUpgrade = request.isUpgrade();
+                    final WebConnection wc = request.getWebConnection();
+                    
                     readListener.onError(t);
-                    if (request.isUpgrade()) {
-                        final WebConnection wc = request.getWebConnection();
+                    
+                    if (isUpgrade) {
                         if (wc != null) {
                             try {
                                 wc.close();
