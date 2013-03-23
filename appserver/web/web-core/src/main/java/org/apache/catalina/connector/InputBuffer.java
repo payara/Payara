@@ -566,16 +566,13 @@ public class InputBuffer extends Reader
                 }
 
                 synchronized(lk) {
+                    readListener.onError(t);
                     if (request.isUpgrade()) {
                         final WebConnection wc = request.getWebConnection();
-                        try {
-                            readListener.onError(t);
-                        } finally {
-                            if (wc != null) {
-                                try {
-                                    wc.close();
-                                } catch (Exception ignored) {
-                                }
+                        if (wc != null) {
+                            try {
+                                wc.close();
+                            } catch (Exception ignored) {
                             }
                         }
                     }
