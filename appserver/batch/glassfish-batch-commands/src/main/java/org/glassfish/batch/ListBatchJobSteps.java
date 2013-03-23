@@ -126,8 +126,9 @@ public class ListBatchJobSteps
         List<StepExecution> stepExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
         List<StepExecution> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
-        if (jobExecution != null)
-            stepExecutions.addAll(jobExecution);
+        if (jobExecution == null || jobExecution.size() == 0)
+            throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
+        stepExecutions.addAll(jobExecution);
 
         return stepExecutions;
     }
