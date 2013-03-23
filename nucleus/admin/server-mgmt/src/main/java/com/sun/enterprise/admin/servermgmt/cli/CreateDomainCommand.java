@@ -42,6 +42,7 @@ package com.sun.enterprise.admin.servermgmt.cli;
 import com.sun.appserv.management.client.prefs.LoginInfo;
 import com.sun.appserv.management.client.prefs.LoginInfoStore;
 import com.sun.appserv.management.client.prefs.LoginInfoStoreFactory;
+import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.admin.cli.CLICommand;
 import com.sun.enterprise.admin.cli.CLIConstants;
 import com.sun.enterprise.admin.servermgmt.*;
@@ -62,6 +63,7 @@ import java.io.Console;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Level;
+import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandModel.ParamModel;
@@ -479,6 +481,7 @@ public final class CreateDomainCommand extends CLICommand {
             domainConfig.put(DomainConfig.KEYTOOLOPTIONS, keytoolOptions);
             domainConfig.put(DomainConfig.K_TEMPLATE_NAME, template);
             domainConfig.put(DomainConfig.K_PORTBASE, portBase);
+            domainConfig.put(DomainConfig.K_INITIAL_ADMIN_USER_GROUPS, Version.getInitialAdminGroups());
             initSecureAdminSettings(domainConfig);
             try {
                 DomainBuilder domainBuilder = new DomainBuilder(domainConfig);

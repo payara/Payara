@@ -65,11 +65,11 @@ public class DomainSecurity extends MasterPasswordFileManager {
      * @param user Username.
      * @param password Password.
      */
-    void processAdminKeyFile(File keyFile, String user, String password)
+    void processAdminKeyFile(File keyFile, String user, String password, final String[] adminUserGroups)
             throws IOException {
         final String keyFilePath = keyFile.getAbsolutePath();
         final FileRealmHelper fileRealm = new FileRealmHelper(keyFilePath);
-        final String[] group = 	new String[]{AdminConstants.DOMAIN_ADMIN_GROUP_NAME};
+        final String[] group = 	adminUserGroups;
         fileRealm.addUser(user, password.toCharArray(), group);
         fileRealm.persist();
     }

@@ -270,12 +270,14 @@ public class DomainBuilder {
             File configDir = new File(domainDir, DomainConstants.CONFIG_DIR);
             String user =  (String) _domainConfig.get(DomainConfig.K_USER);
             String password = (String) _domainConfig.get(DomainConfig.K_PASSWORD);
+            String[] adminUserGroups = ((String) _domainConfig.get(DomainConfig.K_INITIAL_ADMIN_USER_GROUPS)).split(",");
             String masterPassword = (String) _domainConfig.get(DomainConfig.K_MASTER_PASSWORD);
             Boolean saveMasterPassword = (Boolean)_domainConfig.get(DomainConfig.K_SAVE_MASTER_PASSWORD);
 
             // Process domain security.
             DomainSecurity domainSecurity = new DomainSecurity();
-            domainSecurity.processAdminKeyFile(new File(configDir, DomainConstants.ADMIN_KEY_FILE), user, password);
+            domainSecurity.processAdminKeyFile(new File(configDir, DomainConstants.ADMIN_KEY_FILE), user, password,
+                    adminUserGroups);
             try {
                 domainSecurity.createSSLCertificateDatabase(configDir, _domainConfig, masterPassword);
             } catch (Exception e) {

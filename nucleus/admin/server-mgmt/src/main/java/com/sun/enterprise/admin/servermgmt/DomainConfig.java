@@ -93,6 +93,7 @@ public class DomainConfig extends RepositoryConfig {
     public static final String K_ADMIN_CERT_DN = "domain.admin.cert.dn";
     public static final String K_INSTANCE_CERT_DN = "domain.instance.cert.dn";
     public static final String K_SECURE_ADMIN_IDENTIFIER = "domain.indicator";
+    public static final String K_INITIAL_ADMIN_USER_GROUPS="domain.admin.groups";
 
     private Properties _domainProperties;
 
