@@ -102,6 +102,7 @@
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${gfdir}" includes="**/appserver-domain.jar"/>
 	  <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
+	  <fileset dir="${gfdir}" includes="**/weld-se.jar"/>
 	</delete>
 	<delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
      </target>
