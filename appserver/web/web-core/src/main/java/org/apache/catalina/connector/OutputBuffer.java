@@ -60,6 +60,7 @@ package org.apache.catalina.connector;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.channels.InterruptedByTimeoutException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.Map;
@@ -544,6 +545,14 @@ public class OutputBuffer extends Writer
         }
     }
 
+    void disableWriteHandler() {
+        if (writeHandler != null) {
+            synchronized(writeHandler) {
+                writeHandler.onError(new InterruptedByTimeoutException());
+            }
+        }
+    }
+
 
     private void addSessionCookies() throws IOException {
         Request req = (Request) response.getRequest();
@@ -740,13 +749,16 @@ public class OutputBuffer extends Writer
     
     class WriteHandlerImpl implements WriteHandler {
         private WriteListener writeListener = null;
-        private Object lk = new Object();
+        private volatile boolean disable = false;
 
         private WriteHandlerImpl(WriteListener listener) {
             writeListener = listener;
         }
 
         public void onWritePossible() {
+            if (disable) {
+                return;
+            }
             if (!Boolean.TRUE.equals(CAN_WRITE_SCOPE.get())) {
                 processWritePossible();
             } else {
@@ -777,11 +789,12 @@ public class OutputBuffer extends Writer
                     Thread.currentThread().setContextClassLoader(newCL);
                 }
 
-                synchronized(lk) {
+                synchronized(this) {
                     prevIsReady = true;
                     try {
                         writeListener.onWritePossible();
                     } catch(Throwable t) {
+                        disable = true;
                         writeListener.onError(t);
                     }
                 }
@@ -796,6 +809,11 @@ public class OutputBuffer extends Writer
         }
 
         public void onError(final Throwable t) {
+            if (disable) {
+                return;
+            }
+            disable = true;
+
             if (!Boolean.TRUE.equals(CAN_WRITE_SCOPE.get())) {
                 processError(t);
             } else {
@@ -826,7 +844,7 @@ public class OutputBuffer extends Writer
                     Thread.currentThread().setContextClassLoader(newCL);
                 }
 
-                synchronized(lk) {
+                synchronized(this) {
                     writeListener.onError(t);
                 }
             } finally {
