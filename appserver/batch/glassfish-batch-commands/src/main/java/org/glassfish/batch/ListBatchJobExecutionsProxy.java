@@ -37,43 +37,67 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.batch.spi.impl;
+package org.glassfish.batch;
 
-import com.ibm.jbatch.spi.BatchSecurityHelper;
-import com.sun.enterprise.config.serverbeans.Config;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.util.SystemPropertyConstants;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.I18n;
+import org.glassfish.api.Param;
+import org.glassfish.api.admin.*;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
+import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@Service
-public class GlassFishBatchSecurityHelper
-    implements BatchSecurityHelper {
+/**
+ * Command to list batch jobs info
+ *
+ *         1      *             1      *
+ * jobName --------> instanceId --------> executionId
+ *
+ * @author Mahesh Kannan
+ */
+@Service(name = "list-batch-job-executions")
+@PerLookup
+@CommandLock(CommandLock.LockType.NONE)
+@I18n("list.batch.jobs.executions")
+@ExecuteOn({RuntimeType.DAS})
+@TargetType({CommandTarget.CLUSTER, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
+@RestEndpoints({
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "list-batch-jobs-executions",
+                description = "List Batch Jobs")
+})
+public class ListBatchJobExecutionsProxy
+    extends AbstractListCommandProxy {
 
-    @Inject
-    private InvocationManager invocationManager;
+    @Param(name = "executionid", shortName = "x", optional = true)
+    String executionId;
 
-    @Inject
-    Config config;
-
-    private ThreadLocal<Boolean> invocationPrivilege = new ThreadLocal<>();
-
-    public void markInvocationPrivilege(boolean isAdmin) {
-        invocationPrivilege.set(isAdmin);
-    }
+    @Param(primary = true, optional = true)
+    String instanceId;
 
     @Override
-    public String getCurrentTag() {
-        ComponentInvocation compInv = invocationManager.getCurrentInvocation();
-        return config.getName() + ":" + compInv.getAppName();
+    protected String getCommandName() {
+        return "_ListBatchJobExecutions";
     }
 
-    @Override
-    public boolean isAdmin(String tag) {
-        Boolean result =  invocationPrivilege.get();
-        return result != null ? result : false;
+    protected void fillParameterMap(ParameterMap parameterMap) {
+        super.fillParameterMap(parameterMap);
+        if (executionId != null)
+            parameterMap.add("executionid", executionId);
+        if (instanceId != null)
+            parameterMap.add("", instanceId);
     }
+
 }

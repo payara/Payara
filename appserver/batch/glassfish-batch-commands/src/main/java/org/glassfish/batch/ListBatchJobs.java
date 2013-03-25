@@ -65,16 +65,17 @@ import java.util.logging.Level;
  *
  * @author Mahesh Kannan
  */
-@Service(name = "list-batch-jobs")
+@Service(name = "_ListBatchJobs")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("list.batch.jobs")
-@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
+@I18n("_ListBatchJobs")
+@ExecuteOn(value = {RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "list-batch-jobs",
-                description = "List Batch Jobs")
+                path = "_ListBatchJobs",
+                description = "_List Batch Jobs")
 })
 public class ListBatchJobs
     extends AbstractLongListCommand {
@@ -205,7 +206,7 @@ public class ListBatchJobs
     }
 
     private Map<String, Object> handleJob(JobExecution je, ColumnFormatter columnFormatter)
-        throws  JobSecurityException, NoSuchJobExecutionException {
+        throws  JobSecurityException, NoSuchJobException, NoSuchJobExecutionException {
         Map<String, Object> jobInfo = new HashMap<>();
 
         String[] cfData = new String[getOutputHeaders().length];
@@ -218,14 +219,16 @@ public class ListBatchJobs
                     break;
                 case APP_NAME:
                     try {
-                        data = "" + ((TaggedJobExecution) je).getTagName();
+                        String appName = "" + ((TaggedJobExecution) je).getTagName();
+                        int semi = appName.indexOf(':');
+                        data = appName.substring(semi+1);
                     } catch (Exception ex) {
                         logger.log(Level.FINE, "Error while calling ((TaggedJobExecution) je).getTagName() ", ex);
-                        data = "null";//ex.toString();
+                        data = ex.toString();
                     }
                     break;
                 case INSTANCE_COUNT:
-                    data = "";//jobOperator.getJobInstanceCount(je.getJobName());
+                    data = " "; //jobOperator.getJobInstanceCount(je.getJobName());
                     break;
                 case INSTANCE_ID:
                     data = jobOperator.getJobInstance(je.getExecutionId()).getInstanceId();

@@ -65,16 +65,17 @@ import java.util.*;
  *
  * @author Mahesh Kannan
  */
-@Service(name = "list-batch-job-steps")
+@Service(name = "_ListBatchJobSteps")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("list.batch.job.steps")
-@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
+@I18n("_ListBatchJobSteps")
+@ExecuteOn(value = {RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "list-batch-job-steps",
-                description = "List Batch Job Steps")
+                path = "_ListBatchJobSteps",
+                description = "_List Batch Job Steps")
 })
 public class ListBatchJobSteps
     extends AbstractLongListCommand {

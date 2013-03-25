@@ -63,16 +63,17 @@ import java.util.*;
  *
  * @author Mahesh Kannan
  */
-@Service(name = "list-batch-job-executions")
+@Service(name = "_ListBatchJobExecutions")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("list.batch.job.executions")
-@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
+@I18n("_ListBatchJobExecutions")
+@ExecuteOn(value = {RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "list-batch-job-executions",
-                description = "List Batch Job Executions")
+                path = "_ListBatchJobExecutions",
+                description = "_List Batch Job Executions")
 })
 public class ListBatchJobExecutions
     extends AbstractLongListCommand {
@@ -93,11 +94,11 @@ public class ListBatchJobExecutions
 
     private static final String STEP_COUNT = "stepCount";
 
-    @Param(name = "instanceid", shortName = "i", optional = true)
-    String instanceId;
+    @Param(name = "executionid", shortName = "x", optional = true)
+    String executionId;
 
     @Param(primary = true, optional = true)
-    String executionId;
+    String instanceId;
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps)

@@ -44,6 +44,7 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
+import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
@@ -55,8 +56,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -87,6 +90,9 @@ public class BatchRuntimeHelper
 
     @Inject
     Events events;
+
+    private GlassFishBatchExecutorServiceProvider glassFishBatchExecutorServiceProvider
+            = new GlassFishBatchExecutorServiceProvider();
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
@@ -120,11 +126,10 @@ public class BatchRuntimeHelper
 
     @Override
     public void postConstruct() {
-        System.out.println("** GlassFishBatchExecutorServiceProvider.postConstruct() called");
         events.register(this);
 
         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-        batchSPIManager.registerExecutorServiceProvider(new GlassFishBatchExecutorServiceProvider());
+        batchSPIManager.registerExecutorServiceProvider(glassFishBatchExecutorServiceProvider);
         batchSPIManager.registerBatchSecurityHelper(glassFishBatchSecurityHelper);
 
         try {
@@ -137,16 +142,31 @@ public class BatchRuntimeHelper
         }
     }
 
+    public void setExecutorService(ExecutorService executorService) {
+        glassFishBatchExecutorServiceProvider.setExecutorService(executorService);
+    }
+
     @Override
     public void event(Event event) {
         if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
-            System.out.println("** GlassFishBatchExecutorServiceProvider.onEvent() called: "
-                + event.toString());
+            if (event.hook() != null && event.hook() instanceof DeploymentContextImpl) {
+                DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
+                Properties props = deploymentContext.getAppProps();
+                String appName = props.getProperty("defaultAppName");
+                if (! Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
+                    System.out.println("** BatchRuntimeHelper:: App Undeployed: " + appName);
+                    try {
+                        BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
+                        batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(appName);
+                    } catch (Exception ex) {
+                        logger.log(Level.FINE, "Error while purging jobs", ex);
+                    }
+                }
+            }
         }
     }
 
     public String getDataSourceLookupName() {
-//        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getDataSourceLookupName() != n
         return batchRuntimeConfiguration.getDataSourceLookupName();
     }
 
@@ -155,28 +175,28 @@ public class BatchRuntimeHelper
     }
 
     public String getExecutorServiceLookupName() {
-//        return (batchRuntimeConfiguration != null && batchRuntimeConfiguration.getExecutorServiceLookupName() != null)
-//                    ? batchRuntimeConfiguration.getExecutorServiceLookupName() : DEFAULT_EXECUTOR_SERVICE_LOOKUP_NAME;
         return batchRuntimeConfiguration.getExecutorServiceLookupName();
     }
+
 
     private class GlassFishBatchExecutorServiceProvider
         implements ExecutorServiceProvider {
 
         private volatile ExecutorService executorService;
 
+        void setExecutorService(ExecutorService executorService) {
+            this.executorService = executorService;
+        }
+
         @Override
         public ExecutorService getExecutorService() {
             checkAndInitializeBatchRuntime();
-            System.out.println("** GlassFishBatchExecutorServiceProvider.getExecutorService() called ");
             if (executorService == null) {
                 synchronized (this) {
                     if (executorService == null) {
                         try {
                             InitialContext initialContext = new InitialContext();
                             executorService = (ExecutorService) initialContext.lookup(getExecutorServiceLookupName());
-                            System.out.println("** [INITIALIZED] GlassFishBatchExecutorServiceProvider.getExecutorService() ==> "
-                                + executorService);
                         } catch (NamingException nEx) {
                             nEx.printStackTrace();
                         }
