@@ -60,6 +60,8 @@ public interface EjbSessionDescriptor extends EjbDescriptor {
 
     boolean hasRemoveMethods();
 
+    boolean isPassivationCapable();
+
     Set<MethodDescriptor> getRemoveMethodDescriptors();
 
     String getPortableJndiName(String clientViewType);
