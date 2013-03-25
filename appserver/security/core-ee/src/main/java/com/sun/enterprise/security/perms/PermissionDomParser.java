@@ -66,11 +66,8 @@ public class PermissionDomParser {
     
     protected static final String PERMISSIONS_XML = "META-INF/permissions.xml"; 
 
-    private static String SF = 
-        "/scratch/bg/all/main/appserver/distributions/glassfish/target/stage/glassfish4/glassfish/lib/schemas/permissions_7.xsd"; 
-    private static String xmlSF = 
-        "/scratch/bg/all/main/appserver/distributions/glassfish/target/stage/glassfish4/glassfish/lib/schemas/xml.xsd"; 
-
+    private static String SF = "schemas/permissions_7.xsd";
+         
     
     private PermissionCollection pc = new Permissions();
     
@@ -171,15 +168,6 @@ public class PermissionDomParser {
         return permSchema;
     }
     
-    public final static void main(String[] args) {
-        
-        File permFile = 
-            new File("/scratch/bg/all/main/appserver/tests/quicklook/shaun3/ear1/META-INF/permissions.xml");
-        
-        PermissionDomParser ps = new PermissionDomParser(permFile);
-        
-    }
-
     
     
 }

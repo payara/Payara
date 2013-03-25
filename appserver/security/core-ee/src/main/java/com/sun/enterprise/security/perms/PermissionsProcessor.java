@@ -62,7 +62,7 @@ public class PermissionsProcessor {
     protected DeploymentContext context;
     protected SMGlobalPolicyUtil.CommponentType type;
     
-    protected static Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
+    protected static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
 
 
     public PermissionsProcessor(SMGlobalPolicyUtil.CommponentType type, 

@@ -178,9 +178,8 @@ public class SMGlobalPolicyUtil {
     
     private static boolean eeGrantedPolicyInitDone = false;
 
-    //private static boolean eeRestrictedPolicyInitDone = false;
     
-    protected static String domainCfgFolder = getJavaPolicyFolder() + File.separator;
+    protected static final String domainCfgFolder = getJavaPolicyFolder() + File.separator;
     
     private static final AllPermission ALL_PERM = new AllPermission();
 
