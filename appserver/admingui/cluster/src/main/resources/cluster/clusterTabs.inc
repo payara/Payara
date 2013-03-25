@@ -43,7 +43,10 @@
 <!-- cluster/clusterTabs.jsf -->
 
 <sun:tabSet id="clusterTabs" immediate="$boolean{true}" selected="#{sessionScope.clusterTabs}">
-     
+    <!beforeCreate
+        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+        setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
     <sun:tab id="general" immediate="$boolean{true}" text="$resource{i18ncs.cluster.GeneralTab}" >
         <!command
             setSessionAttribute(key="clusterTabs" value="general");

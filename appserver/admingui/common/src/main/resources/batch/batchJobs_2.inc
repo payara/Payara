@@ -40,29 +40,9 @@
 
 -->
 
-<!initPage
-    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-	setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
-/>
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.batch.jobListingTitle}"  >
-
-<!define name="content">
-    <event>
-    <!beforeCreate
-        createMap(result="#{requestScope.attrsMap}");
-        mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
-        setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobs}");
-        setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.batchJobsTableTitle}");
-        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/common/batch/batchJobExecution.jsf");
-        setPageSessionAttribute(key="listPageLink" value="#{request.contextPath}/common/batch/batchJobs.jsf");
-    />
-    </event>
-"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":batchJobs");</script>
-        <sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
              <sun:title id="propertyContentPage" title="$resource{i18nc.batch.jobListingTitle}" helpText="$resource{i18nc.batch.jobListingTitleHelp}" />
-        "<br>
+#include "/common/shared/nameSection.inc"
         <sun:table id="configs" title="#{tableTitle}"
             deselectMultipleButton="$boolean{false}"
             selectMultipleButton="$boolean{false}"
@@ -78,7 +58,7 @@
         />
 
     <sun:tableColumn headerText="$resource{i18nc.batch.executionIdCol}" sort="executionId" rowHeader="$boolean{true}" id="col1">
-        <sun:hyperlink id="link" text="#{td.value.executionId}" url="#{pageSession.editLink}?executionId=#{td.value.executionId}" />
+        <sun:hyperlink id="link" text="#{td.value.executionId}" url="#{pageSession.editLink}&executionId=#{td.value.executionId}" />
     </sun:tableColumn>
 
     <sun:tableColumn headerText="$resource{i18nc.batch.jobNameCol}"  sort="jobName"  rowHeader="$boolean{false}" id="jobname">

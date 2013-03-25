@@ -134,12 +134,6 @@
                 parentId="tree"
                 content="pluginTreeNodeMonitoringInfo.jsf" />
         <integration-point
-                id="batch"
-                type="org.glassfish.admingui:navNode"
-                priority="580"
-                parentId="tree"
-                content="pluginTreeNodeBatch.jsf" />
-        <integration-point
                 id="common_resources"
                 type="org.glassfish.admingui:navNode"
                 priority="600"
@@ -176,12 +170,6 @@
                 parentId="#{configNameId}"
                 content="pluginTreeNodeAdminService.jsf" />
         <integration-point
-                id="common_batch_config"
-                type="org.glassfish.admingui:navNode"
-                priority="150"
-                parentId="#{configNameId}"
-                content="pluginTreeNodeBatchConfig.jsf" />
-        <integration-point
                 id="monitor"
                 type="org.glassfish.admingui:navNode"
                 priority="500"
@@ -193,6 +181,7 @@
                 priority="700"
                 parentId="#{configNameId}"
                 content="configuration/pluginTreeNodeConfigSysProps.jsf"/>
+
 
         <integration-point
                 id="monitoring"
@@ -244,4 +233,27 @@
                 priority="800"
                 parentId="form"
                 content="/shared/targetSectionForCreate.inc"/>
+
+        <integration-point
+            id="serverBatch"
+            type="org.glassfish.admingui:serverInstTab"
+            priority="30"
+            parentId="serverInstTabs"
+            content="batch/batchTabs.jsf"
+        />
+        <integration-point
+            id="clusterBatch"
+            type="org.glassfish.admingui:clusterTab"
+            priority="200"
+            parentId="clusterTabs"
+            content="batch/batchTabsCluster.jsf"
+            />
+
+        <integration-point
+            id="standaloneBatch"
+            type="org.glassfish.admingui:standaloneInstTab"
+            priority="40"
+            parentId="standaloneInstanceTabs"
+            content="batch/batchTabsStandalone.jsf"
+            />
 </console-config>

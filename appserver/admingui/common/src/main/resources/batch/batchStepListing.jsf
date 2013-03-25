@@ -49,19 +49,18 @@
 <!define name="content">
     <event>
     <!beforeCreate
-        setSessionAttribute(key="batchExecutionTabs" value="steps");
+#include "/common/batch/batchRequestParam.inc"
         getRequestValue(key="executionId" value="#{pageSession.executionId}");
+        setSessionAttribute(key="batchExecutionTabs" value="steps");
         createMap(result="#{requestScope.attrsMap}");
+        mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
         mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
         mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-steps" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobSteps}");
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.jobStepListingTableTitle}");
-        setPageSessionAttribute(key="listPageLink" value="#{request.contextPath}/common/batch/batchJobs.jsf");
     />
     </event>
-"   <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":batchJobs");</script>
-
 <sun:form id="propertyForm">
 #include "/common/batch/batchExecutionTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
@@ -71,13 +70,13 @@
         <sun:panelGroup id="topButtons">
             <sun:button id="cancelButton" immediate="#{true}" primary="#{false}"  text="$resource{i18n.button.Back}" >
                 <!command
-                    gf.redirect(page="#{pageSession.listPageLink}");
+                    gf.redirect(page="#{pageSession.listJobsLink}");
                 />
             </sun:button>
         </sun:panelGroup>
     </facet>
     </sun:title>
-    <sun:propertySheet id="propertySheet">
+#include "/common/shared/nameSection.inc"
             <sun:propertySheetSection >
                 <sun:property id="executionId"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.executionId}">
                     <sun:staticText id="executionId" text="#{pageSession.executionId}" />
@@ -88,7 +87,6 @@
                 </sun:property>
                 -->
             </sun:propertySheetSection >
-        </sun:propertySheet>
             "<br>
 
     <sun:table id="configs" title="#{tableTitle}"
@@ -154,7 +152,7 @@
        </sun:tableColumn>
       </sun:tableRowGroup>
     </sun:table>
-
+ "<br/>"
     <sun:hidden id="helpKey" value="$resource{help_common.jobStepListing}" />
 </sun:form>
 </define>

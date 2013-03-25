@@ -322,6 +322,7 @@ public class UtilHandlers {
             map = new HashMap();
         }
         keyList.addAll(map.keySet());
+        Collections.sort(keyList);
         handlerCtx.setOutputValue("Keys", keyList);
     }
 

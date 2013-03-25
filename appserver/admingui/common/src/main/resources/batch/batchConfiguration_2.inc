@@ -40,27 +40,7 @@
 
 -->
 
-<!initPage
-    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-	setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
-/>
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.batch.configurationTitle}"  >
-
-<!define name="content">
-    <event>
-    <!beforeCreate
-        setSessionAttribute(key="batchTabs" value="batchConfig");
-        getRequestValue(key="configName" value="#{pageSession.configName}" default="server-config");
-        createMap(result="#{pageSession.attrsMap}")
-        #mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration"  method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
-        #mapPut(map="#{pageSession.valueMap}" key="target" value="server");
-    />
-    </event>
-<sun:form id="propertyForm">
 #include "/common/shared/alertMsg_1.inc"
-
     <sun:title id="propertyContentPage" title="$resource{i18nc.batch.configurationTitle}" helpText="$resource{i18nc.batch.configurationTitleHelp}" >
     <!facet pageButtonsTop>
             <sun:panelGroup id="topButtons">
@@ -74,7 +54,7 @@
             </sun:panelGroup>
         </facet>
     </sun:title>
-    <sun:propertySheet id="propertySheet">
+#include "/common/shared/nameSection.inc"
             <sun:propertySheetSection >
                 <sun:property id="executorServiceLookupName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.executorServiceLookupName}" helpText="$resource{i18nc.batch.configuration.executorServiceLookupNameHelp}">
                     <sun:dropDown id="executorServiceLookupName" selected="#{pageSession.valueMap['executorServiceLookupName']}" labels="$pageSession{mesList}"  values="$pageSession{mesList}"  >
@@ -91,9 +71,7 @@
                     />
                    </sun:dropDown>
                </sun:property>
-
             </sun:propertySheetSection>
-            </sun:propertySheet>
 
     <sun:hidden id="helpKey" value="$resource{help_common.batchConfiguration}" />
 </sun:form>

@@ -40,21 +40,25 @@
 
 -->
 
-<sun:tabSet id="batchExecutionTabs" immediate="$boolean{true}" selected="#{sessionScope.batchExecutionTabs}">
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+	setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.batch.jobListingTitle}"  >
+
+<!define name="content">
+    <event>
     <!beforeCreate
-            setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-            setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
-        />
-    <sun:tab id="jobParameters" immediate="$boolean{true}" text="$resource{i18nc.batch.jobParametersTab}" toolTip="$resource{i18nc.batch.jobParametersTabTip}" >
-        <!command
-        setSessionAttribute(key="batchExecutionTabs" value="jobParameters");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobExecution.jsf?executionId=#{pageSession.executionId}&target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.tabSetName}");
-        />
-    </sun:tab>
-    <sun:tab id="steps" immediate="$boolean{true}" text="$resource{i18nc.batch.stepTab}" toolTip="$resource{i18nc.batch.stepTabTip}" >
-        <!command
-        setSessionAttribute(key="batchExecutionTabs" value="steps");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchStepListing.jsf?executionId=#{pageSession.executionId}&target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.tabSetName}");
-        />
-    </sun:tab>
-</sun:tabSet>
+#include "/common/batch/batchRequestParam.inc"
+        setSessionAttribute(key="#{pageSession.tabSetName}" value="batchJobs");
+        createMap(result="#{requestScope.attrsMap}");
+        mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
+        mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
+        setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobs}");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.batchJobsTableTitle}");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/common/batch/batchJobExecution.jsf?target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.encodedTabSetName}");
+    />
+    </event>
+        <sun:form id="propertyForm">

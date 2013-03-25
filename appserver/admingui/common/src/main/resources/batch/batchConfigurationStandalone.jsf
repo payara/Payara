@@ -39,18 +39,8 @@
     holder.
 
 -->
+#include "/common/batch/batchConfiguration_1.inc"
 
-<sun:tabSet id="batchTabs" immediate="$boolean{true}" selected="#{sessionScope.batchTabs}">
-    <sun:tab id="listing" immediate="$boolean{true}" text="$resource{i18nc.batch.jobListingTab}" toolTip="$resource{i18nc.batch.jobListingTabTip}" >
-        <!command
-        setSessionAttribute(key="batchTabs" value="listing");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobs.jsf");
-        />
-    </sun:tab>
-    <sun:tab id="batchConfig" immediate="$boolean{true}" text="$resource{i18nc.batch.configuration}" toolTip="$resource{i18nc.batch.configurationTip}" >
-        <!command
-        setSessionAttribute(key="batchTabs" value="batchConfig");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchConfiguration.jsf");
-        />
-    </sun:tab>
-</sun:tabSet>
+#include "/cluster/standalone/standaloneInstanceTabs.inc"
+
+#include "/common/batch/batchConfiguration_2.inc"
