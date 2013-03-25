@@ -40,6 +40,7 @@
 
 package com.sun.ejb.containers.interceptors;
 
+import javax.interceptor.AroundConstruct;
 import javax.interceptor.AroundInvoke;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -65,6 +66,7 @@ public class SystemInterceptorProxy
 
     public Object delegate;
 
+    private Method aroundConstruct;
     private Method postConstruct;
     private Method preDestroy;
     private Method aroundInvoke;
@@ -91,6 +93,9 @@ public class SystemInterceptorProxy
                } else if( m.getAnnotation(AroundTimeout.class) != null ) {
                    aroundTimeout = m;
                    prepareMethod(m);                         
+               } else if( m.getAnnotation(AroundConstruct.class) != null ) {
+                   aroundConstruct = m;
+                   prepareMethod(m);                         
                }
            }
 
@@ -116,40 +121,31 @@ public class SystemInterceptorProxy
     }
 
     @PostConstruct
-    public void init(InvocationContext ctx) throws Throwable {
-        doCallback(ctx, postConstruct);
+    public Object init(InvocationContext ctx) throws Exception {
+        return doCall(ctx, postConstruct);
     }
 
     @PreDestroy
-    public void destroy(InvocationContext ctx) throws Throwable {
-        doCallback(ctx, preDestroy);
+    public Object destroy(InvocationContext ctx) throws Exception {
+        return doCall(ctx, preDestroy);
     }
 
-
-    private void doCallback(InvocationContext ctx, Method m) throws Throwable {
-
-        if( (delegate != null) && (m != null) ) {
-            try {
-                m.invoke(delegate, ctx);
-            } catch(InvocationTargetException ite) {
-                throw ite.getCause();
-            }
-        } else {
-            ctx.proceed();
-        }
+    @AroundConstruct
+    public Object create(InvocationContext ctx) throws Exception {
+        return doCall(ctx, aroundConstruct);
     }
 
     @AroundInvoke
     public Object aroundInvoke(InvocationContext ctx) throws Exception {
-        return doAround(ctx, aroundInvoke);
+        return doCall(ctx, aroundInvoke);
     }
 
     @AroundTimeout
     public Object aroundTimeout(InvocationContext ctx) throws Exception {
-        return doAround(ctx, aroundTimeout);
+        return doCall(ctx, aroundTimeout);
     }
 
-    private Object doAround(InvocationContext ctx, Method m) throws Exception {
+    private Object doCall(InvocationContext ctx, Method m) throws Exception {
         Object returnValue = null;
 
         if( (delegate != null) && (m != null) ) {
@@ -179,6 +175,13 @@ public class SystemInterceptorProxy
         String interceptorName = interceptorClass.getName();
 
         interceptor.setInterceptorClass(interceptorClass);
+
+        {
+               LifecycleCallbackDescriptor desc = new LifecycleCallbackDescriptor();
+               desc.setLifecycleCallbackClass(interceptorName);
+               desc.setLifecycleCallbackMethod("create");
+               interceptor.addCallbackDescriptor(CallbackType.AROUND_CONSTRUCT, desc);
+        }
 
         {
                LifecycleCallbackDescriptor desc = new LifecycleCallbackDescriptor();
