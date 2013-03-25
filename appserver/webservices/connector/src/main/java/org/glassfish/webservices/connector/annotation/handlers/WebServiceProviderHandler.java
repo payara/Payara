@@ -40,7 +40,6 @@
 
 package org.glassfish.webservices.connector.annotation.handlers;
 
-import java.text.MessageFormat;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.annotation.Annotation;
@@ -296,6 +295,14 @@ public class WebServiceProviderHandler extends AbstractHandler {
             if(endpoint.getWebComponentImpl() == null) {
                 WebComponentDescriptor webComponent = (WebComponentDescriptor) webBundle.
                     getWebComponentByCanonicalName(endpoint.getWebComponentLink());
+
+                if (webComponent == null) {
+                    //GLASSFISH-3297
+                    WebComponentDescriptor[] wcs = webBundle.getWebComponentByImplName(((Class) annElem).getCanonicalName());
+                    if (wcs.length > 0) {
+                        webComponent = wcs[0];
+                    }
+                }
 
                 // if servlet is not known, we should add it now
                 if (webComponent == null) {

@@ -443,6 +443,14 @@ public class WebServiceHandler extends AbstractHandler {
                 WebComponentDescriptor webComponent = (WebComponentDescriptor) webBundle.
                     getWebComponentByCanonicalName(endpoint.getWebComponentLink());
 
+                if (webComponent == null) {
+                    //GLASSFISH-3297
+                    WebComponentDescriptor[] wcs = webBundle.getWebComponentByImplName(implClassFullName);
+                    if (wcs.length > 0) {
+                        webComponent = wcs[0];
+                    }
+                }
+
                 // if servlet is not known, we should add it now
                 if (webComponent == null) {
                     webComponent = new WebComponentDescriptorImpl();
