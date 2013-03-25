@@ -88,9 +88,9 @@
 				    gf.restRequest(
 					endpoint="#{sessionScope.REST_URL}/clusters/cluster.json"
 					method="GET"
-					result="#{requestScope.clusters}");
-				    gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{requestScope.servers}" );
-                                    listAdd(list="#{requestScope.servers}", value="server" index="0");
+					result="#{requestScope.resp}");
+                    setAttribute(key="clusters" value="#{requestScope.resp.data.extraProperties.childResources}");
+                    gf.getMapKeys(Map="#{requestScope.resp.data.extraProperties.childResources}" Keys="#{requestScope.clusters}" );
 				/>
 				<!command
 					setAttribute(key="targetType" value="cluster");

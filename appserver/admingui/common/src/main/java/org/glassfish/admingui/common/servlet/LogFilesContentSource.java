@@ -97,10 +97,9 @@ public class LogFilesContentSource  implements DownloadServlet.ContentSource {
             Map attrsMap = new HashMap();
             String tempDir = System.getProperty("java.io.tmpdir");
             String fileName = "log-files-" + target + "-" + dateFormat.format(date) + ".zip";
-            String filePath = tempDir + System.getProperty("file.separator") + fileName;
-            File file = new File(filePath);
+            File file = new File(tempDir, fileName);
             // retrieveFilePath
-            attrsMap.put("id", filePath); // CAUTION: file instead of dir 
+            attrsMap.put("id", file.getAbsolutePath()); // CAUTION: file instead of dir
             attrsMap.put("retrieve", "true"); 
             attrsMap.put("target", target); 
             RestUtil.postRestRequestFromServlet(request, endpoint, attrsMap, true, true);
