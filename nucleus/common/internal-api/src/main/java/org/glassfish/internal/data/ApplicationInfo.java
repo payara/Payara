@@ -572,7 +572,7 @@ public class ApplicationInfo extends ModuleInfo {
         }
 
         @Override
-        public void event(Event event) {
+        public void event(@RestrictTo(Deployment.DEPLOYMENT_FAILURE_NAME) Event event) {
             if( ! event.is(Deployment.DEPLOYMENT_FAILURE) ) return;
             
             DeploymentContext dc = Deployment.DEPLOYMENT_FAILURE.getHook(event);

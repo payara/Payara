@@ -46,6 +46,8 @@ import com.sun.enterprise.util.OS;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.*;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -506,6 +508,19 @@ public class FileUtils {
         if(!deleteFile(f))
             f.deleteOnExit();
     }
+    
+    /**
+     * Delete a file.  Will retry every ten milliseconds for five seconds, doing a
+     * gc after each second.
+     *
+     * @param f file to delete
+     * @return boolean indicating success or failure of the deletion atttempt; returns true if file is absent
+     */
+    public static boolean deleteFileWithWaitLoop(File f) {
+        return internalDeleteFile(f, true);
+        
+    }
+    
     /**
      * Delete a file.  If on Windows and the delete fails, run the gc and retry the deletion.
      *
@@ -513,6 +528,21 @@ public class FileUtils {
      * @return boolean indicating success or failure of the deletion atttempt; returns true if file is absent
      */
     public static boolean deleteFile(File f) {
+        return internalDeleteFile(f, false);
+    }
+    
+    
+    private final static long WAIT_TIME = 10L;
+    private final static long ITERATIONS = 5000L / WAIT_TIME ;
+    private final static long GC_INTERVAL = 1000L;
+    
+    /**
+     * Delete a file.  If on Windows and the delete fails, run the gc and retry the deletion.
+     *
+     * @param f file to delete
+     * @return boolean indicating success or failure of the deletion atttempt; returns true if file is absent
+     */
+    private static boolean internalDeleteFile(File f, boolean doWaitLoop) {
         /*
         *The operation succeeds immediately if the file is deleted
         *successfully.  On systems that support symbolic links, the file
@@ -522,8 +552,37 @@ public class FileUtils {
         *a symlink checks for the existence of the linked-to directory or
         *file rather than of the link itself.
         */
-        if (f.delete()) {
-            return true;
+        if (!doWaitLoop) {
+            if (f.delete()) {
+                return true;
+            }
+        }
+        else {
+            for (long lcv = 0; lcv < ITERATIONS; lcv++) {
+                if (f.delete()) {
+                    return true;
+                }
+                
+                try {
+                    Thread.sleep(WAIT_TIME);
+                }
+                catch (InterruptedException ie) {
+                    break;
+                }
+                
+                if ((lcv % GC_INTERVAL) == 0L) {
+                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
+
+                        @Override
+                        public Object run() {
+                            System.gc();
+                            return null;
+                        }
+                        
+                    } );
+                }
+            }
+            
         }
 
         boolean log = _utillogger.isLoggable(FILE_OPERATION_LOG_LEVEL);

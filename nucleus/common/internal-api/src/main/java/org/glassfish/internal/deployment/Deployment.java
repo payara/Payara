@@ -85,11 +85,16 @@ public interface Deployment {
      * once before any sniffer is invoked.
      */
     public final EventTypes<DeploymentContext> DEPLOYMENT_START = EventTypes.create("Deployment_Start", DeploymentContext.class);
+    
+    /**
+     * The name of the Deployment Failure event
+     */
+    public static final String DEPLOYMENT_FAILURE_NAME = "Deployment_Failed";
     /**
      * This asynchronous event is sent when a deployment activity (first time deploy or loading of an already deployed application)
      * failed.
      */
-    public final EventTypes<DeploymentContext> DEPLOYMENT_FAILURE = EventTypes.create("Deployment_Failed", DeploymentContext.class);
+    public final EventTypes<DeploymentContext> DEPLOYMENT_FAILURE = EventTypes.create(DEPLOYMENT_FAILURE_NAME, DeploymentContext.class);
     /**
      * This synchronous event is sent after creation of deployment classloader. 
      */

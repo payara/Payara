@@ -586,7 +586,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
                     allDeletesSucceeded &= deleteDir(entries[i]);
                 } else {
                     if ( ! entries[i].equals(StaleFileManager.Util.markerFile(archive))) {
-                        final boolean fileDeleteOK = FileUtils.deleteFile(entries[i]);
+                        final boolean fileDeleteOK = FileUtils.deleteFileWithWaitLoop(entries[i]);
                         if (fileDeleteOK) {
                             myStaleFileManager().recordDeletedEntry(entries[i]);
                         }
@@ -596,7 +596,7 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
             }
         }
         // delete self (the directory or the symbolic link)
-        return (allDeletesSucceeded && FileUtils.deleteFile(directory));
+        return (allDeletesSucceeded && FileUtils.deleteFileWithWaitLoop(directory));
     } 
     
     /**
