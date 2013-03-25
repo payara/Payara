@@ -259,27 +259,30 @@ public class AppClientGroupFacadeGenerator {
         final File mainClassFile = File.createTempFile("main", ".class");
         final OutputStream os = new BufferedOutputStream(new FileOutputStream(mainClassFile));
         InputStream is = null;
+        JarFile jf = null;
         try {
-            is = openByteCodeStream(mainClassJAR, mainClassResourceName);
+            jf = new JarFile(mainClassJAR);
+            final JarEntry entry = jf.getJarEntry(mainClassResourceName);
+            is = jf.getInputStream(entry);
             DeploymentUtils.copyStream(is, os);
             is.close();
             clientArtifactsManager.add(mainClassFile, mainClassResourceName, true);
         } catch (Exception e) {
             throw new DeploymentException(e);
         } finally {
-            os.close();
-            if (is != null) {
-                is.close();
+            try {
+                os.close();
+            } finally {
+                try {
+                    if (is != null) {
+                        is.close();
+                    }
+                } finally {
+                    if (jf != null) {
+                        jf.close();
+                    }
+                }
             }
         }
-    }
-    
-    protected InputStream openByteCodeStream(
-            final File jarFile,
-            final String resourceName) throws IOException {
-        final JarFile jf = new JarFile(jarFile);
-        final JarEntry entry = jf.getJarEntry(resourceName);
-        InputStream is = jf.getInputStream(entry);
-        return is;
     }
 }
