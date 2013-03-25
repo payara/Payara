@@ -74,6 +74,10 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 import org.glassfish.web.util.ExceptionUtils;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.glassfish.hk2.api.PreDestroy;
+import com.sun.enterprise.security.integration.DDPermissionsLoader;
+import com.sun.enterprise.security.integration.PermsHolder;
+import com.sun.enterprise.security.perms.PermissionsProcessor;
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 
 import javax.naming.Binding;
 import javax.naming.NameClassPair;
@@ -144,7 +148,7 @@ import java.util.logging.Logger;
  */
 public class WebappClassLoader
     extends URLClassLoader
-    implements Reloader, InstrumentableClassLoader, PreDestroy
+    implements Reloader, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader 
 {
     // ------------------------------------------------------- Static Variables
 
@@ -446,6 +450,9 @@ public class WebappClassLoader
      */
     private ConcurrentLinkedQueue<Permission> permissionList =
         new ConcurrentLinkedQueue<Permission>();
+    
+    //holder for declared and ee permissions
+    private PermsHolder permissionsHolder;
 
     /**
      * Path where resources loaded from JARs will be extracted.
@@ -741,7 +748,30 @@ public class WebappClassLoader
             permissionList.add(permission);
         }
     }
+    
+    
+    @Override
+    public void addDeclaredPermissions(PermissionCollection declaredPc 
+            ) throws SecurityException {
+        
+        if (securityManager != null) {
+            securityManager.checkSecurityAccess(
+                    DDPermissionsLoader.SET_EE_POLICY);
 
+            permissionsHolder.setDeclaredPermissions(declaredPc);
+        }
+    }
+    
+    @Override
+    public void addEEPermissions(PermissionCollection eePc) {
+        
+        if (securityManager != null) {
+            securityManager.checkSecurityAccess(
+                    DDPermissionsLoader.SET_EE_POLICY);
+
+            permissionsHolder.setEEPermissions(eePc);
+        }
+    }
 
     /**
      * Return the JAR path.
@@ -1736,19 +1766,39 @@ public class WebappClassLoader
     protected PermissionCollection getPermissions(CodeSource codeSource) {
 
         String codeUrl = codeSource.getLocation().toString();
-        PermissionCollection pc;
-        if ((pc = loaderPC.get(codeUrl)) == null) {
-            pc = super.getPermissions(codeSource);
-            if (pc != null) {
-                Iterator<Permission> perms = permissionList.iterator();
-                while (perms.hasNext()) {
-                    Permission p = perms.next();
+        PermissionCollection pc = loaderPC.get(codeUrl);
+        if (pc == null) {
+            pc = new Permissions();            
+
+            PermissionCollection spc = super.getPermissions(codeSource);
+            if (spc != null) {
+                Enumeration<Permission> perms = spc.elements();
+                while (perms.hasMoreElements()) {
+                    Permission p = perms.nextElement();
+                    pc.add(p);
+                }                 
+            }
+                
+            Iterator<Permission> perms = permissionList.iterator();
+            while (perms.hasNext()) {
+                Permission p = perms.next();
+                pc.add(p);
+            }
+            
+            //get the declared and EE perms
+            PermissionCollection pc1 = 
+                permissionsHolder.getPermissions(codeSource, null);
+            if  (pc1 != null) {
+                Enumeration<Permission> dperms =  pc1.elements();
+                while (dperms.hasMoreElements()) {
+                    Permission p = dperms.nextElement();
                     pc.add(p);
                 }
-                PermissionCollection tmpPc = loaderPC.putIfAbsent(codeUrl,pc);
-                if (tmpPc != null) {
-                    pc = tmpPc;
-                }
+            }
+                
+            PermissionCollection tmpPc = loaderPC.putIfAbsent(codeUrl,pc);                
+            if (tmpPc != null) {
+                pc = tmpPc;
             }
         }
         return (pc);
@@ -1827,6 +1877,8 @@ public class WebappClassLoader
         }
 
         addOverridablePackage("com.sun.faces.extensions");
+        
+        permissionsHolder = new PermsHolder();
     }
 
 
@@ -1933,6 +1985,7 @@ public class WebappClassLoader
         parent = null;
 
         permissionList.clear();
+        permissionsHolder = null;
         loaderPC.clear();
 
         if (loaderDir != null) {

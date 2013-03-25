@@ -43,6 +43,9 @@ package com.sun.enterprise.loader;
 import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.i18n.StringManager;
+import com.sun.enterprise.security.integration.DDPermissionsLoader;
+import com.sun.enterprise.security.integration.PermsHolder;
+import org.glassfish.api.deployment.DeploymentContext;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -62,12 +65,14 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.security.AccessController;
 import java.security.CodeSource;
+import java.security.Permission;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.security.ProtectionDomain;
 import java.security.SecureClassLoader;
 import java.security.cert.Certificate;
+import java.security.Permissions;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.Attributes;
@@ -77,6 +82,7 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.security.PermissionCollection;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
 import org.glassfish.hk2.api.PreDestroy;
 
@@ -93,7 +99,7 @@ import org.glassfish.hk2.api.PreDestroy;
  */
 public class ASURLClassLoader
         extends URLClassLoader
-        implements JasperAdapter, InstrumentableClassLoader, PreDestroy {
+        implements JasperAdapter, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader {
 
     /*
        NOTE: various variables are 'final' to enjoy the JVM thread visibility guaranteed for 'final'.
@@ -140,12 +146,17 @@ public class ASURLClassLoader
     private final static StringManager sm =
         StringManager.getManager(ASURLClassLoader.class);
 
+    //holder for declared and ee permissions
+    private PermsHolder permissionsHolder;
+    
     /**
      * Constructor.
      */
     public ASURLClassLoader() {
         super(new URL[0]);
 
+        permissionsHolder = new PermsHolder();
+        
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE,
                         "ClassLoader: " + this + " is getting created.");
@@ -159,6 +170,7 @@ public class ASURLClassLoader
      */
     public ASURLClassLoader(ClassLoader parent) {
         super(new URL[0], parent);
+        permissionsHolder = new PermsHolder();
     }
 
     public boolean isDone() {
@@ -678,6 +690,48 @@ public class ASURLClassLoader
         });
         return (byte[]) result;
     }
+    
+    @Override
+    public void addEEPermissions(PermissionCollection eePc) {        
+        // sm on
+        if (System.getSecurityManager() != null) {
+            System.getSecurityManager().checkSecurityAccess(
+                    DDPermissionsLoader.SET_EE_POLICY);
+
+            permissionsHolder.setEEPermissions(eePc);
+        }
+    }
+
+    @Override    
+    public void addDeclaredPermissions(PermissionCollection declaredPc 
+            ) throws SecurityException {
+        
+        if (System.getSecurityManager() != null) {
+            System.getSecurityManager().checkSecurityAccess(
+                    DDPermissionsLoader.SET_EE_POLICY);
+        
+            permissionsHolder.setDeclaredPermissions(declaredPc);
+        }
+        
+    }
+
+    
+    
+    @Override
+    protected PermissionCollection getPermissions(CodeSource codeSource) {
+        
+        String codeUrl = codeSource.getLocation().toString();
+        
+        PermissionCollection cachedPc = 
+            permissionsHolder.getCachedPerms(codeSource);
+        if (cachedPc != null)
+            return cachedPc;
+        
+        return permissionsHolder.getPermissions(
+                codeSource, super.getPermissions(codeSource));
+    }
+    
+    
 
     /** THREAD SAFETY: what happens when more than one thread requests the same class
         and thus works on the same classData?  Or defines the same package?  Maybe
@@ -791,7 +845,18 @@ public class ASURLClassLoader
             }
 
             byte[] result = loadClassData0(u, entryName);
-            if (result != null) return new ClassData(result, u.pd);
+            if (result != null) {
+                if (System.getSecurityManager() == null)
+                    return new ClassData(result, u.pd);
+                else {
+                    //recreate the pd to include the declared permissions
+                    CodeSource cs = u.pd.getCodeSource();
+                    PermissionCollection pc = this.getPermissions(cs);
+                    ProtectionDomain pdWithPemissions = 
+                        new ProtectionDomain(u.pd.getCodeSource(), pc, u.pd.getClassLoader(), u.pd.getPrincipals());
+                    return new ClassData(result, pdWithPemissions);
+                }
+            }
             i++;
         }
 

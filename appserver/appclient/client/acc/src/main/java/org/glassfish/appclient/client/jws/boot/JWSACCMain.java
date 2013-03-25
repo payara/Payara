@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ import java.util.Vector;
 import javax.swing.SwingUtilities;
 import org.glassfish.appclient.client.acc.AppClientContainer;
 import org.glassfish.appclient.common.Util;
+import org.glassfish.appclient.client.acc.JWSACCClassLoader;
 
 /**
  *Alternate main class for ACC, used when launched by Java Web Start.
@@ -415,7 +416,7 @@ public class JWSACCMain implements Runnable {
      *@return the class loader
      */
     private static ClassLoader prepareClassLoader(File downloadedAppclientJarFile) throws IOException, URISyntaxException, ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        ClassLoader ldr = new URLClassLoader(downloadedJarURLs, classPathManager.getParentClassLoader());
+        ClassLoader ldr = new JWSACCClassLoader(downloadedJarURLs, classPathManager.getParentClassLoader());             
         return ldr;
     }
     

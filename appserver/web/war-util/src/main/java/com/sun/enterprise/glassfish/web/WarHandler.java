@@ -44,6 +44,8 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
+import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.apache.naming.resources.FileDirContext;
@@ -77,6 +79,8 @@ import java.util.ResourceBundle;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -205,6 +209,17 @@ public class WarHandler extends AbstractArchiveHandler {
             
             configureContextXmlAttribute(cloader, base, context);
             
+            try {
+                final DeploymentContext dc = context;
+                final ClassLoader cl = cloader;
+                
+                AccessController.doPrivileged(
+                        new PermsArchiveDelegate.SetPermissionsAction(
+                                SMGlobalPolicyUtil.CommponentType.war, dc, cl));
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException)e.getException();
+            }
+
         } catch(XMLStreamException xse) {
             logger.log(Level.SEVERE, xse.getMessage());
             if (logger.isLoggable(Level.FINE)) {

@@ -155,6 +155,11 @@
           <groupId>org.glassfish.annotations</groupId>
           <artifactId>logging-annotation-processor</artifactId>
           <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>security-ee</artifactId>
+            <version>${project.version}</version>
         </dependency>        
    </dependencies>
 </project>

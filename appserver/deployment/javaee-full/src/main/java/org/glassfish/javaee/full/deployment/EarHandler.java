@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import java.net.URI;
 
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.archive.*;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -72,15 +71,25 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.deploy.shared.FileArchive;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
+import com.sun.enterprise.security.integration.DDPermissionsLoader;
+import com.sun.enterprise.security.perms.EarEEPermissionsProcessor;
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
+import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import java.io.*;
 import java.util.logging.Level;
+import java.util.Map;
 import java.net.URLClassLoader;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.security.AccessController;
+import java.security.PermissionCollection;
+import java.security.Permission;
+import java.security.PrivilegedExceptionAction;
+import java.security.PrivilegedActionException;
 import java.security.PrivilegedAction;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -112,8 +121,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     private static LocalStringsImpl strings = new LocalStringsImpl(EarHandler.class);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarHandler.class);
 
+    //declaredPermission
+    protected PermissionCollection earDeclaredPC;
 
-
+    //ee permissions for all types
+    private Map<SMGlobalPolicyUtil.CommponentType, PermissionCollection> eeGarntsMap;
+    
     public String getArchiveType() {
         return EarDetector.ARCHIVE_TYPE;
     }
@@ -289,7 +302,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
     public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
         final ReadableArchive archive  = context.getSource();
-
+        
         ApplicationHolder holder =
             getApplicationHolder(archive, context, true);
 
@@ -324,6 +337,17 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                         DeploymentProperties.COMPATIBILITY, compatProp);
                 }
             }
+            
+            if (System.getSecurityManager() != null) {
+                //procee declared permissions
+                earDeclaredPC = 
+                    PermsArchiveDelegate.getDeclaredPermissions(
+                            SMGlobalPolicyUtil.CommponentType.ear, context);
+                
+                //process ee permissions
+                processEEPermissions(context);
+            }
+            
             final URL[] earLibURLs = ASClassLoaderUtil.getAppLibDirLibraries(context.getSourceDir(), holder.app.getLibraryDirectory(), compatProp);
             final EarLibClassLoader earLibCl = AccessController.doPrivileged(new PrivilegedAction<EarLibClassLoader>() {
                 @Override
@@ -331,6 +355,18 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                     return new EarLibClassLoader(earLibURLs, parent);
                 }
             });
+
+            if (System.getSecurityManager() != null) {
+                addEEOrDeclaredPermissions(earLibCl, earDeclaredPC, false);   
+                if(Level.FINE.equals(_logger.getLevel()))
+                    _logger.fine("added declaredPermissions to earlib: " + earDeclaredPC );
+                addEEOrDeclaredPermissions(earLibCl, 
+                        eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ear),
+                                true);
+                if(Level.FINE.equals(_logger.getLevel()))
+                    _logger.fine("added all ee permissions to earlib: " + 
+                        eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ear) );
+            }
 
             embeddedConnCl =  AccessController.doPrivileged(new PrivilegedAction<DelegatingClassLoader>() {
                 @Override
@@ -349,8 +385,22 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             // add ear lib to module classloader list so we can 
             // clean it up later
             cl.addModuleClassLoader(EAR_LIB, earLibCl);
+            
+            if(System.getSecurityManager() != null) {
+                //push declared permissions to ear classloader
+                addEEOrDeclaredPermissions(cl, earDeclaredPC, false);
+                if(Level.FINE.equals(_logger.getLevel()))
+                    _logger.fine("declaredPermissions added: " + earDeclaredPC );
+                //push ejb permissions to ear classloader
+                addEEOrDeclaredPermissions(cl, 
+                        eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ejb),
+                                true);
+                if(Level.FINE.equals(_logger.getLevel()))
+                    _logger.fine("ee permissions added: " + eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ejb) );
+            }
+
         } catch (Exception e) {
-            _logger.log(Level.SEVERE, strings.get("errAddLibs") ,e);
+            _logger.log(Level.SEVERE, strings.get("errAddLibs"), e);
             throw new RuntimeException(e);
         }
 
@@ -408,6 +458,13 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                         sub.setParentArchive(context.getSource());
 
                         ClassLoader subCl = handler.getClassLoader(cl, subContext);
+
+                        if ((System.getSecurityManager() != null) && (subCl instanceof DDPermissionsLoader)) {                           
+                           addEEOrDeclaredPermissions(subCl, earDeclaredPC, false);
+                           if(Level.FINE.equals(_logger.getLevel()))
+                               _logger.fine("added declared permissions to sub module of " + subCl );
+                        }
+                        
                         if (md.getModuleType().equals(DOLUtils.ejbType())) {
                             // for ejb module, we just add the ejb urls 
                             // to EarClassLoader and use that to load 
@@ -446,7 +503,42 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         }
         return cl;
     }
+    
+    
+    protected void processEEPermissions(DeploymentContext dc) {
+        
+        EarEEPermissionsProcessor eePp = 
+            new EarEEPermissionsProcessor(dc);
+        
+        eeGarntsMap = eePp.getAllAdjustedEEPermission();
+        
+    }
 
+    //set ee or declared permissions
+    private void addEEOrDeclaredPermissions(ClassLoader cloader, final PermissionCollection pc, final boolean isEEPermission) {
+        
+        if(!(cloader instanceof DDPermissionsLoader))
+            return;
+        
+        final DDPermissionsLoader ddpl = (DDPermissionsLoader)cloader;
+        try {
+            AccessController.doPrivileged(
+                  new PrivilegedExceptionAction() {
+                    public Object run() throws SecurityException {
+                        if (isEEPermission)
+                            ddpl.addEEPermissions(pc);
+                        else
+                            ddpl.addDeclaredPermissions(pc);
+                        
+                        return null;
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException ) e.getException();
+            }        
+    }
+    
+    
     public boolean accept(ReadableArchive source, String entryName) {
         // I am hiding everything but the metadata.
         return entryName.startsWith("META-INF");

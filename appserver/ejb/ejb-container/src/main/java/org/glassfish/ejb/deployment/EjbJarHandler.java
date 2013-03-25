@@ -42,6 +42,8 @@
 package org.glassfish.ejb.deployment;
 
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
+import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.loader.ASURLClassLoader;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.deployment.util.DOLUtils;
@@ -62,6 +64,7 @@ import java.io.*;
 import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.util.List;
 import java.util.logging.Level;
 
@@ -156,6 +159,19 @@ public class EjbJarHandler extends AbstractArchiveHandler {
             for (URL url : getManifestLibraries(context)) {
                 cloader.addURL(url);
             }
+
+            try {
+                final DeploymentContext dc = context;
+                final ClassLoader cl = cloader;
+                
+                AccessController.doPrivileged(
+                        new PermsArchiveDelegate.SetPermissionsAction(
+                                SMGlobalPolicyUtil.CommponentType.ejb, dc, cl));
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException)e.getException();
+            }
+
+            
         } catch (Exception e) {
             _logger.log(Level.SEVERE, e.getMessage());
             throw new RuntimeException(e);

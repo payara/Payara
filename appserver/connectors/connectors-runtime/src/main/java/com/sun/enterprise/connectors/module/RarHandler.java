@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,8 @@ import com.sun.appserv.connectors.internal.api.ConnectorsClassLoaderUtil;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.connectors.connector.module.RarDetector;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
+import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.logging.LogDomains;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -55,8 +57,9 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.IOException;
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
 import java.net.URISyntaxException;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -115,6 +118,8 @@ public class RarHandler extends AbstractArchiveHandler {
             } catch (URISyntaxException e) {
                 throw new RuntimeException(e);
             }
+            
+            ClassLoader carCL;
             if (isEmbedded(context)) {
                 String applicationName = ConnectorsUtil.getApplicationName(context);
                 String embeddedRarName = ConnectorsUtil.getEmbeddedRarModuleName(applicationName, moduleName);
@@ -122,10 +127,24 @@ public class RarHandler extends AbstractArchiveHandler {
                 // -> embedded-RAR-CL -> ear-lib-CL.
                 // parent provided here is ear-CL, we need to use
                 // ear-lib-CL as parent for embedded-RAR module-CL 
-                return loader.createRARClassLoader(moduleDir, parent.getParent().getParent(), embeddedRarName, appLibs);
+                carCL = loader.createRARClassLoader(moduleDir, parent.getParent().getParent(), embeddedRarName, appLibs);
             } else {
-                return loader.createRARClassLoader(moduleDir, null, moduleName, appLibs);
+                carCL = loader.createRARClassLoader(moduleDir, null, moduleName, appLibs);
             }
+                        
+            try {
+                final DeploymentContext dc = context;
+                final ClassLoader cl = carCL;
+                
+                AccessController.doPrivileged(
+                        new PermsArchiveDelegate.SetPermissionsAction(
+                                SMGlobalPolicyUtil.CommponentType.rar, dc, cl));
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException)e.getException();
+            }
+
+            return carCL;
+            
         } catch (ConnectorRuntimeException e) {
             throw new RuntimeException(e);
         }

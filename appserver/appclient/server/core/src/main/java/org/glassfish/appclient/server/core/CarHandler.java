@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,8 @@ package org.glassfish.appclient.server.core;
 
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.loader.ASURLClassLoader;
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
+import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -58,6 +60,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.util.logging.Level;
 import java.net.URL;
 
@@ -111,6 +114,19 @@ public class CarHandler extends AbstractArchiveHandler {
             for (URL url : getManifestLibraries(context)) {
                 cloader.addURL(url);
             }
+                       
+            try {
+                final DeploymentContext dc = context;
+                final ClassLoader cl = cloader;
+                
+                AccessController.doPrivileged(
+                        new PermsArchiveDelegate.SetPermissionsAction(
+                                SMGlobalPolicyUtil.CommponentType.car, dc, cl));
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException)e.getException();
+            }
+
+
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }

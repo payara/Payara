@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,14 +52,19 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.AccessController;
+import java.security.PermissionCollection;
 import java.security.PrivilegedAction;
 import java.security.ProtectionDomain;
+import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.security.cert.Certificate;
+
+import org.glassfish.appclient.common.ClientClassLoaderDelegate;
 
 /**
  *
@@ -79,6 +84,9 @@ public class ACCClassLoader extends URLClassLoader {
             Collections.synchronizedList(
                 new ArrayList<ClassFileTransformer>());
 
+    
+    private ClientClassLoaderDelegate clientCLDelegate;
+    
     public static synchronized ACCClassLoader newInstance(ClassLoader parent,
             final boolean shouldTransform) {
         if (instance != null) {
@@ -171,6 +179,8 @@ public class ACCClassLoader extends URLClassLoader {
     public ACCClassLoader(ClassLoader parent, final boolean shouldTransform) {
         super(new URL[0], parent);
         this.shouldTransform = shouldTransform;
+        
+        clientCLDelegate = new ClientClassLoaderDelegate(this);
     }
 //
 //    public ACCClassLoader(URL[] urls) {
@@ -179,6 +189,8 @@ public class ACCClassLoader extends URLClassLoader {
 
     public ACCClassLoader(URL[] urls, ClassLoader parent) {
         super(urls, parent);
+        
+        clientCLDelegate = new ClientClassLoaderDelegate(this);
     }
 
 //    public ACCClassLoader(URL[] urls, ClassLoader parent, URLStreamHandlerFactory factory) {
@@ -271,5 +283,28 @@ public class ACCClassLoader extends URLClassLoader {
                 throw new ClassNotFoundException(className, e);
             }
         }
+    }    
+
+    
+    @Override
+    protected PermissionCollection getPermissions(CodeSource codesource) {
+
+        if (System.getSecurityManager() == null)
+            return super.getPermissions(codesource);
+        
+        //when security manager is enabled, find the declared permissions        
+        if (clientCLDelegate.getCachedPerms(codesource) != null)
+            return clientCLDelegate.getCachedPerms(codesource);
+
+        return clientCLDelegate.getPermissions(codesource, 
+                super.getPermissions(codesource));
     }
+    
+    
+    public void processDeclaredPermissions() throws IOException  {
+
+        if (clientCLDelegate == null)
+            clientCLDelegate = new ClientClassLoaderDelegate(this);
+    }    
+    
 }

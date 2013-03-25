@@ -52,6 +52,7 @@
                         com.sun.enterprise.security.authorize; \
                         com.sun.enterprise.security.provider; \
                         com.sun.enterprise.security.auth.digest.impl; \
+                        com.sun.enterprise.security.perms; \
                         com.sun.enterprise.security.web.integration; version=${project.osgi.version}
 
 # dependent flashlight package resolved at runtime
