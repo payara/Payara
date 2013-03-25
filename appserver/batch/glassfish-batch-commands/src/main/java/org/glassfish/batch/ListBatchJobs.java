@@ -65,12 +65,11 @@ import java.util.logging.Level;
  *
  * @author Mahesh Kannan
  */
-@Service(name = "_list-batch-jobs")
+@Service(name = "list-batch-jobs")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("_list.batch.jobs")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
+@I18n("list.batch.jobs")
+@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
@@ -219,13 +218,10 @@ public class ListBatchJobs
                     break;
                 case APP_NAME:
                     try {
-                        String appName = "" + ((TaggedJobExecution) je).getTagName();
-                        int semi = appName.indexOf(':');
-                        String targetName = (semi > 0) ? appName.substring(0, semi) : "";
-                        data = appName.substring(semi+1);
+                        data = "" + ((TaggedJobExecution) je).getTagName();
                     } catch (Exception ex) {
                         logger.log(Level.FINE, "Error while calling ((TaggedJobExecution) je).getTagName() ", ex);
-                        data = ex.toString();
+                        data = "null";//ex.toString();
                     }
                     break;
                 case INSTANCE_COUNT:
@@ -261,12 +257,5 @@ public class ListBatchJobs
         columnFormatter.addRow(cfData);
 
         return jobInfo;
-    }
-
-    @Override
-    protected void fillParameterMap(ParameterMap parameterMap) {
-        super.fillParameterMap(parameterMap);
-        if (jobName != null)
-            parameterMap.add("", jobName);
     }
 }

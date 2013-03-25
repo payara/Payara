@@ -53,7 +53,6 @@ import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import java.util.*;
@@ -66,12 +65,11 @@ import java.util.*;
  *
  * @author Mahesh Kannan
  */
-@Service(name = "_list-batch-job-steps")
+@Service(name = "list-batch-job-steps")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.job.steps")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
+@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
@@ -80,8 +78,6 @@ import java.util.*;
 })
 public class ListBatchJobSteps
     extends AbstractLongListCommand {
-
-    private static final String JOB_NAME = "jobName";
 
     private static final String NAME = "stepName";
 
@@ -100,8 +96,6 @@ public class ListBatchJobSteps
     @Param(primary = true)
     String executionId;
 
-    private String jobName;
-
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps)
         throws Exception {
@@ -112,9 +106,6 @@ public class ListBatchJobSteps
         for (StepExecution je : findStepExecutions()) {
             jobExecutions.add(handleJob(je, columnFormatter));
         }
-
-        if (jobName != null)
-            extraProps.put("jobName", jobName);
         context.getActionReport().setMessage(columnFormatter.toString());
     }
 
@@ -132,15 +123,13 @@ public class ListBatchJobSteps
 
     private List<StepExecution> findStepExecutions()
         throws JobSecurityException, NoSuchJobExecutionException {
+        List<StepExecution> stepExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
-        if (! belongsToThisTarget(je)) {
+        List<StepExecution> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
+        if (jobExecution == null || jobExecution.size() == 0)
             throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
-        }
-        List<StepExecution> stepExecutions = jobOperator.getStepExecutions(Long.valueOf(executionId));
-        if (stepExecutions == null || stepExecutions.size() == 0)
-            throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
-        jobName = je.getJobName();
+        stepExecutions.addAll(jobExecution);
+
         return stepExecutions;
     }
 
@@ -205,13 +194,6 @@ public class ListBatchJobSteps
         }
 
         return jobInfo;
-    }
-
-    @Override
-    protected void fillParameterMap(ParameterMap parameterMap) {
-        super.fillParameterMap(parameterMap);
-        if (executionId != null)
-            parameterMap.add("", executionId);
     }
 
 }

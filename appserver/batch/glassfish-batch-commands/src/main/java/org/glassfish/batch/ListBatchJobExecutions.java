@@ -63,12 +63,11 @@ import java.util.*;
  *
  * @author Mahesh Kannan
  */
-@Service(name = "_list-batch-job-executions")
+@Service(name = "list-batch-job-executions")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.job.executions")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
+@ExecuteOn(value = {RuntimeType.SINGLE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
@@ -94,11 +93,11 @@ public class ListBatchJobExecutions
 
     private static final String STEP_COUNT = "stepCount";
 
-    @Param(name = "executionid", shortName = "x", optional = true)
-    String executionId;
+    @Param(name = "instanceid", shortName = "i", optional = true)
+    String instanceId;
 
     @Param(primary = true, optional = true)
-    String instanceId;
+    String executionId;
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps)
@@ -118,12 +117,10 @@ public class ListBatchJobExecutions
                     + "; did you mean " + ji.getInstanceId() + " ?");
                 }
             }
-            if (belongsToThisTarget(je))
-                jobExecutions.add(handleJob(je, columnFormatter));
+            jobExecutions.add(handleJob(je, columnFormatter));
         } else if (instanceId != null) {
             for (JobExecution je : getJobExecutionForInstance(Long.valueOf(instanceId))) {
-                if (belongsToThisTarget(je))
-                    jobExecutions.add(handleJob(je, columnFormatter));
+                jobExecutions.add(handleJob(je, columnFormatter));
             }
         } else {
             JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -134,8 +131,7 @@ public class ListBatchJobExecutions
                     if (exe != null) {
                         for (JobInstance ji : exe) {
                             for (JobExecution je : jobOperator.getJobExecutions(ji)) {
-                                if (belongsToThisTarget(je))
-                                    jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
+                                jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
                             }
                         }
                     }
@@ -207,7 +203,7 @@ public class ListBatchJobExecutions
             Object data = null;
             switch (getOutputHeaders()[index]) {
                 case JOB_NAME:
-                    data = "" + je.getJobName();
+                    data = " " + je.getJobName();
                     break;
                 case EXECUTION_ID:
                     data = "" + je.getExecutionId();
@@ -259,14 +255,4 @@ public class ListBatchJobExecutions
 
         return jobInfo;
     }
-
-    @Override
-    protected void fillParameterMap(ParameterMap parameterMap) {
-        super.fillParameterMap(parameterMap);
-        if (executionId != null)
-            parameterMap.add("executionid", executionId);
-        if (instanceId != null)
-            parameterMap.add("", instanceId);
-    }
-
 }

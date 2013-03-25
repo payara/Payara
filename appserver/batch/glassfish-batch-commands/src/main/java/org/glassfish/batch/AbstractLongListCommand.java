@@ -40,7 +40,6 @@
 package org.glassfish.batch;
 
 import org.glassfish.api.Param;
-import org.glassfish.api.admin.ParameterMap;
 
 /**
  * @author Mahesh Kannan
@@ -55,12 +54,5 @@ public abstract class AbstractLongListCommand
     @Override
     protected final boolean supportsLongFormat() {
         return useLongFormat;
-    }
-
-    @Override
-    protected void fillParameterMap(ParameterMap parameterMap) {
-        super.fillParameterMap(parameterMap);
-        if (useLongFormat)
-            parameterMap.add("long", ""+useLongFormat);
     }
 }

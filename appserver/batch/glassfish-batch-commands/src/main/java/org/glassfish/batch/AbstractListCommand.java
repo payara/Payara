@@ -39,21 +39,15 @@
  */
 package org.glassfish.batch;
 
-import com.ibm.jbatch.spi.TaggedJobExecution;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.batch.spi.impl.GlassFishBatchSecurityHelper;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 
-import javax.batch.runtime.JobExecution;
 import javax.inject.Inject;
 import java.util.*;
 import java.util.logging.Level;
@@ -65,15 +59,6 @@ import java.util.logging.Logger;
  */
 public abstract class AbstractListCommand
     implements AdminCommand {
-
-    @Inject
-    ServiceLocator serviceLocator;
-
-    @Inject
-    Target targetUtil;
-
-    @Inject
-    Config config;
 
     @Inject
     BatchRuntimeHelper helper;
@@ -90,7 +75,7 @@ public abstract class AbstractListCommand
     @Param(name = "header", shortName = "h", optional = true)
     protected boolean header;
 
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
+    @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
 
     protected String[] outputHeaders;
@@ -172,23 +157,4 @@ public abstract class AbstractListCommand
         return displayHeaders;
     }
 
-    protected boolean belongsToThisTarget(JobExecution je) {
-        try {
-            String appName = "" + ((TaggedJobExecution) je).getTagName();
-            int semi = appName.indexOf(':');
-            return config.getName().equals(semi > 0 ? appName.substring(0, semi) : "");
-        } catch (Exception ex) {
-            //
-        }
-        return false;
-    }
-
-    protected void fillParameterMap(ParameterMap parameterMap) {
-        if (isTerse)
-            parameterMap.add("terse", ""+isTerse);
-        if (outputHeaderList != null)
-            parameterMap.add("output", outputHeaderList);
-        if (header)
-            parameterMap.add("header", ""+header);
-    }
 }
