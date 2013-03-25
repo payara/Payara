@@ -96,8 +96,6 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
 
     private Decider decider;
     
-    private boolean isDebug;
-    
     @Override
     public void initialize(SecurityProvider providerConfig) {
                 
@@ -119,13 +117,17 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
     private synchronized Decider getDecider() {
         if (decider == null) {
             decider = createDecider();
-            if (isDebug) {
+            if (isDebug()) {
                 _logger.log(DEBUG_LEVEL, "Created SimpleAuthorizationProviderImpl Decider of type {0}", decider.getClass().getName());
             }
         }
         return decider;
     }
 
+    private boolean isDebug() {
+        return _logger.isLoggable(DEBUG_LEVEL);
+    }
+    
     @Override
     public AzResult getAuthorizationDecision(
         AzSubject subject,
@@ -133,7 +135,6 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
         AzAction action,
         AzEnvironment environment,
         List<AzAttributeResolver> attributeResolvers ) {
-        isDebug = _logger.isLoggable(DEBUG_LEVEL);
 
         //TODO: get user roles from Rolemapper, and do the policy  evaluation
         if ( ! isAdminResource(resource)) {
@@ -157,7 +158,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
             final AzResource resource,
             final AzAction action,
             final AzEnvironment environment) {
-        if (isDebug) {
+        if (isDebug()) {
             _logger.log(DEBUG_LEVEL, "");
         }
         AzResult rtn = new AzResultImpl(getDecider().decide(subject, resource, action, environment), 
