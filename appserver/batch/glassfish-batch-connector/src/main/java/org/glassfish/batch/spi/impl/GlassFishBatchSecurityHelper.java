@@ -40,8 +40,11 @@
 package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.spi.BatchSecurityHelper;
+import com.sun.enterprise.config.serverbeans.Config;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
@@ -53,16 +56,19 @@ public class GlassFishBatchSecurityHelper
     @Inject
     private InvocationManager invocationManager;
 
+    @Inject
+    Config config;
+
     private ThreadLocal<Boolean> invocationPrivilege = new ThreadLocal<>();
 
     public void markInvocationPrivilege(boolean isAdmin) {
-        invocationPrivilege.set(Boolean.valueOf(isAdmin));
+        invocationPrivilege.set(isAdmin);
     }
 
     @Override
     public String getCurrentTag() {
         ComponentInvocation compInv = invocationManager.getCurrentInvocation();
-        return "" + compInv.getAppName();
+        return config.getName() + ":" + compInv.getAppName();
     }
 
     @Override
