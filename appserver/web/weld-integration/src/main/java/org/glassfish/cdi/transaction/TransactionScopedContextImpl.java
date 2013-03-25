@@ -127,11 +127,14 @@ public class TransactionScopedContextImpl implements Context {
     }
 
     private <T> T getContextualInstance(Object beanId, TransactionSynchronizationRegistry transactionSynchronizationRegistry) {
-        TransactionScopedBean<T> transactionScopedBean = (TransactionScopedBean<T>) transactionSynchronizationRegistry.getResource(beanId);
+        Object obj = transactionSynchronizationRegistry.getResource(beanId);
+        TransactionScopedBean<T> transactionScopedBean = (TransactionScopedBean<T>) obj;
+
+//        TransactionScopedBean<T> transactionScopedBean = (TransactionScopedBean<T>) transactionSynchronizationRegistry.getResource(beanId);
         if (transactionScopedBean != null) {
             return transactionScopedBean.getContextualInstance();
         }
-
+//
         return null;
     }
 

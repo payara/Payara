@@ -46,6 +46,7 @@ import com.sun.enterprise.web.WebModule;
 import java.util.Collection;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.InjectionTarget;
 
@@ -64,9 +65,9 @@ import org.jvnet.hk2.annotations.Service;
  * @author Roger.Kitain@Sun.COM
  */
 @Service
-public class WebComponentInjectionManager implements WebComponentDecorator {
+public class WebComponentInjectionManager<T> implements WebComponentDecorator<T> {
     @SuppressWarnings("unchecked")
-    public void decorate(Object webComponent, WebModule wm) {
+    public void decorate(T webComponent, WebModule wm) {
         if (wm.getWebBundleDescriptor().hasExtensionProperty(WeldDeployer.WELD_EXTENSION)) {
             DeploymentContext deploymentContext = wm.getWebModuleConfig().getDeploymentContext();
             WeldBootstrap weldBootstrap = deploymentContext.getTransientAppMetaData(
@@ -75,12 +76,14 @@ public class WebComponentInjectionManager implements WebComponentDecorator {
             DeploymentImpl deploymentImpl = deploymentContext.getTransientAppMetaData(
                 WeldDeployer.WELD_DEPLOYMENT, DeploymentImpl.class); 
             Collection<BeanDeploymentArchive> deployments = deploymentImpl.getBeanDeploymentArchives();
-            BeanDeploymentArchive beanDeploymentArchive = (BeanDeploymentArchive)deployments.iterator().next(); 
+            BeanDeploymentArchive beanDeploymentArchive = deployments.iterator().next();
             BeanManager beanManager = weldBootstrap.getManager(beanDeploymentArchive);
             // PENDING : Not available in this Web Beans Release
-            CreationalContext<?> ccontext = beanManager.createCreationalContext(null);
+            CreationalContext<T> ccontext = beanManager.createCreationalContext(null);
             @SuppressWarnings("rawtypes")
-            InjectionTarget injectionTarget = beanManager.createInjectionTarget(beanManager.createAnnotatedType(webComponent.getClass()));
+            Class<T> clazz = (Class<T>) webComponent.getClass();
+            AnnotatedType<T> annotatedType = beanManager.createAnnotatedType(clazz);
+            InjectionTarget<T> injectionTarget = beanManager.createInjectionTarget(annotatedType);
             injectionTarget.inject(webComponent, ccontext);
         }
     }

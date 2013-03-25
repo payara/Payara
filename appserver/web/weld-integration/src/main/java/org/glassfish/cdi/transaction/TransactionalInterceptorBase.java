@@ -98,9 +98,8 @@ public class TransactionalInterceptorBase {
             rollbackOn = transactionalAnnotation.rollbackOn();
             dontRollbackOn = transactionalAnnotation.dontRollbackOn();
         } else {  //if not at class level
-            Class targetClass = ctx.getTarget().getClass();
-            transactionalAnnotation = (javax.transaction.Transactional)
-                    targetClass.getAnnotation(javax.transaction.Transactional.class);
+            Class<?> targetClass = ctx.getTarget().getClass();
+            transactionalAnnotation = targetClass.getAnnotation(javax.transaction.Transactional.class);
             if (transactionalAnnotation != null) {
                 rollbackOn = transactionalAnnotation.rollbackOn();
                 dontRollbackOn = transactionalAnnotation.dontRollbackOn();

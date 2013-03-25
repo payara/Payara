@@ -50,12 +50,12 @@ import org.jvnet.hk2.annotations.Contract;
  * @author Sanjeeb.Sahoo@Sun.COM
  */
 @Contract
-public interface WebComponentDecorator
+public interface WebComponentDecorator<T>
 {
     /**
      * Decoare a web component.
      * @param webComponent web component to be decorated.
      * @param wm web module which owns this web component.
      */
-    void decorate(Object webComponent, WebModule wm);
+    void decorate(T webComponent, WebModule wm);
 }
