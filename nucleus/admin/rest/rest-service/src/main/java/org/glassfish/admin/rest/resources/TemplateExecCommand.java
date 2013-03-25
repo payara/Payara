@@ -41,7 +41,9 @@
 package org.glassfish.admin.rest.resources;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URLDecoder;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.provider.MethodMetaData;
 import org.glassfish.admin.rest.results.ActionReportResult;
@@ -59,7 +61,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import javax.ws.rs.Consumes;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -218,7 +221,11 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         for (Map.Entry<String, List<String>> entry : qs.entrySet()) {
             String key = entry.getKey();
             for (String value : entry.getValue()) {
-                data.add(key, value);
+                try {
+                    data.add(key, URLDecoder.decode(value, "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    Logger.getLogger(TemplateExecCommand.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         }
     }
