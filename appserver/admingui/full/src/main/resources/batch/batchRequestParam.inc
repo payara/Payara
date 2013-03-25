@@ -40,25 +40,26 @@
 
 -->
 
-<sun:tab id="standaloneBatch" immediate="true" text="$resource{i18nc.batch.batchTabs}" toolTip="$resource{i18nc.batch.batchTabs}">
-    <!beforeCreate
-        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-        setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
-    />
-    <!command
-        setSessionAttribute(key="standaloneInstanceTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedInstanceName}&tabSetName=standaloneInstanceTabs");
-    />
-    <sun:tab id="batchJobs" immediate="$boolean{true}" text="$resource{i18nc.batch.jobListingTab}" toolTip="$resource{i18nc.batch.jobListingTabTip}" >
-        <!command
-        setSessionAttribute(key="standaloneInstanceTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedInstanceName}&tabSetName=standaloneInstanceTabs");
-        />
-    </sun:tab>
-    <sun:tab id="batchConfig" immediate="$boolean{true}" text="$resource{i18nc.batch.configuration}" toolTip="$resource{i18nc.batch.configurationTip}" >
-        <!command
-        setSessionAttribute(key="standaloneInstanceTabs" value="batchConfig");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchConfigurationStandalone.jsf?target=#{pageSession.encodedInstanceName}&tabSetName=standaloneInstanceTabs");
-        />
-    </sun:tab>
-</sun:tab>
+getRequestValue(key="target" value="#{pageSession.target}");
+urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
+getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
+getRequestValue(key="tabSetName" value="#{pageSession.tabSetName}");
+urlencode(value="#{pageSession.tabSetName}" encoding="UTF-8" result="#{pageSession.encodedTabSetName}");
+
+if(#{pageSession.isCluster}=true){
+    setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
+    setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
+    setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+}
+if(#{pageSession.isCluster}=false){
+    setPageSessionAttribute(key="isCluster", value="false");
+    setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
+    setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
+    if(#{pageSession.target}=server){
+        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsServer.jsf?target=server&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+    }
+    if("!(#{pageSession.target}=server)"){
+        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedTarget}&isCluster=false&tabSetName=#{pageSession.encodedTabSetName}");
+    }
+}
+

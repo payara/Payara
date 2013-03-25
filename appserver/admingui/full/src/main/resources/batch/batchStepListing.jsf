@@ -41,15 +41,16 @@
 -->
 
 <!initPage
+    setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-	setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+	setResourceBundle(key="help_full" bundle="org.glassfish.full.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.batch.jobStepListingTitle}"  >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nf.batch.jobStepListingTitle}"  >
 
 <!define name="content">
     <event>
     <!beforeCreate
-#include "/common/batch/batchRequestParam.inc"
+#include "/full/batch/batchRequestParam.inc"
         getRequestValue(key="executionId" value="#{pageSession.executionId}");
         setSessionAttribute(key="batchExecutionTabs" value="steps");
         createMap(result="#{requestScope.attrsMap}");
@@ -58,14 +59,14 @@
         mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-steps" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobSteps}");
-        setPageSessionAttribute(key="tableTitle" value="$resource{i18nc.batch.jobStepListingTableTitle}");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.jobStepListingTableTitle}");
     />
     </event>
 <sun:form id="propertyForm">
-#include "/common/batch/batchExecutionTabs.inc"
+#include "/full/batch/batchExecutionTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
 
-    <sun:title id="propertyContentPage" title="$resource{i18nc.batch.jobStepListingTitle}" helpText="$resource{i18nc.batch.jobStepListingTitleHelp}" >
+    <sun:title id="propertyContentPage" title="$resource{i18nf.batch.jobStepListingTitle}" helpText="$resource{i18nf.batch.jobStepListingTitleHelp}" >
     <!facet pageButtonsTop>
         <sun:panelGroup id="topButtons">
             <sun:button id="cancelButton" immediate="#{true}" primary="#{false}"  text="$resource{i18n.button.Back}" >
@@ -78,11 +79,11 @@
     </sun:title>
 #include "/common/shared/nameSection.inc"
             <sun:propertySheetSection >
-                <sun:property id="executionId"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.executionId}">
+                <sun:property id="executionId"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.executionId}">
                     <sun:staticText id="executionId" text="#{pageSession.executionId}" />
                 </sun:property>
                   <!--
-                <sun:property id="jobName"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.jobName}">
+                <sun:property id="jobName"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.jobName}">
                     <sun:staticText id="jobName" value="#{pageSession.valueMap.jobName}" />
                 </sun:property>
                 -->
@@ -104,19 +105,19 @@
              getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
             />
 
-        <sun:tableColumn headerText="$resource{i18nc.batch.stepNameCol}"  sort="jobName"  rowHeader="$boolean{false}" id="stepName">
+        <sun:tableColumn headerText="$resource{i18nf.batch.stepNameCol}"  sort="jobName"  rowHeader="$boolean{false}" id="stepName">
             <staticText id="stepName" value="#{td.value.stepName}" />
         </sun:tableColumn>
 
-        <sun:tableColumn headerText="$resource{i18nc.batch.batchStatusCol}"  sort="batchStatus"  rowHeader="$boolean{false}" id="batchStatus">
+        <sun:tableColumn headerText="$resource{i18nf.batch.batchStatusCol}"  sort="batchStatus"  rowHeader="$boolean{false}" id="batchStatus">
             <staticText id="max" value="#{td.value.batchStatus}" />
         </sun:tableColumn>
 
-        <sun:tableColumn headerText="$resource{i18nc.batch.exitStatusCol}"  sort="exitStatus"  rowHeader="$boolean{false}" id="exitStatus">
+        <sun:tableColumn headerText="$resource{i18nf.batch.exitStatusCol}"  sort="exitStatus"  rowHeader="$boolean{false}" id="exitStatus">
             <staticText id="max" value="#{td.value.exitStatus}" />
         </sun:tableColumn>
 
-        <sun:tableColumn headerText="$resource{i18nc.batch.startTimeCol}"  sort="startTime"  rowHeader="$boolean{false}" id="startTime">
+        <sun:tableColumn headerText="$resource{i18nf.batch.startTimeCol}"  sort="startTime"  rowHeader="$boolean{false}" id="startTime">
             <staticText id="st" value="#{requestScope.st}" >
             <!beforeEncode
                 gf.convertDateTime(dateTime="#{td.value.startTime}"  result="#{requestScope.st}");
@@ -124,7 +125,7 @@
             </staticText>
         </sun:tableColumn>
 
-        <sun:tableColumn headerText="$resource{i18nc.batch.endTimeCol}"  sort="endTime"  rowHeader="$boolean{false}" id="endTime">
+        <sun:tableColumn headerText="$resource{i18nf.batch.endTimeCol}"  sort="endTime"  rowHeader="$boolean{false}" id="endTime">
             <staticText id="endTime" value="#{requestScope.endTime}" >
                 <!beforeEncode
                     gf.convertDateTime(dateTime="#{td.value.endTime}"  result="#{requestScope.endTime}");
@@ -132,7 +133,7 @@
             </staticText>
         </sun:tableColumn>
 
-       <sun:tableColumn  headerText="$resource{i18nc.batch.stepMetricsCol}" rowHeader="$boolean{true}" id="stepM">
+       <sun:tableColumn  headerText="$resource{i18nf.batch.stepMetricsCol}" rowHeader="$boolean{true}" id="stepM">
            <event>
                <!beforeEncode
                    gf.convertMapToListOfMap(map="#{td.value.stepMetrics}"  keyName="key" valueName="value" result="#{requestScope.listOfStepMetrics}");
@@ -153,7 +154,7 @@
       </sun:tableRowGroup>
     </sun:table>
  "<br/>"
-    <sun:hidden id="helpKey" value="$resource{help_common.jobStepListing}" />
+    <sun:hidden id="helpKey" value="$resource{help_full.jobStepListing}" />
 </sun:form>
 </define>
 </composition>

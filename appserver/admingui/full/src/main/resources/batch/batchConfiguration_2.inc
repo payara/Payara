@@ -41,7 +41,7 @@
 -->
 
 #include "/common/shared/alertMsg_1.inc"
-    <sun:title id="propertyContentPage" title="$resource{i18nc.batch.configurationTitle}" helpText="$resource{i18nc.batch.configurationTitleHelp}" >
+    <sun:title id="propertyContentPage" title="$resource{i18nf.batch.configurationTitle}" helpText="$resource{i18nf.batch.configurationTitleHelp}" >
     <!facet pageButtonsTop>
             <sun:panelGroup id="topButtons">
                 <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
@@ -56,7 +56,7 @@
     </sun:title>
 #include "/common/shared/nameSection.inc"
             <sun:propertySheetSection >
-                <sun:property id="executorServiceLookupName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.executorServiceLookupName}" helpText="$resource{i18nc.batch.configuration.executorServiceLookupNameHelp}">
+                <sun:property id="executorServiceLookupName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.executorServiceLookupName}" helpText="$resource{i18nf.batch.configuration.executorServiceLookupNameHelp}">
                     <sun:dropDown id="executorServiceLookupName" selected="#{pageSession.valueMap['executorServiceLookupName']}" labels="$pageSession{mesList}"  values="$pageSession{mesList}"  >
                         <!beforeCreate
                             gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-managed-executor-services", attrs="#{pageSession.attrsMap}"  result="#{pageSession.mesList}");
@@ -64,7 +64,7 @@
                     </sun:dropDown>
                 </sun:property>
 
-                <sun:property id="poolNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.batch.configuration.dataSourceLookupName}"  helpText="$resource{i18nc.batch.configuration.dataSourceLookupNameHelp}">
+                <sun:property id="poolNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.dataSourceLookupName}"  helpText="$resource{i18nf.batch.configuration.dataSourceLookupNameHelp}">
                     <sun:dropDown id="PoolName" selected="#{pageSession.valueMap['dataSourceLookupName']}" labels="$pageSession{jdbcList}"  values="$pageSession{jdbcList}" >
                     <!beforeCreate
                         gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-jdbc-resources", attrs="#{pageSession.attrsMap}" result="#{pageSession.jdbcList}");
@@ -73,7 +73,7 @@
                </sun:property>
             </sun:propertySheetSection>
 
-    <sun:hidden id="helpKey" value="$resource{help_common.batchConfiguration}" />
+    <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
 </sun:form>
 </define>
 </composition>

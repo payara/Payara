@@ -39,8 +39,27 @@
     holder.
 
 -->
-#include "/common/batch/batchConfiguration_1.inc"
 
-#include "/cluster/standalone/standaloneInstanceTabs.inc"
-
-#include "/common/batch/batchConfiguration_2.inc"
+<sun:tab id="clusterBatch" immediate="true" text="$resource{i18nf.batch.batchTabs}" toolTip="$resource{i18nf.batch.batchTabs}">
+    <!beforeCreate
+        setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
+        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+        setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+    />
+    <!command
+        setSessionAttribute(key="clusterTabs" value="batchJobs");
+        gf.redirect(page="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
+    />
+    <sun:tab id="batchJobs" immediate="$boolean{true}" text="$resource{i18nf.batch.jobListingTab}" toolTip="$resource{i18nf.batch.jobListingTabTip}" >
+        <!command
+        setSessionAttribute(key="clusterTabs" value="batchJobs");
+        gf.redirect(page="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
+        />
+    </sun:tab>
+    <sun:tab id="batchConfig" immediate="$boolean{true}" text="$resource{i18nf.batch.configuration}" toolTip="$resource{i18nf.batch.configurationTip}" >
+        <!command
+        setSessionAttribute(key="clusterTabs" value="batchConfig");
+        gf.redirect(page="#{request.contextPath}/full/batch/batchConfigurationCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
+        />
+    </sun:tab>
+</sun:tab>

@@ -41,7 +41,7 @@
 -->
 
 #include "/common/shared/alertMsg_1.inc"
-             <sun:title id="propertyContentPage" title="$resource{i18nc.batch.jobListingTitle}" helpText="$resource{i18nc.batch.jobListingTitleHelp}" />
+             <sun:title id="propertyContentPage" title="$resource{i18nf.batch.jobListingTitle}" helpText="$resource{i18nf.batch.jobListingTitleHelp}" />
 #include "/common/shared/nameSection.inc"
         <sun:table id="configs" title="#{tableTitle}"
             deselectMultipleButton="$boolean{false}"
@@ -57,27 +57,27 @@
          getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
         />
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.executionIdCol}" sort="executionId" rowHeader="$boolean{true}" id="col1">
+    <sun:tableColumn headerText="$resource{i18nf.batch.executionIdCol}" sort="executionId" rowHeader="$boolean{true}" id="col1">
         <sun:hyperlink id="link" text="#{td.value.executionId}" url="#{pageSession.editLink}&executionId=#{td.value.executionId}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.jobNameCol}"  sort="jobName"  rowHeader="$boolean{false}" id="jobname">
+    <sun:tableColumn headerText="$resource{i18nf.batch.jobNameCol}"  sort="jobName"  rowHeader="$boolean{false}" id="jobname">
         <staticText id="max" value="#{td.value.jobName}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.batchStatusCol}"  sort="batchStatus"  rowHeader="$boolean{false}" id="batchStatus">
+    <sun:tableColumn headerText="$resource{i18nf.batch.batchStatusCol}"  sort="batchStatus"  rowHeader="$boolean{false}" id="batchStatus">
         <staticText id="max" value="#{td.value.batchStatus}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.exitStatusCol}"  sort="exitStatus"  rowHeader="$boolean{false}" id="exitStatus">
+    <sun:tableColumn headerText="$resource{i18nf.batch.exitStatusCol}"  sort="exitStatus"  rowHeader="$boolean{false}" id="exitStatus">
         <staticText id="max" value="#{td.value.exitStatus}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.instanceIdCol}"  sort="instanceId"  rowHeader="$boolean{false}" id="instanceId">
+    <sun:tableColumn headerText="$resource{i18nf.batch.instanceIdCol}"  sort="instanceId"  rowHeader="$boolean{false}" id="instanceId">
         <staticText id="max" value="#{td.value.instanceId}" />
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.startTimeCol}"  sort="startTime"  rowHeader="$boolean{false}" id="startTime">
+    <sun:tableColumn headerText="$resource{i18nf.batch.startTimeCol}"  sort="startTime"  rowHeader="$boolean{false}" id="startTime">
         <staticText id="st" value="#{requestScope.st}" >
         <!beforeEncode
             gf.convertDateTime(dateTime="#{td.value.startTime}"  result="#{requestScope.st}");
@@ -85,7 +85,7 @@
         </staticText>
     </sun:tableColumn>
 
-    <sun:tableColumn headerText="$resource{i18nc.batch.endTimeCol}"  sort="endTime"  rowHeader="$boolean{false}" id="endTime">
+    <sun:tableColumn headerText="$resource{i18nf.batch.endTimeCol}"  sort="endTime"  rowHeader="$boolean{false}" id="endTime">
         <staticText id="endTime" value="#{requestScope.endTime}" >
             <!beforeEncode
                 gf.convertDateTime(dateTime="#{td.value.endTime}"  result="#{requestScope.endTime}");
@@ -95,7 +95,7 @@
   </sun:tableRowGroup>
 </sun:table>
 
-<sun:hidden id="helpKey" value="$resource{help_common.batchJobs}" />
+<sun:hidden id="helpKey" value="$resource{help_full.batchJobs}" />
             </sun:form>
 </define>
 </composition>

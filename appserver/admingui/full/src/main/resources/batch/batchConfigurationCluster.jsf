@@ -40,8 +40,8 @@
 
 -->
 
-#include "/common/batch/batchConfiguration_1.inc"
+#include "/full/batch/batchConfiguration_1.inc"
 
 #include "/cluster/cluster/clusterTabs.inc"
 
-#include "/common/batch/batchConfiguration_2.inc"
+#include "/full/batch/batchConfiguration_2.inc"

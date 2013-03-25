@@ -40,25 +40,8 @@
 
 -->
 
-<sun:tab id="clusterBatch" immediate="true" text="$resource{i18nc.batch.batchTabs}" toolTip="$resource{i18nc.batch.batchTabs}">
-    <!beforeCreate
-        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-        setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
-    />
-    <!command
-        setSessionAttribute(key="clusterTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobsCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
-    />
-    <sun:tab id="batchJobs" immediate="$boolean{true}" text="$resource{i18nc.batch.jobListingTab}" toolTip="$resource{i18nc.batch.jobListingTabTip}" >
-        <!command
-        setSessionAttribute(key="clusterTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobsCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
-        />
-    </sun:tab>
-    <sun:tab id="batchConfig" immediate="$boolean{true}" text="$resource{i18nc.batch.configuration}" toolTip="$resource{i18nc.batch.configurationTip}" >
-        <!command
-        setSessionAttribute(key="clusterTabs" value="batchConfig");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchConfigurationCluster.jsf?target=#{pageSession.encodedClusterName}&isCluster=true&tabSetName=clusterTabs");
-        />
-    </sun:tab>
-</sun:tab>
+#include "/full/batch/batchJobs_1.inc"
+#include "/common/appServer/serverInstTabs.inc"
+#include "/full/batch/batchJobs_2.inc"
+
+

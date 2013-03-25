@@ -39,9 +39,6 @@
     holder.
 
 -->
-
-#include "/common/batch/batchJobs_1.inc"
-#include "/common/appServer/serverInstTabs.inc"
-#include "/common/batch/batchJobs_2.inc"
-
-
+#include "/full/batch/batchJobs_1.inc"
+#include "/cluster/standalone/standaloneInstanceTabs.inc"
+#include "/full/batch/batchJobs_2.inc"

@@ -169,4 +169,28 @@
             content="external-jndi-resource|org.glassfish.admingui.core.Strings|tree.externalResources"
     />
 
+
+    <integration-point
+            id="serverBatch"
+            type="org.glassfish.admingui:serverInstTab"
+            priority="30"
+            parentId="serverInstTabs"
+            content="batch/batchTabs.jsf"
+            />
+    <integration-point
+            id="clusterBatch"
+            type="org.glassfish.admingui:clusterTab"
+            priority="200"
+            parentId="clusterTabs"
+            content="batch/batchTabsCluster.jsf"
+            />
+
+    <integration-point
+            id="standaloneBatch"
+            type="org.glassfish.admingui:standaloneInstTab"
+            priority="40"
+            parentId="standaloneInstanceTabs"
+            content="batch/batchTabsStandalone.jsf"
+            />
+
 </console-config>

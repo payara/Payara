@@ -39,24 +39,6 @@
     holder.
 
 -->
-
-<!initPage
-    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
-    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
-	setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
-/>
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.batch.configurationTitle}"  >
-
-<!define name="content">
-    <event>
-    <!beforeCreate
-#include "/common/batch/batchRequestParam.inc"
-        setSessionAttribute(key="#{pageSession.tabSetName}" value="batchConfig");
-        createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration"  method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedTarget}");
-    />
-    </event>
-<sun:form id="propertyForm">
+#include "/full/batch/batchJobs_1.inc"
+#include "/cluster/cluster/clusterTabs.inc"
+#include "/full/batch/batchJobs_2.inc"

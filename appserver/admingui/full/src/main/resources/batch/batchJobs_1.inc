@@ -40,26 +40,26 @@
 
 -->
 
-<sun:tab id="serverBatch" immediate="true" text="$resource{i18nc.batch.batchTabs}" toolTip="$resource{i18nc.batch.batchTabs}">
+<!initPage
+    setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+	setResourceBundle(key="help_full" bundle="org.glassfish.full.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nf.batch.jobListingTitle}"  >
+
+<!define name="content">
+    <event>
     <!beforeCreate
-        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+#include "/full/batch/batchRequestParam.inc"
+        setSessionAttribute(key="#{pageSession.tabSetName}" value="batchJobs");
+        createMap(result="#{requestScope.attrsMap}");
+        mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
+        mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
+        setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobs}");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.batchJobsTableTitle}");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/batch/batchJobExecution.jsf?target=#{pageSession.target}&isCluster=#{pageSession.isCluster}&tabSetName=#{pageSession.encodedTabSetName}");
     />
-    <!command
-        setSessionAttribute(key="serverInstTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobsServer.jsf?target=server&tabSetName=serverInstTabs");
-    />
-
-    <sun:tab id="batchJobs" immediate="$boolean{true}" text="$resource{i18nc.batch.jobListingTab}" toolTip="$resource{i18nc.batch.jobListingTabTip}" >
-        <!command
-        setSessionAttribute(key="serverInstTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchJobsServer.jsf?target=server&tabSetName=serverInstTabs");
-        />
-    </sun:tab>
-
-    <sun:tab id="batchConfig" immediate="$boolean{true}" text="$resource{i18nc.batch.configuration}" toolTip="$resource{i18nc.batch.configurationTip}" >
-        <!command
-        setSessionAttribute(key="serverInstTabs" value="batchConfig");
-        gf.redirect(page="#{request.contextPath}/common/batch/batchConfigurationServer.jsf?target=server&tabSetName=serverInstTabs");
-        />
-    </sun:tab>
-</sun:tab>
+    </event>
+        <sun:form id="propertyForm">
