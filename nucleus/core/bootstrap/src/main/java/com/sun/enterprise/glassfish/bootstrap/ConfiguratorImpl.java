@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,12 +40,11 @@
 
 package com.sun.enterprise.glassfish.bootstrap;
 
+import java.util.Properties;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import java.util.Properties;
 
 /**
  * @author bhavanishankar@dev.java.net
@@ -60,11 +59,16 @@ class ConfiguratorImpl implements Configurator {
         this.habitat = habitat;
     }
 
+    @Override
     public void configure(Properties props) throws GlassFishException {
-        CommandRunner commandRunner = habitat.getService(CommandRunner.class);
+        CommandRunner commandRunner = null;
         for (Object obj : props.keySet()) {
             String key = (String) obj;
             if (key.startsWith(CONFIG_PROP_PREFIX)) {
+                if (commandRunner == null) {
+                    // only create the CommandRunner if needed
+                    commandRunner = habitat.getService(CommandRunner.class);
+                }
                 CommandResult result = commandRunner.run("set",
                         key.substring(CONFIG_PROP_PREFIX.length()) + "=" + props.getProperty(key));
                 if (result.getExitStatus() != CommandResult.ExitStatus.SUCCESS) {
