@@ -59,6 +59,10 @@
         mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-steps" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobSteps}");
+
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-executions" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.exec}");
+        setPageSessionAttribute(key="jobName", value="#{requestScope.exec.data.extraProperties.listBatchJobExecutions[0].jobName}");
+
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.jobStepListingTableTitle}");
     />
     </event>
@@ -79,14 +83,12 @@
     </sun:title>
 #include "/common/shared/nameSection.inc"
             <sun:propertySheetSection >
+                <sun:property id="jobName"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.jobName}">
+                    <sun:staticText id="jobName" value="#{pageSession.jobName}" />
+                </sun:property>
                 <sun:property id="executionId"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.executionId}">
                     <sun:staticText id="executionId" text="#{pageSession.executionId}" />
                 </sun:property>
-                  <!--
-                <sun:property id="jobName"   labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.jobName}">
-                    <sun:staticText id="jobName" value="#{pageSession.valueMap.jobName}" />
-                </sun:property>
-                -->
             </sun:propertySheetSection >
             "<br>
 
