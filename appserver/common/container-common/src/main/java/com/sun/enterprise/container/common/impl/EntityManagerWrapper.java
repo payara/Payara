@@ -201,7 +201,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
 
                         //Check if sync type of current persistence context is compatible with persistence context being propagated
                         if(synchronizationType == SYNCHRONIZED && propagatedPersistenceContext.getSynchronizationType() == UNSYNCHRONIZED) {
-                            throw new EJBException("Detected an UNSYNCHRONIZED  persistence context being propagated to SYNCHRONIZED persistence context.");
+                            throw new IllegalStateException("Detected an UNSYNCHRONIZED  persistence context being propagated to SYNCHRONIZED persistence context.");
                         }
 
                     }
