@@ -97,16 +97,18 @@ public class JMSConnectionFactoryDefinitionNode extends DeploymentDescriptorNode
 
         // change the resource adapter name from internal format to standard format
         String resourceAdapter = desc.getResourceAdapter();
-        int poundIndex = resourceAdapter.indexOf("#");
-        if (poundIndex > 0) {
-            // the internal format of resource adapter name is "appName#raName", remove the appName part
-            resourceAdapter =  resourceAdapter.substring(poundIndex);
-        } else if (poundIndex == 0) {
-            // the resource adapter name should not be the standard format "#raName" here
-            DOLUtils.getDefaultLogger().log(Level.WARNING, RESOURCE_ADAPTER_NAME_INVALID,
-                    new Object[] { desc.getName(), desc.getResourceAdapter() });
-        } else {
-            // the resource adapter name represent the standalone RA in this case.
+        if (resourceAdapter != null) {
+            int poundIndex = resourceAdapter.indexOf("#");
+            if (poundIndex > 0) {
+                // the internal format of resource adapter name is "appName#raName", remove the appName part
+                resourceAdapter =  resourceAdapter.substring(poundIndex);
+            } else if (poundIndex == 0) {
+                // the resource adapter name should not be the standard format "#raName" here
+                DOLUtils.getDefaultLogger().log(Level.WARNING, RESOURCE_ADAPTER_NAME_INVALID,
+                        new Object[] { desc.getName(), desc.getResourceAdapter() });
+            } else {
+                // the resource adapter name represent the standalone RA in this case.
+            }
         }
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_RESOURCE_ADAPTER, resourceAdapter);
         appendTextChild(node, TagNames.JMS_CONNECTION_FACTORY_USER, desc.getUser());
