@@ -146,8 +146,7 @@ public class ServletSecurityHandler extends AbstractWebHandler {
             }
             HttpConstraint httpConstraint = servletSecurityAn.value();
             boolean isDefault = isDefaultHttpConstraint(httpConstraint);
-            boolean deny = webBundleDesc.isDenyUncoveredHttpMethods();
-            if (isDefault && httpMethodConstraints.length > 0) { 
+            if (isDefault && (httpMethodConstraints.length > 0)) { 
                 if (logger.isLoggable(Level.FINER)) {
                     StringBuilder methodString = new StringBuilder();
                     for (HttpMethodConstraint httpMethodConstraint : httpMethodConstraints) {
@@ -162,7 +161,7 @@ public class ServletSecurityHandler extends AbstractWebHandler {
                     }
                 }
             }
-            if (!isDefault || httpMethodConstraints.length == 0 || !deny) {
+            if (!isDefault || (httpMethodConstraints.length == 0)) {
                 SecurityConstraint securityConstraint =
                         createSecurityConstraint(webBundleDesc,
                         urlPatterns, httpConstraint.rolesAllowed(),
