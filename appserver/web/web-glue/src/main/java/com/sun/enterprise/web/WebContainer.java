@@ -179,8 +179,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
 
     public static final String DISPATCHER_MAX_DEPTH = "dispatcher-max-depth";
 
-    static final int DEFAULT_REAP_INTERVAL = 60;   // 1 minute
-
     public static final String JWS_APPCLIENT_EAR_NAME = "__JWSappclients";
     public static final String JWS_APPCLIENT_WAR_NAME = "sys";
     private static final String JWS_APPCLIENT_MODULE_NAME = JWS_APPCLIENT_EAR_NAME + ":" + JWS_APPCLIENT_WAR_NAME + ".war";
@@ -278,13 +276,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     "or the string could not be parsed",
             action = "Verify if the schemas and dtds")
     public static final String EXCEPTION_SET_SCHEMAS_DTDS_LOCATION = "AS-WEB-GLUE-00189";
-
-    @LogMessageInfo(
-            message = "Unable to determine location of server.log file",
-            level = "SEVERE",
-            cause = "IOException happened during opening the server.log file",
-            action = "Verify if the server.log file is valid")
-    public static final String UNABLE_TO_DETERMINE_SERVER_LOG_LOCATION = "AS-WEB-GLUE-00190";
 
     @LogMessageInfo(
             message = "Error loading web module {0}",
@@ -458,7 +449,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private ComponentEnvManager componentEnvManager;
 
     @Inject
-    Configs configs;
+    private Configs configs;
 
     @Inject @Optional
     private DasConfig dasConfig;
@@ -484,9 +475,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     @Inject @Optional
     private JCDIService jcdiService;
 
-    @Inject
-    CommandRunner runner;
-
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config serverConfig;
 
@@ -494,7 +482,7 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
     private Server server;
 
     @Inject
-    ServerContext _serverContext;
+    private ServerContext _serverContext;
 
     @Inject
     private Transactions transactions;
