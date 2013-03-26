@@ -41,7 +41,6 @@
 package com.sun.enterprise.web;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.BindException;
 import java.net.MalformedURLException;
 import java.text.MessageFormat;

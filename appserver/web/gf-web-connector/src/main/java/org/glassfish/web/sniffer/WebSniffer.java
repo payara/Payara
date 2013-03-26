@@ -40,8 +40,6 @@
 
 package org.glassfish.web.sniffer;
 
-import com.sun.enterprise.module.ModulesRegistry;
-import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.api.deployment.DeploymentContext;
