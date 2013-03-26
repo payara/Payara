@@ -308,6 +308,11 @@ public class UpdateCenterHandlers {
         String port = (String)handlerCtx.getInputValue("port");
         try{
             Image image = getUpdateCenterImage();
+            if (image == null){
+                String ucDir = (String)GuiUtil.getSessionValue("topDir");
+                GuiUtil.handleError(handlerCtx,  GuiUtil.getMessage(BUNDLE, "NoImage", new String[]{ucDir}));
+                return;
+            }
             if (connection.equals("useProxy")){
                 int portNo = Integer.parseInt(port);
                 SocketAddress address = new InetSocketAddress(host, portNo);

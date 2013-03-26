@@ -108,14 +108,14 @@
                       <!afterCreate
                             getClientId(component="$this{component}" clientId=>$page{hostId});
                         />
-                    <sun:textField id="host"  columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.config.host']}" text="#{requestScope.host}" required="#{false}" />
+                    <sun:textField id="host"  columns="$int{60}" maxLength="#{sessionScope.fieldLengths['maxLength.config.host']}" text="#{requestScope.host}" required="#{false}" />
                 </sun:property>
 
                 <sun:property id="portProp"  visible="#{false}" style="margin-left: 17pt" labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18nUC.config.port}" helpText="" >                           
                       <!afterCreate
                             getClientId(component="$this{component}" clientId=>$page{portId});
                         />
-                    <sun:textField id="port"  columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.config.port']}" text="#{requestScope.port}" required="#{false}" />
+                    <sun:textField id="port" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.config.port']}" text="#{requestScope.port}" required="#{false}" />
                 </sun:property>
                     
             </sun:propertySheetSection>
