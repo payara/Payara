@@ -65,7 +65,7 @@
   <system-applications />
   <resources>
     <jdbc-resource pool-name="__TimerPool" jndi-name="jdbc/__TimerPool" object-type="system-admin" />
-    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" />
+    <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all-req" />
     <jdbc-connection-pool name="__TimerPool" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" res-type="javax.sql.XADataSource">
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
       <property value=";create=true" name="connectionAttributes" />

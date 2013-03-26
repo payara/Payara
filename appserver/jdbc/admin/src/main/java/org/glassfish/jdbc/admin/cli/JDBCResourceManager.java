@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.resources.admin.cli.ResourceConstants;
 import org.glassfish.resources.admin.cli.ResourceManager;
 import org.glassfish.resourcebase.resources.admin.cli.ResourceUtil;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
@@ -260,6 +261,15 @@ public class JDBCResourceManager implements ResourceManager {
         }
 
         try {
+
+            JdbcResource jdbcResource = (JdbcResource) ConnectorsUtil.getResourceByName(resources, JdbcResource.class, jndiName);
+            if(ResourceConstants.SYSTEM_ALL_REQ.equals(jdbcResource.getObjectType())){
+                String msg = localStrings.getLocalString("delete.jdbc.resource.system-all-req.object-type",
+                        "The jdbc resource [ {0} ] cannot be deleted as it is required to be configured in the system.",
+                        jndiName);
+                return new ResourceStatus(ResourceStatus.FAILURE, msg);
+            }
+
             // delete resource-ref
             resourceUtil.deleteResourceRef(jndiName, target);
             
