@@ -223,15 +223,14 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
 	    return (ejbDesc.getType().equals(EjbMessageBeanDescriptor.TYPE));
     }
 
-    //todo: must implement for Weld 2.0
     public boolean isPassivationCapable() {
-//        if ( ejbDesc instanceof EjbSessionDescriptor ) {
-//            EjbSessionDescriptor ejbSessionDescriptor = ( EjbSessionDescriptor ) ejbDesc;
-//            if ( ejbSessionDescriptor.isStateful() &&
-//                 ejbSessionDescriptor.isPassivationCapable() ) {
-//                return true;
-//            }
-//        }
+        if ( ejbDesc instanceof EjbSessionDescriptor ) {
+            EjbSessionDescriptor ejbSessionDescriptor = ( EjbSessionDescriptor ) ejbDesc;
+            if ( ejbSessionDescriptor.isStateful() &&
+                 ejbSessionDescriptor.isPassivationCapable() ) {
+                return true;
+            }
+        }
 
         return false;
     }
