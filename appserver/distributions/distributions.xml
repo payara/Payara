@@ -50,8 +50,8 @@
     <property name="repo.url" value="http://repine.us.oracle.com:40000"/>
     <!-- property name="repo.url" value="http://localhost:10000"/ -->
     <property name="repo.host" value="http://pkg.glassfish.org"/>
-    <property name="title" value="GlassFish 3"/>
-    <property name="description" value="GlassFish Server is a modular, lightweight, and extensible Java EE 6 application server built on OSGi. Key features include fast startup time, improved developer productivity, hybrid OSGi/Java EE applications, high availability clustering, centralized administration, and overall ease-of-use."/>
+    <property name="title" value="GlassFish 4"/>
+    <property name="description" value="GlassFish Server is a modular and lightweight Java EE 7 compliant application server. Key features include an OSGi runtime, fast startup time, maven support, and rapid iterative development with Active Redeploy.  GlassFish Server also offers feature-rich administration with the web console, command line, and RESTful API."/>
     <property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
     <property name="source.distribution.name.base" value="GlassFish Open Source Edition 4.0"/>
     <property name="dev.authority" value="dev.glassfish.org"/>
