@@ -64,6 +64,7 @@
         ResTypeList=>$attribute{ResTypeList}, DBVendorList=>$attribute{DBVendorList});
     />
     </event>
+    "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:JDBC:connectionPoolResources");</script>
             <sun:form id="propertyForm">
                 <!-- Page Title -->
                 <sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcConnectionPool.step1PageTitle}"
