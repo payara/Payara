@@ -274,7 +274,7 @@ public class ServerConfigLookup {
             if (_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, WEB_CONTAINER_AVAILABILITY_NOT_DEFINED);
             }
-            return globalAvailabilityEnabled;
+            return false;
         }
 
         if (was.getAvailabilityEnabled() == null) {
