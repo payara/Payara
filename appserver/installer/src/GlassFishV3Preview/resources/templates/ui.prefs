@@ -97,7 +97,7 @@ button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;\
-            Welcome to the ${PRODUCT_NAME} installation.&lt;BR&gt;This is a tool for installing ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server is a production ready Java EE 7 compliant application server &lt;BR&gt;developed under an open source license. Benefits include a modular, &lt;BR&gt; runtime that minimizes resource consumption, an easy-to-use &lt;BR&gt;administration console, a feature-rich command line tool,centralized &lt;BR&gt;administration and high-availability clustering. GlassFish Server is also &lt;BR&gt;the fastest open source application server available.&lt;BR&gt;&lt;BR&gt;Please visit &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt; for more information. &lt;BR&gt;&lt;BR&gt;Please click Next to proceed. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
+            Welcome to the ${PRODUCT_NAME} installation.&lt;BR&gt;This installer will guide you through the installation process. &lt;BR&gt;&lt;BR&gt;GlassFish Server is a modular and lightweight Java EE 7 compliant application server. Key features include an OSGi runtime, fast startup time, maven support, and rapid iterative development with Active Redeploy. GlassFish Server also offers feature-rich administration with the web console, command line and RESTful API. Please visit &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt; for more information. &lt;BR&gt;&lt;BR&gt;Please click Next to proceed. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
 
 
 
