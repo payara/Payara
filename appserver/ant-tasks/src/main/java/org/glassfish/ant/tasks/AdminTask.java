@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -123,17 +123,19 @@ public class AdminTask extends Task {
             log("Glassfish install directory : " + installDirectory + " not found. Specify the correct directory as installDir attribute or asinstall.dir property");
             return;
         }
+        BufferedReader error = null;
+        BufferedReader input = null;
         try {
             File asadmin = getAsAdmin(f);
             Process pr = Runtime.getRuntime().exec(asadmin.getAbsolutePath() + " " + commandExec);
 
-            BufferedReader error = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
+            error = new BufferedReader(new InputStreamReader(pr.getErrorStream()));
             String errorLine=null;
             while((errorLine=error.readLine()) != null) {
                 log(errorLine);
             }
 
-            BufferedReader input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
+            input = new BufferedReader(new InputStreamReader(pr.getInputStream()));
             String inputLine=null;
             while((inputLine=input.readLine()) != null) {
                 log(inputLine);
@@ -145,6 +147,24 @@ public class AdminTask extends Task {
 
         } catch (Exception ex) {
             log(ex.getMessage());
+        }
+        finally {
+            if (error != null) {
+                try {
+                    error.close();
+                }
+                catch (Exception e) {
+                    // nothing can be or should be done...
+                }
+            }
+            if (input != null) {
+                try {
+                    input.close();
+                }
+                catch (Exception e) {
+                    // nothing can be or should be done...
+                }
+            }
         }
     }
 

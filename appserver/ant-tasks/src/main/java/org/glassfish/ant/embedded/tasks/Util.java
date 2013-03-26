@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,8 +114,9 @@ public class Util {
             throw new Exception("Application can not be null");
         }
         Deployer deployer = glassfish.getDeployer();
-        if (deployParams.size() > 0) {
-            deployer.deploy(new File(app).toURI(), deployParams.toArray(new String[0]));
+        final int len = deployParams.size();
+        if (len > 0) {
+            deployer.deploy(new File(app).toURI(), deployParams.toArray(new String[len]));
             System.out.println("Deployed [" + app + "] with parameters " + deployParams);
         } else {
             deployer.deploy(new File(app).toURI());
