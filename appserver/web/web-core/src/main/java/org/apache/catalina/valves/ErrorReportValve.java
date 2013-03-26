@@ -437,7 +437,7 @@ public class ErrorReportValve
         sb.append("<h1>");
         // START SJSAS 6412710
         sb.append(sm.getString("errorReportValve.statusHeader",
-                "" + String.valueOf(statusCode), message,
+                String.valueOf(statusCode), message,
                 responseLocale)).append("</h1>");
         // END SJSAS 6412710
         sb.append("<hr/>");
