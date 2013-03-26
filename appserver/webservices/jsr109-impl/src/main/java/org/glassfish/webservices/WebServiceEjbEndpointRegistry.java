@@ -40,6 +40,8 @@
 
 package org.glassfish.webservices;
 
+import com.sun.enterprise.container.common.spi.util.InjectionException;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
@@ -61,6 +63,7 @@ import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 
 import javax.xml.ws.WebServiceException;
+import javax.xml.ws.handler.Handler;
 
 /**
  * This class acts as a registry of all the webservice EJB end points
@@ -143,7 +146,18 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
             	//bug12540102: remove only the data related to the endpoint that is unregistered
             	//since we are using the uri in the adapterListMap 
                 for (ServletAdapter x :list)  {
-                		x.getEndpoint().dispose();
+                	x.getEndpoint().dispose();
+                        for (Handler handler : x.getEndpoint().getBinding().getHandlerChain()) {
+                        try {
+                            WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
+                            InjectionManager injManager = wscImpl.getInjectionManager();
+                            injManager.destroyManagedObject(handler);
+                        } catch (InjectionException e) {
+                            logger.log(Level.WARNING, LogUtils.DESTORY_ON_HANDLER_FAILED,
+                                    new Object[]{handler.getClass(), x.getEndpoint().getServiceName(), e.getMessage()});
+                            continue;
+                        }
+                    }
 
                 }
                 //Fix for issue 9523

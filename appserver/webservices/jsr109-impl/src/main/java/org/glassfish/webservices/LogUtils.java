@@ -545,5 +545,11 @@ public final class LogUtils {
             cause = "Component link in webservices.xml is invalid",
             action = "check port-component-name matches the name of service implementation bean and check component link in webservices.xml")
     public static final String UNRESOLVED_LINK = LOGMSG_PREFIX + "-00117";
+    
+    @LogMessageInfo(
+            message = "destroyManagedObject failed for Handler {0} for Service {1} with error {2}",
+            comment = "{0} - handler class name, {1} - service endpoint name, {2} - exception message",
+            level = "WARNING")
+    public static final String DESTORY_ON_HANDLER_FAILED = LOGMSG_PREFIX + "-00120";
 
 }

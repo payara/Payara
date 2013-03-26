@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.container.common.spi.util.InjectionException;
+import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.runtime.ws.ReliabilityConfig;
@@ -70,13 +71,16 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.xml.ws.handler.Handler;
 
 /**
- * This class serves for initialization of JAX-WS WSEndpoints when the context is initialized on deployment.
- * 
+ * This class serves for initialization of JAX-WS WSEndpoints when the context
+ * is initialized on deployment.
+ *
  * @author Rama Pulavarthi
  */
 public class WSServletContextListener implements ServletContextListener {
+
     private static final Logger logger = LogUtils.getLogger();
     private String contextRoot;
 
@@ -87,8 +91,8 @@ public class WSServletContextListener implements ServletContextListener {
         ComponentEnvManager compEnvManager = wscImpl.getComponentEnvManager();
         JndiNameEnvironment jndiNameEnv = compEnvManager.getCurrentJndiNameEnvironment();
         WebBundleDescriptor webBundle = null;
-        if (jndiNameEnv != null && jndiNameEnv instanceof BundleDescriptor &&
-                ((BundleDescriptor)jndiNameEnv).getModuleType().equals(DOLUtils.warType())) {
+        if (jndiNameEnv != null && jndiNameEnv instanceof BundleDescriptor
+                && ((BundleDescriptor) jndiNameEnv).getModuleType().equals(DOLUtils.warType())) {
             webBundle = ((WebBundleDescriptor) jndiNameEnv);
         } else {
             throw new WebServiceException("Cannot intialize the JAXWSServlet for " + jndiNameEnv);
@@ -102,8 +106,8 @@ public class WSServletContextListener implements ServletContextListener {
         } catch (Throwable t) {
             logger.log(Level.WARNING, LogUtils.DEPLOYMENT_FAILED, t);//TODO Fix Rama
             sce.getServletContext().removeAttribute("ADAPTER_LIST");
-            throw new RuntimeException("Servlet web service endpoint '" +
-                    "' failure", t);
+            throw new RuntimeException("Servlet web service endpoint '"
+                    + "' failure", t);
         }
     }
 
@@ -142,7 +146,7 @@ public class WSServletContextListener implements ServletContextListener {
 
                 if (logger.isLoggable(Level.FINE)) {
                     logger.log(Level.FINE, LogUtils.CREATING_ENDPOINT_FROM_PACKAGED_WSDL,
-                        primaryWsdl.getSystemId().toString());
+                            primaryWsdl.getSystemId().toString());
                     logger.log(Level.FINE, LogUtils.METADATA_DOCS);
                     for (Object source : docs) {
                         logger.log(Level.FINE, ((SDDocumentSource) source).getSystemId().toString());
@@ -213,36 +217,35 @@ public class WSServletContextListener implements ServletContextListener {
                 rmbuilder.messageRetransmissionInterval(Long.parseLong(rxConfig.getBaseRetransmissionInterval().trim()));
             }
             if (rxConfig.getRetransmissionExponentialBackoff() != null) {
-                rmbuilder.retransmissionBackoffAlgorithm(Boolean.parseBoolean(rxConfig.getRetransmissionExponentialBackoff()) ?
-                        ReliableMessagingFeature.BackoffAlgorithm.EXPONENTIAL :
-                        ReliableMessagingFeature.BackoffAlgorithm.getDefault());
+                rmbuilder.retransmissionBackoffAlgorithm(Boolean.parseBoolean(rxConfig.getRetransmissionExponentialBackoff())
+                        ? ReliableMessagingFeature.BackoffAlgorithm.EXPONENTIAL
+                        : ReliableMessagingFeature.BackoffAlgorithm.getDefault());
             }
             if (rxConfig.getAcknowledgementInterval() != null) {
                 rmbuilder.acknowledgementTransmissionInterval(Long.parseLong(rxConfig.getAcknowledgementInterval().trim()));
             }
             if (rxConfig.getSequenceExpiration() != null) {
                 logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
-                        new Object[] {endpoint.getEndpointName(), "<sequence-expiration>"});
+                        new Object[]{endpoint.getEndpointName(), "<sequence-expiration>"});
             }
             if (rxConfig.getBufferRetryCount() != null) {
                 rmbuilder.maxMessageRetransmissionCount(Long.parseLong(rxConfig.getBufferRetryCount().trim()));
             }
             if (rxConfig.getBufferRetryDelay() != null) {
                 logger.log(Level.INFO, LogUtils.CONFIGURATION_IGNORE_IN_WLSWS,
-                        new Object[] {endpoint.getEndpointName(), "<buffer-retry-delay>"});
+                        new Object[]{endpoint.getEndpointName(), "<buffer-retry-delay>"});
             }
 
             wsFeatures.add(rmbuilder.build());
         } else {
             if (endpoint.getHttpResponseBufferSize() != null) {
                 logger.log(Level.WARNING, LogUtils.CONFIGURATION_UNSUPPORTED_IN_WLSWS,
-                        new Object[] {endpoint.getEndpointName(), "<http-response-buffersize>"});
+                        new Object[]{endpoint.getEndpointName(), "<http-response-buffersize>"});
             }
         }
 
         if (wsFeatures.size() > 0) {
-            binding = BindingID.parse(givenBinding).createBinding(wsFeatures.toArray
-                    (new WebServiceFeature[wsFeatures.size()]));
+            binding = BindingID.parse(givenBinding).createBinding(wsFeatures.toArray(new WebServiceFeature[wsFeatures.size()]));
         } else {
             binding = BindingID.parse(givenBinding).createBinding();
         }
@@ -271,8 +274,7 @@ public class WSServletContextListener implements ServletContextListener {
                 binding, // Derive binding
                 primaryWsdl, // primary WSDL
                 docs, // Collection of imported WSDLs and schema
-                catalogURL
-        );
+                catalogURL);
 
         //Fix for 6852 Add the ServletAdapter which implements the BoundEndpoint
         // container.addEndpoint(wsep);
@@ -302,11 +304,12 @@ public class WSServletContextListener implements ServletContextListener {
 
     }
 
-
     private AddressingFeature.Responses getResponse(String s) {
         if (s != null) {
             return AddressingFeature.Responses.valueOf(AddressingFeature.Responses.class, s);
-        } else return AddressingFeature.Responses.ALL;
+        } else {
+            return AddressingFeature.Responses.ALL;
+        }
 
     }
 
@@ -316,28 +319,38 @@ public class WSServletContextListener implements ServletContextListener {
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-    ServletContext servletContext = sce.getServletContext();
+        ServletContext servletContext = sce.getServletContext();
 
-    synchronized(this) {
+        synchronized (this) {
             ServletAdapterList list =
                     (ServletAdapterList) servletContext.getAttribute("ADAPTER_LIST");
-            if(list != null) {
-                for(ServletAdapter x : list) {
+            if (list != null) {
+                for (ServletAdapter x : list) {
                     x.getEndpoint().dispose();
-                }
+                    for (Handler handler : x.getEndpoint().getBinding().getHandlerChain()) {
+                        try {
+                            WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
+                            InjectionManager injManager = wscImpl.getInjectionManager();
+                            injManager.destroyManagedObject(handler);
+                        } catch (InjectionException e) {
+                            logger.log(Level.WARNING, LogUtils.DESTORY_ON_HANDLER_FAILED,
+                                    new Object[]{handler.getClass(), x.getEndpoint().getServiceName(), e.getMessage()});
+                            continue;
+                        }
+                    } 
+               }
                 servletContext.removeAttribute("ADAPTER_LIST");
             }
             JAXWSAdapterRegistry.getInstance().removeAdapter(contextRoot);
-            /*
-            Fix for bug 3932/4052 since the x.getEndpoint().dispose is being
-           called above we do not need to call this explicitly
-            try {
-                (new WsUtil()).doPreDestroy(endpoint, classLoader);
-            } catch (Throwable t) {
-                logger.log(Level.WARNING, "@PreDestroy lifecycle call failed for service"
-                        + endpoint.getName(), t);
-            }*/
-           
+                /*
+                 Fix for bug 3932/4052 since the x.getEndpoint().dispose is being
+                 called above we do not need to call this explicitly
+                 try {
+                 (new WsUtil()).doPreDestroy(endpoint, classLoader);
+                 } catch (Throwable t) {
+                 logger.log(Level.WARNING, "@PreDestroy lifecycle call failed for service"
+                 + endpoint.getName(), t);
+                 }*/
         }
         JAXWSServletModule.destroy(contextRoot);
     }

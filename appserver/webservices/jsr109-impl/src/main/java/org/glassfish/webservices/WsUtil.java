@@ -1993,7 +1993,6 @@ public class WsUtil {
             Class handlerClass;
             try {
                 handlerClass = Class.forName(h.getHandlerClass(), true, loader);
-                handler = (Handler)handlerClass.newInstance();
             } catch (Throwable t) {
                 String msg = MessageFormat.format(
                         logger.getResourceBundle().getString(LogUtils.HANDLER_UNABLE_TO_ADD),
@@ -2004,19 +2003,16 @@ public class WsUtil {
             }
             
             // perform injection
-            try {
-                
+            try {          
                 WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
                 InjectionManager injManager = wscImpl.getInjectionManager(); 
-                injManager.injectInstance(handler);
+                //PostConstruct is invoked by createManagedObject as well
+                handler = (Handler) injManager.createManagedObject(handlerClass);
             } catch(InjectionException e) {
                 logger.log(Level.SEVERE, LogUtils.HANDLER_INJECTION_FAILED,
                         new Object[] {h.getHandlerClass(), e.getMessage()});
                 continue;
             }
-            
-            // Call @PostConstruct if any
-            doPostConstruct(handlerClass, handler);
             
             // Add soap-roles
             Collection<String> rolesColl = h.getSoapRoles();
