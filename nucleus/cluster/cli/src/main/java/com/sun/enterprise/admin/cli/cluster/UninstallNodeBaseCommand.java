@@ -70,13 +70,6 @@ abstract class UninstallNodeBaseCommand extends NativeRemoteCommandsBase {
         super.validate();
         Globals.setDefaultHabitat(habitat);
         installDir = resolver.resolve(installDir);
-        if (!force) {
-            for (String host : hosts) {
-                if (checkIfNodeExistsForHost(host, installDir)) {
-                    throw new CommandException(Strings.get("call.delete.node.ssh", host));
-                }
-            }
-        }
     }
 
     @Override

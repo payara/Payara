@@ -95,13 +95,7 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         Globals.setDefaultHabitat(habitat);
 
         installDir = resolver.resolve(installDir);
-        if (!force) {
-            for (String host : hosts) {
-                if (checkIfNodeExistsForHost(host, installDir)) {
-                    throw new CommandException(Strings.get("node.already.configured", host, installDir));
-                }
-            }
-        }
+
         if(ok(archive)) {
             archive = SmartFile.sanitize(archive);
         }
