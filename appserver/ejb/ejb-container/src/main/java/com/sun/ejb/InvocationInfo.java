@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,7 +122,11 @@ public class InvocationInfo {
         sb.append("Invocation Info for ejb " + ejbName + "\t");
         sb.append("method=" + method + "\t");
         sb.append("methodIntf = " + methodIntf + "\t");
-        sb.append("tx attr = " + Container.txAttrStrings[txAttr] + "\t");
+        if (txAttr != -1) {
+            sb.append("tx attr = " + Container.txAttrStrings[txAttr] + "\t");
+        } else {
+            sb.append("tx attr = -1\t");
+        }
         sb.append("Cached permission = " + cachedPermission + "\t");
         sb.append("target method 1 = " + targetMethod1 + "\t");
         sb.append("target method 2 = " + targetMethod2 + "\t");
