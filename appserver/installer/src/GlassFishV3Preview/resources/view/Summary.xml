@@ -103,7 +103,7 @@ void run ()  {
     String mode = (String)modeResp.getResult();
 
     theSumURL = theSummaryFile.toURI().toURL();
-	theNextStepsURL = new URI("http://www.oracle.com/pls/topic/lookup?ctx=821-2427&id=sjsaseeig").toURL();
+	theNextStepsURL = new URI("http://glassfish.java.net/docs/4.0/quick-start-guide.pdf").toURL();
 	theLogURL = logsLocation.toURI().toURL();
 
   /* determine if anything failed */

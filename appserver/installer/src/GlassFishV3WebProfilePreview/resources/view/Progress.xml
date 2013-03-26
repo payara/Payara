@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -63,6 +63,7 @@
 	  <apt:slideResource>/view/jwsdp_4.png</apt:slideResource>
 	  <apt:slideResource>/view/jwsdp_5.png</apt:slideResource>
 	  <apt:slideResource>/view/jwsdp_6.png</apt:slideResource>
+	  <apt:slideResource>/view/jwsdp_7.png</apt:slideResource>
         </apt:slideShow>
       </apt:visual>
     </apt:property>
