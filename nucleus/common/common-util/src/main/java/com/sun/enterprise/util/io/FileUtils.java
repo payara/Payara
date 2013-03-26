@@ -1386,7 +1386,7 @@ public class FileUtils {
     }
     
     /**
-     * Retriable work for opening a FileOutputStream.
+     * Retriable work for deleting a file
      */
     private static class DeleteFileWork implements RetriableWork {
 
@@ -1399,6 +1399,8 @@ public class FileUtils {
 
         @Override
         public void run() {
+            if (complete) return;
+            
             if (deleteMe.delete()) complete = true;
         }
 
