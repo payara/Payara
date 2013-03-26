@@ -141,8 +141,7 @@ public class CSIv2SSLTaggedComponentHandlerImpl
 		_logger.log(Level.FINE, "{0}.extract->:", baseMsg);
 	    }
 
-            IIOPProfileTemplate iiopProfileTemplate = (IIOPProfileTemplate)ior.
-                                 getProfile().getTaggedProfileTemplate();
+            // IIOPProfileTemplate iiopProfileTemplate = (IIOPProfileTemplate)ior.getProfile().getTaggedProfileTemplate();
             // IIOPAddress primary = iiopProfileTemplate.getPrimaryAddress() ;
             // String host = primary.getHost().toLowerCase(Locale.ENGLISH);
 
