@@ -1257,7 +1257,7 @@ class MapValue {
         			}
         			else {
         				WebPermissionUtil.logger.log(Level.INFO,
-        						"JACC: For the URL pattern {0}, the following methods have beem excluded: {1}", args);
+        						"JACC: For the URL pattern {0}, the following methods have been excluded: {1}", args);
         			}
     			}
     			else {
