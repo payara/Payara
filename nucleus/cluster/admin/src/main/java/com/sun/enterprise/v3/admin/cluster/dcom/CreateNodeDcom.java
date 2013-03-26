@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -108,7 +108,7 @@ public class CreateNodeDcom extends CreateRemoteNodeCommand {
         super.checkDefaults();
 
         // The default is automatically set to 22 -- which is certainly a mistake!
-        if (remotePort == null || remotePort.isEmpty() || remotePort.equals(NodeUtils.NODE_DEFAULT_SSH_PORT)) {
+        if (!ok(remotePort) || remotePort.equals(NodeUtils.NODE_DEFAULT_SSH_PORT)) {
             remotePort = NodeUtils.NODE_DEFAULT_DCOM_PORT;
         }
     }

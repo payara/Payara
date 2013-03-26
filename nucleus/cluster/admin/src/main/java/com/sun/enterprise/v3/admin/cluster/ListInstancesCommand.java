@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,15 +73,15 @@ import org.jvnet.hk2.annotations.Service;
 @PerLookup
 @RestEndpoints({
     @RestEndpoint(configBean=Cluster.class,
-        opType=RestEndpoint.OpType.GET,
-        path="list-instances",
+        opType=RestEndpoint.OpType.GET, 
+        path="list-instances", 
         description="List Cluster Instances",
         params={
             @RestParam(name="id", value="$parent")
         }),
     @RestEndpoint(configBean=Domain.class,
-        opType=RestEndpoint.OpType.GET,
-        path="list-instances",
+        opType=RestEndpoint.OpType.GET, 
+        path="list-instances", 
         description="List Instances")
 })
 public class ListInstancesCommand implements AdminCommand {
@@ -104,13 +104,8 @@ public class ListInstancesCommand implements AdminCommand {
     private boolean standaloneonly;
     @Param(optional = true, defaultValue = "false")
     private boolean nostatus;
-
-    // We are setting the whichTarget to an empty String because FindBugs - LL
-    // does not understand that HK2 is going to set it to a Sting for us later.
-    // This garbage empty String will be replaced by HK2 soon...
     @Param(optional = true, primary = true, defaultValue = "domain")
-    String whichTarget = "";
-
+    String whichTarget;
     private List<InstanceInfo> infos = new LinkedList<InstanceInfo>();
     private List<Server> serverList;
     private ActionReport report;
@@ -140,7 +135,7 @@ public class ListInstancesCommand implements AdminCommand {
         serverList = createServerList();
 
         if (serverList == null) {
-            fail(Strings.get("list.instances.badTarget", whichTarget ));
+            fail(Strings.get("list.instances.badTarget", whichTarget));
             return;
         }
         // Require that we be a DAS
@@ -329,9 +324,6 @@ public class ListInstancesCommand implements AdminCommand {
     }
 
     private List<Server> getServersForNode() {
-        if (whichTarget == null) // FindBugs can't figure out that our caller already checked.
-            throw new NullPointerException("impossible!");
-
         boolean foundNode = false;
         Nodes nodes = domain.getNodes();
 
