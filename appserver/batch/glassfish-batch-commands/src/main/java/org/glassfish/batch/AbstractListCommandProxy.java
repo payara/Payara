@@ -119,15 +119,18 @@ public abstract class AbstractListCommandProxy
         }
 
         if (subReport != null) {
-            context.setActionReport(subReport);
+            postInvoke(context, subReport);
         }
     }
 
     protected abstract String getCommandName();
 
+    protected  abstract void postInvoke(AdminCommandContext context, ActionReport subReport);
+
     private ActionReport executeInternalCommand(AdminCommandContext context, String targetInstanceName) {
         String commandName = getCommandName();
         ParameterMap params = new ParameterMap();
+        params.add("target", targetInstanceName);
         fillParameterMap(params);
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();

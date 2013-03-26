@@ -100,4 +100,12 @@ public class ListBatchJobsProxy
         if (jobName != null)
             parameterMap.add("", jobName);
     }
+
+
+    protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
+        Properties subProperties = subReport.getExtraProperties();
+        Properties extraProps = context.getActionReport().getExtraProperties();
+        extraProps.put("simpleMode", subProperties.get("simpleMode"));
+        extraProps.put("listBatchJobs", subProperties.get("listBatchJobs"));
+    }
 }

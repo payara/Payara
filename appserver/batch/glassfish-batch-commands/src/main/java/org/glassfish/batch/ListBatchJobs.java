@@ -80,6 +80,7 @@ import java.util.logging.Level;
 public class ListBatchJobs
     extends AbstractLongListCommand {
 
+
     private static final String JOB_NAME = "jobName";
 
     private static final String APP_NAME = "appName";

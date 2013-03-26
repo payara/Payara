@@ -94,4 +94,11 @@ public class ListBatchJobStepsProxy
         if (executionId != null)
             parameterMap.add("", executionId);
     }
+
+    protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
+        Properties subProperties = subReport.getExtraProperties();
+        Properties extraProps = context.getActionReport().getExtraProperties();
+        extraProps.put("listBatchJobSteps", subProperties.get("listBatchJobSteps"));
+    }
+
 }
