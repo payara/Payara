@@ -1411,7 +1411,9 @@ public class Response
         setError();
 
         coyoteResponse.setStatus(status);
-        coyoteResponse.setDetailMessage(message);
+        // use encoding in GlassFish
+        coyoteResponse.getResponse().setHtmlEncodingCustomReasonPhrase(false);
+        coyoteResponse.setDetailMessage(HtmlEntityEncoder.encodeXSS(message));
 
         // Clear any data content that has been buffered
         resetBuffer();
@@ -1627,7 +1629,9 @@ public class Response
             return;
 
         coyoteResponse.setStatus(status);
-        coyoteResponse.setDetailMessage(message);
+        // use encoding in GlassFish
+        coyoteResponse.getResponse().setHtmlEncodingCustomReasonPhrase(false);
+        coyoteResponse.setDetailMessage(HtmlEntityEncoder.encodeXSS(message));
     }
 
 
