@@ -42,7 +42,12 @@
 
 <!-- common/commonTaskDoc.inc -->
 
-<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.docs}">                
+<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.docs}">
+    <sun:commonTask
+        text="$resource{i18n.commonTasks.task.docpage}"
+        toolTip="$resource{i18n.commonTasks.task.docpage.toolTip}"
+        onClick="var win=window.open('$resource{i18n.commonTasks.doc.docpage}','_blank');if (win) {win.focus();}; return false;">
+    </sun:commonTask>
     <sun:commonTask
         text="$resource{i18n.commonTasks.task.qstart}"
         toolTip="$resource{i18n.commonTasks.task.qstart.toolTip}"
