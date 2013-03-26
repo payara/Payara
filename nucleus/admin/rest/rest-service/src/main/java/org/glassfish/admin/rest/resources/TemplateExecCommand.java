@@ -157,18 +157,20 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         return Response.status(HttpURLConnection.HTTP_OK).entity(ec).build();
     }
 
-    protected ActionReportResult executeCommandLegacyFormat(ParameterMap data) {
+    protected Response executeCommandLegacyFormat(ParameterMap data) {
         RestActionReporter actionReport = ResourceUtil.runCommand(commandName, data, getSubject());
-
+        final ActionReport.ExitCode exitCode = actionReport.getActionExitCode();
+        final int status = (exitCode == ActionReport.ExitCode.FAILURE) ?
+                     HttpURLConnection.HTTP_INTERNAL_ERROR : HttpURLConnection.HTTP_OK;
         ActionReportResult option = (ActionReportResult) optionsLegacyFormat();
         ActionReportResult results = new ActionReportResult(commandName, actionReport, option.getMetaData());
         results.getActionReport().getExtraProperties().putAll(option.getActionReport().getExtraProperties());
         results.setCommandDisplayName(commandDisplayName);
 
-        if (actionReport.getActionExitCode() == ActionReport.ExitCode.FAILURE) {
+        if (exitCode == ActionReport.ExitCode.FAILURE) {
             results.setErrorMessage(actionReport.getCombinedMessage());
         }
-        return results;
+        return Response.status(status).entity(results).build();
     }
 
     protected CommandResult executeCommand(ParameterMap data) {

@@ -80,7 +80,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    public ActionReportResult processDeleteLegacyFormat(ParameterMap data) {
+    public Response processDeleteLegacyFormat(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
         }
@@ -152,7 +152,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    public ActionReportResult hack(ParameterMap data) {
+    public Response hack(ParameterMap data) {
         if (data != null && data.containsKey("operation")) {
             List<String> l = data.get("operation");
             if (l.contains("__deleteoperation")) {

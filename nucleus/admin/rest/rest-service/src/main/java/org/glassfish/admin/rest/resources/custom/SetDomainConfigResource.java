@@ -70,7 +70,7 @@ public class SetDomainConfigResource extends TemplateCommandPostResource {
     @POST
     @Produces({"text/html;qs=2",MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    public ActionReportResult setDomainConfig(HashMap<String, String> data) {
+    public Response setDomainConfig(HashMap<String, String> data) {
 
         final Iterator<Entry<String, String>> iterator = data.entrySet().iterator();
         if (iterator.hasNext()) {

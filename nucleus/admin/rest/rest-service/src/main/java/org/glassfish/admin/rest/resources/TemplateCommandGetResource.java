@@ -71,7 +71,7 @@ public class TemplateCommandGetResource extends TemplateExecCommand {
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    public ActionReportResult processGetLegacyFormat() {
+    public Response processGetLegacyFormat() {
         return executeCommandLegacyFormat(prepareParameters());
     }
 

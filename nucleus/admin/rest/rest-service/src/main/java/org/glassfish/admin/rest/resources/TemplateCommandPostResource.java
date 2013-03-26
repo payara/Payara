@@ -86,7 +86,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    public ActionReportResult processPostLegacyFormat(ParameterMap data) {
+    public Response processPostLegacyFormat(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
         }
@@ -113,7 +113,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    public ActionReportResult post(FormDataMultiPart formData) {
+    public Response post(FormDataMultiPart formData) {
         /* data passed to the generic command running
          *
          * */
@@ -124,7 +124,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     //Handle POST request without any entity(input).
     //Do not care what the Content-Type is.
     @POST
-    public ActionReportResult processPost() {
+    public Response processPost() {
         try {
             return processPostLegacyFormat(new ParameterMap());
         } catch (Exception e) {
