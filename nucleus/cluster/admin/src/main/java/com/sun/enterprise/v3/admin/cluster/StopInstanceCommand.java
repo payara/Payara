@@ -124,10 +124,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     private Boolean kill = false;
     @Param(optional = false, primary = true)
     private String instanceName;
-
-    @Param(name="_vmShutdown", optional=true, defaultValue = "true")
-    private String vmShutdown;
-
     private Logger logger;
     private RemoteInstanceCommandHelper helper;
     private ActionReport report;
