@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,7 +67,7 @@ import org.glassfish.api.admin.*;
 /**
  *  This is a remote command that lists the configs.
  * Usage: list-config
- 	
+
  * @author Bhakti Mehta
  */
 @Service(name = "list-configs")
@@ -79,8 +79,8 @@ import org.glassfish.api.admin.*;
     CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTERED_INSTANCE})
 @RestEndpoints({
     @RestEndpoint(configBean=Configs.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-configs", 
+        opType=RestEndpoint.OpType.GET,
+        path="list-configs",
         description="list-configs")
 })
 public final class ListConfigsCommand implements AdminCommand {
@@ -90,8 +90,6 @@ public final class ListConfigsCommand implements AdminCommand {
 
     @Param(optional = true, primary = true, defaultValue = "domain")
     private String target;
-
-    private ActionReport report;
 
     @Inject
     private Configs allConfigs;
@@ -110,25 +108,20 @@ public final class ListConfigsCommand implements AdminCommand {
             configList = createConfigList();
 
             if (configList == null) {
-                fail(Strings.get("list.instances.badTarget", target));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(Strings.get("list.instances.badTarget", target));
                 return;
             }
         }
-        
-        StringBuffer sb = new StringBuffer();
+
+        StringBuilder sb = new StringBuilder();
         for (Config config : configList) {
             sb.append(config.getName()).append('\n');
-
         }
         String output = sb.toString();
         //Fix for isue 12885
         report.addSubActionsReport().setMessage(output.substring(0,output.length()-1 ));
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-    }
-
-    private void fail(String s) {
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage(s);
     }
 
     /*
