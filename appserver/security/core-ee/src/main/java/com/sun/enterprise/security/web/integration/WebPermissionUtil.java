@@ -1207,14 +1207,12 @@ class MapValue {
     	boolean otherIsUncovered = false;
     	synchronized (methodValues) {
     		BitSet uncoveredMethodSet = new BitSet();
-    		BitSet deniedMethodSet = new BitSet();
     		// for all the methods in the mapValue
     		for (MethodValue v : methodValues.values()) {
     			// if the method is uncovered add its id to the uncovered set
     			if (v.isUncovered()) {
     				if (deny) {
     					v.setPredefinedOutcome(false);
-    					deniedMethodSet.set(v.index);
     				}
     				uncoveredMethodSet.set(v.index);
     			}
@@ -1248,46 +1246,28 @@ class MapValue {
     			 * which otherConstraint does NOT apply
     			 */
     			uncoveredMethodSet = otherMethodSet;
-
-    			otherMethodSet = getMethodSet();
-    			if (!deniedMethodSet.isEmpty()) {
-    				/*
-    				 * deniedMethodSet contains methods that otherConstraint
-    				 * pertains to, so remove them from deniedMethodSet which 
-    				 * is the set to which the otherConstraint does not apply
-    				 */
-    				otherMethodSet.andNot(deniedMethodSet);
-    			}
-    			/*
-    			 * when otherIsUncovered, deniedMethodSet contains methods to
-    			 * which otherConstraint does NOT apply
-    			 */
-    			deniedMethodSet = otherMethodSet;
     		}
     		if (otherIsUncovered || !uncoveredMethodSet.isEmpty()) {
-    			if (WebPermissionUtil.logger.isLoggable(Level.FINE)) {
-        			StringBuilder msg = new StringBuilder();
-        			msg.append(otherIsUncovered 
-        					? " all but the following methods were uncovered: "
-        							: " the following methods were uncovered: ");
-        			msg.append(MethodValue.getActions(uncoveredMethodSet));
-
-        			WebPermissionUtil.logger.log(Level.FINE,
-        					"JACC: constraint capture: {0}{1}",
-        					new Object[]{urlPatternSpec, msg});
-
-        			if (deny && !deniedMethodSet.isEmpty()) {
-        				msg = new StringBuilder();
-        				msg.append(otherIsUncovered
-        						? " all but the following methods have been excluded: "
-        								: " the following methods have beem excluded: ");
-        				msg.append(otherIsUncovered
-        						? MethodValue.getActions(deniedMethodSet)
-        								: MethodValue.getActions(deniedMethodSet));
-
-        				WebPermissionUtil.logger.log(Level.FINE,
-        						"JACC: constraint capture: {0}{1}",
-        						new Object[]{urlPatternSpec, msg});
+    			String uncoveredMethods = MethodValue.getActions(uncoveredMethodSet);
+    			Object[] args = new Object[] {urlPatternSpec, uncoveredMethods};
+    			if (deny) {
+        			if (otherIsUncovered) {
+        				WebPermissionUtil.logger.log(Level.INFO,
+        						"JACC: For the URL pattern {0}, all but the following methods have been excluded: {1}", args);
+        			}
+        			else {
+        				WebPermissionUtil.logger.log(Level.INFO,
+        						"JACC: For the URL pattern {0}, the following methods have beem excluded: {1}", args);
+        			}
+    			}
+    			else {
+        			if (otherIsUncovered) {
+        				WebPermissionUtil.logger.log(Level.WARNING,
+        						"JACC: For the URL pattern {0}, all but the following methods were uncovered: {1}", args);
+        			}
+        			else {
+        				WebPermissionUtil.logger.log(Level.WARNING,
+        						"JACC: For the URL pattern {0}, the following methods were uncovered: {1}", args);
         			}
     			}
     		}
