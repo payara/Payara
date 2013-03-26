@@ -43,12 +43,36 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.OS;
-import java.io.*;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.RandomAccessFile;
+import java.io.Writer;
 import java.nio.ByteBuffer;
-import java.nio.channels.*;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.*;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -531,11 +555,6 @@ public class FileUtils {
         return internalDeleteFile(f, false);
     }
     
-    
-    private final static long WAIT_TIME = 10L;
-    private final static long ITERATIONS = 5000L / WAIT_TIME ;
-    private final static long GC_INTERVAL = 1000L;
-    
     /**
      * Delete a file.  If on Windows and the delete fails, run the gc and retry the deletion.
      *
@@ -558,36 +577,17 @@ public class FileUtils {
             }
         }
         else {
-            for (long lcv = 0; lcv < ITERATIONS; lcv++) {
-                if (f.delete()) {
-                    return true;
-                }
-                
-                try {
-                    Thread.sleep(WAIT_TIME);
-                }
-                catch (InterruptedException ie) {
-                    break;
-                }
-                
-                if ((lcv % GC_INTERVAL) == 0L) {
-                    AccessController.doPrivileged(new PrivilegedAction<Object>() {
-
-                        @Override
-                        public Object run() {
-                            System.gc();
-                            return null;
-                        }
-                        
-                    } );
-                }
-            }
+            DeleteFileWork work = new DeleteFileWork(f);
             
+            doWithRetry(work);
+            
+            if (work.workComplete()) {
+                return true;
+            }
         }
 
         boolean log = _utillogger.isLoggable(FILE_OPERATION_LOG_LEVEL);
         String filePath = f.getAbsolutePath();
-        ;
 
         /*
         *The deletion failed.  This could be simply because the file
@@ -637,33 +637,33 @@ public class FileUtils {
     * Return a set of all the files (File objects) under the directory specified, with
     * relative pathnames filtered with the filename filter (can be null for all files).
     */
-    public static Set getAllFilesUnder(File directory, FilenameFilter filenameFilter) throws IOException {
+    public static Set<File> getAllFilesUnder(File directory, FilenameFilter filenameFilter) throws IOException {
 	if (!directory.exists() || !directory.isDirectory()) {
 	    throw new IOException("Problem with: " + directory + ". You must supply a directory that exists");
 	}
         return getAllFilesUnder(directory, filenameFilter, true);
     }
 
-    public static Set getAllFilesUnder(File directory, FilenameFilter filenameFilter, boolean relativize) throws IOException {
-        Set allFiles = new TreeSet();
+    public static Set<File> getAllFilesUnder(File directory, FilenameFilter filenameFilter, boolean relativize) throws IOException {
+        Set<File> allFiles = new TreeSet<File>();
         File relativizingDir = relativize ? directory : null;
         recursiveGetFilesUnder( relativizingDir, directory, filenameFilter,
                                 allFiles, false );
         return allFiles;
     }
 
-    public static Set getAllFilesAndDirectoriesUnder(File directory) throws IOException {
+    public static Set<File> getAllFilesAndDirectoriesUnder(File directory) throws IOException {
 	if (!directory.exists() || !directory.isDirectory()) {
 	    throw new IOException("Problem with: " + directory + ". You must supply a directory that exists");
 	}
-	Set allFiles = new TreeSet();
+	Set<File> allFiles = new TreeSet<File>();
 	recursiveGetFilesUnder(directory, directory, null, allFiles, true);
 	return allFiles;
     }
 
     // relativizingRoot can be null, in which case no relativizing is
     // performed.
-    private static void recursiveGetFilesUnder(File relativizingRoot, File directory, FilenameFilter filenameFilter, Set set, boolean returnDirectories) {
+    private static void recursiveGetFilesUnder(File relativizingRoot, File directory, FilenameFilter filenameFilter, Set<File> set, boolean returnDirectories) {
 	File[] files = listFiles(directory, filenameFilter);
 	for (int i = 0; i < files.length; i++) {
 	    if (files[i].isDirectory()) {
@@ -729,7 +729,7 @@ public class FileUtils {
             _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.performGC);
             while (!work.workComplete() && retries++ < FILE_OPERATION_MAX_RETRIES) {
                 try {
-                    Thread.currentThread().sleep(FILE_OPERATION_SLEEP_DELAY_MS);
+                    Thread.sleep(FILE_OPERATION_SLEEP_DELAY_MS);
                 } catch (InterruptedException ex) {
                 }
                 System.gc();
@@ -792,7 +792,7 @@ public class FileUtils {
      */
     public static File[] listAllFiles(File dirName, String ext) {
         File[] target = null;
-        List list = searchDir(dirName, ext);
+        List<File> list = searchDir(dirName, ext);
 
         if ((list != null) && (list.size() > 0)) {
             target = new File[list.size()];
@@ -814,11 +814,11 @@ public class FileUtils {
      * @return a list of abstract pathnames of type java.io.File
      *         that matches with the given extension
      */
-    public static List searchDir(File dirName, String ext) {
-        List targetList = null;
+    public static List<File> searchDir(File dirName, String ext) {
+        List<File> targetList = null;
 
         if (dirName.isDirectory()) {
-            targetList = new ArrayList();
+            targetList = new ArrayList<File>();
 
             File[] list = listFiles(dirName);
 
@@ -1384,10 +1384,34 @@ public class FileUtils {
             return lastError;
         }
     }
+    
+    /**
+     * Retriable work for opening a FileOutputStream.
+     */
+    private static class DeleteFileWork implements RetriableWork {
+
+        private final File deleteMe;
+        private boolean complete = false;
+        
+        private DeleteFileWork(File deleteMe) {
+            this.deleteMe = deleteMe;
+        }
+
+        @Override
+        public void run() {
+            if (deleteMe.delete()) complete = true;
+        }
+
+        @Override
+        public boolean workComplete() {
+            return complete;
+        }
+
+        
+    }
 
     ///////////////////////////////////////////////////////////////////////////
 
-    private static final int BUFFER_SIZE = 0x10000; // 64k
     private final static char[] ILLEGAL_FILENAME_CHARS = {'/', '\\', ':', '*', '?', '"', '<', '>', '|'};
     private final static String ILLEGAL_FILENAME_STRING = "\\/:*?\"<>|";
     private final static char REPLACEMENT_CHAR = '_';
