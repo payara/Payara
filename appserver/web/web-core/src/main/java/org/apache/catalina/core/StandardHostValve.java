@@ -64,7 +64,6 @@ import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.ResponseUtil;
 import org.apache.catalina.valves.ValveBase;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.util.HtmlEntityEncoder;
 import org.glassfish.web.valve.GlassFishValve;
 
 
@@ -685,8 +684,6 @@ final class StandardHostValve
             String message = ((HttpResponse) response).getMessage();
             if (message == null) {
                 message = "";
-            } else {
-                message = HtmlEntityEncoder.encodeXSS(message);
             }
             sreq.setAttribute(RequestDispatcher.ERROR_MESSAGE, message);
         }
