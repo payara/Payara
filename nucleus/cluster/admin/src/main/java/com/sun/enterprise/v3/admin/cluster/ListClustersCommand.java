@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -81,11 +81,11 @@ import org.glassfish.api.admin.*;
 @I18n("list.clusters.command")
 @RestEndpoints({
     @RestEndpoint(configBean=Clusters.class,
-        opType=RestEndpoint.OpType.GET, 
-        path="list-clusters", 
+        opType=RestEndpoint.OpType.GET,
+        path="list-clusters",
         description="List Clusters")
 })
-public final class ListClustersCommand implements AdminCommand, PostConstruct {
+public final class ListClustersCommand implements AdminCommand {
 
     @Inject
     private ServiceLocator habitat;
@@ -93,7 +93,6 @@ public final class ListClustersCommand implements AdminCommand, PostConstruct {
     Domain domain;
     @Inject
     InstanceStateService stateService;
-    private RemoteInstanceCommandHelper helper;
 
     private static final String NONE = "Nothing to list.";
     private static final String EOL = "\n";
@@ -104,15 +103,8 @@ public final class ListClustersCommand implements AdminCommand, PostConstruct {
     @Inject
     private Clusters allClusters;
 
-    private ActionReport report ;
-
-    @Override
-    public void postConstruct() {
-        helper = new RemoteInstanceCommandHelper(habitat);
-    }
-
     public void execute(AdminCommandContext context) {
-        report = context.getActionReport();
+        ActionReport report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         Logger logger = context.getLogger();
         ActionReport.MessagePart top = report.getTopMessagePart();
@@ -128,7 +120,8 @@ public final class ListClustersCommand implements AdminCommand, PostConstruct {
             clusterList = createClusterList();
 
             if (clusterList == null) {
-                fail(Strings.get("list.instances.badTarget", whichTarget));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                report.setMessage(Strings.get("list.instances.badTarget", whichTarget));
                 return;
             }
         }
@@ -162,7 +155,9 @@ public final class ListClustersCommand implements AdminCommand, PostConstruct {
                 if (name != null) {
                     ActionReport tReport = habitat.getService(ActionReport.class, "html");
                     InstanceInfo ii = new InstanceInfo(
-                            habitat, server, helper.getAdminPort(server), server.getAdminHost(),
+                            habitat, server,
+                            new RemoteInstanceCommandHelper(habitat).getAdminPort(server),
+                            server.getAdminHost(),
                             clusterName, logger, timeoutInMsec, tReport, stateService);
                     infos.add(ii);
                 }
@@ -297,12 +292,7 @@ public final class ListClustersCommand implements AdminCommand, PostConstruct {
         return clusters;
     }
 
-     private void fail(String s) {
-        report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        report.setMessage(s);
-    }
-
-    private class ClusterInfo {
+     private static class ClusterInfo {
 
         private boolean atleastOneInstanceRunning = false;
         private boolean allInstancesRunning = true;

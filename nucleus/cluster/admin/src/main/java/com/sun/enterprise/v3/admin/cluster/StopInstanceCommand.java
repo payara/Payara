@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -116,8 +116,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     private ServerEnvironment env;
     @Inject
     IterableProvider<Node> nodeList;
-    @Inject
-    private ModulesRegistry registry;
     @Param(optional = true, defaultValue = "true")
     private Boolean force = true;
     @Param(optional = true, defaultValue = "false")
@@ -126,8 +124,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
     private String instanceName;
 
     @Param(name="_vmShutdown", optional=true, defaultValue = "true")
-    private String vmShutdown;
-
     private Logger logger;
     private RemoteInstanceCommandHelper helper;
     private ActionReport report;
@@ -142,8 +138,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         report = context.getActionReport();
         logger = context.getLogger();
         SSHLauncher launcher;
-        int dasPort;
-        String dasHost;
 
         if (env.isDas()) {
             if (kill) {
@@ -182,11 +176,8 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         // else can't check anything else.
         String nodeName = instance.getNodeRef();
         Node node = nodes.getNode(nodeName);
-        String nodeHost = node.getNodeHost();
         InstanceDirUtils insDU = new InstanceDirUtils(node, serverContext);
         // this should be replaced with method from Node config bean.
-        dasPort = helper.getAdminPort(SystemPropertyConstants.DAS_SERVER_NAME);
-        dasHost = System.getProperty(SystemPropertyConstants.HOST_NAME_PROPERTY);
         if (node.isLocal()){
             try {
                 pidFile = new File (insDU.getLocalInstanceDir(instance.getName()) , "config/pid");

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,8 +57,6 @@ public class ListNodesHelper {
 
     private static final String EOL = "\n";
 
-    Logger logger;
-
     String listType;
     boolean long_opt;
     boolean terse;
@@ -66,7 +64,6 @@ public class ListNodesHelper {
     List<NodeInfo> infos = new LinkedList<NodeInfo>();
 
     public ListNodesHelper(Logger _logger, Servers servers, Nodes nodes, String type, boolean long_opt, boolean terse) {
-        logger = _logger;
         this.listType = type;
         this.long_opt = long_opt;
         this.terse = terse;
@@ -98,7 +95,7 @@ public class ListNodesHelper {
             if (terse)
                 sb.append(name);
             else if (!long_opt)
-                sb.append(name + "  "+ nodeType + "  "+ host);
+                sb.append(name).append("  ").append(nodeType).append("  ").append(host);
 
             if (long_opt){
                 List<Server> serversOnNode = servers.getServersOnNode(n);
@@ -116,12 +113,11 @@ public class ListNodesHelper {
                         nodeType,  instanceList.toString());
                 infos.add(ni);
             }
-
         }
         if (long_opt)
             return  NodeInfo.format(infos);
         else
             return sb.toString();
-        
+
     }
 }

@@ -1,7 +1,7 @@
 /*
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- *  Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ *  Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  *  The contents of this file are subject to the terms of either the GNU
  *  General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,7 @@ import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
 import java.io.*;
 import java.io.IOException;
 import java.net.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.CommandValidationException;
 import org.glassfish.api.admin.RestEndpoints;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
@@ -101,7 +98,6 @@ public class ValidateDcom implements AdminCommand {
     private boolean debug;
     private TokenResolver resolver = new TokenResolver();
     private ActionReport report;
-    private Logger logger;
     private WindowsRemoteFileSystem wrfs;
     private WindowsCredentials creds;
     private StringBuilder out = new StringBuilder();
@@ -150,7 +146,6 @@ public class ValidateDcom implements AdminCommand {
     private boolean init(AdminCommandContext context) {
         report = context.getActionReport();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        logger = context.getLogger();
         user = resolver.resolve(user);
         password = DcomUtils.resolvePassword(resolver.resolve(password));
 
