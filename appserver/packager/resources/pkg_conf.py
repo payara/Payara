@@ -62,7 +62,6 @@
 
 glassfish_version="4.0,0-${build.id}"
 felix_version="4.0.2,0-0"
-javadb_version="10.5.3.0,0-0"
 corba_version="4.0.0,0-4"
 jsf_version="2.2.0,0-12"
 grizzly_version="2.3,0-12"
@@ -72,5 +71,5 @@ shoal_version="1.6.18,0-0"
 
 #description
 glassfish_description="GlassFish Application Server"
-glassfish_description_long="GlassFish Server is a modular, lightweight, and extensible Java EE 6 application server built on OSGi. Key features include fast startup time, improved developer productivity, hybrid OSGi/Java EE applications, high availability clustering, centralized administration, and overall ease-of-use. "
+glassfish_description_long="GlassFish Server is a modular and lightweight Java EE 7 compliant application server. Key features include an OSGi runtime, fast startup time, maven support, and rapid iterative development with Active Redeploy.  GlassFish Server also offers feature-rich administration with the web console, command line, and RESTful API."
 glassfish_info_classification="Application Servers"
