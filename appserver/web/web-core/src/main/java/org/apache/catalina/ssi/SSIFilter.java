@@ -60,7 +60,6 @@ package org.apache.catalina.ssi;
 
 
 import org.apache.catalina.Globals;
-import org.glassfish.web.util.HtmlEntityEncoder;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;

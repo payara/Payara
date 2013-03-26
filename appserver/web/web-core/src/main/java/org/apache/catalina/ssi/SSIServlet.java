@@ -60,7 +60,6 @@ package org.apache.catalina.ssi;
 
 
 import org.apache.catalina.Globals;
-import org.glassfish.web.util.HtmlEntityEncoder;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -187,7 +186,6 @@ public class SSIServlet extends HttpServlet {
             log("SSIServlet.requestHandler()\n" + "Serving "
                     + (buffered?"buffered ":"unbuffered ") + "resource '"
                     + path + "'");
-
         // Exclude any resource in the /WEB-INF and /META-INF subdirectories
         // (the "toUpperCase()" avoids problems on Windows systems)
         if (path == null || path.toUpperCase(Locale.ENGLISH).startsWith("/WEB-INF")
