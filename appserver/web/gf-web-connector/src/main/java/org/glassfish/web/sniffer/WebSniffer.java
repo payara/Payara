@@ -183,14 +183,8 @@ public class WebSniffer  extends GenericSniffer {
     
     // TODO(Sahoo): Ideally we should have separate sniffer for JSP, but since WebSniffer is already
     // handling JSPs, we must make sure that all JSP related modules get installed by WebSniffer as well.
-    // javax.el is needed because org.apache.jasper.runtime.JspApplicationContextImpl.getExpressionFactory
-    // does ExpressionFactory.newInstance("com.sun.el.ExpressionFactoryImpl") which looks up the class
-    // using TCL. The loadClass will fail unless javax.el.jar, which contains this class, is installed.
-    // kchung note: may not need to load java.el here, now that el 3.0 is
-    // bundling api and impl into one jar
     private String[] containerModuleNames = {"org.glassfish.main.web.glue",
-            "org.glassfish.web.javax.servlet.jsp",
-            "org.glassfish.javax.el"
+            "org.glassfish.web.javax.servlet.jsp"
     };
 
     @Override
