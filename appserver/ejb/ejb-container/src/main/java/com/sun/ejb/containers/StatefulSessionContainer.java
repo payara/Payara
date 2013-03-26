@@ -741,13 +741,13 @@ public final class StatefulSessionContainer
     @Override
     protected boolean suspendTransaction(EjbInvocation inv) throws Exception {
         SessionContextImpl sc = (SessionContextImpl) inv.context;
-        return !inv.invocationInfo.isBusinessMethod && !sc.getInLifeCycleCallback();
+        return !(inv.invocationInfo.isBusinessMethod || sc.getInLifeCycleCallback());
     }
 
     @Override
     protected boolean resumeTransaction(EjbInvocation inv) throws Exception {
         SessionContextImpl sc = (SessionContextImpl) inv.context;
-        return !inv.invocationInfo.isBusinessMethod && !sc.getInLifeCycleCallback();
+        return !(inv.invocationInfo.isBusinessMethod || sc.getInLifeCycleCallback());
     }
 
     /**
@@ -1170,8 +1170,6 @@ public final class StatefulSessionContainer
                 (declaringClass == javax.ejb.EJBLocalHome.class));
 
         try {
-            // Do only the 1st part. The rest will be done in destroyBean()
-            ejbInv.useFastPath = true;
             preInvoke(ejbInv);
             removeBean(ejbInv);
         } catch (Exception e) {
@@ -1184,7 +1182,6 @@ public final class StatefulSessionContainer
                         (ejbDescriptor, removeMethod, i.exception);
             }
             */
-            ejbInv.useFastPath = false;
             // do not do tx processing
             postInvoke(ejbInv, false);
         }
@@ -1220,6 +1217,15 @@ public final class StatefulSessionContainer
                 containerInfo.ejbName);
             SessionContextImpl sc = (SessionContextImpl) inv.context;
 
+            Transaction tc = sc.getTransaction();
+		
+            if (tc != null && tc.getStatus() !=
+                    Status.STATUS_NO_TRANSACTION) {
+                // EJB2.0 section 7.6.4: remove must always be called without
+                // a transaction.
+                throw new RemoveException("Cannot remove EJB: transaction in progress");
+            }
+
             // call ejbRemove on the EJB
             if (_logger.isLoggable(TRACE_LEVEL)) {
                 _logger.log(TRACE_LEVEL, "[SFSBContainer] Removing "
@@ -1239,6 +1245,10 @@ public final class StatefulSessionContainer
         }
         catch (EJBException ex) {
             _logger.log(Level.FINE, "EJBException in removing bean", ex);
+            throw ex;
+        }
+        catch (RemoveException ex) {
+            _logger.log(Level.FINE, "Remove exception while removing bean", ex);
             throw ex;
         }
         catch (Exception ex) {
