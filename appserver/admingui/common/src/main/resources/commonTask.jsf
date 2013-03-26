@@ -94,12 +94,12 @@
             <sun:commonTask
                 text="$resource{i18n.commonTasks.task.listApp}"
                 toolTip="$resource{i18n.commonTasks.task.listApp.toolTip}"
-                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applications:applications','#{request.contextPath}/common/applications/applications.jsf');">
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applications','#{request.contextPath}/common/applications/applications.jsf');">
             </sun:commonTask>
             <sun:commonTask
                 text="$resource{i18n.commonTasks.task.deployEAR}"
                 toolTip="$resource{i18n.commonTasks.task.deployEAR.toolTip}"
-                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applications:applications','#{request.contextPath}/common/applications/upload.jsf?appType=webApp&cancelPage=#{request.contextPath}/common/commonTask.jsf');">
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applications','#{request.contextPath}/common/applications/upload.jsf?appType=webApp&cancelPage=#{request.contextPath}/common/commonTask.jsf');">
             </sun:commonTask>
             <event>
                 <!beforeCreate
@@ -113,7 +113,12 @@
             <sun:commonTask
                 text="$resource{i18n.commonTasks.task.adminPassword}"
                 toolTip="$resource{i18n.commonTasks.task.adminPassword}"
-                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applications:applications','#{request.contextPath}/common/appServer/serverInstAdminPassword.jsf');">
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:nodes','#{request.contextPath}/common/appServer/serverInstAdminPassword.jsf');">
+            </sun:commonTask>
+            <sun:commonTask
+                text="$resource{i18n.commonTasks.task.pswdAliases}"
+                toolTip="$resource{i18n.commonTasks.task.pswdAliases.toolTip}"
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:nodes','#{request.contextPath}/common/appServer/pswdAliases.jsf');">
             </sun:commonTask>
         </sun:commonTasksGroup>
 
@@ -121,7 +126,7 @@
               <sun:commonTask
                 text="$resource{i18nc.tree.monitorData}"
                 toolTip="$resource{i18nc.tree.monitorData}"
-                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:monitoring_data','#{request.contextPath}/common/monitor/monitoringInfo.jsf');">
+                onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:applicationServerMonitoring','#{request.contextPath}/common/monitor/monitoringInfo.jsf');">
             </sun:commonTask>
           </sun:commonTasksGroup>
 

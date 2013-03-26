@@ -40,11 +40,15 @@
 
 -->
 
-<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.Other}">
+<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.Resources}">
     <sun:commonTask
-        text="$resource{i18n.commonTasks.task.connPool}"
-        toolTip="$resource{i18n.commonTasks.task.connPool.toolTip}"
-        infoLinkUrl="/com_sun_webui_jsf/help/helpwindow.jsf?&windowTitle=Help+Window&helpFile=jdbcconnectionpoolnew1.html" 
-        onClick="return admingui.woodstock.commonTaskHandler('form:tree:resources:jdbcConnectionPool', '#{facesContext.externalContext.requestContextPath}/jdbc/jdbcConnectionPoolNew1.jsf?cancelPage=#{request.contextPath}/common/commonTask.jsf');">
+        text="$resource{i18n.commonTasks.task.jdbcResource}"
+        toolTip="$resource{i18n.commonTasks.task.jdbcResource.toolTip}"
+        onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:resources:JDBC:jdbcResources', '#{facesContext.externalContext.requestContextPath}/jdbc/jdbcResourceNew.jsf?cancelPage=#{request.contextPath}/common/commonTask.jsf');">
     </sun:commonTask>
+    <sun:commonTask
+            text="$resource{i18n.commonTasks.task.connPool}"
+            toolTip="$resource{i18n.commonTasks.task.connPool.toolTip}"
+            onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:resources:JDBC:connectionPoolResources', '#{facesContext.externalContext.requestContextPath}/jdbc/jdbcConnectionPoolNew1.jsf?cancelPage=#{request.contextPath}/common/commonTask.jsf');">
+        </sun:commonTask>
 </sun:commonTasksGroup> 
