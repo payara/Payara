@@ -56,9 +56,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
 
     private String name;
     private String storeProtocol;
-    private String storeProtocolClass;
     private String transportProtocol;
-    private String transportProtocolClass;
     private String user;
     private String password;
     private String host;
@@ -110,28 +108,12 @@ public class MailSessionDescriptor extends ResourceDescriptor {
         this.storeProtocol = storeProtocol;
     }
 
-    public String getStoreProtocolClass() {
-        return storeProtocolClass;
-    }
-
-    public void setStoreProtocolClass(String storeProtocolClass) {
-        this.storeProtocolClass = storeProtocolClass;
-    }
-
     public String getTransportProtocol() {
         return transportProtocol;
     }
 
     public void setTransportProtocol(String transportProtocol) {
         this.transportProtocol = transportProtocol;
-    }
-
-    public String getTransportProtocolClass() {
-        return transportProtocolClass;
-    }
-
-    public void setTransportProtocolClass(String transportProtocolClass) {
-        this.transportProtocolClass = transportProtocolClass;
     }
 
     public String getUser() {
@@ -209,9 +191,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
                     getHost() == other.getHost() &&
                     getPassword() == other.getPassword() &&
                     getStoreProtocol() == other.getStoreProtocol() &&
-                    getStoreProtocolClass() == other.getStoreProtocolClass() &&
                     getTransportProtocol() == other.getTransportProtocol() &&
-                    getTransportProtocolClass() == other.getTransportProtocolClass() &&
                     getDescription() == other.getDescription()
                 );
         }

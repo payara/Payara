@@ -358,7 +358,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getStoreProtocolClass() {
-            return desc.getStoreProtocolClass();
+            return (desc.getProperty("mail.smtp.class")==null?"com.sun.mail.smtp.SMTPTransport":desc.getProperty("mail.smtp.class"));
         }
 
         @Override
@@ -378,7 +378,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getTransportProtocolClass() {
-            return desc.getTransportProtocol();
+            return (desc.getProperty("mail.imap.class")==null?"com.sun.mail.imap.IMAPStore":desc.getProperty("mail.imap.class"));
         }
 
         @Override

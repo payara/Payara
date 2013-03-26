@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013   Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -76,7 +76,11 @@ public class MailConfiguration implements Serializable {
     private static char PROP_NAME_DELIM_LEGACY = '-';
     
     private static String DEF_VAL_STORE_PROTOCOL = PROTOCOL_TYPE_IMAP;
+    private static String DEF_VAL_STORE_PROTOCOL_CLASS =
+        "com.sun.mail.imap.IMAPStore";
     private static String DEF_VAL_TRANSPORT_PROTOCOL = PROTOCOL_TYPE_SMTP;
+    private static String DEF_VAL_TRANSPORT_PROTOCOL_CLASS =
+        "com.sun.mail.smtp.SMTPTransport";
     private static String DEF_VAL_HOST = "localhost";
     private static String DEF_VAL_USER = "user.name";
     private static String DEF_VAL_FROM = "username@host";
@@ -102,7 +106,9 @@ public class MailConfiguration implements Serializable {
     private String jndiName = "";
     private boolean enabled = false;
     private String storeProtocol = DEF_VAL_STORE_PROTOCOL;
+    private String storeProtocolClass = DEF_VAL_STORE_PROTOCOL_CLASS;
     private String transportProtocol = DEF_VAL_TRANSPORT_PROTOCOL;
+    private String transportProtocolClass = DEF_VAL_TRANSPORT_PROTOCOL_CLASS;
     private String mailHost = DEF_VAL_HOST;
     private String username = DEF_VAL_USER;
     private String mailFrom = DEF_VAL_FROM;
@@ -184,7 +190,9 @@ public class MailConfiguration implements Serializable {
         enabled = mailResource.isEnabled();
 
         storeProtocol = mailResource.getStoreProtocol();
+        storeProtocolClass = mailResource.getStoreProtocolClass();
         transportProtocol = mailResource.getTransportProtocol();
+        transportProtocolClass = mailResource.getTransportProtocolClass();
         mailHost = mailResource.getMailHost();
         username = mailResource.getUsername();
         mailFrom = mailResource.getMailFrom();
@@ -198,6 +206,8 @@ public class MailConfiguration implements Serializable {
 
         mailProperties.put(MAIL_STORE_PROTOCOL, storeProtocol);
         mailProperties.put(MAIL_TRANSPORT_PROTOCOL, transportProtocol);
+        mailProperties.put(storeProtocolClassName, storeProtocolClass);
+        mailProperties.put(transportProtocolClassName, transportProtocolClass);
         mailProperties.put(MAIL_FROM, mailFrom);
         mailProperties.put(MAIL_DEBUG, (debug ? "true" : "false"));
 
@@ -281,7 +291,25 @@ public class MailConfiguration implements Serializable {
         return this.transportProtocol;
     }
 
-    /**
+    /** 
+     * Get the default Message Access Protocol class for the mail session the
+     * server will provide.
+     * @return the store protocol of the mail server.
+     */
+    public String getMailStoreProtocolClass() {
+        return this.storeProtocolClass;
+    }
+
+    /** 
+     * Get the default Transport Protocol class for the mail session the server
+     * will provide.
+     * @return the transport protocol of the mail server.
+     */
+    public String getMailTransportProtocolClass() {
+        return this.transportProtocolClass;
+    }
+
+    /** 
      * Get the mail debug flag for the mail session the server will provide.
      * @return the debug flag of the mail server.
      */
@@ -346,6 +374,8 @@ public class MailConfiguration implements Serializable {
 
         toStringBuffer.append( ", storeProtocol=").append(storeProtocol);
         toStringBuffer.append( ", transportProtocol=").append(transportProtocol);
+        toStringBuffer.append( ", storeProtocolClass=").append(storeProtocolClass);
+        toStringBuffer.append( ", transportProtocolClass=").append(transportProtocolClass);
         toStringBuffer.append( ", mailHost=").append(mailHost);
         toStringBuffer.append( ", username=").append(username);
         toStringBuffer.append( ", mailFrom=").append(mailFrom);

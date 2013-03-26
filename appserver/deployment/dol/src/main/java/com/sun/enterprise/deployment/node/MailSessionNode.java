@@ -69,9 +69,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
 
         table.put(TagNames.MAIL_SESSION_NAME, "setName");
         table.put(TagNames.MAIL_SESSION_STORE_PROTOCOL, "setStoreProtocol");
-        table.put(TagNames.MAIL_SESSION_STORE_PROTOCOL_CLASS, "setStoreProtocolClass");
         table.put(TagNames.MAIL_SESSION_TRANSPORT_PROTOCOL, "setTransportProtocol");
-        table.put(TagNames.MAIL_SESSION_TRANSPORT_PROTOCOL_CLASS, "setTransportProtocolClass");
         table.put(TagNames.MAIL_SESSION_HOST, "setHost");
         table.put(TagNames.MAIL_SESSION_USER, "setUser");
         table.put(TagNames.MAIL_SESSION_PASSWORD, "setPassword");
@@ -86,9 +84,7 @@ public class MailSessionNode extends DeploymentDescriptorNode<MailSessionDescrip
         Node node = appendChild(parent, nodeName);
         appendTextChild(node, TagNames.MAIL_SESSION_NAME, mailSessionDesc.getName());
         appendTextChild(node, TagNames.MAIL_SESSION_STORE_PROTOCOL, mailSessionDesc.getStoreProtocol());
-        appendTextChild(node, TagNames.MAIL_SESSION_STORE_PROTOCOL_CLASS, mailSessionDesc.getStoreProtocolClass());
         appendTextChild(node, TagNames.MAIL_SESSION_TRANSPORT_PROTOCOL, mailSessionDesc.getTransportProtocol());
-        appendTextChild(node, TagNames.MAIL_SESSION_TRANSPORT_PROTOCOL_CLASS, mailSessionDesc.getTransportProtocolClass());
         appendTextChild(node, TagNames.MAIL_SESSION_HOST, mailSessionDesc.getHost());
         appendTextChild(node, TagNames.MAIL_SESSION_USER, mailSessionDesc.getUser());
         appendTextChild(node, TagNames.MAIL_SESSION_PASSWORD, mailSessionDesc.getPassword());

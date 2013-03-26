@@ -196,9 +196,7 @@ public interface TagNames {
     public static final String MAIL_SESSION = "mail-session";
     public static final String MAIL_SESSION_NAME = "name";
     public static final String MAIL_SESSION_STORE_PROTOCOL = "store-protocol";
-    public static final String MAIL_SESSION_STORE_PROTOCOL_CLASS = "store-protocol-class";
     public static final String MAIL_SESSION_TRANSPORT_PROTOCOL = "transport-protocol";
-    public static final String MAIL_SESSION_TRANSPORT_PROTOCOL_CLASS = "transport-protocol-class";
     public static final String MAIL_SESSION_HOST = "host";
     public static final String MAIL_SESSION_USER = "user";
     public static final String MAIL_SESSION_PASSWORD = "password";
