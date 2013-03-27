@@ -57,8 +57,6 @@
    <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$pageSession{listOfRows}"} sourceVar="td">
        <!beforeCreate
            gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="jndiName", result="#{pageSession.tmpRows}");
-           //println("================ #{pageSession.tmpRows}");
-           
            gfr.getResourcesTableData();
            foreach (var="oneRow" list="#{pageSession.listOfRows}") {
                if (#{oneRow.contextInfoEnabled}=true){
@@ -70,7 +68,6 @@
                     mapPut(map="#{requestScope.oneRow}" key="contextInfo" value="" );
                }
            }
-           //println("------------- #{pageSession.listOfRows}");
         />
      <!afterCreate
          getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
@@ -97,12 +94,6 @@
         <sun:image rendered="#{pageSession.onlyDASExist}" id="enCol" value="#{td.value.enableURL}" />
     </sun:tableColumn>
 
-    <!--  comment out, showing this col. is very confusing due to the enabled col.
-    <sun:tableColumn   headerText="$resource{i18ncon.table.colCtxInfoEnabled}" sort="contextInfoEnabled" rowHeader="$boolean{false}" id="colce">
-        <sun:image  id="enCol" value="#{td.value.ctxInfoEnableImage}" />
-    </sun:tableColumn>
-    -->
-
     <sun:tableColumn headerText="$resource{i18ncon.resourcesTable.colContextInfo}" sort="contextInfo"  rowHeader="$boolean{false}" id="coltype">
         <sun:staticText escape="true" id="contextInfo" value="#{td.value.contextInfo}" />
     </sun:tableColumn>
@@ -111,7 +102,7 @@
         <sun:staticText escape="true" id="threadPriority" rendered="#{pageSession.hasThreadPriority}" value="#{td.value.threadPriority}" />
     </sun:tableColumn>
     
-    <sun:tableColumn headerText="$resource{i18ncon.resourcesTable.colDesc}" rowHeader="$boolean{true}" id="col4">
+    <sun:tableColumn headerText="$resource{i18ncon.resourcesTable.colDesc}" rowHeader="$boolean{false}" id="col4">
         <sun:staticText escape="true" id="typeDesc" value="#{td.value.description}" />
     </sun:tableColumn>
     
