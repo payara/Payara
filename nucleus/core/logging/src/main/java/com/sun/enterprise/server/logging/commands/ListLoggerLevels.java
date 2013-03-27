@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -170,6 +170,9 @@ public class ListLoggerLevels implements AdminCommand {
                     final ActionReport.MessagePart part = report.getTopMessagePart()
                             .addChild();
                     String n = name.substring(0, name.lastIndexOf(".level"));
+                    if (n.endsWith("Handler")) {
+                        continue;
+                    }
                     part.setMessage(n + "\t" + "<" + (String) props.get(name) + ">");
                     logLevelMap.put(n, props.get(name)); //Needed for REST xml and JSON output
                     loggerList.add(n); //Needed for REST xml and JSON output                    
