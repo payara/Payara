@@ -57,4 +57,61 @@
         priority="450"
         content="concurrentLink.jsf"
     />
+    <!-- add dropdown option for the resource dropdown of cluster/standalone instance resource table. -->
+    <integration-point
+        id="csResourceDropDown"
+        type="org.glassfish.admingui:resourceTypeDropdown"
+        priority="250"
+        content="contextServiceNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ContextServices"
+    />
+    <integration-point
+        id="csResourceFilter"
+        type="org.glassfish.admingui:resFilterDropdown"
+        priority="250"
+        content="context-service|org.glassfish.concurrent.admingui.Strings|tree.ContextServices"
+    />
+
+    <integration-point
+            id="mtfResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="650"
+            content="managedThreadFactoryNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ManagedThreadFactories"
+            />
+
+    <integration-point
+            id="mtfResourceFilter"
+            type="org.glassfish.admingui:resFilterDropdown"
+            priority="650"
+            content="managed-thread-factory|org.glassfish.concurrent.admingui.Strings|tree.ManagedThreadFactories"
+            />
+
+    <integration-point
+            id="mesResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="550"
+            content="managedExecutorServiceNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ManagedExecutorServices"
+            />
+
+    <integration-point
+            id="mesResourceFilter"
+            type="org.glassfish.admingui:resFilterDropdown"
+            priority="550"
+            content="managed-executor-service|org.glassfish.concurrent.admingui.Strings|tree.ManagedExecutorServices"
+            />
+
+    <integration-point
+            id="msesResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="600"
+            content="managedScheduledExecutorServiceNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ManagedScheduledExecutorServices"
+            />
+
+    <integration-point
+            id="msesResourceFilter"
+            type="org.glassfish.admingui:resFilterDropdown"
+            priority="600"
+            content="managed-scheduled-executor-service|org.glassfish.concurrent.admingui.Strings|tree.ManagedScheduledExecutorServices"
+            />
+
+
 </console-config>

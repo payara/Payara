@@ -65,6 +65,7 @@
         setPageSessionAttribute(key="useString" value="#{false}");
     />
     </event>
+    "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:concurrent:contextServices");</script>
     <sun:form id="form">
 #include "/common/shared/alertMsg_1.inc"
 

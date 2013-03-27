@@ -121,7 +121,7 @@
                 labels="$attribute{filterLabels}" values="$attribute{filterValues}">
                 <!beforeCreate
                     getContentOfIntegrationPoints(type="org.glassfish.admingui:resFilterDropdown" labels="#{requestScope.filterLabels}" values="#{requestScope.filterValues}" );
-                    listAdd(list="#{requestScope.filterLabels}" value="$resource{i18n.common.showAll}",  index="0");
+                    listAdd(list="#{requestScope.filterLabels}" value="$resource{i18n.common.showAll}",  index="0", sort="true");
                     listAdd(list="#{requestScope.filterValues}" value=""  index="0" );
                 />
                 <!command

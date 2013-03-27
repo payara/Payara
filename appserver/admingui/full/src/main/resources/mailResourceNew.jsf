@@ -71,6 +71,8 @@
         mapPut(map="#{pageSession.valueMap2}" key="enabled" value="true");
     />
     </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:mailResources");</script>
+
             <sun:form id="form">
 #include "/common/shared/alertMsg_1.inc"
 

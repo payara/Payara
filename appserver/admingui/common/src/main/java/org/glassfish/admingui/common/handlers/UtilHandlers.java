@@ -338,7 +338,9 @@ public class UtilHandlers {
     	input={
             @HandlerInput(name="list", type=List.class),
             @HandlerInput(name="value", type=Object.class, required=true),
-            @HandlerInput(name="index", type=Integer.class)
+            @HandlerInput(name="index", type=Integer.class),
+            @HandlerInput(name="sort", type=boolean.class, defaultValue="false"),
+
         },
         output={
             @HandlerOutput(name="result", type=List.class)}
@@ -353,6 +355,10 @@ public class UtilHandlers {
             list.add(handlerCtx.getInputValue("value"));
         } else {
             list.add(index, handlerCtx.getInputValue("value"));
+        }
+        boolean sort = (Boolean) handlerCtx.getInputValue("sort");
+        if (sort){
+            Collections.sort(list);
         }
         handlerCtx.setOutputValue("result", list);
     }

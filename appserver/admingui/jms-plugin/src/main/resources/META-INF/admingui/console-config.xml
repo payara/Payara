@@ -114,14 +114,13 @@
     <integration-point
             id="jmsResourceDropDown"
             type="org.glassfish.admingui:resourceTypeDropdown"
-            priority="400"
+            priority="150"
             content="jms/jmsConnectionNew.jsf|org.glassfish.admingui.core.Strings|tree.connectionFactories"
     />
     <integration-point
             id="jmsResourceDropDown2"
             type="org.glassfish.admingui:resourceTypeDropdown"
-            priority="500"
+            priority="350"
             content="jms/jmsDestinationNew.jsf|org.glassfish.admingui.core.Strings|tree.destinationResources"
     />
-
-</console-config> 
+</console-config>

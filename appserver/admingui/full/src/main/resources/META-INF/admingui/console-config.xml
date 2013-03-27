@@ -134,38 +134,38 @@
     <integration-point
             id="jmailResourceDropDown"
             type="org.glassfish.admingui:resourceTypeDropdown"
-            priority="600"
+            priority="500"
             content="full/mailResourceNew.jsf|org.glassfish.admingui.core.Strings|tree.javaMailSessions"
     />
     <integration-point
             id="customResourceDropDown"
             type="org.glassfish.admingui:resourceTypeDropdown"
-            priority="700"
+            priority="300"
             content="full/customResourceNew.jsf|org.glassfish.admingui.core.Strings|tree.customResources"
     />
     <integration-point
             id="externalResourceDropDown"
             type="org.glassfish.admingui:resourceTypeDropdown"
-            priority="800"
+            priority="400"
             content="full/externalResourceNew.jsf|org.glassfish.admingui.core.Strings|tree.externalResources"
     />
 
     <integration-point
             id="jmailFilter"
             type="org.glassfish.admingui:resFilterDropdown"
-            priority="600"
+            priority="500"
             content="mail-resource|org.glassfish.admingui.core.Strings|tree.javaMailSessions"
     />
     <integration-point
             id="customFilter"
             type="org.glassfish.admingui:resFilterDropdown"
-            priority="700"
+            priority="300"
             content="custom-resource|org.glassfish.admingui.core.Strings|tree.customResources"
     />
     <integration-point
             id="externalFilter"
             type="org.glassfish.admingui:resFilterDropdown"
-            priority="800"
+            priority="400"
             content="external-jndi-resource|org.glassfish.admingui.core.Strings|tree.externalResources"
     />
 

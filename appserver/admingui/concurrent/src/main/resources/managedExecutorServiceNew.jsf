@@ -66,6 +66,7 @@
         setPageSessionAttribute(key="showTaskQueue" value="#{true}");
     />
     </event>
+    "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:concurrent:managedExecutorServices");</script>
     <sun:form id="form">
 #include "/common/shared/alertMsg_1.inc"
 

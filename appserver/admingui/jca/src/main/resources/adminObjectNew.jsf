@@ -129,6 +129,8 @@
         }
     />
     </event>
+    "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:Connectors:adminObjectResources");</script>
+
             <sun:form id="form">
 #include "/common/shared/alertMsg_1.inc"
 

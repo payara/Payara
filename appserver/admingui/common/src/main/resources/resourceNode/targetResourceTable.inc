@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,27 +50,39 @@
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{tableId});
         />
+
 #include "/common/resourceNode/targetResourceTableButtons.inc"
         <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
             <!beforeCreate
                 //To get the resources table for a target
                 setAttribute(key="listOfRows" value={});
                 setPageSessionAttribute(key="resTypes" value={"jdbc-resource", "mail-resource", "custom-resource",
-                                       "external-jndi-resource", "connector-resource", "admin-object-resource"});
+                       "external-jndi-resource", "connector-resource", "admin-object-resource",
+                       "context-service", "managed-thread-factory", "managed-executor-service", "managed-scheduled-executor-service"});
                 setPageSessionAttribute(key="resLabels" value={
                         "$resource{i18n.tree.jdbcResources}",
                         "$resource{i18n.tree.javaMailSessions}",
                         "$resource{i18n.tree.customResources}",
                         "$resource{i18n.tree.externalResources}",
                         "$resource{i18n.tree.connectorResources}",
-                        "$resource{i18n.tree.adminObjectResources}"});
+                        "$resource{i18n.tree.adminObjectResources}",
+                        "$resource{i18n.tree.ContextServices}",
+                        "$resource{i18n.tree.ManagedThreadFactories}",
+                        "$resource{i18n.tree.ManagedExecutorServices}",
+                        "$resource{i18n.tree.ManagedScheduledExecutorServices}"
+                        });
                 setPageSessionAttribute(key="editResUrls" value={
                         "/jdbc/jdbcResourceEdit.jsf",
                         "/full/mailResourceEdit.jsf",
                         "/full/customResourceEdit.jsf",
                         "/full/externalResourceEdit.jsf",
                         "/jca/connectorResourceEdit.jsf",
-                        "/jca/adminObjectEdit.jsf"});
+                        "/jca/adminObjectEdit.jsf",
+                        "/concurrent/contextServiceEdit.jsf",
+                        "/concurrent/managedThreadFactoryEdit.jsf",
+                        "/concurrent/managedExecutorServiceEdit",
+                        "/concurrent/managedScheduledExecutorServiceEdit.jsf"
+                        });
                 gf.createAttributeMap(keys="$pageSession{resTypes}" values="$pageSession{resLabels}" map="#{requestScope.typeMap}");
                 gf.createAttributeMap(keys="$pageSession{resTypes}" values="$pageSession{editResUrls}" map="#{requestScope.editMap}");
 

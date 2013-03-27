@@ -78,6 +78,7 @@
             // TODO: set default values for user/pass in the properties table
         />
     </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:jmsResources:jmsConnectionFactories");</script>
 
     <sun:form id="form" >
 #include "/common/shared/alertMsg_1.inc"

@@ -68,14 +68,14 @@
         <integration-point
                 id="jdbcResourceDropDown"
                 type="org.glassfish.admingui:resourceTypeDropdown"
-                priority="100"
+                priority="450"
                 content="jdbc/jdbcResourceNew.jsf|org.glassfish.admingui.core.Strings|tree.jdbcResources"
         />
         
         <integration-point
                 id="jdbcResourceFilter"
                 type="org.glassfish.admingui:resFilterDropdown"
-                priority="100"
+                priority="450"
                 content="jdbc-resource|org.glassfish.admingui.core.Strings|tree.jdbcResources"
         />
 

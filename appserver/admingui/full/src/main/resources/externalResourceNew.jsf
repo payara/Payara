@@ -96,7 +96,8 @@
         
     />
     </event>
-    
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:jndi:externalResources");</script>
+
             <sun:form id="form">
 #include "/common/shared/alertMsg_1.inc"
 

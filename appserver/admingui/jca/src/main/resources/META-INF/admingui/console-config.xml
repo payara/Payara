@@ -115,7 +115,7 @@
     <integration-point
             id="adminObjResourceDropDown"
             type="org.glassfish.admingui:resourceTypeDropdown"
-            priority="300"
+            priority="100"
             content="jca/adminObjectNew.jsf|org.glassfish.admingui.core.Strings|tree.adminObjectResources"
     />
     <integration-point
@@ -127,7 +127,7 @@
     <integration-point
             id="adminObjResourceFilter"
             type="org.glassfish.admingui:resFilterDropdown"
-            priority="300"
+            priority="100"
             content="admin-object-resource|org.glassfish.admingui.core.Strings|tree.adminObjectResources"
     />
 
