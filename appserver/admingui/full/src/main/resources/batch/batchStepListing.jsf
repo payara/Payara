@@ -107,7 +107,7 @@
              getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
             />
 
-        <sun:tableColumn headerText="$resource{i18nf.batch.stepNameCol}"  sort="jobName"  rowHeader="$boolean{false}" id="stepName">
+        <sun:tableColumn headerText="$resource{i18nf.batch.stepNameCol}"  sort="jobName"  rowHeader="$boolean{true}" id="stepName">
             <staticText id="stepName" value="#{td.value.stepName}" />
         </sun:tableColumn>
 
@@ -135,7 +135,7 @@
             </staticText>
         </sun:tableColumn>
 
-       <sun:tableColumn  headerText="$resource{i18nf.batch.stepMetricsCol}" rowHeader="$boolean{true}" id="stepM">
+       <sun:tableColumn  headerText="$resource{i18nf.batch.stepMetricsCol}" rowHeader="$boolean{false}" id="stepM">
            <event>
                <!beforeEncode
                    gf.convertMapToListOfMap(map="#{td.value.stepMetrics}"  keyName="key" valueName="value" result="#{requestScope.listOfStepMetrics}");
@@ -144,9 +144,9 @@
            "<table  border="1">
            <foreach key="oneM" list="#{requestScope.listOfStepMetrics}">
                "<tr>
-               "<td>
+               "<th scope="row" >
                 <staticText id="key" value="#{requestScope.oneM.key}" />
-               "</td> <td>
+               "</th> <td>
                 <staticText id="value" value="#{requestScope.oneM.value}" />
                "</td>
                "</tr>

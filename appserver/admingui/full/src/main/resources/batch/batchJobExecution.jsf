@@ -128,7 +128,7 @@
              <!afterCreate
                  getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
             />
-            <sun:tableColumn headerText="$resource{i18nf.batch.keyCol}"  sort="key"  rowHeader="$boolean{false}" id="key">
+            <sun:tableColumn headerText="$resource{i18nf.batch.keyCol}"  sort="key"  rowHeader="$boolean{true}" id="key">
                 <staticText id="key" value="#{td.value.key}" />
             </sun:tableColumn>
             <sun:tableColumn headerText="$resource{i18nf.batch.valueCol}"  sort="value"  rowHeader="$boolean{false}" id="value">
