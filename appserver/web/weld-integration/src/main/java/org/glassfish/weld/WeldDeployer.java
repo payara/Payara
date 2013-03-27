@@ -117,7 +117,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // is not necessary.
     private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
 
-    private static final String WELD_SHUTDOWN = "false";
+    private static final String WELD_SHUTDOWN = "weld_shutdown";
+    
+    //This constant is used to indicate if bootstrap shutdown has been called or not.
+    private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
     
     @Inject
     private Events events;
@@ -201,7 +204,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     bootstrap.deployBeans();
                 } catch (Throwable t) {
                     try {
-                        bootstrap.shutdown();
+                        doBootstrapShutdown(appInfo);
                     } finally {
                         // ignore.
                     }
@@ -240,7 +243,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     bootstrap.endInitialization();
                 } catch (Throwable t) {
                     try {
-                        bootstrap.shutdown();
+                        doBootstrapShutdown(appInfo);
                     } finally {
                         // ignore.
                     }
@@ -289,7 +292,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                         }
                     });
                     try {
-                        bootstrap.shutdown();
+                        doBootstrapShutdown(appInfo);
                     } catch(Exception e) {
                         logger.log(Level.WARNING,
                                    CDILoggerInfo.WELD_BOOTSTRAP_SHUTDOWN_EXCEPTION,
@@ -310,6 +313,16 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
     }
 
+    private void doBootstrapShutdown(ApplicationInfo appInfo){
+        WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
+                WeldBootstrap.class);
+       String bootstrapShutdown = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP_SHUTDOWN, 
+               String.class);
+       if (bootstrapShutdown == null || Boolean.valueOf(bootstrapShutdown).equals(Boolean.FALSE)) {                        
+            bootstrap.shutdown();
+            appInfo.addTransientAppMetaData(WELD_BOOTSTRAP_SHUTDOWN, "true");
+       }
+    }
     private String getDeploymentErrorMsgPrefix( Throwable t ) {
         if ( t instanceof javax.enterprise.inject.spi.DefinitionException ) {
             return "CDI definition failure:";
@@ -444,6 +457,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // Stash the WeldBootstrap instance, so we may access the WeldManager later..
             context.addTransientAppMetaData(WELD_BOOTSTRAP, bootstrap);
             appInfo.addTransientAppMetaData(WELD_BOOTSTRAP, bootstrap);
+            // Making sure that if WeldBootstrap is added, shutdown is set to false, as it is/would not have been called.
+            appInfo.addTransientAppMetaData(WELD_BOOTSTRAP_SHUTDOWN, "false");
         }
 
         EjbBundleDescriptor ejbBundle = getEjbBundleFromContext(context);
