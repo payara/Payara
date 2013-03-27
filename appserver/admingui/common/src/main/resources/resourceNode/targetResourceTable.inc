@@ -113,8 +113,6 @@
                                             "$attribute{type}"}
                                     map="#{requestScope.oneRowMap}");
                                 listAdd(list="$attribute{listOfRows}" value="#{requestScope.oneRowMap}");
-                                println("========= #{requestScope.oneRowMap}");
-                                println("-AAA---------");
                             }
                         }
                     }
@@ -122,7 +120,6 @@
             />
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
-                println("======= $attribute{listOfRows} ");
             />
             <sun:tableColumn selectId="select" rowHeader="$boolean{false}" id="col0">
                 <sun:checkbox id="select"
