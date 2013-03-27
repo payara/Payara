@@ -83,6 +83,8 @@ import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
 import org.jboss.weld.validation.spi.ValidationServices;
 import javax.inject.Inject;
+import javax.servlet.jsp.tagext.JspTag;
+
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PostConstruct;
@@ -136,8 +138,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             new HashMap<BundleDescriptor, BeanDeploymentArchive>();
 
     private static final Class<?>[] NON_CONTEXT_CLASSES = {
-            Servlet.class, ServletContextListener.class, Filter.class,
-            HttpSessionListener.class, ServletRequestListener.class
+          Servlet.class,
+          ServletContextListener.class,
+          Filter.class,
+          HttpSessionListener.class,
+          ServletRequestListener.class,
+          JspTag.class
             // TODO need to add more classes
     };
 
@@ -188,6 +194,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     
                 });
                 try {
+//                    bootstrap.startExtensions(deploymentImpl.getExtensions());
                     bootstrap.startContainer(Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
