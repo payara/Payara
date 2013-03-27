@@ -1006,7 +1006,6 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
 
                 // All <jvm-options>some jvm option</jvm-options>
                 createJvmOptions(jc);
-                jc.setProfiler(jc.createChild(Profiler.class));
             } catch (TransactionFailure ex) {
                 logger.log(
                         Level.SEVERE,failureCreatingJavaConfigObject , ex);
