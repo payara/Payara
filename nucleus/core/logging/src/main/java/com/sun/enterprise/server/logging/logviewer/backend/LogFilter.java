@@ -40,6 +40,31 @@
 
 package com.sun.enterprise.server.logging.logviewer.backend;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.management.Attribute;
+import javax.management.AttributeList;
+
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.logging.LogLevel;
+import org.glassfish.config.support.TranslatedConfigView;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.Service;
+
 import com.sun.common.util.logging.LoggingConfigImpl;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -48,22 +73,6 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.server.logging.LogFacade;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.config.support.TranslatedConfigView;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.management.Attribute;
-import javax.management.AttributeList;
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * <p/>
@@ -81,6 +90,11 @@ public class LogFilter {
     // Admin front end.
     private static final String RESULTS_ATTRIBUTE = "Results";
 
+    // Load the custom level class for query purpose.
+    private static final Level[] GF_CUSTOM_LEVELS = new Level[] {
+        LogLevel.ALERT,
+        LogLevel.EMERGENCY
+    };
 
     private static final String NV_SEPARATOR = ";";
 
@@ -685,9 +699,10 @@ public class LogFilter {
             buf.append(",");
             buf.append(nameValueCheck(entry.getLoggedNameValuePairs(), nameValueMap));
             buf.append(",");
-            buf.append(messageDataCheck(entry.getLoggedMessage(), entry.getLoggedNameValuePairs(), anySearch));        
-            System.out.println("allChecks="+buf.toString());            
+            buf.append(messageDataCheck(entry.getLoggedMessage(), entry.getLoggedNameValuePairs(), anySearch));
+            System.out.println("allChecks="+buf.toString()); 
         }
+        
         if ((dateTimeCheck(entry.getLoggedDateTime(), fromDate, toDate))
                 && (levelCheck(entry.getLoggedLevel(), queryLevel, onlyLevel))
                 && (moduleCheck(entry.getLoggedLoggerName(), listOfModules))
@@ -731,18 +746,27 @@ public class LogFilter {
             // This means the user is interested in seeing log messages whose
             // log level is equal to what is specified
             return loggedLevel.equals(queryLevel);
-        } 
-        return true;
+        } else {
+            try {
+                int loggedLevelValue = Level.parse(loggedLevel).intValue();
+                int queryLevelValue = Level.parse(queryLevelIn).intValue();
+                return (loggedLevelValue >= queryLevelValue);
+            } catch(Exception e) {
+                return true;                
+            }
+        }
     }
 
     protected boolean moduleCheck(String loggerName, List modules) {
         if ((modules == null) || (modules.size() == 0)) {
             return true;
         }
-
+        loggerName = loggerName.trim();        
         Iterator iterator = modules.iterator();
         while (iterator.hasNext()) {
-            if (loggerName.startsWith((String) iterator.next())) {
+            String module = (String) iterator.next();
+            module = module.trim();
+            if (loggerName.equals(module)) {
                 return true;
             }
         }
