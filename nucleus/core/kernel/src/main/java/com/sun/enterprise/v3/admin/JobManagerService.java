@@ -92,7 +92,7 @@ public class JobManagerService implements JobManager,PostConstruct {
     
     private static final int MAX_SIZE = 65535;
     
-    private ConcurrentHashMap<String, Job> jobRegistry = new ConcurrentHashMap<String, Job>();
+    private final ConcurrentHashMap<String, Job> jobRegistry = new ConcurrentHashMap<String, Job>();
 
     private final AtomicInteger lastId = new AtomicInteger(0);
 
@@ -130,7 +130,7 @@ public class JobManagerService implements JobManager,PostConstruct {
     // can be generated for new jobs. This is populated lazily the first
     // time the JobManagerService is created, it will scan the
     //jobs.xml and load the information in memory
-    protected ConcurrentHashMap<String,CompletedJob> completedJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
+    private final ConcurrentHashMap<String,CompletedJob> completedJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
 
 
 

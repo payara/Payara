@@ -123,7 +123,11 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
     }
     
     protected boolean isJobEligible(final Job job) {
-        return !skipJob(job.getName());
+        return !skipJob(job.getName()) && checkScope(job);
+    }
+
+    protected boolean checkScope(Job job) {
+        return job.getScope()==null;
     }
     
     private List<JobInfo> chooseJobs() {
