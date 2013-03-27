@@ -298,12 +298,20 @@ public class TransactionState {
     {
         OTSResource ref;
 
+        if (_logger.isLoggable(Level.FINE)) {
+             _logger.log(Level.FINE, "startAssociation for " + res);
+        }
+
         try {
             // XXX should avoid using XID in JTA layer
             Xid xid = null;
             boolean newResource = false;
             boolean seenXid = false;
             if (resourceList.get(res) == null) {
+                if (_logger.isLoggable(Level.FINE)) {
+                     _logger.log(Level.FINE, "startAssociation for unknown resource");
+                }
+
                 // throw RollbackException if try to register
                 // a new resource when a transaction is marked rollback
                 if (status !=
@@ -329,12 +337,20 @@ public class TransactionState {
                 }
                 resourceList.put(res, xid);
             } else {
+                if (_logger.isLoggable(Level.FINE)) {
+                     _logger.log(Level.FINE, "startAssociation for known resource");
+                }
+
                 // use the previously computed branch id
                 xid = (Xid) resourceList.get(res);
                 seenXid = seenXids.contains(xid);
             }
 
             int XAState = getXAState(res);
+            if (_logger.isLoggable(Level.FINE)) {
+                 _logger.log(Level.FINE, "startAssociation in state: " + XAState);
+            }
+
             if (!seenXid) {
                 // first time this branch is enlisted
                 seenXids.add(xid);
@@ -385,10 +401,18 @@ public class TransactionState {
     public void endAssociation(XAResource xares, int flags)
         throws XAException, IllegalStateException
     {
+        if (_logger.isLoggable(Level.FINE)) {
+             _logger.log(Level.FINE, "endAssociation for " + xares);
+        }
+
         try {
             Xid xid = (Xid) resourceList.get(xares);
             assert_prejdk14(xid != null);
             int XAState = getXAState(xares);
+            if (_logger.isLoggable(Level.FINE)) {
+                 _logger.log(Level.FINE, "endAssociation in state: " + XAState);
+            }
+
             switch (XAState) {
             case ASSOCIATED:
                 if ((flags & XAResource.TMSUCCESS) != 0) {
@@ -490,8 +514,8 @@ public class TransactionState {
     private void setXAState(XAResource res, Integer state) {
         if (_logger.isLoggable(Level.FINE)) {
             int oldValue = getXAState(res);
-			_logger.log(Level.FINE,"transaction id : " + gtid);
-            _logger.log(Level.FINE,"res: " + res + "," + oldValue + "," + state);
+            _logger.log(Level.FINE,"transaction id : " + gtid);
+            _logger.log(Level.FINE,"res: " + res + ", old state: " + oldValue + ", new state: " + state);
         }
         resourceStates.put(res, state);
     }
