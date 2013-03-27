@@ -1621,10 +1621,36 @@ public abstract class BaseContainer
         Object instance = null;
 
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
-	    // If injection is being used, let CDI create the instance.
-	    jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
-	    instance = jcdiCtx.getInstance();
-	} else {
+	        // If injection is being used, let CDI create the instance.
+            EJBContextImpl ctx = _constructEJBContextImpl(null);
+            EjbInvocation ejbInv = null;
+            boolean success = false;
+            try {
+                ejbInv = createEjbInvocation(null, ctx);
+                invocationManager.preInvoke(ejbInv);
+            
+	            jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
+	            instance = jcdiCtx.getInstance();
+	            
+	            success = true;
+            }
+            finally {
+                try {
+                    if (ejbInv != null) {
+                        // Complete the dummy invocation
+                        invocationManager.postInvoke(ejbInv);
+                    }
+                } catch(Throwable t) {
+                    if (success) {
+                        throw new InvocationTargetException(t);
+                    } else {
+                        _logger.log(Level.WARNING, "", t);
+                    } 
+                }
+                
+            }
+	    }
+        else {
             EJBContextImpl ctx = _constructEJBContextImpl(null); 
 
             EjbInvocation ejbInv = null;
