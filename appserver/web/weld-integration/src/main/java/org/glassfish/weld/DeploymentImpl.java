@@ -90,6 +90,8 @@ public class DeploymentImpl implements Deployment {
     // holds BDA's created for extensions
     private Map<ClassLoader, BeanDeploymentArchive> extensionBDAMap = new HashMap<>();
 
+    private Iterable<Metadata<Extension>> extensions;
+
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
      * from information from the provided <code>ReadableArchive</code>.
@@ -370,14 +372,20 @@ public class DeploymentImpl implements Deployment {
 
     @Override
     public Iterable<Metadata<Extension>> getExtensions() {
+        if ( extensions != null ) {
+            return extensions;
+        }
+
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<Metadata<Extension>>();
-        for(BeanDeploymentArchive bda:bdas){
-            Iterable<Metadata<Extension>> bdaExtns = context.getTransientAppMetaData(
-                WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class).loadExtensions(
-                ((BeanDeploymentArchiveImpl) bda).getModuleClassLoaderForBDA());
-            for(Metadata<Extension> bdaExtn : bdaExtns){
-                extnList.add(bdaExtn);
+        for ( BeanDeploymentArchive bda : bdas ) {
+            ClassLoader moduleClassLoader = ( ( BeanDeploymentArchiveImpl ) bda ).getModuleClassLoaderForBDA();
+            extensions = context.getTransientAppMetaData( WeldDeployer.WELD_BOOTSTRAP,
+                                                          WeldBootstrap.class).loadExtensions( moduleClassLoader );
+            if ( extensions != null ) {
+                for ( Metadata<Extension> bdaExtn : extensions ) {
+                    extnList.add(bdaExtn);
+                }
             }
         }
         return extnList;
