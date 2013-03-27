@@ -349,7 +349,6 @@ public interface JavaConfig extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      *         {@link Profiler }
      */
     @Element
-    @NotNull
     Profiler getProfiler();
 
     /**

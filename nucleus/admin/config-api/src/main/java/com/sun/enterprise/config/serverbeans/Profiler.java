@@ -85,7 +85,7 @@ public interface Profiler extends ConfigBeanProxy, PropertyBag, JvmOptionBag {
      * @return possible object is
      *         {@link String }
      */
-    @Attribute(key=false, defaultValue = "base")   // bizarre case of having a name, but it's not a key; it's a singleton
+    @Attribute(key=false)   // bizarre case of having a name, but it's not a key; it's a singleton
     @NotNull
     @Pattern(regexp=NAME_REGEX)
     public String getName();
