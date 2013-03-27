@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -186,6 +188,14 @@ final class InstallerThread extends Thread {
      * <p> Load the Admin Console web application.</p>
      */
     private void load() {
+        ApplicationRegistry appRegistry = habitat.<ApplicationRegistry>getService(ApplicationRegistry.class);
+        ApplicationInfo appInfo = appRegistry.get(AdminConsoleAdapter.ADMIN_APP_NAME);
+        if (appInfo != null && appInfo.isLoaded()) {
+            // Application is already loaded
+            adapter.setStateMsg(AdapterState.APPLICATION_LOADED);
+            return;
+        }
+
         // hook for Jerome
         Application config = adapter.getConfig();
         if (config == null) {

@@ -145,7 +145,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
 
     private String deploymentTracingEnabled = null;
 
-    private Map<Application,Integer> appOrderInfoMap = new HashMap<Application,Integer>();
+    private Map<String,Integer> appOrderInfoMap = new HashMap<String, Integer>();
     private int appOrder = 0;
 
     /**
@@ -186,16 +186,16 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
          */
         systemApplications = domain.getSystemApplications();
         for (Application systemApp : systemApplications.getApplications()) {
-          appOrderInfoMap.put(systemApp, new Integer(appOrder++));
+          appOrderInfoMap.put(systemApp.getName(), new Integer(appOrder++));
         }
         List<Application> standaloneAdapters =
             applications.getApplicationsWithSnifferType(ServerTags.CONNECTOR, true);
         for (Application standaloneAdapter : standaloneAdapters) {
-          appOrderInfoMap.put(standaloneAdapter, new Integer(appOrder++));
+          appOrderInfoMap.put(standaloneAdapter.getName(), new Integer(appOrder++));
         }
         List<Application> allApplications = applications.getApplications();
         for (Application app : allApplications) {
-          appOrderInfoMap.put(app, new Integer(appOrder++));
+          appOrderInfoMap.put(app.getName(), new Integer(appOrder++));
         }
         
         for (Application systemApp : systemApplications.getApplications()) {
@@ -203,7 +203,9 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             if (Boolean.valueOf(systemApp.getDeployProperties().getProperty
                 (ServerTags.LOAD_SYSTEM_APP_ON_STARTUP))) {
                 if (deployment.isAppEnabled(systemApp) || loadAppOnDAS(systemApp.getName())) {
-                  DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(systemApp, appOrderInfoMap.get(systemApp).intValue()));
+                  Integer order = appOrderInfoMap.get(systemApp.getName());
+                  ApplicationOrderInfo info = new ApplicationOrderInfo(systemApp, order);
+                  DeploymentOrder.addApplicationDeployment(info);
                 }
             }
         }
@@ -215,7 +217,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(standaloneAdapter) || loadAppOnDAS(standaloneAdapter.getName())) {
-              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(standaloneAdapter, appOrderInfoMap.get(standaloneAdapter).intValue()));
+              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(standaloneAdapter, appOrderInfoMap.get(standaloneAdapter.getName()).intValue()));
             }
         }
 
@@ -230,7 +232,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // referenced by non-DAS target so the application
             // information is available on DAS
             if (deployment.isAppEnabled(app) || loadAppOnDAS(app.getName())) {
-              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app).intValue()));
+              DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
             }
         }
 
