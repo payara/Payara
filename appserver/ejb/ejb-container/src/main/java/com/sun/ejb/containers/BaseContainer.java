@@ -1617,78 +1617,56 @@ public abstract class BaseContainer
     protected EJBContextImpl createEjbInstanceAndContext() throws Exception {
         EjbBundleDescriptorImpl ejbBundle = ejbDescriptor.getEjbBundleDescriptor();
 
-        JCDIService.JCDIInjectionContext jcdiCtx = null;
+        JCDIService.JCDIInjectionContext<Object> jcdiCtx = null;
         Object instance = null;
 
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
-	        // If injection is being used, let CDI create the instance.
-            EJBContextImpl ctx = _constructEJBContextImpl(null);
-            EjbInvocation ejbInv = null;
-            boolean success = false;
-            try {
-                ejbInv = createEjbInvocation(null, ctx);
-                invocationManager.preInvoke(ejbInv);
+        EJBContextImpl ctx = _constructEJBContextImpl(null);
+        EjbInvocation ejbInv = null;
+        boolean success = false;
+        try {
+            ejbInv = createEjbInvocation(null, ctx);
+            invocationManager.preInvoke(ejbInv);
             
-	            jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
-	            instance = jcdiCtx.getInstance();
-	            
-	            success = true;
+            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+                jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
+                instance = jcdiCtx.getInstance();
             }
-            finally {
-                try {
-                    if (ejbInv != null) {
-                        // Complete the dummy invocation
-                        invocationManager.postInvoke(ejbInv);
-                    }
-                } catch(Throwable t) {
-                    if (success) {
-                        throw new InvocationTargetException(t);
-                    } else {
-                        _logger.log(Level.WARNING, "", t);
-                    } 
-                }
-                
-            }
-	    }
-        else {
-            EJBContextImpl ctx = _constructEJBContextImpl(null); 
-
-            EjbInvocation ejbInv = null;
-            boolean success = true;
-            try {
-                // create dummy invocation
-                ejbInv = createEjbInvocation(null, ctx);
-                invocationManager.preInvoke(ejbInv);
+            else {
                 injectEjbInstance(ctx);
 
                 intercept(CallbackType.AROUND_CONSTRUCT, ctx);
-            } catch(Throwable t) {
-                success = false;
-                throw new InvocationTargetException(t);
-            } finally {
-                try {
-                    if (ejbInv != null) {
-                        // Complete the dummy invocation
-                        invocationManager.postInvoke(ejbInv);
-                    }
-                } catch(Throwable t) {
-                    if (success) {
-                        throw new InvocationTargetException(t);
-                    } else {
-                        _logger.log(Level.WARNING, "", t);
-                    } 
+                
+                instance = ctx.getEJB();
+            }
+            
+            success = true;
+        }
+        catch (Throwable th) {
+            throw new InvocationTargetException(th);
+        }
+        finally {
+            try {
+                if (ejbInv != null) {
+                    // Complete the dummy invocation
+                    invocationManager.postInvoke(ejbInv);
                 }
             }
+            catch(Throwable t) {
+                if (success) {
+                    throw new InvocationTargetException(t);
+                } else {
+                    _logger.log(Level.WARNING, "", t);
+                } 
+            }
+            
+        }
 
-	    instance = ctx.getEJB();
-	}
-
-	EJBContextImpl contextImpl = _constructEJBContextImpl(instance);
-	if( jcdiCtx != null ) {
-	    contextImpl.setJCDIInjectionContext(jcdiCtx);
-	}
+	    EJBContextImpl contextImpl = _constructEJBContextImpl(instance);
+	    if( jcdiCtx != null ) {
+	        contextImpl.setJCDIInjectionContext(jcdiCtx);
+	    }
 	
-	return contextImpl;
+	    return contextImpl;
     }
 
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
