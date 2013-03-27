@@ -328,9 +328,14 @@ public class CompositeUtil {
         try {
             m.invoke(o, args);
         } catch (IllegalArgumentException iae) {
-            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(iae.getLocalizedMessage()).build());
+            // TODO: i18n
+            String message = "An exception occured while trying to set the value for the property '" + 
+                    attribute + "': " + iae.getLocalizedMessage();
+            throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(message).build());
         } catch (Exception e) {
-            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(e.getLocalizedMessage()).build());
+            String message = "An exception occured while trying to set the value for the property '" + 
+                    attribute + "': " + e.getLocalizedMessage();
+            throw new WebApplicationException(Response.status(Status.INTERNAL_SERVER_ERROR).entity(message).build());
         }
     }
 
