@@ -85,7 +85,7 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
 
     @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
 
-    public static final String LOGGER = "org.glassfish.resourcebase.resources.listener";
+    public static final String LOGGER = "javax.enterprise.resources.listener";
     private static final Logger logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     private static LocalStringManagerImpl localStrings =

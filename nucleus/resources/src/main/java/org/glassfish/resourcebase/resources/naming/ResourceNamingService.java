@@ -89,7 +89,7 @@ public class ResourceNamingService {
 
     @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
 
-    public static final String LOGGER = "org.glassfish.resourcebase.resources.naming";
+    public static final String LOGGER = "javax.enterprise.resources.naming";
     private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     public static final String JAVA_APP_SCOPE_PREFIX = "java:app/";

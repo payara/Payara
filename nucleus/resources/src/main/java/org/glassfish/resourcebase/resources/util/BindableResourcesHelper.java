@@ -77,7 +77,7 @@ public class BindableResourcesHelper {
 
     @LoggerInfo(subsystem="RESOURCE", description="Nucleus Resource", publish=true)
 
-    public static final String LOGGER = "org.glassfish.resourcebase.resources.util";
+    public static final String LOGGER = "javax.enterprise.resources.util";
 
     private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
