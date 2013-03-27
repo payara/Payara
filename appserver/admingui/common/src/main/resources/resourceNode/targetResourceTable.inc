@@ -80,12 +80,11 @@
                         "/jca/adminObjectEdit.jsf",
                         "/concurrent/contextServiceEdit.jsf",
                         "/concurrent/managedThreadFactoryEdit.jsf",
-                        "/concurrent/managedExecutorServiceEdit",
+                        "/concurrent/managedExecutorServiceEdit.jsf",
                         "/concurrent/managedScheduledExecutorServiceEdit.jsf"
                         });
                 gf.createAttributeMap(keys="$pageSession{resTypes}" values="$pageSession{resLabels}" map="#{requestScope.typeMap}");
                 gf.createAttributeMap(keys="$pageSession{resTypes}" values="$pageSession{editResUrls}" map="#{requestScope.editMap}");
-
                 gf.getChildrenNamesList(endpoint="#{pageSession.restURL}" result="#{requestScope.resourceNames}");
                 foreach (var="resName" list="#{requestScope.resourceNames}") {
                     urlencode(value="#{requestScope.resName}" encoding="UTF-8" result="#{requestScope.encodedResName}");
@@ -114,6 +113,8 @@
                                             "$attribute{type}"}
                                     map="#{requestScope.oneRowMap}");
                                 listAdd(list="$attribute{listOfRows}" value="#{requestScope.oneRowMap}");
+                                println("========= #{requestScope.oneRowMap}");
+                                println("-AAA---------");
                             }
                         }
                     }
@@ -121,6 +122,7 @@
             />
             <!afterCreate
                 getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+                println("======= $attribute{listOfRows} ");
             />
             <sun:tableColumn selectId="select" rowHeader="$boolean{false}" id="col0">
                 <sun:checkbox id="select"
