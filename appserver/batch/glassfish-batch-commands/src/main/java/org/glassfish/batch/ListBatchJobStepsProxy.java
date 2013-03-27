@@ -69,14 +69,14 @@ import java.util.logging.Logger;
 @Service(name = "list-batch-job-steps")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("list.batch.jobs.steps")
+@I18n("list.batch.job.steps")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType({CommandTarget.CLUSTER, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,
-                path = "list-batch-jobs-steps",
-                description = "List Batch Jobs Steps")
+                path = "list-batch-job-steps",
+                description = "List Batch Job Steps")
 })
 public class ListBatchJobStepsProxy
         extends AbstractListCommandProxy {
