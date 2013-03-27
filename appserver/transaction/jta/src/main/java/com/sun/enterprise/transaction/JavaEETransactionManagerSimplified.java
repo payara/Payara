@@ -176,7 +176,7 @@ public class JavaEETransactionManagerSimplified
             if ("true".equals(mEnlistDelists)) {
                 multipleEnlistDelists = true;
                 if (_logger.isLoggable(Level.FINE))
-                    _logger.log(Level.FINE,"TM: multiple enlists, delists are enabled");
+                    _logger.log(Level.FINE, "TM: multiple enlists, delists are enabled");
             }
             String maxEntriesValue
                 = System.getProperty("JTA_RESOURCE_TABLE_MAX_ENTRIES");
@@ -231,7 +231,7 @@ public class JavaEETransactionManagerSimplified
 
         // ENF OF BUG 4665539
                 if (_logger.isLoggable(Level.FINE))
-                _logger.log(Level.FINE,"TM: Tx Timeout = " + transactionTimeout);
+                _logger.log(Level.FINE, "TM: Tx Timeout = " + transactionTimeout);
 
         // START IASRI 4705808 TTT004 -- monitor resource table stats
         try {
@@ -299,6 +299,12 @@ public class JavaEETransactionManagerSimplified
 
     public boolean enlistResource(Transaction tran, TransactionalResource h)
             throws RollbackException, IllegalStateException, SystemException {
+       if(_logger.isLoggable(Level.FINE)) {
+           _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistResource, h=" 
+                   + h + " h.xares=" + h.getXAResource()
+                   /** +" h.alloc=" +h.getResourceAllocator() **/ +" tran=" + tran);
+       }
+
         if ( !h.isTransactional() )
             return true;
 
@@ -320,12 +326,6 @@ public class JavaEETransactionManagerSimplified
 
        JavaEETransactionImpl tx = (JavaEETransactionImpl)tran;
 
-       if(_logger.isLoggable(Level.FINE)) {
-           _logger.log(Level.FINE,"\n\nIn JavaEETransactionManagerSimplified.enlistResource, h=" 
-                   +h+" h.xares="+h.getXAResource()
-                   /** +" h.alloc=" +h.getResourceAllocator() **/ +" tx="+tx);
-       }
-
        JavaEETransactionManagerDelegate d = setDelegate();
        boolean useLAO = d.useLAO();
 
@@ -333,6 +333,9 @@ public class JavaEETransactionManagerSimplified
            boolean isSameRM=false;
            try {
                isSameRM = h.getXAResource().isSameRM(tx.getNonXAResource().getXAResource());
+               if(_logger.isLoggable(Level.FINE)) {
+                   _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistResource, isSameRM? " + isSameRM);
+               }
            } catch ( XAException xex ) {
                throw new SystemException(sm.getString("enterprise_distributedtx.samerm_excep",xex));
            } catch ( Exception ex ) {
@@ -403,6 +406,11 @@ public class JavaEETransactionManagerSimplified
     }
 
     public void unregisterComponentResource(TransactionalResource h) {
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.unregisterComponentResource, h=" 
+                   + h + " h.xares=" + h.getXAResource());
+        }
+
         Object instance = h.getComponentInstance();
         if (instance == null) return;
         h.setComponentInstance(null);
@@ -455,6 +463,12 @@ public class JavaEETransactionManagerSimplified
 ** XXX EJB CONTAINER ONLY XXX **/
 
         ResourceHandler rh = inv.getResourceHandler();
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.getResourceList, "
+                    + ((rh == null)? "" : (" ResourceHandler type: "  + rh.getClass().getName()))
+                    + " ResourceHandler: "  + rh);
+        }
+
         if (rh != null) {
             l = rh.getResourceList();
             if (l == null) {
@@ -476,7 +490,7 @@ public class JavaEETransactionManagerSimplified
 
     public void enlistComponentResources() throws RemoteException {
         if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE,"TM: enlistComponentResources");
+            _logger.log(Level.FINE, "TM: enlistComponentResources");
 
         ComponentInvocation inv = invMgr.getCurrentInvocation();
         if (inv == null)
@@ -486,16 +500,21 @@ public class JavaEETransactionManagerSimplified
             inv.setTransaction((JavaEETransaction)tran);
             enlistComponentResources(inv);
         } catch (InvocationException ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.excep_in_enlist" ,ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_enlist" ,ex);
             throw new RemoteException(ex.getMessage(), ex.getNestedException());
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.excep_in_enlist" ,ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_enlist" ,ex);
             throw new RemoteException(ex.getMessage(), ex);
         }
     }
 
     public boolean delistResource(Transaction tran, TransactionalResource h, int flag)
             throws IllegalStateException, SystemException {
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistResource, h=" 
+                   + h + " h.xares=" + h.getXAResource() + " tran=" + tran);
+        }
+
         if (!h.isTransactional()) return true;
 
         if ( !(tran instanceof JavaEETransaction) )
@@ -518,7 +537,7 @@ public class JavaEETransactionManagerSimplified
     public void delistComponentResources(boolean suspend)
             throws RemoteException {
         if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE,"TM: delistComponentResources");
+            _logger.log(Level.FINE, "TM: delistComponentResources");
         ComponentInvocation inv = invMgr.getCurrentInvocation();
         // BEGIN IASRI# 4646060
         if (inv == null) {
@@ -528,10 +547,10 @@ public class JavaEETransactionManagerSimplified
         try {
             delistComponentResources(inv, suspend);
         } catch (InvocationException ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.excep_in_delist",ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_delist",ex);
             throw new RemoteException("", ex.getNestedException());
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.excep_in_delist",ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_delist",ex);
             throw new RemoteException("", ex);
         }
     }
@@ -544,6 +563,11 @@ public class JavaEETransactionManagerSimplified
             if (instance == null) return;
             h.setComponentInstance(instance);
             List l = getResourceList(instance, inv);
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.registerComponentResource, h=" 
+                       + h + " h.xares=" + h.getXAResource());
+            }
+
             l.add(h);
         }
     }
@@ -576,6 +600,12 @@ public class JavaEETransactionManagerSimplified
 ** XXX EJB CONTAINER ONLY XXX **/
 
         ResourceHandler rh = inv.getResourceHandler();
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.getExistingResourceList, "
+                    + ((rh == null)? "" : (" ResourceHandler type: "  + rh.getClass().getName()))
+                    + " ResourceHandler: "  + rh);
+        }
+
         if (rh != null) {
             l = rh.getResourceList();
         }
@@ -618,8 +648,8 @@ public class JavaEETransactionManagerSimplified
 
     public void componentDestroyed(Object instance, ComponentInvocation inv) {
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE,"TM: componentDestroyed" + instance);
-            _logger.log(Level.FINE,"TM: resourceTable before: " + resourceTable.getEntryCount());
+            _logger.log(Level.FINE, "TM: componentDestroyed" + instance);
+            _logger.log(Level.FINE, "TM: resourceTable before: " + resourceTable.getEntryCount());
         }
 
         // Access resourceTable directly to avoid adding an empty list then removing it
@@ -627,7 +657,7 @@ public class JavaEETransactionManagerSimplified
         processResourceList(l);
 
         if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE,"TM: resourceTable after: " + resourceTable.getEntryCount());
+            _logger.log(Level.FINE, "TM: resourceTable after: " + resourceTable.getEntryCount());
     }
 
     public void componentDestroyed(ResourceHandler rh) {
@@ -753,7 +783,7 @@ public class JavaEETransactionManagerSimplified
     public void registerSynchronization(Synchronization sync)
             throws IllegalStateException, SystemException {
         if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE,"TM: registerSynchronization");
+            _logger.log(Level.FINE, "TM: registerSynchronization");
 
         try {
             Transaction tran = getTransaction();
@@ -761,7 +791,7 @@ public class JavaEETransactionManagerSimplified
                 tran.registerSynchronization(sync);
             }
         } catch (RollbackException ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.rollbackexcep_in_regsynch",ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.rollbackexcep_in_regsynch",ex);
             throw new IllegalStateException();
         }
     }
@@ -1107,7 +1137,7 @@ public class JavaEETransactionManagerSimplified
                     _logger.warning("enterprise_distributedtx.txbean_null" + tran);
                 } else {
                     if (_logger.isLoggable(Level.FINE))
-                        _logger.log(Level.FINE,"TM: Adding txnId " + tBean.getId() + " to txnTable");
+                        _logger.log(Level.FINE, "TM: Adding txnId " + tBean.getId() + " to txnTable");
 
                     txnTable.put(tBean.getId(), tran);
                     tranBeans.add(tBean);
@@ -1154,7 +1184,7 @@ public class JavaEETransactionManagerSimplified
             throw new  IllegalStateException(result);
         } else {
             if (_logger.isLoggable(Level.FINE))
-                _logger.log(Level.FINE,"TM: Marking txnId " + txnId + " for rollback");
+                _logger.log(Level.FINE, "TM: Marking txnId " + txnId + " for rollback");
 
              ((Transaction) txnTable.get(txnId)).setRollbackOnly();
          }
@@ -1250,11 +1280,11 @@ public class JavaEETransactionManagerSimplified
                         }
                     } catch (IllegalStateException ex) {
                         if (_logger.isLoggable(Level.FINE))
-                            _logger.log(Level.FINE,"TM: Exception in delistResource", ex);
+                            _logger.log(Level.FINE, "TM: Exception in delistResource", ex);
                         // ignore error due to tx time out
                     }catch(Exception ex){
                         if (_logger.isLoggable(Level.FINE))
-                            _logger.log(Level.FINE,"TM: Exception in delistResource", ex);
+                            _logger.log(Level.FINE, "TM: Exception in delistResource", ex);
                         it.remove();
                         handleResourceError(h, ex, tran);
                     }
@@ -1262,20 +1292,30 @@ public class JavaEETransactionManagerSimplified
                 //END OF IASRI 4658504
             }
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.excep_in_delist",ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_delist",ex);
         }
     }
 
     protected boolean enlistXAResource(Transaction tran, TransactionalResource h)
             throws RollbackException, IllegalStateException, SystemException {
 
-        if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE,"TM: enlistResource");
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistXAResource, h=" 
+                   + h + " h.xares=" + h.getXAResource() + " tran=" + tran);
+        }
 
         if (resourceEnlistable(h)) {
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistXAResource - enlistable");
+            }
+
             XAResource res = h.getXAResource();
             boolean result = tran.enlistResource(res);
             if (!h.isEnlisted())
+                if(_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.enlistXAResource - enlist");
+                }
+
                 h.enlistedInTransaction(tran);
             return result;
         } else {
@@ -1298,6 +1338,9 @@ public class JavaEETransactionManagerSimplified
                     try{
                         enlistResource(tran,h);
                     }catch(Exception ex){
+                        if (_logger.isLoggable(Level.FINE))
+                            _logger.log(Level.WARNING, "enterprise_distributedtx.pooling_excep", ex);
+
                         it.remove();
                         handleResourceError(h,ex,tran);
                     }
@@ -1305,7 +1348,7 @@ public class JavaEETransactionManagerSimplified
                 //END OF IASRI 4658504
             }
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE,"enterprise_distributedtx.excep_in_enlist",ex);
+            _logger.log(Level.SEVERE, "enterprise_distributedtx.excep_in_enlist",ex);
         }
     }
 
@@ -1321,7 +1364,7 @@ public class JavaEETransactionManagerSimplified
                     h.closeUserConnection();
                 } catch (Exception ex) {
                     if (_logger.isLoggable(Level.FINE))
-                        _logger.log(Level.WARNING,"enterprise_distributedtx.pooling_excep", ex);
+                        _logger.log(Level.WARNING, "enterprise_distributedtx.pooling_excep", ex);
                 }
             }
             l.clear();
@@ -1333,9 +1376,9 @@ public class JavaEETransactionManagerSimplified
 
         if (_logger.isLoggable(Level.FINE)) {
             if (h.isTransactional()) {
-                _logger.log(Level.FINE,"TM: HandleResourceError " +
+                _logger.log(Level.FINE, "TM: HandleResourceError " +
                                    h.getXAResource() +
-                                   "," + ex);
+                                   ", " + ex);
             }
         }
         try {
@@ -1396,11 +1439,22 @@ public class JavaEETransactionManagerSimplified
         throws IllegalStateException, SystemException {
 
 // ** XXX Throw an exception instead ??? XXX **
-        if (_logger.isLoggable(Level.FINE))
-            _logger.log(Level.FINE,"TM: delistResource");
+        if(_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistJTSResource, h=" 
+                   + h + " h.xares=" + h.getXAResource() + " tran=" + tran + " flag=" + flag);
+        }
 
         if (!h.isShareable() || multipleEnlistDelists) {
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistJTSResource "
+                        + "- !h.isShareable() || multipleEnlistDelists");
+            }
+
             if (h.isTransactional() && h.isEnlisted()) {
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "\n\nIn JavaEETransactionManagerSimplified.delistJTSResource - delist");
+            }
+
                 return tran.delistResource(h.getXAResource(), flag);
             } else {
                 return true;
@@ -1470,7 +1524,7 @@ public class JavaEETransactionManagerSimplified
             delegate.setTransactionManager(this);
 
             if (_logger.isLoggable(Level.FINE))
-                    _logger.log(Level.FINE,"Replaced delegate with " 
+                    _logger.log(Level.FINE, "Replaced delegate with " 
                             + d.getClass().getName());
         }
     }

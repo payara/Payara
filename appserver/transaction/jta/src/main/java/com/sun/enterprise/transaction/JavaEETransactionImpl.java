@@ -635,8 +635,8 @@ public final class JavaEETransactionImpl extends TimerTask implements
             throws IllegalStateException, SystemException {
         // START OF IASRI 4660742
         if (_logger.isLoggable(Level.FINE)) {
-              _logger.log(Level.FINE,"--In JavaEETransactionImpl.delistResource, jtsTx="
-                          +jtsTx +" nonXAResource="+nonXAResource);
+              _logger.log(Level.FINE,"--In JavaEETransactionImpl.delistResource: "
+                          + xaRes + " from " + this);
         }
         // END OF IASRI 4660742
 
