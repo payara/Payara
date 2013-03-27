@@ -224,7 +224,6 @@
         <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
         <!-- End of OSGi bundle configurations -->
         <jvm-options>-XX:NewRatio=2</jvm-options>
-          <profiler></profiler>
       </java-config>
       <network-config>
         <protocols>
@@ -399,8 +398,7 @@
              -->
              <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
              <!-- End of OSGi bundle configurations -->
-             <profiler></profiler>
-         </java-config>
+        </java-config>
          <availability-service>
              <web-container-availability/>
              <ejb-container-availability sfsb-store-pool-name="jdbc/hastore"/>
