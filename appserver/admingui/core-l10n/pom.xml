@@ -63,6 +63,18 @@
         <plugins>
             <plugin>
               <groupId>org.glassfish.hk2</groupId>
+              <artifactId>osgiversion-maven-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>compute-osgi-version</id>
+                      <goals>
+                          <goal>compute-osgi-version</goal>
+                      </goals>
+                  </execution>
+              </executions>
+            </plugin>
+            <plugin>
+              <groupId>org.glassfish.hk2</groupId>
               <artifactId>osgiversion-maven-plugin</artifactId>            
               <executions>
                   <execution>
