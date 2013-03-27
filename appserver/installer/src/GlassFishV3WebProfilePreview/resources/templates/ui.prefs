@@ -210,7 +210,7 @@ INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif
 
 BASIC_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Installs a GlassFish Server management domain; ideal for development&lt;BR&gt;or non business critical use. Please make sure that the ports 4848 and&lt;BR&gt; 8080 are free.&lt;BODY&gt;&lt;HTML&gt;
 
-ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Offers the option to install the binaries only, a management domain, a &lt;BR&gt;stand alone instance or a cluster. This option is ideal for production&lt;BR&gt;deployments.&lt;BODY&gt;&lt;HTML&gt;
+ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Not supported.&lt;BODY&gt;&lt;HTML&gt;
 
 BASIC_USER=Typical Installation
 ADVANCED_USER=Custom Installation

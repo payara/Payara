@@ -52,7 +52,7 @@
     </page>
     <page name="InstallHome"/>
     <page name="JDKSelection">
-	<when><![CDATA[ !CONFIG_ONLY && !BASIC_USER && !(IS_MAC || IS_AIX) ]]></when>
+	<when><![CDATA[ !(IS_MAC || IS_AIX) ]]></when>
     </page>
     <page name="UpdateTool">
 	<when><![CDATA[ !CONFIG_ONLY  ]]></when>
