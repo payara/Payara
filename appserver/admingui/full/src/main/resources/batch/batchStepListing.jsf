@@ -57,10 +57,10 @@
         mapPut(map="#{requestScope.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
         mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
         mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-steps" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs-steps" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
         setAttribute(key="listOfRows", value="#{requestScope.resp.data.extraProperties.listBatchJobSteps}");
 
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-executions" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.exec}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs-executions" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.exec}");
         setPageSessionAttribute(key="jobName", value="#{requestScope.exec.data.extraProperties.listBatchJobExecutions[0].jobName}");
 
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.jobStepListingTableTitle}");

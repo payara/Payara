@@ -58,8 +58,17 @@
         mapPut(map="#{requestScope.attrsMap}"  key="long" value="true");
         mapPut(map="#{requestScope.attrsMap}"  key="executionId" value="#{pageSession.executionId}");
         mapPut(map="#{requestScope.attrsMap}"  key="target" value="#{pageSession.encodedTarget}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-job-executions" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
+        println("================= URL = #{sessionScope.REST_URL}/list-batch-job-executions" );
+        println("================= attrsMap = #{requestScope.attrsMap}");
+        println("--------------------");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-jobs-executions" attrs="#{requestScope.attrsMap}" method="GET" result="#{requestScope.resp}");
+        println("======== response = #{requestScope.resp}"  );
+
+        println("---------------------");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchJobExecutions[0]}");
+        println("======== listBatchJobExecutions[0]=#{pageSession.valueMap}");
+        println("---------------------");
+        println("======== call convertMapToListOfMap with #{pageSession.valueMap.jobParameters}");
         gf.convertMapToListOfMap(map="#{pageSession.valueMap.jobParameters}"  keyName="key" valueName="value" result="#{requestScope.listOfRows}");
         setPageSessionAttribute(key="tableTitle" value="$resource{i18nf.batch.jobParametersTableTitle}");
     />
