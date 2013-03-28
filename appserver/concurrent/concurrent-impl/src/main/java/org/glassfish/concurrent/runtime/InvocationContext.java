@@ -44,11 +44,13 @@ import com.sun.enterprise.security.integration.AppServSecurityContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 
+import java.io.IOException;
+
 public class InvocationContext implements ContextHandle {
 
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
-    private transient AppServSecurityContext securityContext;
+    private AppServSecurityContext securityContext;
 
     static final long serialVersionUID = 268374345047242571L;
 
@@ -70,11 +72,44 @@ public class InvocationContext implements ContextHandle {
         return securityContext;
     }
 
-    private void readObject(java.io.ObjectInputStream in) {
-        //TODO- re-initialize these fields
-        invocation = null;
-        contextClassLoader = null;
-        securityContext = null;
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+        String componentId = null;
+        String appName = null;
+        String moduleName = null;
+        if (invocation != null) {
+            componentId = invocation.getComponentId();
+            appName = invocation.getAppName();
+            moduleName = invocation.getModuleName();
+        }
+        out.writeObject(componentId);
+        out.writeObject(appName);
+        out.writeObject(moduleName);
     }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        String componentId = (String) in.readObject();
+        String appName = (String) in.readObject();
+        String moduleName = (String) in.readObject();
+        invocation = createComponentInvocation(componentId, appName, moduleName);
+        //TODO re-initialize these fields
+        contextClassLoader = null;
+    }
+
+    private ComponentInvocation createComponentInvocation(String componentId, String appName, String moduleName) {
+        if (componentId == null && appName == null && moduleName == null) {
+            return null;
+        }
+        ComponentInvocation newInv = new ComponentInvocation(
+                componentId,
+                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
+                null,
+                appName,
+                moduleName
+        );
+        return newInv;
+    }
+
 
 }

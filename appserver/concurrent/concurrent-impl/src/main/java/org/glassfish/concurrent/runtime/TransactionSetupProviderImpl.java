@@ -94,9 +94,14 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         }
     }
 
+    private void writeObject(java.io.ObjectOutputStream out) {
+        // no field to be written
+    }
+
     private void readObject(java.io.ObjectInputStream in) {
-        //TODO- re-initialize these fields
-        transactionManager = null;
+        // re-initialize these fields
+        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+        transactionManager = concurrentRuntime.getTransactionManager();
     }
 
 }

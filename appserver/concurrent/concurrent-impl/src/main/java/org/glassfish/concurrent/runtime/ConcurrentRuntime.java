@@ -127,6 +127,26 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         setRuntime(this);
     }
 
+    AppServSecurityContext getSecurityContext() {
+        return securityContext;
+    }
+
+    InvocationManager getInvocationManager() {
+        return invocationManager;
+    }
+
+    Deployment getDeployment() {
+        return deployment;
+    }
+
+    Applications getApplications() {
+        return applications;
+    }
+
+    JavaEETransactionManager getTransactionManager() {
+        return transactionManager;
+    }
+
     public synchronized ContextServiceImpl getContextService(ResourceInfo resource, ContextServiceConfig config) {
         String jndiName = config.getJndiName();
         if (contextServiceMap != null && contextServiceMap.containsKey(jndiName)) {

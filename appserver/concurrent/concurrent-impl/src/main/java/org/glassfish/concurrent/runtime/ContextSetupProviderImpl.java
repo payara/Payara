@@ -54,6 +54,7 @@ import org.glassfish.internal.deployment.Deployment;
 
 import javax.enterprise.concurrent.ContextService;
 import javax.transaction.*;
+import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -228,13 +229,19 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         return newInv;
     }
 
-    private void readObject(java.io.ObjectInputStream in) {
-        //TODO- re-initialize these fields
-        securityContext = null;
-        invocationManager = null;
-        deployment = null;
-        applications = null;
-        transactionManager = null;
+    private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.defaultWriteObject();
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
+        // re-initialize these fields
+        securityContext = concurrentRuntime.getSecurityContext();
+        invocationManager = concurrentRuntime.getInvocationManager();
+        deployment = concurrentRuntime.getDeployment();
+        applications = concurrentRuntime.getApplications();
+        transactionManager = concurrentRuntime.getTransactionManager();
     }
 
     private static class PairKey {
