@@ -44,54 +44,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>net.java</groupId>
-        <artifactId>jvnet-parent</artifactId>
-        <version>3</version>
-    </parent>
-
     <groupId>org.glassfish.main</groupId>
-    <artifactId>glassfish-main-parent</artifactId>
-    <packaging>pom</packaging>
+    <artifactId>glassfish-main-aggregator</artifactId>
     <version>4.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
     
-    <name>GlassFish Main Parent Project</name>
-    <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</developerConnection>
-    </scm>
-    <issueManagement>
-        <system>IssueTracker</system>
-        <url>http://java.net/jira/browse/GLASSFISH</url>
-    </issueManagement>
-
-    <mailingLists>
-        <mailingList>
-            <name>dev</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>dev@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/dev/archive</archive>
-        </mailingList>
-        <mailingList>
-            <name>users</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>users@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/users/archive</archive>
-        </mailingList>
-        <mailingList>
-            <name>issues</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>issues@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/issues/archive</archive>
-        </mailingList>
-        <mailingList>
-            <name>commits</name>
-            <subscribe>http://java.net/projects/glassfish/lists</subscribe>
-            <post>commits@glassfish.java.net</post>
-            <archive>http://java.net/projects/glassfish/lists/commits/archive</archive>
-        </mailingList>
-    </mailingLists>
-
+    <name>GlassFish Build Aggregator</name>
+    
     <profiles>
         <profile>
             <id>release-phase2</id>
@@ -140,31 +99,31 @@
                 <module>appserver</module>
             </modules>
         </profile>
-        <profile>
-            <id>gpg</id>
-            <activation>
-                <property>
-                    <name>gpg.passphrase</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.1</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
     </profiles>
+    
+    <!--
+        Skip deploy and install as this is an aggregator POM
+    -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>2.4</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>2.7</version>
+                    <configuration>
+                        <skip>true</skip>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>        
 </project>
