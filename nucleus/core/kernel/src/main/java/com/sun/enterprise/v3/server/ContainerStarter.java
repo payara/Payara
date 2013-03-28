@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -95,8 +95,8 @@ public class ContainerStarter {
         try {
 
             Module[] modules = sniffer.setup(null, logger);
-            logger.logp(Level.INFO, "ContainerStarter", "startContainer", "Snifer {0} set up following modules: {1}",
-                    new Object[]{sniffer, Arrays.toString(modules)});
+            logger.logp(Level.FINE, "ContainerStarter", "startContainer", "Sniffer {0} set up following modules: {1}",
+                    new Object[]{sniffer, modules != null ? Arrays.toString(modules): ""});
         } catch(FileNotFoundException fnf) {
             logger.log(Level.SEVERE, fnf.getMessage());
             return null;
