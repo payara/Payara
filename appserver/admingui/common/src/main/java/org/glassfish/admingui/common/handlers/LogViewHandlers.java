@@ -131,7 +131,6 @@ public class LogViewHandlers {
         Date from = null, to = null;
 
         if ((instanceName != null)) {
-            	    notNullStringPut(attMap, "instanceName", instanceName);
             if (logFileName != null) {
                 // Convert Date/Time fields
                 if ((dateEnabledString != null) &&
@@ -227,7 +226,6 @@ public class LogViewHandlers {
                     notNullStringPut(attMap, "toTime", Long.valueOf(to.getTime()));
                 notNullStringPut(attMap, "anySearch", anySearch);
                 notNullStringPut(attMap, "logLevel", logLevel);
-                notNullStringPut(attMap, "instanceName", instanceName);
                 notNullStringPut(attMap, "logFileRefresh", "true");
                 if (moduleList != null) {
                     attMap.put("listOfModules", moduleList);
