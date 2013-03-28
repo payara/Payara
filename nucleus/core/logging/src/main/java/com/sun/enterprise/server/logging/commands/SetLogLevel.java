@@ -89,7 +89,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 @Service(name = "set-log-levels")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.log.levels")
+@I18n("set.log.level")
 @RestEndpoints({
     @RestEndpoint(configBean=Domain.class,
         opType=RestEndpoint.OpType.POST, 
