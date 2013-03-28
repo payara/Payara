@@ -1630,28 +1630,22 @@ public abstract class BaseContainer
             if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
                 jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
                 instance = jcdiCtx.getInstance();
-            }
-            else {
+            } else {
                 injectEjbInstance(ctx);
-
                 intercept(CallbackType.AROUND_CONSTRUCT, ctx);
-                
                 instance = ctx.getEJB();
             }
-            
             success = true;
-        }
-        catch (Throwable th) {
+            
+        } catch (Throwable th) {
             throw new InvocationTargetException(th);
-        }
-        finally {
+        } finally {
             try {
                 if (ejbInv != null) {
                     // Complete the dummy invocation
                     invocationManager.postInvoke(ejbInv);
                 }
-            }
-            catch(Throwable t) {
+            } catch(Throwable t) {
                 if (success) {
                     throw new InvocationTargetException(t);
                 } else {
@@ -1661,12 +1655,12 @@ public abstract class BaseContainer
             
         }
 
-	    EJBContextImpl contextImpl = _constructEJBContextImpl(instance);
-	    if( jcdiCtx != null ) {
-	        contextImpl.setJCDIInjectionContext(jcdiCtx);
-	    }
+        EJBContextImpl contextImpl = _constructEJBContextImpl(instance);
+        if( jcdiCtx != null ) {
+            contextImpl.setJCDIInjectionContext(jcdiCtx);
+        }
 	
-	    return contextImpl;
+        return contextImpl;
     }
 
     protected EJBContextImpl _constructEJBContextImpl(Object instance) {
