@@ -42,7 +42,6 @@ package org.glassfish.admin.rest.resources.custom;
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
 
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.utilities.ServiceLocatorUtilities;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.LogManager;
 
@@ -55,6 +54,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -93,7 +94,7 @@ public class StructuredLogViewerResource {
             @QueryParam("toTime") @DefaultValue("-1") long toTime,
             @QueryParam("logLevel") @DefaultValue("INFO") String logLevel,
             @QueryParam("anySearch") @DefaultValue("") String anySearch,
-            @QueryParam("listOfModules") List<String> listOfModules, //default value is empty for List
+            @QueryParam("listOfModules") String listOfModules, //default value is empty for List
             @QueryParam("instanceName") @DefaultValue("") String instanceName) throws IOException {
 
         return getWithType(
@@ -119,7 +120,7 @@ public class StructuredLogViewerResource {
             @QueryParam("toTime") @DefaultValue("-1") long toTime,
             @QueryParam("logLevel") @DefaultValue("INFO") String logLevel,
             @QueryParam("anySearch") @DefaultValue("") String anySearch,
-            @QueryParam("listOfModules") List<String> listOfModules, //default value is empty for List,
+            @QueryParam("listOfModules") String listOfModules, //default value is empty for List,
             @QueryParam("instanceName") @DefaultValue("") String instanceName) throws IOException {
 
         return getWithType(
@@ -140,13 +141,19 @@ public class StructuredLogViewerResource {
             int maximumNumberOfResults,
             long fromTime,
             long toTime,
-            String logLevel, boolean onlyLevel, String anySearch, List<String> listOfModules,
+            String logLevel, boolean onlyLevel, String anySearch, String listOfModules,
             String instanceName,
             String type) throws IOException {
         if (habitat.getService(LogManager.class) == null) {
             //the logger service is not install, so we cannot rely on it.
             //return an error
             throw new IOException("The GlassFish LogManager Service is not available. Not installed?");
+        }
+        
+        List<String> modules = new ArrayList<String>();
+        if ((listOfModules != null) && !listOfModules.isEmpty()) {
+            modules.addAll(Arrays.asList(listOfModules.split(",")));
+            
         }
 
         Properties nameValueMap = new Properties();
@@ -163,7 +170,7 @@ public class StructuredLogViewerResource {
                     maximumNumberOfResults,
                     fromTime == -1 ? null : new Date(fromTime),
                     toTime == -1 ? null : new Date(toTime),
-                    logLevel, onlyLevel, listOfModules, nameValueMap, anySearch);
+                    logLevel, onlyLevel, modules, nameValueMap, anySearch);
             return convertQueryResult(result, type);
         } else {
             final AttributeList result = logFilter.getLogRecordsUsingQuery(logFileName,
@@ -172,7 +179,7 @@ public class StructuredLogViewerResource {
                     maximumNumberOfResults,
                     fromTime == -1 ? null : new Date(fromTime),
                     toTime == -1 ? null : new Date(toTime),
-                    logLevel, onlyLevel, listOfModules, nameValueMap, anySearch, instanceName);
+                    logLevel, onlyLevel, modules, nameValueMap, anySearch, instanceName);
             return convertQueryResult(result, type);
         }
 
