@@ -46,7 +46,7 @@
     <parent>
         <groupId>net.java</groupId>
         <artifactId>jvnet-parent</artifactId>
-        <version>3</version>
+        <version>4</version>
 	<relativePath></relativePath>
     </parent>
 
@@ -357,13 +357,6 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <extensions>true</extensions>
                 <configuration>
-                    <checkoutDirectory>.</checkoutDirectory>
-                    <skipCheckoutIfExists>true</skipCheckoutIfExists>
-                    <distribution>
-                        <groupId>org.glassfish.distributions</groupId>
-                        <artifactId>web</artifactId>
-                        <version>${project.version}</version>
-                    </distribution>
                     <dir>${project.build.outputDirectory}</dir>
                 </configuration>
             </plugin>
@@ -424,7 +417,6 @@
                     <addGroupIdToProjectName>true</addGroupIdToProjectName>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -583,59 +575,16 @@
                 <type>pom</type>
             </dependency>
             <dependency>
+                <groupId>org.glassfish.grizzly</groupId>
+                <artifactId>grizzly-bom</artifactId>
+                <version>${grizzly.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>            
+            <dependency>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>osgi-resource-locator</artifactId>
                 <version>1.0.1</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-framework</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-http</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-http-server</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-http-servlet</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-rcm</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-portunif</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-comet</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-websockets</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-http-ajp</artifactId>
-                <version>${grizzly.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.grizzly</groupId>
-                <artifactId>grizzly-config</artifactId>
-                <version>${grizzly.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.sun.xml.stream</groupId>
@@ -1095,26 +1044,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>staging</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-    	    <repositories>
-        	<repository>
-            	    <id>jvnet-nexus-staging</id>
-            	    <name>java.net staging repository</name>
-            	    <url>https://maven.java.net/content/repositories/staging/</url>
-        	</repository>
-    	    </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-            	    <id>jvnet-nexus-staging</id>
-            	    <name>java.net staging repository</name>
-            	    <url>https://maven.java.net/content/repositories/staging/</url>
-                </pluginRepository>
-            </pluginRepositories>            
-	</profile>
     </profiles>
     
     <dependencies>
