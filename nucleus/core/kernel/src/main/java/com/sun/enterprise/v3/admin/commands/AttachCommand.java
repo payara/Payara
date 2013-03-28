@@ -175,7 +175,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
                     String commandUser = SubjectUtil.getUsernamesFromSubject(attached.getSubject()).get(0);
                     //In most cases if the user who attaches to the command is the same
                     //as one who started it then purge the job once it is completed
-                    if (commandUser != null && commandUser.equals(attachedUser))  {
+                    if ((commandUser != null && commandUser.equals(attachedUser)) && attached.isOutboundPayloadEmpty())  {
                         purgeJob(attached.getId());
 
                     }
