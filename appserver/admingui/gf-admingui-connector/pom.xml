@@ -55,7 +55,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Integration</name>
-    <description>GlassFish V3 Admin Console Integration</description>
+    <description>GlassFish Admin Console Integration</description>
 
     <developers>
         <!-- See parent POM -->

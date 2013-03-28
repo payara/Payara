@@ -52,7 +52,7 @@
     <artifactId>amx-core</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>AMX V3 Core</name>
+    <name>AMX Core</name>
     <description>Appserver Management Extensions (AMX) Core</description>
 	
     <developers>

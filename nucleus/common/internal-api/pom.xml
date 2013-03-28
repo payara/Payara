@@ -52,7 +52,7 @@
     <artifactId>internal-api</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Private APIs of Glassfish V3</name>
+    <name>Private APIs of Glassfish</name>
 
     <build>
         <resources>

@@ -52,7 +52,7 @@
     <artifactId>console-jdbc-plugin-l10n</artifactId>
     
     <name>Admin Console JDBC Plugin l10n</name>
-    <description>JDBC plugin bundle for GlassFish V3 Admin Console Localization</description>
+    <description>JDBC plugin bundle for GlassFish Admin Console Localization</description>
     
     <properties>
         <javadoc.skip>true</javadoc.skip>

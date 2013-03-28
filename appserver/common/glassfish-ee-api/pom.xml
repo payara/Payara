@@ -51,7 +51,7 @@
     <artifactId>glassfish-ee-api</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Java EE dependent public APIs of Glassfish V3</name>
+    <name>Java EE dependent public APIs of Glassfish</name>
 
     <developers>
         <developer>

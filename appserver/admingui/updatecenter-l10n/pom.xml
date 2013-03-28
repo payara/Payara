@@ -53,7 +53,7 @@
     <artifactId>console-updatecenter-plugin-l10n</artifactId>
     
     <name>Admin Console Update Center Plugin l10n</name>
-    <description>Update Center plugin bundle for GlassFish V3 Admin Console Localization</description>
+    <description>Update Center plugin bundle for GlassFish Admin Console Localization</description>
     
     <properties>
         <javadoc.skip>true</javadoc.skip>

@@ -54,7 +54,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Update Center Plugin</name>
-    <description>Update Center plugin bundle for GlassFish V3 Admin Console</description>
+    <description>Update Center plugin bundle for GlassFish Admin Console</description>
 
     <developers>
         <!-- See parent POM -->

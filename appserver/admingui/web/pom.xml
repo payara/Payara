@@ -52,7 +52,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Web Container Plugin</name>
-    <description>Web container plugin bundle for GlassFish V3 Admin Console</description>
+    <description>Web container plugin bundle for GlassFish Admin Console</description>
 
     <developers>
         <!-- See parent POM -->

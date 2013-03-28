@@ -53,7 +53,7 @@
     <artifactId>glassfish-api</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Public APIs of Glassfish V3</name>
+    <name>Public APIs of Glassfish</name>
 
     <developers>
         <developer>

@@ -52,7 +52,7 @@
     <artifactId>console-web-plugin-l10n</artifactId>
     
     <name>Admin Console Web Container Plugin l10n</name>
-    <description>Web container plugin bundle for GlassFish V3 Admin Console Localization</description>
+    <description>Web container plugin bundle for GlassFish Admin Console Localization</description>
     
     <properties>
         <javadoc.skip>true</javadoc.skip>

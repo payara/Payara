@@ -53,7 +53,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Corba Plugin</name>
-    <description>Corba plugin bundle for GlassFish V3 Admin Console</description>
+    <description>Corba plugin bundle for GlassFish Admin Console</description>
 
     <developers>
         <!-- See parent POM -->

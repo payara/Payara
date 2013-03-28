@@ -52,7 +52,7 @@
     <artifactId>console-jts-plugin-l10n</artifactId>
     
     <name>Admin Console JTS Plugin l10n</name>
-    <description>Transaction Service plugin bundle for GlassFish V3 Admin Console Localization</description>
+    <description>Transaction Service plugin bundle for GlassFish Admin Console Localization</description>
     
     <properties>
         <javadoc.skip>true</javadoc.skip>

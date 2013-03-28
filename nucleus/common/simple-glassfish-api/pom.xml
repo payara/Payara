@@ -51,6 +51,6 @@
     <artifactId>simple-glassfish-api</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Simple Public APIs of Glassfish V3</name>
+    <name>Simple Public APIs of Glassfish</name>
 </project>
 

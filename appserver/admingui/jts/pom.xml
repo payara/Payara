@@ -53,7 +53,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console JTS Plugin</name>
-    <description>Transaction Service plugin bundle for GlassFish V3 Admin Console</description>
+    <description>Transaction Service plugin bundle for GlassFish Admin Console</description>
 
     <developers>
         <!-- See parent POM -->
