@@ -197,7 +197,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     
                 });
                 try {
-//                    bootstrap.startExtensions(deploymentImpl.getExtensions());
+                    bootstrap.startExtensions(deploymentImpl.getExtensions());
                     bootstrap.startContainer(Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
