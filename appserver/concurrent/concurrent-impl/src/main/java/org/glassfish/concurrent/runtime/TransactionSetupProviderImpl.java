@@ -41,6 +41,8 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 
@@ -58,11 +60,14 @@ import java.util.logging.Logger;
 public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
     private transient JavaEETransactionManager transactionManager;
+    private transient InvocationManager invocationManager;
 
     static final long serialVersionUID = -856400645253308289L;
 
-    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager) {
+    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager,
+                                        InvocationManager invocationManager) {
         this.transactionManager = transactionManager;
+        this.invocationManager = invocationManager;
     }
 
     @Override
@@ -74,6 +79,13 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
                 return new TransactionHandleImpl(suspendedTxn);
             } catch (SystemException e) {
                 Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, e.toString());
+            }
+        } else {
+            ComponentInvocation currInv = invocationManager.getCurrentInvocation();
+            ComponentInvocation prevInv = invocationManager.getPreviousInvocation();
+            if (currInv != null && prevInv != null) {
+                currInv.setTransaction(prevInv.getTransaction());
+                currInv.setResourceTableKey(prevInv.getResourceTableKey());
             }
         }
         return null;
@@ -102,6 +114,7 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         // re-initialize these fields
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         transactionManager = concurrentRuntime.getTransactionManager();
+        invocationManager = concurrentRuntime.getInvocationManager();
     }
 
 }

@@ -65,6 +65,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
     private transient Applications applications;
+    // transactionManager should be null for ContextService since it uses TransactionSetupProviderImpl
     private transient JavaEETransactionManager transactionManager;
 
     private static final Logger logger  = LogFacade.getLogger();
@@ -231,17 +232,21 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
         out.defaultWriteObject();
+        out.writeBoolean(transactionManager == null);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
+        boolean nullTransactionManager = in.readBoolean();
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         // re-initialize these fields
         securityContext = concurrentRuntime.getSecurityContext();
         invocationManager = concurrentRuntime.getInvocationManager();
         deployment = concurrentRuntime.getDeployment();
         applications = concurrentRuntime.getApplications();
-        transactionManager = concurrentRuntime.getTransactionManager();
+        if (!nullTransactionManager) {
+            transactionManager = concurrentRuntime.getTransactionManager();
+        }
     }
 
     private static class PairKey {

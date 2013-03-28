@@ -290,7 +290,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 new ContextSetupProviderImpl(invocationManager, securityContext, deployment, applications,
                                              cleanupTransaction? transactionManager: null, contextTypes);
         ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
-                new TransactionSetupProviderImpl(transactionManager));
+                new TransactionSetupProviderImpl(transactionManager, invocationManager));
         return obj;
     }
 
