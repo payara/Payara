@@ -1,6 +1,6 @@
-Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
-This is a set of integrations tests for hk2 and GlassFish.
+This is a set of integrations tests for cdi.
 
 They currently require two parameters to be specified:
 glassfish.home= The directory where glassfish is installed
