@@ -43,8 +43,8 @@
 <sun:panelGroup id="ucPanel" separator="">
     <sun:imageHyperlink id="imgHlink" url="#{request.contextPath}/updateCenter/update.jsf"
 	    style="text-decoration: none"   
-	    alt="#{sessionScope._updateCountMsg}"
-	    toolTip="#{sessionScope._updateCountMsg}"
+	    alt="$resource{i18n.tree.updateCenter} #{sessionScope._updateCountMsg}"
+	    toolTip="$resource{i18n.tree.updateCenter} #{sessionScope._updateCountMsg}"
 	    imageURL="#{request.contextPath}/resource/updateCenter/images/updateCenter.png" 
 	    text="#{sessionScope._updateCountMsg}"
 	    style="color:white; margin-left: 5px; text-decoration: none;"
