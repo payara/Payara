@@ -96,6 +96,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         ResourceConfig rc = super.getResourceConfig(classes, sc, serviceLocator, additionalBinders);
         registerExtendedWadlConfig(classes, rc, serviceLocator);
         rc.register(ExceptionFilter.class);
+        rc.property(ServerProperties.RESOURCE_LOCATOR_VALIDATION_DISABLE, Boolean.TRUE);
         return rc;
     }
 
