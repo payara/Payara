@@ -95,7 +95,10 @@ import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.web.ServletFilterMapping;
 import com.sun.logging.LogDomains;
+import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
+import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
 
 @Service
@@ -122,6 +125,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     //This constant is used to indicate if bootstrap shutdown has been called or not.
     private static final String WELD_BOOTSTRAP_SHUTDOWN = "weld_bootstrap_shutdown";
     
+    private static final String WELD_CONVERSATION_FILTER_CLASS = "org.jboss.weld.servlet.ConversationFilter";
+    private static final String WELD_CONVERSATION_FILTER_NAME = "CDI Conversation Filter";
     @Inject
     private Events events;
 
@@ -520,6 +525,19 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // Add Weld Context Listener - this listener will ensure the WeldELContextListener is used
             // for JSP's..
             wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_CONTEXT_LISTENER));
+            // Adding Weld ConverstationFilter if there is filterMapping for it and it doesn't exist already.
+            // However, it will be applied only if web.xml has mapping for it.
+            // Doing this hear to make sure that its done only for CDI enabled web application
+            for (ServletFilterMapping sfMapping : wDesc.getServletFilterMappings()) {
+                  String displayName = ((ServletFilterMappingDescriptor)sfMapping).getDisplayName();
+                  if (WELD_CONVERSATION_FILTER_NAME.equals(displayName)) {
+                        ServletFilterDescriptor ref = new ServletFilterDescriptor();
+                        ref.setClassName(WELD_CONVERSATION_FILTER_CLASS);
+                        ref.setName(WELD_CONVERSATION_FILTER_NAME);
+                        wDesc.addServletFilter(ref);   
+                        break;
+                  }
+            }
         }
 
         BundleDescriptor bundle = (wDesc != null) ? wDesc : ejbBundle;
