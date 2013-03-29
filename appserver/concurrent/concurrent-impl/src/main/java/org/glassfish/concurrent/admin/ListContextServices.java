@@ -40,23 +40,24 @@
 
 package org.glassfish.concurrent.admin;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.concurrent.config.ContextService;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * List Context Service Resources command
@@ -87,6 +88,9 @@ public class ListContextServices implements AdminCommand {
     @Inject
     private BindableResourcesHelper bindableResourcesHelper;
 
+    @Inject
+    private ServiceLocator habitat;
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values the parameter values
@@ -99,14 +103,28 @@ public class ListContextServices implements AdminCommand {
 
         try {
             Collection<ContextService> contextServices = domain.getResources().getResources(ContextService.class);
+            List<Map<String,String>> resourcesList = new ArrayList<Map<String, String>>();
+            List<DefaultResourceProxy> drps = habitat.getAllServices(DefaultResourceProxy.class);
+
             for (ContextService contextService : contextServices) {
                 String jndiName = contextService.getJndiName();
                 if(bindableResourcesHelper.resourceExists(jndiName, target)){
                     ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setMessage(jndiName);
+                    Map<String,String> resourceNameMap = new HashMap<String,String>();
+                    String logicalName = DefaultResourceProxy.Util.getLogicalName(drps, jndiName);
+                    if (logicalName != null) {
+                        resourceNameMap.put("logical-jndi-name", logicalName);
+                    }
+                    resourceNameMap.put("name", jndiName);
+                    resourcesList.add(resourceNameMap);
                 }
             }
-        } catch (Exception e) {
+
+            Properties extraProperties = new Properties();
+            extraProperties.put("contextServices", resourcesList);
+            report.setExtraProperties(extraProperties);
+       } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.context.service.failed", "List context services failed"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);

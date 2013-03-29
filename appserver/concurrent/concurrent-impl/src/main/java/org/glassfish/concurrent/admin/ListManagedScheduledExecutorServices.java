@@ -48,15 +48,17 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.concurrent.config.ManagedScheduledExecutorService;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * List Managed Scheduled Executor Service Resources command
@@ -87,6 +89,9 @@ public class ListManagedScheduledExecutorServices implements AdminCommand {
     @Inject
     private BindableResourcesHelper bindableResourcesHelper;
 
+    @Inject
+    private ServiceLocator habitat;
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values the parameter values
@@ -99,13 +104,26 @@ public class ListManagedScheduledExecutorServices implements AdminCommand {
 
         try {
             Collection<ManagedScheduledExecutorService> managedScheduledExecutorServices = domain.getResources().getResources(ManagedScheduledExecutorService.class);
+            List<Map<String,String>> resourcesList = new ArrayList<Map<String, String>>();
+            List<DefaultResourceProxy> drps = habitat.getAllServices(DefaultResourceProxy.class);
+
             for (ManagedScheduledExecutorService managedScheduledExecutorService : managedScheduledExecutorServices) {
                 String jndiName = managedScheduledExecutorService.getJndiName();
                 if(bindableResourcesHelper.resourceExists(jndiName, target)){
                     ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setMessage(jndiName);
+                    Map<String,String> resourceNameMap = new HashMap<String,String>();
+                    String logicalName = DefaultResourceProxy.Util.getLogicalName(drps, jndiName);
+                    if (logicalName != null) {
+                        resourceNameMap.put("logical-jndi-name", logicalName);
+                    }
+                    resourceNameMap.put("name", jndiName);
+                    resourcesList.add(resourceNameMap);
                 }
             }
+            Properties extraProperties = new Properties();
+            extraProperties.put("managedScheduledExecutorServices", resourcesList);
+            report.setExtraProperties(extraProperties);
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.managed.scheduled.executor.service.failed", "List managed scheduled executor services failed"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
