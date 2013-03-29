@@ -527,7 +527,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_CONTEXT_LISTENER));
             // Adding Weld ConverstationFilter if there is filterMapping for it and it doesn't exist already.
             // However, it will be applied only if web.xml has mapping for it.
-            // Doing this hear to make sure that its done only for CDI enabled web application
+            // Doing this here to make sure that its done only for CDI enabled web application
             for (ServletFilterMapping sfMapping : wDesc.getServletFilterMappings()) {
                   String displayName = ((ServletFilterMappingDescriptor)sfMapping).getDisplayName();
                   if (WELD_CONVERSATION_FILTER_NAME.equals(displayName)) {
