@@ -139,7 +139,11 @@ public class ListBatchJobExecutions
                 }
             }
         }
-        context.getActionReport().setMessage(columnFormatter.toString());
+        if (jobExecutions.size() > 0) {
+            context.getActionReport().setMessage(columnFormatter.toString());
+        } else {
+            throw new RuntimeException("No Job Executions found");
+        }
 
     }
 
@@ -181,6 +185,10 @@ public class ListBatchJobExecutions
         }
 
         List<JobExecution> jeList = new ArrayList<JobExecution>();
+
+        if (jobInstance == null)
+            throw new RuntimeException("No Job Executions found for instanceid = " + instId);
+
         List<JobExecution> lst = BatchRuntime.getJobOperator().getJobExecutions(jobInstance);
         if (lst != null) {
             for (JobExecution je : lst) {

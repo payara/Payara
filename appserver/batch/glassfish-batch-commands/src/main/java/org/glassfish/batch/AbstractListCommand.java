@@ -101,7 +101,7 @@ public abstract class AbstractListCommand
             executeCommand(context, extraProperties);
             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (Exception ex) {
-            logger.log(Level.WARNING, "Exception during command ", ex);
+            logger.log(Level.FINE, "Exception during command ", ex);
             actionReport.setMessage(ex.getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } finally {
