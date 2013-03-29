@@ -119,6 +119,8 @@ public abstract class ProxyImpl implements Proxy {
                     if(properties != null) {
                         proxiedResponse.put("properties", properties);
                     }
+                } else {
+                    throw new WebApplicationException(response.readEntity(String.class), status);
                 }
             } else { // server == null
                 // TODO error to user. Can not locate server for whom data is being looked for
