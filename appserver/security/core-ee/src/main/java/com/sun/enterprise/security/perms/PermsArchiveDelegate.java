@@ -130,7 +130,7 @@ public class PermsArchiveDelegate {
             
             DDPermissionsLoader ddcl = (DDPermissionsLoader)classloader;
             
-            if (((ExtendedDeploymentContext)context).getParentContext() != null) {
+            if (((ExtendedDeploymentContext)context).getParentContext() == null) {
 
                 PermissionCollection declPc = getDeclaredPermissions(type, context); 
                 ddcl.addDeclaredPermissions(declPc);
