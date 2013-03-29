@@ -45,18 +45,20 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main.tests</groupId>
-        <artifactId>tests</artifactId>
+        <groupId>org.glassfish.tests</groupId>
+        <artifactId>cdi</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.tests</groupId>
-    <artifactId>cdi</artifactId>
+    <groupId>org.glassfish.tests.cdi</groupId>
+    <artifactId>cases</artifactId>
     <packaging>pom</packaging>
+    <version>4.0-SNAPSHOT</version>
 
-    <name>GlassFish CDI Tests</name>  
+    <name>GlassFish CDI Test Cases</name>  
     <modules>
-        <module>negative</module>
-        <module>cases</module>
+        <module>multiBeansXml</module>
+        <module>runner</module>
     </modules>
 </project>
