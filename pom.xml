@@ -105,6 +105,7 @@
         Skip deploy and install as this is an aggregator POM
     -->
     <build>
+        <defaultGoal>install</defaultGoal>
         <pluginManagement>
             <plugins>
                 <plugin>
