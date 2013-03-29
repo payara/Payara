@@ -54,10 +54,10 @@
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="childType" value="managed-thread-factory");
-        //REST related
+        setPageSessionAttribute(key="listCommand" value="list-managed-thread-factories");
+        setPageSessionAttribute(key="logicalJndiMapKey" value="managedThreadFactories");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         setPageSessionAttribute(key="rest-api" value="true");
-
         setPageSessionAttribute(key="hasThreadPriority" value="#{true}");
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncon.msg.JS.confirmDeleteManagedThreadFactory}");
         setPageSessionAttribute(key="createLink" value="#{request.contextPath}/concurrent/managedThreadFactoryNew.jsf");

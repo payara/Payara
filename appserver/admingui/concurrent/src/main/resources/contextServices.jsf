@@ -54,6 +54,9 @@
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="childType" value="context-service");
+        setPageSessionAttribute(key="listCommand" value="list-context-services");
+        setPageSessionAttribute(key="logicalJndiMapKey" value="contextServices");
+
         //REST related
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         setPageSessionAttribute(key="rest-api" value="true");

@@ -73,6 +73,7 @@
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
     setPageSessionAttribute(key="showMaxPoolSize" value="#{true}");
     setPageSessionAttribute(key="showTaskQueue" value="#{true}");
+#include /concurrent/logicalName.inc
 
     />
 </event>

@@ -71,7 +71,7 @@
     setPageSessionAttribute(key="edit" value="#{true}" );
 
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
-
+#include /concurrent/logicalName.inc
     />
 </event>
 <sun:form id="propertyForm">

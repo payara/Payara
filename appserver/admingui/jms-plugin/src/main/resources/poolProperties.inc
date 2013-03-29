@@ -55,7 +55,7 @@
         </sun:property>
                 
                 
-        <sun:property id="logic"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.connectionFactory.logicalJndiName}"  rendered="#{edit and renderLogic}">
+        <sun:property id="logic"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.logicalJndiName}"  rendered="#{edit and renderLogic}">
             <sun:staticText  id="logic" text="#{pageSession.logicalJndiName}" />
         </sun:property>
                 

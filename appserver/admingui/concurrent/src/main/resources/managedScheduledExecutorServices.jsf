@@ -54,7 +54,8 @@
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
-        //REST related
+        setPageSessionAttribute(key="listCommand" value="list-managed-scheduled-executor-services");
+        setPageSessionAttribute(key="logicalJndiMapKey" value="managedScheduledExecutorServices");
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         setPageSessionAttribute(key="hasThreadPriority" value="#{true}");
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncon.msg.JS.confirmDeleteManagedScheduledExecutorService}");

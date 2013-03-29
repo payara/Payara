@@ -58,11 +58,13 @@
        <!beforeCreate
            gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="jndiName", result="#{pageSession.tmpRows}");
            gfr.getResourcesTableData();
+           gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/#{pageSession.listCommand}" attrs="#{requestScope.jMap}" method="GET" result="#{requestScope.tmpJMap}");
+           mapGet(Map="#{requestScope.tmpJMap.data.extraProperties}", Key="#{pageSession.logicalJndiMapKey}"  Value="#{requestScope.logicalMapList}")
+           gf.getLogicalJndiName(logicalMapList="#{requestScope.logicalMapList}", listRow="#{pageSession.listOfRows}" result="#{pageSession.listOfRows}");
            foreach (var="oneRow" list="#{pageSession.listOfRows}") {
                if (#{oneRow.contextInfoEnabled}=true){
                     mapPut(map="#{requestScope.oneRow}" key="ctxInfoEnableImage" value="/resource/images/enabled.png");
                 }
-
                 if (#{oneRow.contextInfoEnabled}=false){
                     mapPut(map="#{requestScope.oneRow}" key="ctxInfoEnableImage" value="/resource/images/disabled.png");
                     mapPut(map="#{requestScope.oneRow}" key="contextInfo" value="" );
@@ -82,8 +84,11 @@
     </sun:tableColumn>    
 
     <sun:tableColumn headerText="$resource{i18ncon.resourcesTable.colJndiName}" sort="name" rowHeader="$boolean{true}" id="col1">
-        <sun:hyperlink id="link" text="#{td.value.name}" 
-            url="#{pageSession.editLink}?name=#{td.value.name}" />
+        <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.encodedName}&logicalJndiName=#{td.value.encodedLogicalJndiName}" />
+    </sun:tableColumn>
+
+    <sun:tableColumn id="colLogicalName" headerText="$resource{i18n.common.resourcesTable.colLogicalJndiName}"  sort="logicalJndiName"  rowHeader="$boolean{false}">
+        <h:outputText id="lname" value="#{td.value.logicalJndiName}"/>
     </sun:tableColumn>
 
     <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">

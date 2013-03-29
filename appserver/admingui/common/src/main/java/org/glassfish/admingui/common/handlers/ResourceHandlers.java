@@ -40,6 +40,7 @@
 
 package org.glassfish.admingui.common.handlers;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.List;
 
@@ -168,7 +169,7 @@ public class ResourceHandlers {
         List<Map> combined = new ArrayList();
         for(Map oneRow: tableList){
             Map newRow = new HashMap();
-            boolean isC = (boolean) oneRow.get("isConfidential");
+            boolean isC = (Boolean) oneRow.get("isConfidential");
             String name = (String)oneRow.get("name");
             newRow.put("name", name);
             if (GuiUtil.isEmpty(name)){
@@ -239,5 +240,38 @@ public class ResourceHandlers {
         handlerCtx.setOutputValue("result", result);
         handlerCtx.setOutputValue("hasConfidentialProps", hasConf);
     }
-        
+
+    //getLogicalJndiName(logicalMap="#{requestScope.tmpJMap.data.extraProperties.#{pageSession.logicalJndiMapKey}}", listRow="#{pageSession.listOfRows}");
+    @Handler(id="gf.getLogicalJndiName",
+            input={
+                    @HandlerInput(name="logicalMapList", type=List.class, required=true),
+                    @HandlerInput(name="listRow", type=java.util.List.class)},
+            output={
+                    @HandlerOutput(name="result", type=java.util.List.class) })
+    public static void getLogicalJndiName(HandlerContext handlerCtx)  {
+        List<Map<String, String>> logicalMapList = (List<Map<String, String>>) handlerCtx.getInputValue("logicalMapList");
+        List<Map<String, Object>> listRow = (List<Map<String, Object>>) handlerCtx.getInputValue("listRow");
+        if (logicalMapList.isEmpty() || listRow.isEmpty()){
+            handlerCtx.setOutputValue("result", listRow);
+        }
+        //listRow is the row for each resource table, need to extract its logical jndi name for logicalMapList and add that to the row.
+        try{
+            for(Map<String, Object> onerow: listRow){
+                String name= (String) onerow.get("name");
+                onerow.put("logicalJndiName", "");
+                onerow.put("encodedLogicalJndiName", "");
+                for(Map<String, String> logicalMap : logicalMapList){
+                    if(name.equals(logicalMap.get("name"))){
+                        String lname = logicalMap.get("logical-jndi-name");
+                        onerow.put("logicalJndiName", lname);
+                        onerow.put("encodedLogicalJndiName", URLEncoder.encode(lname, "UTF-8"));
+                    }
+                    break;
+                }
+            }
+            handlerCtx.setOutputValue("result", listRow);
+        } catch (Exception ex) {
+            GuiUtil.handleException(handlerCtx, ex);
+        }
+    }
 }

@@ -80,7 +80,7 @@
             <sun:hyperlink id="link" text="#{td.value.name}" url="#{pageSession.editLink}?name=#{td.value.encodedName}" />
         </sun:tableColumn>
         
-        <sun:tableColumn id="colLogicalName" headerText="$resource{i18njms.resourcesTable.colLogicalJndiName}"  sort="logicalJndiName" rendered="#{isConnPage}" rowHeader="$boolean{true}">
+        <sun:tableColumn id="colLogicalName" headerText="$resource{i18n.common.resourcesTable.colLogicalJndiName}"  sort="logicalJndiName" rendered="#{isConnPage}" rowHeader="$boolean{false}">
             <h:outputText id="lname" value="#{td.value.logicalJndiName}"/>
         </sun:tableColumn>
 

@@ -57,6 +57,8 @@
         //REST related
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
         setPageSessionAttribute(key="rest-api" value="true");
+        setPageSessionAttribute(key="listCommand" value="list-managed-executor-services");
+        setPageSessionAttribute(key="logicalJndiMapKey" value="managedExecutorServices");
 
         setPageSessionAttribute(key="hasThreadPriority" value="#{true}");
         setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncon.msg.JS.confirmDeleteManagedExecutorService}");

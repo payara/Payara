@@ -60,17 +60,15 @@
     //For resourceEditTabs.inc
     setPageSessionAttribute(key="generalPage" value="#{pageSession.selfPage}");
     setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
-
     gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
     gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
     setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled"});
     setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
-    
     gf.restRequest(endpoint="#{pageSession.selfUrl}/property" method="GET" result="#{requestScope.propTable}");
     setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
     setPageSessionAttribute(key="edit" value="#{true}" );
-
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
+#include /concurrent/logicalName.inc
 
     />
 </event>
