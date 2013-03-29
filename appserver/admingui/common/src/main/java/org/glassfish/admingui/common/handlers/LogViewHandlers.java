@@ -154,44 +154,38 @@ public class LogViewHandlers {
                 // Convert module array to List
                 //List moduleList = null;
                 //Set moduleList = new HashSet();
-                Set moduleList = null;
+                String listOfModules = "";
+                String sep = "";
+
                 if (loggers != null) {
                     int len = ((Object[]) loggers).length;
                     if (len > 0) {
-                        moduleList = new HashSet();
                         Object val;
+                        StringBuilder sb = new StringBuilder();
                         for (int count = 0; count < len; count++) {
                             val = (((Object[]) loggers)[count]);
                             if ((val == null) || (val.toString().trim().length() == 0)) {
                                 continue;
                             }
-                            moduleList.add(val);
+                            sb.append(sep).append(val);
+                            sep = ",";
                         }
+                        listOfModules = sb.toString();
                     }
                 }
 
                 // Add custom loggers
                 if ((customLoggers != null) && (customLoggers.toString().trim().length() != 0)) {
-                    String listOfModules = customLoggers.toString().trim();
+                    String customLoggerList = customLoggers.toString().trim();
+                    
                     for (String delim : CUSTOM_LOGGER_DELIMITERS) {
-                        listOfModules = listOfModules.replace(delim, ",");
+                        customLoggerList = customLoggerList.replace(delim, ",");
                     }
+                    listOfModules += sep + customLoggerList;
+                }
+                
+                if (!listOfModules.isEmpty()) {
                     attMap.put("listOfModules", listOfModules);
-//                    StringTokenizer tok = new StringTokenizer(
-//                            customLoggers.toString(),
-//                            CUSTOM_LOGGER_DELIMITERS);
-//                    String token;
-//                    if (moduleList == null) {
-//                        moduleList = new HashSet();
-//                    }
-//
-//                    while (tok.hasMoreTokens()) {
-//                        token = tok.nextToken();
-//                        if ((token == null) || (token.length() == 0)) {
-//                            continue;
-//                        }
-//                        moduleList.add(token);
-//                    }
                 }
 
                 // Get the number to Display
