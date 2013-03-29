@@ -92,12 +92,13 @@ public class DeploymentImpl implements Deployment {
 
     private Iterable<Metadata<Extension>> extensions;
 
+    private Collection<EjbDescriptor> deployedEjbs = new LinkedList<>();
+
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
      * from information from the provided <code>ReadableArchive</code>.
      */
-    public DeploymentImpl(ReadableArchive archive, Collection<EjbDescriptor> ejbs,
-                          DeploymentContext context) {
+    public DeploymentImpl(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context) {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.CREATING_DEPLOYMENT_ARCHIVE, new Object[]{ archive.getName()});
         }
@@ -140,9 +141,7 @@ public class DeploymentImpl implements Deployment {
      * This method is called for subsequent modules after This <code>Deployment</code> has
      * been created.
      */
-    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs,
-                            DeploymentContext context) {
-
+    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context) {
         if (libJarBDAs == null) {
             libJarBDAs = scanForLibJars(archive, ejbs, context);
             if ((libJarBDAs != null) && libJarBDAs.size() > 0) {
@@ -425,9 +424,9 @@ public class DeploymentImpl implements Deployment {
 
     // This method creates and returns a List of BeanDeploymentArchives for each
     // Weld enabled jar under /lib of an existing Archive.
-    private List<BeanDeploymentArchive> scanForLibJars(
-        ReadableArchive archive, Collection<EjbDescriptor> ejbs,
-        DeploymentContext context) {
+    private List<BeanDeploymentArchive> scanForLibJars( ReadableArchive archive,
+                                                        Collection<EjbDescriptor> ejbs,
+                                                        DeploymentContext context) {
         List<ReadableArchive> libJars = null;
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if ((holder != null) && (holder.app != null)) {
@@ -470,8 +469,7 @@ public class DeploymentImpl implements Deployment {
             ListIterator<ReadableArchive> libJarIterator = libJars.listIterator();
             while (libJarIterator.hasNext()) {
                 ReadableArchive libJarArchive = (ReadableArchive)libJarIterator.next();
-                BeanDeploymentArchive bda = new BeanDeploymentArchiveImpl(
-                    libJarArchive, ejbs, context,
+                BeanDeploymentArchive bda = new BeanDeploymentArchiveImpl(libJarArchive, ejbs, context,
                     /* use lib/jarname as BDA ID */ libDir + SEPARATOR_CHAR
                     + libJarArchive.getName());
                 this.beanDeploymentArchives.add(bda);
@@ -515,5 +513,15 @@ public class DeploymentImpl implements Deployment {
                 }
             }
         }
+    }
+
+    protected void addDeployedEjbs( Collection<EjbDescriptor> ejbs ) {
+        if ( ejbs != null ) {
+            deployedEjbs.addAll( ejbs );
+        }
+    }
+
+    public Collection<EjbDescriptor> getDeployedEjbs() {
+        return deployedEjbs;
     }
 }

@@ -476,15 +476,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             ejbServices = new EjbServicesImpl(services);
         }
 
-        // Check if we already have a Deployment
-
-        DeploymentImpl deploymentImpl = context.getTransientAppMetaData(
-            WELD_DEPLOYMENT, DeploymentImpl.class);
-
         // Create a Deployment Collecting Information From The ReadableArchive (archive)
-
+        DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
-            
             deploymentImpl = new DeploymentImpl(archive, ejbs, context);
 
             // Add services
@@ -504,16 +498,15 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             BootstrapConfigurationImpl bootstrapConfiguration = new BootstrapConfigurationImpl();
             deploymentImpl.getServices().add(BootstrapConfiguration.class, bootstrapConfiguration);
-
         } else {
             deploymentImpl.scanArchive(archive, ejbs, context);
         }
-        
+        deploymentImpl.addDeployedEjbs(ejbs);
+
         if( ejbBundle != null && (!deploymentImpl.getServices().contains(EjbServices.class))) {
             // EJB Services is registered as a top-level service
             deploymentImpl.getServices().add(EjbServices.class, ejbServices);
         }
-        
 
         BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archive.getName());
 
@@ -549,7 +542,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             // Each InjectionServicesImpl instance knows its associated GlassFish bundle.
 
             InjectionManager injectionMgr = services.getService(InjectionManager.class);
-            InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle);
+            InjectionServices injectionServices = new InjectionServicesImpl(injectionMgr, bundle, deploymentImpl);
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE,

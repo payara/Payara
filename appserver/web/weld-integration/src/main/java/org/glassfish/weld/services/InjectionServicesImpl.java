@@ -41,10 +41,9 @@
 package org.glassfish.weld.services;
 
 import com.sun.enterprise.deployment.*;
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.EjbContainerServices;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.weld.DeploymentImpl;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -58,10 +57,10 @@ import javax.ejb.EJB;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.inject.spi.InjectionTarget;
-import javax.naming.InitialContext;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import javax.xml.ws.WebServiceRef;
+import java.util.Collection;
 import java.util.List;
 
 
@@ -72,9 +71,12 @@ public class InjectionServicesImpl implements InjectionServices {
     // Associated bundle context
     private BundleDescriptor bundleContext;
 
-    public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context) {
+    private DeploymentImpl deployment;
+
+    public InjectionServicesImpl(InjectionManager injectionMgr, BundleDescriptor context, DeploymentImpl deployment) {
         injectionManager = injectionMgr;
         bundleContext = context;
+        this.deployment = deployment;
     }
 
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
@@ -144,89 +146,123 @@ public class InjectionServicesImpl implements InjectionServices {
 
     public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
         // We are only validating producer fields of resources.  See spec section 3.7.1
-        // Not doing this for ejbs either.
-
-
         Class annotatedClass = annotatedType.getJavaClass();
         JndiNameEnvironment jndiNameEnvironment = (JndiNameEnvironment) bundleContext;
-        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
-        InvocationManager invocationManager = serviceLocator.getService(InvocationManager.class);
-        ComponentEnvManager compEnvManager = serviceLocator.getService(ComponentEnvManager.class);
-        String componentId = compEnvManager.getComponentEnvId(jndiNameEnvironment);
-        String appName = bundleContext.getApplication().getAppName();
-        String moduleName = bundleContext.getModuleName();
-
-        ComponentInvocation componentInvocation = null;
 
         InjectionInfo injectionInfo = jndiNameEnvironment.getInjectionInfoByClass(annotatedClass);
         List<InjectionCapable> injectionResources = injectionInfo.getInjectionResources();
-        if ( injectionResources.size() > 0 ) {
-        }
 
-        boolean lookupsWillWork = true;
         for (AnnotatedField<? super T> annotatedField : annotatedType.getFields()) {
-            if ( lookupsWillWork && annotatedField.isAnnotationPresent( Produces.class ) ) {
-                if ( componentInvocation == null ) {
-                    componentInvocation = createComponentInvocation( componentId,
-                                                                     appName,
-                                                                     moduleName);
-                    try {
-                        invocationManager.preInvoke(componentInvocation);
-                    } catch ( Exception preInvokeException ) {
-                        lookupsWillWork = false;
-                    }
-                }
-
-                if ( lookupsWillWork ) {
-                    String lookupName = getLookupName( annotatedClass,
-                                                       annotatedField,
-                                                       injectionResources );
-                    Object resource = getResource( lookupName );
-                    if ( resource == null ) {
-                        // we have to retry using the component environment name because it could be a env entry with a
-                        // name specified in the annotation but getLookupName returned that instead of the
-                        // field's component env entry name...convoluted but necessary
-                        lookupName = getComponentEnvName( annotatedClass,
-                                                          annotatedField.getJavaMember().getName(),
-                                                          injectionResources );
-                        resource = getResource( lookupName );
-                    }
-                    if ( resource != null ) {
-                        validateResource( annotatedField, resource);
-                    }
+            if ( annotatedField.isAnnotationPresent( Produces.class ) ) {
+                if ( annotatedField.isAnnotationPresent( EJB.class ) ) {
+                    validateEjbProducer( annotatedClass, annotatedField, injectionResources );
+                } else if ( annotatedField.isAnnotationPresent( Resource.class ) ) {
+                    validateResourceProducer( annotatedClass, annotatedField, injectionResources );
+                } else if ( annotatedField.isAnnotationPresent( PersistenceUnit.class ) ) {
+                    validateResourceClass(annotatedField, PersistenceUnit.class);
+                } else if ( annotatedField.isAnnotationPresent( PersistenceContext.class ) ) {
+                    validateResourceClass(annotatedField, PersistenceContext.class);
+                } else if ( annotatedField.isAnnotationPresent( WebServiceRef.class ) ) {
+                    validateWebServiceRef( annotatedField );
                 }
             }
         }
 
-        if ( componentInvocation != null ) {
-            try {
-                invocationManager.postInvoke(componentInvocation);
-            } catch ( Exception ignore ) {
+    }
+
+    private void validateEjbProducer( Class annotatedClass,
+                                      AnnotatedField annotatedField,
+                                      List<InjectionCapable> injectionResources ) {
+        EJB ejbAnnotation = annotatedField.getAnnotation(EJB.class);
+        if ( ejbAnnotation != null ) {
+            String lookupName = getLookupName( annotatedClass,
+                                               annotatedField,
+                                               injectionResources );
+
+            EjbDescriptor foundEjb = null;
+            Collection<EjbDescriptor> ejbs = deployment.getDeployedEjbs();
+            for ( EjbDescriptor oneEjb : ejbs ) {
+                String jndiName = oneEjb.getJndiName();
+                if ( lookupName.indexOf( jndiName ) > 0 ) {
+                    foundEjb = oneEjb;
+                    break;
+                }
+            }
+            if ( foundEjb != null ) {
+                String className = foundEjb.getEjbImplClassName();
+                try {
+                    Class clazz = Class.forName( className, false, annotatedClass.getClassLoader() );
+                    validateResourceClass(annotatedField, clazz);
+                } catch (ClassNotFoundException ignore) {
+                }
             }
         }
     }
 
-    private void validateResource( AnnotatedField annotatedField, Object resource) {
-        if ( ! annotatedField.getJavaMember().getType().isAssignableFrom( resource.getClass() ) ) {
-            throw new DefinitionException( "The type of the injection point " +
-                                               annotatedField.getJavaMember().getName() +
-                                               "is " +
-                                               annotatedField.getJavaMember().getType().getName() +
-                                               ".  The type of the physical resource is " +
-                                               resource.getClass().getName() +
-                                               " They are incompatible. ");
+    private void validateResourceProducer( Class annotatedClass,
+                                           AnnotatedField annotatedField,
+                                           List<InjectionCapable> injectionResources ) {
+        Resource resourceAnnotation = annotatedField.getAnnotation(Resource.class);
+        if ( resourceAnnotation != null ) {
+            String lookupName = getLookupName( annotatedClass,
+                                               annotatedField,
+                                               injectionResources );
+            if ( lookupName.equals( "java:comp/BeanManager" ) ) {
+                validateResourceClass(annotatedField, BeanManager.class);
+            } else {
+                boolean done = false;
+                for (InjectionCapable injectionCapable : injectionResources) {
+                    for (com.sun.enterprise.deployment.InjectionTarget target : injectionCapable.getInjectionTargets()) {
+                        if( target.isFieldInjectable() ) {  // make sure it's a field and not a method
+                            if ( annotatedClass.getName().equals(target.getClassName() ) &&
+                                target.getFieldName().equals( annotatedField.getJavaMember().getName() ) ) {
+                                String type = injectionCapable.getInjectResourceType();
+                                try {
+                                    Class clazz = Class.forName( type, false, annotatedClass.getClassLoader() );
+                                    validateResourceClass(annotatedField, clazz);
+                                } catch (ClassNotFoundException ignore) {
+                                } finally {
+                                    done = true;
+                                }
+                            }
+                        }
+                        if ( done ) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
-
-    private Object getResource( String lookupName ) {
-        try {
-            InitialContext initialContext = new InitialContext();
-            return initialContext.lookup( lookupName );
-        } catch ( Exception ignore ) {
+    private void validateWebServiceRef( AnnotatedField annotatedField ) {
+        WebServiceRef webServiceRef = annotatedField.getAnnotation(WebServiceRef.class);
+        if ( webServiceRef != null ) {
+            Class serviceClass = webServiceRef.value();
+            if ( serviceClass != null ) {
+                validateResourceClass(annotatedField, serviceClass);
+            }
         }
+    }
 
-        return null;
+    private void validateResourceClass(AnnotatedField annotatedField, Class resourceClass) {
+        if ( ! annotatedField.getJavaMember().getType().isAssignableFrom( resourceClass ) ) {
+            throwProducerDefinitionExeption( annotatedField.getJavaMember().getName(),
+                                             annotatedField.getJavaMember().getType().getName(),
+                                             resourceClass.getName() );
+        }
+    }
+
+    private void throwProducerDefinitionExeption( String annotatedFieldName,
+                                                  String annotatedFieldType,
+                                                  String resourceClassName ) {
+        throw new DefinitionException( "The type of the injection point " +
+                                       annotatedFieldName +
+                                       " is " +
+                                       annotatedFieldType +
+                                       ".  The type of the physical resource is " +
+                                       resourceClassName +
+                                       " They are incompatible. ");
     }
 
     private String getComponentEnvName( Class annotatedClass, String fieldName, List<InjectionCapable> injectionResources ) {
@@ -247,22 +283,6 @@ public class InjectionServicesImpl implements InjectionServices {
         }
 
         return null;
-    }
-
-    private ComponentInvocation createComponentInvocation( String componentId,
-                                                           String appName,
-                                                           String moduleName) {
-        ComponentInvocation.ComponentInvocationType componentInvocationType =
-            ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION;
-
-        ComponentInvocation componentInvocation =
-            new ComponentInvocation( componentId,
-                                     componentInvocationType,
-                                     null,
-                                     appName,
-                                     moduleName);
-        componentInvocation.setJNDIEnvironment( bundleContext );
-        return componentInvocation;
     }
 
     private String getLookupName( Class annotatedClass, AnnotatedField annotatedField, List<InjectionCapable> injectionResources ) {
