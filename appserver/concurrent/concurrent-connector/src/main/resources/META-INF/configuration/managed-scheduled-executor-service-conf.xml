@@ -42,7 +42,7 @@
     <config-bundle location="domain/resources" replace-if-exist="false">
         <configuration-element config-bean-class-name="org.glassfish.concurrent.config.ManagedScheduledExecutorService">
 <![CDATA[
-    <managed-scheduled-executor-service jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all-req">
+    <managed-scheduled-executor-service jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all">
     </managed-scheduled-executor-service>
 ]]>
         </configuration-element>

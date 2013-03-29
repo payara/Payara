@@ -42,7 +42,7 @@
     <config-bundle location="domain/resources" replace-if-exist="false">
         <configuration-element config-bean-class-name="org.glassfish.concurrent.config.ManagedThreadFactory">
 <![CDATA[
-    <managed-thread-factory jndi-name="concurrent/__defaultManagedThreadFactory" object-type="system-all-req">
+    <managed-thread-factory jndi-name="concurrent/__defaultManagedThreadFactory" object-type="system-all">
     </managed-thread-factory>
 ]]>
         </configuration-element>

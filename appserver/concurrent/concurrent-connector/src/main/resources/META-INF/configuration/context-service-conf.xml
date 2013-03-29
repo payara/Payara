@@ -42,7 +42,7 @@
     <config-bundle location="domain/resources" replace-if-exist="false">
         <configuration-element config-bean-class-name="org.glassfish.concurrent.config.ContextService">
 <![CDATA[
-    <context-service jndi-name="concurrent/__defaultContextService" object-type="system-all-req">
+    <context-service jndi-name="concurrent/__defaultContextService" object-type="system-all">
     </context-service>
 ]]>
         </configuration-element>

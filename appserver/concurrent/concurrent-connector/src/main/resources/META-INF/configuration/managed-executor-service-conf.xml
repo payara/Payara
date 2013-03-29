@@ -42,7 +42,7 @@
     <config-bundle location="domain/resources" replace-if-exist="false">
         <configuration-element config-bean-class-name="org.glassfish.concurrent.config.ManagedExecutorService">
 <![CDATA[
-    <managed-executor-service jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all-req">
+    <managed-executor-service jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all">
     </managed-executor-service>
 ]]>
         </configuration-element>
