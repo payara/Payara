@@ -135,9 +135,23 @@
     <f:verbatim>
         <script type="text/javascript">
           function download(event) {
+            if (event.preventDefault) {
               event.preventDefault();
+            }
+            var url = '#{request.contextPath}/download/log-files-' + $('#{targetNameId}').value + '.zip?contentSourceId=LogFiles&target=' + $('#{targetNameId}').value + '&restUrl=#{sessionScope.REST_URL}';
+            if(location.protocol != 'https:' &&
+              navigator.appName.indexOf("Internet Explorer") != -1 &&
+              navigator.appVersion.indexOf("MSIE 10") != -1) {
+              // bug#16542371 IE10 is super secure. Because of https community page, it throws
+              // SEC7111: HTTPS security is compromised by http://localhost:4848/download/log-files-server.zip?contentSourceId=LogFiles&target=server&restUrl=http://localhost:4848/management/domainindex.jsf
+              // and then iframe is loaded with res:// page, so it throws
+              // SCRIPT5: Access is denied
+              // for iframe.contentWindow
+              // thus GLASSFISH-17921 is not fixed for the case, let user see raw 500 error, if any.
+              window.location = url;
+            } else {
               var iframe = $('download'); 
-              iframe.src = '#{request.contextPath}/download/log-files-' + $('#{targetNameId}').value + '.zip?contentSourceId=LogFiles&target=' + $('#{targetNameId}').value + '&restUrl=#{sessionScope.REST_URL}';
+              iframe.src = url;
               setTimeout(function() {
                   var doc = iframe.contentWindow.document; 
                   var matches = doc.body.innerHTML.match('Exception: (.+)?</pre>');
@@ -147,6 +161,7 @@
                   }
               }, 1000);
               return false;
+            }
           }
         </script>
         <iframe id="download" src="#" style="display: none"></iframe>
