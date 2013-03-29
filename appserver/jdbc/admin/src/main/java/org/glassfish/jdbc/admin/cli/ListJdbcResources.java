@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,24 @@
 
 package org.glassfish.jdbc.admin.cli;
 
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
+import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.resourcebase.resources.util.BindableResourcesHelper;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * List JDBC Resources command
@@ -90,6 +91,10 @@ public class ListJdbcResources implements AdminCommand {
     @Inject
     private JDBCResourceManager jdbcMgr;
 
+    @Inject
+    private ServiceLocator habitat;
+
+
     /**
      * Executes the command with the command parameters passed as Properties
      * where the keys are the parameter names and the values the parameter values
@@ -102,13 +107,28 @@ public class ListJdbcResources implements AdminCommand {
 
         try {
             Collection<JdbcResource> jdbcResources = domain.getResources().getResources(JdbcResource.class);
+            List<Map<String,String>> resourcesList = new ArrayList<Map<String, String>>();
+
+            List<DefaultResourceProxy> drps = habitat.getAllServices(DefaultResourceProxy.class);
             for (JdbcResource jdbcResource : jdbcResources) {
                 String jndiName = jdbcResource.getJndiName();
                 if(bindableResourcesHelper.resourceExists(jndiName, target)){
                     ActionReport.MessagePart part = report.getTopMessagePart().addChild();
                     part.setMessage(jndiName);
+                    Map<String,String> resourceNameMap = new HashMap<String,String>();
+                    String logicalName = DefaultResourceProxy.Util.getLogicalName(drps, jndiName);
+                    if (logicalName != null) {
+                        resourceNameMap.put("logical-jndi-name", logicalName);
+                    }
+                    resourceNameMap.put("name", jndiName);
+                    resourcesList.add(resourceNameMap);
                 }
             }
+
+            Properties extraProperties = new Properties();
+            extraProperties.put("jdbcResources", resourcesList);
+            report.setExtraProperties(extraProperties);
+
         } catch (Exception e) {
             report.setMessage(localStrings.getLocalString("list.jdbc.resources.failed",
                     "List JDBC resources failed"));
