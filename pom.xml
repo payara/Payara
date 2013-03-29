@@ -85,7 +85,7 @@
         </profile>
         <profile>
             <!--
-                RE profile for release purposes.
+                RE profile for release purposes. 
             -->
             <id>ips</id>
             <activation>
