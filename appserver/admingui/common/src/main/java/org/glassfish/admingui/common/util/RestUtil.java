@@ -850,8 +850,6 @@ public class RestUtil {
             address = FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("REST_URL") + address;
         }
         WebTarget target = targetWithQueryParams(getJerseyClient().target(address), payload);
-        System.out.println("GET: "+address + ":" + payload.toString());
-
         Response resp = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
@@ -867,8 +865,6 @@ public class RestUtil {
         if (payload instanceof Map) {
             payload = buildMultivalueMap((Map<String, Object>) payload);
         }
-        System.out.println("POST: "+address + ":" + payload.toString());
-
         Response cr = target.request(RESPONSE_TYPE).header("Content-Type", contentType)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
                 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
@@ -880,7 +876,6 @@ public class RestUtil {
     public static RestResponse  post(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
-        System.out.println("POST: "+address + ":" + payload.toString());
         Response cr = target
                 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
                 .request(RESPONSE_TYPE)
@@ -893,7 +888,6 @@ public class RestUtil {
     public static RestResponse put(String address, Map<String, Object> payload) {
         WebTarget target = getJerseyClient().target(address);
         MultivaluedMap formData = buildMultivalueMap(payload);
-        System.out.println("PUT: "+address + ":" + payload.toString());
 
         Response cr = target
                 //                .header("Content-type", MediaType.APPLICATION_FORM_URLENCODED)
