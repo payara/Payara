@@ -71,6 +71,7 @@
 
         setPageSessionAttribute(key="generalPage" value="#{request.contextPath}/jdbc/jdbcResourceEdit.jsf");
         setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf");
+        setPageSessionAttribute(key="showLogicalJndi" value="#{true}");
     />
     </event>
 "    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:JDBC:jdbcResources");</script>

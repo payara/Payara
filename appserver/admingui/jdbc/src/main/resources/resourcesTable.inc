@@ -56,8 +56,12 @@
 
    <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$pageSession{listOfRows}"} sourceVar="td">
        <!beforeCreate
-           gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="jndiName", result="#{pageSession.tmpRows}");
-           gfr.getResourcesTableData();
+            gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="jndiName", result="#{pageSession.tmpRows}");
+            gfr.getResourcesTableData();
+            if(#{pageSession.showLogicalJndi}){
+                gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/list-jdbc-resources"  method="GET" result="#{requestScope.tmpJMap}");
+                gf.getLogicalJndiName(logicalMapList="#{requestScope.tmpJMap.data.extraProperties.jdbcResources}", listRow="#{pageSession.listOfRows}" result="#{pageSession.listOfRows}");
+            }
         />
      <!afterCreate
          getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
@@ -73,13 +77,12 @@
 
     <sun:tableColumn headerText="$resource{i18njdbc.resourcesTable.colJndiName}" sort="name" rowHeader="$boolean{true}" id="col1">
         <sun:hyperlink id="link" text="#{td.value.name}" 
-            url="#{pageSession.editLink}?name=#{td.value.name}" />
+            url="#{pageSession.editLink}?name=#{td.value.name}&logicalJndiName=#{td.value.encodedLogicalJndiName}" />
     </sun:tableColumn>
 
-    <!--TODO enable when we enable cluster support
-    <sun:tableColumn rendered="#{supportCluster}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{true}" id="col2">
-        <sun:hyperlink rendered="#{supportCluster}" id="targetLink" text="#{td.value.enabled}" url="#{targetLink}?name=#{td.value.name}" />
-    </sun:tableColumn>-->
+    <sun:tableColumn id="colLogicalName" headerText="$resource{i18n.common.resourcesTable.colLogicalJndiName}" rendered="#{pageSession.showLogicalJndi}"  sort="logicalJndiName"  rowHeader="$boolean{false}">
+        <h:outputText id="lname" value="#{td.value.logicalJndiName}"/>
+    </sun:tableColumn>
 
     <sun:tableColumn rendered="#{!pageSession.onlyDASExist}" headerText="$resource{i18n.deployTable.colStatus}" sort="enabled" rowHeader="$boolean{false}" id="col22">
         <sun:hyperlink rendered="#{!pageSession.onlyDASExist}" id="targetLink" text="#{td.value.enableURL}" url="#{targetPage}?name=#{td.value.encodedName}&generalPage=#{pageSession.generalPage}?name=#{td.value.encodedName}" />

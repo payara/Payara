@@ -90,9 +90,7 @@
     setPageSessionAttribute(key="showCancelButton" value="#{true}" );
     setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
     setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
-
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
-
     />
 </event>
 <sun:form id="propertyForm">
@@ -103,8 +101,7 @@
     <sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcResource.editPageTitle}" helpText="$resource{i18njdbc.jdbcResource.editPageTitleHelp}" >        
 #include "/common/resourceNode/resourceEditPageButtons.inc"
     </sun:title>
-    "<br><br>
-    
+
 #include "/jdbc/jdbcResource.inc"
 #include "/common/shared/propertyDescTable.inc"
     

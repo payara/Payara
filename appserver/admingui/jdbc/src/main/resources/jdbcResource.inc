@@ -59,6 +59,16 @@
             <sun:staticText id="name" text="#{pageSession.Name}"  rendered="#{Edit}" />
         </sun:property>
 
+#include "/common/resourceNode/logicalName.inc"
+        <sun:property id="logicalName"  rendered="#{edit and renderLogic}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.logicalJndiName}">
+            <sun:staticText id="lName" text="#{pageSession.logicalJndiName}"  rendered="#{Edit}" />
+            <!beforeCreate
+                setPageSessionAttribute(key="listCommand" value="list-jdbc-resources");
+                setPageSessionAttribute(key="logicalJndiMapKey" value="jdbcResources");
+                gfr.prepareLogicalJndiNameForEdit();
+            />
+        </sun:property>
+
         <sun:property id="poolNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.poolName}"  helpText="$resource{i18njdbc.jdbcResource.poolHelp}">
             <sun:dropDown id="PoolName" selected="#{pageSession.valueMap['poolName']}" labels="$pageSession{jdbcList}"  values="$pageSession{jdbcList}" >
             <!beforeCreate
