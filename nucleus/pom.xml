@@ -907,6 +907,18 @@
                 <version>${v3-docs.version}</version>
                 <type>zip</type>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs.man</groupId>
+                <artifactId>osgi-cli-interactive-manpage</artifactId>
+                <version>${v3-docs.version}</version>
+                <type>zip</type>
+            </dependency>
+            <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
+            <dependency>
+                <groupId>jline</groupId>
+                <artifactId>jline</artifactId>
+                <version>2.9</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     
