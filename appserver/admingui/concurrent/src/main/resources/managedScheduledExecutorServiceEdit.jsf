@@ -49,7 +49,6 @@
 <!define name="content">
 <event>
     <!beforeCreate
-    setSessionAttribute(key="conEditTabs" value="general");
     getRequestValue(key="name" value="#{pageSession.Name}");
     urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
     setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/concurrent/managedScheduledExecutorServiceEdit.jsf?name=#{pageSession.encodedName}");
@@ -58,6 +57,7 @@
     setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
     setPageSessionAttribute(key="isConcurrent" value="true");
     //For resourceEditTabs.inc
+    setSessionAttribute(key="resEditTabs" value="general");
     setPageSessionAttribute(key="generalPage" value="#{pageSession.selfPage}");
     setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
 
