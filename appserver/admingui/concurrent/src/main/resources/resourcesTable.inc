@@ -58,7 +58,7 @@
        <!beforeCreate
            gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", id="jndiName", result="#{pageSession.tmpRows}");
            gfr.getResourcesTableData();
-           gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/#{pageSession.listCommand}" attrs="#{requestScope.jMap}" method="GET" result="#{requestScope.tmpJMap}");
+           gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/#{pageSession.listCommand}"  method="GET" result="#{requestScope.tmpJMap}");
            mapGet(Map="#{requestScope.tmpJMap.data.extraProperties}", Key="#{pageSession.logicalJndiMapKey}"  Value="#{requestScope.logicalMapList}")
            gf.getLogicalJndiName(logicalMapList="#{requestScope.logicalMapList}", listRow="#{pageSession.listOfRows}" result="#{pageSession.listOfRows}");
            foreach (var="oneRow" list="#{pageSession.listOfRows}") {

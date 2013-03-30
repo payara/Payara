@@ -39,8 +39,23 @@
     holder.
 -->
 
+<handler id="gfr.prepareLogicalJndiNameForEdit" >
+    ## if logicalJndiName is passed in, we don't need to find it.
     getRequestValue(key="logicalJndiName" value="#{pageSession.logicalJndiName}");
     setPageSessionAttribute(key="renderLogic" value="#{false}");
     if("#{pageSession.logicalJndiName}"){
         setPageSessionAttribute(key="renderLogic" value="#{true}");
     }
+    if(!#{pageSession.logicalJndiName}){
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/#{pageSession.listCommand}"  method="GET" result="#{requestScope.tmpJMap}");
+        mapGet(Map="#{requestScope.tmpJMap.data.extraProperties}", Key="#{pageSession.logicalJndiMapKey}"  Value="#{requestScope.logicalMapList}")
+        foreach (var="oneR" list="#{requestScope.logicalMapList}") {
+            if("#{oneR['name']} = #{pageSession.Name}" ){
+                setPageSessionAttribute(key="logicalJndiName" value="#{oneR['logical-jndi-name']}" );
+                if(#{pageSession.logicalJndiName}){
+                    setPageSessionAttribute(key="renderLogic" value="#{true}");
+                }
+            }
+        }
+    }
+</handler>

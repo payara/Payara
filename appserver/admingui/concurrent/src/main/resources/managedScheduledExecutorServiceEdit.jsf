@@ -73,7 +73,8 @@
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
     setPageSessionAttribute(key="showMaxPoolSize" value="#{false}");
     setPageSessionAttribute(key="showTaskQueue" value="#{false}");
-#include /concurrent/logicalName.inc
+    setPageSessionAttribute(key="listCommand" value="list-managed-scheduled-executor-services");
+    setPageSessionAttribute(key="logicalJndiMapKey" value="managedScheduledExecutorServices");
 
     />
 </event>

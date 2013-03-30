@@ -68,7 +68,6 @@
     setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
     setPageSessionAttribute(key="edit" value="#{true}" );
     setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
-#include /concurrent/logicalName.inc
 
     />
 </event>

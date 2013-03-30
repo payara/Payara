@@ -54,9 +54,17 @@
         <sun:property id="name"  rendered="#{edit}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.jndiName}">
             <sun:staticText id="name" text="#{pageSession.Name}"  rendered="#{Edit}" />
         </sun:property>
+
+#include "/common/resourceNode/logicalName.inc"
         <sun:property id="logicalName"  rendered="#{edit and renderLogic}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.logicalJndiName}">
             <sun:staticText id="lName" text="#{pageSession.logicalJndiName}"  rendered="#{Edit}" />
+            <!beforeCreate
+                setPageSessionAttribute(key="listCommand" value="list-managed-thread-factories");
+                setPageSessionAttribute(key="logicalJndiMapKey" value="managedThreadFactories");
+                gfr.prepareLogicalJndiNameForEdit();
+            />
         </sun:property>
+
 #include "/concurrent/contextInfo.inc"
         <sun:property id="statusProp"  rendered="#{useCheckBox}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}">
             <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['enabled']}" selectedValue="true" visible="#{false}" />

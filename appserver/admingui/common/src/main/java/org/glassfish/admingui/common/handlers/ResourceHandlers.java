@@ -251,7 +251,7 @@ public class ResourceHandlers {
     public static void getLogicalJndiName(HandlerContext handlerCtx)  {
         List<Map<String, String>> logicalMapList = (List<Map<String, String>>) handlerCtx.getInputValue("logicalMapList");
         List<Map<String, Object>> listRow = (List<Map<String, Object>>) handlerCtx.getInputValue("listRow");
-        if (logicalMapList.isEmpty() || listRow.isEmpty()){
+        if (listRow==null || listRow.isEmpty()){
             handlerCtx.setOutputValue("result", listRow);
         }
         //listRow is the row for each resource table, need to extract its logical jndi name for logicalMapList and add that to the row.
@@ -263,10 +263,12 @@ public class ResourceHandlers {
                 for(Map<String, String> logicalMap : logicalMapList){
                     if(name.equals(logicalMap.get("name"))){
                         String lname = logicalMap.get("logical-jndi-name");
-                        onerow.put("logicalJndiName", lname);
-                        onerow.put("encodedLogicalJndiName", URLEncoder.encode(lname, "UTF-8"));
+                        if (!GuiUtil.isEmpty(lname)){
+                            onerow.put("logicalJndiName", lname);
+                            onerow.put("encodedLogicalJndiName", URLEncoder.encode(lname, "UTF-8"));
+                        }
+                        break;
                     }
-                    break;
                 }
             }
             handlerCtx.setOutputValue("result", listRow);
