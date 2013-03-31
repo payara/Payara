@@ -57,6 +57,8 @@ import javax.ejb.EJB;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.inject.spi.InjectionTarget;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceContext;
 import javax.persistence.PersistenceUnit;
 import javax.xml.ws.WebServiceRef;
@@ -159,9 +161,9 @@ public class InjectionServicesImpl implements InjectionServices {
                 } else if ( annotatedField.isAnnotationPresent( Resource.class ) ) {
                     validateResourceProducer( annotatedClass, annotatedField, injectionResources );
                 } else if ( annotatedField.isAnnotationPresent( PersistenceUnit.class ) ) {
-                    validateResourceClass(annotatedField, PersistenceUnit.class);
+                    validateResourceClass(annotatedField, EntityManagerFactory.class);
                 } else if ( annotatedField.isAnnotationPresent( PersistenceContext.class ) ) {
-                    validateResourceClass(annotatedField, PersistenceContext.class);
+                    validateResourceClass(annotatedField, EntityManager.class);
                 } else if ( annotatedField.isAnnotationPresent( WebServiceRef.class ) ) {
                     validateWebServiceRef( annotatedField );
                 }
@@ -175,9 +177,9 @@ public class InjectionServicesImpl implements InjectionServices {
                                       List<InjectionCapable> injectionResources ) {
         EJB ejbAnnotation = annotatedField.getAnnotation(EJB.class);
         if ( ejbAnnotation != null ) {
-            String lookupName = getLookupName( annotatedClass,
-                                               annotatedField,
-                                               injectionResources );
+            String lookupName = getLookupName(annotatedClass,
+                                              annotatedField,
+                                              injectionResources);
 
             EjbDescriptor foundEjb = null;
             Collection<EjbDescriptor> ejbs = deployment.getDeployedEjbs();
@@ -204,9 +206,9 @@ public class InjectionServicesImpl implements InjectionServices {
                                            List<InjectionCapable> injectionResources ) {
         Resource resourceAnnotation = annotatedField.getAnnotation(Resource.class);
         if ( resourceAnnotation != null ) {
-            String lookupName = getLookupName( annotatedClass,
-                                               annotatedField,
-                                               injectionResources );
+            String lookupName = getLookupName(annotatedClass,
+                                              annotatedField,
+                                              injectionResources);
             if ( lookupName.equals( "java:comp/BeanManager" ) ) {
                 validateResourceClass(annotatedField, BeanManager.class);
             } else {
@@ -296,9 +298,6 @@ public class InjectionServicesImpl implements InjectionServices {
         } else if ( annotatedField.isAnnotationPresent( WebServiceRef.class ) ) {
             WebServiceRef webServiceRef = annotatedField.getAnnotation( WebServiceRef.class );
             lookupName = getJndiName(webServiceRef.lookup(), webServiceRef.mappedName(), webServiceRef.name());
-        } else if ( annotatedField.isAnnotationPresent( PersistenceUnit.class ) ) {
-            PersistenceUnit persistenceUnit = annotatedField.getAnnotation( PersistenceUnit.class );
-            lookupName = getJndiName( persistenceUnit.unitName(), null, persistenceUnit.name() );
         } else if ( annotatedField.isAnnotationPresent( PersistenceUnit.class ) ) {
             PersistenceUnit persistenceUnit = annotatedField.getAnnotation( PersistenceUnit.class );
             lookupName = getJndiName( persistenceUnit.unitName(), null, persistenceUnit.name() );
