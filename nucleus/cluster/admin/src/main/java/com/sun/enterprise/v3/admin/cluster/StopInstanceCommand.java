@@ -138,8 +138,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         report = context.getActionReport();
         logger = context.getLogger();
         SSHLauncher launcher;
-        int dasPort;
-        String dasHost;
 
         if (env.isDas()) {
             if (kill) {
@@ -180,8 +178,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         Node node = nodes.getNode(nodeName);
         InstanceDirUtils insDU = new InstanceDirUtils(node, serverContext);
         // this should be replaced with method from Node config bean.
-        dasPort = helper.getAdminPort(SystemPropertyConstants.DAS_SERVER_NAME);
-        dasHost = System.getProperty(SystemPropertyConstants.HOST_NAME_PROPERTY);
         if (node.isLocal()){
             try {
                 pidFile = new File (insDU.getLocalInstanceDir(instance.getName()) , "config/pid");
