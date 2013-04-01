@@ -80,14 +80,12 @@
                 <!command
                     getUIComponent(clientId="$pageSession{configsTableRowGroupId}", component=>$attribute{tableRowGroup});
                     getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
-//                    flushJMSDestination(selectedRows="${selectedRows}");
                     prepareAlertMsg(summary="$resource{i18njms.jmsPhysDestinations.purged}", type="success");
                     foreach (var="dest" list="$attribute{selectedRows}") {
                          createMap(result="#{requestScope.attrsMap}");
                          mapPut(map="#{requestScope.attrsMap}" key="desttype" value="#{dest.type}" );
                          mapPut(map="#{requestScope.attrsMap}" key="id" value="#{dest.name}" );
-                         gf.restRequest(endpoint="#{pageSession.resourceUrl}/flush-jmsdest",
-                            attrs="#{requestScope.attrsMap}", method="post", result="#{requestScope.result}");
+                         gf.restRequest(endpoint="#{pageSession.resourceUrl}/flush-jmsdest", attrs="#{requestScope.attrsMap}", method="post", result="#{requestScope.result}");
                          // TODO: handle failures
                     }
                 />
@@ -118,8 +116,6 @@
                 onClick="setTimeout('admingui.table.toggleButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
             />
         </sun:tableColumn>    
-
-        // TODO: Fix these links. Combine all of the phys dest pages into one
         <sun:tableColumn id="col1" headerText="$resource{i18n.common.PropertyName}" sort="name" rowHeader="$boolean{true}">
             <sun:hyperlink id="nameCol" text="#{td.value.name}" 
                 url="#{request.contextPath}/jms/physdest/jmsPhysicalDestinationEdit.jsf?name=#{td.value.name}&type=#{td.value.type}&target=#{pageSession.target}&parentPage=#{pageSession.selfPage}" />
@@ -129,7 +125,7 @@
             <staticText id="typeCol"  value="#{td.value.type}" />
         </sun:tableColumn>
         <sun:tableColumn id="col4" headerText="$resource{i18njms.jmsPhysDestinations.stats}">
-            <sun:hyperlink id="statsCol" text="$resource{i18njms.jmsPhysDestinations.view}" url="#{request.contextPath}/jms/physdest/jmsPhysicalDestinationStats.jsf?name=#{td.value.name}&type=#{td.value.type}&target=#{pageSession.target}&parent=#{pageSession.selfPage}" />
+            <sun:hyperlink id="statsCol" text="$resource{i18njms.jmsPhysDestinations.view}" url="#{request.contextPath}/jms/physdest/jmsPhysicalDestinationStats.jsf?name=#{td.value.name}&type=#{td.value.type}&target=#{pageSession.target}&parentPage=#{pageSession.selfPage}" />
         </sun:tableColumn>
     </sun:tableRowGroup>
 </sun:table>

@@ -51,16 +51,13 @@
 <!define name="content">
     <event>
         <!beforeCreate
-            setSessionAttribute(key="clusterTabs" value="jmsPhysDest");
-            getRequestValue(key="target" value="#{pageSession.encodedClusterName}");
-            setPageSessionAttribute(key="clusterName" value="#{pageSession.encodedClusterName}");
-            setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/physdest/clusterPhysDest.jsf?target=#{pageSession.encodedClusterName}");
-            setPageSessionAttribute(key="target" value="#{param.target}");
-
+            getRequestValue(key="target" value="#{pageSession.clusterName}");
+            urlencode(value="#{pageSession.clusterName}"  encoding="UTF-8" result="#{pageSession.encodedClusterName}");
+            setPageSessionAttribute(key="target" value="#{pageSession.encodedClusterName}")
+            setPageSessionAttribute(key="selfPage" value="jms/physdest/clusterPhysDest.jsf?target=#{pageSession.encodedClusterName}");
             setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/clusters/cluster");
             setPageSessionAttribute(key="resourceUrl", value="#{pageSession.parentUrl}/#{pageSession.encodedClusterName}");
             setPageSessionAttribute(key="rest-api" value="true");
-
             gf.restRequest(endpoint="#{pageSession.resourceUrl}/list-jmsdest", method="get", result="#{requestScope.result}");
             setPageSessionAttribute(key="destList", value="#{requestScope.result.data.extraProperties.destinations}");
         />

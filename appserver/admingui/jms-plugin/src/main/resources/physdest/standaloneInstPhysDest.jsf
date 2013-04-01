@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -53,14 +53,12 @@
         <!beforeCreate
             getRequestValue(key="target" value="#{pageSession.instanceName}");
             urlencode(value="#{pageSession.instanceName}" encoding="UTF-8" result="#{pageSession.encodedInstanceName}");
+            setPageSessionAttribute(key="target" value="#{pageSession.instanceName}")
+            setPageSessionAttribute(key="selfPage" value="jms/physdest/standaloneInstPhysDest.jsf?target=#{pageSession.instanceName}");
             setSessionAttribute(key="standaloneInstanceTabs" value="jmsPhysDest");
-            setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/physdest/standaloneInstPhysDest.jsf?target=#{pageSession.instanceName}");
-            setPageSessionAttribute(key="target" value="#{param.target}");
-
             setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/servers/server");
             setPageSessionAttribute(key="resourceUrl", value="#{pageSession.parentUrl}/#{pageSession.encodedInstanceName}");
             setPageSessionAttribute(key="rest-api" value="true");
-
             gf.restRequest(endpoint="#{pageSession.resourceUrl}/list-jmsdest", method="get", result="#{requestScope.result}");
             setPageSessionAttribute(key="destList", value="#{requestScope.result.data.extraProperties.destinations}");
         />

@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -50,13 +50,11 @@
     <event>
     <!beforeCreate
         setPageSessionAttribute(key="pageTitle" value="$resource{i18njms.jmsPhysDestinations.statsPageTitle}");
-        //setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jms/physdest/jmsPhysicalDestinations.jsf");
         setPageSessionAttribute(key="edit" value="#{true}");
         getRequestValue(key="name" value=>$page{destName});
         getRequestValue(key="type" value=>$page{destType});
         getRequestValue(key="target" value=>$page{target});
-        getRequestValue(key="parent" value=>$page{parentPage});
-
+        getRequestValue(key="parentPage" value=>$page{parentPage});
         getPhysicalDestinationStats(name="#{pageSession.destName}", type="#{pageSession.destType}", target="#{pageSession.target}", statsData="#{statsData}");
     />
     </event>
@@ -67,7 +65,7 @@
                 <sun:panelGroup id="topButtons">
                     <sun:button id="topOK" text="$resource{i18n.button.Back}">
                         <!command
-                            gf.redirect(page="#{pageSession.parentPage}");
+                            gf.redirect(page="#{request.contextPath}/#{pageSession.parentPage}");
                         />
                     </sun:button>
                 </sun:panelGroup>
@@ -98,13 +96,12 @@
                     <h:outputText value="#{row['help']}" style="font-style: italic;"/>
                 </h:column>
         </h:dataTable>
-        <sun:hidden id="helpKey" value="$resource{helpjms.jmsPhysicalDestinationStats}" />
         <sun:title>
             <!facet pageButtonsBottom>
                 <sun:panelGroup id="bottomButtons">
-                    <sun:button id="bottomOK" text="$resource{i18n.button.OK}">
+                    <sun:button id="bottomOK" text="$resource{i18n.button.Back}">
                         <!command
-                            gf.redirect(page="#{pageSession.parentPage}");
+                            gf.redirect(page="#{request.contextPath}/#{pageSession.parentPage}");
                         />
                     </sun:button>
                 </sun:panelGroup>

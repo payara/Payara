@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@
     </sun:button>
     <!facet pageButtonsTop>
     <sun:panelGroup id="topButtons">
-     <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.Save}"
+     <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
             onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
         <!command
             createMap(result="#{requestScope.attrsMap}");
@@ -64,9 +64,7 @@
             mapPut(map="#{requestScope.attrsMap}", key="id", value="#{name}");
 
             gf.restRequest(endpoint="#{baseUrl}/create-jmsdest", method="post", attrs="#{requestScope.attrsMap}", result="#{requestScope.result}");
-
-//            updatePhysicalDestination(name="#{pageSession.destName}", type="#{pageSession.destType}", attributes="#{pageSession.valueMap}");
-        gf.redirect(page="#{request.contextPath}/#{pageSession.parentPage}");
+            gf.redirect(page="#{request.contextPath}/#{pageSession.parentPage}");
         />
     </sun:button>
      <sun:button id="updateButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
