@@ -93,7 +93,7 @@ public class WeldUtils {
     public static final String EXPANDED_RAR_SUFFIX = "_rar";
     public static final String EXPANDED_JAR_SUFFIX = "_jar";
 
-    public static enum BDAType { WAR, JAR, UNKNOWN };
+    public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
 
     protected static final List<String> cdiEnablingAnnotations;

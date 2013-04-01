@@ -102,6 +102,10 @@ public class WeldSniffer extends GenericSniffer {
 
         if (!isWeldArchive && archiveName != null && archiveName.endsWith(WeldUtils.EXPANDED_RAR_SUFFIX)) {
             isWeldArchive = isEntryPresent(archive, WeldUtils.META_INF_BEANS_XML);
+            if (!isWeldArchive) {
+                // Check jars in root dir of rar
+                isWeldArchive = scanLibDir(archive, "");
+            }
         }
         
         return isWeldArchive;
@@ -109,7 +113,7 @@ public class WeldSniffer extends GenericSniffer {
 
     private boolean scanLibDir(ReadableArchive archive, String libLocation) {
         boolean entryPresent = false;
-        if (libLocation != null && !libLocation.isEmpty()) { 
+        if (libLocation != null ) {
             Enumeration<String> entries = archive.entries(libLocation);
             while (entries.hasMoreElements() && !entryPresent) {
                 String entryName = entries.nextElement();

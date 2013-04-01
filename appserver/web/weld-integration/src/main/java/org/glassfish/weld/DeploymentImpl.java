@@ -74,6 +74,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 public class DeploymentImpl implements Deployment {
 
     // Keep track of our BDAs for this deployment
+    private List<BeanDeploymentArchive> rarBDAs;
     private List<BeanDeploymentArchive> jarBDAs;
     private List<BeanDeploymentArchive> warBDAs;
     private List<BeanDeploymentArchive> libJarBDAs = null;
@@ -123,14 +124,19 @@ public class DeploymentImpl implements Deployment {
         beanDeploymentArchives.add(bda);
         if (((BeanDeploymentArchiveImpl)bda).getBDAType().equals(BDAType.WAR)) {
             if (warBDAs == null) {
-                warBDAs = new ArrayList<BeanDeploymentArchive>();
+                warBDAs = new ArrayList<>();
             }
             warBDAs.add(bda);
         } else if (((BeanDeploymentArchiveImpl)bda).getBDAType().equals(BDAType.JAR)) {
             if (jarBDAs == null) {
-                jarBDAs = new ArrayList<BeanDeploymentArchive>();
+                jarBDAs = new ArrayList<>();
             }
             jarBDAs.add(bda);
+        } else if (((BeanDeploymentArchiveImpl)bda).getBDAType().equals(BDAType.RAR)) {
+            if (rarBDAs == null) {
+                rarBDAs = new ArrayList<>();
+            }
+            rarBDAs.add(bda);
         }
         idToBeanDeploymentArchive.put(bda.getId(), bda);
     }
@@ -191,13 +197,20 @@ public class DeploymentImpl implements Deployment {
                     }
                 }
 
+                // Make rars accessible to ejbs
+                if (rarBDAs != null) {
+                    for (BeanDeploymentArchive oneRarBda : rarBDAs) {
+                        oneJarBDA.getBeanDeploymentArchives().add(oneRarBda);
+                        modifiedArchive = true;
+                    }
+                }
+
                 if (modifiedArchive) {
                     int idx = getBeanDeploymentArchives().indexOf(oneJarBDA);
                     if (idx >= 0) {
                         getBeanDeploymentArchives().remove(idx);
                         getBeanDeploymentArchives().add(oneJarBDA);
                     }
-                    modifiedArchive = false;
                 }
             }
         }
@@ -219,10 +232,17 @@ public class DeploymentImpl implements Deployment {
                 }
 
                 // Make /lib jars (application) accessible
-
                 if (libJarBDAs != null) {
                     for (BeanDeploymentArchive libJarBDA : libJarBDAs) {
                         warBDA.getBeanDeploymentArchives().add(libJarBDA);
+                        modifiedArchive = true;
+                    }
+                }
+
+                // Make rars accessible to wars
+                if (rarBDAs != null) {
+                    for (BeanDeploymentArchive oneRarBda : rarBDAs) {
+                        warBDA.getBeanDeploymentArchives().add(oneRarBda);
                         modifiedArchive = true;
                     }
                 }

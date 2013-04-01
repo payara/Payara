@@ -463,22 +463,19 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                     }
                 }
                 ensureWebLibJarVisibility(webLibBDAs);
-            }
-
-            //Handle RARs. RARs are packaged differently from EJB-JARs or WARs.
-            //see 20.2 of Connectors 1.6 specification
-            //The resource adapter classes are in a jar file within the
-            //RAR archive
-            if (archive.getName().endsWith(RAR_SUFFIX) || archive.getName().endsWith(EXPANDED_RAR_SUFFIX)) {
+            } else if (archive.getName().endsWith(RAR_SUFFIX) || archive.getName().endsWith(EXPANDED_RAR_SUFFIX)) {
+                //Handle RARs. RARs are packaged differently from EJB-JARs or WARs.
+                //see 20.2 of Connectors 1.6 specification
+                //The resource adapter classes are in a jar file within the
+                //RAR archive
+                bdaType = BDAType.RAR;
                 collectRarInfo(archive);
-            }
-
-            if (archive.exists(META_INF_BEANS_XML)) {
+            } else if (archive.exists(META_INF_BEANS_XML)) {
                 if ( logger.isLoggable( FINE ) ) {
                     logger.log(FINE, CDILoggerInfo.PROCESSING_BDA_JAR, new Object []{archive.getURI()});
                 }
                 bdaType = BDAType.JAR;
-                    collectJarInfo(archive, true, true);
+                collectJarInfo(archive, true, true);
             } else if (WeldUtils.hasCDIEnablingAnnotations(context, archive.getURI())) {
                 if ( logger.isLoggable( FINE ) ) {
                     logger.log(FINE,
@@ -502,6 +499,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 //                bdaType = BDAType.UNKNOWN;
 //                collectJarInfo(archive, false);
 //            }
+
+
 
         } catch(IOException e) {
             logger.log(SEVERE, e.getLocalizedMessage(), e);
