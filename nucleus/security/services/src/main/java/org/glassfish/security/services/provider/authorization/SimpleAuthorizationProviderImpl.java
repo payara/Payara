@@ -259,6 +259,9 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
              * DAS sending a request to an instance, in which case it's
              * an administrator.
              */
+            if (secureAdmin == null) {
+                return false;
+            }
             for (Principal p : subject.getSubject().getPrincipals()) {
                 for (SecureAdminPrincipal sap : secureAdmin.getSecureAdminPrincipal()) {
                     if (sap.getDn().equals(p.getName())) {
