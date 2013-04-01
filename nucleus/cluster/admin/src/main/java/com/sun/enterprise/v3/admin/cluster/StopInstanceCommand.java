@@ -178,7 +178,6 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         // else can't check anything else.
         String nodeName = instance.getNodeRef();
         Node node = nodes.getNode(nodeName);
-        String nodeHost = node.getNodeHost();
         InstanceDirUtils insDU = new InstanceDirUtils(node, serverContext);
         // this should be replaced with method from Node config bean.
         dasPort = helper.getAdminPort(SystemPropertyConstants.DAS_SERVER_NAME);
