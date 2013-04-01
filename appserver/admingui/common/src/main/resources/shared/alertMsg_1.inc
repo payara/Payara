@@ -67,7 +67,8 @@
 <sun:alert id="pageAlert"  
             type="#{alertType}" 
             summary="#{alertSummary}"
-            detail="#{alertDetail}" >
+            detail="#{alertDetail}"
+            alt="#{alertSummary} #{alertDetail}">
     <!beforeCreate
         if ($attribute{alertSummary}){
             decodeString(str="$attribute{alertSummary}", output=>$attribute{alertSummary});
