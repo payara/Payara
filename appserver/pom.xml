@@ -61,10 +61,10 @@
     
     <properties>
         <jms-api.version>2.0-b13</jms-api.version>
-        <jsp-api.version>2.3.0</jsp-api.version>
-        <jsp-impl.version>2.3.0</jsp-impl.version>
-        <javax.el.version>3.0-b06</javax.el.version>
-        <javax.el-api.version>3.0-b07</javax.el-api.version>
+        <jsp-api.version>2.3.1</jsp-api.version>
+        <jsp-impl.version>2.3.1</jsp-impl.version>
+        <javax.el.version>3.0-b07</javax.el.version>
+        <javax.el-api.version>3.0-b08</javax.el-api.version>
         <jstl-impl.version>1.2.2</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.0-m12</mojarra.version>
