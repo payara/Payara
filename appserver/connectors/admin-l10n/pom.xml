@@ -52,8 +52,6 @@
     <artifactId>connectors-admin-l10n</artifactId>
     
     <name>Connectors admin l10n</name>
-
-
     
     <properties>
         <javadoc.skip>true</javadoc.skip>
@@ -112,5 +110,13 @@
             </resource>
         </resources>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
+            <artifactId>connectors-admin-manpage-l10n</artifactId>
+            <version>${v3-docs-l10n.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
 </project>
 

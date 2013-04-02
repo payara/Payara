@@ -665,6 +665,66 @@
                 <version>${v3-docs.version}</version>
             </dependency>            
             <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-common-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-cluster-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-corba-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-ejb-lite-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-ejb-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-jca-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-jdbc-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-common-full-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-jms-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-jruby-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-jts-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+                <artifactId>console-web-plugin-help-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+            </dependency>            
+            <dependency>
                 <groupId>javax.batch</groupId>
                 <artifactId>javax.batch-api</artifactId>
                 <version>${javax.batch-api.version}</version>

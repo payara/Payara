@@ -100,5 +100,14 @@
             </resource>
         </resources>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.docs-l10n.help-l10n</groupId>
+            <artifactId>console-jms-plugin-help-l10n</artifactId>
+            <version>${v3-docs-l10n.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
+
 </project>
 

@@ -101,4 +101,12 @@
             </resource>
         </resources>
     </build>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
+            <artifactId>web-gui-plugin-common-manpage-l10n</artifactId>
+            <version>${v3-docs-l10n.version}</version>
+            <type>zip</type>
+        </dependency>
+    </dependencies>
 </project>

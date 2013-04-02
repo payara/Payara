@@ -125,6 +125,7 @@
         <btrace.version>1.0.5</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <v3-docs.version>4.0-b26</v3-docs.version>
+        <v3-docs-l10n.version>4.0-b03</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>3.1</asm.version>
         <shoal.version>1.6.18</shoal.version>
@@ -911,6 +912,18 @@
                 <groupId>org.glassfish.docs.man</groupId>
                 <artifactId>osgi-cli-interactive-manpage</artifactId>
                 <version>${v3-docs.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
+                <artifactId>osgi-cli-remote-manpage-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
+                <type>zip</type>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.docs-l10n.man-l10n</groupId>
+                <artifactId>osgi-cli-interactive-manpage-l10n</artifactId>
+                <version>${v3-docs-l10n.version}</version>
                 <type>zip</type>
             </dependency>
             <!-- This is currently used by osgi-shell cmd, but can be used for others as well -->
