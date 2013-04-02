@@ -73,37 +73,44 @@
 
         <!-- Add a link under the Configuration Page, matching the tree node order  -->
         <integration-point
-                id="common_ConfigurationLink"
+                id="common_jvmConfigurationLink"
                 type="org.glassfish.admingui:configuration"
-                priority="100"
+                priority="350"
                 parentId="propSheetSection"
-                content="configuration/configurationLink.jsf"
+                content="configuration/jvmConfigurationLink.jsf"
         />
+        <integration-point
+            id="common_loggerConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="450"
+            parentId="propSheetSection"
+            content="configuration/loggerConfigurationLink.jsf"
+            />
         <integration-point
                 id="common_securityLink"
                 type="org.glassfish.admingui:configuration"
-                priority="350"
+                priority="650"
                 parentId="propSheetSection"
                 content="security/configurationLink.jsf"
         />
         <integration-point
                 id="common_adminServiceLink"
                 type="org.glassfish.admingui:configuration"
-                priority="700"
+                priority="50"
                 parentId="propSheetSection"
                 content="configuration/jmxConfigurationLink.jsf"
         />
         <integration-point
                 id="web_MonitorConfigurationLink"
                 type="org.glassfish.admingui:configuration"
-                priority="800"
+                priority="500"
                 parentId="propSheetSection"
                 content="monitor/configurationLink.jsf"
         />
         <integration-point
                 id="sysPropsConfigurationLink"
                 type="org.glassfish.admingui:configuration"
-                priority="900"
+                priority="700"
                 parentId="propSheetSection"
                 content="configuration/systemPropsConfigurationLink.jsf"
         />

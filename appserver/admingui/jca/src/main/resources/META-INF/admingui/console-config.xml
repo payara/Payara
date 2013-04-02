@@ -68,7 +68,7 @@
     <integration-point
             id="jca_connectorServiceLink"
             type="org.glassfish.admingui:configuration"
-            priority="750"
+            priority="200"
             parentId="propSheetSection"
             content="connectorServiceConfigLink.jsf"
     />

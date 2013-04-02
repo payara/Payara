@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,15 +45,6 @@
         setResourceBundle(key="i18n_web" bundle="org.glassfish.web.admingui.Strings");
     />
 </event>
-<sun:property>
-    <sun:hyperlink 
-        toolTip="$resource{i18n_web.tree.httpService.tooltip}" 
-        url="/web/configuration/accessLog.jsf?configName=#{configName}"
-        >
-    <sun:image url="/resource/web/images/httpservice.gif" />
-    <sun:staticText text="$resource{i18n_web.tree.httpService}" />
-    </sun:hyperlink>
-</sun:property>
 
 <sun:property>
     <sun:hyperlink
@@ -64,45 +55,3 @@
     <sun:staticText text="$resource{i18n_web.tree.virtualServers}" />
     </sun:hyperlink>
 </sun:property>
-
-<sun:property>
-    <sun:hyperlink
-        toolTip="$resource{i18n_web.tree.grizzly.networkListeners.tooltip}"
-        url="/web/grizzly/networkListeners.jsf?configName=#{configName}"
-        >
-    <sun:image url="/resource/images/http.gif" />
-    <sun:staticText text="$resource{i18n_web.tree.grizzly.networkListeners}" />
-    </sun:hyperlink>
-</sun:property>
-
-<sun:property>
-    <sun:hyperlink
-        toolTip="$resource{i18n_web.tree.grizzly.protocols.tooltip}"
-        url="/web/grizzly/protocols.jsf?configName=#{configName}"
-        >
-    <sun:image url="/resource/images/http.gif" />
-    <sun:staticText text="$resource{i18n_web.tree.grizzly.protocols}" />
-    </sun:hyperlink>
-</sun:property>
-
-<sun:property>
-    <sun:hyperlink
-        toolTip="$resource{i18n_web.tree.grizzly.transports.tooltip}"
-        url="/web/grizzly/transports.jsf?configName=#{configName}"
-        >
-    <sun:image url="/resource/images/http.gif" />
-    <sun:staticText text="$resource{i18n_web.tree.grizzly.transports}" />
-    </sun:hyperlink>
-</sun:property>
-
-<sun:property>
-    <sun:hyperlink
-        toolTip="$resource{i18n_web.tree.threadPools.tooltip}"
-        url="/web/configuration/threadPools.jsf?configName=#{configName}"
-        >
-    <sun:image url="/resource/web/images/threadPool.gif" />
-    <sun:staticText text="$resource{i18n_web.tree.threadPools}" />
-    </sun:hyperlink>
-</sun:property>
-
-

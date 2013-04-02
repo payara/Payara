@@ -63,7 +63,7 @@
         <integration-point
                 id="commonConfigurationLink"
                 type="org.glassfish.admingui:configuration"
-                priority="650"
+                priority="600"
                 parentId="propSheetSection"
                 content="configurationLink.jsf"
         />

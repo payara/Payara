@@ -63,7 +63,7 @@
     <integration-point
             id="availabilityServiceLink"
             type="org.glassfish.admingui:configuration"
-            priority="375"
+            priority="100"
             parentId="propSheetSection"
             content="/availability/availabilityLink.jsf"/>
     <integration-point
@@ -81,7 +81,7 @@
     <integration-point
                 id="gmsLink"
                 type="org.glassfish.admingui:configuration"
-                priority="850"
+                priority="280"
                 parentId="propSheetSection"
                 content="/configuration/gmsConfigurationLink.inc"
         />

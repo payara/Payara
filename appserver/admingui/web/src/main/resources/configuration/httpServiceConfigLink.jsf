@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,23 +40,17 @@
 
 -->
 
+<event>
+    <!beforeCreate
+        setResourceBundle(key="i18n_web" bundle="org.glassfish.web.admingui.Strings");
+    />
+</event>
 <sun:property>
     <sun:hyperlink 
-        toolTip="$resource{i18n.tree.jvmSettings.tooltip}"
-        url="/common/javaConfig/serverInstJvmGeneral.jsf?configName=#{configName}"
+        toolTip="$resource{i18n_web.tree.httpService.tooltip}" 
+        url="/web/configuration/accessLog.jsf?configName=#{configName}"
         >
-        <sun:image url="/resource/images/jvm.gif" />
-        <sun:staticText text="$resource{i18n.tree.jvmSettings}" />
+    <sun:image url="/resource/web/images/httpservice.gif" />
+    <sun:staticText text="$resource{i18n_web.tree.httpService}" />
     </sun:hyperlink>
 </sun:property>
-
-<sun:property>
-    <sun:hyperlink 
-        toolTip="$resource{i18n.tree.loggerSettings.tooltip}"
-        url="/common/configuration/loggerGeneral.jsf?configName=#{configName}"
-        >
-        <sun:image url="/resource/images/logger.gif" />
-        <sun:staticText text="$resource{i18n.tree.loggerSettings}" />
-    </sun:hyperlink>
-</sun:property>
-
