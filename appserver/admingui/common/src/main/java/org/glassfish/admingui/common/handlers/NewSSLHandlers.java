@@ -207,9 +207,6 @@ public class NewSSLHandlers {
             return listCiphers;
         }
 
-    //Vector eccCiphers = breakUpCiphers(new Vector(), ciphers, "ECDH"); //NOI18N
-    //eccCiphers = breakUpCiphers(eccCiphers, ciphers, "ECDHE"); //NOI18N
-
 
     private static Vector breakUpCiphers(Vector cipherSubset, Vector allCiphers, String type){
             if (allCiphers != null){
