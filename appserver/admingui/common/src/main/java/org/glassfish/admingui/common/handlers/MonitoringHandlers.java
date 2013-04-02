@@ -84,6 +84,10 @@ public class MonitoringHandlers {
                 Map oneRow = new HashMap();
                 String name = null;
                 String moduleName=e.getKey();
+                //workaround for GLASSFISH-19722.  Skip any cloud module.
+                if(moduleName.startsWith("cloud")){
+                    continue;
+                }
                 ListIterator ni = monDisplayList.listIterator();
                 ListIterator vi = monNamesList.listIterator();
                 while (ni.hasNext() && vi.hasNext()) {
