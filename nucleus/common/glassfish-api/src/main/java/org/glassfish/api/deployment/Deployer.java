@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,12 +45,13 @@ import org.glassfish.api.container.Container;
 /**
  * A deployer is capable of deploying one type of applications.
  *
- * Deployers shoud use the ArchiveHandler to get a ClassLoader capable of loading classes
- * and resources from the archive type that his being deployed.
+ * Deployers should use the ArchiveHandler to get a ClassLoader capable of 
+ * loading classes and resources from the archive type that is being deployed.
  *
- * In all cases the ApplicationContainer subclass must return the class loader associated
- * with the application. In case the application is deployed to more than one container
- * the class loader can be shared and therefore should be retrieved from the ArchiveHandler 
+ * In all cases the ApplicationContainer subclass must return the class loader 
+ * associated with the application. In case the application is deployed to more 
+ * than one container the class loader can be shared and therefore should be 
+ * retrieved from the ArchiveHandler 
  *
  * @param <T> is the container type associated with this deployer
  * @param <U> is the ApplicationContainer implementation for this deployer
