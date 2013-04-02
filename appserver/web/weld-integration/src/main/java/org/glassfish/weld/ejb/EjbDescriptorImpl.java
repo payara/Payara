@@ -45,8 +45,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.ejb.Local;
-import javax.ejb.Remote;
 import javax.interceptor.InvocationContext;
 
 import org.jboss.weld.ejb.SessionBeanInterceptor;
@@ -119,17 +117,19 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             Set<String> localNames = sessionDesc.getLocalBusinessClassNames();
 
             // Add superinterfaces that are also marked as Local
-            Set<String> extraNames = new HashSet<String>();
-            for(String local : localNames) {
-                try {
-                    Class<?> localClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
-                    addIfLocal(localClass.getInterfaces(), extraNames);
-                } catch(ClassNotFoundException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-
-            localNames.addAll(extraNames);
+            //JJS: 4/2/13 Removing superinterfaces to track down cdi tck failures.
+            // http://java.net/jira/browse/GLASSFISH-19970
+//            Set<String> extraNames = new HashSet<String>();
+//            for(String local : localNames) {
+//                try {
+//                    Class<?> localClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
+//                    addIfLocal(localClass.getInterfaces(), extraNames);
+//                } catch(ClassNotFoundException e) {
+//                    throw new IllegalStateException(e);
+//                }
+//            }
+//
+//            localNames.addAll(extraNames);
 
             // Include the no-interface Local view
             if( sessionDesc.isLocalBean() ) {
@@ -255,23 +255,25 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
     }
     */
 
-    private void addIfLocal(Class<?>[] interfaces, Set<String> names) {
-        for(Class<?> next : interfaces) {
-            if( next.getAnnotation(Local.class) != null ) {
-                names.add(next.getName());
-            }
-            addIfLocal(next.getInterfaces(), names);
-        }
-    }
-    
-    private void addIfRemote(Class<?>[] interfaces, Set<String> names) {
-        for(Class<?> next : interfaces) {
-            if( next.getAnnotation(Remote.class) != null ) {
-                names.add(next.getName());
-            }
-            addIfRemote(next.getInterfaces(), names);
-        }
-    }
+    //JJS: 4/2/13 Removing superinterfaces to track down cdi tck failures.
+    // http://java.net/jira/browse/GLASSFISH-19970
+//    private void addIfLocal(Class<?>[] interfaces, Set<String> names) {
+//        for(Class<?> next : interfaces) {
+//            if( next.getAnnotation(Local.class) != null ) {
+//                names.add(next.getName());
+//            }
+//            addIfLocal(next.getInterfaces(), names);
+//        }
+//    }
+//
+//    private void addIfRemote(Class<?>[] interfaces, Set<String> names) {
+//        for(Class<?> next : interfaces) {
+//            if( next.getAnnotation(Remote.class) != null ) {
+//                names.add(next.getName());
+//            }
+//            addIfRemote(next.getInterfaces(), names);
+//        }
+//    }
     
 
     private EjbInterceptor createSystemLevelCDIInterceptor() {
@@ -328,17 +330,19 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
             Set<String> remoteNames = sessionDesc.getRemoteBusinessClassNames();
 
             // Add superinterfaces that are also marked as Local
-            Set<String> extraNames = new HashSet<String>();
-            for(String local : remoteNames) {
-                try {
-                    Class<?> remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
-                    addIfRemote(remoteClass.getInterfaces(), extraNames);
-                } catch(ClassNotFoundException e) {
-                    throw new IllegalStateException(e);
-                }
-            }
-
-            remoteNames.addAll(extraNames);
+            //JJS: 4/2/13 Removing superinterfaces to track down cdi tck failures.
+            // http://java.net/jira/browse/GLASSFISH-19970
+//            Set<String> extraNames = new HashSet<String>();
+//            for(String local : remoteNames) {
+//                try {
+//                    Class<?> remoteClass = sessionDesc.getEjbBundleDescriptor().getClassLoader().loadClass(local);
+//                    addIfRemote(remoteClass.getInterfaces(), extraNames);
+//                } catch(ClassNotFoundException e) {
+//                    throw new IllegalStateException(e);
+//                }
+//            }
+//
+//            remoteNames.addAll(extraNames);
 
             // Include the no-interface Local view
             if( sessionDesc.isLocalBean() ) {
