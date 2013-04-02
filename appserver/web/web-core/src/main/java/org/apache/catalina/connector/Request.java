@@ -103,7 +103,6 @@ import javax.servlet.http.Part;
 import javax.servlet.http.WebConnection;
 
 import com.sun.appserv.ProxyHandler;
-import com.sun.enterprise.security.integration.RealmInitializer;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Host;
@@ -120,7 +119,6 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.core.StandardWrapper;
-import org.apache.catalina.deploy.LoginConfig;
 import org.apache.catalina.fileupload.Multipart;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.session.PersistentManagerBase;
@@ -3125,8 +3123,9 @@ public class Request
             return oldSessionId;
 
         if (response != null) {
-            Cookie newCookie = new Cookie(
-                    getContext().getSessionCookieName(), newSessionId);
+            String sessionCookieName = ((getContext() != null)?
+                    getContext().getSessionCookieName() : Globals.SESSION_COOKIE_NAME);
+            Cookie newCookie = new Cookie(sessionCookieName, newSessionId);
             configureSessionCookie(newCookie);
             ((HttpResponse)response).addSessionCookieInternal(newCookie);
         }
