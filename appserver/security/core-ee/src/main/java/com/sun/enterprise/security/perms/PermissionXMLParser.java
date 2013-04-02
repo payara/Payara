@@ -44,6 +44,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -62,7 +63,7 @@ import static javax.xml.stream.XMLStreamConstants.END_ELEMENT;
 import static javax.xml.stream.XMLStreamConstants.START_ELEMENT;
 
 //import com.sun.enterprise.deploy.shared.LogMessageInfo;
-
+import com.sun.enterprise.security.integration.PermissionCreator;
 
 /**
  * Paser to parse permissions.xml packaged in a ear or in a standalone module
@@ -107,8 +108,18 @@ public class PermissionXMLParser {
             PermissionCollection permissionCollectionToBeRestricted)
             throws XMLStreamException, FileNotFoundException {
         
-        this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
-        init(new FileInputStream(permissionsXmlFile));
+        FileInputStream fi = null;
+        try {
+            this.permissionCollectionToBeRestricted = permissionCollectionToBeRestricted;
+            fi = new FileInputStream(permissionsXmlFile); 
+            init(fi);
+        } finally {
+            if (fi != null)
+                try {
+                    fi.close();
+                } catch (IOException e) {
+                }            
+        }
         
     }
 
@@ -220,15 +231,14 @@ public class PermissionXMLParser {
     
     private void addPermission(String classname, String target, String actions)  {
         try {
-            Class<?> clazz = Class.forName(classname);
-            if (clazz != null) {
-                Constructor constructor = clazz.getConstructor(String.class, String.class);
-                Permission permission = (Permission)constructor.newInstance(target, actions);
-                if (permissionCollectionToBeRestricted != null && permissionCollectionToBeRestricted.implies(permission)) {
+            Permission pm = PermissionCreator.getInstance(classname, target, actions);
+
+            if (pm != null) {
+                if (permissionCollectionToBeRestricted != null && permissionCollectionToBeRestricted.implies(pm)) {
                     throw new SecurityException("Restricted Permission Declared - fail deployment!");
                 }
                 else {
-                    pc.add(permission);
+                    pc.add(pm);
                 }
             }
         } catch (ClassNotFoundException e) {

@@ -89,6 +89,8 @@ import java.net.URLClassLoader;
 import java.net.URLStreamHandlerFactory;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -939,11 +941,28 @@ public class WebappLoader
      * Configure associated class loader permissions.
      */
     private void setPermissions() {
-
+        
         if (!Globals.IS_SECURITY_ENABLED)
             return;
         if (!(container instanceof Context))
             return;
+
+        try {
+            AccessController.doPrivileged(
+                  new PrivilegedExceptionAction() {
+                    public Object run() throws SecurityException {
+                        setPermissions_priv();
+                        return null;
+                    }
+                });
+            } catch (PrivilegedActionException e) {
+                throw (SecurityException ) e.getException();
+            }        
+    }
+    
+    
+    private void setPermissions_priv() {
+
 
         // Tell the class loader the root of the context
         ServletContext servletContext =

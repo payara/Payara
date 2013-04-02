@@ -245,6 +245,7 @@
         <ant dir="persistence/jpavalidation" target="build-deploy"/>
         <ant dir="security/helloworld" target="build-deploy"/>
         <ant dir="security/basicauth" target="build-deploy"/>
+        <ant dir="security/appperms" target="build-deploy"/>
         <ant dir="ejb/slsbnicmt" target="build-deploy"/>
         <ant dir="ejb/sfulnoi" target="build-deploy"/>
         <ant dir="bean-validator/simple-bv-servlet" target="build-deploy"/>
@@ -279,6 +280,7 @@
         <ant dir="persistence/jpavalidation" target="undeploy"/>
         <ant dir="security/helloworld" target="undeploy"/>
         <ant dir="security/basicauth" target="undeploy"/>
+        <ant dir="security/appperms" target="undeploy"/>
         <ant dir="ejb/slsbnicmt" target="undeploy"/>
         <ant dir="ejb/sfulnoi" target="undeploy"/>
         <ant dir="bean-validator/simple-bv-servlet" target="undeploy"/>

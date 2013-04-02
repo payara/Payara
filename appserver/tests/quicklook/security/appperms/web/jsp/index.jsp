@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
+<%--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -39,35 +38,14 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
--->
+--%>
 
-
-<permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns:xml="http://www.w3.org/XML/1998/namespace" 
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
-      http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
-    version="7">
-
-  <permission>
-    <class-name>java.io.FilePermission</class-name>
-    <name>/scratch/spei/bug/test/ear.txt</name>
-    <actions>read,write,delete</actions>
-  </permission>
-  <permission>
-    <class-name>java.io.FilePermission</class-name>
-    <name>/scratch/spei/bug/test/war.txt</name>
-    <actions>read,write,delete</actions>
-  </permission>
-  <permission>
-    <class-name>java.io.FilePermission</class-name>
-    <name>/scratch/spei/bug/test/ejb.txt</name>
-    <actions>read,write,delete</actions>
-  </permission>
-
-  <permission>
-    <class-name>java.lang.RuntimePermission</class-name>
-    <name>createClassLoader</name>
-  </permission>
-
-</permissions>
+<html>
+<body>
+<h2>Jpa in JavaEE environment (InjectEMF and UserTransaction)</h2>
+<h3>Relationship and Lazy Loading!</h3>
+<a href="jpa?testcase=llinit">Step 1. Persisting Entities with Mx1 Relationship</a> <br>
+<a href="jpa?testcase=llfind">Step 2. Checking Lazy Loading by Find</a> <br>
+<a href="jpa?testcase=llquery">Step 3. Checking Lazy Loading by Query</a> <br>
+</body>
+</html>

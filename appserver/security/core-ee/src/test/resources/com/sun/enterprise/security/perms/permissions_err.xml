@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -40,7 +41,6 @@
 
 -->
 
-<?xml version="1.0" encoding="UTF-8"?>
 <permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xml="http://www.w3.org/XML/1998/namespace" 
@@ -49,23 +49,23 @@
     version="7">
 
   <permission>
-    <classname>java.io.FilePermission</classname>
+    <class-name>java.io.FilePermission</class-name>
     <name>/scratch/spei/bug/test/ear.txt</name>
     <actions>read,write,delete</actions>
   </permission>
   <permission>
-<!--    <classname>java.io.FilePermission</classname>   -->
+<!--    <class-name>java.io.FilePermission</class-name>   -->
     <name>/scratch/spei/bug/test/war.txt</name>
     <actions>read,write,delete</actions>
   </permission>
   <permission>
-    <classname>java.io.FilePermission</classname>
+    <class-name>java.io.FilePermission</class-name>
     <name>/scratch/spei/bug/test/ejb.txt</name>
     <actions>read,write,delete</actions>
   </permission>
 
   <permission>
-    <classname>java.lang.RuntimePermission</classname>
+    <class-name>java.lang.RuntimePermission</class-name>
     <name>createClassLoader</name>
   </permission>
 

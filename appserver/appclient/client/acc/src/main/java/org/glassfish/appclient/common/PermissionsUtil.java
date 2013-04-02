@@ -70,7 +70,7 @@ public class PermissionsUtil {
         "META-INF/" + CLIENT_RESTRICT_PERMS_FILE;
     
     
-    //get client declared permissions which is packaged on the client's genrated jar, 
+    //get client declared permissions which is packaged on the client's generated jar, 
     //or in the client's module jar if standalone
     //result could be null
     public static PermissionCollection getClientDeclaredPermissions(ClassLoader cl) throws IOException {
@@ -163,7 +163,6 @@ public class PermissionsUtil {
         URL furl = new URL("file:" + policyFilename);
             
         return getEEPolicyPermissions(furl);
-
     }
 
 
@@ -176,7 +175,6 @@ public class PermissionsUtil {
         File pf = new File(policyPath);
         
         String  clientPath = pf.getParent() + File.separator;
-
 
         //System.out.println("clientPath  " + clientPath );
         

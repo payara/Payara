@@ -40,8 +40,6 @@
     holder.
 
 -->
-
-
 <permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
     xmlns:xml="http://www.w3.org/XML/1998/namespace" 

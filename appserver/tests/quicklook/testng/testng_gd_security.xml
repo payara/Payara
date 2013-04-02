@@ -121,6 +121,11 @@
        <class name="test.security.basicauth.BasicAuthTestNG" />
     </classes>
   </test>
+  <test name="security_app_permissions">
+    <classes>
+       <class name="test.security.appperms.ApppermsTestNG" />
+    </classes>
+  </test>
   <test name="ejb_remoteview">
     <classes>
         <class name="test.ejb.remoteview.RemoteViewTestNG"/>

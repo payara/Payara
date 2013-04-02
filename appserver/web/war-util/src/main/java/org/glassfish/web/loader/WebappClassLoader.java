@@ -705,21 +705,25 @@ public class WebappClassLoader
         }
 
         if (securityManager != null) {
+            
+            securityManager.checkSecurityAccess(
+                    DDPermissionsLoader.SET_EE_POLICY);
+
             Permission permission = null;
             if( path.startsWith("jndi:") || path.startsWith("jar:jndi:") ) {
                 if (!path.endsWith("/")) {
                     path = path + "/";
                 }
                 permission = new JndiPermission(path + "*");
-                addPermission(permission);
+                permissionList.add(permission);
             } else {
                 if (!path.endsWith(File.separator)) {
                     permission = new FilePermission(path, "read");
-                    addPermission(permission);
+                    permissionList.add(permission);
                     path = path + File.separator;
                 }
                 permission = new FilePermission(path + "-", "read");
-                addPermission(permission);
+                permissionList.add(permission);
             }
         }
     }
@@ -745,6 +749,11 @@ public class WebappClassLoader
      */
     public void addPermission(Permission permission) {
         if ((securityManager != null) && (permission != null)) {
+
+            if (securityManager != null)
+                securityManager.checkSecurityAccess(
+                        DDPermissionsLoader.SET_EE_POLICY);
+
             permissionList.add(permission);
         }
     }
@@ -763,7 +772,8 @@ public class WebappClassLoader
     }
     
     @Override
-    public void addEEPermissions(PermissionCollection eePc) {
+    public void addEEPermissions(PermissionCollection eePc) 
+         throws SecurityException {
         
         if (securityManager != null) {
             securityManager.checkSecurityAccess(

@@ -41,33 +41,56 @@
 
 -->
 
+<project name="appperms" default="default" basedir=".">
+    <property file="build.properties"/>
+    <property file="${ws.root}/gfproject/${deploy.platform}-config.properties"/>
+    
+    <description>Builds, tests, and runs the project Application packaged permissions</description>
+    <import file="${ws.root}/gfproject/build-impl.xml"/>   
+    <import file="${ws.root}/gfproject/${deploy.platform}-targets.xml"/>
+    
+    <target name="all" depends="build,deploy,redeploy,runtest,undeploy" />    
+    <target name="build-deploy" depends="build,deploy,redeploy" />
 
-<permissions xmlns="http://xmlns.jcp.org/xml/ns/javaee"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-    xmlns:xml="http://www.w3.org/XML/1998/namespace" 
-    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee 
-      http://xmlns.jcp.org/xml/ns/javaee/permissions_7.xsd"
-    version="7">
+   
+    <target name="build" depends="compile-tests">
+        <antcall target="build-impl">
+          <param name="war.classes" value="**/*Servlet.class,**/*Interface.class"/>
+	</antcall>
+        <antcall target="updateear"/>
+    </target>
+    
+    <target name="deploy">
+        <antcall target="deploy-${deploy.platform}-impl"/>
+    </target>
 
-  <permission>
-    <class-name>java.io.FilePermission</class-name>
-    <name>/scratch/spei/bug/test/ear.txt</name>
-    <actions>read,write,delete</actions>
-  </permission>
-  <permission>
-    <class-name>java.io.FilePermission</class-name>
-    <name>/scratch/spei/bug/test/war.txt</name>
-    <actions>read,write,delete</actions>
-  </permission>
-  <permission>
-    <class-name>java.io.FilePermission</class-name>
-    <name>/scratch/spei/bug/test/ejb.txt</name>
-    <actions>read,write,delete</actions>
-  </permission>
+    <target name="redeploy">
+        <antcall target="re-deploy-${deploy.platform}">
+          <param name="redeploy" value="--force=true"/>
+	</antcall>
+    </target>
+    
+    <target  name="runtest"> 
+        <antcall target="runtest-impl">
+        <param name="contextroot" value="${testng.test.name}"/>
+        <param name="testng.test.name" value="${testng.test.name}"/>
+        <param name="testng.testclient" value="ApppermsTestNG"/>
+     </antcall>
+        
+    </target>
+    
+    <target name="undeploy">
+        <antcall target="undeploy-${deploy.platform}-impl"/>
 
-  <permission>
-    <class-name>java.lang.RuntimePermission</class-name>
-    <name>createClassLoader</name>
-  </permission>
+    </target>
+    
+    <target name="updateear"> 
+       <echo message="update file ${dist.dir}/${app.file.ext} with permissions.xml" />
 
-</permissions>
+        <jar jarfile="${dist.dir}/${app.file.ext}"  update="true" >
+            <metainf  dir="metadata"  includes="permissions.xml" /> 
+        </jar>   
+    </target>
+
+
+</project>

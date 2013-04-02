@@ -692,7 +692,8 @@ public class ASURLClassLoader
     }
     
     @Override
-    public void addEEPermissions(PermissionCollection eePc) {        
+    public void addEEPermissions(PermissionCollection eePc) 
+        throws SecurityException {        
         // sm on
         if (System.getSecurityManager() != null) {
             System.getSecurityManager().checkSecurityAccess(

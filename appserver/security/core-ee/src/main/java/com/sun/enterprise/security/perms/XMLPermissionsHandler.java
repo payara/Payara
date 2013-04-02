@@ -43,34 +43,46 @@ package com.sun.enterprise.security.perms;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.security.PermissionCollection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.inject.Inject;
 import javax.xml.stream.XMLStreamException;
 
-import org.glassfish.api.deployment.DeploymentContext;
+import org.xml.sax.SAXParseException;
 
+
+import com.sun.enterprise.config.serverbeans.DasConfig;
+import com.sun.enterprise.deployment.io.PermissionsDeploymentDescriptorFile;
+import com.sun.enterprise.deployment.PermissionItemDescriptor;
+import com.sun.enterprise.deployment.PermissionsDescriptor;
 import com.sun.logging.LogDomains;
 
-
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 /**
  * 
  * Utility class to get declared permissions  
  *
  */
-public class XMLPermissionsHandler {
 
+public class XMLPermissionsHandler {
     
+    
+    private static ServiceLocator serviceLocator = Globals.getDefaultBaseServiceLocator();
+    private DasConfig dasConfig;
     
     private PermissionCollection declaredPermXml = null;
     private PermissionCollection restrictedPC = null;  //per app based restriction, not used for now
     
     private SMGlobalPolicyUtil.CommponentType compType;
     
-    static Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
+    private static final Logger logger = Logger.getLogger(LogDomains.SECURITY_LOGGER);
 
     public XMLPermissionsHandler(File base,  
             SMGlobalPolicyUtil.CommponentType type)
@@ -107,17 +119,56 @@ public class XMLPermissionsHandler {
 
         File permissionsXml = new File(base.getAbsolutePath(),
                 PermissionXMLParser.PERMISSIONS_XML);
+
         if (permissionsXml.exists()) {
-            FileInputStream restInput = new FileInputStream(permissionsXml);
-            configureAppDeclaredPermissions(restInput);
-        }
+            FileInputStream fi = null;
+            try {
+                //this one uses the Node approach
+                PermissionsDeploymentDescriptorFile pddf = new PermissionsDeploymentDescriptorFile();
+                
+                if (serviceLocator != null) {
+                    dasConfig = serviceLocator.getService(DasConfig.class);
+                    if (dasConfig != null) {
+                        String xmlValidationLevel = dasConfig.getDeployXmlValidation();
+                        if (xmlValidationLevel.equals("none"))
+                            pddf.setXMLValidation(false);
+                        else
+                            pddf.setXMLValidation(true);                    
+                        pddf.setXMLValidationLevel(xmlValidationLevel);
+                    }
+                }
+                    
+                fi = new FileInputStream(permissionsXml);
+                PermissionsDescriptor pd = (PermissionsDescriptor)pddf.read(fi);
+                
+                declaredPermXml = pd.getDeclaredPermissions();
+                
+            } catch (SAXParseException e) {
+                throw new SecurityException(e);
+            } catch (IOException e) {
+                throw new SecurityException(e);
+            } finally {
+                if (fi != null) {
+                    try {
+                        fi.close();
+                    } catch (IOException e) {
+                    }            
+                }
+            }
+
+            if (logger.isLoggable(Level.FINE)){
+                logger.fine("App declared permission = " + declaredPermXml);
+            }
+        }        
     }
 
+    
+    
     private void configureAppDeclaredPermissions(InputStream permInput)
             throws XMLStreamException, FileNotFoundException {
 
         if (permInput != null) {
-            
+            //this one has no shchema check (for client)
             PermissionXMLParser parser = new PermissionXMLParser(
                     permInput, restrictedPC);
             this.declaredPermXml = parser.getPermissions();
