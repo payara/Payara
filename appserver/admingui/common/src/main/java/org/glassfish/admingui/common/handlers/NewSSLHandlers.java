@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -175,15 +175,15 @@ public class NewSSLHandlers {
         }
         
         private static String[] getEccCiphers(Vector ciphers){
-            Vector eccCiphers = breakUpCiphers(new Vector(), ciphers, "ECDH"); //NOI18N
-            eccCiphers = breakUpCiphers(eccCiphers, ciphers, "ECDHE"); //NOI18N
+            Vector eccCiphers = breakUpCiphers(new Vector(), ciphers, "_ECDH_"); //NOI18N
+            eccCiphers = breakUpCiphers(eccCiphers, ciphers, "_ECDHE_"); //NOI18N
             String[] ciphersList = (String[])eccCiphers.toArray(new String[eccCiphers.size()]);
             return ciphersList;
         }    
         
         private static String[] getEphemeralCiphers(Vector ciphers){
-            Vector ephmCiphers = breakUpCiphers(new Vector(), ciphers, "DHE_RSA"); //NOI18N
-            ephmCiphers = breakUpCiphers(ephmCiphers, ciphers, "DHE_DSS"); //NOI18N
+            Vector ephmCiphers = breakUpCiphers(new Vector(), ciphers, "_DHE_RSA_"); //NOI18N
+            ephmCiphers = breakUpCiphers(ephmCiphers, ciphers, "_DHE_DSS_"); //NOI18N
             String[] ciphersList = (String[])ephmCiphers.toArray(new String[ephmCiphers.size()]);
             return ciphersList;
         }
@@ -206,8 +206,12 @@ public class NewSSLHandlers {
             }
             return listCiphers;
         }
-        
-        private static Vector breakUpCiphers(Vector cipherSubset, Vector allCiphers, String type){
+
+    //Vector eccCiphers = breakUpCiphers(new Vector(), ciphers, "ECDH"); //NOI18N
+    //eccCiphers = breakUpCiphers(eccCiphers, ciphers, "ECDHE"); //NOI18N
+
+
+    private static Vector breakUpCiphers(Vector cipherSubset, Vector allCiphers, String type){
             if (allCiphers != null){
                 for(int i=0; i<allCiphers.size(); i++){
                     String cipherName = allCiphers.get(i).toString();
