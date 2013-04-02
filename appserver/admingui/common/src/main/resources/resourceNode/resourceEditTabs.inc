@@ -54,12 +54,12 @@
             setPageSessionAttribute(key="has2Objects" value="#{false}");
             setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
         }
-        if(!#{pageSession.isAppScopedRes}){        
+        if(!#{pageSession.isAppScopedRes}){
             if(#{pageSession.showTargetSection}) {
                 setPageSessionAttribute(key="useString" value="#{true}");
                 setPageSessionAttribute(key="useCheckBox" value="#{false}");
                 setPageSessionAttribute(key="has2Objects" value="#{false}");
-                setPageSessionAttribute(key="showDefaultButton" value="#{false}" );
+                setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
             }
             if(!#{pageSession.showTargetSection}) {
                 setPageSessionAttribute(key="useString" value="#{false}");
