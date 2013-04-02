@@ -53,7 +53,6 @@
     <property name="title" value="GlassFish 4"/>
     <property name="description" value="GlassFish Server is a modular and lightweight Java EE 7 compliant application server. Key features include an OSGi runtime, fast startup time, maven support, and rapid iterative development with Active Redeploy.  GlassFish Server also offers feature-rich administration with the web console, command line, and RESTful API."/>
     <property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
-    <property name="source.distribution.name.base" value="GlassFish Open Source Edition 4.0"/>
     <property name="dev.authority" value="dev.glassfish.org"/>
     <property name="contrib.authority" value="contrib.glassfish.org"/>
     <property name="stable.authority" value="stable.glassfish.org"/>
@@ -131,7 +130,6 @@
         <attribute name="name" default="" />
         <sequential>
             <property name="image.name" value="@{type}"/>
-            <property name="source.distribution.name" value="${source.distribution.name.base} @{name}"/>        
             <!-- create basic image -->    
             <ant antfile="../@{type}/@{type}-distributions.xml" target="install-packages">
                 <property name="image.dir" value="${glassfish.image.dir}/${install.dir.name}"/>
