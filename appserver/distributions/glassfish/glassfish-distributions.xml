@@ -68,6 +68,7 @@
         <install.package name="glassfish-ejb-l10n"/>
         <install.package name="glassfish-cmp-l10n"/>
         <install.package name="glassfish-jms-l10n"/>
+        <install.package name="metro-l10n"/>
         <install.package name="mq-locale"/>
     </target>
 </project>

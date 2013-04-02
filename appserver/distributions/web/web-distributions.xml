@@ -64,11 +64,10 @@
     </target>
 
     <target name="install-l10n-packages">
-        <install.package name="glassfish-jca-l10n"/>
+        <install.package name="glassfish-jpa-l10n"/>
         <install.package name="glassfish-jts-l10n"/>
         <install.package name="glassfish-ejb-lite-l10n"/>
-        <install.package name="glassfish-web-l10n"/>
-        <install.package name="glassfish-jdbc-l10n"/>
+        <install.package name="glassfish-registration-l10n"/>
         <install.package name="glassfish-gui-l10n"/>
     </target>
 </project>

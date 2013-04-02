@@ -55,20 +55,26 @@
         <install.package name="jersey"/>
         <install.package name="glassfish-management"/>
         <install.package name="glassfish-corba-base"/>
-        <install.package name="glassfish-grizzly-full"/>
+	<install.package name="glassfish-grizzly-full"/>
+	<install.package name="glassfish-common-web"/>
         <install.package name="glassfish-ha"/>
         <install.package name="glassfish-jca"/>
         <install.package name="glassfish-jta"/>
         <install.package name="glassfish-web"/>
-        <install.package name="glassfish-jdbc"/>
+	<install.package name="glassfish-jdbc"/>
+	<install.package name="glassfish-jmx"/>
         <install.package name="pkg-java"/>
     </target>
 
     <target name="install-l10n-packages">
-        <install.package name="glassfish-common-l10n"/>
+        <install.package name="glassfish-nucleus-l10n"/>
+	<install.package name="glassfish-common-l10n"/>
+        <install.package name="glassfish-common-web-l10n"/>
         <install.package name="glassfish-cluster-l10n"/>
         <install.package name="glassfish-jca-l10n"/>
         <install.package name="glassfish-web-l10n"/>
+        <install.package name="glassfish-jta-l10n"/>
         <install.package name="glassfish-jdbc-l10n"/>
+        <install.package name="glassfish-management-l10n"/>
     </target>
 </project>
