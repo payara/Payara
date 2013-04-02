@@ -40,17 +40,19 @@
 
 package org.glassfish.concurrent.runtime;
 
+import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 
+import javax.security.auth.Subject;
 import java.io.IOException;
 
 public class InvocationContext implements ContextHandle {
 
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
-    private AppServSecurityContext securityContext;
+    private transient AppServSecurityContext securityContext;
 
     static final long serialVersionUID = 268374345047242571L;
 
@@ -73,7 +75,7 @@ public class InvocationContext implements ContextHandle {
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
+        // write values for invocation
         String componentId = null;
         String appName = null;
         String moduleName = null;
@@ -85,14 +87,46 @@ public class InvocationContext implements ContextHandle {
         out.writeObject(componentId);
         out.writeObject(appName);
         out.writeObject(moduleName);
+        // write values for securityContext
+        String principalName = null;
+        boolean defaultSecurityContext = false;
+        Subject subject = null;
+        if (securityContext != null) {
+            if (securityContext.getCallerPrincipal() != null) {
+                principalName = securityContext.getCallerPrincipal().getName();
+                subject = securityContext.getSubject();
+                // Clear principal set to avoid ClassNotFoundException during deserialization.
+                // It will be set by AppServSecurityContext.newInstance in readObject().
+                subject.getPrincipals().clear();
+            }
+            if (securityContext == SecurityContext.getDefaultSecurityContext()) {
+                defaultSecurityContext = true;
+            }
+        }
+        out.writeObject(principalName);
+        out.writeBoolean(defaultSecurityContext);
+        out.writeObject(subject);
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
-        in.defaultReadObject();
+        // reconstruct invocation
         String componentId = (String) in.readObject();
         String appName = (String) in.readObject();
         String moduleName = (String) in.readObject();
         invocation = createComponentInvocation(componentId, appName, moduleName);
+        // reconstruct securityContext
+        String principalName = (String) in.readObject();
+        boolean defaultSecurityContext = in.readBoolean();
+        Subject subject = (Subject) in.readObject();
+        if (principalName != null) {
+            if (defaultSecurityContext) {
+                securityContext = SecurityContext.getDefaultSecurityContext();
+            }
+            else {
+                AppServSecurityContext appServSecurityContext = ConcurrentRuntime.getRuntime().getSecurityContext();
+                securityContext = appServSecurityContext.newInstance(principalName, subject, null);
+            }
+        }
         //TODO re-initialize these fields
         contextClassLoader = null;
     }
