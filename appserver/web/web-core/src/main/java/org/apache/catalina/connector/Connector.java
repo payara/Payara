@@ -363,6 +363,12 @@ public class Connector
     private int maxPostSize = 2 * 1024 * 1024;
 
     /**
+     * Maximum size of a POST which will be saved by the container
+     * during authentication. 4kB by default
+     */
+    protected int maxSavePostSize = 4 * 1024;
+
+    /**
      * Has this component been initialized yet?
      */
     protected boolean initialized = false;
@@ -794,6 +800,29 @@ public class Connector
     public void setMaxPostSize(int maxPostSize) {
         this.maxPostSize = maxPostSize;
         setProperty("maxPostSize", String.valueOf(maxPostSize));
+    }
+
+    /**
+     * Return the maximum size of a POST which will be saved by the container
+     * during authentication.
+     */
+    public int getMaxSavePostSize() {
+
+        return (maxSavePostSize);
+
+    }
+
+    /**
+     * Set the maximum size of a POST which will be saved by the container
+     * during authentication.
+     *
+     * @param maxSavePostSize The new maximum size in bytes of a POST which will
+     * be saved by the container during authentication.
+     */
+    public void setMaxSavePostSize(int maxSavePostSize) {
+
+        this.maxSavePostSize = maxSavePostSize;
+        setProperty("maxSavePostSize", String.valueOf(maxSavePostSize));
     }
 
     /**

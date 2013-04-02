@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@
 package org.apache.catalina;
 
 import javax.servlet.http.Cookie;
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -135,4 +136,12 @@ public interface HttpResponse
     public void reset(int status, String message);
 
 
+    /**
+     * Send an acknowledgment of a request.   An acknowledgment in this
+     * case is simply an HTTP response status line, i.e.
+     * <code>HTTP/1.1 [STATUS] [REASON-PHRASE]<code>.
+     *
+     * @exception java.io.IOException if an input/output error occurs
+     */
+    public void sendAcknowledgement() throws IOException;
 }

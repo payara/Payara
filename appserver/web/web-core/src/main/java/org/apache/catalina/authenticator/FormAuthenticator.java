@@ -70,10 +70,12 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 import java.io.IOException;
 import java.security.Principal;
 import java.util.*;
 import java.util.logging.Level;
+import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -387,7 +389,8 @@ public class FormAuthenticator
      * @param request The request to be restored
      * @param session The session containing the saved information
      */
-    protected boolean restoreRequest(HttpRequest request, Session session) {
+    protected boolean restoreRequest(HttpRequest request, Session session)
+            throws IOException {
 
         // Retrieve and remove the SavedRequest object from our session
         SavedRequest saved = (SavedRequest)
@@ -403,40 +406,71 @@ public class FormAuthenticator
         if (saved == null)
             return (false);
 
+        // Swallow any request body since we will be replacing it
+        // Need to do this before headers are restored as AJP connector uses
+        // content length header to determine how much data needs to be read for
+        // request body
+        byte[] buffer = new byte[4096];
+        InputStream is = request.getStream();
+        while (is.read(buffer) >= 0) {
+            // Ignore request body
+        }
+
         // Modify our current request to reflect the original one
         request.clearCookies();
         Iterator<Cookie> cookies = saved.getCookies();
         while (cookies.hasNext()) {
             request.addCookie(cookies.next());
         }
+
+        String method = saved.getMethod();
+        boolean cachable = "GET".equalsIgnoreCase(method) ||
+                "HEAD".equalsIgnoreCase(method);
         request.clearHeaders();
         Iterator<String> names = saved.getHeaderNames();
         while (names.hasNext()) {
             String name = names.next();
-            Iterator<String> values = saved.getHeaderValues(name);
-            while (values.hasNext()) {
-                request.addHeader(name, values.next());
+            // The browser isn't expecting this conditional response now.
+            // Assuming that it can quietly recover from an unexpected 412.
+            // BZ 43687
+            if(!("If-Modified-Since".equalsIgnoreCase(name) ||
+                    (cachable && "If-None-Match".equalsIgnoreCase(name)))) {
+                Iterator<String> values = saved.getHeaderValues(name);
+                while (values.hasNext()) {
+                    request.addHeader(name, values.next());
+                }
             }
         }
+
+        request.setContentLength(saved.getContentLenght());
+
         request.clearLocales();
         Iterator<Locale> locales = saved.getLocales();
         while (locales.hasNext()) {
             request.addLocale(locales.next());
         }
+
         request.clearParameters();
-        if ("POST".equalsIgnoreCase(saved.getMethod())) {
-            Iterator<String> paramNames = saved.getParameterNames();
-            while (paramNames.hasNext()) {
-                String paramName = paramNames.next();
-                String paramValues[] =
-                    saved.getParameterValues(paramName);
-                request.addParameter(paramName, paramValues);
+        // setQueryStringEncoding is done inside request.clearParameters
+
+        ByteChunk body = saved.getBody();
+
+        if (body != null) {
+            request.replayPayload(body.getBytes());
+
+            // If no content type specified, use default for POST
+            String savedContentType = saved.getContentType();
+            if (savedContentType == null && "POST".equalsIgnoreCase(method)) {
+                savedContentType = "application/x-www-form-urlencoded";
             }
+
+            request.setContentType(savedContentType);
         }
-        request.setMethod(saved.getMethod());
+
+        request.setMethod(method);
         request.setQueryString(saved.getQueryString());
-        request.setRequestURI(saved.getRequestURI());
-        return (true);
+
+        return true;
 
     }
 
@@ -537,7 +571,8 @@ public class FormAuthenticator
      */
     //START Apache bug 36136: Refactor the login and error page forward
     //private void saveRequest(HttpRequest request, Session session) {
-    protected void saveRequest(HttpRequest request, Session session) {
+    protected void saveRequest(HttpRequest request, Session session)
+            throws IOException {
     //END Apache bug 36136: Refactor the login and error page forward
 
         // Create and populate a SavedRequest object for this request
@@ -557,17 +592,35 @@ public class FormAuthenticator
                 saved.addHeader(name, value);
             }
         }
+
+        saved.setContentLength(hreq.getContentLength());
+
         Enumeration locales = hreq.getLocales();
         while (locales.hasMoreElements()) {
             Locale locale = (Locale) locales.nextElement();
             saved.addLocale(locale);
         }
-        Map<String, String[]> parameters = hreq.getParameterMap();
-        for (Map.Entry<String, String[]> e : parameters.entrySet()) {
-            String paramName = e.getKey();
-            String paramValues[] = e.getValue();
-            saved.addParameter(paramName, paramValues);
+
+        // May need to acknowledge a 100-continue expectation
+        ((HttpResponse)request.getResponse()).sendAcknowledgement();
+
+        ByteChunk body = new ByteChunk();
+        body.setLimit(request.getConnector().getMaxSavePostSize());
+
+        byte[] buffer = new byte[4096];
+        int bytesRead;
+        InputStream is = request.getStream();
+
+        while ( (bytesRead = is.read(buffer) ) >= 0) {
+            body.append(buffer, 0, bytesRead);
         }
+
+        // Only save the request body if there is something to save
+        if (body.getLength() > 0) {
+            saved.setContentType(hreq.getContentType());
+            saved.setBody(body);
+        }
+
         saved.setMethod(hreq.getMethod());
         saved.setQueryString(hreq.getQueryString());
         saved.setRequestURI(hreq.getRequestURI());
