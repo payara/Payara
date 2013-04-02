@@ -120,8 +120,8 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.0.0.Beta7</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <websocket-api.version>1.0-rc2</websocket-api.version>
-        <tyrus.version>1.0-b14</tyrus.version>
+        <websocket-api.version>1.0-rc3</websocket-api.version>
+        <tyrus.version>1.0-rc1</tyrus.version>
         <jsonp.version>1.0-b06</jsonp.version>
         <concurrent-api.version>1.0-b06</concurrent-api.version>
         <concurrent.version>1.0-b07</concurrent.version>
@@ -580,46 +580,6 @@
                 <version>${websocket-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-core</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-server</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-spi</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-client</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-servlet</artifactId>
-                <version>${tyrus.version}</version> 
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-grizzly</artifactId>
-                <version>${tyrus.version}</version> 
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-websocket-core</artifactId>
-                <version>${tyrus.version}</version> 
-            </dependency>
-            <dependency>
-                <groupId>org.glassfish.tyrus</groupId>
-                <artifactId>tyrus-container-glassfish-cdi</artifactId>
-                <version>${tyrus.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>javax.enterprise.concurrent</groupId>
                 <artifactId>javax.enterprise.concurrent-api</artifactId>
                 <version>${concurrent-api.version}</version>
@@ -718,10 +678,17 @@
                 <groupId>com.ibm.jbatch</groupId>
                 <artifactId>com.ibm.jbatch-ri-spi</artifactId>
                 <version>${com.ibm.jbatch-ri-spi.version}</version>
-            </dependency>            
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.tyrus</groupId>
+                <artifactId>tyrus-bom</artifactId>
+                <version>${tyrus.version}</version>
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
         </dependencies>
     </dependencyManagement>
-    
+
     <build>
         <plugins>
             <plugin>
