@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.security.cli;
+package org.glassfish.security.services.commands;
 
 //import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.*;
@@ -48,6 +48,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.logging.LogDomains;
+import java.beans.PropertyChangeEvent;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -72,6 +73,14 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.security.services.config.AuthenticationService;
+import org.glassfish.security.services.config.LoginModuleConfig;
+import org.glassfish.security.services.config.SecurityConfigurations;
+import org.glassfish.security.services.config.SecurityProvider;
+import org.glassfish.security.services.config.SecurityProviderConfig;
+import org.glassfish.security.services.impl.LDAPLoginModule;
+import org.jvnet.hk2.config.RetryableException;
+import org.jvnet.hk2.config.Transaction;
 
 /**  A convenience command to configure LDAP for administration. There are several properties and attributes that
  *   user needs to remember and that's rather user unfriendly. That's why this command is being developed.
@@ -122,6 +131,10 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     public static final String LDAPS_URL = "ldaps://";
 
     private static final Logger logger = LogDomains.getLogger(LDAPAdminAccessConfigurator.class, LogDomains.SECURITY_LOGGER);
+    
+    private static final String AUTHENTICATION_SERVICE_PROVIDER_NAME = "adminAuth";
+    private static final String FILE_REALM_SECURITY_PROVIDER_NAME = "adminFile";
+    private static final String ADMIN_FILE_LM_NAME = "adminFileLM";
 
     private Config asc;
     
@@ -131,12 +144,40 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     @AccessRequired.To("update")
     private AdminService adminService;
     
+    @AccessRequired.To("update")
+    private SecurityProvider fileRealmProvider;
+    
+    @Inject
+    private SecurityConfigurations securityConfigs;
+    
     @Override
     public boolean preAuthorization(AdminCommandContext context) {
         asc = chooseConfig();
         final SecurityService ss = asc.getSecurityService();
         adminAuthRealm = getAdminRealm(ss);
         adminService = asc.getAdminService();
+        final AuthenticationService adminAuthService = (AuthenticationService) 
+                securityConfigs.getSecurityServiceByName(AUTHENTICATION_SERVICE_PROVIDER_NAME);
+        final ActionReport report = context.getActionReport();
+        if (adminAuthService == null) {
+            report.setMessage(lsm.getString("ldap.noExistingAtnService", AUTHENTICATION_SERVICE_PROVIDER_NAME));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        fileRealmProvider = adminAuthService.getSecurityProviderByName(FILE_REALM_SECURITY_PROVIDER_NAME);
+        if (fileRealmProvider == null) {
+            report.setMessage(lsm.getString("ldap.noExistingAtnProvider", FILE_REALM_SECURITY_PROVIDER_NAME));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
+        if ( ! "LoginModule".equals(fileRealmProvider.getType())) {
+            report.setMessage(lsm.getString("ldap.fileRealmProviderNotLoginModuleType", 
+                    FILE_REALM_SECURITY_PROVIDER_NAME,
+                    adminAuthService.getName(),
+                    fileRealmProvider.getType()));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return false;
+        }
         return true;
     }
 
@@ -174,6 +215,9 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
         } catch (PropertyVetoException e) {
             rep.setMessage(e.getMessage());
             rep.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        } catch (RetryableException re) {
+            rep.setMessage(re.getMessage());
+            rep.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
 /*
         catch (NoSuchRealmException e) {
@@ -188,14 +232,18 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
 */
     }
 
-    private void configure(StringBuilder sb) throws TransactionFailure, PropertyVetoException {
+    private void configure(StringBuilder sb) throws TransactionFailure, PropertyVetoException, RetryableException {
         
-        //following things should happen transactionally - TODO replace SingleConfigCode by ConfigCode ...
         //createBackupRealm(sb, getAdminRealm(asc.getSecurityService()), getNewRealmName(asc.getSecurityService()));
-        deleteRealm(asc.getSecurityService(), sb);
-        createRealm(asc.getSecurityService(), sb);
-        configureAdminService(asc.getAdminService());
-        //configure(asc.getSecurityService(), asc.getAdminService(), sb);
+        
+        Transaction t = new Transaction();
+        final SecurityService w_asc = t.enroll(asc.getSecurityService());
+        AdminService w_adminSvc = t.enroll(asc.getAdminService());
+        deleteRealm(w_asc, sb);
+        createRealm(w_asc, sb);
+        configureAdminService(w_adminSvc);
+        updateSecurityProvider(t, fileRealmProvider, sb);
+        t.commit();
     }
 
 /*    private String getNewRealmName(SecurityService ss) {
@@ -210,6 +258,20 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
         return pref + (index+1);
     }*/
 
+    private void updateSecurityProvider(final Transaction t, final SecurityProvider w_sp,
+            final StringBuilder sb) throws TransactionFailure, PropertyVetoException {
+        for (SecurityProviderConfig spc : w_sp.getSecurityProviderConfig()) {
+            if ((spc instanceof LoginModuleConfig) && spc.getName().equals(ADMIN_FILE_LM_NAME)) {
+                final LoginModuleConfig w_lmConfig = t.enroll((LoginModuleConfig) spc);
+                w_lmConfig.setModuleClass(LDAPLoginModule.class.getName());
+                sb.append(lsm.getString("ldap.authProviderConfigOK", w_sp.getName()));
+                return;
+            }
+        }
+        throw new TransactionFailure(
+                lsm.getString("ldap.noAuthProviderConfig", w_sp.getName(), ADMIN_FILE_LM_NAME));
+    }
+    
     private AuthRealm getAdminRealm(SecurityService ss) {
         List<AuthRealm> realms = ss.getAuthRealm();
         for (AuthRealm realm : realms) {
@@ -220,49 +282,25 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     }
 
     private void configureAdminService(AdminService as) throws PropertyVetoException, TransactionFailure {
-        SingleConfigCode<AdminService> scc = new SingleConfigCode<AdminService>() {
-            @Override
-            public Object run(AdminService as) {
-                try {
-                    as.setAuthRealmName(FIXED_ADMIN_REALM_NAME);  //just in case ...
-                    return as;
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }
-        };
-        ConfigSupport.apply(scc, as);
+        as.setAuthRealmName(FIXED_ADMIN_REALM_NAME);  //just in case ...
     }
 
-    private void createRealm(SecurityService ss, final StringBuilder sb) throws TransactionFailure {
-        SingleConfigCode<SecurityService> scc = new SingleConfigCode<SecurityService>() {
-            @Override
-            public Object run(SecurityService ss) throws PropertyVetoException, TransactionFailure {
-                AuthRealm ldapr = createLDAPRealm(ss);
-                ss.getAuthRealm().add(ldapr);
-                appendNL(sb,lsm.getString("ldap.realm.setup", FIXED_ADMIN_REALM_NAME));
-                return true;
-            }
-        };
-        ConfigSupport.apply(scc, ss);
+    private void createRealm(SecurityService w_ss, final StringBuilder sb) throws TransactionFailure, PropertyVetoException {
+        AuthRealm ldapr = createLDAPRealm(w_ss);
+        w_ss.getAuthRealm().add(ldapr);
+        appendNL(sb,lsm.getString("ldap.realm.setup", FIXED_ADMIN_REALM_NAME));
     }
 
     // delete and create a new realm to replace it in a single transaction
-    private void deleteRealm(SecurityService ss, final StringBuilder sb) throws TransactionFailure {
-        SingleConfigCode<SecurityService> scc = new SingleConfigCode<SecurityService>() {
-            @Override
-            public Object run(SecurityService ss) throws PropertyVetoException, TransactionFailure {
-                AuthRealm oldAdminRealm = getAdminRealm(ss);
-                ss.getAuthRealm().remove(oldAdminRealm);
-                appendNL(sb,"...");
-                //AuthRealm ldapr = createLDAPRealm(ss);
-                //ss.getAuthRealm().add(ldapr);
-                //appendNL(sb,lsm.getString("ldap.realm.setup", FIXED_ADMIN_REALM_NAME));
-                return true;
-            }
-        };
-        ConfigSupport.apply(scc, ss);
+    private void deleteRealm(SecurityService w_ss, final StringBuilder sb) throws TransactionFailure {
+        
+        
+        AuthRealm oldAdminRealm = getAdminRealm(w_ss);
+        w_ss.getAuthRealm().remove(oldAdminRealm);
+        appendNL(sb,"...");
+        //AuthRealm ldapr = createLDAPRealm(ss);
+        //ss.getAuthRealm().add(ldapr);
+        //appendNL(sb,lsm.getString("ldap.realm.setup", FIXED_ADMIN_REALM_NAME));
     }
 
     // this had been called renameRealm, but in the SecurityConfigListener, the method authRealmUpdated actually does a create...

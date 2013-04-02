@@ -225,6 +225,9 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
             return result;
         }
         
+        protected String getAdminGroupName() {
+            return AuthorizationAdminConstants.ADMIN_GROUP;
+        }
         private boolean isSubjectTrustedForDASAndInstances(final AzSubject subject) {
             final Set<String> principalNames = new HashSet<String>();
             for (Principal p : subject.getSubject().getPrincipals()) {
@@ -239,7 +242,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
         }
 
         private boolean isSubjectAnAdministrator(final AzSubject subject) {
-            return isPrincipalType(subject, AuthorizationAdminConstants.ADMIN_GROUP) ||
+            return isPrincipalType(subject, getAdminGroupName()) ||
                     hasSecureAdminPrincipal(subject);
         }
 
