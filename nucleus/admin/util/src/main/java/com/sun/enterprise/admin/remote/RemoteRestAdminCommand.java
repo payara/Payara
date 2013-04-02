@@ -1301,7 +1301,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             throw new CommandValidationException("Code: " + HttpURLConnection.HTTP_PRECON_FAILED + ": Cached CommandModel is invalid.");
         }
         if (code == HttpURLConnection.HTTP_NOT_FOUND) {
-            throw new InvalidCommandException(urlConnection.getResponseMessage());
+            try {
+                throw new InvalidCommandException(ProprietaryReaderFactory
+                            .<String>getReader(String.class, urlConnection.getContentType())
+                            .readFrom(urlConnection.getErrorStream(), urlConnection.getContentType()));
+            } catch (IOException ioex) {
+                throw new InvalidCommandException(urlConnection.getResponseMessage());
+            }
         }
         /*
          * The DAS might be redirecting to a secure port.  If so, follow
@@ -1311,7 +1317,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             return urlConnection.getHeaderField("Location");
         }
         if (code != HttpURLConnection.HTTP_OK && code != HttpURLConnection.HTTP_INTERNAL_ERROR) {
-            throw new CommandException(strings.get("BadResponse", "" + code,
+            throw new CommandException(strings.get("BadResponse", String.valueOf(code),
                                         urlConnection.getResponseMessage()));
         }
         /*

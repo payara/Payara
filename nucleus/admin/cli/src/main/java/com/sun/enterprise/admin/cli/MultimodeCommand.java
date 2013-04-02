@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli;
 
+import static com.sun.enterprise.admin.cli.CLICommand.ERROR;
 import java.io.*;
 import java.util.*;
 
@@ -266,6 +267,7 @@ public class MultimodeCommand extends CLICommand {
                 catch (InvalidCommandException e) {
                     // not a big deal if we cannot help
                 }
+                rc = ERROR;
             }
             catch (CommandException ce) {
                 if (ce.getCause() instanceof java.net.ConnectException) {
