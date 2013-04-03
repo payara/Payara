@@ -81,7 +81,6 @@ import org.jboss.weld.injection.spi.InjectionServices;
 import org.jboss.weld.security.spi.SecurityServices;
 import org.jboss.weld.serialization.spi.ProxyServices;
 import org.jboss.weld.transaction.spi.TransactionServices;
-import org.jboss.weld.validation.spi.ValidationServices;
 import javax.inject.Inject;
 import javax.servlet.jsp.tagext.JspTag;
 
@@ -96,7 +95,6 @@ import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.web.ServletFilterMapping;
-import com.sun.logging.LogDomains;
 import org.glassfish.web.deployment.descriptor.ServletFilterDescriptor;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.jboss.weld.resources.spi.ResourceLoader;
@@ -207,6 +205,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                     bootstrap.deployBeans();
+
+
+                    bootstrap.validateBeans();
+                    bootstrap.endInitialization();
                 } catch (Throwable t) {
                     try {
                         doBootstrapShutdown(appInfo);
@@ -226,39 +228,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     //for Bean classloading to succeed. The TCL is reset
                     //to its old value here.
                     Thread.currentThread().setContextClassLoader(oldTCL);
-                }
-            }
-        } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STARTED) ) {
-            ApplicationInfo appInfo = (ApplicationInfo)event.hook();
-            WeldBootstrap bootstrap = appInfo.getTransientAppMetaData(WELD_BOOTSTRAP, 
-                WeldBootstrap.class);
-            if( bootstrap != null ) {
-                final String fAppName = appInfo.getName();
-                invocationManager.pushAppEnvironment(new ApplicationEnvironment() {
-
-                    @Override
-                    public String getName() {
-                        return fAppName;
-                    }
-                    
-                });
-                
-                try {
-                    bootstrap.validateBeans();
-                    bootstrap.endInitialization();
-                } catch (Throwable t) {
-                    try {
-                        doBootstrapShutdown(appInfo);
-                    } finally {
-                        // ignore.
-                    }
-                    String msgPrefix = getDeploymentErrorMsgPrefix( t );
-                    DeploymentException de = new DeploymentException( msgPrefix + t.getMessage());
-                    de.initCause(t);
-                    throw(de);
-                }
-                finally {
-                    invocationManager.popAppEnvironment();
                 }
             }
         } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STOPPED) ||
