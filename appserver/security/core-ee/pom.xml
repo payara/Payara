@@ -272,10 +272,5 @@
             <artifactId>libpam4j-repackaged</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>dol</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>
