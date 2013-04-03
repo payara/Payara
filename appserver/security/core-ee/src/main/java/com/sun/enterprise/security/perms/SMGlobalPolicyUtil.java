@@ -394,72 +394,33 @@ public class SMGlobalPolicyUtil {
         if (restrictedPC == null  || declaredPC == null)
             return;
 
-        //check if both restricted and delcared have AllPermission
-        checkAllPermission(declaredPC, restrictedPC);
-        
-        //remove the AllPermission item from restrictedPC
-        PermissionCollection revisedRestrictedPC =
-            removeAllPermItem(restrictedPC);
-        
         //check declared does not contain restricted
-        checkContains(declaredPC, revisedRestrictedPC);
+        checkContains(declaredPC, restrictedPC);
         
         //check restricted does not contain declared
-        checkContains(revisedRestrictedPC, declaredPC);
+        checkContains(restrictedPC, declaredPC);
 
     }
  
     
-    //check if restrictedPC and  declaredPC both have AllPermission
-    private static void checkAllPermission(PermissionCollection declaredPC, 
-            PermissionCollection restrictedPC) throws SecurityException {
-        
-        if (declaredPC == null || restrictedPC == null)
-            return;
-        
-        if (restrictedPC.implies(ALL_PERM) && declaredPC.implies(ALL_PERM))
-                throw new SecurityException("AllPermission is restricted but also declared");        
-        
-    }
-    
     //check if permissionCollection toBeCheckedPC is contained/implied by  containPC
-    private static boolean checkContains(PermissionCollection containPC, 
+    private static void checkContains(PermissionCollection containPC, 
             PermissionCollection toBeCheckedPC) throws SecurityException {
     
         if (containPC == null  || toBeCheckedPC == null)
-            return true;
+            return;
 
         Enumeration<Permission> checkEnum = toBeCheckedPC.elements();
         while (checkEnum.hasMoreElements()) {
             Permission p = checkEnum.nextElement();
             if (containPC.implies(p)) {
-                throw new SecurityException("Restricted permission " + p + " is declared in the " + containPC);
+                throw new SecurityException("Restricted permission " + p 
+                        + " is declared or implied in the " + containPC);
             }
         }
         
-        return true;        
+        return;        
     }
-    
-    //browse a PC to remove the AllPermission entry
-    private static PermissionCollection removeAllPermItem(PermissionCollection pc) {
-        if (pc == null)
-            return pc;
-        
-        if (!pc.implies(ALL_PERM))
-            return pc;
-        
-        Permissions rtnPC = new Permissions();
-        Enumeration<Permission> pcEnum = pc.elements();
-        while (pcEnum.hasMoreElements()) {
-            Permission p = pcEnum.nextElement();
-            if (ALL_PERM.equals(p))
-                continue;
-            rtnPC.add(p);
-        }
-        
-        return rtnPC;
-    }
-    
     
     /**
      * Check a permission set against a restriction of a component type

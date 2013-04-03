@@ -1,5 +1,4 @@
-/*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+/* DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
@@ -38,28 +37,41 @@
  * holder.
  */
 
-// EJB default permissions
-grant codebase "file:/module/Ejb" {
-    permission com.sun.enterprise.security.perms.VoidPermission; 
-    permission java.io.FilePermission "/scratch/ejb/*", "delete";
-};
+package com.sun.enterprise.security.perms;
 
-// Web App default permissions
-grant codebase "file:/module/Web" {
-    permission com.sun.enterprise.security.perms.VoidPermission; 
-    permission java.io.FilePermission "/scratch/servlet/*", "delete";
-};
-
-// Connector default permissions
-grant codebase "file:/module/Rar" {
-    permission com.sun.enterprise.security.perms.VoidPermission; 
-};
+import java.security.BasicPermission;
+import java.security.Permission;
 
 
-// App client default permissions
-grant codebase "file:/module/Car" {
-    permission com.sun.enterprise.security.perms.VoidPermission; 
-    permission java.io.FilePermission "/scratch/spei/bug/client/*", "delete";
-};
+/**
+ * a class used on permission restriction list to imply 
+ * "No 'AllPermission' allowed" in permissions.xml.
+ * 
+ *  This permission can not imply any other permission
+ */
+public class VoidPermission extends BasicPermission {
+
+     private static final long serialVersionUID = 5535516010244462567L;
 
 
+     public VoidPermission() {
+         this("VoidPermmission");
+     }
+     
+     public VoidPermission(String name) {
+         super(name);
+
+     }
+
+     
+     public VoidPermission(String name, String actions) {
+         super(name, actions);
+     }
+
+     
+     @Override
+     public boolean implies(Permission permission) {
+          //always return false
+          return false;
+     }
+}

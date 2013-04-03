@@ -41,6 +41,7 @@
 
 // App client default restricted permissions
 grant codebase "file:/module/Car" {
-    permission java.security.AllPermission;
+    //following restricts the use of 'java.security.AllPermission' in permissions.xml
+    permission com.sun.enterprise.security.perms.VoidPermission;
 };
 
