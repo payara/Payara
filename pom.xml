@@ -51,6 +51,11 @@
     
     <name>GlassFish Build Aggregator</name>
     
+    <scm>
+        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</developerConnection>
+    </scm>
+    
     <profiles>
         <profile>
             <id>release-phase2</id>
