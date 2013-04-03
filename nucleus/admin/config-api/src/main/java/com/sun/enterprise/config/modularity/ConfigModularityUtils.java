@@ -740,7 +740,7 @@ public final class ConfigModularityUtils {
         Method[] methods = classToQuery.getMethods();
         for (Method method : methods) {
             Class<?> rt = method.getReturnType();
-            if (rt != null && methodReturnType != null) {
+            if (rt != null) {
                 if (rt.getSimpleName().equals(methodReturnType.getSimpleName())) {
                     return method;
                 }
