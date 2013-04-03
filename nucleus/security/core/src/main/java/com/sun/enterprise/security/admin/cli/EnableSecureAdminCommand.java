@@ -85,7 +85,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 	asadmin create-ssl --type network-listener --certname s1as --ssl2enabled=false --ssl3enabled=false --clientauthenabled=false sec-admin-listener
         asadmin set configs.config.server-config.network-config.protocols.protocol.sec-admin-listener.ssl.client-auth=want
 	asadmin set configs.config.server-config.network-config.protocols.protocol.sec-admin-listener.ssl.classname=com.sun.enterprise.security.ssl.GlassfishSSLImpl
-	asadmin set configs.config.server-config.security-service.message-security-config.HttpServlet.provider-config.GFConsoleAuthModule.property.restAuthURL=https://localhost:4848/management/sessions
 
 
 	###

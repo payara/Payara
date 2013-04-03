@@ -387,7 +387,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
         private static final String CLASSNAME_VALUE = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
         private static final String AUTH_LAYER_NAME = "HttpServlet";
         private static final String PROVIDER_ID_VALUE = "GFConsoleAuthModule";
-        private static final String REST_AUTH_URL_PROPERTY_NAME = "restAuthURL";
 
         private Http writeableHttpWithFileCacheChild(final Transaction t,
                 final Protocol secAdminListenerProtocol_w) throws TransactionFailure {
@@ -458,26 +457,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
             return null;
         }
 
-        private void secureRestAuthURL(final Transaction t,
-                final Config config_w,
-                final boolean newEnabledState) throws TransactionFailure {
-            try {
-                final ProviderConfig pc = findProviderConfig(config_w);
-                if (pc == null) {
-                    return;
-                }
-                final Property p = pc.getProperty(REST_AUTH_URL_PROPERTY_NAME);
-                final Property p_w = t.enroll(p);
-                final String urlText = p_w.getValue();
-                final StringBuilder newURLString = new StringBuilder();
-                newURLString.append(newEnabledState ? "https" : "http");
-                newURLString.append("://").append(urlText.substring(urlText.indexOf("//") + "//".length()));
-                p_w.setValue(newURLString.toString());
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
         @Override
         public Work<ConfigLevelContext> enableWork() {
             return new Work<ConfigLevelContext>() {
@@ -516,7 +495,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
                                 context.topLevelContext.writableSecureAdmin().dasAlias(),
                                 context.topLevelContext.writableSecureAdmin().instanceAlias()));
 
-                    secureRestAuthURL(context.t, context.config_w, true);
                     return true;
                 }
             };
@@ -532,7 +510,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
 
                     context.deleteProtocol(SEC_ADMIN_LISTENER_PROTOCOL_NAME);
 
-                    secureRestAuthURL(context.t, context.config_w, false);
                     return true;
                 }
             };

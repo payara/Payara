@@ -76,7 +76,6 @@ public class AdminConsoleConfigUpgrade
     private static final String CLASS_NAME =
         "org.glassfish.admingui.common.security.AdminConsoleAuthModule";
     private static final String AUTH_SOURCE = "sender";
-    private static final String AUTH_URL_PROP = "restAuthURL";
     private static final String AUTH_URL_VAL_TEMPLATE =
         "http://localhost:%s/management/sessions";
     public static final String DEFAULT_ADMIN_PORT = "4848";
@@ -168,10 +167,6 @@ public class AdminConsoleConfigUpgrade
             }
 
             // add properties
-            Property urlProp = pConfig.createChild(Property.class);
-            urlProp.setName(AUTH_URL_PROP);
-            urlProp.setValue(String.format(AUTH_URL_VAL_TEMPLATE, adminPort));
-
             Property logPageProp = pConfig.createChild(Property.class);
             logPageProp.setName(LOGIN_PAGE_PROP);
             logPageProp.setValue(LOGIN_PAGE_VAL);
@@ -181,7 +176,6 @@ public class AdminConsoleConfigUpgrade
             logErrPage.setValue(LOGIN_ERR_PAGE_VAL);
 
             List<Property> props = pConfig.getProperty();
-            props.add(urlProp);
             props.add(logPageProp);
             props.add(logErrPage);
 

@@ -141,7 +141,6 @@
             <provider-config provider-type="server" provider-id="GFConsoleAuthModule" class-name="org.glassfish.admingui.common.security.AdminConsoleAuthModule">
                 <request-policy auth-source="sender"></request-policy>
                 <response-policy></response-policy>
-                <property name="restAuthURL" value="http://localhost:${ADMIN_LISTENER_PORT}/management/sessions"></property>
                 <property name="loginPage" value="/login.jsf"></property>
                 <property name="loginErrorPage" value="/loginError.jsf"></property>
             </provider-config>

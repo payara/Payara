@@ -87,7 +87,7 @@ import com.sun.enterprise.security.SecurityServicesUtil;
  *	as well as invoke REST requests.</p>
  */
 public class AdminConsoleAuthModule implements ServerAuthModule {
-    public static final String TOKEN_ADMIN_LISTENER_PORT = "${ADMIN_LISTENER_PORT}";
+    //public static final String TOKEN_ADMIN_LISTENER_PORT = "${ADMIN_LISTENER_PORT}";
 
     private CallbackHandler handler = null;
 
@@ -132,13 +132,6 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
     public void initialize(MessagePolicy requestPolicy, MessagePolicy responsePolicy, CallbackHandler handler, Map options) throws AuthException {
         this.handler = handler;
         if (options != null) {
-            // Save the REST URL we need to authenticate the user.
-            this.restURL = (String) options.get("restAuthURL");
-            if (restURL == null) {
-                throw new AuthException("'restAuthURL' "
-                        + "must be supplied as a property in the provider-config "
-                        + "in the domain.xml file!");
-            }
             this.loginPage = (String) options.get("loginPage");
             if (loginPage == null) {
                 throw new AuthException("'loginPage' "
@@ -154,21 +147,12 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             ServiceLocator habitat = SecurityServicesUtil.getInstance().getHabitat();
             Domain domain = habitat.getService(Domain.class);
             NetworkListener adminListener = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
-
-            if (restURL.contains(TOKEN_ADMIN_LISTENER_PORT)) {
-                restURL = restURL.replace(TOKEN_ADMIN_LISTENER_PORT, adminListener.getPort());
-            }
-
-	    String host = adminListener.getAddress();
-	    if (! ("localhost".equals(host) || "0.0.0.0".equals(host))){
-                restURL = restURL.replace("localhost", adminListener.getAddress());
-            }
-
-            //If secure admin is enabled, we need to ensure using https
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-            if (restURL.startsWith("http:") && (SecureAdmin.Util.isEnabled(secureAdmin))) {
-                restURL = restURL.replace("http:", "https:");
-            }
+            
+            final String host = adminListener.getAddress();
+            // Save the REST URL we need to authenticate the user.
+            this.restURL =  (SecureAdmin.Util.isEnabled(secureAdmin) ? "https://" : "http://") + 
+                    (host.equals("0.0.0.0") ? "localhost" : host) + ":" + adminListener.getPort() + "/management/sessions";
         }
     }
 

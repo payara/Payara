@@ -60,8 +60,6 @@ import org.glassfish.hk2.api.PerLookup;
 
 asadmin -s set configs.config.server-config.network-config.network-listeners.network-listener.admin-listener.protocol=admin-listener
 
-asadmin -s set configs.config.server-config.security-service.message-security-config.HttpServlet.provider-config.GFConsoleAuthModule.property.restAuthURL=http://localhost:4848/management/sessions
-
 asadmin -s delete-protocol sec-admin-listener
 asadmin -s delete-protocol admin-http-redirect
 asadmin -s delete-protocol pu-protocol
