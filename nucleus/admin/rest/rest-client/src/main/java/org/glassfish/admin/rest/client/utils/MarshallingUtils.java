@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -113,7 +112,7 @@ public class MarshallingUtils {
             LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_ENCODING_ERROR, ex, "UTF-8");
             throw new RuntimeException(ex);
         } catch (XMLStreamException ex) {
-            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_ERROR, ex);
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_STREAM_ERROR, ex);
         } finally {
             try {
                 if (input != null) {
@@ -154,7 +153,7 @@ public class MarshallingUtils {
             writer.close();
             return sw.toString();
         } catch (XMLStreamException ex) {
-            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_ERROR, ex);
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_STREAM_ERROR, ex);
             throw new RuntimeException(ex);
         }
     }
@@ -208,7 +207,7 @@ public class MarshallingUtils {
                 LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_ENCODING_ERROR, ex, "UTF-8");
                 throw new RuntimeException(ex);
             } catch (XMLStreamException ex) {
-                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_ERROR, ex);
+                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_STREAM_ERROR, ex);
                 throw new RuntimeException(ex);
             } finally {
                 try {
