@@ -53,6 +53,7 @@ import org.glassfish.enterprise.concurrent.spi.ContextSetupProvider;
 import org.glassfish.internal.deployment.Deployment;
 
 import javax.enterprise.concurrent.ContextService;
+import javax.enterprise.concurrent.ManagedTask;
 import javax.transaction.*;
 import java.io.IOException;
 import java.util.Map;
@@ -127,8 +128,9 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (currentInvocation != null) {
             savedInvocation = createComponentInvocation(currentInvocation);
         }
+        boolean useTransactionOfExecutionThread = transactionManager == null && useTransactionOfExecutionThread(contextObjectProperties);
         // TODO - support workarea propagation
-        return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext);
+        return new InvocationContext(savedInvocation, contextClassloader, currentSecurityContext, useTransactionOfExecutionThread);
     }
 
     @Override
@@ -157,8 +159,8 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             resetSecurityContext = securityContext.getCurrentSecurityContext();
             securityContext.setCurrentSecurityContext(handle.getSecurityContext());
         }
-        if (handle.getInvocation() != null) {
-            ComponentInvocation invocation = handle.getInvocation();
+        ComponentInvocation invocation = handle.getInvocation();
+        if (invocation != null && !handle.isUseTransactionOfExecutionThread()) {
             // Each invocation needs a ResourceTableKey that returns a unique hashCode for TransactionManager
             invocation.setResourceTableKey(new PairKey(invocation.getInstance(), Thread.currentThread()));
             invocationManager.preInvoke(invocation);
@@ -167,7 +169,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (transactionManager != null) {
             transactionManager.clearThreadTx();
         }
-        return new InvocationContext(handle.getInvocation(), resetClassLoader, resetSecurityContext);
+        return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
     @Override
@@ -183,7 +185,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (handle.getSecurityContext() != null) {
             securityContext.setCurrentSecurityContext(handle.getSecurityContext());
         }
-        if (handle.getInvocation() != null) {
+        if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
             invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
         }
         if (transactionManager != null) {
@@ -228,6 +230,17 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             newInv.setJNDIEnvironment(currInv.getJNDIEnvironment());
         }
         return newInv;
+    }
+
+    private boolean useTransactionOfExecutionThread(Map<String, String> executionProperties) {
+        return (ManagedTask.USE_TRANSACTION_OF_EXECUTION_THREAD.equals(getTransactionExecutionProperty(executionProperties)));
+    }
+
+    private String getTransactionExecutionProperty(Map<String, String> executionProperties) {
+        if (executionProperties != null && executionProperties.get(ManagedTask.TRANSACTION) != null) {
+            return executionProperties.get(ManagedTask.TRANSACTION);
+        }
+        return ManagedTask.SUSPEND;
     }
 
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {

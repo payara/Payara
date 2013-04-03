@@ -53,13 +53,16 @@ public class InvocationContext implements ContextHandle {
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
     private transient AppServSecurityContext securityContext;
+    private boolean useTransactionOfExecutionThread;
 
-    static final long serialVersionUID = 268374345047242571L;
+    static final long serialVersionUID = 5642415011655486579L;
 
-    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, AppServSecurityContext securityContext) {
+    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, AppServSecurityContext securityContext,
+                             boolean useTransactionOfExecutionThread) {
         this.invocation = invocation;
         this.contextClassLoader = contextClassLoader;
         this.securityContext = securityContext;
+        this.useTransactionOfExecutionThread = useTransactionOfExecutionThread;
     }
 
     public ComponentInvocation getInvocation() {
@@ -74,7 +77,12 @@ public class InvocationContext implements ContextHandle {
         return securityContext;
     }
 
+    public boolean isUseTransactionOfExecutionThread() {
+        return useTransactionOfExecutionThread;
+    }
+
     private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+        out.writeBoolean(useTransactionOfExecutionThread);
         // write values for invocation
         String componentId = null;
         String appName = null;
@@ -109,6 +117,7 @@ public class InvocationContext implements ContextHandle {
     }
 
     private void readObject(java.io.ObjectInputStream in) throws IOException, ClassNotFoundException {
+        useTransactionOfExecutionThread = in.readBoolean();
         // reconstruct invocation
         String componentId = (String) in.readObject();
         String appName = (String) in.readObject();

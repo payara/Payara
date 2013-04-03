@@ -41,19 +41,14 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
-import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.enterprise.concurrent.spi.TransactionHandle;
 import org.glassfish.enterprise.concurrent.spi.TransactionSetupProvider;
 
 import javax.enterprise.concurrent.ManagedTask;
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.transaction.InvalidTransactionException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -79,13 +74,6 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
                 return new TransactionHandleImpl(suspendedTxn);
             } catch (SystemException e) {
                 Logger.getLogger(this.getClass().getName()).log(Level.SEVERE, e.toString());
-            }
-        } else {
-            ComponentInvocation currInv = invocationManager.getCurrentInvocation();
-            ComponentInvocation prevInv = invocationManager.getPreviousInvocation();
-            if (currInv != null && prevInv != null) {
-                currInv.setTransaction(prevInv.getTransaction());
-                currInv.setResourceTableKey(prevInv.getResourceTableKey());
             }
         }
         return null;
