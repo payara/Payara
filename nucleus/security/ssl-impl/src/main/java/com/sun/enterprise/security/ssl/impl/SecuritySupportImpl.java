@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -141,9 +141,20 @@ public class SecuritySupportImpl extends SecuritySupport {
                 trustStorePass = keyStorePass;
             }
         }
-        if (keyStorePass == null) {
-            keyStorePass = System.getProperty(KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASS).toCharArray();
-            trustStorePass = System.getProperty(TRUSTSTORE_PASS_PROP, DEFAULT_TRUSTSTORE_PASS).toCharArray();
+        /*
+         * If we don't have a keystore password yet check the properties.
+         * Always do so for the app client case whether the passwords have been
+         * found from master password helper or not.
+         */
+        if (keyStorePass == null || isACC()) {
+            final String keyStorePassOverride = System.getProperty(KEYSTORE_PASS_PROP, DEFAULT_KEYSTORE_PASS);
+            if (keyStorePassOverride != null) {
+                keyStorePass = keyStorePassOverride.toCharArray();
+            }
+            final String trustStorePassOverride = System.getProperty(TRUSTSTORE_PASS_PROP, DEFAULT_TRUSTSTORE_PASS);
+            if (trustStorePassOverride != null){
+                trustStorePass = trustStorePassOverride.toCharArray();
+            }
         }
 
         if (!initialized) {
@@ -423,7 +434,7 @@ public class SecuritySupportImpl extends SecuritySupport {
     }
 
     public boolean isACC() {
-        return penv.getProcessType().equals(ProcessType.ACC);
+        return (penv == null ? false : penv.getProcessType().equals(ProcessType.ACC));
     }
 
     public boolean isNotServerORACC() {
