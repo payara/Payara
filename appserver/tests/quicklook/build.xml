@@ -245,7 +245,6 @@
         <ant dir="persistence/jpavalidation" target="build-deploy"/>
         <ant dir="security/helloworld" target="build-deploy"/>
         <ant dir="security/basicauth" target="build-deploy"/>
-        <ant dir="security/appperms" target="build-deploy"/>
         <ant dir="ejb/slsbnicmt" target="build-deploy"/>
         <ant dir="ejb/sfulnoi" target="build-deploy"/>
         <ant dir="bean-validator/simple-bv-servlet" target="build-deploy"/>
@@ -268,6 +267,7 @@
         -->
         <ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>
         <ant dir="wsit/jaxbosgi" target="build-deploy"/>
+        <ant dir="security/appperms" target="build-deploy"/>
     </target>
 
     <target name="undeploy">
@@ -280,7 +280,6 @@
         <ant dir="persistence/jpavalidation" target="undeploy"/>
         <ant dir="security/helloworld" target="undeploy"/>
         <ant dir="security/basicauth" target="undeploy"/>
-        <ant dir="security/appperms" target="undeploy"/>
         <ant dir="ejb/slsbnicmt" target="undeploy"/>
         <ant dir="ejb/sfulnoi" target="undeploy"/>
         <ant dir="bean-validator/simple-bv-servlet" target="undeploy"/>
@@ -301,6 +300,7 @@
         -->
         <ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>
         <ant dir="wsit/jaxbosgi" target="undeploy"/>
+        <ant dir="security/appperms" target="undeploy"/>
     </target>
 
     <!-- Target is re-definted here as didn't want to specify ws.root property -->

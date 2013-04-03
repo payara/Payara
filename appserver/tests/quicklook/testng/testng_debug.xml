@@ -115,11 +115,6 @@
        <class name="test.security.basicauth.BasicAuthTestNG" />
     </classes>
   </test>
-  <test name="security_app_permissions">
-    <classes>
-       <class name="test.security.appperms.ApppermsTestNG" />
-    </classes>
-  </test>
    <!--<test name="ejb30_session_hello">
     <classes>
        <class name="ejb30.session.hello.test.TestClient" />
