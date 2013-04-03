@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -99,7 +99,14 @@ public abstract class DigestLoginModule implements LoginModule {
             if (obj instanceof DigestCredentials) {
                 digestCredentials = (DigestCredentials) obj;
                 break;
+            } else if (obj instanceof com.sun.enterprise.security.auth.login.DigestCredentials) {
+                com.sun.enterprise.security.auth.login.DigestCredentials dc = (com.sun.enterprise.security.auth.login.DigestCredentials) obj;
+                digestCredentials = new DigestCredentials(dc.getRealmName(), 
+                        dc.getUserName(), dc.getParameters());
             }
+        }
+        if (digestCredentials == null) {
+            throw new LoginException();
         }
         DigestAlgorithmParameter [] params = digestCredentials.getParameters();
         String username = digestCredentials.getUserName();
