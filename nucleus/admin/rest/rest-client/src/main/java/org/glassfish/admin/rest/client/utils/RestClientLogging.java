@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 package org.glassfish.admin.rest.client.utils;
 
 import java.util.logging.Logger;
@@ -52,9 +51,23 @@ import org.glassfish.logging.annotation.LoggerInfo;
 public class RestClientLogging {
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.admin.rest.client.LogMessages";
-
     @LoggerInfo(subsystem = "REST", description = "REST Client Logger", publish = true)
     public static final String REST_CLIENT_LOGGER = "javax.enterprise.admin.rest.client";
-
     public static final Logger logger = Logger.getLogger(REST_CLIENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+    @LogMessageInfo(
+            message = "An unsupported encoding was requested: {0}",
+            level = "SEVERE")
+    public static final String REST_CLIENT_ENCODING_ERROR = "NCLS-RSCL-00001";
+    @LogMessageInfo(
+            message = "An error occurred while processing an XML document",
+            level = "SEVERE")
+    public static final String REST_CLIENT_XML_ERROR = "NCLS-RSCL-00002";
+    @LogMessageInfo(
+            message = "An IO exception occurred",
+            level = "SEVERE")
+    public static final String REST_CLIENT_IO_ERROR = "NCLS-RSCL-00003";
+    @LogMessageInfo(
+            message = "An error occurred while processing a JSON object",
+            level = "SEVERE")
+    public static final String REST_CLIENT_JSON_ERROR = "NCLS-RSCL-00003";
 }

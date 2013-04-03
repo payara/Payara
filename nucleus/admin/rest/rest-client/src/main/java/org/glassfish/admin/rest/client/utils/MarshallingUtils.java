@@ -44,12 +44,14 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamConstants;
@@ -59,6 +61,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.api.logging.LogHelper;
 
 /**
  *
@@ -106,16 +109,18 @@ public class MarshallingUtils {
                     }
                 }
             }
-        } catch (Exception ex) {
-            RestClientLogging.logger.log(Level.SEVERE, null, ex);
+        } catch (UnsupportedEncodingException ex) {
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_ENCODING_ERROR, ex, "UTF-8");
             throw new RuntimeException(ex);
+        } catch (XMLStreamException ex) {
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_ERROR, ex);
         } finally {
             try {
                 if (input != null) {
                     input.close();
                 }
             } catch (IOException ex) {
-                RestClientLogging.logger.log(Level.SEVERE, null, ex);
+                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_IO_ERROR, ex);
             }
         }
         return list;
@@ -148,8 +153,8 @@ public class MarshallingUtils {
             writer.flush();
             writer.close();
             return sw.toString();
-        } catch (Exception ex) {
-            RestClientLogging.logger.log(Level.SEVERE, null, ex);
+        } catch (XMLStreamException ex) {
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_ERROR, ex);
             throw new RuntimeException(ex);
         }
     }
@@ -199,8 +204,11 @@ public class MarshallingUtils {
                         }
                     }
                 }
-            } catch (Exception ex) {
-                RestClientLogging.logger.log(Level.SEVERE, null, ex);
+            } catch (UnsupportedEncodingException ex) {
+                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_ENCODING_ERROR, ex, "UTF-8");
+                throw new RuntimeException(ex);
+            } catch (XMLStreamException ex) {
+                LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_XML_ERROR, ex);
                 throw new RuntimeException(ex);
             } finally {
                 try {
@@ -208,7 +216,7 @@ public class MarshallingUtils {
                         input.close();
                     }
                 } catch (IOException ex) {
-                    RestClientLogging.logger.log(Level.SEVERE, null, ex);
+                    LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_IO_ERROR, ex);
                 }
             }
         } else {
@@ -250,7 +258,7 @@ public class MarshallingUtils {
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
 
         return map;
@@ -271,7 +279,7 @@ public class MarshallingUtils {
                 }
             }
         } catch (JSONException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
 
         return results;

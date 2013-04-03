@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU 
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest.client.utils;
 
-import com.sun.logging.LogDomains;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -49,6 +48,7 @@ import java.util.logging.Level;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.api.logging.LogHelper;
 
 /**
  *
@@ -82,8 +82,7 @@ public class Util {
                 }
             }
         } catch (JSONException e) {
-            LogDomains.getLogger(Util.class, LogDomains.ADMIN_LOGGER)
-                    .log(Level.INFO, "rest.json_parsing_exception", e.getLocalizedMessage());
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
 
         return map;
@@ -104,8 +103,7 @@ public class Util {
                 }
             }
         } catch (JSONException e) {
-            LogDomains.getLogger(Util.class, LogDomains.ADMIN_LOGGER)
-                    .log(Level.INFO, "rest.json_parsing_exception", e.getLocalizedMessage());
+            LogHelper.log(RestClientLogging.logger, Level.SEVERE, RestClientLogging.REST_CLIENT_JSON_ERROR, e);
         }
 
         return results;
