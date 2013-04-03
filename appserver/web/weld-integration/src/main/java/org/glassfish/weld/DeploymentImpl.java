@@ -63,7 +63,7 @@ import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
 import org.jboss.weld.bootstrap.api.helpers.SimpleServiceRegistry;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.bootstrap.spi.Deployment;
+import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
@@ -71,7 +71,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 /*
  * Represents a deployment of a CDI (Weld) application.
  */
-public class DeploymentImpl implements Deployment {
+public class DeploymentImpl implements CDI11Deployment {
 
     // Keep track of our BDAs for this deployment
     private List<BeanDeploymentArchive> rarBDAs;
@@ -544,4 +544,15 @@ public class DeploymentImpl implements Deployment {
     public Collection<EjbDescriptor> getDeployedEjbs() {
         return deployedEjbs;
     }
+
+    public BeanDeploymentArchive getBeanDeploymentArchive(Class<?> beanClass) {
+        for ( BeanDeploymentArchive oneBda : beanDeploymentArchives ) {
+            BeanDeploymentArchiveImpl beanDeploymentArchiveImpl = ( BeanDeploymentArchiveImpl ) oneBda;
+            if ( beanDeploymentArchiveImpl.getBeanClassObjects().contains( beanClass ) ) {
+                return oneBda;
+            }
+        }
+        return null;
+    }
+
 }
