@@ -382,7 +382,7 @@ public final class ConfigModularityUtils {
                 try {
                     m = parent.getClass().getMethod("getExtensionByType", java.lang.Class.class);
                 } catch (NoSuchMethodException e) {
-                    LOG.log(Level.INFO, "Cannot find getExtensionByType", e);
+                    LOG.log(Level.FINE, "Cannot find getExtensionByType", e);
                 }
                 if (m != null) {
                     return (ConfigBeanProxy) m.invoke(parent, clz);
@@ -739,8 +739,11 @@ public final class ConfigModularityUtils {
     public Method getMatchingGetterMethod(Class classToQuery, Class methodReturnType) {
         Method[] methods = classToQuery.getMethods();
         for (Method method : methods) {
-            if (method.getReturnType().getSimpleName().equals(methodReturnType.getSimpleName())) {
-                return method;
+            Class<?> rt = method.getReturnType();
+            if (rt != null && methodReturnType != null) {
+                if (rt.getSimpleName().equals(methodReturnType.getSimpleName())) {
+                    return method;
+                }
             }
         }
         return null;
