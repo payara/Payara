@@ -51,7 +51,6 @@
     <sun:button id="loadDefaultsButton" style="margin-left: 8pt"  rendered="#{pageSession.showDef}" primary="#{false}" text="$resource{i18n.button.LoadDefaults}"
         onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
         <!beforeCreate
-        println("------------- showDefaultButton = #{pageSession.showDefaultButton}");
             if (!#{pageSession.edit}){
                 setPageSessionAttribute(key="showDef" value="#{false}");
             }
