@@ -168,6 +168,12 @@
            <artifactId>glassfish-batch-commands</artifactId>
            <version>${project.version}</version>
        </dependency>
+       <dependency>
+           <groupId>org.glassfish.main.batch</groupId>
+           <artifactId>batch-databases</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+       </dependency>
         <dependency>
             <groupId>javax.batch</groupId>
             <artifactId>javax.batch-api</artifactId>
