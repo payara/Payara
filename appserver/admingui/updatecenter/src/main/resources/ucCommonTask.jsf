@@ -44,22 +44,17 @@
     <sun:commonTask
         text="$resource{i18n.uc.commonTask.install}"
         toolTip="$resource{i18n.uc.commonTask.installToolTip}"
-        infoLinkUrl="/com_sun_webui_jsf/help/helpwindow.jsf?&windowTitle=Help+Window&helpFile=updatecenter.html" 
-        onClick="admingui.nav.selectTreeNodeById('form:tree:uc'); 
-            parent.location='#{facesContext.externalContext.requestContextPath}/updateCenter/installed.jsf'; return false;">
+        onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:uc', '#{facesContext.externalContext.requestContextPath}/updateCenter/installed.jsf');">
     </sun:commonTask>
+
     <sun:commonTask
         text="$resource{i18n.uc.commonTask.update}"
         toolTip="$resource{i18n.uc.commonTask.updateToolTip}"
-        infoLinkUrl="/com_sun_webui_jsf/help/helpwindow.jsf?&windowTitle=Help+Window&helpFile=updatecenter.html" 
-        onClick="admingui.nav.selectTreeNodeById('form:tree:uc'); 
-            parent.location='#{facesContext.externalContext.requestContextPath}/updateCenter/update.jsf'; return false;">
+        onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:uc', '#{facesContext.externalContext.requestContextPath}/updateCenter/update.jsf');">
     </sun:commonTask>
     <sun:commonTask
         text="$resource{i18n.uc.commonTask.addOn}"
         toolTip="$resource{i18n.uc.commonTask.addOnToolTip}"
-        infoLinkUrl="/com_sun_webui_jsf/help/helpwindow.jsf?&windowTitle=Help+Window&helpFile=updatecenter.html" 
-        onClick="admingui.nav.selectTreeNodeById('form:tree:uc'); 
-            parent.location='#{facesContext.externalContext.requestContextPath}/updateCenter/addOn.jsf'; return false;">
+        onClick="return admingui.woodstock.commonTaskHandler('treeForm:tree:uc', '#{facesContext.externalContext.requestContextPath}/updateCenter/addOn.jsf');">
     </sun:commonTask>
 </sun:commonTasksGroup>
