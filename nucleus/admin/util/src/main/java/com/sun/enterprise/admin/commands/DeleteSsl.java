@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,10 +67,10 @@ import java.beans.PropertyVetoException;
 /**
  * Delete Ssl command
  * 
- * Usage: delete-ssl --type [http-listener|iiop-listener|iiop-service] 
+ * Usage: delete-ssl --type [http-listener|iiop-listener|iiop-service|protocol]
  *        [--terse=false] [--echo=false] [--interactive=true] [--host localhost] 
  *        [--port 4848|4849] [--secure | -s] [--user admin_user] 
- *        [--passwordfile file_name] [--target target(Default server)] [listener_id]
+ *        [--passwordfile file_name] [--target target(Default server)] [listener_id|protocol_id]
  *
  * @author Nandini Ektare
  */
@@ -83,7 +83,7 @@ public class DeleteSsl implements AdminCommand {
     
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteSsl.class);
 
-    @Param(name="type", acceptableValues="network-listener, http-listener, iiop-listener, iiop-service, jmx-connector")
+    @Param(name="type", acceptableValues="network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     public String type;
     
     @Param(name="listener_id", primary=true, optional=true)

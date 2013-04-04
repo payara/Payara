@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,9 +74,9 @@ import javax.inject.Named;
 /**
  * Create Ssl Command
  *
- * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service] --certname cert_name [--ssl2enabled=false]
+ * Usage: create-ssl --type [http-listener|iiop-listener|iiop-service|protocol] --certname cert_name [--ssl2enabled=false]
  * [--ssl2ciphers ssl2ciphers] [--ssl3enabled=true] [--ssl3tlsciphers ssl3tlsciphers] [--tlsenabled=true]
- * [--tlsrollbackenabled=true] [--clientauthenabled=false] [--target target(Default server)] [listener_id]
+ * [--tlsrollbackenabled=true] [--clientauthenabled=false] [--target target(Default server)] [listener_id|protocol_id]
  *
  * domain.xml element example &lt;ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false"
  * ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/&gt;
@@ -111,7 +111,7 @@ public class CreateSsl implements AdminCommand {
         new LocalStringManagerImpl(CreateSsl.class);
     @Param(name = "certname", alias="certNickname")
     String certName;
-    @Param(name = "type", acceptableValues = "network-listener, http-listener, iiop-listener, iiop-service, jmx-connector")
+    @Param(name = "type", acceptableValues = "network-listener, http-listener, iiop-listener, iiop-service, jmx-connector, protocol")
     String type;
     @Param(name = "ssl2Enabled", optional = true, defaultValue = Ssl.SSL2_ENABLED + "")
     Boolean ssl2Enabled;
@@ -192,10 +192,11 @@ public class CreateSsl implements AdminCommand {
         newSsl.setTlsRollbackEnabled(tlsrollbackenabled.toString());
     }
 
-    public Protocol findOrCreateProtocol(final String name) throws TransactionFailure {
+    public Protocol findOrCreateProtocol(final String name, final boolean create)
+    throws TransactionFailure {
         NetworkConfig networkConfig = config.getNetworkConfig();
         Protocol protocol = networkConfig.findProtocol(name);
-        if (protocol == null) {
+        if (protocol == null && create) {
             protocol = (Protocol) ConfigSupport.apply(new SingleConfigCode<Protocols>() {
                 public Object run(Protocols param) throws TransactionFailure {
                     Protocol newProtocol = param.createChild(Protocol.class);
@@ -207,6 +208,10 @@ public class CreateSsl implements AdminCommand {
             }, habitat.<Protocols>getService(Protocols.class));
         }
         return protocol;
+    }
+
+    public Protocol findOrCreateProtocol(final String name) throws TransactionFailure {
+        return findOrCreateProtocol(name, true);
     }
 
     private void addSslToJMXConnector(Config config, ActionReport report) {
