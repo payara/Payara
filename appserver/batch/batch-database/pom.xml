@@ -76,37 +76,5 @@
     -->
     <packaging>distribution-fragment</packaging>
 
-        <!--
-    <build>
-         In this module, all the files are statically stored as-is in the Subversion repository,
-         so the simple copying from src/main/resources to target/classes that Maven does by default
-         is suffice.
-
-         But in more complex scenario, one can use maven-antrun-extended-plugin and use a series of Ant tasks
-         to perform processing on resources, such as token replacement, file generation, pre-processing, etc.
-
-         The following section shows how you can do this.
-        <plugins>
-            <plugin>
-                <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-                <artifactId>maven-antrun-extended-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <configuration>
-                            <tasks>
-                                <resolveArtifact artifactId="ejb-timer-service-app"
-                                   tofile="target/classes/glassfish/lib/install/applications/ejb-timer-service-app.war"/>
-                            </tasks>
-                        </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
-       -->
 
 </project>
