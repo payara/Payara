@@ -54,6 +54,7 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Command to list batch jobs info
@@ -118,10 +119,20 @@ public class ListBatchJobExecutions
                     + "; did you mean " + ji.getInstanceId() + " ?");
                 }
             }
-            jobExecutions.add(handleJob(je, columnFormatter));
+            try {
+                jobExecutions.add(handleJob(je, columnFormatter));
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);
+            }
         } else if (instanceId != null) {
             for (JobExecution je : getJobExecutionForInstance(Long.valueOf(instanceId))) {
-                jobExecutions.add(handleJob(je, columnFormatter));
+                try {
+                    jobExecutions.add(handleJob(je, columnFormatter));
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                    logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);
+                }
             }
         } else {
             JobOperator jobOperator = BatchRuntime.getJobOperator();
@@ -132,7 +143,12 @@ public class ListBatchJobExecutions
                     if (exe != null) {
                         for (JobInstance ji : exe) {
                             for (JobExecution je : jobOperator.getJobExecutions(ji)) {
-                                jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
+                                try {
+                                    jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
+                                } catch (Exception ex) {
+                                    logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                                    logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);
+                                }
                             }
                         }
                     }
@@ -218,18 +234,26 @@ public class ListBatchJobExecutions
                     data = "" + je.getExecutionId();
                     break;
                 case BATCH_STATUS:
-                    data = je.getBatchStatus();
+                    data = je.getBatchStatus() != null ? je.getBatchStatus() : "";
                     break;
                 case EXIT_STATUS:
-                    data = je.getExitStatus();
+                    data = je.getExitStatus() != null ? je.getExitStatus() : "";
                     break;
                 case START_TIME:
-                    data = je.getStartTime().getTime();
-                    cfData[index] = je.getStartTime().toString();
+                    if (je.getStartTime() != null) {
+                        data = je.getStartTime().getTime();
+                        cfData[index] = je.getStartTime().toString();
+                    } else {
+                        data = "";
+                    }
                     break;
                 case END_TIME:
-                    data = je.getEndTime().getTime();
-                    cfData[index] = je.getEndTime().toString();
+                    if (je.getEndTime() != null) {
+                        data = je.getEndTime().getTime();
+                        cfData[index] = je.getEndTime().toString();
+                    } else {
+                        data = "";
+                    }
                     break;
                 case JOB_PARAMETERS:
                     data = je.getJobParameters() == null ? new Properties() : je.getJobParameters();

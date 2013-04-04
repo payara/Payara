@@ -68,12 +68,13 @@ public class GlassFishBatchSecurityHelper
     @Override
     public String getCurrentTag() {
         ComponentInvocation compInv = invocationManager.getCurrentInvocation();
-        return config.getName() + ":" + compInv.getAppName();
+        return compInv == null
+            ? null : (config.getName() + ":" + compInv.getAppName());
     }
 
     @Override
     public boolean isAdmin(String tag) {
         Boolean result =  invocationPrivilege.get();
-        return result != null ? result : false;
+        return result != null ? result : tag == null;
     }
 }

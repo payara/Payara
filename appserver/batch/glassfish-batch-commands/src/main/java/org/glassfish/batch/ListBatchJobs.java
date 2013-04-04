@@ -116,7 +116,12 @@ public class ListBatchJobs
             List<Map<String, Object>> jobExecutions = new ArrayList<>();
             extraProps.put("listBatchJobs", jobExecutions);
             for (JobExecution je : findJobExecutions()) {
-                jobExecutions.add(handleJob(je, columnFormatter));
+                try {
+                    jobExecutions.add(handleJob(je, columnFormatter));
+                } catch (Exception ex) {
+                    logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                    logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
+                }
             }
         }
         context.getActionReport().setMessage(columnFormatter.toString());
@@ -238,18 +243,26 @@ public class ListBatchJobs
                     data = je.getExecutionId();
                     break;
                 case BATCH_STATUS:
-                    data = je.getBatchStatus();
+                    data = je.getBatchStatus() != null ? je.getBatchStatus() : "";
                     break;
                 case EXIT_STATUS:
-                    data = je.getExitStatus();
+                    data = je.getExitStatus() != null ? je.getExitStatus() : "";
                     break;
                 case START_TIME:
-                    data = je.getStartTime().getTime();
-                    cfData[index] = je.getStartTime().toString();
+                    if (je.getStartTime() != null) {
+                        data = je.getStartTime().getTime();
+                        cfData[index] = je.getStartTime().toString();
+                    } else {
+                        data = "";
+                    }
                     break;
                 case END_TIME:
-                    data = je.getEndTime().getTime();
-                    cfData[index] = je.getEndTime().toString();
+                    if (je.getEndTime() != null) {
+                        data = je.getEndTime().getTime();
+                        cfData[index] = je.getEndTime().toString();
+                    } else {
+                        data = "";
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);

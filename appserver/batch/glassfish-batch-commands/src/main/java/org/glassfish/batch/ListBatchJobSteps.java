@@ -56,6 +56,7 @@ import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import java.util.*;
+import java.util.logging.Level;
 
 /**
  * Command to list batch jobs info
@@ -105,7 +106,12 @@ public class ListBatchJobSteps
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
         extraProps.put("listBatchJobSteps", jobExecutions);
         for (StepExecution je : findStepExecutions()) {
-            jobExecutions.add(handleJob(je, columnFormatter));
+            try {
+                jobExecutions.add(handleJob(je, columnFormatter));
+            } catch (Exception ex) {
+                logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
+                logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
+            }
         }
         context.getActionReport().setMessage(columnFormatter.toString());
     }
@@ -150,18 +156,26 @@ public class ListBatchJobSteps
                     data = stepExecution.getStepExecutionId();
                     break;
                 case BATCH_STATUS:
-                    data = stepExecution.getBatchStatus();
+                    data = stepExecution.getBatchStatus() != null ? stepExecution.getBatchStatus() : "";
                     break;
                 case EXIT_STATUS:
-                    data = stepExecution.getExitStatus();
+                    data = stepExecution.getExitStatus() != null ? stepExecution.getExitStatus() : "";
                     break;
                 case START_TIME:
-                    data = stepExecution.getStartTime().getTime();
-                    cfData[index] = stepExecution.getStartTime().toString();
+                    if (stepExecution.getStartTime() != null) {
+                        data = stepExecution.getStartTime().getTime();
+                        cfData[index] = stepExecution.getStartTime().toString();
+                    } else {
+                        data = "";
+                    }
                     break;
                 case END_TIME:
-                    data = stepExecution.getEndTime().getTime();
-                    cfData[index] = stepExecution.getEndTime().toString();
+                    if (stepExecution.getEndTime() != null) {
+                        data = stepExecution.getEndTime().getTime();
+                        cfData[index] = stepExecution.getEndTime().toString();
+                    } else {
+                        data = "";
+                    }
                     break;
                 case STEP_METRICS:
                     stepMetricsIndex = index;

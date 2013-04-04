@@ -40,6 +40,7 @@
 package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.spi.*;
+import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -73,7 +74,7 @@ import java.util.logging.Logger;
 @Service
 @RunLevel(StartupRunLevel.VAL)
 public class BatchRuntimeHelper
-    implements PostConstruct, EventListener {
+        implements PostConstruct, EventListener {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -91,12 +92,15 @@ public class BatchRuntimeHelper
     @Inject
     Events events;
 
+    @Inject
+    Config config;
+
     private GlassFishBatchExecutorServiceProvider glassFishBatchExecutorServiceProvider
             = new GlassFishBatchExecutorServiceProvider();
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
-    private static final String CREATE_TABLE_DDL_NAME = "batch_";
+    private static final String CREATE_TABLE_DDL_NAME = "/jsr352-";
 
     public void checkAndInitializeBatchRuntime() {
         if (!initialized.get()) {
@@ -104,20 +108,24 @@ public class BatchRuntimeHelper
                 if (!initialized.get()) {
                     initialized.set(true);
 //                    try {
-//                        Java2DBProcessorHelper java2DBProcessorHelper = new Java2DBProcessorHelper(this.getClass().getSimpleName());
-//                        File ddlDir = new File(serverContext.getInstallRoot(), "/lib");
-//
 //                        //Temporary fix till batch_{db_vendor}.sql is part of the distribution
 //                        File sqlFile = new File(ddlDir, "batch_derby.sql");
 //                        if (sqlFile.exists()) {
-////                            java2DBProcessorHelper.executeDDLStatement(ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, getDataSourceLookupName());
-//                            java2DBProcessorHelper.executeDDLStatement(sqlFile, getDataSourceLookupName());
+//                            java2DBProcessorHelper.executeDDLStatement(ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, getDataSourceLookupName());
+////                            java2DBProcessorHelper.executeDDLStatement(sqlFile, getDataSourceLookupName());
 //                        } else {
 //                            logger.log(Level.WARNING, sqlFile.getAbsolutePath() + " does NOT exist");
 //                        }
+
+//                        Java2DBProcessorHelper java2DBProcessorHelper = new Java2DBProcessorHelper(this.getClass().getSimpleName());
+//                        File ddlDir = new File(serverContext.getInstallRoot(), "/lib/install/databases/");
+//                        logger.log(Level.INFO, "**[1]Executing DDL for: " + ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME);
+//                        java2DBProcessorHelper.executeDDLStatement(
+//                                ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, getDataSourceLookupName());
 //                        initialized.set(true);
+//
 //                    } catch (Exception ex) {
-//                        logger.log(Level.SEVERE, "Exception during table creation ", ex);
+//                        logger.log(Level.FINE, "Exception during table creation ", ex);
 //                    }
                 }
             }
@@ -133,8 +141,8 @@ public class BatchRuntimeHelper
         batchSPIManager.registerBatchSecurityHelper(glassFishBatchSecurityHelper);
 
         try {
-            DatabaseConfigurationBean databaseConfigurationBean = new DatabaseConfigurationBean();
-            databaseConfigurationBean.setJndiName(getDataSourceLookupName());
+            DatabaseConfigurationBean databaseConfigurationBean = new GlassFishDatabaseConfigurationBean();
+//            databaseConfigurationBean.setJndiName(getDataSourceLookupName());
             databaseConfigurationBean.setSchema(getSchemaName());
             batchSPIManager.registerDatabaseConfigurationBean(databaseConfigurationBean);
         } catch (DatabaseAlreadyInitializedException daiEx) {
@@ -153,12 +161,14 @@ public class BatchRuntimeHelper
                 DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
                 Properties props = deploymentContext.getAppProps();
                 String appName = props.getProperty("defaultAppName");
-                if (! Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
-                    System.out.println("** BatchRuntimeHelper:: App Undeployed: " + appName);
+                if (!Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
+                    String tagName = config.getName() + ":" + appName;
+                    System.out.println("** BatchRuntimeHelper:: App Undeployed. tagName: " + tagName);
                     try {
                         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-                        batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(appName);
+                        batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
                     } catch (Exception ex) {
+                        logger.log(Level.INFO, "Error while purging jobs: " + ex);
                         logger.log(Level.FINE, "Error while purging jobs", ex);
                     }
                 }
@@ -178,9 +188,17 @@ public class BatchRuntimeHelper
         return batchRuntimeConfiguration.getExecutorServiceLookupName();
     }
 
+    private class GlassFishDatabaseConfigurationBean
+        extends DatabaseConfigurationBean {
+        @Override
+        public String getJndiName() {
+            checkAndInitializeBatchRuntime();
+            return getDataSourceLookupName();
+        }
+    }
 
     private class GlassFishBatchExecutorServiceProvider
-        implements ExecutorServiceProvider {
+            implements ExecutorServiceProvider {
 
         private volatile ExecutorService executorService;
 
@@ -194,17 +212,34 @@ public class BatchRuntimeHelper
             if (executorService == null) {
                 synchronized (this) {
                     if (executorService == null) {
-                        try {
-                            InitialContext initialContext = new InitialContext();
-                            executorService = (ExecutorService) initialContext.lookup(getExecutorServiceLookupName());
-                        } catch (NamingException nEx) {
-                            nEx.printStackTrace();
+                        if (System.getSecurityManager() == null)
+                            executorService = lookupExecutorService();
+                        else {
+                            java.security.AccessController.doPrivileged(
+                                    new java.security.PrivilegedAction() {
+                                        public java.lang.Object run() {
+                                            executorService = lookupExecutorService();
+                                            return null;
+                                        }
+                                    }
+                            );
                         }
                     }
                 }
             }
             return executorService;
         }
+    }
+
+    private ExecutorService lookupExecutorService() {
+        try {
+            InitialContext initialContext = new InitialContext();
+            return (ExecutorService) initialContext.lookup(getExecutorServiceLookupName());
+        } catch (NamingException nEx) {
+            nEx.printStackTrace();
+        }
+
+        return null;
     }
 
 }
