@@ -205,7 +205,7 @@ public class SecureAdminHelperImpl implements SecureAdminHelper {
          * an empty password.
          */
         if (adminRealm == null) {
-            return true;
+            return false;
         }
         for (final Enumeration<String> e = adminRealm.getUserNames(); e.hasMoreElements(); ) {
             final String username = e.nextElement();
