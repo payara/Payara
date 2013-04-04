@@ -131,6 +131,9 @@
           <property value="${com.sun.aas.instanceRoot}/generated/policy" name="repository" />
         </jacc-provider>
         <jacc-provider policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" />
+        <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
+          <property value="false" name="auditOn" />
+        </audit-module>
         <message-security-config auth-layer="SOAP">
           <provider-config provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
             <request-policy auth-source="content" />
@@ -315,6 +318,9 @@
                  <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy" />
              </jacc-provider>
              <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory" />
+             <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
+                 <property value="false" name="auditOn" />
+             </audit-module>
              <message-security-config auth-layer="SOAP">
                  <provider-config provider-type="client" provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule">
                      <request-policy auth-source="content" />
