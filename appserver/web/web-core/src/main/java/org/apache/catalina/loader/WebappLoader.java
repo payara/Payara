@@ -949,7 +949,7 @@ public class WebappLoader
 
         try {
             AccessController.doPrivileged(
-                  new PrivilegedExceptionAction() {
+                  new PrivilegedExceptionAction<Object>() {
                     public Object run() throws SecurityException {
                         setPermissions_priv();
                         return null;
