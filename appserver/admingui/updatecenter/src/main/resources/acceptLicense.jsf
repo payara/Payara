@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@
 <!composition template="/templates/default.layout"  guiTitle="$resource{i18nUC.licensePg.Title}" guiOnLoad="admingui.help.pluginId = 'common';">
 <!define name="content">
 
-#include "/common/shared/alertMsg.inc"      
+#include "/common/shared/alertMsg_1.inc"
         <sun:form id="form">
              <sun:title id="topTitle" title="$resource{i18nUC.licensePg.Title}" />
              

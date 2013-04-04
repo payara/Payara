@@ -65,7 +65,7 @@
 </event>
             <sun:form id="propertyForm">
 #include "/updateCenter/ucTabs.inc"
-#include "/common/shared/alertMsg.inc"
+#include "/common/shared/alertMsg_1.inc"
 <!-- Page Title -->
  <sun:title id="propertyContentPage" title="$resource{i18nUC.updateCenter.ConfigPageTitle}" helpText="$resource{i18nUC.updateCenter.ConfigPageTitleHelp}" >
   <!facet pageButtonsTop>
