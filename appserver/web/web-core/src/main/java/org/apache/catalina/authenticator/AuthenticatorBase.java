@@ -960,6 +960,19 @@ public abstract class AuthenticatorBase
         }
         return p;
     }
+
+    @Override
+    public void logout(HttpRequest request) throws ServletException {
+        Session session = getSession(request);
+        if (session != null) {
+            session.setPrincipal(null);
+            session.setAuthType(null);
+        }
+
+        // principal and authType set to null in the following
+        register(request, (HttpResponse)request.getResponse(), null,
+                null, null, null);
+    }
     
     // ------------------------------------------------------ Private Methods
 

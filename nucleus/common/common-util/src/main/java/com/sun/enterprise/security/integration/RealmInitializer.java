@@ -53,6 +53,11 @@ public interface RealmInitializer  {
     //TODO: FIXME, dilution paramater type from Container to Object
     public void setVirtualServer(Object container);
 
+    /**
+     * Clean up security and policy context.
+     */
+    public void logout();
+
     public void updateWebSecurityManager();
 
 }

@@ -2254,19 +2254,9 @@ public class Request
             return;
         }
         /*
-         * Pass the request (this) and, if it's an HttpServletResponse, the response.
+         * Pass the request (this).
          */
-        if (realm.isSecurityExtensionEnabled(getServletContext())) {
-            realm.logout(this, (response instanceof HttpServletResponse ? (HttpServletResponse) response : null));
-        }
-        setUserPrincipal(null);
-        setAuthType(null);
-
-        Session session = getSessionInternal(false);
-        if (session != null) {
-            session.setPrincipal(null);
-            session.setAuthType(null);
-        }
+        realm.logout(this);
     }
 
     /**

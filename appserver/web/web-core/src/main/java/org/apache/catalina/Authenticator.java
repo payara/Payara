@@ -77,4 +77,6 @@ import javax.servlet.ServletException;
 public interface Authenticator {
     public void login(String userName, char[] password, HttpRequest request)
             throws ServletException;
+
+    public void logout(HttpRequest request) throws ServletException;
 }

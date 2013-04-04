@@ -444,13 +444,15 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
     }
 
     @Override
-    public void logout(final HttpServletRequest req, final HttpServletResponse resp) {
+    public void logout(final HttpRequest req) {
+        boolean securityExtensionEnabled = isSecurityExtensionEnabled(req.getRequest().getServletContext());
         byte[] alreadyCalled = (byte[]) reentrancyStatus.get();
-        if (helper != null && alreadyCalled[0] == 0) {
+        if (securityExtensionEnabled && helper != null && alreadyCalled[0] == 0) {
             alreadyCalled[0] = 1;
-            MessageInfo messageInfo = (MessageInfo) req.getAttribute(MESSAGE_INFO);
+            MessageInfo messageInfo = (MessageInfo) req.getRequest().getAttribute(MESSAGE_INFO);
             if (messageInfo == null) {
-                messageInfo = new HttpMessageInfo((HttpServletRequest) req, (HttpServletResponse) resp);
+                messageInfo = new HttpMessageInfo((HttpServletRequest) req.getRequest(),
+                        (HttpServletResponse) req.getResponse().getResponse());
             }
             messageInfo.getMap().put(HttpServletConstants.IS_MANDATORY,
                         Boolean.TRUE.toString());
@@ -476,15 +478,39 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
             } catch (AuthException ex) {
                 throw new RuntimeException(ex);
             } finally {
-                doLogout();
+                doLogout(req, true);
                 alreadyCalled[0] = 0;
             }
         } else {
-            doLogout();
+            doLogout(req, alreadyCalled[0] == 1);
         }
     }
-    
-    private void doLogout() {
+
+    private void doLogout(HttpRequest request, boolean extensionEnabled) {
+        Context context = request.getContext();
+        Authenticator authenticator = null;
+        if (context != null) {
+            authenticator = context.getAuthenticator();
+        }
+        if (authenticator == null) {
+            throw new RuntimeException("Context or Authenticator is null");
+        }
+        try {
+            if (extensionEnabled) {
+                AuthenticatorProxy proxy = new AuthenticatorProxy(authenticator, null, null);
+                proxy.logout(request);
+            } else {
+                authenticator.logout(request);
+            }
+        } catch(Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
+        logout();
+    }
+
+    @Override
+    public void logout() {
         setSecurityContext(null);
         resetPolicyContext();
     }
@@ -686,6 +712,7 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         
         return success;
     }
+
     // BEGIN IASRI 4747594
     /**
      * Set the run-as principal into the SecurityContext when needed.

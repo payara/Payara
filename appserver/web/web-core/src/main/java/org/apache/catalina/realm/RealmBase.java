@@ -1465,7 +1465,7 @@ public abstract class RealmBase
     }
 
     @Override
-    public void logout(HttpServletRequest hreq, HttpServletResponse hres) {
+    public void logout(HttpRequest hreq) {
         // no-op
     }
 
