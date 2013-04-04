@@ -55,14 +55,11 @@ import java.util.logging.Logger;
 public class TransactionSetupProviderImpl implements TransactionSetupProvider {
 
     private transient JavaEETransactionManager transactionManager;
-    private transient InvocationManager invocationManager;
 
     static final long serialVersionUID = -856400645253308289L;
 
-    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager,
-                                        InvocationManager invocationManager) {
+    public TransactionSetupProviderImpl(JavaEETransactionManager transactionManager) {
         this.transactionManager = transactionManager;
-        this.invocationManager = invocationManager;
     }
 
     @Override
@@ -102,7 +99,6 @@ public class TransactionSetupProviderImpl implements TransactionSetupProvider {
         // re-initialize these fields
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         transactionManager = concurrentRuntime.getTransactionManager();
-        invocationManager = concurrentRuntime.getInvocationManager();
     }
 
 }

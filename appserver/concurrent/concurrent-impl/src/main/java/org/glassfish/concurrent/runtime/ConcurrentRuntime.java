@@ -52,6 +52,7 @@ import org.glassfish.concurrent.runtime.deployer.ManagedThreadFactoryConfig;
 import org.glassfish.enterprise.concurrent.*;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
 import org.jvnet.hk2.annotations.Service;
@@ -101,6 +102,9 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     @Inject
     JavaEETransactionManager transactionManager;
 
+    @Inject
+    ApplicationRegistry applicationRegistry;
+
     /**
      * Returns the ConcurrentRuntime instance.
      * It follows singleton pattern and only one instance exists at any point
@@ -145,6 +149,10 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     JavaEETransactionManager getTransactionManager() {
         return transactionManager;
+    }
+
+    ApplicationRegistry getApplicationRegistry() {
+        return applicationRegistry;
     }
 
     public synchronized ContextServiceImpl getContextService(ResourceInfo resource, ContextServiceConfig config) {
@@ -290,7 +298,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 new ContextSetupProviderImpl(invocationManager, securityContext, deployment, applications,
                                              cleanupTransaction? transactionManager: null, contextTypes);
         ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
-                new TransactionSetupProviderImpl(transactionManager, invocationManager));
+                new TransactionSetupProviderImpl(transactionManager));
         return obj;
     }
 

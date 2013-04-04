@@ -44,6 +44,8 @@ import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 
 import javax.security.auth.Subject;
 import java.io.IOException;
@@ -136,8 +138,14 @@ public class InvocationContext implements ContextHandle {
                 securityContext = appServSecurityContext.newInstance(principalName, subject, null);
             }
         }
-        //TODO re-initialize these fields
-        contextClassLoader = null;
+        // reconstruct contextClassLoader
+        ApplicationRegistry applicationRegistry = ConcurrentRuntime.getRuntime().getApplicationRegistry();
+        if (appName != null) {
+            ApplicationInfo applicationInfo = applicationRegistry.get(appName);
+            if (applicationInfo != null) {
+                contextClassLoader = applicationInfo.getAppClassLoader();
+            }
+        }
     }
 
     private ComponentInvocation createComponentInvocation(String componentId, String appName, String moduleName) {
