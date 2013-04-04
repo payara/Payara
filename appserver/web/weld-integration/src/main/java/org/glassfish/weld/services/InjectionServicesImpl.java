@@ -240,9 +240,30 @@ public class InjectionServicesImpl implements InjectionServices {
     private void validateWebServiceRef( AnnotatedField annotatedField ) {
         WebServiceRef webServiceRef = annotatedField.getAnnotation(WebServiceRef.class);
         if ( webServiceRef != null ) {
-            Class serviceClass = webServiceRef.value();
-            if ( serviceClass != null ) {
-                validateResourceClass(annotatedField, serviceClass);
+            if ( javax.xml.ws.Service.class.isAssignableFrom(annotatedField.getJavaMember().getType())) {
+                return;
+            }
+
+            if ( annotatedField.getJavaMember().getType().isInterface() ) {
+                Class serviceClass = webServiceRef.value();
+                if ( serviceClass != null ) {
+                    if ( ! javax.xml.ws.Service.class.isAssignableFrom(serviceClass)) {
+                        throw new DefinitionException( "The type of the injection point " +
+                                                       annotatedField.getJavaMember().getName() +
+                                                       " is an interface: " +
+                                                       annotatedField.getJavaMember().getType().getName() +
+                                                       ".  The @WebSreviceRef value of " +
+                                                       serviceClass +
+                                                       " is not assignable from " +
+                                                       javax.xml.ws.Service.class.getName());
+                    }
+                }
+            } else {
+                throw new DefinitionException( "The type of the injection point " +
+                                                   annotatedField.getJavaMember().getName() +
+                                                   " is " +
+                                                   annotatedField.getJavaMember().getType().getName() +
+                                                   ".  This type is invalid for a field annotated with @WebSreviceRef");
             }
         }
     }
