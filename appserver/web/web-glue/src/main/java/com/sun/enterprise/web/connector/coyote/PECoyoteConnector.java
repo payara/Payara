@@ -1188,6 +1188,7 @@ public class PECoyoteConnector extends Connector {
         setKeepAliveTimeoutInSeconds(Integer.parseInt(http.getTimeoutSeconds()));
         setAuthPassthroughEnabled(ConfigBeansUtilities.toBoolean(http.getAuthPassThroughEnabled()));
         setMaxPostSize(Integer.parseInt(http.getMaxPostSizeBytes()));
+        setMaxSavePostSize(Integer.parseInt(http.getMaxSavePostSizeBytes()));
         setProperty("compression", http.getCompression());
         setProperty("compressableMimeType", http.getCompressableMimeType());
         if (http.getNoCompressionUserAgents() != null) {
