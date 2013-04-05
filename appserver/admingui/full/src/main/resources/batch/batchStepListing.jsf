@@ -107,7 +107,7 @@
              getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
             />
 
-        <sun:tableColumn headerText="$resource{i18nf.batch.stepNameCol}"  sort="jobName"  rowHeader="$boolean{true}" id="stepName">
+        <sun:tableColumn headerText="$resource{i18nf.batch.stepNameCol}"  sort="stepName"  rowHeader="$boolean{true}" id="stepName">
             <staticText id="stepName" value="#{td.value.stepName}" />
         </sun:tableColumn>
 
