@@ -684,7 +684,7 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
      * <jacc-provider policy-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyProvider" name="simple" policy-configuration-factory-provider="com.sun.enterprise.security.jacc.provider.SimplePolicyConfigurationFactory"/>
      */
     private void createJaccProvider(SecurityService ss) throws PropertyVetoException {
-        while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("message-security-config"))) {
+        while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("audit-module"))) {
             try {
                 if (parser.getEventType() == START_ELEMENT || parser.next() == START_ELEMENT) {
                     if (parser.getLocalName().equals("jacc-provider") && ss != null) {
@@ -751,32 +751,38 @@ public class DefaultConfigUpgrade implements ConfigurationUpgrade, PostConstruct
     /* Cursor should be already be at audit-module START_ELEMENT in the template.
      * Create AuditModle config object.
      * from template:
-     * <audit-module classname="com.sun.enterprise.security.Audit" name="default">
+     * <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
      *      <property name="auditOn" value="false"/>
      * </audit-module>
      */
     private void createAuditModule(SecurityService ss) throws PropertyVetoException {
-        try {
-            if (parser.getLocalName().equals("audit-module") && ss != null) {
-                AuditModule am = ss.createChild(AuditModule.class);
-                ss.getAuditModule().add(am);
-                for (int i = 0; i < parser.getAttributeCount(); i++) {
-                    String attr = parser.getAttributeLocalName(i);
-                    String val = parser.getAttributeValue(i);
-                    if (attr.equals("classname")) {
-                        am.setClassname(val);
-                    }
-                    if (attr.equals("name")) {
-                        am.setName(val);
+        while (!(parser.getEventType() == START_ELEMENT && parser.getLocalName().equals("message-security-config"))) {
+            try {
+                if (parser.getEventType() == START_ELEMENT || parser.next() == START_ELEMENT) {
+                    if (parser.getLocalName().equals("audit-module") && ss != null) {
+                        AuditModule am = ss.createChild(AuditModule.class);
+                        ss.getAuditModule().add(am);
+                        for (int i = 0; i < parser.getAttributeCount(); i++) {
+                            String attr = parser.getAttributeLocalName(i);
+                            String val = parser.getAttributeValue(i);
+                            if (attr.equals("classname")) {
+                                am.setClassname(val);
+                            }
+                            if (attr.equals("name")) {
+                                am.setName(val);
+                            }
+                        }
+
+                        createAuditModuleProperty(am);
                     }
                 }
-
-                createAuditModuleProperty(am);
+            } catch (TransactionFailure ex) {
+                logger.log(
+                        Level.SEVERE, failureCreatingAuditModule, ex);
+            } catch (XMLStreamException ex) {
+                logger.log(
+                        Level.SEVERE, failureCreatingAuditModule, ex);
             }
-
-        } catch (TransactionFailure ex) {
-            logger.log(
-                    Level.SEVERE, failureCreatingAuditModule, ex);
         }
 
     }
