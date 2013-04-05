@@ -85,7 +85,6 @@ public interface ManagedScheduledExecutorService extends ConfigBeanProxy,
     }
 
     @Service
-    @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 4)
     public class ManagedScheduledExecutorServiceConfigActivator extends ConfigBeanInstaller {
 
     }

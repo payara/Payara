@@ -59,6 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.util.*;
+import org.glassfish.concurrent.runtime.deployer.DefaultManagedScheduledExecutorService;
 
 /**
  * List Managed Scheduled Executor Service Resources command
@@ -91,6 +92,9 @@ public class ListManagedScheduledExecutorServices implements AdminCommand {
 
     @Inject
     private ServiceLocator habitat;
+
+    @Inject
+    private DefaultManagedScheduledExecutorService defaultService; // make sure default has been created
 
     /**
      * Executes the command with the command parameters passed as Properties

@@ -46,6 +46,7 @@ import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.concurrent.ManagedExecutorService;
+import javax.inject.Inject;
 import javax.naming.NamingException;
 
 /**
@@ -60,6 +61,9 @@ public class DefaultManagedExecutorService implements NamedNamingObjectProxy, De
     static final String DEFAULT_MANAGED_EXECUTOR_SERVICE = "java:comp/DefaultManagedExecutorService";
     static final String DEFAULT_MANAGED_EXECUTOR_SERVICE_PHYS = "concurrent/__defaultManagedExecutorService";
     private ManagedExecutorService managedExecutorService;
+    
+    // Ensure that config for this object has been created
+    @Inject org.glassfish.concurrent.config.ManagedExecutorService.ManagedExecutorServiceConfigActivator config;
 
     @Override
     public Object handle(String name) throws NamingException {

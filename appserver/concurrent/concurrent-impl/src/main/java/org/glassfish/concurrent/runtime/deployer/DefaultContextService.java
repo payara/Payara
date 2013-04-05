@@ -46,6 +46,7 @@ import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.concurrent.ContextService;
+import javax.inject.Inject;
 import javax.naming.NamingException;
 
 /**
@@ -60,6 +61,9 @@ public class DefaultContextService implements NamedNamingObjectProxy, DefaultRes
     static final String DEFAULT_CONTEXT_SERVICE = "java:comp/DefaultContextService";
     static final String DEFAULT_CONTEXT_SERVICE_PHYS = "concurrent/__defaultContextService";
     private ContextService contextService;
+    
+    // Ensure that config for this object has been created
+    @Inject org.glassfish.concurrent.config.ContextService.ContextServiceConfigActivator config;
 
     @Override
     public Object handle(String name) throws NamingException {

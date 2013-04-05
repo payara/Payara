@@ -84,7 +84,6 @@ public interface ContextService extends ConfigBeanProxy, Resource,
     }
 
     @Service
-    @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 4)
     public  class  ContextServiceConfigActivator extends ConfigBeanInstaller{
 
     }

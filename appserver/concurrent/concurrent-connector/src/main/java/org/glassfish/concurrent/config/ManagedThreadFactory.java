@@ -104,7 +104,6 @@ public interface ManagedThreadFactory extends ConfigBeanProxy, Resource,
     }
 
     @Service
-    @RunLevel(mode = RunLevel.RUNLEVEL_MODE_VALIDATING, value = 4)
     public class ManagedThreadFactoryConfigActivator extends ConfigBeanInstaller {
 
     }

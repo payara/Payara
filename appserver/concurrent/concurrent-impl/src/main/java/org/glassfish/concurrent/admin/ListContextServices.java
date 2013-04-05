@@ -58,6 +58,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import java.util.*;
+import org.glassfish.concurrent.runtime.deployer.DefaultContextService;
 
 /**
  * List Context Service Resources command
@@ -90,6 +91,9 @@ public class ListContextServices implements AdminCommand {
 
     @Inject
     private ServiceLocator habitat;
+    
+    @Inject
+    private DefaultContextService defaultService; // make sure default has been created
 
     /**
      * Executes the command with the command parameters passed as Properties
