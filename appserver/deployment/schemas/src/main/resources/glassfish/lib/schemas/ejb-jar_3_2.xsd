@@ -461,6 +461,8 @@
             cmp-version 1.x must denote a public field of the
             enterprise bean class or one of its superclasses.
             
+            Support for entity beans is optional as of EJB 3.2.
+            
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -484,6 +486,8 @@
         
         1.x
         2.x
+        
+        Support for entity beans is optional as of EJB 3.2.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -511,6 +515,8 @@
         used only for collection-valued cmr-fields. It specifies the
         type of the collection that is used.
         
+        Support for entity beans is optional as of EJB 3.2.
+        
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -530,6 +536,8 @@
             whose names consist of the name of the field
             specified by cmr-field-name in which the first
             letter is uppercased, prefixed by "get" or "set".
+            
+            Support for entity beans is optional as of EJB 3.2.
             
           </xsd:documentation>
         </xsd:annotation>
@@ -923,6 +931,8 @@
         relationship, if specified, is unique within the ejb-jar
         file.
         
+        Support for entity beans is optional as of EJB 3.2.
+        
       </xsd:documentation>
     </xsd:annotation>
     <xsd:sequence>
@@ -995,6 +1005,8 @@
         </ejb-relationship-role>
         </ejb-relation>
         
+        Support for entity beans is optional as of EJB 3.2.
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -1033,6 +1045,8 @@
             element contained in an ejb-relation element in
             which the other ejb-relationship-role
             element specifies a multiplicity of One.
+            
+            Support for entity beans is optional as of EJB 3.2.
             
           </xsd:documentation>
         </xsd:annotation>
@@ -1364,6 +1378,8 @@
     <xsd:annotation>
       <xsd:documentation>
 
+        Support for entity beans is optional as of EJB 3.2.
+        
         The entity-beanType declares an entity bean. The declaration
         consists of:
         
@@ -1492,6 +1508,8 @@
             deferred to deployment time, the prim-key-class 
             element should specify java.lang.Object.
             
+            Support for entity beans is optional as of EJB 3.2.
+            
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1526,6 +1544,8 @@
             bean whose local interface is 
             com.acme.commerce.Order might be Order. 
             
+            Support for entity beans is optional as of EJB 3.2.
+            
           </xsd:documentation>
         </xsd:annotation>
       </xsd:element>
@@ -1553,6 +1573,8 @@
             fields of the primary key class must be public, and
             their names must correspond to the field names of
             the entity bean class that comprise the key.
+            
+            Support for entity beans is optional as of EJB 3.2.
             
           </xsd:documentation>
         </xsd:annotation>
@@ -1771,6 +1793,12 @@
         are bound at the class-level and/or default-level as well as the
         method-level, both class-level and/or default-level as well as
         method-level will apply. 
+        
+        The method-name element may be used to bind a constructor-level 
+        interceptor using the unqualified name of the bean class as the value; 
+        the optional method-params elements identify the constructor if a bean 
+        class has a constructor annotated with the Inject annotation in addition 
+        to a no-arg constructor.
         
         There are four possible styles of the interceptor element syntax :
         
@@ -2130,10 +2158,13 @@
         timeout callback methods
         message-driven bean message listener method
         
-        This style may be used for stateful session bean lifecycle 
-        callback methods to specify their transaction attributes, 
-        if used with the method-intf element that contains 
-        LifecycleCallback as the value.
+        This style may also be used in combination with the 
+        method-intf element that contains LifecycleCallback as 
+        the value to specify transaction attributes of a stateful 
+        session bean PostConstruct, PreDestroy, PrePassivate, 
+        and PostActivate lifecycle callback methods or to override 
+        transaction attributes of a singleton session bean 
+        PostConstruct and PreDestroy lifecycle callback methods.
         
         2.
         <method>
@@ -2148,6 +2179,7 @@
         name.
         
         This style may be used to refer to stateful session bean
+        PostConstruct, PreDestroy, PrePassivate, and PostActivate 
         lifecycle callback methods to specify their transaction
         attributes if any of the following is true:
         there is only one method with this name in the specified 
@@ -2364,8 +2396,10 @@
         MessageEndpoint refers to the methods of a message-driven bean's
         message-listener interface.
         
-        LifecycleCallback refers to the lifecycle callback methods of 
-        a singleton or stateful session bean.
+        LifecycleCallback refers to the PostConstruct and PreDestroy
+        lifecycle callback methods of a singleton session bean and
+        to the PostConstruct, PreDestroy, PrePassivate, and PostActivate
+        lifecycle callback methods of a stateful session bean.
         
         The method-intf element must be one of the following:
         
@@ -2459,12 +2493,18 @@
         indicator to state that the method is unchecked for
         authorization, and a list of method elements.
         
-        The security roles used in the method-permissionType
-        must be defined in the security-role elements of the
-        deployment descriptor, and the methods must be methods
-        defined in the enterprise bean's no-interface view, 
-        business, home, component and/or web service endpoint 
-        interfaces.
+        Except as noted below the security roles used in the
+        method-permissionType must be defined in the security-role
+        elements of the deployment descriptor, and the methods
+        must be methods defined in the enterprise bean's no-interface
+        view, business, home, component and/or web service endpoint
+        interfaces. 
+        
+        If the role name "**" is included in the list of allowed 
+        roles, and the application has not defined in its deployment 
+        descriptor an application security role with this name, 
+        then the list of allowed roles includes every and any 
+        authenticated user.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -2513,6 +2553,8 @@
         One
         Many
         
+        Support for entity beans is optional as of EJB 3.2.
+        
       </xsd:documentation>
     </xsd:annotation>
     <xsd:simpleContent>
@@ -2537,6 +2579,8 @@
         
         Bean
         Container
+        
+        Support for entity beans is optional as of EJB 3.2.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -2626,6 +2670,8 @@
         </ejb-ql>
         </query>
         
+        Support for entity beans is optional as of EJB 3.2.
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -2651,6 +2697,8 @@
         relationship-role-sourceType is used by
         relationship-role-source elements to uniquely identify an
         entity bean.
+        
+        Support for entity beans is optional as of EJB 3.2.
         
       </xsd:documentation>
     </xsd:annotation>
@@ -2678,6 +2726,8 @@
         participate. The relationshipsType contains an optional
         description; and a list of ejb-relation elements, which
         specify the container managed relationships.
+        
+        Support for entity beans is optional as of EJB 3.2.
         
       </xsd:documentation>
     </xsd:annotation>
