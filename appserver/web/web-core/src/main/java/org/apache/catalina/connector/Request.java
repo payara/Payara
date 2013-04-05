@@ -3148,11 +3148,13 @@ public class Request
      * Create an instance of <code>HttpUpgradeHandler</code> for an given
      * class and uses it for the http protocol upgrade processing.
      *
-     * @param handlerClass The <code>ProtocolHandler</code> class used for the upgrade.
+     * @param handlerClass The <code>HttpUpgradeHandler</code> class used for the upgrade.
      *
      * @return an instance of the <code>HttpUpgradeHandler</code>
      *
      * @exception IOException if an I/O error occurred during the upgrade
+     * @exception ServletException if the given <tt>clazz</tt> fails to be
+     * instantiated
      *
      * @see javax.servlet.http.HttpUpgradeHandler
      * @see javax.servlet.http.WebConnection
@@ -3160,17 +3162,16 @@ public class Request
      * @since Servlet 3.1
      */
     @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException {
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass)
+            throws IOException, ServletException {
         upgrade = true;
         T handler = null;
         try {
             handler = ((StandardContext) getContext()).createHttpUpgradeHandlerInstance(handlerClass);
-        } catch(Exception ex) {
-            if (ex instanceof IOException) {
-                throw (IOException)ex;
-            } else {
-                throw new IOException(ex);
-            }
+        } catch(IOException | ServletException ise) {
+            throw ise;
+        } catch(Throwable t) {
+            throw new ServletException(t);
         }
         httpUpgradeHandler = handler;
         coyoteRequest.getResponse().suspend();

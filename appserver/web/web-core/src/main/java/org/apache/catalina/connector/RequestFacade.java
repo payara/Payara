@@ -1122,7 +1122,7 @@ public class RequestFacade
     }
 
 
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException {
+    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
         if (request == null) {
             throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
