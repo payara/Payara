@@ -143,7 +143,7 @@ public class PermsArchiveDelegate {
     }
     
     
-    public static class SetPermissionsAction implements PrivilegedExceptionAction {
+    public static class SetPermissionsAction implements PrivilegedExceptionAction<Object> {
         
         private SMGlobalPolicyUtil.CommponentType type;
         private DeploymentContext context;
