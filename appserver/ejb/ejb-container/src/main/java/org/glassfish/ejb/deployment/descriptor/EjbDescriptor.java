@@ -1089,8 +1089,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
 
         ClassLoader classLoader = getEjbBundleDescriptor().getClassLoader();
         List<EjbInterceptor> classOrMethodInterceptors = (type.equals(CallbackType.AROUND_CONSTRUCT))?
-                getConstructorInterceptors(classLoader) :
-                getCallbackMethodInterceptors(callbackDescriptors, classLoader);
+                getConstructorInterceptors(classLoader) : interceptorChain;
 
         for (EjbInterceptor next : classOrMethodInterceptors) {
             if (next.getCallbackDescriptors(type).size() > 0) {
@@ -1104,31 +1103,6 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
             beanClassCallbackInfo.addCallbackDescriptors(type, callbackDescriptors);
             beanClassCallbackInfo.setInterceptorClassName(getEjbImplClassName());
             callbackInterceptors.add(beanClassCallbackInfo);
-        }
-
-        return callbackInterceptors;
-    }
-
-    /**
-     * Return bean method if this callback type is defined on the bean class or null if it is not
-     */
-    private List<EjbInterceptor> getCallbackMethodInterceptors(
-            Set<LifecycleCallbackDescriptor> callbackDescriptors, ClassLoader classLoader) {
-
-        List<EjbInterceptor> callbackInterceptors = interceptorChain;
-        if (callbackDescriptors != null) {
-            for (LifecycleCallbackDescriptor callbackDesc : callbackDescriptors) {
-                if( callbackDesc.getLifecycleCallbackClass().equals(getEjbClassName())) {
-                    try {
-                        Method method = callbackDesc.getLifecycleCallbackMethodObject(classLoader);
-                        MethodDescriptor md = new MethodDescriptor(method, MethodDescriptor.LIFECYCLE_CALLBACK);
-                        callbackInterceptors = getClassOrMethodInterceptors(md);
-                        break;
-                    } catch(Exception e) {
-                        // no method on class
-                    }
-                }
-            }
         }
 
         return callbackInterceptors;

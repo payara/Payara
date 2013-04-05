@@ -238,31 +238,7 @@ public class ManagedBeanDescriptor extends JndiEnvironmentRefsGroupDescriptor {
         LinkedList<InterceptorDescriptor> callbackInterceptors =
                 new LinkedList<InterceptorDescriptor>();
 
-        List<InterceptorDescriptor> interceptors = classInterceptorChain;
-
-        // Check if any interceptors were specified on the method or a constructor
-        LifecycleCallbackDescriptor lcDesc = null;
-        if (type.equals(CallbackType.POST_CONSTRUCT)) {
-            lcDesc = getPostConstructDescriptorByClass(getBeanClassName());
-        } else if (type.equals(CallbackType.PRE_DESTROY)) {
-            lcDesc = getPreDestroyDescriptorByClass(getBeanClassName());
-        }
-
-        if (lcDesc != null) {
-            String methodName = lcDesc.getLifecycleCallbackMethod();
-            // See if there's any method-level setting (either a chain
-            // or a empty list ).  If not, use class-level chain
-            for(MethodDescriptor mDesc : methodInterceptorsMap.keySet()) {
-                if (methodName.equals(mDesc.getName()) && 
-                        mDesc.getParameterClassNames().length == 0) {
-
-                    interceptors = methodInterceptorsMap.get(mDesc);
-                    break;
-                }
-            }
-        } 
-
-        for (InterceptorDescriptor next : interceptors) {
+        for (InterceptorDescriptor next : classInterceptorChain) {
             if (next.getCallbackDescriptors(type).size() > 0) {
                 callbackInterceptors.add(next);
             }
