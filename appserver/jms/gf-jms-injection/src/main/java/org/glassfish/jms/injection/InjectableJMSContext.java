@@ -56,6 +56,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.Transaction;
 import javax.transaction.SystemException;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
@@ -93,6 +94,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
      * to be Serializable this may not be needed)
      */
     private transient ConnectionFactory connectionFactory;
+    private transient ConnectionFactory connectionFactoryPM;
     private transient JavaEETransactionManager transactionManager;
 
     @Inject
@@ -115,13 +117,14 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     @Override
     protected JMSContext delegate() {
         AbstractJMSContextManager manager = requestedManager;
-        if (isInTransaction())
+        boolean isInTransaction = isInTransaction();
+        if (isInTransaction)
             manager = transactedManager;
 
         logger.log(Level.FINE, localStrings.getLocalString("JMSContext.delegation.type", 
                    "JMSContext wrapper with id {0} is delegating to {1} instance.", ipId, manager.getType()));
         try {
-            return manager.getContext(ipId, id, metadata, getConnectionFactory());
+            return manager.getContext(ipId, id, metadata, getConnectionFactory(isInTransaction));
         } catch (ContextNotActiveException e) {
             String message = localStrings.getLocalString("ContextNotActiveException.msg",
                              "An injected JMSContext cannot be used when there is neither a transaction or a valid request scope.");
@@ -134,14 +137,15 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         JMSContext rContext = null;
         JMSContext tContext = null;
         try {
-            if (isInTransaction()) {
+            boolean isInTransaction = isInTransaction();
+            if (isInTransaction) {
                 tContext = transactedManager.getContext(id);
                 if (tContext == null)
-                    tContext = transactedManager.getContext(ipId, id, metadata, getConnectionFactory());
+                    tContext = transactedManager.getContext(ipId, id, metadata, getConnectionFactory(isInTransaction));
             } else {
                 rContext = requestedManager.getContext(id);
                 if (rContext == null)
-                    rContext = requestedManager.getContext(ipId, id, metadata, getConnectionFactory());
+                    rContext = requestedManager.getContext(ipId, id, metadata, getConnectionFactory(isInTransaction));
             }
         } catch (ContextNotActiveException cnae) {
             // if toString() is called in an env which doesn't have valid CDI request/transaction scope,
@@ -192,8 +196,14 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         return transactionManager;
     }
 
-    private ConnectionFactory getConnectionFactory() {
-        if (connectionFactory == null) {
+    private ConnectionFactory getConnectionFactory(boolean isInTransaction) {
+        ConnectionFactory cachedCF = null;
+        if (isInTransaction)
+            cachedCF = connectionFactoryPM;
+        else
+            cachedCF = connectionFactory;
+
+        if (cachedCF == null) {
             String jndiName;
             if (metadata.getLookup() == null) {
                 // Use platform default connection factory
@@ -212,7 +222,14 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
             }
 
             try {
-                connectionFactory = (ConnectionFactory) initialContext.lookup(jndiName);
+                cachedCF = (ConnectionFactory) initialContext.lookup(jndiName);
+
+                if (isInTransaction) {
+                    // append __PM to jndi name to work around GLASSFISH-19872
+                    // it needs double jndi lookup for __PM resource
+                    jndiName = ConnectorsUtil.getPMJndiName(jndiName);
+                    cachedCF = (ConnectionFactory) initialContext.lookup(jndiName);
+                }
             } catch (NamingException ne) {
                 throw new RuntimeException(localStrings.getLocalString("connectionFactory.not.found", 
                                            "ConnectionFactory not found with lookup {0}.", 
@@ -224,8 +241,13 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
                     } catch (NamingException ne) {}
                 }
             }
+
+            if (isInTransaction)
+                connectionFactoryPM = cachedCF;
+            else
+                connectionFactory = cachedCF;
         }
-        return connectionFactory;
+        return cachedCF;
     }
 
     private boolean isInTransaction() {

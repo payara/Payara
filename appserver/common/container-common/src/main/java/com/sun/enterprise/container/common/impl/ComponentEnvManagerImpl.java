@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.container.common.impl;
 
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.container.common.spi.EjbNamingReferenceManager;
 import com.sun.enterprise.container.common.spi.WebServiceReferenceManager;
 import com.sun.enterprise.container.common.spi.util.CallFlowAgent;
@@ -61,6 +62,7 @@ import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.javaee.services.CommonResourceProxy;
+import org.glassfish.javaee.services.JMSCFResourcePMProxy;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
@@ -351,6 +353,14 @@ public class ComponentEnvManagerImpl
             String logicalJndiName = descriptorToLogicalJndiName(descriptor);
             CompEnvBinding envBinding = new CompEnvBinding(logicalJndiName, proxy);
             jndiBindings.add(envBinding);
+
+            // add another proxy with __PM suffix
+            if(descriptor.getResourceType().equals(JavaEEResourceType.JMSCFDD)) {
+                CommonResourceProxy jmscfProxy = locator.getService(JMSCFResourcePMProxy.class);
+                jmscfProxy.setDescriptor(descriptor);
+                CompEnvBinding jmscfEnvBinding = new CompEnvBinding(ConnectorsUtil.getPMJndiName(logicalJndiName), jmscfProxy);
+                jndiBindings.add(jmscfEnvBinding);
+            }
         }
     }
 

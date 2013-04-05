@@ -45,6 +45,8 @@ import org.glassfish.api.naming.DefaultResourceProxy;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.enterprise.connectors.ConnectorRuntime;
 
 /**
  * Naming Object Proxy to handle the Default JMS Connection Factory.
@@ -59,15 +61,30 @@ public class DefaultJMSConnectionFactory implements NamedNamingObjectProxy, Defa
     static final String DEFAULT_CF = "java:comp/DefaultJMSConnectionFactory";
     static final String DEFAULT_CF_PHYS = "jms/__defaultConnectionFactory";
     private ConnectionFactory connectionFactory;
+    private ConnectionFactory connectionFactoryPM;
 
     @Override
     public Object handle(String name) throws NamingException {
-        if(connectionFactory == null) {
-            javax.naming.Context ctx = new javax.naming.InitialContext();
-            // cache the connectionFactory to avoid JNDI lookup overheads
-            connectionFactory = (ConnectionFactory) ctx.lookup(DEFAULT_CF_PHYS);
+        ConnectionFactory cachedCF = null;
+        boolean isCFPM = false;
+        if (name != null && name.endsWith(ConnectorConstants.PM_JNDI_SUFFIX)) {
+            cachedCF = connectionFactoryPM;
+            isCFPM = true;
+        } else {
+            cachedCF = connectionFactory;
         }
-        return connectionFactory;
+        if(cachedCF == null) {
+            javax.naming.Context ctx = new javax.naming.InitialContext();
+            if (isCFPM) {
+                ConnectorRuntime connectorRuntime = ConnectorRuntime.getRuntime();
+                cachedCF = (ConnectionFactory) connectorRuntime.lookupPMResource(DEFAULT_CF_PHYS, false);
+                connectionFactoryPM = cachedCF;
+            } else {
+                cachedCF = (ConnectionFactory) ctx.lookup(DEFAULT_CF_PHYS);
+                connectionFactory = cachedCF;
+            }
+        }
+        return cachedCF;
     }
 
     @Override

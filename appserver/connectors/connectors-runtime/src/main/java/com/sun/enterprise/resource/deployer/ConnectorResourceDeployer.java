@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package com.sun.enterprise.resource.deployer;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.logging.LogDomains;
@@ -103,6 +104,14 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
                     resourceInfo);
         }
         runtime.createConnectorResource(resourceInfo, poolInfo, null);
+        String jndiName = resourceInfo.getName();
+        //In-case the resource is explicitly created with a suffix (__nontx or __PM), no need to create one
+        if (ConnectorsUtil.getValidSuffix(jndiName) == null) {
+            ResourceInfo pmResourceInfo = new ResourceInfo(ConnectorsUtil.getPMJndiName(jndiName),
+                    resourceInfo.getApplicationName(), resourceInfo.getModuleName());
+            runtime.createConnectorResource(pmResourceInfo, poolInfo, null);
+        }
+
         if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "Added connector resource in backend",
                     resourceInfo);
@@ -133,6 +142,13 @@ public class ConnectorResourceDeployer extends AbstractConnectorResourceDeployer
             throws Exception {
 
         runtime.deleteConnectorResource(resourceInfo);
+        //In-case the resource is explicitly created with a suffix (__nontx or __PM), no need to delete one
+        if (ConnectorsUtil.getValidSuffix(resourceInfo.getName()) == null) {
+            String pmJndiName = ConnectorsUtil.getPMJndiName(resourceInfo.getName());
+            ResourceInfo pmResourceInfo = new ResourceInfo(pmJndiName, resourceInfo.getApplicationName(),
+                    resourceInfo.getModuleName());
+            runtime.deleteConnectorResource(pmResourceInfo);
+        }
 
         //Since 8.1 PE/SE/EE - if no more resource-ref to the pool
         //of this resource in this server instance, remove pool from connector

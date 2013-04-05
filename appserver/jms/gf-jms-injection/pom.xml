@@ -87,6 +87,12 @@
             <artifactId>javax.jms-api</artifactId>
             <version>${jms-api.version}</version>
         </dependency>
+
+         <dependency>
+            <groupId>org.glassfish.main.connectors</groupId>
+            <artifactId>connectors-internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
