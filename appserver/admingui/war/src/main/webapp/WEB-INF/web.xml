@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -143,11 +143,12 @@
             <http-only>true</http-only>
         </cookie-config>
     </session-config>
-    <!-- following mapping aded to avoid JSF warning. refer to GLASSFISH-19403 -->
+    <!-- following mapping added to avoid JSF warning. refer to GLASSFISH-19403 -->
     <mime-mapping>
         <extension>jsp</extension>
         <mime-type>text/html</mime-type>
     </mime-mapping>
+
     <welcome-file-list>
         <welcome-file>/index.jsf</welcome-file>
     </welcome-file-list>
@@ -155,12 +156,8 @@
         <exception-type>javax.faces.application.ViewExpiredException</exception-type>
         <location>/</location>
     </error-page>
-    <!--
-    <error-page>
-        <error-code>403</error-code>
-        <location>/</location>
-    </error-page>
-    -->
+
+    <!-- only user from admin realm can access any URL pattern -->
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>protected</web-resource-name>
@@ -171,7 +168,8 @@
         </auth-constraint>
     </security-constraint>
 
-    <!-- resources like images, css, etc.  that don't need protection -->
+
+    <!-- resources like images, css, etc. there is no executable code, and everyone should be able to do a GET , this is for presenting the login page. -->
     <security-constraint>
         <web-resource-collection>
             <web-resource-name>public</web-resource-name>
@@ -182,6 +180,22 @@
             <http-method>GET</http-method>
         </web-resource-collection>
     </security-constraint>
+
+    <!-- The following constraint is added to avoid the WARNING or INFO msg for uncovered http method.  This will not allow *anyone*  to do any method
+         except GET on these resources. -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>public</web-resource-name>
+            <url-pattern>/theme/com/*</url-pattern>
+            <url-pattern>/theme/org/*</url-pattern>
+            <url-pattern>/resource/*</url-pattern>
+            <url-pattern>/theme/META-INF/*</url-pattern>
+            <http-method-omission>GET</http-method-omission>
+        </web-resource-collection>
+        <auth-constraint/>
+    </security-constraint>
+
+
 
     <login-config>
         <auth-method>FORM</auth-method>
