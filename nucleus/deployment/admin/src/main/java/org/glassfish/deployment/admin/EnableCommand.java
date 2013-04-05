@@ -188,6 +188,11 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
      */
     public void execute(AdminCommandContext context) {
         deployment.validateSpecifiedTarget(target);
+        InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
+        DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
+        suppInfo.setDeploymentContext(notifier.dc());
+        suppInfo.setAccessChecks(accessChecks);
+        report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
 
         if (!deployment.isRegistered(name())) {
             report.setMessage(localStrings.getLocalString("application.notreg","Application {0} not registered", name()));
@@ -210,11 +215,6 @@ public class EnableCommand extends StateCommandParameters implements AdminComman
             return;
         }
 
-        InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
-        DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
-        suppInfo.setDeploymentContext(notifier.dc());
-        suppInfo.setAccessChecks(accessChecks);
-        report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
         if (env.isDas()) {
             // try to disable the enabled version, if exist
             try {

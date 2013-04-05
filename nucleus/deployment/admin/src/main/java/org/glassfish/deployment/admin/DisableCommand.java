@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -265,6 +265,9 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
             deployment.validateSpecifiedTarget(target);
         }
         InterceptorNotifier notifier = new InterceptorNotifier(habitat, null);
+        final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
+        suppInfo.setAccessChecks(accessChecks);
+        report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
 
         if (env.isDas() && DeploymentUtils.isDomainTarget(target)) {
 
@@ -374,10 +377,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
             final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
             
-            final DeployCommandSupplementalInfo suppInfo = new DeployCommandSupplementalInfo();
             suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);
-            suppInfo.setAccessChecks(accessChecks);
-            report.setResultType(DeployCommandSupplementalInfo.class, suppInfo);
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error during disabling: ", e);
