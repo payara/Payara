@@ -117,7 +117,8 @@ public class ListBatchJobs
             extraProps.put("listBatchJobs", jobExecutions);
             for (JobExecution je : findJobExecutions()) {
                 try {
-                    jobExecutions.add(handleJob(je, columnFormatter));
+                    if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
+                        jobExecutions.add(handleJob(je, columnFormatter));
                 } catch (Exception ex) {
                     logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
                     logger.log(Level.FINE, "Exception while getting jobExecution details ", ex);
@@ -153,33 +154,19 @@ public class ListBatchJobs
         throws JobSecurityException, NoSuchJobException {
 
         Map<String, Integer> jobToInstanceCountMap = new HashMap<>();
-        Set<String> jobNames = new HashSet<>();
-        if (jobName != null)
-            jobNames.add(jobName);
-        else
-            jobNames = BatchRuntime.getJobOperator().getJobNames();
-        if (jobNames != null) {
-            for (String jName : jobNames) {
-                int size = getOutputHeaders().length;
-                String[] data = new String[size];
-                int instCount = BatchRuntime.getJobOperator().getJobInstanceCount(jName);
-                for (int index = 0; index < size; index++) {
-                    switch (getOutputHeaders()[index]) {
-                        case JOB_NAME:
-                            data[index] = jName;
-                            break;
-                        case INSTANCE_COUNT:
-                            data[index] = "" + instCount;
-                            break;
-                        default:
-                            throw new InternalError("Cannot handle " + getOutputHeaders()[index] + " in simple mode");
-                    }
+        List<JobExecution> jobExecutions = findJobExecutions();
+        for (JobExecution je : jobExecutions) {
+            if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName())) {
+                String jobName = je.getJobName();
+                int count = 0;
+                if (jobToInstanceCountMap.containsKey(jobName)) {
+                    count = jobToInstanceCountMap.get(jobName);
                 }
-                columnFormatter.addRow(data);
-                jobToInstanceCountMap.put(jName, instCount);
+                jobToInstanceCountMap.put(jobName, count+1);
             }
         }
-
+        for (Map.Entry<String, Integer> e : jobToInstanceCountMap.entrySet())
+            columnFormatter.addRow(new Object[] {e.getKey(), e.getValue()});
         return jobToInstanceCountMap;
     }
 

@@ -77,4 +77,8 @@ public class GlassFishBatchSecurityHelper
         Boolean result =  invocationPrivilege.get();
         return result != null ? result : tag == null;
     }
+
+    public boolean isVisibleToThisInstance(String tagName) {
+        return tagName.startsWith(config.getName());
+    }
 }

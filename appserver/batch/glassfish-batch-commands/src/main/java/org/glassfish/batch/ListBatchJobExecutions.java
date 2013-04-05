@@ -39,6 +39,7 @@
  */
 package org.glassfish.batch;
 
+import com.ibm.jbatch.spi.TaggedJobExecution;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import org.glassfish.api.I18n;
@@ -120,7 +121,8 @@ public class ListBatchJobExecutions
                 }
             }
             try {
-                jobExecutions.add(handleJob(je, columnFormatter));
+                if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
+                    jobExecutions.add(handleJob(je, columnFormatter));
             } catch (Exception ex) {
                 logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
                 logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);
@@ -128,7 +130,8 @@ public class ListBatchJobExecutions
         } else if (instanceId != null) {
             for (JobExecution je : getJobExecutionForInstance(Long.valueOf(instanceId))) {
                 try {
-                    jobExecutions.add(handleJob(je, columnFormatter));
+                    if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
+                        jobExecutions.add(handleJob(je, columnFormatter));
                 } catch (Exception ex) {
                     logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
                     logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);
@@ -144,7 +147,8 @@ public class ListBatchJobExecutions
                         for (JobInstance ji : exe) {
                             for (JobExecution je : jobOperator.getJobExecutions(ji)) {
                                 try {
-                                    jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
+                                    if (glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
+                                        jobExecutions.add(handleJob(jobOperator.getJobExecution(je.getExecutionId()), columnFormatter));
                                 } catch (Exception ex) {
                                     logger.log(Level.WARNING, "Exception while getting jobExecution details: " + ex);
                                     logger.log(Level.FINE, "Exception while getting jobExecution details: ", ex);

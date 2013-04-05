@@ -39,6 +39,7 @@
  */
 package org.glassfish.batch;
 
+import com.ibm.jbatch.spi.TaggedJobExecution;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import org.glassfish.api.I18n;
@@ -53,6 +54,7 @@ import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
 import javax.batch.runtime.BatchRuntime;
+import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
 import java.util.*;
@@ -130,12 +132,14 @@ public class ListBatchJobSteps
 
     private List<StepExecution> findStepExecutions()
         throws JobSecurityException, NoSuchJobExecutionException {
-        List<StepExecution> stepExecutions = new ArrayList<>();
         JobOperator jobOperator = BatchRuntime.getJobOperator();
-        List<StepExecution> jobExecution = jobOperator.getStepExecutions(Long.valueOf(executionId));
-        if (jobExecution == null || jobExecution.size() == 0)
+        JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
+        if (!glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
             throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
-        stepExecutions.addAll(jobExecution);
+
+        List<StepExecution> stepExecutions = jobOperator.getStepExecutions(Long.valueOf(executionId));
+        if (stepExecutions == null || stepExecutions.size() == 0)
+            throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
 
         return stepExecutions;
     }
