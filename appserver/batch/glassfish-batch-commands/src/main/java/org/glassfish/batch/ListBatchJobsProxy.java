@@ -98,7 +98,7 @@ public class ListBatchJobsProxy
     protected void fillParameterMap(ParameterMap parameterMap) {
        super.fillParameterMap(parameterMap);
         if (jobName != null)
-            parameterMap.add("", jobName);
+            parameterMap.add("DEFAULT", jobName);
     }
 
 

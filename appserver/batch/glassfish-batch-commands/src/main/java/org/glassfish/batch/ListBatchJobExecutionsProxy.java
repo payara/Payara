@@ -97,7 +97,7 @@ public class ListBatchJobExecutionsProxy
         if (executionId != null)
             parameterMap.add("executionid", executionId);
         if (instanceId != null)
-            parameterMap.add("", instanceId);
+            parameterMap.add("DEFAULT", instanceId);
     }
 
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {

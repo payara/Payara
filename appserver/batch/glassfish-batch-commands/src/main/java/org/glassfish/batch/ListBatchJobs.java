@@ -234,7 +234,7 @@ public class ListBatchJobs
                     }
                     break;
                 case INSTANCE_COUNT:
-                    data = " "; //jobOperator.getJobInstanceCount(je.getJobName());
+                    data = jobOperator.getJobInstanceCount(je.getJobName());
                     break;
                 case INSTANCE_ID:
                     data = jobOperator.getJobInstance(je.getExecutionId()).getInstanceId();

@@ -119,13 +119,16 @@ public abstract class AbstractListCommandProxy
         }
 
         if (subReport != null) {
-            postInvoke(context, subReport);
+            if (subReport.getExtraProperties() != null && subReport.getExtraProperties().size() > 0)
+                postInvoke(context, subReport);
+            else
+                postInvoke(context, subReport.getSubActionsReport().get(0));
         }
     }
 
     protected abstract String getCommandName();
 
-    protected  abstract void postInvoke(AdminCommandContext context, ActionReport subReport);
+    protected abstract void postInvoke(AdminCommandContext context, ActionReport subReport);
 
     private ActionReport executeInternalCommand(AdminCommandContext context, String targetInstanceName) {
         String commandName = getCommandName();
