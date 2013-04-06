@@ -41,7 +41,6 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.security.integration.AppServSecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.concurrent.LogFacade;
@@ -88,9 +87,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
     private static final Logger logger  = LogFacade.getLogger();
 
     @Inject
-    AppServSecurityContext securityContext;
-
-    @Inject
     InvocationManager invocationManager;
 
     @Inject
@@ -129,10 +125,6 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
      */
     ConcurrentRuntime() {
         setRuntime(this);
-    }
-
-    AppServSecurityContext getSecurityContext() {
-        return securityContext;
     }
 
     InvocationManager getInvocationManager() {
@@ -295,7 +287,7 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
         boolean isContextInfoEnabled = Boolean.valueOf(contextInfoEnabled);
         ContextSetupProviderImpl.CONTEXT_TYPE[] contextTypes = parseContextInfo(contextInfo, isContextInfoEnabled);
         ContextSetupProviderImpl contextSetupProvider =
-                new ContextSetupProviderImpl(invocationManager, securityContext, deployment, applications,
+                new ContextSetupProviderImpl(invocationManager, deployment, applications,
                                              cleanupTransaction? transactionManager: null, contextTypes);
         ContextServiceImpl obj = new ContextServiceImpl(jndiName, contextSetupProvider,
                 new TransactionSetupProviderImpl(transactionManager));

@@ -42,7 +42,7 @@ package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Applications;
-import com.sun.enterprise.security.integration.AppServSecurityContext;
+import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
@@ -62,7 +62,6 @@ import java.util.logging.Logger;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
-    private transient AppServSecurityContext securityContext;
     private transient InvocationManager invocationManager;
     private transient Deployment deployment;
     private transient Applications applications;
@@ -79,13 +78,11 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
-                                    AppServSecurityContext securityContext,
                                     Deployment deployment,
                                     Applications applications,
                                     JavaEETransactionManager transactionManager,
                                     CONTEXT_TYPE... contextTypes) {
         this.invocationManager = invocationManager;
-        this.securityContext = securityContext;
         this.deployment = deployment;
         this.applications = applications;
         this.transactionManager = transactionManager;
@@ -116,13 +113,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     public ContextHandle saveContext(ContextService contextService, Map<String, String> contextObjectProperties) {
         // Capture the current thread context
         ClassLoader contextClassloader = null;
-        AppServSecurityContext currentSecurityContext = null;
+        SecurityContext currentSecurityContext = null;
         ComponentInvocation savedInvocation = null;
         if (classloading) {
             contextClassloader = Utility.getClassLoader();
         }
         if (security) {
-            currentSecurityContext = securityContext.getCurrentSecurityContext();
+            currentSecurityContext = SecurityContext.getCurrent();
         }
         ComponentInvocation currentInvocation = invocationManager.getCurrentInvocation();
         if (currentInvocation != null) {
@@ -151,13 +148,13 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         }
 
         ClassLoader resetClassLoader = null;
-        AppServSecurityContext resetSecurityContext = null;
+        SecurityContext resetSecurityContext = null;
         if (handle.getContextClassLoader() != null) {
             resetClassLoader = Utility.setContextClassLoader(handle.getContextClassLoader());
         }
         if (handle.getSecurityContext() != null) {
-            resetSecurityContext = securityContext.getCurrentSecurityContext();
-            securityContext.setCurrentSecurityContext(handle.getSecurityContext());
+            resetSecurityContext = SecurityContext.getCurrent();
+            SecurityContext.setCurrent(handle.getSecurityContext());
         }
         ComponentInvocation invocation = handle.getInvocation();
         if (invocation != null && !handle.isUseTransactionOfExecutionThread()) {
@@ -183,7 +180,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             Utility.setContextClassLoader(handle.getContextClassLoader());
         }
         if (handle.getSecurityContext() != null) {
-            securityContext.setCurrentSecurityContext(handle.getSecurityContext());
+            SecurityContext.setCurrent(handle.getSecurityContext());
         }
         if (handle.getInvocation() != null && !handle.isUseTransactionOfExecutionThread()) {
             invocationManager.postInvoke(((InvocationContext)contextHandle).getInvocation());
@@ -253,7 +250,6 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         boolean nullTransactionManager = in.readBoolean();
         ConcurrentRuntime concurrentRuntime = ConcurrentRuntime.getRuntime();
         // re-initialize these fields
-        securityContext = concurrentRuntime.getSecurityContext();
         invocationManager = concurrentRuntime.getInvocationManager();
         deployment = concurrentRuntime.getDeployment();
         applications = concurrentRuntime.getApplications();

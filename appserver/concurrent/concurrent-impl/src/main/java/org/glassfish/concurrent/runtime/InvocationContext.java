@@ -41,7 +41,6 @@
 package org.glassfish.concurrent.runtime;
 
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.integration.AppServSecurityContext;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.enterprise.concurrent.spi.ContextHandle;
 import org.glassfish.internal.data.ApplicationInfo;
@@ -54,12 +53,12 @@ public class InvocationContext implements ContextHandle {
 
     private transient ComponentInvocation invocation;
     private transient ClassLoader contextClassLoader;
-    private transient AppServSecurityContext securityContext;
+    private transient SecurityContext securityContext;
     private boolean useTransactionOfExecutionThread;
 
     static final long serialVersionUID = 5642415011655486579L;
 
-    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, AppServSecurityContext securityContext,
+    public InvocationContext(ComponentInvocation invocation, ClassLoader contextClassLoader, SecurityContext securityContext,
                              boolean useTransactionOfExecutionThread) {
         this.invocation = invocation;
         this.contextClassLoader = contextClassLoader;
@@ -75,7 +74,7 @@ public class InvocationContext implements ContextHandle {
         return contextClassLoader;
     }
 
-    public AppServSecurityContext getSecurityContext() {
+    public SecurityContext getSecurityContext() {
         return securityContext;
     }
 
@@ -106,7 +105,7 @@ public class InvocationContext implements ContextHandle {
                 principalName = securityContext.getCallerPrincipal().getName();
                 subject = securityContext.getSubject();
                 // Clear principal set to avoid ClassNotFoundException during deserialization.
-                // It will be set by AppServSecurityContext.newInstance in readObject().
+                // It will be set by new SecurityContext in readObject().
                 subject.getPrincipals().clear();
             }
             if (securityContext == SecurityContext.getDefaultSecurityContext()) {
@@ -134,8 +133,7 @@ public class InvocationContext implements ContextHandle {
                 securityContext = SecurityContext.getDefaultSecurityContext();
             }
             else {
-                AppServSecurityContext appServSecurityContext = ConcurrentRuntime.getRuntime().getSecurityContext();
-                securityContext = appServSecurityContext.newInstance(principalName, subject, null);
+                securityContext = new SecurityContext(principalName, subject, null);
             }
         }
         // reconstruct contextClassLoader
