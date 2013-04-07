@@ -1163,7 +1163,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     }
 
     @Override
-    public <T> EntityGraph<T> getEntityGraph(String graphName) {
+    public EntityGraph<?> getEntityGraph(String graphName) {
         try {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodStart(EntityManagerMethod.GET_ENTITY_GRAPH);
