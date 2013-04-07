@@ -353,6 +353,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             }
 
             if (webinfbda) {
+                //todo: why is this next line even here?  Can I take it out?
                 context.getTransientAppMetadata();
                 bdaType = BDAType.WAR;
                 Enumeration<String> entries = archive.entries();

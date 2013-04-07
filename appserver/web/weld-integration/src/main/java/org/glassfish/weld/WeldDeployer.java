@@ -57,6 +57,7 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpSessionListener;
 
+import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.MetaData;
 import org.glassfish.api.deployment.archive.ReadableArchive;
@@ -136,6 +137,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     
     @Inject
     private InvocationManager invocationManager;
+
+    @Inject
+    ArchiveFactory archiveFactory;
+
 
     private Map<Application, WeldBootstrap> appToBootstrap =
             new HashMap<Application, WeldBootstrap>();
@@ -448,7 +453,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         // Create a Deployment Collecting Information From The ReadableArchive (archive)
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
-            deploymentImpl = new DeploymentImpl(archive, ejbs, context);
+            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory);
 
             // Add services
             TransactionServices transactionServices = new TransactionServicesImpl(services);
