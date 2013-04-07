@@ -48,6 +48,7 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.batch.spi.impl.GlassFishBatchValidationException;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -60,8 +61,10 @@ import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -112,11 +115,17 @@ public class SetBatchRuntimeConfiguration
             actionReport.setExtraProperties(extraProperties);
         }
 
+        if (dataSourceLookupName == null && executorServiceLookupName == null) {
+            actionReport.setMessage("Either dataSourceLookupName or executorServiceLookupName must be specified.");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
         try {
             Config config = targetUtil.getConfig(target);
 
-
             BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
+            String errorMessage = null;
             if (batchRuntimeConfiguration != null) {
                 ConfigSupport.apply(new SingleConfigCode<BatchRuntimeConfiguration>() {
                     @Override
@@ -125,21 +134,26 @@ public class SetBatchRuntimeConfiguration
                         boolean encounteredError = false;
                         if (dataSourceLookupName != null) {
                             try {
-                                InitialContext ctx = new InitialContext();
-                                ctx.lookup(dataSourceLookupName);
+                                helper.validateDataSourceLookupName(dataSourceLookupName);
                                 batchRuntimeConfigurationProxy.setDataSourceLookupName(dataSourceLookupName);
-                            } catch (NamingException nmEx) {
-                                logger.log(Level.FINE, "Exception during command ", nmEx);
-                                actionReport.setMessage("No datasource bound to name = " + dataSourceLookupName);
+                                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                            } catch (GlassFishBatchValidationException ex) {
+                                logger.log(Level.WARNING, ex.getMessage());
+                                actionReport.setMessage(dataSourceLookupName + " is not mapped to a DataSource");
                                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                encounteredError = true;
                             }
                         }
                         if (executorServiceLookupName != null && !encounteredError) {
                             try {
                                 InitialContext ctx = new InitialContext();
-                                ctx.lookup(executorServiceLookupName);
-                                batchRuntimeConfigurationProxy.setExecutorServiceLookupName(executorServiceLookupName);
+                                Object obj = ctx.lookup(executorServiceLookupName);
+                                if (obj instanceof ExecutorService) {
+                                    batchRuntimeConfigurationProxy.setDataSourceLookupName(executorServiceLookupName);
+                                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                                } else {
+                                    actionReport.setMessage(executorServiceLookupName + " is not mapped to an ExecutorService");
+                                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                }
                             } catch (NamingException nmEx) {
                                 logger.log(Level.FINE, "Exception during command ", nmEx);
                                 actionReport.setMessage("No executor service bound to name = " + executorServiceLookupName);
@@ -151,10 +165,9 @@ public class SetBatchRuntimeConfiguration
                 }, batchRuntimeConfiguration);
             }
 
-            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } catch (TransactionFailure txfEx) {
             logger.log(Level.WARNING, "Exception during command ", txfEx);
-            actionReport.setMessage(txfEx.getMessage());
+            actionReport.setMessage(txfEx.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

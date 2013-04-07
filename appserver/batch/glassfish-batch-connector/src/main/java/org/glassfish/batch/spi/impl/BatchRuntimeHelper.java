@@ -57,6 +57,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -234,12 +235,33 @@ public class BatchRuntimeHelper
     private ExecutorService lookupExecutorService() {
         try {
             InitialContext initialContext = new InitialContext();
-            return (ExecutorService) initialContext.lookup(getExecutorServiceLookupName());
+            return (ExecutorService) initialContext.lookup(getExecutorServiceLookupName());   //java:comp/DefaultManagedExecutorService
         } catch (NamingException nEx) {
-            nEx.printStackTrace();
+            try {
+                InitialContext initialContext = new InitialContext();
+                return (ExecutorService) initialContext.lookup("java:comp/DefaultManagedExecutorService");
+            } catch (NamingException namEx) {
+                logger.log(Level.WARNING, "Error during ExecutorService lookup", namEx);
+            }
+            logger.log(Level.WARNING, "Error during ExecutorService lookup", nEx);
         }
 
         return null;
+    }
+
+    public void validateDataSourceLookupName() {
+        validateDataSourceLookupName(getDataSourceLookupName());
+    }
+
+    public static void validateDataSourceLookupName(String dsLookupName) {
+        try {
+            InitialContext ctx = new InitialContext();
+            Object obj = ctx.lookup(dsLookupName);
+            if (! (obj instanceof DataSource))
+                throw new GlassFishBatchValidationException(dsLookupName + " is not mapped to a DataSource. Batch operations may not work correctly.");
+        } catch (NamingException nmEx) {
+            throw new GlassFishBatchValidationException("No DataSource bound to name = " + dsLookupName, nmEx);
+        }
     }
 
 }
