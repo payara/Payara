@@ -46,6 +46,8 @@ import static org.glassfish.weld.connector.WeldUtils.META_INF_BEANS_XML;
 import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -57,6 +59,8 @@ import com.sun.enterprise.deploy.shared.ArchiveFactory;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
+import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.deployment.common.InstalledLibrariesResolver;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.weld.connector.WeldUtils;
 import org.glassfish.weld.connector.WeldUtils.BDAType;
@@ -96,6 +100,8 @@ public class DeploymentImpl implements CDI11Deployment {
 
     private Collection<EjbDescriptor> deployedEjbs = new LinkedList<>();
     private ArchiveFactory archiveFactory;
+
+    private boolean earContextAppLibBdasProcessed = false;
 
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
@@ -168,7 +174,6 @@ public class DeploymentImpl implements CDI11Deployment {
      * <code>Deployment</code>.
      */
     public void buildDeploymentGraph() {
-
         // Make jars accessible to each other - Example:
         //    /ejb1.jar <----> /ejb2.jar
         // If there are any application (/lib) jars, make them accessible
@@ -472,8 +477,8 @@ public class DeploymentImpl implements CDI11Deployment {
     // This method creates and returns a List of BeanDeploymentArchives for each
     // Weld enabled jar under /lib of an existing Archive.
     private List<RootBeanDeploymentArchive> scanForLibJars( ReadableArchive archive,
-                                                        Collection<EjbDescriptor> ejbs,
-                                                        DeploymentContext context) {
+                                                            Collection<EjbDescriptor> ejbs,
+                                                            DeploymentContext context) {
         List<ReadableArchive> libJars = null;
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if ((holder != null) && (holder.app != null)) {
@@ -527,6 +532,10 @@ public class DeploymentImpl implements CDI11Deployment {
                                           ejbs,
                                           context,
                                           libDir + SEPARATOR_CHAR + libJarArchive.getName());
+        createLibJarBda(rootBda);
+    }
+
+    private void createLibJarBda(RootBeanDeploymentArchive rootBda) {
         addBdaToDeploymentBdas(rootBda);
 
         BeanDeploymentArchive libBda = rootBda.getModuleBda();
@@ -535,7 +544,6 @@ public class DeploymentImpl implements CDI11Deployment {
             libJarRootBdas = new ArrayList<>();
         }
 
-        //todo: I think the libs are done during buildDeploymentGraph
         for ( BeanDeploymentArchive existingLibBda : libJarRootBdas) {
             existingLibBda.getBeanDeploymentArchives().add( libBda );
             libBda.getBeanDeploymentArchives().add( existingLibBda );
@@ -544,8 +552,10 @@ public class DeploymentImpl implements CDI11Deployment {
     }
 
     private void addBdaToDeploymentBdas( BeanDeploymentArchive bda ) {
-        beanDeploymentArchives.add(bda);
-        idToBeanDeploymentArchive.put(bda.getId(), bda);
+        if ( ! beanDeploymentArchives.contains( bda ) ) {
+            beanDeploymentArchives.add(bda);
+            idToBeanDeploymentArchive.put(bda.getId(), bda);
+        }
     }
 
     // These are application libraries that reside outside of the ear.  They are usually specified by entries
@@ -555,79 +565,48 @@ public class DeploymentImpl implements CDI11Deployment {
     // In a war's manifest put in something like:
     //                           Extension-List: MyExtLib
     //                           MyExtLib-Extension-Name: com.acme.extlib
-//    private List<BeanDeploymentArchive> getBdasForAppLibs(BeanDeploymentArchiveImpl moduleBda,
-//                                                          ReadableArchive archive,
-//                                                          DeploymentContext context ) {
-//        List<BeanDeploymentArchive> libBdas = new ArrayList<>();
-//        try {
-//
-//            // each appLib in context.getAppLibs is a URI of the form "file:/glassfish/runtime/trunk/glassfish4/glassfish/domains/domain1/lib/applibs/mylib.jar"
-//            List<URI> appLibs = context.getAppLibs();
-//
-//            Set<String> installedLibraries = InstalledLibrariesResolver.getInstalledLibraries( archive );
-//            if ( appLibs != null && appLibs.size() > 0 && installedLibraries != null && installedLibraries.size() > 0 ) {
-//                for ( URI oneAppLib : appLibs ) {
-//                    for ( String oneInstalledLibrary : installedLibraries ) {
-//                        if ( oneAppLib.getPath().endsWith( oneInstalledLibrary ) ) {
-//                            if ( archive.exists( WeldUtils.META_INF_BEANS_XML ) ) {
-//                                ReadableArchive libArchive = archiveFactory.openArchive(oneAppLib);
-//                                String bdaId = archive.getName() + "_" + libArchive.getName();
-//                                libBdas.add(new BeanDeploymentArchiveImpl(libArchive,
-//                                                                          Collections.<EjbDescriptor>emptyList(),
-//                                                                          context,
-//                                                                          bdaId ) );
-//                            }
-//                            break;
-//                        }
-//                    }
-//                }
-//            }
-//        } catch (URISyntaxException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        } catch (IOException e) {
-//            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-//        }
-//
-//        for ( BeanDeploymentArchive oneBda : libBdas ) {
-//            this.beanDeploymentArchives.add(oneBda);
-//            if (libJarRootBdas  == null) {
-//                libJarRootBdas = new ArrayList<>();
-//            }
-//            libJarRootBdas.add(oneBda);
-//            this.idToBeanDeploymentArchive.put(oneBda.getId(), oneBda);
-//        }
-//        //Ensure each library jar is visible to each other.
-//        ensureLibBdasVisibileToEachOther(libBdas);
-//
-//        return libBdas;
-//    }
+    private void processBdasForAppLibs( ReadableArchive archive, DeploymentContext context ) {
+        List<RootBeanDeploymentArchive> libBdas = new ArrayList<>();
+        try {
+            // each appLib in context.getAppLibs is a URI of the form "file:/glassfish/runtime/trunk/glassfish4/glassfish/domains/domain1/lib/applibs/mylib.jar"
+            List<URI> appLibs = context.getAppLibs();
 
-    private void ensureLibBdasVisibileToEachOther(List<BeanDeploymentArchive> libBDAs) {
-        //ensure all ear/lib JAR BDAs are visible to each other
-        for (int i = 0; i < libBDAs.size(); i++) {
-            BeanDeploymentArchive firstBDA = libBDAs.get(i);
-            boolean modified = false;
-            //loop through the list once more
-            for (int j = 0; j < libBDAs.size(); j++) {
-                BeanDeploymentArchive otherBDA = libBDAs.get(j);
-                if (!firstBDA.getId().equals(otherBDA.getId())){
-                    if ( logger.isLoggable( FINE ) ) {
-                        logger.log(FINE, "DeploymentImpl::ensureLibBdasVisibileToEachOther - " + firstBDA.getId() + " being associated with " + otherBDA.getId());
+            Set<String> installedLibraries = InstalledLibrariesResolver.getInstalledLibraries(archive);
+            if ( appLibs != null && appLibs.size() > 0 && installedLibraries != null && installedLibraries.size() > 0 ) {
+                for ( URI oneAppLib : appLibs ) {
+                    for ( String oneInstalledLibrary : installedLibraries ) {
+                        if ( oneAppLib.getPath().endsWith( oneInstalledLibrary ) ) {
+                            ReadableArchive libArchive = null;
+                            try {
+                                libArchive = archiveFactory.openArchive(oneAppLib);
+                                if ( libArchive.exists( WeldUtils.META_INF_BEANS_XML ) ) {
+                                    String bdaId = archive.getName() + "_" + libArchive.getName();
+                                    RootBeanDeploymentArchive rootBda =
+                                        new RootBeanDeploymentArchive(libArchive,
+                                                                      Collections.<EjbDescriptor>emptyList(),
+                                                                      context,
+                                                                      bdaId );
+
+                                    libBdas.add(rootBda);
+                                }
+                            } finally {
+                                if ( libArchive != null ) {
+                                    try {
+                                        libArchive.close();
+                                    } catch ( Exception ignore ) {}
+                                }
+                            }
+                            break;
+                        }
                     }
-                    firstBDA.getBeanDeploymentArchives().add(otherBDA);
-                    modified = true;
                 }
             }
-            //update modified BDA
-            if (modified){
-                int idx = this.beanDeploymentArchives.indexOf(firstBDA);
-                if ( logger.isLoggable( FINE ) ) {
-                    logger.log(FINE, "DeploymentImpl::ensureLibBdasVisibileToEachOther - updating " + firstBDA.getId() );
-                }
-                if (idx >= 0) {
-                    this.beanDeploymentArchives.set(idx, firstBDA);
-                }
-            }
+        } catch (URISyntaxException | IOException e) {
+            //todo: log error
+        }
+
+        for ( RootBeanDeploymentArchive oneBda : libBdas ) {
+            createLibJarBda(oneBda );
         }
     }
 
@@ -703,5 +682,19 @@ public class DeploymentImpl implements CDI11Deployment {
         addBdaToDeploymentBdas(moduleBda);
 
         addBeanDeploymentArchives(rootBda);
+
+        // first check if the parent is an ear and if so see if there are app libs defined there.
+        if ( ! earContextAppLibBdasProcessed && context instanceof DeploymentContextImpl ) {
+            DeploymentContextImpl deploymentContext = ( DeploymentContextImpl ) context;
+            DeploymentContext parentContext = deploymentContext.getParentContext();
+            if ( parentContext != null ) {
+                processBdasForAppLibs( parentContext.getSource(), parentContext );
+                parentContext.getSource();
+                earContextAppLibBdasProcessed = true;
+            }
+        }
+
+        // then check the module
+        processBdasForAppLibs(archive, context);
     }
 }
