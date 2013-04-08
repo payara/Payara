@@ -535,20 +535,27 @@ public class DeploymentImpl implements CDI11Deployment {
         createLibJarBda(rootBda);
     }
 
-    private void createLibJarBda(RootBeanDeploymentArchive rootBda) {
-        addBdaToDeploymentBdas(rootBda);
+    private void createLibJarBda(RootBeanDeploymentArchive rootLibBda) {
+        addBdaToDeploymentBdas(rootLibBda);
 
-        BeanDeploymentArchive libBda = rootBda.getModuleBda();
-        addBdaToDeploymentBdas(libBda);
+        BeanDeploymentArchive libModuleBda = rootLibBda.getModuleBda();
+        addBdaToDeploymentBdas(libModuleBda);
         if (libJarRootBdas == null) {
             libJarRootBdas = new ArrayList<>();
         }
 
-        for ( BeanDeploymentArchive existingLibBda : libJarRootBdas) {
-            existingLibBda.getBeanDeploymentArchives().add( libBda );
-            libBda.getBeanDeploymentArchives().add( existingLibBda );
+        for ( RootBeanDeploymentArchive existingLibJarRootBda : libJarRootBdas) {
+            rootLibBda.getBeanDeploymentArchives().add( existingLibJarRootBda );
+            rootLibBda.getBeanDeploymentArchives().add( existingLibJarRootBda.getModuleBda() );
+            rootLibBda.getModuleBda().getBeanDeploymentArchives().add( existingLibJarRootBda );
+            rootLibBda.getModuleBda().getBeanDeploymentArchives().add( existingLibJarRootBda.getModuleBda() );
+
+            existingLibJarRootBda.getBeanDeploymentArchives().add( rootLibBda );
+            existingLibJarRootBda.getBeanDeploymentArchives().add( rootLibBda.getModuleBda() );
+            existingLibJarRootBda.getModuleBda().getBeanDeploymentArchives().add( rootLibBda );
+            existingLibJarRootBda.getModuleBda().getBeanDeploymentArchives().add( rootLibBda.getModuleBda() );
         }
-        libJarRootBdas.add(rootBda);
+        libJarRootBdas.add(rootLibBda);
     }
 
     private void addBdaToDeploymentBdas( BeanDeploymentArchive bda ) {
