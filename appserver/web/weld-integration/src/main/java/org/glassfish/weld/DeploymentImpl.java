@@ -704,4 +704,11 @@ public class DeploymentImpl implements CDI11Deployment {
         // then check the module
         processBdasForAppLibs(archive, context);
     }
+
+    public Iterator<RootBeanDeploymentArchive> getLibJarRootBdas() {
+        if ( libJarRootBdas == null ) {
+            return null;
+        }
+        return libJarRootBdas.iterator();
+    }
 }

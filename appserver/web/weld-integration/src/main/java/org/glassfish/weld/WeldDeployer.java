@@ -40,12 +40,7 @@
 
 package org.glassfish.weld;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -191,6 +186,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 }
 
                 deploymentImpl.buildDeploymentGraph();
+
+                addCdiServicesToLibraryBdas(deploymentImpl.getLibJarRootBdas(),
+                                            services.getService(InjectionManager.class));
 
                 //get Current TCL
                 ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
@@ -567,4 +565,23 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
         return ejbBundle;
     }
+
+    /**
+     * Add the cdi services to the library bdas.
+     */
+    private void addCdiServicesToLibraryBdas( Iterator<RootBeanDeploymentArchive> libJarRootBdas, InjectionManager injectionMgr ) {
+        if ( injectionMgr != null && libJarRootBdas != null ) {
+            while( libJarRootBdas.hasNext() ) {
+                RootBeanDeploymentArchive oneLibJarRootBda = libJarRootBdas.next();
+                addCdiServicesToBda( injectionMgr, oneLibJarRootBda );
+                addCdiServicesToBda( injectionMgr, oneLibJarRootBda.getModuleBda() );
+            }
+        }
+    }
+
+    private void addCdiServicesToBda( InjectionManager injectionMgr, BeanDeploymentArchive bda ) {
+        InjectionServices injectionServices = new LibraryBdaInjectionServices(injectionMgr);
+        bda.getServices().add(InjectionServices.class, injectionServices);
+    }
+
 }
