@@ -764,15 +764,19 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
     public void unload(WebServicesApplication container, DeploymentContext context) {
         final WebServiceDeploymentNotifier notifier = getDeploymentNotifier();
         deletePublishedFiles(container.getPublishedFiles());
-//        Application app = container.getApplication();
-        // load uses context.getModuleMetaData(Application.class) to get the Application.  If there's a deployment
-        // failure then "container" may not have initialized the application and container.getApplication() returns
-        // null and we get NPE.  So use context.getModuleMetaData(Application.class) always.
-        Application app = context.getModuleMetaData(Application.class);
-        for(WebService svc : getWebServiceDescriptors(app)) {
-            for(WebServiceEndpoint endpoint : svc.getEndpoints()) {
-                if (notifier != null) {
-                    notifier.notifyUndeployed(endpoint);
+        Application app = container.getApplication();
+        if ( app == null ) {
+            // load uses context.getModuleMetaData(Application.class) to get the Application.  If there's a deployment
+            // failure then "container" may not have initialized the application and container.getApplication() returns
+            // null and we get NPE.  So use context.getModuleMetaData(Application.class) always.
+            app = context.getModuleMetaData(Application.class);
+        }
+        if ( app != null ) {
+            for(WebService svc : getWebServiceDescriptors(app)) {
+                for(WebServiceEndpoint endpoint : svc.getEndpoints()) {
+                    if (notifier != null) {
+                        notifier.notifyUndeployed(endpoint);
+                    }
                 }
             }
         }

@@ -636,25 +636,30 @@ public class ManagedBeanManagerImpl implements ManagedBeanManager, PostConstruct
         JCDIService jcdiService = habitat.getService(JCDIService.class);
 
         if( (jcdiService != null) && jcdiService.isJCDIEnabled(bundle)) {
-
-            Map<Object, JCDIService.JCDIInjectionContext> bundleNonManagedObjs =
-                jcdiManagedBeanInstanceMap.get(bundle);
-            JCDIService.JCDIInjectionContext context =
-                    bundleNonManagedObjs.remove(managedBean);  
-
-            if( context == null ) {
+            Map<Object, JCDIService.JCDIInjectionContext> bundleNonManagedObjs = jcdiManagedBeanInstanceMap.get(bundle);
+            // in a failure scenario it's possible that bundleNonManagedObjs is null
+            if ( bundleNonManagedObjs == null ) {
                 if (validate) {
                     throw new IllegalStateException("Unknown JCDI-enabled managed bean " +
-                            managedBean + " of class " + managedBean.getClass());
+                                                     managedBean + " of class " + managedBean.getClass());
                 }
                 _logger.log(Level.FINE, "Unknown JCDI-enabled managed bean " +
                             managedBean + " of class " + managedBean.getClass());
-                return;
+            } else {
+                JCDIService.JCDIInjectionContext context = bundleNonManagedObjs.remove(managedBean);
+                if( context == null ) {
+                    if (validate) {
+                        throw new IllegalStateException("Unknown JCDI-enabled managed bean " +
+                                                            managedBean + " of class " + managedBean.getClass());
+                    }
+                    _logger.log(Level.FINE, "Unknown JCDI-enabled managed bean " +
+                        managedBean + " of class " + managedBean.getClass());
+                    return;
+                }
+
+                // Call PreDestroy and cleanup
+                context.cleanup(true);
             }
-
-            // Call PreDestroy and cleanup
-            context.cleanup(true);
-
         } else {
 
             Object managedBeanInstance = null;
