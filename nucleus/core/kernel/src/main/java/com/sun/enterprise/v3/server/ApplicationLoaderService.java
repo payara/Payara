@@ -488,7 +488,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     }
 
     private void unloadApplicationForTenants(Application app, ActionReport report, Logger logger) {
-        if (app.getAppTenants() == null) {
+        if (app == null || app.getAppTenants() == null) {
             return;
         }
 
