@@ -67,7 +67,7 @@ public class WeldSniffer extends GenericSniffer {
     }
 
     /**
-     * Returns true if the archive contains beans.xml as defined by packaging rules of Weld 
+     * Returns true if the archive contains beans.xml as defined by packaging rules of Weld
      */
     @Override
     public boolean handles(ReadableArchive archive) {
@@ -83,8 +83,8 @@ public class WeldSniffer extends GenericSniffer {
                 // Check jars under WEB_INF/lib
                 if (isEntryPresent(archive, WeldUtils.WEB_INF_LIB)) {
                     isWeldArchive = scanLibDir(archive, WeldUtils.WEB_INF_LIB);
-                } 
-            } 
+                }
+            }
         }
 
         // TODO This doesn't seem to match the ReadableArchive for a stand-alone ejb-jar.
@@ -98,7 +98,7 @@ public class WeldSniffer extends GenericSniffer {
         // If stand-alone ejb-jar
         if (!isWeldArchive && isEntryPresent(archive, WeldUtils.META_INF_BEANS_XML) ) {
             isWeldArchive = true;
-        }     
+        }
 
         if (!isWeldArchive && archiveName != null && archiveName.endsWith(WeldUtils.EXPANDED_RAR_SUFFIX)) {
             isWeldArchive = isEntryPresent(archive, WeldUtils.META_INF_BEANS_XML);
@@ -107,13 +107,13 @@ public class WeldSniffer extends GenericSniffer {
                 isWeldArchive = scanLibDir(archive, "");
             }
         }
-        
+
         return isWeldArchive;
     }
 
     private boolean scanLibDir(ReadableArchive archive, String libLocation) {
         boolean entryPresent = false;
-        if (libLocation != null ) {
+        if (libLocation != null && !libLocation.isEmpty()) {
             Enumeration<String> entries = archive.entries(libLocation);
             while (entries.hasMoreElements() && !entryPresent) {
                 String entryName = entries.nextElement();
@@ -125,9 +125,9 @@ public class WeldSniffer extends GenericSniffer {
                         entryPresent = isEntryPresent(jarInLib, WeldUtils.META_INF_BEANS_XML);
                         jarInLib.close();
                     } catch (IOException e) {
-                    } 
-                } 
-            } 
+                    }
+                }
+            }
         }
         return entryPresent;
     }
@@ -158,7 +158,7 @@ public class WeldSniffer extends GenericSniffer {
      *
      */
     public boolean supportsArchiveType(ArchiveType archiveType) {
-        if (archiveType.toString().equals(ModuleType.WAR.toString()) || 
+        if (archiveType.toString().equals(ModuleType.WAR.toString()) ||
             archiveType.toString().equals(ModuleType.EJB.toString()) ||
             archiveType.toString().equals(ModuleType.RAR.toString())) {
             return true;
@@ -169,7 +169,7 @@ public class WeldSniffer extends GenericSniffer {
 
     @Override
     public String[] getAnnotationNames(DeploymentContext context) {
-        return WeldUtils.getCDIEnablingAnnotations(context);
+        return WeldUtils.isImplicitBeanDiscoveryEnabled() ? WeldUtils.getCDIEnablingAnnotations(context) : null;
     }
 
 

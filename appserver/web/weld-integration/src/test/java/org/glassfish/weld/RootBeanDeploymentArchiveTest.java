@@ -44,6 +44,9 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.weld.connector.WeldUtils;
+import org.jboss.weld.bootstrap.WeldBootstrap;
+import org.jboss.weld.bootstrap.spi.BeanDiscoveryMode;
+import org.jboss.weld.bootstrap.spi.BeansXml;
 import org.junit.Test;
 
 import static junit.framework.Assert.*;
@@ -53,6 +56,8 @@ import static org.easymock.EasyMock.*;
 
 import org.easymock.EasyMockSupport;
 
+import java.net.URI;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -77,14 +82,15 @@ public class RootBeanDeploymentArchiveTest {
         webInfLibEntries.add(webInfLib1);
         webInfLibEntries.add(webInfLib2);
 
-
         EasyMockSupport mockSupport = new EasyMockSupport();
+        BeansXml beansXML = mockSupport.createMock(BeansXml.class);
+        WeldBootstrap wb = mockSupport.createMock(WeldBootstrap.class);
         ReadableArchive readableArchive = mockSupport.createMock(ReadableArchive.class);
         ReadableArchive subArchive1 = mockSupport.createMock(ReadableArchive.class);
         ReadableArchive subArchive2 = mockSupport.createMock(ReadableArchive.class);
 
         Collection<EjbDescriptor> ejbs = Collections.emptyList();
-        DeploymentContext deploymentContext = mockSupport.createMock( DeploymentContext.class );
+        DeploymentContext deploymentContext = mockSupport.createMock(DeploymentContext.class);
         expect(deploymentContext.getClassLoader()).andReturn(null).anyTimes();
 
         expect(readableArchive.getName()).andReturn(archiveName).anyTimes();
@@ -92,18 +98,26 @@ public class RootBeanDeploymentArchiveTest {
         expect(readableArchive.exists(WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML)).andReturn(false).anyTimes();
 
         // in BeanDeploymentArchiveImpl.populate
-        expect( deploymentContext.getTransientAppMetadata()).andReturn(null).anyTimes();
-        expect( readableArchive.entries() ).andReturn( Collections.<String>emptyEnumeration() );
+        expect(deploymentContext.getTransientAppMetadata()).andReturn(null).anyTimes();
+        expect(deploymentContext.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class)).andReturn(wb).anyTimes();
+        expect(wb.parse(anyObject(URL.class))).andReturn(beansXML).anyTimes();
+
+        expect(readableArchive.getURI()).andReturn(URI.create(WeldUtils.WEB_INF_BEANS_XML)).anyTimes();
+        expect(subArchive1.getURI()).andReturn(URI.create(webInfLib1)).anyTimes();
+        expect(subArchive2.getURI()).andReturn(URI.create(webInfLib2)).anyTimes();
+        expect(beansXML.getBeanDiscoveryMode()).andReturn(BeanDiscoveryMode.ALL).anyTimes();
+
+        expect(readableArchive.entries()).andReturn(Collections.<String>emptyEnumeration());
         readableArchive.close();
 
         expect(readableArchive.exists(WeldUtils.WEB_INF_LIB)).andReturn(true).anyTimes();
-        expect( readableArchive.entries(WeldUtils.WEB_INF_LIB) ).andReturn( Collections.enumeration( webInfLibEntries ));
+        expect(readableArchive.entries(WeldUtils.WEB_INF_LIB)).andReturn( Collections.enumeration( webInfLibEntries));
 
-        expect( readableArchive.getSubArchive( webInfLib1 )).andReturn( subArchive1);
-        expect(subArchive1.exists(WeldUtils.META_INF_BEANS_XML ) ).andReturn(true);
+        expect(readableArchive.getSubArchive( webInfLib1)).andReturn( subArchive1);
+        expect(subArchive1.exists(WeldUtils.META_INF_BEANS_XML)).andReturn(true);
 
-        expect( readableArchive.getSubArchive( webInfLib2 )).andReturn( subArchive2);
-        expect(subArchive2.exists(WeldUtils.META_INF_BEANS_XML ) ).andReturn(true);
+        expect(readableArchive.getSubArchive(webInfLib2)).andReturn( subArchive2);
+        expect(subArchive2.exists(WeldUtils.META_INF_BEANS_XML)).andReturn(true);
 
         // build new BeanDeploymentArchiveImpl for lib1 and lib2
         setupMocksForWebInfLibBda( subArchive1, subArchive11Name, lib1ClassNames);

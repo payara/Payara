@@ -51,6 +51,9 @@ import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
+import javax.ejb.MessageDriven;
+import javax.ejb.Stateful;
+import javax.ejb.Stateless;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.NormalScope;
@@ -90,7 +93,7 @@ public class WeldUtils {
     public static final String META_INF_SERVICES_EXTENSION = "META-INF"
             + SEPARATOR_CHAR + SERVICES_DIR + SEPARATOR_CHAR
             + SERVICES_CLASSNAME;
-    
+
     public static final String CLASS_SUFFIX = ".class";
     public static final String JAR_SUFFIX = ".jar";
     public static final String RAR_SUFFIX = ".rar";
@@ -100,15 +103,28 @@ public class WeldUtils {
     public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
 
+    protected static final List<String> cdiScopeAnnotations;
+    static {
+        cdiScopeAnnotations = new ArrayList<String>();
+        cdiScopeAnnotations.add(Scope.class.getName());
+        cdiScopeAnnotations.add(NormalScope.class.getName());
+        cdiScopeAnnotations.add(ApplicationScoped.class.getName());
+        cdiScopeAnnotations.add(SessionScoped.class.getName());
+        cdiScopeAnnotations.add(RequestScoped.class.getName());
+        cdiScopeAnnotations.add(Dependent.class.getName());
+    }
+
     protected static final List<String> cdiEnablingAnnotations;
     static {
         cdiEnablingAnnotations = new ArrayList<String>();
-        cdiEnablingAnnotations.add(Scope.class.getName());
-        cdiEnablingAnnotations.add(NormalScope.class.getName());
-        cdiEnablingAnnotations.add(ApplicationScoped.class.getName());
-        cdiEnablingAnnotations.add(SessionScoped.class.getName());
-        cdiEnablingAnnotations.add(RequestScoped.class.getName());
-        cdiEnablingAnnotations.add(Dependent.class.getName());
+
+        // CDI scopes
+        cdiEnablingAnnotations.addAll(cdiScopeAnnotations);
+
+        // EJB annotations
+        cdiEnablingAnnotations.add(MessageDriven.class.getName());
+        cdiEnablingAnnotations.add(Stateful.class.getName());
+        cdiEnablingAnnotations.add(Stateless.class.getName());
         cdiEnablingAnnotations.add(Singleton.class.getName());
     }
 
@@ -120,6 +136,19 @@ public class WeldUtils {
         excludedAnnotationTypes.add(Documented.class.getName());
         excludedAnnotationTypes.add(Retention.class.getName());
         excludedAnnotationTypes.add(Target.class.getName());
+    }
+
+
+    /**
+     * Determine whether the specified archive is an implicit bean deployment archive.
+     *
+     * @param context     The deployment context
+     * @param archivePath The URI of the archive
+     *
+     * @return true, if it is an implicit bean deployment archive; otherwise, false.
+     */
+    public static boolean isImplicitBeanArchive(DeploymentContext context, URI archivePath) {
+        return isImplicitBeanDiscoveryEnabled() && hasCDIEnablingAnnotations(context, archivePath);
     }
 
 
@@ -151,11 +180,7 @@ public class WeldUtils {
     public static boolean hasCDIEnablingAnnotations(DeploymentContext context, Collection<URI> paths) {
         List<String> result = new ArrayList<String>();
 
-        Types types =  (Types) context.getTransientAppMetadata().get(Types.class.getName());
-        if (types == null) {
-            types = (Types) ((ExtendedDeploymentContext) context).getParentContext().getTransientAppMetadata().get(Types.class.getName());
-        }
-
+        Types types = getTypes(context);
         if (types != null) {
             Iterator<Type> typesIter = types.getAllTypes().iterator();
             while (typesIter.hasNext()) {
@@ -190,7 +215,7 @@ public class WeldUtils {
     public static String[] getCDIEnablingAnnotations(DeploymentContext context) {
         List<String> result = new ArrayList<String>();
 
-        Types types =  (Types) context.getTransientAppMetadata().get(Types.class.getName());
+        Types types = getTypes(context);
         if (types != null) {
             Iterator<Type> typesIter = types.getAllTypes().iterator();
             while (typesIter.hasNext()) {
@@ -215,6 +240,65 @@ public class WeldUtils {
 
 
     /**
+     * Get the names of any classes that are annotated with bean-defining annotations, which should
+     * enable CDI processing even in the absence of a beans.xml descriptor.
+     *
+     * @param context The DeploymentContext
+     *
+     * @return A collection of class names; The collection could be empty if none are found.
+     */
+    public static Collection<String> getCDIAnnotatedClassNames(DeploymentContext context) {
+        Set<String> result = new HashSet<String>();
+
+        Types types = getTypes(context);
+        if (types != null) {
+            Iterator<Type> typesIter = types.getAllTypes().iterator();
+            while (typesIter.hasNext()) {
+                Type type = typesIter.next();
+                if (!(type instanceof AnnotationType)) {
+                    Iterator<AnnotationModel> annotations = type.getAnnotations().iterator();
+                    while (annotations.hasNext()) {
+                        AnnotationModel am = annotations.next();
+                        AnnotationType at = am.getType();
+                        if (isCDIEnablingAnnotation(at)) {
+                            if (!result.contains(at.getName())) {
+                                result.add(type.getName());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Determine whether the specified class is annotated with a CDI scope annotation.
+     *
+     * @param clazz  The class to check.
+     *
+     * @return true, if the specified class has a CDI scope annotation; Otherwise, false.
+     */
+    public static boolean hasScopeAnnotation(Class clazz) {
+        return hasValidAnnotation(clazz, cdiScopeAnnotations, null);
+    }
+
+
+    /**
+     * Determine whether the specified class is annotated with a CDI-enabling annotation.
+     *
+     * @param clazz The class to check.
+     *
+     * @return true, if the specified class has a CDI scope annotation; Otherwise, false.
+     */
+    public static boolean hasCDIEnablingAnnotation(Class clazz) {
+        return hasValidAnnotation(clazz, cdiEnablingAnnotations, null);
+    }
+
+
+    /**
      * Determine if the specified annotation type is a CDI-enabling annotation
      *
      * @param annotationType The annotation type to check
@@ -235,7 +319,7 @@ public class WeldUtils {
      * @return true, if the specified annotation type qualifies as a CDI enabler; Otherwise, false
      */
     private static boolean isCDIEnablingAnnotation(AnnotationType annotationType,
-                                                   Set<String> excludedTypeNames) {
+                                                   Set<String>    excludedTypeNames) {
         boolean result = false;
 
         Set<String> exclusions = new HashSet<String>();
@@ -263,37 +347,27 @@ public class WeldUtils {
 
 
     /**
-     * Determine whether the specified class is annotated with a CDI scope annotation.
-     *
-     * @param clazz  The class to check.
-     *
-     * @return true, if the specified class has a CDI scope annotation; Otherwise, false.
-     */
-    public static boolean hasScopeAnnotation(Class clazz) {
-        return hasScopeAnnotation(clazz, cdiEnablingAnnotations, null);
-    }
-
-
-    /**
      * Determine whether the specified class is annotated with one of the annotations in the specified
      * validScopes collection, but not with any of the annotations in the specified exclusion set.
      *
-     * @param clazz          The class to check.
+     * @param annotatedClass          The class to check.
      * @param validScopes    A collection of valid CDI scope type names
      * @param excludedScopes A collection of excluded CDI scope type names
      *
      * @return true, if the specified class has at least one of the annotations specified in
      *         validScopes, and none of the annotations specified in excludedScopes; Otherwise, false.
      */
-    public static boolean hasScopeAnnotation(Class              clazz,
+    public static boolean hasValidAnnotation(Class              annotatedClass,
                                              Collection<String> validScopes,
                                              Collection<String> excludedScopes) {
         boolean result = false;
 
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
-        for (Annotation annotation : clazz.getAnnotations()) {
-            if (WeldUtils.isScopeAnnotation(annotation.annotationType(), validScopes, excludedScopes)) {
+        for (Annotation annotation : annotatedClass.getAnnotations()) {
+            if (WeldUtils.isValidAnnotation(annotation.annotationType(),
+                                            validScopes,
+                                            excludedScopes)) {
                 result =true;
                 break;
             }
@@ -313,7 +387,7 @@ public class WeldUtils {
      *
      * @return true, if the specified type is in the valid list and not in the excluded list; Otherwise, false.
      */
-    protected static boolean isScopeAnnotation(Class<? extends Annotation> annotationType,
+    protected static boolean isValidAnnotation(Class<? extends Annotation> annotationType,
                                                Collection<String>          validTypeNames,
                                                Collection<String>          excludedTypeNames) {
         boolean result = false;
@@ -333,7 +407,7 @@ public class WeldUtils {
                 // types, less itself (to avoid infinite recursion)
                 excludedScopes.add(annotationTypeName);
                 for (Annotation parent : annotationType.getAnnotations()) {
-                    if (isScopeAnnotation(parent.annotationType(), validTypeNames, excludedScopes)) {
+                    if (isValidAnnotation(parent.annotationType(), validTypeNames, excludedScopes)) {
                         result = true;
                         break;
                     }
@@ -345,9 +419,35 @@ public class WeldUtils {
     }
 
 
-    public static boolean isEnableImplicitCDI() {
-        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
-        Config config = serviceLocator.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
-        return Boolean.valueOf( config.getExtensionByType(CDIService.class).getEnableImplicitCdi() );
+    private static Types getTypes(DeploymentContext context) {
+        String metadataKey = Types.class.getName();
+
+        Types types = (Types) context.getTransientAppMetadata().get(metadataKey);
+        while (types == null) {
+            context = ((ExtendedDeploymentContext) context).getParentContext();
+            if (context != null) {
+                types = (Types) context.getTransientAppMetadata().get(metadataKey);
+            } else {
+                break;
+            }
+        }
+
+        return types;
     }
+
+
+    public static boolean isImplicitBeanDiscoveryEnabled() {
+        boolean result = false;
+
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        if (serviceLocator != null) {
+            Config config = serviceLocator.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+            if (config != null) {
+                result = Boolean.valueOf(config.getExtensionByType(CDIService.class).getEnableImplicitCdi());
+            }
+        }
+        return result;
+    }
+
+
 }

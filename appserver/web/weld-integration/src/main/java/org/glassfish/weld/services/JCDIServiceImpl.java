@@ -115,7 +115,7 @@ public class JCDIServiceImpl implements JCDIService {
 
     @Inject
     private InvocationManager invocationManager;
-    
+
     private Logger logger = Logger.getLogger(JCDIServiceImpl.class.getName());
 
 
@@ -128,7 +128,7 @@ public class JCDIServiceImpl implements JCDIService {
         if( inv == null ) {
             return false;
         }
-        
+
         JndiNameEnvironment componentEnv =
             compEnvManager.getJndiNameEnvironment(inv.getComponentId());
 
@@ -158,7 +158,7 @@ public class JCDIServiceImpl implements JCDIService {
     public boolean isCDIScoped(Class<?> clazz) {
         // Check all the annotations on the specified Class to determine if the class is annotated
         // with a supported CDI scope
-        return WeldUtils.hasScopeAnnotation(clazz, validScopes, excludedScopes);
+        return WeldUtils.hasValidAnnotation(clazz, validScopes, excludedScopes);
     }
 
     public void setELResolver(ServletContext servletContext) throws NamingException {
@@ -182,15 +182,14 @@ public class JCDIServiceImpl implements JCDIService {
 
     // instance could be null. If null, create a new one
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    private <T> JCDIInjectionContext<T> _createJCDIInjectionContext(EjbDescriptor ejb, 
-							     T instance) {
+    private <T> JCDIInjectionContext<T> _createJCDIInjectionContext(EjbDescriptor ejb, T instance) {
 
         BundleDescriptor topLevelBundleDesc = (BundleDescriptor)
                 ejb.getEjbBundleDescriptor().getModuleDescriptor().getDescriptor();
 
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, ejb.getEjbClassName());
-     
+
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(ejb.getEjbBundleDescriptor().getApplication());
         WeldManager weldManager = bootstrap.getManager(bda);
 
@@ -203,20 +202,20 @@ public class JCDIServiceImpl implements JCDIService {
         InjectionTarget it = weldManager.createInjectionTarget(ejbDesc);
 
         // Per instance required, create the creational context
-        CreationalContext<?> cc = weldManager.createCreationalContext(bean);   
-	
+        CreationalContext<?> cc = weldManager.createCreationalContext(bean);
+
     	Object beanInstance = instance;
-    
+
     	if( beanInstance == null ) {
     	    // Create instance , perform constructor injection.
     	    beanInstance = it.produce(cc);
-    	} 
+    	}
 
     	// Injection is not performed yet. Separate injectEJBInstance() call is required.
         return new JCDIInjectionContextImpl(it, cc, beanInstance);
 
     }
-    
+
     private BeanDeploymentArchive getBDAForBeanClass(BundleDescriptor bundleDesc, String beanClassName){
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE,
@@ -233,7 +232,7 @@ public class JCDIServiceImpl implements JCDIService {
             }
             return topLevelBDA;
         }
-        
+
         //for all sub-BDAs
         for (BeanDeploymentArchive bda: topLevelBDA.getBeanDeploymentArchives()){
             if (bda.getBeanClasses().contains(beanClassName)){
@@ -249,16 +248,15 @@ public class JCDIServiceImpl implements JCDIService {
         //If not found in any BDA's subclasses, return topLevel BDA
         return topLevelBDA;
     }
-    
+
 
     @SuppressWarnings("unchecked")
     public <T> void injectEJBInstance(JCDIInjectionContext<T> injectionCtx) {
-    	JCDIInjectionContextImpl<T> injectionCtxImpl = 
-    	    (JCDIInjectionContextImpl<T>) injectionCtx;
-    
+    	JCDIInjectionContextImpl<T> injectionCtxImpl = (JCDIInjectionContextImpl<T>) injectionCtx;
+
     	// Perform injection and call initializers
     	injectionCtxImpl.it.inject(injectionCtxImpl.instance, injectionCtxImpl.cc);
-    
+
     	// NOTE : PostConstruct is handled by ejb container
     }
 
@@ -308,7 +306,7 @@ public class JCDIServiceImpl implements JCDIService {
         if (!invokePostConstruct) {
             annotatedType = new NoPostConstructPreDestroyAnnotatedType(annotatedType);
         }
-        
+
         InjectionTarget it = ((BeanDeploymentArchiveImpl)bda).getInjectionTarget(annotatedType);
         if (it == null) {
             it = beanManager.createInjectionTarget(annotatedType);
@@ -327,20 +325,20 @@ public class JCDIServiceImpl implements JCDIService {
         return new JCDIInjectionContextImpl(it, cc, managedObject);
 
     }
-    
+
     /**
      * This class is here to exclude the post-construct and pre-destroy methods from the AnnotatedType.
      * This is done in cases where Weld will not be calling those methods and we therefore do NOT want
      * Weld to validate them, as they may be of the form required for interceptors rather than
      * Managed objects
-     * 
+     *
      * @author jwells
      *
      * @param <X>
      */
     private static class NoPostConstructPreDestroyAnnotatedType<X> implements AnnotatedType<X> {
         private final AnnotatedType<X> delegate;
-        
+
         private NoPostConstructPreDestroyAnnotatedType(AnnotatedType<X> delegate) {
             this.delegate = delegate;
         }
@@ -390,7 +388,7 @@ public class JCDIServiceImpl implements JCDIService {
                     // Do not include the post-construct or pre-destroy
                     continue;
                 }
-                
+
                 retVal.add(m);
             }
             return retVal;
@@ -401,8 +399,8 @@ public class JCDIServiceImpl implements JCDIService {
             return delegate.getFields();
         }
 
-        
-        
+
+
     }
 
     @SuppressWarnings("rawtypes")
