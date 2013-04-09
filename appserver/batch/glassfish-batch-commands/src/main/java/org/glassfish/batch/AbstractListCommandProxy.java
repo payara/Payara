@@ -93,6 +93,8 @@ public abstract class AbstractListCommandProxy
     @Param(name = "long", shortName = "l", optional = true)
     protected boolean useLongFormat;
 
+    protected ActionReport.ExitCode commandsExitCode = ActionReport.ExitCode.SUCCESS;
+
     @Override
     public final void execute(AdminCommandContext context) {
         ActionReport actionReport = context.getActionReport();
@@ -121,9 +123,16 @@ public abstract class AbstractListCommandProxy
         if (subReport != null) {
             if (subReport.getExtraProperties() != null && subReport.getExtraProperties().size() > 0)
                 postInvoke(context, subReport);
-            else
-                postInvoke(context, subReport.getSubActionsReport().get(0));
+            else {
+                if (subReport.getSubActionsReport() != null && subReport.getSubActionsReport().size() > 0) {
+                    postInvoke(context, subReport.getSubActionsReport().get(0));
+                } else {
+                    actionReport.setMessage(subReport.getMessage());
+                    commandsExitCode = subReport.getActionExitCode();
+                }
+            }
         }
+        actionReport.setActionExitCode(commandsExitCode);
     }
 
     protected abstract String getCommandName();

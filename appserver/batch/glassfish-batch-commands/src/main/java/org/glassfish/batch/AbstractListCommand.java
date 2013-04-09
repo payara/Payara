@@ -122,9 +122,10 @@ public abstract class AbstractListCommand
         for (String h : getAllHeaders())
             validHeaders.put(h.toLowerCase(Locale.US), h);
         for (int i=0; i<headers.length; i++) {
-            headers[i] = validHeaders.get(headers[i].toLowerCase(Locale.US));
-            if (headers[i] == null)
-                throw new IllegalArgumentException("IllegalArgument " + headers[i]);
+            String val = validHeaders.get(headers[i].toLowerCase(Locale.US));
+            if (val == null)
+                throw new IllegalArgumentException("Invalid header " + headers[i]);
+            headers[i] = val;
         }
 
         outputHeaders = headers;

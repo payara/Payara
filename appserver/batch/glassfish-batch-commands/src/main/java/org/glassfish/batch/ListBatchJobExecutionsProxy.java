@@ -103,7 +103,8 @@ public class ListBatchJobExecutionsProxy
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
         Properties subProperties = subReport.getExtraProperties();
         Properties extraProps = context.getActionReport().getExtraProperties();
-        extraProps.put("listBatchJobExecutions", subProperties.get("listBatchJobExecutions"));
+        if (subProperties.get("listBatchJobExecutions") != null)
+            extraProps.put("listBatchJobExecutions", subProperties.get("listBatchJobExecutions"));
     }
 
 }

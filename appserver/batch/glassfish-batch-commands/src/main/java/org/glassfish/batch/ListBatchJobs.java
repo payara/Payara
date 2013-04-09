@@ -142,12 +142,13 @@ public class ListBatchJobs
     }
 
     private boolean isSimpleMode() {
+
         for (String h : getOutputHeaders()) {
             if (!JOB_NAME.equals(h) && !INSTANCE_COUNT.equals(h)) {
                 return false;
             }
         }
-        return true;
+        return getOutputHeaders().length == 2;
     }
 
     private Map<String, Integer> findSimpleJobInfo(ColumnFormatter columnFormatter)
