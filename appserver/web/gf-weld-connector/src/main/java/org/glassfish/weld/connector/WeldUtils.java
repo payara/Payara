@@ -40,11 +40,16 @@
 
 package org.glassfish.weld.connector;
 
+import com.sun.enterprise.config.serverbeans.CDIService;
+import com.sun.enterprise.config.serverbeans.Config;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.AnnotationType;
 import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -341,4 +346,10 @@ public class WeldUtils {
     }
 
 
+    public static boolean isDisableImplicitCDI() {
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        Config config = serviceLocator.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
+        String value = config.getExtensionByType(CDIService.class).getDisableImplicitCdi();
+        return Boolean.valueOf( config.getExtensionByType(CDIService.class).getDisableImplicitCdi() );
+    }
 }
