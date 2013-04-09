@@ -850,11 +850,6 @@ public class RestUtil {
             address = FacesContext.getCurrentInstance().getExternalContext().getSessionMap().get("REST_URL") + address;
         }
         WebTarget target = targetWithQueryParams(getJerseyClient().target(address), payload);
-        if (payload==null || payload.isEmpty()){
-            System.out.println("GET: " + address );
-        }else{
-            System.out.println("GET: " + address + "; payload=" + payload);
-        }
         Response resp = target
                 .request(RESPONSE_TYPE)
                 .cookie(new Cookie(REST_TOKEN_COOKIE, getRestToken()))
