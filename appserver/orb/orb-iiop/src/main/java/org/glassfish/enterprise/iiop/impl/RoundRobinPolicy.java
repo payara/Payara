@@ -48,6 +48,7 @@ import org.glassfish.internal.api.ORBLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -271,7 +272,12 @@ public class RoundRobinPolicy {
     private ClusterInstanceInfo makeClusterInstanceInfo(String str, 
         int weight) {
 
-	String[] host_port = str.split(":");
+    //support IPV6 literal address
+    String[] host_port = new String[2];
+    int i = str.lastIndexOf(':');
+    host_port[0] = str.substring(0,i);
+    host_port[1] = str.substring(i+1);
+
 	String server_identifier = ""; //for bootstrapping, can be ""
 	String type = CLEAR_TEXT; //will be clear_text for bootstrapping
 	SocketInfo socketInfo = new SocketInfo(
@@ -418,7 +424,7 @@ public class RoundRobinPolicy {
             InetAddress [] addresses = InetAddress.getAllByName(host);
             List<InetAddress> addrs = new ArrayList<InetAddress>() ;
             for (InetAddress addr : addresses) {
-                if (addr instanceof Inet4Address) {
+                if (addr instanceof Inet4Address || addr instanceof Inet6Address) {
                     addrs.add( addr ) ;
                 }
             }
