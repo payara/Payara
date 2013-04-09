@@ -43,11 +43,8 @@ package com.sun.enterprise.security.admin.cli;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
-import com.sun.enterprise.config.serverbeans.ProviderConfig;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminCommandException;
-import com.sun.enterprise.config.serverbeans.SecurityService;
 import org.glassfish.grizzly.config.dom.FileCache;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.HttpRedirect;
@@ -73,7 +70,6 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
-import org.jvnet.hk2.config.types.Property;
 
 /**
  * Provides common behavior for the enable and disable secure admin commands.
@@ -395,7 +391,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
              * writeable -- it was just created moments ago and has not yet
              * been committed.
              */
-            Http http_w = null;
+            Http http_w;
             Http http = secAdminListenerProtocol_w.getHttp();
             if (http == null) {
                 http_w = secAdminListenerProtocol_w.createChild(Http.class);
@@ -437,24 +433,6 @@ public abstract class SecureAdminCommand implements AdminCommand {
                 final String dasAlias,
                 final String instanceAlias) throws TransactionFailure {
             return (configName.equals(DAS_CONFIG_NAME) ? dasAlias : instanceAlias);
-        }
-
-        private ProviderConfig findProviderConfig(
-                final Config config_w) {
-            final SecurityService ss = config_w.getSecurityService();
-            if (ss == null) {
-                return null;
-            }
-            for (MessageSecurityConfig msc : ss.getMessageSecurityConfig()) {
-                if (msc.getAuthLayer().equals(AUTH_LAYER_NAME)) {
-                    for (ProviderConfig pc : msc.getProviderConfig()) {
-                        if (pc.getProviderId().equals(PROVIDER_ID_VALUE)) {
-                            return pc;
-                        }
-                    }
-                }
-            }
-            return null;
         }
 
         @Override
