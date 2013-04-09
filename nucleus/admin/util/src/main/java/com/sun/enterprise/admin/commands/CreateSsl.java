@@ -104,6 +104,14 @@ import javax.inject.Named;
         params={
             @RestParam(name="id", value="$parent"),
             @RestParam(name="type", value="http-listener")
+        }),
+    @RestEndpoint(configBean=Protocol.class,
+        opType=RestEndpoint.OpType.POST, 
+        path="create-ssl", 
+        description="create-ssl",
+        params={
+            @RestParam(name="id", value="$parent"),
+            @RestParam(name="type", value="protocol")
         })
 })
 public class CreateSsl implements AdminCommand {
@@ -146,6 +154,7 @@ public class CreateSsl implements AdminCommand {
      *
      * @param context information
      */
+    @Override
     public void execute(AdminCommandContext context) {
         final ActionReport report = context.getActionReport();
         Target targetUtil = habitat.getService(Target.class);
@@ -198,6 +207,7 @@ public class CreateSsl implements AdminCommand {
         Protocol protocol = networkConfig.findProtocol(name);
         if (protocol == null && create) {
             protocol = (Protocol) ConfigSupport.apply(new SingleConfigCode<Protocols>() {
+                @Override
                 public Object run(Protocols param) throws TransactionFailure {
                     Protocol newProtocol = param.createChild(Protocol.class);
                     newProtocol.setName(name);
@@ -241,6 +251,7 @@ public class CreateSsl implements AdminCommand {
         }
         try {
             ConfigSupport.apply(new SingleConfigCode<JmxConnector>() {
+                @Override
                 public Object run(JmxConnector param)
                     throws PropertyVetoException, TransactionFailure {
                     Ssl newSsl = param.createChild(Ssl.class);
