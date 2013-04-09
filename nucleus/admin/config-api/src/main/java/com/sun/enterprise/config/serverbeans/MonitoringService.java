@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -187,6 +187,9 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
 
     @DuckTyped
     void setMonitoringLevel(String name, String level);
+    
+    @DuckTyped
+    boolean isAnyModuleOn();
 
     public class Duck {
         public static ContainerMonitoring getContainerMonitoring(MonitoringService ms, String name) {
@@ -199,6 +202,23 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
         }
 
         private final static List<String> getMethods = new ArrayList<String>();
+        
+        private static void populateGetMethods() {
+            // We need to use reflection to compare the given name with the
+            // getters of ModuleMonitoringLevel.
+            // For performance, the method names are cached when this is run first time.
+            synchronized (getMethods) {
+                if (getMethods.isEmpty()) {
+                    for (Method method : ModuleMonitoringLevels.class.getDeclaredMethods()) {
+                        // If it is a getter store it in the list
+                        String str = method.getName();
+                        if (str.startsWith("get") && method.getReturnType().equals(String.class)) {
+                            getMethods.add(str);
+                        }
+                    }
+                }
+            }
+        }
 
         public static String getMonitoringLevel(MonitoringService ms, String name) {
 
@@ -211,22 +231,8 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
             // Order of precedence is to first check module-monitoring-levels
             // then container-monitoring.
 
-            // module-monitoring-levels
-            // We need to use reflection to comapre the given name with the
-            // getters of ModuleMonitoringLevel.
-            // For performance, the method names are cached when this is run first time.
-
-          synchronized (getMethods) {
-            if (getMethods.isEmpty()) {
-                for (Method method : ModuleMonitoringLevels.class.getDeclaredMethods()) {
-                    // If it is a getter store it in the list
-                    String str = method.getName();
-                    if (str.startsWith("get")) {
-                        getMethods.add(str);
-                    }
-                }
-            }
-          }
+            // module-monitoring-levels           
+            populateGetMethods();      
 
             // strip - part from name
             String rName = name.replaceAll("-", "");
@@ -260,6 +266,29 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
             }
 
             return null;
+        }
+        
+        public static boolean isAnyModuleOn(MonitoringService ms) {
+            boolean rv = false;
+            populateGetMethods();
+            ModuleMonitoringLevels mml = ms.getModuleMonitoringLevels();
+            for (String methodName : getMethods) {
+                try {
+                    Method mthd = ModuleMonitoringLevels.class.getMethod(methodName, (Class[])null);
+                    String level = (String) mthd.invoke(mml, (Object[])null);
+                    rv = rv || !"OFF".equals(level);
+                } catch (NoSuchMethodException nsme) {
+                    Logger.getAnonymousLogger().log(Level.WARNING, nsme.getMessage(), nsme);
+                } catch (IllegalAccessException ile) {
+                    Logger.getAnonymousLogger().log(Level.WARNING, ile.getMessage(), ile);
+                } catch (java.lang.reflect.InvocationTargetException ite) {
+                    Logger.getAnonymousLogger().log(Level.WARNING, ite.getMessage(), ite);
+                }                
+            }
+            for (ContainerMonitoring cm : ms.getContainerMonitoring()) {
+                rv = rv || !"OFF".equals(cm.getLevel());
+            }
+            return rv;
         }
 
         private final static List<String> setMethods = new ArrayList<String>();

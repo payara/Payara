@@ -155,9 +155,10 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
     private static final String PROBE_PROVIDER_XML_FILE_NAMES = "probe-provider-xml-file-names";
     private static final String DELIMITER = ",";
     private StatsProviderManagerDelegateImpl spmd;
-    private boolean monitoringEnabled;
+    private boolean monitoringEnabled = false;
     private boolean hasDiscoveredXMLProviders = false;
 
+    @Override
     public void postConstruct() {
         domain = habitat.getService(Domain.class);
         transactions.addListenerForType(ContainerMonitoring.class, this);
@@ -168,22 +169,30 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         // somehow during bootstrapping we would have some problems so we just get the value
         // and run with it...
 
-        if(monitoringService != null)
-            monitoringEnabled = Boolean.parseBoolean(monitoringService.getMonitoringEnabled());
-        else
-            monitoringEnabled = false;
+        boolean enableMonitoring = (monitoringService != null) ?
+                Boolean.parseBoolean(monitoringService.getMonitoringEnabled())
+                    && monitoringService.isAnyModuleOn()  :
+                false;
 
         //Don't listen for any events and dont process any probeProviders or statsProviders (dont set delegate)
-        if (!monitoringEnabled)
-                return;
+        if (enableMonitoring) {
+            enableMonitoring(false);
+        }   
+    }
 
+    private void enableMonitoring(boolean isDiscoverXMLProbeProviders) {
         // Register as ModuleLifecycleListener
         events.register(this);
 
-        boolean isDiscoverXMLProbeProviders = false;
         enableMonitoringForProbeProviders(isDiscoverXMLProbeProviders);
+        AgentAttacher.attachAgent();
+        //Lets do the catch up for all the statsProviders (we might have ignored the module level changes earlier)
+        if (spmd != null) {
+            spmd.updateAllStatsProviders();
+        }
+        monitoringEnabled = true;
     }
-
+    
     private void discoverProbeProviders() {
         // Iterate thru existing modules
         if (logger.isLoggable(Level.FINE))
@@ -513,7 +522,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 if (logger.isLoggable(Level.FINE))
                     logger.log(Level.FINE, level_change_mesg,
                                 new Object[]{propName, newEnabled, oldEnabled});
-                if ((!newEnabled.equals(oldEnabled)) && (spr != null)) {
+                if (!newEnabled.equals(oldEnabled)) {
                     handleLevelChange(propName, newEnabled);
                 }
             }
@@ -525,7 +534,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 if (logger.isLoggable(Level.FINE))
                     logger.log(Level.FINE, level_change_mesg,
                                 new Object[]{propName, newEnabled, oldEnabled});
-                if ((!newEnabled.equals(oldEnabled)) && (spr != null)) {
+                if (!newEnabled.equals(oldEnabled)) {
                     handleLevelChange(cm.getName(), newEnabled);
                 }
             }
@@ -553,7 +562,11 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
             logger.fine("In handleLevelChange(), spmd = " + spmd + "  Enabled="+enabledStr);
         if(!ok(propName))
             return;
-
+       
+        if (!monitoringEnabled && !"OFF".equals(enabledStr)) {
+            enableMonitoring(true);
+        }
+        
         if(spmd == null)
             return; // nothing to do!
 
@@ -600,15 +613,13 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
 
             if(enabled) {
                 logger.log(Level.INFO,monitoringEnabledLogMsg);
-                // attach btrace agent dynamically
-                AgentAttacher.attachAgent();
-                enableMonitoringForProbeProviders(true);
-                //Lets do the catch up for all the statsProviders (we might have ignored the module level changes earlier) s
-                spmd.updateAllStatsProviders();
+                enableMonitoring(true);
             } else { // if disabled
                 logger.log(Level.INFO,monitoringDisabledLogMsg);
                 disableMonitoringForProbeProviders();
-                spmd.disableAllStatsProviders();
+                if (spmd != null) {
+                    spmd.disableAllStatsProviders();
+                }
             }
         }
     }

@@ -410,9 +410,6 @@ public class MonitoringReporter extends V2DottedNameSupport {
         org.glassfish.flashlight.datatree.TreeNode tn = datareg.get(serverEnv.getInstanceName());
 
         if (tn == null) {
-            // No monitoring data, so nothing to list
-            // officially this is considered a "success"
-            setSuccess(Strings.get("admin.get.monitoring.empty"));
             return;
         }
 

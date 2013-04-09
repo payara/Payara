@@ -158,7 +158,9 @@ public class MonitoringResource {
             }
         } else { // Called for /monitoring/domain/
             List<TreeNode> list = new ArrayList<TreeNode>();
-            list.add(rootNode); //Add currentInstance to response
+            if (rootNode != null) {
+                list.add(rootNode); //Add currentInstance to response
+            }
             constructEntity(list,  ar);
 
             if(isRunningOnDAS) { // Add links to instances from the cluster
