@@ -91,7 +91,7 @@ public class ResourceLoaderImpl implements ResourceLoader{
         if (cl != null) {
             return cl.getResource(name);
         } else {
-            return this.getClass().getResource(name);
+            return getClass().getResource(name);
         }
     }
 

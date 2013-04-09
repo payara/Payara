@@ -42,15 +42,10 @@ package org.glassfish.weld;
 
 import org.glassfish.api.deployment.ApplicationContainer;
 import org.glassfish.api.deployment.ApplicationContext;
-import org.jboss.weld.bootstrap.WeldBootstrap;
 
 public class WeldApplicationContainer implements ApplicationContainer {
 
-    private WeldBootstrap weldBootstrap;
-
-
-    public WeldApplicationContainer(WeldBootstrap bootstrap) {
-        weldBootstrap = bootstrap;
+    public WeldApplicationContainer() {
     }
 
     public Object getDescriptor() {

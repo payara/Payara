@@ -538,7 +538,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             bundleToBeanDeploymentArchive.put(bundle, bda);
         }
 
-        WeldApplicationContainer wbApp = new WeldApplicationContainer(bootstrap);
+        WeldApplicationContainer wbApp = new WeldApplicationContainer();
 
         // Stash the WeldBootstrap instance, so we may access the WeldManager later..
         //context.addTransientAppMetaData(WELD_BOOTSTRAP, bootstrap);

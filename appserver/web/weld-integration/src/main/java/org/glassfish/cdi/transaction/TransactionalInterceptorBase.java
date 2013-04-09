@@ -68,19 +68,20 @@ public class TransactionalInterceptorBase {
      * @return TransactionManager
      */
     public TransactionManager getTransactionManager() {
-        if (testTransactionManager!=null) return testTransactionManager;
-        if (transactionManager == null) {
-            try {
-                synchronized(TransactionalInterceptorBase.class) {
-                    if (transactionManager == null)
-                        transactionManager = (TransactionManager)
-                                new InitialContext().lookup("java:appserver/TransactionManager");
-                }
-            } catch (NamingException e) {
-                _logger.severe(
-                        "Encountered NamingException while attempting to acquire transaction manager for " +
-                                "Transactional annotation interceptors " + e);
+        if (testTransactionManager != null) {
+            return testTransactionManager;
+        }
+
+        try {
+            synchronized(TransactionalInterceptorBase.class) {
+                if (transactionManager == null)
+                    transactionManager = (TransactionManager)
+                            new InitialContext().lookup("java:appserver/TransactionManager");
             }
+        } catch (NamingException e) {
+            _logger.severe(
+                    "Encountered NamingException while attempting to acquire transaction manager for " +
+                            "Transactional annotation interceptors " + e);
         }
         return transactionManager;
     }

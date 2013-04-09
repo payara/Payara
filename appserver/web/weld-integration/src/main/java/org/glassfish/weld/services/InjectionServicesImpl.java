@@ -185,7 +185,7 @@ public class InjectionServicesImpl implements InjectionServices {
             Collection<EjbDescriptor> ejbs = deployment.getDeployedEjbs();
             for ( EjbDescriptor oneEjb : ejbs ) {
                 String jndiName = oneEjb.getJndiName();
-                if ( lookupName.indexOf( jndiName ) >= 0 ) {
+                if (lookupName.contains(jndiName)) {
                     foundEjb = oneEjb;
                     break;
                 }
