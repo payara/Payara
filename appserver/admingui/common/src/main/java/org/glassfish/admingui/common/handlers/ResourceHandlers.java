@@ -253,6 +253,7 @@ public class ResourceHandlers {
         List<Map<String, Object>> listRow = (List<Map<String, Object>>) handlerCtx.getInputValue("listRow");
         if (listRow==null || listRow.isEmpty()){
             handlerCtx.setOutputValue("result", listRow);
+            return;
         }
         //listRow is the row for each resource table, need to extract its logical jndi name for logicalMapList and add that to the row.
         try{
