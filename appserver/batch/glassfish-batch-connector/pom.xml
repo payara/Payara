@@ -68,5 +68,10 @@
             <artifactId>persistence-common</artifactId>
             <version>${project.version}</version>
         </dependency>
+            <dependency>
+            <groupId>org.glassfish.main.concurrent</groupId>
+            <artifactId>concurrent-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

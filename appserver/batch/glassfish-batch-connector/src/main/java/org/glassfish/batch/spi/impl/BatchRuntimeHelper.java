@@ -47,18 +47,17 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.deployment.Deployment;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -78,11 +77,16 @@ public class BatchRuntimeHelper
         implements PostConstruct, EventListener {
 
     @Inject
+    ServiceLocator serviceLocator;
+
+    @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private BatchRuntimeConfiguration batchRuntimeConfiguration;
 
     @Inject
     private ServerContext serverContext;
+
+    private volatile ManagedServiceActivator activator;
 
     @Inject
     private GlassFishBatchSecurityHelper glassFishBatchSecurityHelper;
@@ -95,6 +99,7 @@ public class BatchRuntimeHelper
 
     @Inject
     Config config;
+
 
     private GlassFishBatchExecutorServiceProvider glassFishBatchExecutorServiceProvider
             = new GlassFishBatchExecutorServiceProvider();
@@ -164,7 +169,6 @@ public class BatchRuntimeHelper
                 String appName = props.getProperty("defaultAppName");
                 if (!Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
                     String tagName = config.getName() + ":" + appName;
-                    System.out.println("** BatchRuntimeHelper:: App Undeployed. tagName: " + tagName);
                     try {
                         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
                         batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
@@ -178,7 +182,17 @@ public class BatchRuntimeHelper
     }
 
     public String getDataSourceLookupName() {
-        return batchRuntimeConfiguration.getDataSourceLookupName();
+        String val = batchRuntimeConfiguration.getDataSourceLookupName();
+        if (val == null || val.trim().length() == 0) {
+            val = serverContext.getInstanceName().equals("server")
+                    ? "jdbc/__TimerPool" : "jdbc/__default";
+        }
+
+        return val;
+    }
+
+    public static String getDefaultDataSourceLookupNameForTarget(String targetName) {
+        return targetName.equals("server") ? "jdbc/__TimerPool" : "jdbc/__default";
     }
 
     private String getSchemaName() {
@@ -232,35 +246,23 @@ public class BatchRuntimeHelper
         }
     }
 
-    private ExecutorService lookupExecutorService() {
+    public ExecutorService lookupExecutorService() {
+        return lookupExecutorService(getExecutorServiceLookupName());
+    }
+
+    public ExecutorService lookupExecutorService(String exeLookupName) {
         try {
-            InitialContext initialContext = new InitialContext();
-            return (ExecutorService) initialContext.lookup(getExecutorServiceLookupName());   //java:comp/DefaultManagedExecutorService
-        } catch (NamingException nEx) {
-            try {
-                InitialContext initialContext = new InitialContext();
-                return (ExecutorService) initialContext.lookup("java:comp/DefaultManagedExecutorService");
-            } catch (NamingException namEx) {
-                logger.log(Level.WARNING, "Error during ExecutorService lookup", namEx);
+            if (activator == null) {
+                activator = serviceLocator.getService(ManagedServiceActivator.class);
             }
-            logger.log(Level.WARNING, "Error during ExecutorService lookup", nEx);
-        }
-
-        return null;
-    }
-
-    public void validateDataSourceLookupName() {
-        validateDataSourceLookupName(getDataSourceLookupName());
-    }
-
-    public static void validateDataSourceLookupName(String dsLookupName) {
-        try {
-            InitialContext ctx = new InitialContext();
-            Object obj = ctx.lookup(dsLookupName);
-            if (! (obj instanceof DataSource))
-                throw new GlassFishBatchValidationException(dsLookupName + " is not mapped to a DataSource. Batch operations may not work correctly.");
-        } catch (NamingException nmEx) {
-            throw new GlassFishBatchValidationException("No DataSource bound to name = " + dsLookupName, nmEx);
+            InitialContext initialContext = new InitialContext();
+            Object obj = initialContext.lookup(exeLookupName);
+            if (!(obj instanceof ExecutorService)) {
+                throw new GlassFishBatchValidationException(exeLookupName + " is not mapped to an ExecutorService. Batch operations may not work correctly.");
+            }
+            return (ExecutorService) obj;
+        } catch (NamingException nEx) {
+            throw new GlassFishBatchValidationException("No ExecutorService bound to name = " + exeLookupName, nEx);
         }
     }
 

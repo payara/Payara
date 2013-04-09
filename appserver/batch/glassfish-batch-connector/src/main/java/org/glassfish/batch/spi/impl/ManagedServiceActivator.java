@@ -39,28 +39,18 @@
  */
 package org.glassfish.batch.spi.impl;
 
-import org.glassfish.api.admin.config.ConfigExtension;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
 
 /**
  * @author Mahesh Kannan
- *
  */
-@Configured
-public interface BatchRuntimeConfiguration
-    extends ConfigBeanProxy, ConfigExtension {
+@Service
+public class ManagedServiceActivator {
 
-    @Attribute
-    String getDataSourceLookupName();
-
-    @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService")
-    String getExecutorServiceLookupName();
-
-    public void setDataSourceLookupName(String value);
-
-    public void setExecutorServiceLookupName(String value);
+    // Ensure that config for this object has been created
+    @Inject
+    org.glassfish.concurrent.config.ManagedExecutorService.ManagedExecutorServiceConfigActivator managedExecutorServiceConfigActivator;
 
 }

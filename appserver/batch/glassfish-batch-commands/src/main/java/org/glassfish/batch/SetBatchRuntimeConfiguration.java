@@ -40,18 +40,17 @@
 package org.glassfish.batch;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.batch.spi.impl.GlassFishBatchValidationException;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -59,12 +58,8 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
-import javax.sql.DataSource;
 import java.beans.PropertyVetoException;
-import java.util.Properties;
-import java.util.concurrent.ExecutorService;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -88,7 +83,7 @@ public class SetBatchRuntimeConfiguration
     implements AdminCommand {
 
     @Inject
-    BatchRuntimeHelper helper;
+    ServiceLocator serviceLocator;
 
     @Inject
     protected Logger logger;
@@ -105,9 +100,8 @@ public class SetBatchRuntimeConfiguration
     @Param(name = "executorServiceLookupName", shortName = "x", optional = true)
     private String executorServiceLookupName;
 
-
     @Override
-    public void execute(AdminCommandContext context) {
+    public void execute(final AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
@@ -123,9 +117,9 @@ public class SetBatchRuntimeConfiguration
 
         try {
             Config config = targetUtil.getConfig(target);
+            System.out.println("** EXECUTING -d " + dataSourceLookupName + "  -x " + executorServiceLookupName);
 
             BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
-            String errorMessage = null;
             if (batchRuntimeConfiguration != null) {
                 ConfigSupport.apply(new SingleConfigCode<BatchRuntimeConfiguration>() {
                     @Override
@@ -134,32 +128,29 @@ public class SetBatchRuntimeConfiguration
                         boolean encounteredError = false;
                         if (dataSourceLookupName != null) {
                             try {
-                                helper.validateDataSourceLookupName(dataSourceLookupName);
+                                validateDataSourceLookupName(context, target, dataSourceLookupName);
                                 batchRuntimeConfigurationProxy.setDataSourceLookupName(dataSourceLookupName);
                                 actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                             } catch (GlassFishBatchValidationException ex) {
                                 logger.log(Level.WARNING, ex.getMessage());
                                 actionReport.setMessage(dataSourceLookupName + " is not mapped to a DataSource");
                                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                throw new GlassFishBatchValidationException(dataSourceLookupName + " is not mapped to a DataSource");
                             }
                         }
                         if (executorServiceLookupName != null && !encounteredError) {
                             try {
-                                InitialContext ctx = new InitialContext();
-                                Object obj = ctx.lookup(executorServiceLookupName);
-                                if (obj instanceof ExecutorService) {
-                                    batchRuntimeConfigurationProxy.setDataSourceLookupName(executorServiceLookupName);
-                                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                                } else {
-                                    actionReport.setMessage(executorServiceLookupName + " is not mapped to an ExecutorService");
-                                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                                }
-                            } catch (NamingException nmEx) {
-                                logger.log(Level.FINE, "Exception during command ", nmEx);
+                                validateExecutorServiceLookupName(context, target, executorServiceLookupName);
+                                batchRuntimeConfigurationProxy.setExecutorServiceLookupName(executorServiceLookupName);
+                                actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                            } catch (GlassFishBatchValidationException ex) {
+                                logger.log(Level.WARNING, ex.getMessage());
                                 actionReport.setMessage("No executor service bound to name = " + executorServiceLookupName);
                                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                throw new GlassFishBatchValidationException("No executor service bound to name = " + executorServiceLookupName);
                             }
                         }
+
                         return null;
                     }
                 }, batchRuntimeConfiguration);
@@ -173,5 +164,63 @@ public class SetBatchRuntimeConfiguration
         }
     }
 
+    public void validateDataSourceLookupName(AdminCommandContext context, String targetName, String dsLookupName) {
+        try {
+            CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+            ActionReport subReport = context.getActionReport().addSubActionsReport();
+            CommandRunner.CommandInvocation inv = runner.getCommandInvocation("list-jdbc-resources", subReport, context.getSubject());
+
+            ParameterMap params = new ParameterMap();
+            params.add("target", targetName);
+            inv.parameters(params);
+            inv.execute();
+
+            Properties props = subReport.getExtraProperties();
+            if (props != null) {
+                if (props.get("jdbcResources") != null) {
+                    List<HashMap<String, String>> map = (List<HashMap<String, String>>) props.get("jdbcResources");
+                    for (HashMap<String, String> e : map) {
+                        if (e.get("name").equals(dsLookupName)) {
+                            return;
+                        }
+                    }
+                }
+            }
+            throw new GlassFishBatchValidationException("No DataSource mapped to " + dsLookupName);
+        } catch (Exception ex) {
+            throw new GlassFishBatchValidationException("Exception during validation: ", ex);
+        }
+    }
+
+    public void validateExecutorServiceLookupName(AdminCommandContext context, String targetName, String exeLookupName) {
+        if ("concurrent/__defaultManagedExecutorService".equals(exeLookupName)) {
+            return;
+        }
+        try {
+            CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+            ActionReport subReport = context.getActionReport().addSubActionsReport();
+            CommandRunner.CommandInvocation inv = runner.getCommandInvocation("list-managed-executor-services", subReport, context.getSubject());
+
+            ParameterMap params = new ParameterMap();
+            params.add("target", targetName);
+            inv.parameters(params);
+            inv.execute();
+
+            Properties props = subReport.getExtraProperties();
+            if (props != null) {
+                if (props.get("managedExecutorServices") != null) {
+                    List<HashMap<String, String>> map = (List<HashMap<String, String>>) props.get("managedExecutorServices");
+                    for (HashMap<String, String> e : map) {
+                        if (e.get("name").equals(exeLookupName)) {
+                            return;
+                        }
+                    }
+                }
+            }
+            throw new GlassFishBatchValidationException("No ExecutorService mapped to " + exeLookupName);
+        } catch (Exception ex) {
+            throw new GlassFishBatchValidationException("Exception during validation: ", ex);
+        }
+    }
 
 }

@@ -48,6 +48,7 @@ import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -85,6 +86,9 @@ public class ListBatchRuntimeConfiguration
     @Inject
     protected Target targetUtil;
 
+    @Inject
+    BatchRuntimeHelper helper;
+
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps) {
 
@@ -108,7 +112,9 @@ public class ListBatchRuntimeConfiguration
         for (int index=0; index<getOutputHeaders().length; index++) {
             switch (getOutputHeaders()[index]) {
                 case DATA_SOURCE_NAME:
-                    data[index] = batchRuntimeConfiguration.getDataSourceLookupName();
+                    String val = batchRuntimeConfiguration.getDataSourceLookupName();
+                    data[index] = (val == null || val.trim().length() == 0)
+                        ? BatchRuntimeHelper.getDefaultDataSourceLookupNameForTarget(target) : val;
                     break;
                 case EXECUTOR_SERVICE_NAME:
                     data[index] = batchRuntimeConfiguration.getExecutorServiceLookupName();
