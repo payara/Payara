@@ -1182,8 +1182,7 @@ public final class StatefulSessionContainer
                         (ejbDescriptor, removeMethod, i.exception);
             }
             */
-            // do not do tx processing
-            postInvoke(ejbInv, false);
+            postInvoke(ejbInv);
         }
 
         if (ejbInv.exception != null) {
@@ -2993,8 +2992,6 @@ public final class StatefulSessionContainer
 
         boolean inTx = false;
         try {
-
-            ((SessionContextImpl)ctx).setInLifeCycleCallback(true);
             invocationManager.preInvoke(ejbInv);
 
             inTx = callLifecycleCallbackInTxIfUsed(ejbInv, ctx, preDestroyInvInfo, CallbackType.PRE_DESTROY);
