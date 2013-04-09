@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.config.serverbeans;
+package org.glassfish.weld.connector;
 
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
@@ -50,18 +50,18 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface CDIService extends ConfigExtension {
     /**
-     * Gets the value of the disableImplicitCdi property.
+     * Gets the value of the enableImplicitCdi property.
      *
-     * @return The value of the disableImplicitCdi property.
+     * @return The value of the enableImplicitCdi property.
      */
-    @Attribute (defaultValue="true",dataType=Boolean.class)
-    String getDisableImplicitCdi();
+    @Attribute (defaultValue="false",dataType=Boolean.class)
+    String getEnableImplicitCdi();
 
     /**
-     * Sets the value of the disableImplicitCdi property.
+     * Sets the value of the enableImplicitCdi property.
      *
      * @param value allowed object is {@link String }
      */
-    void setDisableImplicitCdi(String value);
+    void setEnableImplicitCdi(String value);
 
 }
