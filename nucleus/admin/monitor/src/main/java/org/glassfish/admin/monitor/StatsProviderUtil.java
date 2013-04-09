@@ -55,6 +55,9 @@ public class StatsProviderUtil {
     }
 
     public static void setHandlesForStatsProviders(Object statsProvider, Collection<ProbeClientMethodHandle> handles) {
+        if (spmd == null) {
+            return;
+        }
         // save the handles also against statsProvider so you can unregister when statsProvider is unregistered
         if (handles != null) {
             spmd.setHandlesForStatsProviders(statsProvider, handles);
@@ -62,6 +65,6 @@ public class StatsProviderUtil {
     }
 
     public static Boolean isMonitoringEnabled(String configElement) {
-        return spmd.getEnabledValue(configElement);
+        return spmd == null ? Boolean.FALSE : spmd.getEnabledValue(configElement);
     }
 }
