@@ -59,7 +59,8 @@
 
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-timers?target=#{pageSession.encodedClusterName}"
             attrs="#{requestScope.attrsMap}" method="get" result="#{requestScope.resp}");
-            setAttribute(key="listOfRows" value="#{requestScope.resp.data.extraProperties.ejbTimers}");
+        setAttribute(key="listOfRows" value="#{requestScope.resp.data.extraProperties.ejbTimers}");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/cluster/cluster/clusterGeneral.jsf?clusterName=#{pageSession.encodedClusterName}");
         gf.isClusterName(clusterName="#{pageSession.clusterName}" );
     />
     </event>
@@ -67,12 +68,22 @@
 #include "/cluster/cluster/clusterTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
 
-         <sun:title id="propertyContentPage" title="$resource{i18ncs.clusters.ejbTimers.PageTitle}" />
+         <sun:title id="propertyContentPage" title="$resource{i18ncs.clusters.ejbTimers.PageTitle}" >
+              <!facet pageButtonsTop>
+                  <sun:panelGroup id="topButtons">
+                      <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Back}" >
+                          <!command
+                              gf.redirect(page="#{parentPage}");
+                          />
+                      </sun:button>
+                  </sun:panelGroup>
+              </facet>
+         </sun:title>
 <sun:table id="configs" title="#{tableTitle}" >
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{tableId});
     />
-
+"<br/ > <br />
 <sun:tableRowGroup id="rowGroup1"  data={"$attribute{listOfRows}"} sourceVar="td">
      <!afterCreate
          getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});

@@ -45,8 +45,7 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.cluster.migrateEjbTimers}"
-        guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:clusterTreeNode');" >
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.cluster.migrateEjbTimers}"  >
 <!define name="content">
     <event>
     <!beforeCreate
@@ -119,6 +118,7 @@
         </sun:propertySheet>
     </h:panelGroup>
     <h:panelGroup rendered="#{empty runningInstances}">
+        "<br /> <br />
         "<em>$resource{i18ncs.cluster.migrateEjbTimersNoRunningInstance}</em>
     </h:panelGroup>
 

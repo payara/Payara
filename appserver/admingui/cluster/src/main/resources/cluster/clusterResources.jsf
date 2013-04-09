@@ -47,11 +47,7 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout"
-    guiTitle="$resource{i18ncs.cluster.ResourcesTitle}"
-    guiTemplateOnLoad="admingui.nav.refreshTree();"
->
-
+<!composition template="/templates/default.layout" guiTitle="$resource{i18ncs.cluster.ResourcesTitle}" >
 <!define name="content">
     <event>
     <!beforeCreate
@@ -121,7 +117,7 @@
     <!afterCreate
          getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
     />
-   <sun:tableColumn selectId="select" rowHeader="$boolean{false}" id="col0">
+   <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
         <sun:checkbox id="select"
             selected="#{td.value.selected}"
             selectedValue="$boolean{true}"

@@ -78,7 +78,7 @@
         <!afterCreate
          getClientId(component="$this{component}" clientId=>$page{propertyTableRowGroupId});
         />
-        <sun:tableColumn selectId="select" rowHeader="$boolean{false}" id="col1">
+        <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col1">
             <sun:checkbox id="select" 
                 selected="#{td.value.selected}" 
                 selectedValue="$boolean{true}" 
