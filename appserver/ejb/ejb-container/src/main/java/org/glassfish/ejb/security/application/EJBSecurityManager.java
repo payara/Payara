@@ -82,6 +82,7 @@ import org.glassfish.ejb.security.factory.EJBSecurityManagerFactory;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.security.common.Role;
 
 import com.sun.ejb.EjbInvocation;
 import com.sun.enterprise.deployment.EjbIORConfigurationDescriptor;
@@ -350,7 +351,11 @@ public final class EJBSecurityManager
         // pc will always has a value which is provided by implementation
         // of PolicyConfigurationFactory
         assert pc != null;
-        List<String> role = new ArrayList<String>();
+        // Get the set of roles declared
+        Set<Role> roleset = eDescriptor.getEjbBundleDescriptor().getRoles();
+        Role anyAuthUserRole = new Role("**");
+        boolean rolesetContainsAnyAuthUserRole = roleset.contains(anyAuthUserRole);
+        List<Role> role = new ArrayList<Role>();
         String eName = eDescriptor.getName();
         for (RoleReference roleRef : eDescriptor.getRoleReferences()) {
             String rolename = roleRef.getRoleName();
@@ -358,7 +363,7 @@ public final class EJBSecurityManager
                     new EJBRoleRefPermission(eName, rolename);
             String rolelink = roleRef.getSecurityRoleLink().getName();
 
-            role.add(rolename);
+            role.add(new Role(rolename));
             pc.addToRole(rolelink, ejbrr);
 
             if (_logger.isLoggable(Level.FINE)) {
@@ -368,16 +373,35 @@ public final class EJBSecurityManager
                         ")" + "mapped to role (" + rolelink + ")");
             }
         }
+        if (_logger.isLoggable(Level.FINE)){
+        	_logger.log(Level.FINE,"JACC: Converting role-ref: Going through the list of roles not present in RoleRef elements and creating EJBRoleRefPermissions ");
+        }
+        for (Role r : roleset) {
+        	if (_logger.isLoggable(Level.FINE)){
+        		_logger.log(Level.FINE,"JACC: Converting role-ref: Looking at Role =  "+r.getName());
+        	}
+        	if (!role.contains(r)) {
+        		String action = r.getName();
+        		EJBRoleRefPermission ejbrr = new EJBRoleRefPermission(eName, action);
+        		pc.addToRole(action, ejbrr);
+        		if (_logger.isLoggable(Level.FINE)) {
+        			_logger.fine("JACC: Converting role-ref: Role =  " + r.getName() +
+        					" is added as a permission with name(" + ejbrr.getName() +
+        					") and actions (" + ejbrr.getActions() +
+        					")" + "mapped to role (" + action + ")");
+        		}
+        	}
+        }
         /**
          * JACC MR8 add EJBRoleRefPermission for the any authenticated user role '**'
          */
-        if (!role.contains("**")) {
-            String rolename = "**";
+        if ((!role.contains(anyAuthUserRole)) && !rolesetContainsAnyAuthUserRole) {
+            String rolename = anyAuthUserRole.getName();
             EJBRoleRefPermission ejbrr =
                     new EJBRoleRefPermission(eName, rolename);
             pc.addToRole(rolename, ejbrr);
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.fine("JACC: adding any authenticated user role-ref " +
+                _logger.fine("JACC: Converting role-ref: Adding any authenticated user role-ref " +
                         " to permission with name(" + ejbrr.getName() +
                         ") and actions (" + ejbrr.getActions() +
                         ")" + "mapped to role (" + rolename + ")");

@@ -446,13 +446,14 @@ public abstract class EJBContextImpl
 
         checkAccessToCallerSecurity();
         
-        EjbDescriptor ejbd = container.getEjbDescriptor();
-        RoleReference rr = ejbd.getRoleReferenceByName(roleRef);
-        
-        if ( rr == null ) {
-            throw new IllegalStateException(
-                "No mapping available for role reference " + roleRef);
-        }
+        // GLASSFISH-20036 - No requirement for explicit security-role-ref
+        //EjbDescriptor ejbd = container.getEjbDescriptor();
+        //RoleReference rr = ejbd.getRoleReferenceByName(roleRef);
+        //
+        //if ( rr == null ) {
+        //    throw new IllegalStateException(
+        //        "No mapping available for role reference " + roleRef);
+        //}
         
         com.sun.enterprise.security.SecurityManager sm = container.getSecurityManager();
 	    return sm.isCallerInRole(roleRef);

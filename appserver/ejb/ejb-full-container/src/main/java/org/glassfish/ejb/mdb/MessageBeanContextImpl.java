@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -154,13 +154,14 @@ public final class MessageBeanContextImpl
             throw new IllegalStateException("not invoked from within a message-bean context");
         }
 
-        EjbDescriptor ejbd = container.getEjbDescriptor();
-        RoleReference rr = ejbd.getRoleReferenceByName(roleRef);
-
-        if ( rr == null ) {
-            throw new IllegalStateException(
-                "No mapping available for role reference " + roleRef);
-        }
+        // GLASSFISH-20036 - No requirement for explicit security-role-ref
+        //EjbDescriptor ejbd = container.getEjbDescriptor();
+        //RoleReference rr = ejbd.getRoleReferenceByName(roleRef);
+        //
+        //if ( rr == null ) {
+        //    throw new IllegalStateException(
+        //        "No mapping available for role reference " + roleRef);
+        //}
 
         com.sun.enterprise.security.SecurityManager sm = container.getSecurityManager();
 	    return sm.isCallerInRole(roleRef);
