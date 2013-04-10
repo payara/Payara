@@ -46,23 +46,23 @@ import com.sun.enterprise.container.common.spi.util.InjectionManager;
 import com.sun.enterprise.deployment.*;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.weld.DeploymentImpl;
 import org.jboss.weld.injection.spi.InjectionContext;
 import org.jboss.weld.injection.spi.InjectionServices;
 
 import javax.enterprise.inject.spi.*;
 
 /**
- * The InjectionServices for a library bda.  A library bda has no associated bundle so we cannot reuse the
- * InjectionServicesImpl for injecting into a bean that's resides in an application library (not WEB-INF/lib)
+ * The InjectionServices for a non-module bda (library or rar).  A non-module bda has no associated bundle so we
+ * cannot reuse the InjectionServicesImpl for injecting into a bean that's resides in an application library
+ * (not WEB-INF/lib) or rar
  *
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
-public class LibraryBdaInjectionServices implements InjectionServices {
+public class NonModuleInjectionServices implements InjectionServices {
 
     private InjectionManager injectionManager;
 
-    public LibraryBdaInjectionServices(InjectionManager injectionMgr) {
+    public NonModuleInjectionServices(InjectionManager injectionMgr) {
         injectionManager = injectionMgr;
     }
 

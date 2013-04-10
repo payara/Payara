@@ -41,10 +41,7 @@
 package org.glassfish.weld;
 
 import static java.util.logging.Level.FINE;
-import static org.glassfish.weld.connector.WeldUtils.BEANS_XML_FILENAME;
-import static org.glassfish.weld.connector.WeldUtils.JAR_SUFFIX;
-import static org.glassfish.weld.connector.WeldUtils.META_INF_BEANS_XML;
-import static org.glassfish.weld.connector.WeldUtils.SEPARATOR_CHAR;
+import static org.glassfish.weld.connector.WeldUtils.*;
 
 import java.io.IOException;
 import java.net.URI;
@@ -724,5 +721,12 @@ public class DeploymentImpl implements CDI11Deployment {
             return null;
         }
         return libJarRootBdas.iterator();
+    }
+
+    public Iterator<RootBeanDeploymentArchive> getRarRootBdas() {
+        if ( rarRootBdas == null ) {
+            return null;
+        }
+        return rarRootBdas.iterator();
     }
 }

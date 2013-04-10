@@ -188,8 +188,10 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
                 deploymentImpl.buildDeploymentGraph();
 
-                addCdiServicesToLibraryBdas(deploymentImpl.getLibJarRootBdas(),
-                                            services.getService(InjectionManager.class));
+                addCdiServicesToNonModuleBdas(deploymentImpl.getLibJarRootBdas(),
+                                              services.getService(InjectionManager.class));
+                addCdiServicesToNonModuleBdas(deploymentImpl.getRarRootBdas(),
+                                              services.getService(InjectionManager.class));
 
                 //get Current TCL
                 ClassLoader oldTCL = Thread.currentThread().getContextClassLoader();
@@ -572,20 +574,20 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     }
 
     /**
-     * Add the cdi services to the library bdas.
+     * Add the cdi services to a non-module bda (library or rar)
      */
-    private void addCdiServicesToLibraryBdas( Iterator<RootBeanDeploymentArchive> libJarRootBdas, InjectionManager injectionMgr ) {
-        if ( injectionMgr != null && libJarRootBdas != null ) {
-            while( libJarRootBdas.hasNext() ) {
-                RootBeanDeploymentArchive oneLibJarRootBda = libJarRootBdas.next();
-                addCdiServicesToBda( injectionMgr, oneLibJarRootBda );
-                addCdiServicesToBda( injectionMgr, oneLibJarRootBda.getModuleBda() );
+    private void addCdiServicesToNonModuleBdas(Iterator<RootBeanDeploymentArchive> rootBdas, InjectionManager injectionMgr) {
+        if ( injectionMgr != null && rootBdas != null ) {
+            while( rootBdas.hasNext() ) {
+                RootBeanDeploymentArchive oneRootBda = rootBdas.next();
+                addCdiServicesToBda( injectionMgr, oneRootBda );
+                addCdiServicesToBda(injectionMgr, oneRootBda.getModuleBda());
             }
         }
     }
 
     private void addCdiServicesToBda( InjectionManager injectionMgr, BeanDeploymentArchive bda ) {
-        InjectionServices injectionServices = new LibraryBdaInjectionServices(injectionMgr);
+        InjectionServices injectionServices = new NonModuleInjectionServices(injectionMgr);
         bda.getServices().add(InjectionServices.class, injectionServices);
     }
 
