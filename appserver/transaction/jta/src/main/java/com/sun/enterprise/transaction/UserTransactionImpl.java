@@ -109,6 +109,7 @@ public class UserTransactionImpl implements UserTransaction, Serializable
     // will have checking turned on.   
     private boolean checkEjbAccess;
 
+
     /**
      * Default constructor.
      */
@@ -146,7 +147,12 @@ public class UserTransactionImpl implements UserTransaction, Serializable
                 throw new IllegalStateException(sm.getString("enterprise_distributedtx.operation_not_allowed"));
             }
         }
+
+        if ( transactionManager.isThreadMarkedTransactional() )
+            throw new IllegalStateException(
+                    "Use of UserTransaction not allowed from within method or bean annotated with @Transactional");
     }
+
 
     public void begin() throws NotSupportedException, SystemException
     {

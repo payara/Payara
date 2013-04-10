@@ -52,14 +52,14 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Mandatory transaction type,
- *  ie javax.transaction.Transactional.TxType.MANDATORY
+ * ie javax.transaction.Transactional.TxType.MANDATORY
  * If called outside a transaction context, TransactionRequiredException will be thrown
  * If called inside a transaction context, managed bean method execution will then
- *  continue under that context.
+ * continue under that context.
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 @Interceptor()
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.MANDATORY)
 public class TransactionalInterceptorMandatory extends TransactionalInterceptorBase {
@@ -70,12 +70,19 @@ public class TransactionalInterceptorMandatory extends TransactionalInterceptorB
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In MANDATORY TransactionalInterceptor");
-        if(getTransactionManager().getTransaction() == null)
-            throw new TransactionalException(
-                    "TransactionRequiredException thrown from TxType.MANDATORY transactional interceptor.",
-                    new TransactionRequiredException("Managed bean with Transactional annotation and TxType of " +
-                                        "MANDATORY called outside of a transaction context"));
-        return proceed(ctx);
+        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        boolean isCallerTransactional = isThreadMarkedTransactional();
+        if (!isCallerTransactional) markThreadAsTransactional();
+        try {
+            if (getTransactionManager().getTransaction() == null)
+                throw new TransactionalException(
+                        "TransactionRequiredException thrown from TxType.MANDATORY transactional interceptor.",
+                        new TransactionRequiredException("Managed bean with Transactional annotation and TxType of " +
+                                "MANDATORY called outside of a transaction context"));
+            return proceed(ctx);
+        } finally {
+            if (!isCallerTransactional) clearThreadAsTransactional();
+        }
     }
 
 }

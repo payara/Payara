@@ -41,14 +41,18 @@
 package org.glassfish.cdi.transaction;
 
 
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.logging.LogDomains;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
+import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
@@ -56,9 +60,9 @@ import java.util.logging.Logger;
  *
  * @author Paul Parkinson
  */
-public class TransactionalInterceptorBase {
-    private static TransactionManager transactionManager;
+public class TransactionalInterceptorBase implements Serializable {
     private TransactionManager testTransactionManager;
+    private TransactionManager transactionManager;
 
     private static Logger _logger = LogDomains.getLogger(
             TransactionalInterceptorBase.class, LogDomains.JTA_LOGGER);
@@ -68,26 +72,31 @@ public class TransactionalInterceptorBase {
      * @return TransactionManager
      */
     public TransactionManager getTransactionManager() {
-        if (testTransactionManager != null) {
-            return testTransactionManager;
-        }
-
-        try {
-            synchronized(TransactionalInterceptorBase.class) {
-                if (transactionManager == null)
-                    transactionManager = (TransactionManager)
-                            new InitialContext().lookup("java:appserver/TransactionManager");
+        if (testTransactionManager != null) return testTransactionManager;
+        if (transactionManager == null) {
+            try {
+                synchronized (TransactionalInterceptorBase.class) {
+                    if (transactionManager == null)
+                        transactionManager = (TransactionManager)
+                                new InitialContext().lookup("java:appserver/TransactionManager");
+                }
+            } catch (NamingException e) {
+                _logger.severe(
+                        "Encountered NamingException while attempting to acquire transaction manager for " +
+                                "Transactional annotation interceptors " + e);
+                throw new RuntimeException("Unable to obtain TransactionManager for Transactional Interceptor", e);
             }
-        } catch (NamingException e) {
-            _logger.severe(
-                    "Encountered NamingException while attempting to acquire transaction manager for " +
-                            "Transactional annotation interceptors " + e);
         }
         return transactionManager;
     }
 
     public void setTestTransactionManager(TransactionManager testTransactionManager) {
         this.testTransactionManager = testTransactionManager;
+    }
+
+    boolean isLifeCycleMethod(InvocationContext ctx) {
+        return (ctx.getMethod().getAnnotation(PostConstruct.class) != null) ||
+                (ctx.getMethod().getAnnotation(PreDestroy.class) != null);
     }
 
     public Object proceed(InvocationContext ctx) throws Exception {
@@ -98,7 +107,7 @@ public class TransactionalInterceptorBase {
         if(transactionalAnnotation != null) { //if at method level
             rollbackOn = transactionalAnnotation.rollbackOn();
             dontRollbackOn = transactionalAnnotation.dontRollbackOn();
-        } else {  //if not at class level
+        } else {  //if not, at class level
             Class<?> targetClass = ctx.getTarget().getClass();
             transactionalAnnotation = targetClass.getAnnotation(javax.transaction.Transactional.class);
             if (transactionalAnnotation != null) {
@@ -135,5 +144,20 @@ public class TransactionalInterceptorBase {
     private void markRollbackIfActiveTransaction() throws SystemException {
         Transaction transaction = getTransactionManager().getTransaction();
         if(transaction!=null) getTransactionManager().setRollbackOnly();
+    }
+
+    void markThreadAsTransactional() {
+        if(transactionManager instanceof JavaEETransactionManager)
+            ((JavaEETransactionManager)transactionManager).setAsTransactional(Boolean.TRUE);
+    }
+
+    void clearThreadAsTransactional() {
+        if(transactionManager instanceof JavaEETransactionManager)
+            ((JavaEETransactionManager)transactionManager).setAsTransactional(Boolean.FALSE);
+    }
+
+    boolean isThreadMarkedTransactional() {
+        return transactionManager instanceof JavaEETransactionManager &&
+                ((JavaEETransactionManager) transactionManager).isThreadMarkedTransactional();
     }
 }

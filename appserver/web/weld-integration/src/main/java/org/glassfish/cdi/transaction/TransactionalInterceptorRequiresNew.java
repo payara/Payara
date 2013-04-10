@@ -52,18 +52,18 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for RequiresNew transaction type,
- *  ie javax.transaction.Transactional.TxType.REQUIRES_NEW
+ * ie javax.transaction.Transactional.TxType.REQUIRES_NEW
  * If called outside a transaction context, a new JTA transaction will begin,
- *  the managed bean method execution will then continue inside this transaction context,
- *  and the transaction will be committed.
+ * the managed bean method execution will then continue inside this transaction context,
+ * and the transaction will be committed.
  * If called inside a transaction context, the current transaction context will be suspended,
- *  a new JTA transaction will begin, the managed bean method execution will then continue
- *  inside this transaction context, the transaction will be committed, and the previously
- *  suspended transaction will be resumed.
+ * a new JTA transaction will begin, the managed bean method execution will then continue
+ * inside this transaction context, the transaction will be committed, and the previously
+ * suspended transaction will be resumed.
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRES_NEW)
 public class TransactionalInterceptorRequiresNew extends TransactionalInterceptorBase {
@@ -74,50 +74,58 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In REQUIRES_NEW TransactionalInterceptor");
-        Transaction suspendedTransaction = null;
-        if (getTransactionManager().getTransaction() != null) {
-            _logger.info("Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
-                    "called inside a transaction context.  Suspending before beginning a transaction...");
-            suspendedTransaction = getTransactionManager().suspend();
-            //todo catch, wrap in new transactional exception and throw
-        }
+        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        boolean isCallerTransactional = isThreadMarkedTransactional();
+        if (!isCallerTransactional) markThreadAsTransactional();
         try {
-            getTransactionManager().begin();
-        } catch (Exception exception) {
-            String messageString =
-                    "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
-                            "encountered exception during begin " +
-                            exception;
-            _logger.info(messageString);
-            throw new TransactionalException(messageString, exception);
-        }
-        Object proceed = null;
-        try {
-            proceed = proceed(ctx);
-        } finally {
+            Transaction suspendedTransaction = null;
+            if (getTransactionManager().getTransaction() != null) {
+                _logger.info("Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                        "called inside a transaction context.  Suspending before beginning a transaction...");
+                suspendedTransaction = getTransactionManager().suspend();
+                //todo catch, wrap in new transactional exception and throw
+            }
             try {
-                getTransactionManager().commit();
+                getTransactionManager().begin();
             } catch (Exception exception) {
                 String messageString =
                         "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
-                                "encountered exception during commit " +
+                                "encountered exception during begin " +
                                 exception;
                 _logger.info(messageString);
                 throw new TransactionalException(messageString, exception);
             }
-            if (suspendedTransaction != null) {
+            Object proceed = null;
+            try {
+                proceed = proceed(ctx);
+            } finally {
                 try {
-                    getTransactionManager().resume(suspendedTransaction);
+                    getTransactionManager().commit();
                 } catch (Exception exception) {
                     String messageString =
-                            "Managed bean with Transactional annotation and TxType of REQUIRED " +
-                                    "encountered exception during resume " +
+                            "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                                    "encountered exception during commit " +
                                     exception;
                     _logger.info(messageString);
                     throw new TransactionalException(messageString, exception);
                 }
+                if (suspendedTransaction != null) {
+                    try {
+                        getTransactionManager().resume(suspendedTransaction);
+                    } catch (Exception exception) {
+                        String messageString =
+                                "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                                        "encountered exception during resume " +
+                                        exception;
+                        _logger.info(messageString);
+                        throw new TransactionalException(messageString, exception);
+                    }
+                }
             }
+            return proceed;
+
+        } finally {
+            if (!isCallerTransactional) clearThreadAsTransactional();
         }
-        return proceed;
     }
 }

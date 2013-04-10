@@ -52,16 +52,16 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for NotSupported transaction type,
- *  ie javax.transaction.Transactional.TxType.NOT_SUPPORTED
+ * ie javax.transaction.Transactional.TxType.NOT_SUPPORTED
  * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
+ * continue outside a transaction context.
  * If called inside a transaction context, the current transaction context will be suspended,
- *  the managed bean method execution will then continue outside a transaction context,
- *  and the previously suspended transaction will be resumed.
+ * the managed bean method execution will then continue outside a transaction context,
+ * and the previously suspended transaction will be resumed.
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {
@@ -72,37 +72,45 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In NOT_SUPPORTED TransactionalInterceptor");
-        Transaction transaction = null;
-        if (getTransactionManager().getTransaction() != null) {
-            _logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                    "called inside a transaction context.  Suspending transaction...");
-            try {
-                transaction = getTransactionManager().suspend();
-            } catch (Exception exception) {
-                String messageString =
-                        "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                                "called inside a transaction context.  Suspending transaction failed due to " +
-                                exception;
-                _logger.info(messageString);
-                throw new TransactionalException(messageString, exception);
-            }
-        }
-        Object proceed = null;
+        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        boolean isCallerTransactional = isThreadMarkedTransactional();
+        if (isCallerTransactional) clearThreadAsTransactional();
         try {
-            proceed = proceed(ctx);
-        } finally {
-            if (transaction != null) {
+            Transaction transaction = null;
+            if (getTransactionManager().getTransaction() != null) {
+                _logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+                        "called inside a transaction context.  Suspending transaction...");
                 try {
-                    getTransactionManager().resume(transaction);
-                } catch (Exception exception ) {
+                    transaction = getTransactionManager().suspend();
+                } catch (Exception exception) {
                     String messageString =
                             "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                                    "encountered exception during resume " +
+                                    "called inside a transaction context.  Suspending transaction failed due to " +
                                     exception;
+                    _logger.info(messageString);
                     throw new TransactionalException(messageString, exception);
                 }
             }
+            Object proceed = null;
+            try {
+                proceed = proceed(ctx);
+            } finally {
+                if (transaction != null) {
+                    try {
+                        getTransactionManager().resume(transaction);
+                    } catch (Exception exception) {
+                        String messageString =
+                                "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+                                        "encountered exception during resume " +
+                                        exception;
+                        throw new TransactionalException(messageString, exception);
+                    }
+                }
+            }
+            return proceed;
+
+        } finally {
+            if (isCallerTransactional) markThreadAsTransactional();
         }
-        return proceed;
     }
 }

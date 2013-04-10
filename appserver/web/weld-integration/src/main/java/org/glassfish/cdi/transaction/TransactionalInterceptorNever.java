@@ -52,14 +52,14 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Never transaction type,
- *  ie javax.transaction.Transactional.TxType.NEVER
+ * ie javax.transaction.Transactional.TxType.NEVER
  * If called outside a transaction context, managed bean method execution will then
- *  continue outside a transaction context.
+ * continue outside a transaction context.
  * If called inside a transaction context, InvalidTransactionException will be thrown
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
 public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
@@ -70,11 +70,18 @@ public class TransactionalInterceptorNever extends TransactionalInterceptorBase 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In NEVER TransactionalInterceptor");
-        if(getTransactionManager().getTransaction() != null)
-            throw new TransactionalException(
-                    "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",
-                    new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
-                    "called inside a transaction context"));
-        return proceed(ctx);
+        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        boolean isCallerTransactional = isThreadMarkedTransactional();
+        if (isCallerTransactional) clearThreadAsTransactional();
+        try {
+            if (getTransactionManager().getTransaction() != null)
+                throw new TransactionalException(
+                        "InvalidTransactionException thrown from TxType.NEVER transactional interceptor.",
+                        new InvalidTransactionException("Managed bean with Transactional annotation and TxType of NEVER " +
+                                "called inside a transaction context"));
+            return proceed(ctx);
+        } finally {
+            if (isCallerTransactional) markThreadAsTransactional();
+        }
     }
 }

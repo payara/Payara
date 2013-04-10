@@ -142,6 +142,8 @@ public class JavaEETransactionManagerSimplified
 
     private  Timer _timer = new Timer("transaction-manager", true);
 
+    private static ThreadLocal transactionalThreadLocal = new ThreadLocal();
+
     static {
         statusMap.put(Status.STATUS_ACTIVE, "Active");
         statusMap.put(Status.STATUS_MARKED_ROLLBACK, "MarkedRollback");
@@ -1527,6 +1529,20 @@ public class JavaEETransactionManagerSimplified
                     _logger.log(Level.FINE, "Replaced delegate with " 
                             + d.getClass().getName());
         }
+    }
+
+    public void setAsTransactional(Boolean isTransactional) {
+        transactionalThreadLocal.set(isTransactional);
+    }
+
+    public boolean isThreadMarkedTransactional() {
+        Object transactionalThreadLocalValue = transactionalThreadLocal.get();
+        return transactionalThreadLocalValue != null && transactionalThreadLocalValue.equals(Boolean.TRUE);
+    }
+
+
+    public static ThreadLocal getTransactionalThreadLocal() {
+        return transactionalThreadLocal;
     }
 
     public Logger getLogger() {

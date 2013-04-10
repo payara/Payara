@@ -51,16 +51,16 @@ import java.util.logging.Logger;
 
 /**
  * Transactional annotation Interceptor class for Required transaction type,
- *  ie javax.transaction.Transactional.TxType.REQUIRED
+ * ie javax.transaction.Transactional.TxType.REQUIRED
  * If called outside a transaction context, a new JTA transaction will begin,
- *  the managed bean method execution will then continue inside this transaction context,
- *  and the transaction will be committed.
+ * the managed bean method execution will then continue inside this transaction context,
+ * and the transaction will be committed.
  * If called inside a transaction context, the managed bean method execution will then continue
- *  inside this transaction context.
+ * inside this transaction context.
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE+10)
+@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRED)
 public class TransactionalInterceptorRequired extends TransactionalInterceptorBase {
@@ -71,38 +71,45 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In REQUIRED TransactionalInterceptor");
-        boolean isTransactionStarted = false;
-        if(getTransactionManager().getTransaction()==null) {
-            _logger.info("Managed bean with Transactional annotation and TxType of REQUIRED " +
-                    "called outside a transaction context.  Beginning a transaction...");
-            try {
-                getTransactionManager().begin();
-            } catch (Exception exception) {
-                String messageString =
-                        "Managed bean with Transactional annotation and TxType of REQUIRED " +
-                                "encountered exception during begin " +
-                                exception;
-                _logger.info(messageString);
-                throw new TransactionalException(messageString, exception);
-            }
-            isTransactionStarted = true;
-        }
-        Object proceed = null;
+        if (isLifeCycleMethod(ctx)) return proceed(ctx);
+        boolean isCallerTransactional = isThreadMarkedTransactional();
+        if (!isCallerTransactional) markThreadAsTransactional();
         try {
-            proceed = proceed(ctx);
-        } finally {
-            if (isTransactionStarted)
+            boolean isTransactionStarted = false;
+            if (getTransactionManager().getTransaction() == null) {
+                _logger.info("Managed bean with Transactional annotation and TxType of REQUIRED " +
+                        "called outside a transaction context.  Beginning a transaction...");
                 try {
-                    getTransactionManager().commit();
+                    getTransactionManager().begin();
                 } catch (Exception exception) {
                     String messageString =
                             "Managed bean with Transactional annotation and TxType of REQUIRED " +
-                                    "encountered exception during commit " +
+                                    "encountered exception during begin " +
                                     exception;
                     _logger.info(messageString);
                     throw new TransactionalException(messageString, exception);
                 }
+                isTransactionStarted = true;
+            }
+            Object proceed = null;
+            try {
+                proceed = proceed(ctx);
+            } finally {
+                if (isTransactionStarted)
+                    try {
+                        getTransactionManager().commit();
+                    } catch (Exception exception) {
+                        String messageString =
+                                "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                                        "encountered exception during commit " +
+                                        exception;
+                        _logger.info(messageString);
+                        throw new TransactionalException(messageString, exception);
+                    }
+            }
+            return proceed;
+        } finally {
+            if (!isCallerTransactional) clearThreadAsTransactional();
         }
-        return proceed;
     }
 }
