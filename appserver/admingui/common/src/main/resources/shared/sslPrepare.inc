@@ -55,16 +55,19 @@ if (#{requestScope.exist}){
 }
 if (! #{requestScope.exist}){
     setPageSessionAttribute(key="edit" value="#{false}" )
-    gf.createEntity(endpoint="#{pageSession.createSslUrl}" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
-    gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json" valueMap="#{pageSession.valueMap}");
+    <!-- this <ssl> does not exists, we cannot find a way to get the default value, so hard coded here for now.
+         TODO: REST need to provide an endpoint to get the default value.
+      -->
+    createMap(result="#{pageSession.valueMap}");
+    mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="tlsEnabled" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="trustMaxCertLength" value="5");
+
     convertToDifferentCiphersGroup(ciphers="#{pageSession.valueMap['ssl3TlsCiphers']}"
         CommonCiphersList="#{pageSession.selectedCommon}"
         EphemeralCiphersList="#{pageSession.selectedEphemeral}"
         OtherCiphersList="#{pageSession.selectedOther}"
         EccCiphersList="#{pageSession.selectedEcc}")
-    <!-- sincs ssl is already created, we set this to edit, otherwise the OK button calling create-ssl cannot take all the options presented
-         to user on screen -->
-    setPageSessionAttribute(key="edit" value="#{true}" )
 }
 
 //set the following for including buttons.inc

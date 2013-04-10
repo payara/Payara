@@ -224,7 +224,23 @@ public class UtilHandlers {
         File file = (File) handlerCtx.getInputValue("File");
         handlerCtx.setOutputValue("Name", (file == null) ? "" : file.getName() );
     }
-    
+
+    /**
+     *	<p> Returns a duplicate copy of the source Map
+     *
+     *  <p> Input value: "source" -- Type: <code>java.util.Map</code>
+     *  <p> Output value: "dest" -- Type: <code>java.util.Map</code></p>
+     *	@param	handlerCtx	The HandlerContext.
+     */
+    @Handler(id="mapCopy",
+            input={
+                    @HandlerInput(name="source", type=Map.class, required=true)},
+            output={
+                    @HandlerOutput(name="dest", type=Map.class)})
+    public static void mapCopy(HandlerContext handlerCtx) {
+        Map source = (Map) handlerCtx.getInputValue("source");
+        handlerCtx.setOutputValue("dest",  new HashMap(source));
+    }
     /**
      *	<p> Returns the value to which the input map maps the input key. </p>
      *

@@ -61,16 +61,16 @@
         setPageSessionAttribute(key="childType" value="ssl")
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol/#{pageSession.Name}");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
-        createMap(result="#{pageSession.valueMap}");
+        createMap(result="#{pageSession.createMap}");
+        mapPut(map="#{pageSession.createMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="createSslUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener/#{pageSession.listenerName}/create-ssl");
         if ("#{pageSession.protocol}=true") {
             setPageSessionAttribute(key="createSslUrl", value="#{pageSession.parentUrl}/create-ssl");
-            mapPut(map="#{pageSession.valueMap}" key="type" value="protocol");
+            mapPut(map="#{pageSession.createMap}" key="type" value="protocol");
         }
         setPageSessionAttribute(key="rest-api" value="true");
         setPageSessionAttribute(key="showCancelButton" value="#{true}" )
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        mapPut(map="#{pageSession.valueMap}" key="certName" value="");
+
 #include "/common/shared/sslPrepare.inc"
       />
   </event>

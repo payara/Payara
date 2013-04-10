@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -80,7 +80,7 @@
         <sun:checkbox id="ClientAuth" label="$resource{i18n.desc.Enabled}" selected="#{pageSession.valueMap['clientAuthEnabled']}" selectedValue="true" />
      </sun:property>
      <sun:property id="CertNicknameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.certNicknameLabel}" helpText="$resource{i18n.ssl.certNicknameHelp}" >
-        <sun:textField id="CertNickname" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.certNickname']}" text="#{pageSession.valueMap['certNickname']}" />
+        <sun:textField id="CertNickname" styleClass="required" required="#{true}" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.certNickname']}" text="#{pageSession.valueMap['certNickname']}" />
      </sun:property>
      <sun:property id="keystore"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.ssl.keyStore}" helpText="$resource{i18n.ssl.keyStoreHelp}" >
         <sun:textField id="keystore" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ssl.keyStore']}" text="#{pageSession.valueMap['keyStore']}" />

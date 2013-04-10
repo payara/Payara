@@ -45,7 +45,7 @@
 <!facet pageButtonsTop>
     <sun:panelGroup id="topButtons">
         <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
-                 onClick="if (checkSSLRequiredElements()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                 onClick="if (checkSSLRequiredElements() && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
                 convertCiphersItemsToStr(common="#{pageSession.selectedCommon}" ephemeral="#{pageSession.selectedEphemeral}" other="#{pageSession.selectedOther}" ecc="#{pageSession.selectedEcc}" ciphers="#{requestScope.ciphers}")
                 mapPut(map="#{pageSession.valueMap}" key="ssl3TlsCiphers" value="#{requestScope.ciphers}")
@@ -62,11 +62,15 @@
         </sun:button>
 
         <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
-                    onClick="if (checkSSLRequiredElements()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                    onClick="if (checkSSLRequiredElements()  && guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}') ) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
             <!command
                 convertCiphersItemsToStr(common="#{pageSession.selectedCommon}" ephemeral="#{pageSession.selectedEphemeral}" other="#{pageSession.selectedOther}" ecc="#{pageSession.selectedEcc}" ciphers="#{requestScope.ciphers}")
                 mapPut(map="#{pageSession.valueMap}" key="ssl3TlsCiphers" value="#{requestScope.ciphers}")
-                gf.createEntity(endpoint="#{pageSession.createSslUrl}" attrs="#{pageSession.valueMap}" skipAttrs="#{pageSession.skipAttrsList}" convertToFalse="#{pageSession.convertToFalseList}");
+
+                <!-- since create-ssl doesn't take all the options, we create it first just with cert name, and then edit it with all the attributes -->
+                mapPut(map="#{pageSession.createMap}", key="certNickname",  value="#{pageSession.valueMap['certNickname']}")
+                gf.createEntity(endpoint="#{pageSession.createSslUrl}" attrs="#{pageSession.createMap}" skipAttrs="#{pageSession.skipAttrsList}" convertToFalse="#{pageSession.convertToFalseList}");
+                gf.createEntity(endpoint="#{pageSession.selfUrl}" attrs="#{pageSession.valueMap}" skipAttrs="#{pageSession.skipAttrsList}" convertToFalse="#{pageSession.convertToFalseList}");
                 prepareSuccessfulMsg();
                 gf.redirect(page="#{selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
             />

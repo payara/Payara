@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -59,9 +59,8 @@
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
         setPageSessionAttribute(key="createSslUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/admin-service/jmx-connector/system/create-ssl");
-        createMap(result="#{pageSession.valueMap}");
-        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
-        mapPut(map="#{pageSession.valueMap}" key="certName" value=""); 
+        createMap(result="#{pageSession.createMap}");
+        mapPut(map="#{pageSession.createMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="rest-api" value="true");
 #include "/common/shared/sslPrepare.inc"
       />
