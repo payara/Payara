@@ -171,7 +171,8 @@ public class BatchRuntimeHelper
                     String tagName = config.getName() + ":" + appName;
                     try {
                         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-                        batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
+                        if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null)
+                            batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
                     } catch (Exception ex) {
                         logger.log(Level.INFO, "Error while purging jobs: " + ex);
                         logger.log(Level.FINE, "Error while purging jobs", ex);
