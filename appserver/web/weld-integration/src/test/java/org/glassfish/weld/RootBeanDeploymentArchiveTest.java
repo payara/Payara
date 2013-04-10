@@ -71,6 +71,7 @@ public class RootBeanDeploymentArchiveTest {
         String webInfLib2 = "WEB-INF/lib/lib2.jar";
         String subArchive11Name = "sa1";
         String subArchive12Name = "sa2";
+        URI dummyURI = URI.create("dummy");
         ArrayList<String> lib1ClassNames = new ArrayList<>();
         lib1ClassNames.add( Lib1Class1.class.getName() + ".class" );
         lib1ClassNames.add( Lib1Class2.class.getName() + ".class" );
@@ -103,10 +104,8 @@ public class RootBeanDeploymentArchiveTest {
         expect(wb.parse(anyObject(URL.class))).andReturn(beansXML).anyTimes();
 
         expect(readableArchive.getURI()).andReturn(URI.create(WeldUtils.WEB_INF_BEANS_XML)).anyTimes();
-//        expect(subArchive1.getURI()).andReturn(URI.create(webInfLib1)).anyTimes();
-//        expect(subArchive2.getURI()).andReturn(URI.create(webInfLib2)).anyTimes();
-        expect(subArchive1.getURI()).andReturn((new java.io.File(webInfLib1)).toURI()).anyTimes();
-        expect(subArchive2.getURI()).andReturn((new java.io.File(webInfLib2)).toURI()).anyTimes();
+        expect(subArchive1.getURI()).andReturn(dummyURI).anyTimes();
+        expect(subArchive2.getURI()).andReturn(dummyURI).anyTimes();
         expect(beansXML.getBeanDiscoveryMode()).andReturn(BeanDiscoveryMode.ALL).anyTimes();
 
         expect(readableArchive.entries()).andReturn(Collections.<String>emptyEnumeration());
