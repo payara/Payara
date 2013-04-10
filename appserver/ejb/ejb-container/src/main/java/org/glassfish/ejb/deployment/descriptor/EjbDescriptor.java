@@ -1432,9 +1432,13 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
         }
         if (mp.isRoleBased()) {
             if (!getEjbBundleDescriptor().getRoles().contains(mp.getRole())) {
-                throw new IllegalArgumentException(localStrings.getLocalString(
+                // Check for the any authenticated user role '**' as this role
+                // will be implicitly defined when not listed as a security-role
+                if (!"**".equals(mp.getRole().getName())) {
+                    throw new IllegalArgumentException(localStrings.getLocalString(
                         "enterprise.deployment.exceptioncannotaddrolesbundle",
                         "Cannot add roles when the bundle does not have them"));
+                }
             }
         }
 
