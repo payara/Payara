@@ -141,7 +141,7 @@ public class ManagedBeanHandler extends AbstractHandler {
         }
 
 
-        for(Method m : managedBeanClass.getDeclaredMethods()) {
+        for(Method m : managedBeanClass.getMethods()) {
             processForAnnotations(element, m, methodLevelInterceptors, managedBeanDesc, managedBeanClass);
         }
 
