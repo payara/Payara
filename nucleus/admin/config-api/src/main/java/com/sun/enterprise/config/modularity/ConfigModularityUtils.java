@@ -374,6 +374,7 @@ public final class ConfigModularityUtils {
             return null;
         } else {
             Class clz = getClassFor(childElement);
+            if (parent == null) return null;
             Method m = getMatchingGetterMethod(parent.getClass(), clz);
             if (m != null) {
                 return (ConfigBeanProxy) m.invoke(parent);
@@ -740,7 +741,7 @@ public final class ConfigModularityUtils {
         Method[] methods = classToQuery.getMethods();
         for (Method method : methods) {
             Class<?> rt = method.getReturnType();
-            if (rt != null) {
+            if (rt != null && methodReturnType != null) {
                 if (rt.getSimpleName().equals(methodReturnType.getSimpleName())) {
                     return method;
                 }
