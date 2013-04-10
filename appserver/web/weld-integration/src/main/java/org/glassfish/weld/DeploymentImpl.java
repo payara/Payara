@@ -497,21 +497,11 @@ public class DeploymentImpl implements CDI11Deployment {
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.isImplicitBeanArchive(context, jarInLib.getURI())) {
+                            if (jarInLib.exists(META_INF_BEANS_XML) || WeldUtils.isImplicitBeanArchive(context, jarInLib)) {
                                 if (libJars == null) {
                                     libJars = new ArrayList<ReadableArchive>();
                                 }
                                 libJars.add(jarInLib);
-                                // This is causing tck failures, specifically
-                                // MultiModuleProcessingTest.testProcessedModulesCount
-                                // creating a bda for an extionsion that does not include a beans.xml is handled later
-                                // when annotated types are created by that extension.  This is done in
-                                // loadBeanDeploymentArchive(Class<?> beanClass)
-//                            } else if (jarInLib.exists(META_INF_SERVICES_EXTENSION)){
-//                                if (libJars == null) {
-//                                    libJars = new ArrayList<ReadableArchive>();
-//                                }
-//                                libJars.add(jarInLib);
                             }
                         } catch (IOException e) {
                             logger.log(FINE, CDILoggerInfo.EXCEPTION_SCANNING_JARS, new Object[]{e});

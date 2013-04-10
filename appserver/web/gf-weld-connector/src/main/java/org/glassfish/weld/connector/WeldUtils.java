@@ -43,6 +43,7 @@ package org.glassfish.weld.connector;
 import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
 import org.glassfish.hk2.classmodel.reflect.AnnotationType;
@@ -61,6 +62,8 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Scope;
 import javax.inject.Singleton;
+import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -90,9 +93,8 @@ public class WeldUtils {
     // We don't want this connector module to depend on CDI API, as connector can be present in a distribution
     // which does not have CDI implementation. So, we use the class name as a string.
     private static final String SERVICES_CLASSNAME = "javax.enterprise.inject.spi.Extension";
-    public static final String META_INF_SERVICES_EXTENSION = "META-INF"
-            + SEPARATOR_CHAR + SERVICES_DIR + SEPARATOR_CHAR
-            + SERVICES_CLASSNAME;
+    public static final String META_INF_SERVICES_EXTENSION =
+                   "META-INF" + SEPARATOR_CHAR + SERVICES_DIR + SEPARATOR_CHAR + SERVICES_CLASSNAME;
 
     public static final String CLASS_SUFFIX = ".class";
     public static final String JAR_SUFFIX = ".jar";
@@ -136,6 +138,27 @@ public class WeldUtils {
         excludedAnnotationTypes.add(Documented.class.getName());
         excludedAnnotationTypes.add(Retention.class.getName());
         excludedAnnotationTypes.add(Target.class.getName());
+    }
+
+
+    /**
+     * Determine whether the specified archive is an implicit bean deployment archive.
+     *
+     * @param context  The deployment context
+     * @param archive  The archive in question
+     *
+     * @return true, if it is an implicit bean deployment archive; otherwise, false.
+     */
+    public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
+            throws IOException {
+        boolean result = false;
+        if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
+            URI archivePath =
+                    new File(context.getSourceDir().getAbsolutePath(), archive.getName()).toURI();
+
+            result = isImplicitBeanArchive(context, archivePath);
+        }
+        return result;
     }
 
 

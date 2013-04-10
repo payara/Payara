@@ -110,7 +110,7 @@ public class WeldCompositeSniffer extends WeldSniffer {
                         ReadableArchive jarInLib = archive.getSubArchive(entryName);
                         entryPresent = isEntryPresent(jarInLib, WeldUtils.META_INF_BEANS_XML);
                         if (!entryPresent) {
-                            entryPresent = WeldUtils.isImplicitBeanArchive(context, jarInLib.getURI());
+                            entryPresent = WeldUtils.isImplicitBeanArchive(context, jarInLib);
                         }
                         jarInLib.close();
                         if (entryPresent) break;

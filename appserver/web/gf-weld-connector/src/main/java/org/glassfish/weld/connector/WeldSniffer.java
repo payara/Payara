@@ -113,7 +113,7 @@ public class WeldSniffer extends GenericSniffer {
 
     private boolean scanLibDir(ReadableArchive archive, String libLocation) {
         boolean entryPresent = false;
-        if (libLocation != null && !libLocation.isEmpty()) {
+        if (libLocation != null) {
             Enumeration<String> entries = archive.entries(libLocation);
             while (entries.hasMoreElements() && !entryPresent) {
                 String entryName = entries.nextElement();

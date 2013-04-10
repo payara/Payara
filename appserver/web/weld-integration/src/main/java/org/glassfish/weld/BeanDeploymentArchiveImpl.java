@@ -250,12 +250,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public BeansXml getBeansXml() {
         BeansXml result = null;
-// TODO: PJZ: Can we cache the parse result for subsequent calls?
+
         WeldBootstrap wb = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
                                                            WeldBootstrap.class);
         if (beansXmlURLs.size() == 1) {
             result = wb.parse(beansXmlURLs.get(0));
         } else {
+            // This method attempts to performs a merge, but loses some
+            // information (e.g., version, bean-discovery-mode)
             result = wb.parse(beansXmlURLs);
         }
 
@@ -363,10 +365,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             if (beansXMLURL != null) {
                 // Parse the descriptor to determine if CDI is disabled
                 BeansXml beansXML = parseBeansXML(archive, beansXMLURL);
-                if (!beansXML.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
+                BeanDiscoveryMode bdMode = beansXML.getBeanDiscoveryMode();
+                if (!bdMode.equals(BeanDiscoveryMode.NONE)) {
 
                     webinfbda   = true;
-                    hasBeansXml = true;
+
+                    // If the mode is explicitly set to "annotated", then pretend there is no beans.xml
+                    // to force the implicit behavior
+                    hasBeansXml = !bdMode.equals(BeanDiscoveryMode.ANNOTATED);
+
                     if (logger.isLoggable(FINE)) {
                         logger.log(FINE,
                                    CDILoggerInfo.PROCESSING_BEANS_XML,
@@ -374,8 +381,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                                                 WEB_INF_BEANS_XML,
                                                 WEB_INF_CLASSES_META_INF_BEANS_XML});
                     }
-                } else { // not a WEB-INF BDA
-                    addBeansXMLURL(archive, beansXMLURL);
                 }
             } else if (archive.exists(WEB_INF_CLASSES)) { // If WEB-INF/classes exists, check for CDI beans there
                 // Check WEB-INF/classes for CDI-enabling annotations
@@ -445,33 +450,19 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         if (weblibJarArchive.exists(META_INF_BEANS_XML)) {
                             // Parse the descriptor to determine if CDI is disabled
                             BeansXml beansXML = parseBeansXML(weblibJarArchive, META_INF_BEANS_XML);
-                            if (beansXML.getBeanDiscoveryMode() != BeanDiscoveryMode.NONE) {
+                            if (!beansXML.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
                                 if (logger.isLoggable(FINE)) {
                                     logger.log(FINE,
                                                CDILoggerInfo.WEB_INF_LIB_CONSIDERING_BEAN_ARCHIVE,
                                                new Object[]{entry});
                                 }
                                 weblibJarsThatAreBeanArchives.add(weblibJarArchive);
-
-                            // This is causing tck failures, specifically
-                            // MultiModuleProcessingTest.testProcessedModulesCount
-                            // creating a bda for an extionsion that does not include a beans.xml is handled later
-                            // when annotated types are created by that extension.  This is done in
-                            // DeploymentImpl.loadBeanDeploymentArchive(Class<?> beanClass)
-//                        } else if (weblibJarArchive.exists(META_INF_SERVICES_EXTENSION)) {
-//                            if ( logger.isLoggable( FINE ) ) {
-//                                logger.log(FINE, "-WEB-INF/lib: considering " + entry
-//                                        + " as an extension and creating another BDA for it");
-//                            }
-//                            weblibJarsThatAreBeanArchives.add(weblibJarArchive);
-                            } else {
-                                addBeansXMLURL(weblibJarArchive, META_INF_BEANS_XML);
                             }
                         } else {
                             // Check for classes annotated with qualified annotations
                             URI entryPath =
                                   new File(context.getSourceDir().getAbsolutePath(), entry).toURI();
-                            if (WeldUtils.isImplicitBeanArchive(context, entryPath)) {
+                            if (WeldUtils.isImplicitBeanArchive(context, weblibJarArchive)) {
                                 if (logger.isLoggable(FINE)) {
                                     logger.log(FINE,
                                                CDILoggerInfo.WEB_INF_LIB_CONSIDERING_BEAN_ARCHIVE,
@@ -515,18 +506,19 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             } else if (archive.exists(META_INF_BEANS_XML)) {
                 // Parse the descriptor to determine if CDI is disabled
                 BeansXml beansXML = parseBeansXML(archive, META_INF_BEANS_XML);
-                if (beansXML.getBeanDiscoveryMode() != BeanDiscoveryMode.NONE) {
+                BeanDiscoveryMode bdMode = beansXML.getBeanDiscoveryMode();
+                if (!bdMode.equals(BeanDiscoveryMode.NONE)) {
 
                     if (logger.isLoggable(FINE)) {
                         logger.log(FINE, CDILoggerInfo.PROCESSING_BDA_JAR,
                                    new Object[]{archive.getURI()});
                     }
                     bdaType = BDAType.JAR;
-                    collectJarInfo(archive, true, true);
+                    collectJarInfo(archive, true, !bdMode.equals(BeanDiscoveryMode.ANNOTATED));
                 } else {
                     addBeansXMLURL(archive, META_INF_BEANS_XML);
                 }
-            } else if (WeldUtils.isImplicitBeanArchive(context, archive.getURI())) {
+            } else if (WeldUtils.isImplicitBeanArchive(context, archive)) {
                 if (logger.isLoggable(FINE)) {
                     logger.log(FINE,
                                CDILoggerInfo.PROCESSING_BECAUSE_SCOPE_ANNOTATION,

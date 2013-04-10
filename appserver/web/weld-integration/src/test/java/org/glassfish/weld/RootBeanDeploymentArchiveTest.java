@@ -56,6 +56,7 @@ import static org.easymock.EasyMock.*;
 
 import org.easymock.EasyMockSupport;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -71,7 +72,8 @@ public class RootBeanDeploymentArchiveTest {
         String webInfLib2 = "WEB-INF/lib/lib2.jar";
         String subArchive11Name = "sa1";
         String subArchive12Name = "sa2";
-        URI dummyURI = URI.create("dummy");
+        URI webInfLib1URI = URI.create("WEB-INF" + File.separatorChar + "lib" + File.separatorChar + "lib1.jar");
+        URI webInfLib2URI = URI.create("WEB-INF" + File.separatorChar + "lib" + File.separatorChar + "lib2.jar");
         ArrayList<String> lib1ClassNames = new ArrayList<>();
         lib1ClassNames.add( Lib1Class1.class.getName() + ".class" );
         lib1ClassNames.add( Lib1Class2.class.getName() + ".class" );
@@ -104,8 +106,8 @@ public class RootBeanDeploymentArchiveTest {
         expect(wb.parse(anyObject(URL.class))).andReturn(beansXML).anyTimes();
 
         expect(readableArchive.getURI()).andReturn(URI.create(WeldUtils.WEB_INF_BEANS_XML)).anyTimes();
-        expect(subArchive1.getURI()).andReturn(dummyURI).anyTimes();
-        expect(subArchive2.getURI()).andReturn(dummyURI).anyTimes();
+        expect(subArchive1.getURI()).andReturn(webInfLib1URI).anyTimes();
+        expect(subArchive2.getURI()).andReturn(webInfLib2URI).anyTimes();
         expect(beansXML.getBeanDiscoveryMode()).andReturn(BeanDiscoveryMode.ALL).anyTimes();
 
         expect(readableArchive.entries()).andReturn(Collections.<String>emptyEnumeration());
