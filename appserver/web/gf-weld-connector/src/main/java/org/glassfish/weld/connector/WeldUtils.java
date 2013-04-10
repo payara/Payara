@@ -437,6 +437,9 @@ public class WeldUtils {
 
 
     public static boolean isImplicitBeanDiscoveryEnabled() {
+        if ( true ) {
+            return true;
+        }
         boolean result = false;
 
         ServiceLocator serviceLocator = Globals.getDefaultHabitat();
