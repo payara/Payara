@@ -44,19 +44,26 @@ import com.sun.enterprise.config.serverbeans.Config;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.internal.data.ModuleInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.batch.operations.JobOperator;
+import javax.batch.runtime.BatchRuntime;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -100,6 +107,8 @@ public class BatchRuntimeHelper
     @Inject
     Config config;
 
+    @Inject
+    ApplicationRegistry applicationRegistry;
 
     private GlassFishBatchExecutorServiceProvider glassFishBatchExecutorServiceProvider
             = new GlassFishBatchExecutorServiceProvider();
@@ -160,8 +169,33 @@ public class BatchRuntimeHelper
         glassFishBatchExecutorServiceProvider.setExecutorService(executorService);
     }
 
+    private Set<String> tagNamesRequiringCleanup = new HashSet<>();
+
+    private void registerIfBatchJobsDirExists(ApplicationInfo applicationInfo) {
+        if (applicationInfo != null) {
+            for (ModuleInfo moduleInfo : applicationInfo.getModuleInfos()) {
+                ClassLoader cl = moduleInfo.getModuleClassLoader();
+                if (cl.getResource("META-INF/batch-jobs") != null) {
+                    tagNamesRequiringCleanup.add(config.getName() + ":" + applicationInfo.getName());
+                }
+            }
+        }
+    }
+
     @Override
     public void event(Event event) {
+
+        if (event.is(EventTypes.SERVER_READY)) {
+            for (String appName : applicationRegistry.getAllApplicationNames()) {
+                ApplicationInfo applicationInfo = applicationRegistry.get(appName);
+                registerIfBatchJobsDirExists(applicationInfo);
+            }
+        } else if (event.is(Deployment.APPLICATION_LOADED)) {
+            if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
+                ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+                registerIfBatchJobsDirExists(applicationInfo);
+            }
+        }
         if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
             if (event.hook() != null && event.hook() instanceof DeploymentContextImpl) {
                 DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
@@ -171,8 +205,18 @@ public class BatchRuntimeHelper
                     String tagName = config.getName() + ":" + appName;
                     try {
                         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-                        if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null)
+                        if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
                             batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
+                            tagNamesRequiringCleanup.remove(tagName);
+                        } else if (tagNamesRequiringCleanup.contains(tagName)) {
+                            //Force initialization of BatchRuntime
+                            JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+                            if (batchSPIManager.getBatchJobUtil() != null) {
+                                batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
+                                tagNamesRequiringCleanup.remove(tagName);
+                            }
+                        }
                     } catch (Exception ex) {
                         logger.log(Level.INFO, "Error while purging jobs: " + ex);
                         logger.log(Level.FINE, "Error while purging jobs", ex);
