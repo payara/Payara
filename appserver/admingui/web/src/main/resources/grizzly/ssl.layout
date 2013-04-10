@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,13 +61,14 @@
         setPageSessionAttribute(key="childType" value="ssl")
         setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/protocols/protocol/#{pageSession.Name}");
         setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        createMap(result="#{pageSession.valueMap}");
         setPageSessionAttribute(key="createSslUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/network-config/network-listeners/network-listener/#{pageSession.listenerName}/create-ssl");
         if ("#{pageSession.protocol}=true") {
             setPageSessionAttribute(key="createSslUrl", value="#{pageSession.parentUrl}/create-ssl");
+            mapPut(map="#{pageSession.valueMap}" key="type" value="protocol");
         }
         setPageSessionAttribute(key="rest-api" value="true");
         setPageSessionAttribute(key="showCancelButton" value="#{true}" )
-        createMap(result="#{pageSession.valueMap}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         mapPut(map="#{pageSession.valueMap}" key="certName" value="");
 #include "/common/shared/sslPrepare.inc"
