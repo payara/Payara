@@ -54,7 +54,7 @@ public interface CDIService extends ConfigExtension {
      *
      * @return The value of the enableImplicitCdi property.
      */
-    @Attribute (defaultValue="false",dataType=Boolean.class)
+    @Attribute (defaultValue="true", dataType=Boolean.class)
     String getEnableImplicitCdi();
 
     /**
