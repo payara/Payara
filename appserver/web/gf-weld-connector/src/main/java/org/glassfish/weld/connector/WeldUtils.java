@@ -149,12 +149,15 @@ public class WeldUtils {
      * @return true, if it is an implicit bean deployment archive; otherwise, false.
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
-        throws IOException {
+            throws IOException {
+
         boolean result = false;
+
+        // Archives with extensions are not candidates for implicit bean discovery
         if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
-            URI archivePath = archive.getURI();
-            result = isImplicitBeanArchive(context, archivePath);
+            result = isImplicitBeanArchive(context, archive.getURI());
         }
+
         return result;
     }
 
@@ -459,6 +462,7 @@ public class WeldUtils {
     public static boolean isImplicitBeanDiscoveryEnabled() {
         boolean result = false;
 
+        // Check the "global" configuration
         ServiceLocator serviceLocator = Globals.getDefaultHabitat();
         if (serviceLocator != null) {
             Config config = serviceLocator.getService(Config.class, ServerEnvironment.DEFAULT_INSTANCE_NAME);
@@ -466,6 +470,7 @@ public class WeldUtils {
                 result = Boolean.valueOf(config.getExtensionByType(CDIService.class).getEnableImplicitCdi());
             }
         }
+
         return result;
     }
 

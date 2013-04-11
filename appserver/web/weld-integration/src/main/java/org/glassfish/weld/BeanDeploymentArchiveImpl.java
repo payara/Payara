@@ -381,6 +381,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                                                 WEB_INF_BEANS_XML,
                                                 WEB_INF_CLASSES_META_INF_BEANS_XML});
                     }
+                } else {
+                    addBeansXMLURL(archive, beansXMLURL);
                 }
             } else if (archive.exists(WEB_INF_CLASSES)) { // If WEB-INF/classes exists, check for CDI beans there
                 // Check WEB-INF/classes for CDI-enabling annotations
@@ -450,13 +452,17 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         if (weblibJarArchive.exists(META_INF_BEANS_XML)) {
                             // Parse the descriptor to determine if CDI is disabled
                             BeansXml beansXML = parseBeansXML(weblibJarArchive, META_INF_BEANS_XML);
-                            if (!beansXML.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
+                            BeanDiscoveryMode bdMode = beansXML.getBeanDiscoveryMode();
+                            if (!bdMode.equals(BeanDiscoveryMode.NONE)) {
                                 if (logger.isLoggable(FINE)) {
                                     logger.log(FINE,
                                                CDILoggerInfo.WEB_INF_LIB_CONSIDERING_BEAN_ARCHIVE,
                                                new Object[]{entry});
                                 }
-                                weblibJarsThatAreBeanArchives.add(weblibJarArchive);
+
+                                if (!bdMode.equals(BeanDiscoveryMode.ANNOTATED) || isImplicitBeanArchive(context, weblibJarArchive)) {
+                                    weblibJarsThatAreBeanArchives.add(weblibJarArchive);
+                                }
                             }
                         } else {
                             // Check for classes annotated with qualified annotations
