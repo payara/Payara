@@ -66,7 +66,7 @@ public class NegativeTest extends NucleusStartStopTest {
     /**
      * This test currently fails due to a possible bug in Weld
      */
-    @Test(enabled=false)
+    @Test
     public void testNormalScopeWithFinalsDoesNotDeploy() {
         String deployPath = getDeployablePath(NORMAL_WITH_FINALS_JAR);
         
