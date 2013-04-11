@@ -62,7 +62,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Scope;
 import javax.inject.Singleton;
-import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -153,9 +152,7 @@ public class WeldUtils {
         throws IOException {
         boolean result = false;
         if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
-            URI archivePath =
-                new File(context.getSourceDir().getAbsolutePath(), archive.getName()).toURI();
-
+            URI archivePath = archive.getURI();
             result = isImplicitBeanArchive(context, archivePath);
         }
         return result;
