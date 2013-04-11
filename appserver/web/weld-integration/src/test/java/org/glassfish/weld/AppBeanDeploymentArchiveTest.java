@@ -40,51 +40,40 @@
 
 package org.glassfish.weld;
 
-import org.jboss.weld.Container;
-import org.jboss.weld.Weld;
-import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
-import org.jboss.weld.manager.BeanManagerImpl;
+import org.easymock.EasyMockSupport;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.weld.connector.WeldUtils;
+import org.junit.Test;
 
-import javax.enterprise.inject.spi.CDI;
-import javax.enterprise.inject.spi.CDIProvider;
-import java.util.Map;
-import java.util.Set;
+import static junit.framework.Assert.*;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
-public class GlassFishWeldProvider implements CDIProvider {
+public class AppBeanDeploymentArchiveTest {
+    @Test
+    public void testConstructor() throws Exception {
+        String appId = "ai";
+        EasyMockSupport mockSupport = new EasyMockSupport();
 
-    private static class WeldSingleton {
-        private static final Weld WELD_INSTANCE = new GlassFishEnhancedWeld();
-    }
+        DeploymentContext deploymentContext = mockSupport.createMock(DeploymentContext.class);
+        mockSupport.replayAll();
+        AppBeanDeploymentArchive appBda = new AppBeanDeploymentArchive(appId, deploymentContext);
 
-    private static class GlassFishEnhancedWeld extends Weld {
+        assertNull(appBda.getBeansXml() );
+        assertEquals( WeldUtils.BDAType.UNKNOWN, appBda.getBDAType() );
+        assertEquals(appId, appBda.getId());
 
-        @Override
-        protected BeanManagerImpl unsatisfiedBeanManager(String callerClassName) {
-            /*
-             * In certain scenarios we use flat deployment model (weld-se, weld-servlet). In that case
-             * we return the only BeanManager we have.
-             */
-            if (Container.instance().beanDeploymentArchives().values().size() == 1) {
-                return Container.instance().beanDeploymentArchives().values().iterator().next();
-            }
+        assertEquals(0, appBda.getBeanClasses().size());
+        assertEquals(0, appBda.getBeanClassObjects().size());
+        assertEquals(0, appBda.getModuleBeanClasses().size());
+        assertEquals(0, appBda.getModuleBeanClassObjects().size());
+        assertEquals(0, appBda.getEjbs().size());
 
-            Map<BeanDeploymentArchive, BeanManagerImpl> beanDeploymentArchives =
-                Container.instance().beanDeploymentArchives();
-            Set<BeanDeploymentArchive> bdas = beanDeploymentArchives.keySet();
-            for ( BeanDeploymentArchive oneBda : bdas ) {
-                if ( oneBda instanceof AppBeanDeploymentArchive ) {
-                    return beanDeploymentArchives.get( oneBda );
-                }
-            }
-            return super.unsatisfiedBeanManager(callerClassName);
-        }
-    }
+        assertEquals( 0, appBda.getBeanDeploymentArchives().size() );
 
-    @Override
-    public CDI<Object> getCDI() {
-        return WeldSingleton.WELD_INSTANCE;
+
+        mockSupport.verifyAll();
+        mockSupport.resetAll();
     }
 }
