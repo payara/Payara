@@ -622,7 +622,17 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             //however it is needed for file publishing for jaxws
             if(wsUtil.isJAXWSbasedService(next) && (!next.hasFilePublishing())) {
                 for(WebServiceEndpoint wsep : next.getEndpoints()) {
-                    wsep.composeFinalWsdlUrl(wsUtil.getWebServerInfoForDAS().getWebServerRootURL(wsep.isSecure()));
+                    URL finalWsdlURL = wsep.composeFinalWsdlUrl(wsUtil.getWebServerInfoForDAS().getWebServerRootURL(wsep.isSecure()));
+                    if (webBundleDesc!= null) {
+                        //if there's service-ref to this service update its
+                        // wsdl-file value to point to the just exposed URL
+                        for (ServiceReferenceDescriptor srd: webBundleDesc.getServiceReferenceDescriptors()) {
+                            if (srd.getServiceName().equals(wsep.getServiceName())
+                                    && srd.getServiceNamespaceUri().equals(wsep.getWsdlService().getNamespaceURI())) {
+                                srd.setWsdlFileUri(finalWsdlURL.toExternalForm() + "?WSDL");
+                            }
+                        }
+                    }
                 }
             } else {
 
