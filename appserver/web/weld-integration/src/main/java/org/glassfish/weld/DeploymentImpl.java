@@ -103,6 +103,8 @@ public class DeploymentImpl implements CDI11Deployment {
 
     private boolean earContextAppLibBdasProcessed = false;
 
+    private String appName;
+
     /**
      * Produce <code>BeanDeploymentArchive</code>s for this <code>Deployment</code>
      * from information from the provided <code>ReadableArchive</code>.
@@ -127,6 +129,13 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         createModuleBda(archive, ejbs, context);
+
+        ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
+        if ((holder != null) && (holder.app != null)) {
+            appName = holder.app.getAppName();
+        } else {
+            appName = "CDIApp";
+        }
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -283,7 +292,26 @@ public class DeploymentImpl implements CDI11Deployment {
                 }
             }
         }
+
         addDependentBdas();
+        addAppBda();
+    }
+
+    private void addAppBda() {
+        // must prepend the id with something so the id is unique
+        String bdaId = "AppBda_" + appName;
+        while ( getBeanDeploymentArchiveForArchive( bdaId ) != null ) {
+            bdaId = "AppBda_" + appName + UUID.randomUUID();
+        }
+        AppBeanDeploymentArchive appBda = new AppBeanDeploymentArchive(bdaId + appName, context);
+        addBdaToDeploymentBdas( appBda );
+
+        // make all bdas visible to the app Bda.  But none have visibility to App Bda
+        for ( BeanDeploymentArchive oneBda : beanDeploymentArchives ) {
+            if ( ! oneBda.equals(appBda)) {
+                appBda.getBeanDeploymentArchives().add(oneBda);
+            }
+        }
     }
 
     private void addDependentBdas() {
@@ -430,7 +458,8 @@ public class DeploymentImpl implements CDI11Deployment {
         List<BeanDeploymentArchive> bdas = getBeanDeploymentArchives();
         ArrayList<Metadata<Extension>> extnList = new ArrayList<Metadata<Extension>>();
         for ( BeanDeploymentArchive bda : bdas ) {
-            if ( ! ( bda instanceof RootBeanDeploymentArchive ) ) {
+            if ( ! ( bda instanceof RootBeanDeploymentArchive ) &&
+                 ! ( bda instanceof AppBeanDeploymentArchive ) ) {
                 ClassLoader moduleClassLoader = ( ( BeanDeploymentArchiveImpl ) bda ).getModuleClassLoaderForBDA();
                 extensions = context.getTransientAppMetaData( WeldDeployer.WELD_BOOTSTRAP,
                                                               WeldBootstrap.class).loadExtensions( moduleClassLoader );

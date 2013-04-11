@@ -104,6 +104,7 @@
                                 org.jboss.weld.annotated.slim,
                                 org.jboss.weld.annotated.slim.backed
                             </Export-Package>
+                            <Import-Package>org.glassfish.weld</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>
                     </archive>
