@@ -92,7 +92,7 @@ import com.sun.enterprise.deployment.RoleReference;
 import com.sun.enterprise.deployment.RunAsIdentityDescriptor;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityManager;
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.common.AppservAccessController;
@@ -118,7 +118,7 @@ public final class EJBSecurityManager
     private static final Logger _logger
         = LogDomains.getLogger(EJBSecurityManager.class, LogDomains.EJB_LOGGER);
 
-    private  AuditManager auditManager;
+    private  AppServerAuditManager auditManager;
 
     private static final PolicyContextHandlerImpl pcHandlerImpl =
             (PolicyContextHandlerImpl) PolicyContextHandlerImpl.getInstance();

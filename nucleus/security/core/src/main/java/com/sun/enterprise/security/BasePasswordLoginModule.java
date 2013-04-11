@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.appserv.security;
+package com.sun.enterprise.security;
 
 import java.util.*;
 import java.util.logging.Logger;
@@ -73,7 +73,7 @@ import java.security.Principal;
  *
  */
 
-public abstract class AppservPasswordLoginModule implements LoginModule
+public abstract class BasePasswordLoginModule implements LoginModule
 {
     // The _subject, _sharedState and _options satisfy LoginModule and are
     // shared across sub-classes
@@ -93,7 +93,7 @@ public abstract class AppservPasswordLoginModule implements LoginModule
     protected String[] _groupsList = null;
 
     protected static final Logger _logger =
-        LogDomains.getLogger(AppservPasswordLoginModule.class, LogDomains.SECURITY_LOGGER);
+        LogDomains.getLogger(BasePasswordLoginModule.class, LogDomains.SECURITY_LOGGER);
 
     protected final static StringManager sm =
         StringManager.getManager(LoginCallbackHandler.class);

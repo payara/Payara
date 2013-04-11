@@ -40,4 +40,5 @@
 
 -exportcontents: \
                         com.sun.appserv; \
+                        com.sun.appserv.security; \
                         com.sun.appserv.connectors.spi; version=${project.osgi.version}

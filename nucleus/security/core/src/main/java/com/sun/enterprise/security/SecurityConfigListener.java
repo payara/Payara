@@ -55,7 +55,7 @@ import com.sun.enterprise.config.serverbeans.AuditModule;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.MessageSecurityConfig;
 
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.audit.BaseAuditManager;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import java.beans.PropertyChangeEvent;
@@ -85,7 +85,7 @@ public class SecurityConfigListener implements ConfigListener, PostConstruct {
     private RealmsManager realmsManager;
 
     @Inject
-    AuditManager auditManager;
+    BaseAuditManager auditManager;
     
     private String auditEnabled = null;
     private String defaultRealm = null;

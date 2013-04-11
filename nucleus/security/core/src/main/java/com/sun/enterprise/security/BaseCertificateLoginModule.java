@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,9 +38,10 @@
  * holder.
  */
 
-package com.sun.appserv.security;
+package com.sun.enterprise.security;
 
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
+import com.sun.enterprise.security.PrincipalGroupFactory;
 import com.sun.enterprise.security.PrincipalGroupFactory;
 import com.sun.logging.LogDomains;
 import java.security.Principal;
@@ -68,7 +69,7 @@ import org.glassfish.security.common.Group;
  * call commitUserAuthentication().
  *
  */
-public abstract class AppservCertificateLoginModule implements LoginModule {
+public abstract class BaseCertificateLoginModule implements LoginModule {
 
     private Subject subject;
     /**
@@ -83,7 +84,7 @@ public abstract class AppservCertificateLoginModule implements LoginModule {
      * System Logger.
      */
     protected static final Logger _logger =
-            LogDomains.getLogger(AppservCertificateLoginModule.class, LogDomains.SECURITY_LOGGER);
+            LogDomains.getLogger(BaseCertificateLoginModule.class, LogDomains.SECURITY_LOGGER);
     private CallbackHandler callbackHandler;
     private boolean success = false;
     private String[] groups = null;

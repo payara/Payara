@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@
  * Created on July 27, 2003, 11:32 PM
  */
 
-package com.sun.appserv.security;
+package com.sun.enterprise.security;
 
 import java.util.Properties;
 /**
@@ -53,7 +53,7 @@ import java.util.Properties;
  * @author  Harpreet Singh
  * @version
  */
-public abstract class AuditModule {
+public abstract class BaseAuditModule {
     protected Properties props = null;
     /** 
      * Method is invoked at server startup, during AuditModule initialization.
@@ -75,44 +75,6 @@ public abstract class AuditModule {
     public void authentication(String user, String realm, boolean success) {
     }
     
-    /**
-     * Invoked post web authorization request. 
-     * @param user the username for whom the authorization was performed
-     * @param req the HttpRequest object for the web request
-     * @param type the permission type, hasUserDataPermission 
-     * or hasResourcePermission.
-     * @param success the status of the web authorization request
-     */
-    public void webInvocation(String user, Object req,
-            String type, boolean success) {
-    }
-    /**
-     * Invoked post ejb authorization request.
-     * @param user the username for whom the authorization was performed
-     * @param ejb the ejb name for which this authorization was performed
-     * @param method the method name for which this authorization was performed
-     * @param success the status of the ejb authorization request
-     */
-    public void ejbInvocation(String user, String ejb, String method, boolean success) {
-    }
-    
-    /**
-     * Invoked during validation of the web service request
-     * @param uri The URL representation of the web service endpoint
-     * @param endpoint The name of the endpoint representation
-     * @param success the status of the web service request validation
-     */
-    public void webServiceInvocation(String uri, String endpoint, boolean success) {
-    }
-    
-    /**
-     * Invoked during validation of the web service request
-     * @param endpoint The representation of the web service endpoint
-     * @param success the status of the web service request validation
-     */
-    public void ejbAsWebServiceInvocation(String endpoint, boolean success) {
-    }
-
     /**
      * Invoked upon completion of the server startup
      */

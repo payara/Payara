@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,18 +38,26 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.realm;
-import com.sun.enterprise.security.BaseRealm;
+package com.sun.appserv.security;
+
+import com.sun.enterprise.security.BaseProgrammaticLoginPermission;
 
 
 /**
- * Parent class for iAS Realm classes.
+ * Permission for using programmatic login.
  *
- *  This class no longer implements the methods of Realm, instead it extends
- *  from BaseRealm and now is only a place holder for migration and is a
- *  candidate for deprecation.
+ * <P>This permission is used by ProgrammaticLogin to verify whether
+ * the invoking code has been granted the use of this interface.
+ *
+ * <P>The name of this permission is the name of the method being invoked.
  *
  */
-public abstract class IASRealm extends BaseRealm
-{
+public class ProgrammaticLoginPermission extends BaseProgrammaticLoginPermission {
+    
+    public ProgrammaticLoginPermission(String name)
+    {
+        super(name);
+    }
+
+
 }

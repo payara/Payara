@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,7 @@
 
 package com.iplanet.ias.security.auth.login;
 
-import com.sun.appserv.security.AppservPasswordLoginModule;
+import com.sun.enterprise.security.BasePasswordLoginModule;
 import com.sun.enterprise.security.auth.AuthenticationStatus;
 import com.sun.enterprise.security.auth.AuthenticationStatusImpl;
 import com.sun.enterprise.security.auth.realm.Realm;
@@ -50,9 +50,9 @@ import javax.security.auth.login.LoginException;
 /**
  * Provided for backward compatibility with SunOne 7.0
  * Newer implementations should extend
- * com.sun.appserv.security.AppservPasswordLoginModule 
+ * com.sun.appserv.security.BasePasswordLoginModule 
  */
-public abstract class PasswordLoginModule extends AppservPasswordLoginModule
+public abstract class PasswordLoginModule extends BasePasswordLoginModule
 {
     /**
      * authenticateUser calls authenticate which is implemented by the implementation

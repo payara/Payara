@@ -46,7 +46,6 @@
                         com.sun.enterprise.security.auth.login; \
                         com.sun.enterprise.security.factory; \
                         com.iplanet.ias.security.auth.realm; \
-                        com.sun.appserv.security; \
                         com.sun.enterprise.security.auth.realm; \
                         com.sun.enterprise.security.auth.realm.certificate; \
                         com.sun.enterprise.security.auth.realm.file; \

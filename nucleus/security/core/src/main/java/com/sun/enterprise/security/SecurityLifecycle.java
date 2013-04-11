@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security;
 
+import com.sun.enterprise.security.audit.AuditManager;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -49,7 +50,6 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.ssl.SSLUtils;
@@ -149,8 +149,8 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
 
              
 
-            //TODO:V3 LoginContextDriver has a static variable dependency on AuditManager
-            //And since LoginContextDriver has too many static methods that use AuditManager
+            //TODO:V3 LoginContextDriver has a static variable dependency on BaseAuditManager
+            //And since LoginContextDriver has too many static methods that use BaseAuditManager
             //we have to make this workaround here.
              //Commenting this since this is being handles in LoginContextDriver
         //    LoginContextDriver.AUDIT_MANAGER = secServUtil.getAuditManager();

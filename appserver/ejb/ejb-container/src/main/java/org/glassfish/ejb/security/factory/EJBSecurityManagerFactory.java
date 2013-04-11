@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,7 +62,7 @@ import org.glassfish.ejb.security.application.EjbSecurityProbeProvider;
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
 
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.factory.SecurityManagerFactory;
 import com.sun.logging.LogDomains;
 
@@ -86,7 +86,7 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
      
 
     @Inject
-    AuditManager auditManager;
+    AppServerAuditManager auditManager;
 
     private EjbSecurityProbeProvider probeProvider = new EjbSecurityProbeProvider();
     /**
@@ -216,7 +216,7 @@ public final class EJBSecurityManagerFactory extends SecurityManagerFactory {
         return manager;
     }
     
-    public final AuditManager getAuditManager() {
+    public final AppServerAuditManager getAuditManager() {
         return this.auditManager;
     }
 }

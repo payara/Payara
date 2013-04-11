@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.appserv.security;
+package com.sun.enterprise.security;
 
 import java.security.BasicPermission;
 
@@ -52,9 +52,9 @@ import java.security.BasicPermission;
  * <P>The name of this permission is the name of the method being invoked.
  *
  */
-public class ProgrammaticLoginPermission extends BasicPermission
+public class BaseProgrammaticLoginPermission extends BasicPermission
 {
-    public ProgrammaticLoginPermission(String name)
+    public BaseProgrammaticLoginPermission(String name)
     {
         super(name);
     }

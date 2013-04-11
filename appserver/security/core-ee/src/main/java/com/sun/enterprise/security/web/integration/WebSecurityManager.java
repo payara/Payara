@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,7 @@ import com.sun.enterprise.security.ee.CachedPermissionImpl;
 import com.sun.enterprise.security.ee.PermissionCache;
 import com.sun.enterprise.security.ee.PermissionCacheFactory;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.common.Group;
@@ -75,6 +75,7 @@ import com.sun.enterprise.security.SecurityRoleMapperFactoryGen;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ee.SecurityUtil;
 import com.sun.enterprise.security.WebSecurityDeployerProbeProvider;
+import com.sun.enterprise.security.audit.AuditManager;
 import java.util.List;
 import org.glassfish.api.web.Constants; 
 
@@ -487,12 +488,7 @@ public class WebSecurityManager  {
             logger.log(Level.FINE, "[Web-Security] hasResource isGranted: {0}", isGranted);
             logger.log(Level.FINE, "[Web-Security] hasResource perm: {0}", perm);
         }
-        AuditManager auditManager = SecurityServicesUtil.getInstance().getAuditManager();
-        if(auditManager !=null && auditManager.isAuditOn()){
-            Principal prin = httpsr.getUserPrincipal();
-            String user = (prin != null) ? prin.getName(): null;
-            auditManager.webInvocation(user, httpsr, RESOURCE, isGranted);
-        }
+        recordWebInvocation(httpsr, RESOURCE, isGranted);
         return isGranted;
     }
     
@@ -566,13 +562,7 @@ public class WebSecurityManager  {
             logger.log(Level.FINE, "[Web-Security] hasUserDataPermission isGranted: {0}", isGranted);
         }
 
-        AuditManager auditManager = SecurityServicesUtil.getInstance().getAuditManager();
-        if(auditManager!= null && auditManager.isAuditOn()){
-            Principal prin = httpsr.getUserPrincipal();
-            String user = (prin != null) ? prin.getName(): null;
-            auditManager.webInvocation(user, httpsr, USERDATA, isGranted);
-        }
-
+        recordWebInvocation(httpsr, USERDATA, isGranted);
         if ( !isGranted && !requestIsSecure) {
 
 	    if (uri == null) {
@@ -626,6 +616,16 @@ public class WebSecurityManager  {
         wsmf.getManager(CONTEXT_ID,null,true);
     }
 
+    private void recordWebInvocation(final HttpServletRequest httpsr, final String type, final boolean isGranted) {
+        AuditManager auditManager = SecurityServicesUtil.getInstance().getAuditManager();
+        if (auditManager != null && auditManager.isAuditOn() && (auditManager instanceof AppServerAuditManager)) {
+            final AppServerAuditManager appServerAuditManager = (AppServerAuditManager) auditManager;
+            Principal prin = httpsr.getUserPrincipal();
+            String user = (prin != null) ? prin.getName(): null;
+            appServerAuditManager.webInvocation(user, httpsr, type, isGranted);
+        }
+    }
+    
     private static String setPolicyContext(final String ctxID) throws Throwable {
 	String old = PolicyContext.getContextID();
 	if (old != ctxID && 

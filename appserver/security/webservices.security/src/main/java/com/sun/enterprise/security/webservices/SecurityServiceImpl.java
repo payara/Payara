@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -72,7 +72,7 @@ import org.apache.catalina.util.Base64;
 import org.glassfish.webservices.monitoring.AuthenticationListener;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 import com.sun.enterprise.security.authorize.PolicyContextHandlerImpl;
 import com.sun.enterprise.security.jauth.ServerAuthContext;
 import com.sun.enterprise.security.jmac.provider.ClientAuthConfig;
@@ -97,7 +97,7 @@ import javax.xml.soap.SOAPMessage;
 public class SecurityServiceImpl implements SecurityService {
     
     @Inject
-    private AuditManager auditManager;
+    private AppServerAuditManager auditManager;
 
     protected static final Logger _logger = LogDomains.getLogger(SecurityServiceImpl.class,
         LogDomains.SECURITY_LOGGER);

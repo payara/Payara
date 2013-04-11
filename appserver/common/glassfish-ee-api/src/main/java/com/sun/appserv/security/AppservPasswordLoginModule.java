@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,18 +38,21 @@
  * holder.
  */
 
-package com.sun.enterprise.security.auth.realm;
-import com.sun.enterprise.security.BaseRealm;
+package com.sun.appserv.security;
 
+import com.sun.enterprise.security.BasePasswordLoginModule;
 
 /**
- * Parent class for iAS Realm classes.
+ * Abstract base class for password-based login modules.
  *
- *  This class no longer implements the methods of Realm, instead it extends
- *  from BaseRealm and now is only a place holder for migration and is a
- *  candidate for deprecation.
+ * <P>Most login modules receive a username and password from the client
+ * (possibly through HTTP BASIC auth, or FORM, or other mechanism) and
+ * then make (or delegate) an authentication decision based on this data.
+ * This class provides common methods for such password-based login modules.
+ *
+ * <P>Subclasses need to implement the authenticateUser() method and later
+ * call commitUserAuthentication().
  *
  */
-public abstract class IASRealm extends BaseRealm
-{
-}
+
+public abstract class AppservPasswordLoginModule extends BasePasswordLoginModule {}

@@ -52,7 +52,7 @@ import java.util.Set;
 import com.sun.enterprise.security.jauth.*;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.SecurityContext;
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
     
 import java.security.Principal;
 import javax.security.auth.Subject;
@@ -80,7 +80,7 @@ public class WebServiceSecurity {
         _logger = LogDomains.getLogger(WebServiceSecurity.class, LogDomains.SECURITY_LOGGER);
     }
 
-    private static AuditManager auditManager = null;
+    private static AppServerAuditManager auditManager = null;
             
     // keys to shared state (for things like session keys) in SOAPMessageCOntext
     private static final String SHARED_CLIENT_STATE = 
@@ -91,7 +91,7 @@ public class WebServiceSecurity {
 
     static  {
         if (Globals.getDefaultHabitat() != null) {
-            auditManager = Globals.get(AuditManager.class);
+            auditManager = Globals.get(AppServerAuditManager.class);
         }
     }
     

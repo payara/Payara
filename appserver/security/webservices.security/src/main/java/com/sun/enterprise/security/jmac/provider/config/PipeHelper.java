@@ -67,10 +67,11 @@ import org.glassfish.deployment.common.ModuleDescriptor;
 
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 
-import com.sun.enterprise.security.audit.AuditManager;
+import com.sun.enterprise.security.ee.audit.AppServerAuditManager;
 //import com.sun.enterprise.security.audit.AuditManagerFactory;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.ee.authorize.EJBPolicyContextDelegate;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.enterprise.security.common.ClientSecurityContext;
@@ -104,7 +105,7 @@ import org.glassfish.api.invocation.InvocationManager;
 
 
 public class PipeHelper extends ConfigHelper {
-    private  AuditManager auditManager = null;
+    private  AppServerAuditManager auditManager = null;
             //AuditManagerFactory.getAuditManagerInstance();
 
     protected static final LocalStringManagerImpl localStrings = 
@@ -129,10 +130,10 @@ public class PipeHelper extends ConfigHelper {
             }
         }
         this.soapVersion = (binding != null) ? binding.getSOAPVersion() : SOAPVersion.SOAP_11;
-
-        auditManager = (SecurityServicesUtil.getInstance() != null)
+        AuditManager am = (SecurityServicesUtil.getInstance() != null)
                 ? SecurityServicesUtil.getInstance().getAuditManager()
-                : new AuditManager();//workaround for standalone clients where no habitat
+                : null;
+        auditManager = (am != null && (am instanceof AppServerAuditManager)) ? (AppServerAuditManager) am : new AppServerAuditManager();//workaround for standalone clients where no habitat
         invManager = (SecurityServicesUtil.getInstance() != null)
                 ? SecurityServicesUtil.getInstance().getHabitat().<InvocationManager>getService(InvocationManager.class) : null;
 

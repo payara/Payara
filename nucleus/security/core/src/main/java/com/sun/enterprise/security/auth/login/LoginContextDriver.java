@@ -56,6 +56,7 @@ import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.SecurityServicesUtil;
+import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.common.AppservAccessController;
 //import com.sun.enterprise.security.SecurityContext;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
@@ -64,7 +65,6 @@ import com.sun.enterprise.security.auth.login.common.ServerLoginCallbackHandler;
 import com.sun.enterprise.security.auth.login.common.LoginException;
 import com.sun.enterprise.security.auth.realm.Realm;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
-import com.sun.enterprise.security.audit.AuditManager;
 
 // FIXME: ACC methods need to be moved to ACC-specific class.
 import com.sun.enterprise.security.auth.realm.InvalidOperationException;
