@@ -96,17 +96,11 @@
     <target name="create-minnow-images">
         <create.local.image image.dir="${glassfish.image.dir}"/>
         <create.images type="minnow" name="Minnow"/>
-        <copy.image 
-            source="${glassfish.image.dir}"
-            target="${glassfish.image.dir.l10n}" /> 
     </target>
     <target name="create-web-images">
         <copy.image 
             source="../minnow/${glassfish.image.dir}"
             target="${glassfish.image.dir}" />
-        <copy.image 
-            source="../minnow/${glassfish.image.dir}"
-            target="${glassfish.image.dir.l10n}" />        
         <create.images type="web" name="Web"/>
         <antcall target="create-domain" />
         <antcall target="create-domain-ml" />
@@ -115,9 +109,6 @@
         <copy.image 
             source="../web/${glassfish.image.dir}"
             target="${glassfish.image.dir}" />
-        <copy.image 
-            source="../web/${glassfish.image.dir}"
-            target="${glassfish.image.dir.l10n}" />
         <create.images type="glassfish"/>  
         <antcall target="create-domain" />
         <antcall target="create-domain-ml" />
@@ -151,9 +142,7 @@
             <pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>
                         
             <!-- create glassfish.l10n image -->
-            <ant antfile="../@{type}/@{type}-distributions.xml" target="install-packages">
-                <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
-            </ant>            
+            <copy.image source="${glassfish.image.dir}" target="${glassfish.image.dir.l10n}/" />
             <ant antfile="../@{type}/@{type}-distributions.xml" target="install-l10n-packages">
                 <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
             </ant>
