@@ -44,7 +44,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.module.bootstrap.StartupContext;
-import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.event.EventListener;
@@ -68,7 +67,6 @@ import org.glassfish.hk2.api.PostConstruct;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.PersistenceException;
-import javax.persistence.spi.PersistenceUnitTransactionType;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -98,8 +96,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
     private ApplicationRegistry applicationRegistry;
 
     private static Logger logger = LogDomains.getLogger(PersistenceUnitLoader.class, LogDomains.PERSISTENCE_LOGGER + ".jpadeployer");
-
-    private static final StringManager localStrings = StringManager.getManager(JPADeployer.class);
 
     /** Key used to get/put emflists in transientAppMetadata */
     private static final String EMF_KEY = EntityManagerFactory.class.toString();
@@ -205,12 +201,6 @@ public class JPADeployer extends SimpleDeployer<JPAContainer, JPApplicationConta
         PersistenceUnitDescriptorIterator pudIterator = new PersistenceUnitDescriptorIterator() {
             @Override void visitPUD(PersistenceUnitDescriptor pud, DeploymentContext context) {
                 if(referencedPus.contains(pud)) {
-                    if( !PersistenceUnitTransactionType.JTA.toString().equals(pud.getTransactionType()) ) {
-                        String msg = localStrings.getString("jpadeployer.non-jta-managed-PU-not-allowed", // NOI18N
-                                new Object[] {pud.getName(), pud.getTransactionType()});
-                        throw new DeploymentException(msg);
-                    }
-
                     boolean isDas = isDas();
 
                     // While running in embedded mode, it is not possible to guarantee that entity classes are not loaded by the app classloader before transformers are installed
