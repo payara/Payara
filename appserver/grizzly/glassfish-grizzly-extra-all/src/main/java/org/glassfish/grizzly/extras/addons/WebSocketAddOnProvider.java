@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,19 @@
 
 package org.glassfish.grizzly.extras.addons;
 
+import java.io.IOException;
+import org.glassfish.grizzly.config.ConfigAwareElement;
+import org.glassfish.grizzly.config.dom.Http;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.filterchain.FilterChainContext;
+import org.glassfish.grizzly.http.HttpContent;
 import org.glassfish.grizzly.http.server.AddOn;
+import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.websockets.WebSocketAddOn;
+import org.glassfish.grizzly.websockets.WebSocketEngine;
+import org.glassfish.grizzly.websockets.WebSocketFilter;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.grizzly.ContextMapper;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
 
@@ -52,5 +63,60 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name="websocket")
 @ContractsProvided({WebSocketAddOnProvider.class, AddOn.class})
-public class WebSocketAddOnProvider extends WebSocketAddOn {
+public class WebSocketAddOnProvider extends WebSocketAddOn implements ConfigAwareElement<Http> {
+
+    private Mapper mapper;
+    
+    @Override
+    public void configure(ServiceLocator habitat,
+            NetworkListener networkListener, Http configuration) {
+        mapper = getMapper(habitat, networkListener);
+        
+        setTimeoutInSeconds(Long.parseLong(configuration.getWebsocketsTimeoutSeconds()));
+    }
+
+    @Override
+    protected WebSocketFilter createWebSocketFilter() {
+        return new GlassfishWebSocketFilter(mapper, getTimeoutInSeconds());
+    }
+
+    private static Mapper getMapper(final ServiceLocator habitat,
+            final NetworkListener listener) {
+        
+        final int port;
+        try {
+            port = Integer.parseInt(listener.getPort());
+        } catch (NumberFormatException e) {
+            throw new IllegalStateException("Port number is not integer");
+        }
+        
+        for (Mapper m : habitat.<Mapper>getAllServices(Mapper.class)) {
+            if (m.getPort() == port &&
+                    m instanceof ContextMapper) {
+                ContextMapper cm = (ContextMapper) m;
+                if (listener.getName().equals(cm.getId())) {
+                    return m;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    private static class GlassfishWebSocketFilter extends WebSocketFilter {
+        private final Mapper mapper;
+        
+        public GlassfishWebSocketFilter(final Mapper mapper,
+                long wsTimeoutInSeconds) {
+            super(wsTimeoutInSeconds);
+            this.mapper = mapper;
+        }
+
+        @Override
+        protected boolean doServerUpgrade(final FilterChainContext ctx,
+                final HttpContent requestContent) throws IOException {
+            return !WebSocketEngine.getEngine().upgrade(
+                    ctx, requestContent, mapper);
+        }
+    }
 }
