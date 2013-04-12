@@ -95,13 +95,19 @@
     
     <target name="create-minnow-images">
         <create.local.image image.dir="${glassfish.image.dir}"/>
-        <create.images type="minnow" name="Minnow"/>
+        <create.images 
+            type="minnow" 
+            l10n.source="${glassfish.image.dir.l10n}"
+            name="Minnow"/>
     </target>
     <target name="create-web-images">
         <copy.image 
             source="../minnow/${glassfish.image.dir}"
-            target="${glassfish.image.dir}" />
-        <create.images type="web" name="Web"/>
+            target="${glassfish.image.dir}" />       
+        <create.images 
+            type="web" 
+            l10n.source="../minnow/${glassfish.image.dir}"
+            name="Web"/>
         <antcall target="create-domain" />
         <antcall target="create-domain-ml" />
     </target>
@@ -109,7 +115,9 @@
         <copy.image 
             source="../web/${glassfish.image.dir}"
             target="${glassfish.image.dir}" />
-        <create.images type="glassfish"/>  
+        <create.images  
+            l10n.source="../web/${glassfish.image.dir}"
+            type="glassfish"/>  
         <antcall target="create-domain" />
         <antcall target="create-domain-ml" />
     </target>
@@ -129,6 +137,7 @@
     <macrodef name="create.images">
         <attribute name="type" />
         <attribute name="name" default="" />
+        <attribute name="l10n.source"/>
         <sequential>
             <property name="image.name" value="@{type}"/>
             <!-- create basic image -->    
@@ -142,7 +151,11 @@
             <pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>
                         
             <!-- create glassfish.l10n image -->
-            <copy.image source="${glassfish.image.dir}" target="${glassfish.image.dir.l10n}/" />
+            <echo message="basedir=${basedir} - l10n.source=@{l10n.source}" />
+            <copy.image source="@{l10n.source}" target="${glassfish.image.dir.l10n}/" />
+            <ant antfile="../@{type}/@{type}-distributions.xml" target="install-packages">
+                <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
+            </ant>            
             <ant antfile="../@{type}/@{type}-distributions.xml" target="install-l10n-packages">
                 <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
             </ant>
