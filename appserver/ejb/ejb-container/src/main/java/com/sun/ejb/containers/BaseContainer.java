@@ -3968,7 +3968,7 @@ public abstract class BaseContainer
                                    + containerStateToString(containerState));
         }
      
-        EjbInvocation inv = invFactory.create();
+        EjbInvocation inv = createEjbInvocation();
 
         inv.isTimerCallback = true;
      
