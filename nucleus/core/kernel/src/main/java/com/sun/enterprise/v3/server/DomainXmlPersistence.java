@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.v3.server;
 
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.common.util.admin.ManagedFile;
@@ -76,6 +77,8 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
     ServerEnvironmentImpl env;
     @Inject
     protected Logger logger;
+    @Inject
+    ConfigModularityUtils modularityUtils;
 
     final XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
 
@@ -121,6 +124,7 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
 
     @Override
     public void save(DomDocument doc) throws IOException {
+        if(modularityUtils.isIgnorePersisting() && !modularityUtils.isCommandInvocation()) return;
         File destination = getDestination();
         if (destination == null) {
             String msg = localStrings.getLocalString("NoLocation",
