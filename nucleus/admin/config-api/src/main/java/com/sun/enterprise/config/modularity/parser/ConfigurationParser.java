@@ -100,7 +100,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
         //the solution is to put the loop into the apply method...  But it would be some fine amount of work
         for (final ConfigBeanDefaultValue configBeanDefaultValue : values) {
             final ConfigBeanProxy parent = configModularityUtils.getOwningObject(configBeanDefaultValue.getLocation());
-            if (parent == null) continue;
+            if(parent==null) continue;
             ConfigurationPopulator populator = null;
             if (replaceSystemProperties)
                 try {
@@ -121,18 +121,16 @@ public class ConfigurationParser<C extends ConfigLoader> {
                 populator = new ConfigurationPopulator(configBeanDefaultValue.getXmlConfiguration(), doc, parent);
             }
             populator.run(configParser);
-            boolean oldValue = configModularityUtils.isIgnorePersisting();
             try {
                 Class configBeanClass = configModularityUtils.getClassForFullName(configBeanDefaultValue.getConfigBeanClassName());
                 final ConfigBeanProxy pr = doc.getRoot().createProxy(configBeanClass);
-                configModularityUtils.setIgnorePersisting(true);
                 ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
                     public Object run(ConfigBeanProxy param) throws PropertyVetoException, TransactionFailure {
-
-                        if (!configModularityUtils.isCommandInvocation()) {
+                        boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml", "true"));
+                        if (!writeDefaultElementsToXml) {
+                            //Do not write default snippets to domain.xml
                             doc.getRoot().skipFromXml();
                         }
-
                         configModularityUtils.setConfigBean(pr, configBeanDefaultValue, param);
                         return param;
                     }
@@ -144,9 +142,8 @@ public class ConfigurationParser<C extends ConfigLoader> {
                         "can.not.add.configuration.to.extension.point",
                         "Cannot add new configuration extension to the extension point.");
                 LOG.log(Level.SEVERE, msg, e);
-            } finally {
-                configModularityUtils.setIgnorePersisting(oldValue);
             }
+
         }
     }
 }

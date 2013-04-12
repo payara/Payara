@@ -121,8 +121,6 @@ public final class ConfigModularityUtils {
     @Inject
     private StartupContext context;
 
-    private boolean ignorePersisting=false;
-    private boolean isCommandInvocation=false;
     public <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
         //TODO can be optimized a little by checking the default file...
         String fileName = runtimeType + "-" + baseFileName;
@@ -932,21 +930,5 @@ public final class ConfigModularityUtils {
             }
         }
         return prox;
-    }
-
-    public boolean isIgnorePersisting() {
-        return ignorePersisting;
-    }
-
-    public void setIgnorePersisting(boolean ignorePersisting) {
-        this.ignorePersisting = ignorePersisting;
-    }
-
-    public boolean isCommandInvocation() {
-        return isCommandInvocation;
-    }
-
-    public void setCommandInvocation(boolean commandInvocation) {
-        isCommandInvocation = commandInvocation;
     }
 }

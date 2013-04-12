@@ -74,7 +74,7 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
 
     @Override
     public ConfigBeanProxy handleExtension(Object owner, Class ownerType, Object[] params) {
-        if (((Class) params[0]).getName().equals("com.sun.enterprise.config.serverbeans.SystemProperty")) return null;
+        if(((Class) params[0]).getName().equals("com.sun.enterprise.config.serverbeans.SystemProperty")) return null;
         ConfigBeanProxy configExtension = null;
         List<ConfigBeanProxy> extensions = configModularityUtils.getExtensions(((ConfigBean) owner).createProxy(ownerType));
         for (ConfigBeanProxy extension : extensions) {
@@ -85,10 +85,9 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
                 // ignore, not the right type.
             }
         }
-        boolean oldValue = configModularityUtils.isIgnorePersisting();
+
         try {
             ConfigBeanProxy pr = ((ConfigBean) owner).createProxy(ownerType);
-            configModularityUtils.setIgnorePersisting(true);
             ConfigBeanProxy returnValue = moduleConfigurationLoader.createConfigBeanForType((Class) params[0], pr);
             return returnValue;
         } catch (TransactionFailure transactionFailure) {
@@ -96,8 +95,6 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
                     owner.getClass().getName(), ownerType.getName(),
                     transactionFailure.getMessage()});
             return null;
-        } finally {
-            configModularityUtils.setIgnorePersisting(oldValue);
         }
     }
 }
