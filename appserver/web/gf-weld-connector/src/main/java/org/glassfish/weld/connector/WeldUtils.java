@@ -113,6 +113,7 @@ public class WeldUtils {
         cdiScopeAnnotations.add(SessionScoped.class.getName());
         cdiScopeAnnotations.add(RequestScoped.class.getName());
         cdiScopeAnnotations.add(Dependent.class.getName());
+        cdiScopeAnnotations.add(Singleton.class.getName());
     }
 
     protected static final List<String> cdiEnablingAnnotations;
@@ -126,7 +127,7 @@ public class WeldUtils {
         cdiEnablingAnnotations.add(MessageDriven.class.getName());
         cdiEnablingAnnotations.add(Stateful.class.getName());
         cdiEnablingAnnotations.add(Stateless.class.getName());
-        cdiEnablingAnnotations.add(Singleton.class.getName());
+        cdiEnablingAnnotations.add(javax.ejb.Singleton.class.getName());
     }
 
     protected static final List<String> excludedAnnotationTypes = new ArrayList<String>();
