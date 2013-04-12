@@ -409,10 +409,10 @@ public class ContainerMapper extends StaticHttpHandler {
         byte[] errorBody;
         if (res.getStatus() == 404) {
             errorBody = HttpUtils.getErrorPage(Version.getVersion(),
-                    String.format("The requested resource (%s) is not available.", req.getDecodedRequestURI()), "404");
+                    "The requested resource is not available.", "404");
         } else {
             errorBody = HttpUtils.getErrorPage(Version.getVersion(),
-                    "Internal Error", "500");
+                    "The server encountered an internal error that prevented it from fulfilling this request.", "500");
         }
         ByteChunk chunk = new ByteChunk();
         chunk.setBytes(errorBody, 0, errorBody.length);
