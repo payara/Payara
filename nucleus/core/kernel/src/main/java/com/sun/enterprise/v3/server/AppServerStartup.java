@@ -81,10 +81,12 @@ import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.InstanceLifecycleEvent;
 import org.glassfish.hk2.api.InstanceLifecycleEventType;
 import org.glassfish.hk2.api.InstanceLifecycleListener;
+import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.runlevel.RunLevelController;
+import org.glassfish.hk2.runlevel.RunLevelFuture;
 import org.glassfish.hk2.runlevel.RunLevelListener;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
@@ -105,7 +107,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Rank(Constants.DEFAULT_IMPLEMENTATION_RANK) // This should be the default impl if no name is specified
-public class AppServerStartup implements ModuleStartup {
+public class AppServerStartup implements PostConstruct, ModuleStartup {
     
     StartupContext context;
 
@@ -148,7 +150,7 @@ public class AppServerStartup implements ModuleStartup {
     @Inject
     private AppInstanceListener appInstanceListener;
     
-    private final MasterRunLevelListener masterListener = new MasterRunLevelListener();
+    private MasterRunLevelListener masterListener;
     
     private long platformInitTime;
 
@@ -160,6 +162,51 @@ public class AppServerStartup implements ModuleStartup {
      */
     private Thread serverThread;
     private boolean shutdownSignal = false;
+    
+    private final static String THREAD_POLICY_PROPERTY = "com.oracle.glassfish.startupThreadPolicy";
+    private final static String MAX_STARTUP_THREAD_PROPERTY = "com.oracle.glassfish.maxStartupThreads";
+    
+    private final static String POLICY_FULLY_THREADED = "FULLY_THREADED";
+    private final static String POLICY_USE_NO_THREADS = "USE_NO_THREADS";
+    
+    private final static int DEFAULT_STARTUP_THREADS = 4;
+    private final static String FELIX_PLATFORM = "Felix";
+    private final static String STATIC_PLATFORM = "Static";
+    
+    @Override
+    public void postConstruct() {
+        masterListener = new MasterRunLevelListener(runLevelController);
+        String threadPolicy = System.getProperty(THREAD_POLICY_PROPERTY);
+        if (threadPolicy != null) {
+            if (POLICY_FULLY_THREADED.equals(threadPolicy)) {
+                logger.fine("Using startup thread policy FULLY_THREADED at behest of system property");
+                runLevelController.setThreadingPolicy(RunLevelController.ThreadingPolicy.FULLY_THREADED);
+            }
+            else if (POLICY_USE_NO_THREADS.equals(threadPolicy)) {
+                logger.fine("Using startup thread policy USE_NO_THREADS at behest of system property");
+                runLevelController.setThreadingPolicy(RunLevelController.ThreadingPolicy.USE_NO_THREADS);
+            }
+            else {
+                logger.warning("Unknown threading policy " + threadPolicy + ".  Will use the current policy of " +
+                    runLevelController.getThreadingPolicy());
+            }
+        }
+        else {
+            if (platform == null || !(platform.equals(FELIX_PLATFORM) || platform.equals(STATIC_PLATFORM))) {
+                runLevelController.setThreadingPolicy(RunLevelController.ThreadingPolicy.USE_NO_THREADS);
+            }
+        }
+        
+        int numThreads = Integer.getInteger(MAX_STARTUP_THREAD_PROPERTY, DEFAULT_STARTUP_THREADS);
+        if (numThreads > 0) {
+            logger.fine("Startup controller will use " + numThreads + " + threads");
+            runLevelController.setMaximumUseableThreads(numThreads);
+        }
+        else {
+            logger.fine("Startup controller will use infinite threads");
+        }
+        
+    }
 
     public synchronized void start() {
         ClassLoader origCL = Thread.currentThread().getContextClassLoader();
@@ -254,6 +301,8 @@ public class AppServerStartup implements ModuleStartup {
                 new ProcessEnvironment(ProcessEnvironment.ProcessType.Embedded):
                 new ProcessEnvironment(ProcessEnvironment.ProcessType.Server)));
         config.commit();
+        
+        
 
         // activate the run level services
         masterListener.reset();
@@ -568,7 +617,7 @@ public class AppServerStartup implements ModuleStartup {
                 startTimes.put(descriptor.getImplementation(), System.currentTimeMillis());
             }
             
-            if ((getController().getCurrentRunLevel().intValue() > InitRunLevel.VAL) && logger.isLoggable(level)) {
+            if ((getController().getCurrentRunLevel() > InitRunLevel.VAL) && logger.isLoggable(level)) {
                 logger.log(level, "Running service " + descriptor.getImplementation());
             }
         }
@@ -586,7 +635,7 @@ public class AppServerStartup implements ModuleStartup {
                     (System.currentTimeMillis() - startupTime));
             }
             
-            if ((getController().getCurrentRunLevel().intValue() > InitRunLevel.VAL) && logger.isLoggable(level)) {
+            if ((getController().getCurrentRunLevel() > InitRunLevel.VAL) && logger.isLoggable(level)) {
                 logger.log(level, "Service " + descriptor.getImplementation() + " finished " +
                     event.getLifecycleObject());
             }
@@ -619,7 +668,13 @@ public class AppServerStartup implements ModuleStartup {
     
     @Singleton
     private class MasterRunLevelListener implements RunLevelListener {
+        private final RunLevelController controller;
+        
         private boolean forcedShutdown = false;
+        
+        private MasterRunLevelListener(RunLevelController controller) {
+            this.controller = controller;
+        }
         
         private void reset() {
             forcedShutdown = false;
@@ -628,17 +683,24 @@ public class AppServerStartup implements ModuleStartup {
         private boolean isForcedShutdown() { return forcedShutdown; }
 
         @Override
-        public void onCancelled(RunLevelController controller,
-                int previousProceedTo, boolean isInterrupt) {
+        public void onCancelled(RunLevelFuture future,
+                int previousProceedTo) {
             logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested);
+            
+            if (future.isDown()) return;
             
             forcedShutdown = true;
             shutdown();
         }
 
         @Override
-        public void onError(RunLevelController controller, Throwable error,
-                boolean willContinue) {
+        public void onError(RunLevelFuture future, Throwable error) {
+            if (future.isDown()) {
+                // TODO: Need a log message
+                logger.log(Level.WARNING, "An error occured when the system was coming down", error);
+                return;
+            }
+            
             logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, error);
             
             if (controller.getCurrentRunLevel() >= InitRunLevel.VAL) {
@@ -651,8 +713,8 @@ public class AppServerStartup implements ModuleStartup {
         }
 
         @Override
-        public void onProgress(RunLevelController controller) {
-            if (controller.getCurrentRunLevel() >= PostStartupRunLevel.VAL) {
+        public void onProgress(RunLevelFuture future, int achievedLevel) {
+            if (achievedLevel == PostStartupRunLevel.VAL) {
                 if (logger.isLoggable(level)) {
                     printModuleStatus(systemRegistry, level);
                     
