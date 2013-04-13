@@ -216,6 +216,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
     @Inject
     private Provider<org.glassfish.resourcebase.resources.listener.ResourceManager> resourceManagerProvider;
+    private org.glassfish.resourcebase.resources.listener.ResourceManager resourceManager;
 
     @Inject
     private ProcessEnvironment processEnvironment;
@@ -883,6 +884,9 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
         }
         if(isServer() || isEmbedded()){
             poolMonitoringLevelListener = poolMonitoringLevelListenerProvider.get();
+            
+            // Force initialization of the ResourceManager
+            getResourceManager();
         }
 
     }
@@ -962,7 +966,19 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
             throws ConnectorRuntimeException {
         ccPoolAdmService.createConnectorConnectionPool(ccp, connectionDefinitionName, rarName, props, securityMaps);
     }
-
+    
+    private synchronized org.glassfish.resourcebase.resources.listener.ResourceManager getResourceManager() {
+        if (resourceManager == null) {
+            try {
+                resourceManager = resourceManagerProvider.get();
+            }
+            catch (Exception e) {
+                return null;
+            }
+        }
+        
+        return resourceManager;
+    }
 
     /**
      * {@inheritDoc}
@@ -971,15 +987,18 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
 
         Domain domain = domainProvider.get();
         if (domain != null) {
-            Collection<Resource> resources = ConnectorsUtil.getAllSystemRAResourcesAndPools(domain.getResources());
-            resourceManagerProvider.get().undeployResources(resources);
+            org.glassfish.resourcebase.resources.listener.ResourceManager rm = getResourceManager();
+            if (rm != null) {
+                Collection<Resource> resources = ConnectorsUtil.getAllSystemRAResourcesAndPools(domain.getResources());
+                resourceManager.undeployResources(resources);
 
-            resources = null;
-            Collection<ConnectorRuntimeExtension> extensions =
-                habitat.getAllServices(ConnectorRuntimeExtension.class);
-            for(ConnectorRuntimeExtension extension : extensions) {
+                resources = null;
+                Collection<ConnectorRuntimeExtension> extensions =
+                    habitat.getAllServices(ConnectorRuntimeExtension.class);
+                for(ConnectorRuntimeExtension extension : extensions) {
                     resources = extension.getAllSystemRAResourcesAndPools();
-                resourceManagerProvider.get().undeployResources(resources);
+                    resourceManager.undeployResources(resources);
+                }
             }
         }
         poolManager.killFreeConnectionsInPools();
@@ -1571,7 +1590,7 @@ public class ConnectorRuntime implements com.sun.appserv.connectors.internal.api
     }
 
     public org.glassfish.resourcebase.resources.listener.ResourceManager getGlobalResourceManager(){
-        return resourceManagerProvider.get();
+        return getResourceManager();
     }
 
     /**

@@ -60,8 +60,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.runlevel.RunLevelController;
-import org.glassfish.hk2.runlevel.internal.RunLevelContext;
-import org.glassfish.hk2.runlevel.utilities.RunLevelControllerImpl;
+import org.glassfish.hk2.runlevel.internal.AsyncRunLevelContext;
+import org.glassfish.hk2.runlevel.internal.RunLevelControllerImpl;
 import org.glassfish.hk2.utilities.AbstractActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DescriptorBuilder;
@@ -76,6 +76,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Collections;
@@ -120,6 +121,8 @@ public class AppServerStartupTest {
      * services during progression to the start up run level.
      */
     private static List<TestFuture> listFutures = null;
+    
+    private ServiceLocator testLocator;
 
 
     // ----- test initialization ---------------------------------------------
@@ -148,8 +151,8 @@ public class AppServerStartupTest {
 
         config.bind(BuilderHelper.link(RunLevelControllerImpl.class).to(RunLevelController.class).build());
 
-        config.addUnbindFilter(BuilderHelper.createContractFilter(RunLevelContext.class.getName()));
-        config.bind(BuilderHelper.link(RunLevelContext.class).to(Context.class).in(Singleton.class).build());
+        config.addUnbindFilter(BuilderHelper.createContractFilter(AsyncRunLevelContext.class.getName()));
+        config.bind(BuilderHelper.link(AsyncRunLevelContext.class).to(Context.class).in(Singleton.class).build());
 
         config.bind(BuilderHelper.link(AppServerStartup.class).build());
 
@@ -203,7 +206,7 @@ public class AppServerStartupTest {
      */
     @Before
     public void beforeTest() {
-        ServiceLocator testLocator = ServiceLocatorFactory.getInstance().create("AppServerStartupTest");
+        testLocator = ServiceLocatorFactory.getInstance().create("AppServerStartupTest");
         initialize(testLocator);
 
         as = testLocator.getService(AppServerStartup.class);
@@ -233,8 +236,10 @@ public class AppServerStartupTest {
         results = null;
         listFutures = null;
         mapPostConstructExceptions = null;
+        
+        ServiceLocatorFactory.getInstance().destroy(testLocator);
+        testLocator = null;
     }
-
 
     // ----- tests -----------------------------------------------------------
 
@@ -245,7 +250,6 @@ public class AppServerStartupTest {
      */
     @Test
     public void testRunLevelServices() {
-
         // create the list of Futures returned from TestStartupService
         listFutures.add(new TestFuture());
         listFutures.add(new TestFuture());
@@ -274,10 +278,10 @@ public class AppServerStartupTest {
         Assert.assertEquals(EventTypes.SERVER_SHUTDOWN, results.getListEvents().get(3));
 
         // assert that the run level services have been destroyed
-        Assert.assertTrue(results.isDestroyed(TestInitRunLevelService.class, InitRunLevel.VAL));
+        Assert.assertTrue(results.isDestroyed(TestPostStartupRunLevelService.class, PostStartupRunLevel.VAL));
         Assert.assertTrue(results.isDestroyed(TestStartupService.class, StartupRunLevel.VAL));
         Assert.assertTrue(results.isDestroyed(TestStartupRunLevelService.class, StartupRunLevel.VAL));
-        Assert.assertTrue(results.isDestroyed(TestPostStartupRunLevelService.class, PostStartupRunLevel.VAL));
+        Assert.assertTrue(results.isDestroyed(TestInitRunLevelService.class, InitRunLevel.VAL));
     }
 
     /**
@@ -433,11 +437,11 @@ public class AppServerStartupTest {
         }
 
         public void recordConstruction(Class cl) {
-            mapConstructedLevels.put(cl, rls.getPlannedRunLevel());
+            mapConstructedLevels.put(cl, rls.getCurrentProceeding().getProposedLevel());
         }
 
         public void recordDestruction(Class cl) {
-            mapDestroyedLevels.put(cl, rls.getCurrentRunLevel());
+            mapDestroyedLevels.put(cl, rls.getCurrentRunLevel() + 1);
         }
 
         public boolean isConstructed(Class cl) {
@@ -507,6 +511,10 @@ public class AppServerStartupTest {
     @RunLevel(StartupRunLevel.VAL)
     @Service
     public static class TestStartupService extends TestService implements FutureProvider {
+        // Make sure the other one starts first
+        @SuppressWarnings("unused")
+        @Inject
+        private TestStartupRunLevelService dependency;
 
         @Override
         public List getFutures() {
