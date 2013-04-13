@@ -173,6 +173,8 @@ class AsyncContextImpl implements AsyncContext {
         }
     };
 
+    private Handler handler = null;
+
     /**
      * Constructor
      *
@@ -218,19 +220,7 @@ class AsyncContextImpl implements AsyncContext {
             (ApplicationDispatcher)getZeroArgDispatcher(
                 origRequest, servletRequest, isStartAsyncWithZeroArg);
 
-        isDispatchInScope.set(true);
-        if (dispatcher != null) {
-            if (isDispatchInProgress.compareAndSet(false, true)) {
-                pool.execute(new Handler(this, dispatcher));
-            } else {
-                String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
-                throw new IllegalStateException(msg);
-            }
-        } else {
-            // Should never happen, because any unmapped paths will be
-            // mapped to the DefaultServlet
-            log.log(Level.WARNING, UNABLE_DETERMINE_TARGET_OF_DISPATCHER);
-        }
+        dispatch(dispatcher, null, null);
     }
 
     @Override
@@ -240,19 +230,8 @@ class AsyncContextImpl implements AsyncContext {
         }
         ApplicationDispatcher dispatcher = (ApplicationDispatcher)
             servletRequest.getRequestDispatcher(path);
-        isDispatchInScope.set(true);
-        if (dispatcher != null) {
-            if (isDispatchInProgress.compareAndSet(false, true)) {
-                pool.execute(new Handler(this, dispatcher));
-            } else {
-                String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
-                throw new IllegalStateException(msg);
-            }
-        } else {
-            // Should never happen, because any unmapped paths will be
-            // mapped to the DefaultServlet
-            log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER, path);
-        }
+
+        dispatch(dispatcher, null, path);
     }
 
     @Override
@@ -262,10 +241,21 @@ class AsyncContextImpl implements AsyncContext {
         }
         ApplicationDispatcher dispatcher = (ApplicationDispatcher)
             context.getRequestDispatcher(path);
+
+        dispatch(dispatcher, context, path);
+    }
+
+    private void dispatch(ApplicationDispatcher dispatcher,
+            ServletContext context, String path) {
+
         isDispatchInScope.set(true);
         if (dispatcher != null) {
             if (isDispatchInProgress.compareAndSet(false, true)) {
-                pool.execute(new Handler(this, dispatcher));
+                if (origRequest.isDelayAsyncDispatchAndComplete()) {
+                    handler = new Handler(this, dispatcher);
+                } else {
+                    pool.execute(new Handler(this, dispatcher));
+                }
             } else {
                 String msg = rb.getString(ASYNC_DISPATCH_ALREADY_IN_PROGRESS_EXCEPTION);
                 throw new IllegalStateException(msg);
@@ -273,8 +263,21 @@ class AsyncContextImpl implements AsyncContext {
         } else {
             // Should never happen, because any unmapped paths will be
             // mapped to the DefaultServlet
-            log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT,
-                    new Object[] {path, context.getContextPath()});
+            if (context == null && path == null) {
+                log.log(Level.WARNING, UNABLE_DETERMINE_TARGET_OF_DISPATCHER);
+            } else if (context == null && path != null) {
+                log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER, path);
+            } else {
+                log.log(Level.WARNING, UNABLE_ACQUIRE_REQUEST_DISPATCHER_IN_SERVLET_CONTEXT,
+                        new Object[] {path, context.getContextPath()});
+            }
+        }
+    }
+
+    void invokeDelayDispatch() {
+        if (handler != null) {
+            pool.execute(handler);
+            handler = null;
         }
     }
 
@@ -510,23 +513,31 @@ class AsyncContextImpl implements AsyncContext {
             origRequest.setAsyncStarted(false);
             int startAsyncCurrent = asyncContext.startAsyncCounter.get();
             try {
+                origRequest.setDelayAsyncDispatchAndComplete(true);
                 dispatcher.dispatch(asyncContext.getRequest(),
                     asyncContext.getResponse(), DispatcherType.ASYNC);
-                /*
-                 * Close the response after the dispatch target has
-                 * completed execution, unless the dispatch target has called
-                 * ServletRequest#startAsync, in which case the AsyncContext's
-                 * startAsyncCounter will be greater than it was before the
-                 * dispatch
-                 */
-                if (asyncContext.startAsyncCounter.compareAndSet(
+
+                origRequest.setDelayAsyncDispatchAndComplete(false);
+
+                origRequest.processAsyncOperations();
+
+                if ((!origRequest.isAsyncComplete()) &&
+                        asyncContext.startAsyncCounter.compareAndSet(
                         startAsyncCurrent, startAsyncCurrent)) {
+                    /*
+                     * Close the response after the dispatch target has
+                     * completed execution, unless the dispatch target has called
+                     * ServletRequest#startAsync, in which case the AsyncContext's
+                     * startAsyncCounter will be greater than it was before the
+                     * dispatch
+                     */
                     asyncContext.complete();
                 } else {
                     // Reset async timeout
                     origRequest.setAsyncTimeout(asyncContext.getTimeout());
                 }
             } catch (Throwable t) {
+                origRequest.setDelayAsyncDispatchAndComplete(false);
                 asyncContext.notifyAsyncListeners(AsyncEventType.ERROR, t);
                 origRequest.errorDispatchAndComplete(t);
             } finally {
