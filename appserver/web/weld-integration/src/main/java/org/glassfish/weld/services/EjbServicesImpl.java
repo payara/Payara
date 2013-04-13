@@ -215,22 +215,26 @@ public class EjbServicesImpl implements EjbServices {
             throw new IllegalStateException("Cannot load bean class " + glassfishEjbDesc.getEjbClassName(),
                     cnfe);
         }
+        
+        Class<?> ejbBeanSuperClass = ejbBeanClass;
+        while (!ejbBeanSuperClass.equals(java.lang.Object.class)) {
+            for(Method m : ejbBeanSuperClass.getDeclaredMethods()) {
+                List<EjbInterceptor> aroundInvokeChain =
+                    makeInterceptorChain(InterceptionType.AROUND_INVOKE,
+                            interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_INVOKE, m),
+                                    glassfishEjbDesc);
+                glassfishEjbDesc.addMethodLevelChain(aroundInvokeChain, m, true);
 
-        for(Method m : ejbBeanClass.getMethods()) {
-            List<EjbInterceptor> aroundInvokeChain =
-                makeInterceptorChain(InterceptionType.AROUND_INVOKE,
-                        interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_INVOKE, m),
-                                glassfishEjbDesc);
-            glassfishEjbDesc.addMethodLevelChain(aroundInvokeChain, m, true);
 
+                List<EjbInterceptor> aroundTimeoutChain =
+                    makeInterceptorChain(InterceptionType.AROUND_TIMEOUT,
+                            interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_TIMEOUT, m),
+                                    glassfishEjbDesc);
+                glassfishEjbDesc.addMethodLevelChain(aroundTimeoutChain, m, false);
 
-            List<EjbInterceptor> aroundTimeoutChain =
-                makeInterceptorChain(InterceptionType.AROUND_TIMEOUT,
-                        interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_TIMEOUT, m),
-                                glassfishEjbDesc);
-            glassfishEjbDesc.addMethodLevelChain(aroundTimeoutChain, m, false);
-
-        }                                     
+            } 
+            ejbBeanSuperClass = ejbBeanSuperClass.getSuperclass();
+        }
 
         return;
 
