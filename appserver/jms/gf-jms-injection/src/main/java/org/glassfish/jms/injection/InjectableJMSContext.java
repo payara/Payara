@@ -97,6 +97,8 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private transient ConnectionFactory connectionFactoryPM;
     private transient JavaEETransactionManager transactionManager;
 
+    private static final boolean usePMResourceInTransaction = Boolean.getBoolean("org.glassfish.jms.skip-resource-registration-in-transaction");
+
     @Inject
     public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm, TransactedJMSContextManager tm) {
         getTransactionManager();
@@ -198,10 +200,13 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
 
     private ConnectionFactory getConnectionFactory(boolean isInTransaction) {
         ConnectionFactory cachedCF = null;
-        if (isInTransaction)
+        boolean usePMResource = isInTransaction && (usePMResourceInTransaction || connectionFactoryPM != null);
+
+        if (usePMResource) {
             cachedCF = connectionFactoryPM;
-        else
+        } else {
             cachedCF = connectionFactory;
+        }
 
         if (cachedCF == null) {
             String jndiName;
@@ -222,13 +227,20 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
             }
 
             try {
+
+                boolean isPMName = jndiName.endsWith("__pm");
+                if (isPMName) {
+                    int l = jndiName.length();
+                    jndiName = jndiName.substring(0, l-4);
+                }
                 cachedCF = (ConnectionFactory) initialContext.lookup(jndiName);
 
-                if (isInTransaction) {
+                if (isInTransaction && (usePMResourceInTransaction || isPMName)) {
                     // append __PM to jndi name to work around GLASSFISH-19872
                     // it needs double jndi lookup for __PM resource
                     jndiName = ConnectorsUtil.getPMJndiName(jndiName);
                     cachedCF = (ConnectionFactory) initialContext.lookup(jndiName);
+                    usePMResource = true;
                 }
             } catch (NamingException ne) {
                 throw new RuntimeException(localStrings.getLocalString("connectionFactory.not.found", 
@@ -242,7 +254,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
                 }
             }
 
-            if (isInTransaction)
+            if (usePMResource)
                 connectionFactoryPM = cachedCF;
             else
                 connectionFactory = cachedCF;

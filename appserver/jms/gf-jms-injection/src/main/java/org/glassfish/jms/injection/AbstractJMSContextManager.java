@@ -52,6 +52,10 @@ import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 /**
  * This bean has a map to store JMSContext instances based on the injection
@@ -90,7 +94,9 @@ public abstract class AbstractJMSContextManager implements Serializable {
         JMSContext context = null;
         if (contextEntry == null) {
             context = createContext(ipId, metadata, connectionFactory);
-            contexts.put(id, new JMSContextEntry(ipId, context));
+            ServiceLocator serviceLocator = Globals.get(ServiceLocator.class);
+            InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
+            contexts.put(id, new JMSContextEntry(ipId, context, invMgr.getCurrentInvocation()));
         } else {
             context = contextEntry.getCtx();
         }
@@ -108,11 +114,17 @@ public abstract class AbstractJMSContextManager implements Serializable {
     // Close and remove the JMSContext instances
     @PreDestroy
     public synchronized void cleanup() {
+        ServiceLocator serviceLocator = Globals.get(ServiceLocator.class);
+        InvocationManager invMgr = serviceLocator.getService(InvocationManager.class);
+        ComponentInvocation currentInv = invMgr.getCurrentInvocation();
+
         for (Entry<String, JMSContextEntry> entry : contexts.entrySet()) {
             JMSContextEntry contextEntry = entry.getValue();
             String ipId = contextEntry.getInjectionPointId();
             JMSContext context = contextEntry.getCtx();
             if (context != null) {
+                ComponentInvocation inv = contextEntry.getComponentInvocation();
+                if (inv != null && currentInv != inv) invMgr.preInvoke(inv);
                 try {
                     context.close();
                     logger.log(Level.FINE, localStrings.getLocalString("JMSContext.impl.close", 
@@ -122,6 +134,8 @@ public abstract class AbstractJMSContextManager implements Serializable {
                     logger.log(Level.SEVERE, localStrings.getLocalString("JMSContext.impl.close.failure", 
                                              "Failed to close JMSContext instance associated with id {0}: {1}.", 
                                              ipId, context.toString()), e);
+                } finally {
+                    if (inv != null && currentInv != inv) invMgr.postInvoke(inv);
                 }
             }
         }

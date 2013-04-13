@@ -42,14 +42,17 @@ package org.glassfish.jms.injection;
 
 import java.io.Serializable;
 import javax.jms.JMSContext;
+import org.glassfish.api.invocation.ComponentInvocation;
 
 public class JMSContextEntry implements Serializable {
     private final String injectionPointId;
     private final JMSContext ctx;
+    private final ComponentInvocation inv;
 
-    public JMSContextEntry(String ipId, JMSContext context) {
+    public JMSContextEntry(String ipId, JMSContext context, ComponentInvocation inv) {
         injectionPointId = ipId;
         ctx = context;
+        this.inv = inv;
     }
 
     public String getInjectionPointId() {
@@ -58,5 +61,9 @@ public class JMSContextEntry implements Serializable {
 
     public JMSContext getCtx() {
         return ctx;
+    }
+
+    public ComponentInvocation getComponentInvocation() {
+        return inv;
     }
 }

@@ -76,6 +76,12 @@
         </dependency>
 
         <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>weld-integration</artifactId>
             <version>${project.version}</version>
