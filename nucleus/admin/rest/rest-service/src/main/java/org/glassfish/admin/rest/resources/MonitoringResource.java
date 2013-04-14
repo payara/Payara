@@ -128,7 +128,8 @@ public class MonitoringResource {
                         pathInMonitoringRegistry.append(pathSegment.getPath().replaceAll("\\.", "\\\\.")); // Need to escape '.' before passing it to monitoring code
                 }
 
-                TreeNode resultNode = pathInMonitoringRegistry.length() > 0 ? rootNode.getNode(pathInMonitoringRegistry.toString()) : rootNode;
+                TreeNode resultNode = pathInMonitoringRegistry.length() > 0 && rootNode != null ? 
+                        rootNode.getNode(pathInMonitoringRegistry.toString()) : rootNode;
                 if (resultNode != null) {
                     List<TreeNode> list = new ArrayList<TreeNode>();
                     if (resultNode.hasChildNodes()) {
