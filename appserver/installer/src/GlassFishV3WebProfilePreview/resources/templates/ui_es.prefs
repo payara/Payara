@@ -39,9 +39,9 @@
 #
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ COMMON STUFF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-PRODUCT_NAME=GlassFish Server Open Source Edition Web Profile
+PRODUCT_NAME=Perfil web de GlassFish Server Open Source Edition
 
-app_title=GlassFish Server Open Source Edition Web Profile
+app_title=Perfil web de GlassFish Server Open Source Edition
 
 # Text for Buttons
 btnCancel_text=Cancelar
@@ -95,7 +95,7 @@ btnpanel_bgcolor=e8e9ed
 button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bienvenido a la instalaci\u00F3n de ${PRODUCT_NAME}.&lt;BR&gt;Esta herramienta permite instalar ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server es un servidor de aplicaciones compatible con Java EE 7 y listo para la producci\u00F3n, que se ha &lt;BR&gt;desarrollado con una licencia de c\u00F3digo abierto. Entre las ventajas que ofrece se incluyen el &lt;BR&gt;dise\u00F1o modular, el tiempo de ejecuci\u00F3n que reduce el consumo de recursos, una consola de administraci\u00F3n &lt;BR&gt;f\u00E1cil de usar, una herramienta de l\u00EDnea de comandos con funciones completas, la administraci\u00F3n &lt;BR&gt;centralizada y la agrupaci\u00F3n en clusters de alta disponibilidad. Adem\u00E1s, GlassFish Server &lt;BR&gt;es el servidor de aplicaciones de c\u00F3digo abierto m\u00E1s r\u00E1pido que existe actualmente.&lt;BR&gt;&lt;BR&gt;Visite la &lt;a href=https://glassfish.dev.java.net&gt; p\u00E1gina del proyecto GlassFish&lt;/a&gt; para obtener m\u00E1s informaci\u00F3n. &lt;BR&gt;&lt;BR&gt;Haga clic en Siguiente para continuar. &lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bienvenido a la instalaci\u00F3n de ${PRODUCT_NAME}.&lt;BR&gt;Este Installer le guiar\u00E1 a trav\u00E9s del proceso de instalaci\u00F3n. &lt;BR&gt;&lt;BR&gt;GlassFish Server es un servidor de aplicaciones ligero y de dise\u00F1o modular compatible con Java EE 7. Entre sus funciones clave se incluyen posiblidad de ejecuci\u00F3n en OSGi, inicio m\u00E1s r\u00E1pido, soporte por parte de expertos y un desarrollo reiterativo \u00E1gil con Active Redeploy. GlassFish Server tambi\u00E9n ofrece una administraci\u00F3n con varias funciones en la consola web, la l\u00EDnea de comandos y el API RESTful. Visite &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt; para obtener m\u00E1s informaci\u00F3n. &lt;BR&gt;&lt;BR&gt;Haga clic en Siguiente para continuar. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
 
 
 
@@ -199,7 +199,7 @@ INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif
 
 BASIC_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Instala un dominio de gesti\u00F3n de GlassFish Server, ideal para el desarrollo &lt;BR&gt;o el uso en aspectos no fundamentales para el negocio. Aseg\u00FArese de que los puertos 4848 y&lt;BR&gt; 8080 est\u00E9n libres.&lt;BODY&gt;&lt;HTML&gt;
 
-ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Ofrece la opci\u00F3n de instalar \u00FAnicamente los archivos binarios, un dominio de gesti\u00F3n, una instancia &lt;BR&gt;independiente o un cluster. Esta opci\u00F3n es ideal para despliegues de &lt;BR&gt;producci\u00F3n.&lt;BODY&gt;&lt;HTML&gt;
+ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;No soportado.&lt;BODY&gt;&lt;HTML&gt;
 
 BASIC_USER=Instalaci\u00F3n T\u00EDpica
 ADVANCED_USER=Instalaci\u00F3n Personalizada

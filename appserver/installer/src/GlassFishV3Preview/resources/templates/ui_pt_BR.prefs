@@ -96,7 +96,7 @@ btnpanel_bgcolor=e8e9ed
 button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bem-vindo \u00E0 instala\u00E7\u00E3o do ${PRODUCT_NAME}.&lt;BR&gt;Esta \u00E9 uma ferramenta para a instala\u00E7\u00E3o do ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;O GlassFish Server \u00E9 um servidor de aplica\u00E7\u00F5es compat\u00EDvel com o Java EE 7, pronto para produ\u00E7\u00E3o, &lt;BR&gt;desenvolvido sob uma licen\u00E7a de c\u00F3digo-fonte aberto. As vantagens incluem um &lt;BR&gt;runtime modular que minimiza o consumo de recursos, uma &lt;BR&gt;console de administra\u00E7\u00E3o f\u00E1cil de usar, uma ferramenta de linha de comandos rica em recursos, &lt;BR&gt;administra\u00E7\u00E3o centralizada e clusteriza\u00E7\u00E3o de alta disponibilidade. O GlassFish Server tamb\u00E9m \u00E9 o &lt;BR&gt;servidor de aplica\u00E7\u00F5es de c\u00F3digo-fonte aberto mais r\u00E1pido dispon\u00EDvel no mercado.&lt;BR&gt;&lt;BR&gt;Visite a p\u00E1gina do Projeto GlassFish&lt;a href=https://glassfish.dev.java.net&gt; &lt;/a&gt; para obter mais informa\u00E7\u00F5es. &lt;BR&gt;&lt;BR&gt;Clique em Pr\u00F3ximo para continuar. &lt;BR&gt;&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bem-vindo \u00E0 instala\u00E7\u00E3o do ${PRODUCT_NAME}.&lt;BR&gt;Este instalador o orientar\u00E1 pelo processo de instala\u00E7\u00E3o. &lt;BR&gt;&lt;BR&gt;O GlassFish Server \u00E9 um servidor de aplica\u00E7\u00F5es b\u00E1sico, modular, compat\u00EDvel com Java EE 7. Os recursos-chave incluem runtime OSGi, inicializa\u00E7\u00E3o r\u00E1pida, suporte maven e desenvolvimento iterativa r\u00E1pido com Reimplanta\u00E7\u00E3o Ativa. O GlassFish Server tamb\u00E9m oferece administra\u00E7\u00E3o de recursos avan\u00E7ada com a console da web, linha de comando e API RESTful. Visite &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt; para obter mais informa\u00E7\u00F5es. &lt;BR&gt;&lt;BR&gt;Clique em Pr\u00F3ximo para continuar. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
 
 
 
@@ -200,7 +200,7 @@ INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif
 
 BASIC_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Instala um dom\u00EDnio de gerenciamento do GlassFish Server; ideal para desenvolvimento&lt;BR&gt;ou para uso n\u00E3o comercial cr\u00EDtico. Certifique-se de que as portas 4848 e&lt;BR&gt; 8080 estejam livres.&lt;BODY&gt;&lt;HTML&gt;
 
-ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Oferece a op\u00E7\u00E3o de instalar somente os bin\u00E1rios, um dom\u00EDnio de gerenciamento, uma &lt;BR&gt;inst\u00E2ncia standalone ou um cluster. Essa op\u00E7\u00E3o \u00E9 ideal para implanta\u00E7\u00F5es&lt;BR&gt;de produ\u00E7\u00E3o.&lt;BODY&gt;&lt;HTML&gt;
+ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;N\u00E3o suportado.&lt;BODY&gt;&lt;HTML&gt;
 
 BASIC_USER=Instala\u00E7\u00E3o T\u00EDpica
 ADVANCED_USER=Instala\u00E7\u00E3o Personalizada

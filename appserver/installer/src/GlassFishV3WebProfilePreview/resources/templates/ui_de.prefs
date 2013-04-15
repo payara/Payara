@@ -95,7 +95,7 @@ btnpanel_bgcolor=e8e9ed
 button_font=Sans-Serif-BOLD-14
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Willkommen bei der ${PRODUCT_NAME}-Installation.&lt;BR&gt;Dieses Tool dient zum Installieren von ${PRODUCT_NAME}. &lt;BR&gt;&lt;BR&gt;GlassFish Server ist ein serienreifer Java EE 7-kompatibler Application Server, der unter einer Open Source-Lizenz entwickelt wurde. Zu den Vorteilen z\u00E4hlen eine modulare Laufzeitumgebung, die den Ressourcenverbrauch minimiert, eine benutzerfreundliche Administrationskonsole, ein Befehlszeilentool mit umfangreichen Features, eine zentrale Administration und High Availability Clustering. Au\u00DFerdem ist GlassFish Server der derzeit schnellste Open Source Application Server.&lt;BR&gt;&lt;BR&gt;Weitere Informationen finden Sie auf der &lt;a href=http://glassfish.java.net&gt; GlassFish-Projektseite&lt;/a&gt;. &lt;BR&gt;&lt;BR&gt;Klicken Sie zum Fortfahren auf "Weiter". &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Willkommen bei der Installation von ${PRODUCT_NAME}.&lt;BR&gt;Dieses Installationsprogramm f\u00FChrt Sie durch den Installationsprozess. &lt;BR&gt;&lt;BR&gt;GlassFish Server ist ein modularer und schlanker Java EE 7-kompatibler Anwendungsserver. Zu seinen wesentlichen Markmalen z\u00E4hlen OSGi-Laufzeit, eine kurze Hochfahrzeit, Maven-Unterst\u00FCtzung und eine schnelle iterative Entwicklung mit aktivem Redeployment. GlassFish Server bietet au\u00DFerdem mit Webkonsole, Befehlszeile und RESTful-API eine Verwaltung mit vielen Funktionen. Weitere Informationen finden Sie unter &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt;. &lt;BR&gt;&lt;BR&gt;Klicken Sie auf "Weiter", um fortzufahren. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
 
 
 
@@ -199,7 +199,7 @@ INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif
 
 BASIC_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Installiert eine GlassFish Server-Verwaltungsdomain. Dies eignet sich f\u00FCr Entwicklung oder&lt;BR&gt;nicht-gesch\u00E4ftskritische Verwendung. Vergewissern Sie sich, dass die Ports 4848 und&lt;BR&gt; 8080 frei sind.&lt;BODY&gt;&lt;HTML&gt;
 
-ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Bietet die M\u00F6glichkeit, nur die Bin\u00E4rdateien, eine Verwaltungsdomain, eine &lt;BR&gt;Standalone-Instanz oder ein Cluster zu installieren. Diese Option eignet sich f\u00FCr Production Deployments.&lt;BR&gt;&lt;BODY&gt;&lt;HTML&gt;
+ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Nicht unterst\u00FCtzt.&lt;BODY&gt;&lt;HTML&gt;
 
 BASIC_USER=Standardinstallation
 ADVANCED_USER=Benutzerdefinierte Installation
