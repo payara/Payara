@@ -72,14 +72,14 @@ public class RootBeanDeploymentArchiveTest {
         String webInfLib2 = "WEB-INF/lib/lib2.jar";
         String subArchive11Name = "sa1";
         String subArchive12Name = "sa2";
-        URI webInfLib1URI = URI.create("WEB-INF" + File.separatorChar + "lib" + File.separatorChar + "lib1.jar");
-        URI webInfLib2URI = URI.create("WEB-INF" + File.separatorChar + "lib" + File.separatorChar + "lib2.jar");
+        URI webInfLib1URI = URI.create(webInfLib1);
+        URI webInfLib2URI = URI.create(webInfLib2);
         ArrayList<String> lib1ClassNames = new ArrayList<>();
-        lib1ClassNames.add( Lib1Class1.class.getName() + ".class" );
-        lib1ClassNames.add( Lib1Class2.class.getName() + ".class" );
+        lib1ClassNames.add(Lib1Class1.class.getName() + ".class");
+        lib1ClassNames.add(Lib1Class2.class.getName() + ".class");
         ArrayList<String> lib2ClassNames = new ArrayList<>();
-        lib2ClassNames.add( Lib2Class1.class.getName() + ".class" );
-        lib2ClassNames.add( Lib2Class2.class.getName() + ".class" );
+        lib2ClassNames.add(Lib2Class1.class.getName() + ".class");
+        lib2ClassNames.add(Lib2Class2.class.getName() + ".class");
         WeldUtils.BDAType bdaType = WeldUtils.BDAType.WAR;
         ArrayList<String> webInfLibEntries = new ArrayList<>();
         webInfLibEntries.add(webInfLib1);
@@ -105,7 +105,7 @@ public class RootBeanDeploymentArchiveTest {
         expect(deploymentContext.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP, WeldBootstrap.class)).andReturn(wb).anyTimes();
         expect(wb.parse(anyObject(URL.class))).andReturn(beansXML).anyTimes();
 
-        expect(readableArchive.getURI()).andReturn(URI.create(WeldUtils.WEB_INF_BEANS_XML)).anyTimes();
+        expect(readableArchive.getURI()).andReturn(URI.create("an.war")).anyTimes();
         expect(subArchive1.getURI()).andReturn(webInfLib1URI).anyTimes();
         expect(subArchive2.getURI()).andReturn(webInfLib2URI).anyTimes();
         expect(beansXML.getBeanDiscoveryMode()).andReturn(BeanDiscoveryMode.ALL).anyTimes();
@@ -114,17 +114,17 @@ public class RootBeanDeploymentArchiveTest {
         readableArchive.close();
 
         expect(readableArchive.exists(WeldUtils.WEB_INF_LIB)).andReturn(true).anyTimes();
-        expect(readableArchive.entries(WeldUtils.WEB_INF_LIB)).andReturn( Collections.enumeration( webInfLibEntries));
+        expect(readableArchive.entries(WeldUtils.WEB_INF_LIB)).andReturn(Collections.enumeration(webInfLibEntries));
 
-        expect(readableArchive.getSubArchive( webInfLib1)).andReturn( subArchive1);
+        expect(readableArchive.getSubArchive(webInfLib1)).andReturn(subArchive1);
         expect(subArchive1.exists(WeldUtils.META_INF_BEANS_XML)).andReturn(true);
 
-        expect(readableArchive.getSubArchive(webInfLib2)).andReturn( subArchive2);
+        expect(readableArchive.getSubArchive(webInfLib2)).andReturn(subArchive2);
         expect(subArchive2.exists(WeldUtils.META_INF_BEANS_XML)).andReturn(true);
 
         // build new BeanDeploymentArchiveImpl for lib1 and lib2
-        setupMocksForWebInfLibBda( subArchive1, subArchive11Name, lib1ClassNames);
-        setupMocksForWebInfLibBda( subArchive2, subArchive12Name, lib2ClassNames);
+        setupMocksForWebInfLibBda(subArchive1, subArchive11Name, lib1ClassNames);
+        setupMocksForWebInfLibBda(subArchive2, subArchive12Name, lib2ClassNames);
         readableArchive.close();
         mockSupport.replayAll();
 
@@ -132,21 +132,21 @@ public class RootBeanDeploymentArchiveTest {
                                                                                             ejbs,
                                                                                             deploymentContext);
 
-        assertEquals( "root_" + archiveName, rootBeanDeploymentArchive.getId() );
-        assertEquals( WeldUtils.BDAType.UNKNOWN, rootBeanDeploymentArchive.getBDAType() );
+        assertEquals("root_" + archiveName, rootBeanDeploymentArchive.getId());
+        assertEquals(WeldUtils.BDAType.UNKNOWN, rootBeanDeploymentArchive.getBDAType());
         assertEquals(0, rootBeanDeploymentArchive.getBeanClasses().size());
         assertEquals(0, rootBeanDeploymentArchive.getBeanClassObjects().size());
         assertNull(rootBeanDeploymentArchive.getBeansXml());
 
-        BeanDeploymentArchiveImpl moduleBda = ( BeanDeploymentArchiveImpl ) rootBeanDeploymentArchive.getModuleBda();
-        assertNotNull( moduleBda );
+        BeanDeploymentArchiveImpl moduleBda = (BeanDeploymentArchiveImpl) rootBeanDeploymentArchive.getModuleBda();
+        assertNotNull(moduleBda);
         assertEquals(WeldUtils.BDAType.WAR, moduleBda.getBDAType());
 
-        assertEquals( 3, rootBeanDeploymentArchive.getBeanDeploymentArchives().size() );
+        assertEquals(3, rootBeanDeploymentArchive.getBeanDeploymentArchives().size());
         assertTrue(rootBeanDeploymentArchive.getBeanDeploymentArchives().contains(moduleBda));
 
-        assertEquals( 3, moduleBda.getBeanDeploymentArchives().size() );
-        assertTrue( moduleBda.getBeanDeploymentArchives().contains( rootBeanDeploymentArchive ));
+        assertEquals(3, moduleBda.getBeanDeploymentArchives().size());
+        assertTrue(moduleBda.getBeanDeploymentArchives().contains(rootBeanDeploymentArchive));
 
         assertEquals(0, rootBeanDeploymentArchive.getModuleBeanClasses().size());
         assertEquals(0, rootBeanDeploymentArchive.getModuleBeanClassObjects().size());
@@ -156,10 +156,10 @@ public class RootBeanDeploymentArchiveTest {
         mockSupport.resetAll();
     }
 
-    private void setupMocksForWebInfLibBda( ReadableArchive libJarArchive,
-                                            String libJarArchiveName,
-                                            ArrayList<String> archiveClassNames) throws Exception {
-        expect( libJarArchive.getName() ).andReturn(libJarArchiveName).anyTimes();
+    private void setupMocksForWebInfLibBda(ReadableArchive libJarArchive,
+                                           String libJarArchiveName,
+                                           ArrayList<String> archiveClassNames) throws Exception {
+        expect(libJarArchive.getName()).andReturn(libJarArchiveName).anyTimes();
         expect(libJarArchive.exists(WeldUtils.WEB_INF_BEANS_XML)).andReturn(false).anyTimes();
         expect(libJarArchive.exists(WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML)).andReturn(false).anyTimes();
         expect(libJarArchive.exists(WeldUtils.WEB_INF_CLASSES)).andReturn(false).anyTimes();
@@ -169,8 +169,15 @@ public class RootBeanDeploymentArchiveTest {
         libJarArchive.close();
     }
 
-    public class Lib1Class1 {}
-    public class Lib1Class2 {}
-    public class Lib2Class1 {}
-    public class Lib2Class2 {}
+    public class Lib1Class1 {
+    }
+
+    public class Lib1Class2 {
+    }
+
+    public class Lib2Class1 {
+    }
+
+    public class Lib2Class2 {
+    }
 }
