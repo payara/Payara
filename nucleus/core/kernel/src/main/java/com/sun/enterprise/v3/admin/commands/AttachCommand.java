@@ -148,6 +148,16 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
             ar.setMessage(strings.getLocalString("attach.wrong.commandinstance.id", "Job with id {0} does not exist.", jobID));
             return;
         }
+
+        if (attached != null) {
+            String jobInitiator = SubjectUtil.getUsernamesFromSubject(attached.getSubject()).get(0);
+            if (!attachedUser.equals( jobInitiator)) {
+                ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                ar.setMessage(strings.getLocalString("user.not.authorized",
+                        "User {0} not authorized to attach to job {1}", attachedUser, jobID));
+                return;
+            }
+        }
         if (attached != null) {
             //Very sensitive locking part
             AdminCommandEventBroker attachedBroker = attached.getEventBroker();
