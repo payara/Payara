@@ -40,28 +40,29 @@
 
 package com.sun.enterprise.v3.server;
 
+import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import org.glassfish.common.util.admin.ManagedFile;
-import org.glassfish.common.util.admin.ParamTokenizer;
-import org.glassfish.config.support.ConfigurationAccess;
-import org.glassfish.server.ServerEnvironmentImpl;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import org.jvnet.hk2.config.DomDocument;
-import org.jvnet.hk2.config.IndentingXMLStreamWriter;
-import javax.inject.Singleton;
-import org.glassfish.config.support.ConfigurationPersistence;
-
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamWriter;
-import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.Lock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
+import org.glassfish.common.util.admin.ManagedFile;
+import org.glassfish.config.support.ConfigurationAccess;
+import org.glassfish.config.support.ConfigurationPersistence;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
+import org.glassfish.server.ServerEnvironmentImpl;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.DomDocument;
+import org.jvnet.hk2.config.IndentingXMLStreamWriter;
 
 /**
  * domain.xml persistence.
@@ -76,6 +77,10 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
     ServerEnvironmentImpl env;
     @Inject
     protected Logger logger;
+    @Inject
+    ConfigModularityUtils modularityUtils;
+    
+    DomDocument skippedDoc = null;
 
     final XMLOutputFactory xmlFactory = XMLOutputFactory.newInstance();
 
@@ -121,6 +126,13 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
 
     @Override
     public void save(DomDocument doc) throws IOException {
+        if (modularityUtils.isIgnorePersisting() && !modularityUtils.isCommandInvocation()) {
+            if (skippedDoc != null) {
+                assert(doc == skippedDoc);
+            }
+            skippedDoc = doc;
+            return;
+        }
         File destination = getDestination();
         if (destination == null) {
             String msg = localStrings.getLocalString("NoLocation",
@@ -212,6 +224,7 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
                 writeLock.unlock();
             }
         }
+        skippedDoc = null;
         saved(destination);
     }
 
@@ -234,5 +247,30 @@ public class DomainXmlPersistence implements ConfigurationPersistence, Configura
 
     protected OutputStream getOutputStream(File destination) throws IOException {
         return new FileOutputStream(destination);
+    }
+    
+    /* 
+     * The purpose of this service is to write out the domain.xml if any writes
+     * were skipped during startup of the server. 
+     */
+    @Service
+    @RunLevel(PostStartupRunLevel.VAL)
+    static class SkippedWriteWriter implements PostConstruct {
+        
+        @Inject DomainXmlPersistence domPersist;
+        @Inject Logger logger;
+
+        @Override
+        public void postConstruct() {
+            DomDocument doc = domPersist.skippedDoc;
+            if (doc != null) {
+                try {
+                    domPersist.save(doc);
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, localStrings.getLocalString("ioexception",
+                        "IOException while saving the configuration, changes not persisted"), e);
+                }
+            }
+        } 
     }
 }

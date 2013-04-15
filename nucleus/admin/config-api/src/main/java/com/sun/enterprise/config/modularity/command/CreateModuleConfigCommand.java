@@ -172,16 +172,21 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             report.appendMessage(localStrings.getLocalString("create.module.config.creating.all",
                     "Creating all default configuration elements that are not present in the domain.xml under target {0}.", target));
             report.appendMessage(LINE_SEPARATOR);
-            try {
-                createAllMissingElements(report);
-            } catch (Exception e) {
-                String msg = localStrings.getLocalString("create.module.config.creating.all.failed",
-                        "Failed to create all default configuration elements that are not present in the domain.xml under target {0} due to: {1}.", target, e.getLocalizedMessage());
-                LOG.log(Level.INFO, msg, e);
-                report.setMessage(msg);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setFailureCause(e);
-                return;
+            synchronized (configModularityUtils) {
+                try {
+                    configModularityUtils.setCommandInvocation(true);
+                    createAllMissingElements(report);
+                } catch (Exception e) {
+                    String msg = localStrings.getLocalString("create.module.config.creating.all.failed",
+                            "Failed to create all default configuration elements that are not present in the domain.xml under target {0} due to: {1}.", target, e.getLocalizedMessage());
+                    LOG.log(Level.INFO, msg, e);
+                    report.setMessage(msg);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setFailureCause(e);
+                    return;
+                } finally {
+                    configModularityUtils.setCommandInvocation(false);
+                }
             }
         } else if (serviceName != null) {
             String className = configModularityUtils.convertConfigElementNameToClassName(serviceName);
@@ -193,24 +198,29 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 report.setMessage(msg);
                 return;
             }
-            try {
-                if (dryRun) {
-                    String serviceDefaultConfig = getDefaultConfigFor(configBeanType);
-                    if (serviceDefaultConfig != null) {
-                        report.setMessage(serviceDefaultConfig);
+            synchronized (configModularityUtils) {
+                try {
+                    if (dryRun) {
+                        String serviceDefaultConfig = getDefaultConfigFor(configBeanType);
+                        if (serviceDefaultConfig != null) {
+                            report.setMessage(serviceDefaultConfig);
+                        }
+                    } else {
+                        configModularityUtils.setCommandInvocation(true);
+                        createMissingElementFor(configBeanType, report);
                     }
-                } else {
-                    createMissingElementFor(configBeanType, report);
-                }
 
-            } catch (Exception e) {
-                String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
-                        "Failed to create module configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
-                LOG.log(Level.INFO, msg, e);
-                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                report.setMessage(msg);
-                report.setFailureCause(e);
-                return;
+                } catch (Exception e) {
+                    String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
+                            "Failed to create module configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
+                    LOG.log(Level.INFO, msg, e);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(msg);
+                    report.setFailureCause(e);
+                    return;
+                } finally {
+                    configModularityUtils.setCommandInvocation(false);
+                }
             }
         }
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -307,11 +317,9 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 l.addAll(getAccessChecksForDefaultValue(configBeanDefaultValueList, target, Arrays.asList("read", "create", "delete")));
             }
             return l;
-        }
-        else if(serviceName == null) {
+        } else if (serviceName == null) {
             return Collections.emptyList();
-        }
-        else {
+        } else {
             configBeanType = configModularityUtils.getClassFor(serviceName);
             if (configBeanType == null) {
                 //TODO check if this is the correct course of action.

@@ -121,6 +121,8 @@ public final class ConfigModularityUtils {
     @Inject
     private StartupContext context;
 
+    private boolean ignorePersisting=false;
+    private boolean isCommandInvocation=false;
     public <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
         //TODO can be optimized a little by checking the default file...
         String fileName = runtimeType + "-" + baseFileName;
@@ -502,7 +504,7 @@ public final class ConfigModularityUtils {
 
     }
 
-    public <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
+    public synchronized <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
                                                               T finalConfigBean, ConfigBeanProxy parent)
             throws TransactionFailure, PropertyVetoException {
         //go up in the parents tree till meet someone ImplementingSystemProperty
@@ -515,14 +517,20 @@ public final class ConfigModularityUtils {
                 curParent = curParent.getParent();
             }
             if (configBeanDefaultValue.getCustomizationTokens().size() != 0) {
-                final SystemPropertyBag bag = (SystemPropertyBag) curParent;
-                final List<ConfigCustomizationToken> tokens = configBeanDefaultValue.getCustomizationTokens();
-                ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
-                    public Object run(SystemPropertyBag param) throws PropertyVetoException, TransactionFailure {
-                        addSystemPropertyForToken(tokens, bag);
-                        return param;
-                    }
-                }, bag);
+                final boolean oldIP = isIgnorePersisting();
+                try {
+                    setIgnorePersisting(true);
+                    final SystemPropertyBag bag = (SystemPropertyBag) curParent;
+                    final List<ConfigCustomizationToken> tokens = configBeanDefaultValue.getCustomizationTokens();
+                    ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
+                        public Object run(SystemPropertyBag param) throws PropertyVetoException, TransactionFailure {
+                            addSystemPropertyForToken(tokens, bag);
+                            return param;
+                        }
+                    }, bag);
+                } finally {
+                    setIgnorePersisting(oldIP);
+                }
             }
         }
     }
@@ -705,7 +713,6 @@ public final class ConfigModularityUtils {
             writer = xmlFactory.createXMLStreamWriter(new BufferedOutputStream(bos));
             indentingXMLStreamWriter = new IndentingXMLStreamWriter(writer);
             Dom configBeanDom = Dom.unwrap(configBean);
-            configBeanDom.writeToXml();
             configBeanDom.writeTo(configBeanDom.model.getTagName(), indentingXMLStreamWriter);
             indentingXMLStreamWriter.flush();
             s = bos.toString();
@@ -930,5 +937,21 @@ public final class ConfigModularityUtils {
             }
         }
         return prox;
+    }
+
+    public boolean isIgnorePersisting() {
+        return ignorePersisting;
+    }
+
+    public void setIgnorePersisting(boolean ignorePersisting) {
+        this.ignorePersisting = ignorePersisting;
+    }
+
+    public boolean isCommandInvocation() {
+        return isCommandInvocation;
+    }
+
+    public void setCommandInvocation(boolean commandInvocation) {
+        isCommandInvocation = commandInvocation;
     }
 }

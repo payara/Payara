@@ -90,22 +90,24 @@ public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends Conf
                 return null;
             }
             final Class<U> childElement = configExtensionType;
-            ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
-                @Override
-                public Object run(ConfigBeanProxy parent) throws PropertyVetoException, TransactionFailure {
-                    U child = parent.createChild(childElement);
-                    Dom unwrappedChild = Dom.unwrap(child);
-                    boolean writeDefaultElementsToXml = Boolean.parseBoolean(System.getProperty("writeDefaultElementsToXml", "true"));
-                    if (!writeDefaultElementsToXml) {
-                        //Do not write default snippets to the domain.xml
-                        unwrappedChild.skipFromXml();
-                    }
-
-                    unwrappedChild.addDefaultChildren();
-                    configModularityUtils.getExtensions(parent).add(child);
-                    return child;
+            synchronized (configModularityUtils) {
+                boolean oldIP = configModularityUtils.isIgnorePersisting();
+                try {
+                    configModularityUtils.setIgnorePersisting(true);
+                    ConfigSupport.apply(new SingleConfigCode<ConfigBeanProxy>() {
+                        @Override
+                        public Object run(ConfigBeanProxy parent) throws PropertyVetoException, TransactionFailure {
+                            U child = parent.createChild(childElement);
+                            Dom unwrappedChild = Dom.unwrap(child);
+                            unwrappedChild.addDefaultChildren();
+                            configModularityUtils.getExtensions(parent).add(child);
+                            return child;
+                        }
+                    }, extensionOwner);
+                } finally {
+                    configModularityUtils.setIgnorePersisting(oldIP);
                 }
-            }, extensionOwner);
+            }
         }
 
         return getExtension(configExtensionType, extensionOwner);
