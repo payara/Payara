@@ -126,9 +126,9 @@ import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
 
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevelException;
 
 import javax.inject.Singleton;
 import org.jvnet.hk2.config.types.Property;
@@ -402,7 +402,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 GrizzlyService grizzlyService = null;
                 try {
                     grizzlyService = Globals.get(GrizzlyService.class);
-                } catch (RunLevelException rle) {
+                } catch (MultiException rle) {
                     // if GrizzlyService was shut down already, skip removing the proxy.
                 }
                 if (grizzlyService != null)
