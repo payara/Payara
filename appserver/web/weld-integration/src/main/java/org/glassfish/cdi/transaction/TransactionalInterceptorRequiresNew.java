@@ -75,8 +75,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In REQUIRES_NEW TransactionalInterceptor");
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
-        boolean isCallerTransactional = isThreadMarkedTransactional();
-        if (!isCallerTransactional) markThreadAsTransactional();
+        setTransactionalTransactionOperationsManger(false);
         try {
             Transaction suspendedTransaction = null;
             if (getTransactionManager().getTransaction() != null) {
@@ -125,7 +124,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
             return proceed;
 
         } finally {
-            if (!isCallerTransactional) clearThreadAsTransactional();
+            resetTransactionOperationsManager();
         }
     }
 }

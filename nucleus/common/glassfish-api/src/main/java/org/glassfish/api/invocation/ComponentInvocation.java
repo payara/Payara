@@ -175,9 +175,14 @@ public class ComponentInvocation
     public void setTransaction(Object t) {
         this.transaction = t;
     }
-    
+
+    private Object transactionOperationsManager;
+    public void setTransactionOperationsManager(Object transactionOperationsManager) {
+        this.transactionOperationsManager = transactionOperationsManager;
+    }
+
     public Object getTransactionOperationsManager() {
-        return null;
+        return transactionOperationsManager;
     }
 
     /** 

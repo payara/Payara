@@ -41,13 +41,18 @@
 package org.glassfish.cdi.transaction;
 
 
-import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import com.sun.enterprise.transaction.spi.TransactionOperationsManager;
 import com.sun.logging.LogDomains;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
@@ -61,8 +66,9 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 public class TransactionalInterceptorBase implements Serializable {
-    private TransactionManager testTransactionManager;
-    private TransactionManager transactionManager;
+    private static TransactionManager testTransactionManager;
+    private static TransactionManager transactionManager;
+    private TransactionOperationsManager preexistingTransactionOperationsManager;
 
     private static Logger _logger = LogDomains.getLogger(
             TransactionalInterceptorBase.class, LogDomains.JTA_LOGGER);
@@ -90,8 +96,8 @@ public class TransactionalInterceptorBase implements Serializable {
         return transactionManager;
     }
 
-    public void setTestTransactionManager(TransactionManager testTransactionManager) {
-        this.testTransactionManager = testTransactionManager;
+    void setTestTransactionManager(TransactionManager transactionManager) {
+        testTransactionManager = transactionManager;
     }
 
     boolean isLifeCycleMethod(InvocationContext ctx) {
@@ -143,21 +149,61 @@ public class TransactionalInterceptorBase implements Serializable {
 
     private void markRollbackIfActiveTransaction() throws SystemException {
         Transaction transaction = getTransactionManager().getTransaction();
-        if(transaction!=null) getTransactionManager().setRollbackOnly();
+        if(transaction!=null) {
+            _logger.info("About to setRollbackOnly from @Transactional interceptor on transaction:" + transaction);
+            getTransactionManager().setRollbackOnly();
+        }
     }
 
-    void markThreadAsTransactional() {
-        if(transactionManager instanceof JavaEETransactionManager)
-            ((JavaEETransactionManager)transactionManager).setAsTransactional(Boolean.TRUE);
+    void setTransactionalTransactionOperationsManger(boolean userTransactionMethodsAllowed) {
+        if(testTransactionManager != null) return; //test
+            ComponentInvocation currentInvocation = getCurrentInvocation();
+            if (currentInvocation == null) {
+                _logger.warning(
+                        "No ComponentInvocation present for @Transactional annotation processing.  " +
+                                "Restriction on use of UserTransaction will not be enforced");
+                return;
+            }
+            preexistingTransactionOperationsManager =
+                    (TransactionOperationsManager) currentInvocation.getTransactionOperationsManager();
+            currentInvocation.setTransactionOperationsManager(
+                    new TransactionalTransactionOperationsManager(userTransactionMethodsAllowed));
     }
 
-    void clearThreadAsTransactional() {
-        if(transactionManager instanceof JavaEETransactionManager)
-            ((JavaEETransactionManager)transactionManager).setAsTransactional(Boolean.FALSE);
+    void resetTransactionOperationsManager() {
+        if(testTransactionManager != null) return; //test
+        ComponentInvocation currentInvocation = getCurrentInvocation();
+        if (currentInvocation == null) {
+            //there should always be a currentInvocation and so this would seem a bug
+            // but not a fatal one as app should not be relying on this, so log warning only
+            System.out.println("TransactionalInterceptorBase.markThreadAsTransactional currentInvocation==null");
+            return;
+        }
+        currentInvocation.setTransactionOperationsManager(preexistingTransactionOperationsManager);
     }
 
-    boolean isThreadMarkedTransactional() {
-        return transactionManager instanceof JavaEETransactionManager &&
-                ((JavaEETransactionManager) transactionManager).isThreadMarkedTransactional();
+    ComponentInvocation getCurrentInvocation() {
+        ServiceLocator serviceLocator = Globals.getDefaultHabitat();
+        InvocationManager invocationManager =
+                serviceLocator == null ? null : serviceLocator.getService(InvocationManager.class);
+        return invocationManager == null ? null : invocationManager.getCurrentInvocation();
+    }
+
+    private class TransactionalTransactionOperationsManager implements TransactionOperationsManager {
+        boolean isUserTransactionMethodsAllowed;
+
+        private TransactionalTransactionOperationsManager(boolean isUserTransactionMethodsAllowed) {
+            this.isUserTransactionMethodsAllowed = isUserTransactionMethodsAllowed;
+        }
+
+        public boolean userTransactionMethodsAllowed() {
+            return isUserTransactionMethodsAllowed;
+        }
+
+        public void userTransactionLookupAllowed() throws NameNotFoundException {
+        }
+
+        public void doAfterUtxBegin() {
+        }
     }
 }

@@ -71,8 +71,7 @@ public class TransactionalInterceptorMandatory extends TransactionalInterceptorB
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In MANDATORY TransactionalInterceptor");
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
-        boolean isCallerTransactional = isThreadMarkedTransactional();
-        if (!isCallerTransactional) markThreadAsTransactional();
+        setTransactionalTransactionOperationsManger(false);
         try {
             if (getTransactionManager().getTransaction() == null)
                 throw new TransactionalException(
@@ -81,7 +80,7 @@ public class TransactionalInterceptorMandatory extends TransactionalInterceptorB
                                 "MANDATORY called outside of a transaction context"));
             return proceed(ctx);
         } finally {
-            if (!isCallerTransactional) clearThreadAsTransactional();
+            resetTransactionOperationsManager();
         }
     }
 

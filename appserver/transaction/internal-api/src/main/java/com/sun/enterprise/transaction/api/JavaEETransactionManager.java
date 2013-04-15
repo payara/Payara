@@ -60,7 +60,7 @@ import org.glassfish.api.invocation.ResourceHandler;
 
 /**
  *
- * Manages transacations, acting as a gateway to the TM state machine.
+ * Manages transactions, acting as a gateway to the TM state machine.
  *
  * @author Tony Ng
  */
@@ -410,10 +410,6 @@ public interface JavaEETransactionManager extends TransactionManager {
      * Allows to purge transaction tasks after the specified value of cancelled tasks
      */
     public void setPurgeCancelledTtransactionsAfter(int value);
-
-    public void setAsTransactional(Boolean isTransactional);
-
-    public boolean isThreadMarkedTransactional();
 
 
 }

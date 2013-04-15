@@ -72,12 +72,11 @@ public class TransactionalInterceptorSupports extends TransactionalInterceptorBa
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In SUPPORTS TransactionalInterceptor");
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
-        boolean isCallerTransactional = isThreadMarkedTransactional();
-        if (!isCallerTransactional) markThreadAsTransactional();
+        setTransactionalTransactionOperationsManger(false);
         try {
             return proceed(ctx);
         } finally {
-            if (!isCallerTransactional) clearThreadAsTransactional();
+            resetTransactionOperationsManager();
         }
     }
 }

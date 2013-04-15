@@ -71,8 +71,7 @@ public class TransactionalInterceptorNever extends TransactionalInterceptorBase 
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In NEVER TransactionalInterceptor");
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
-        boolean isCallerTransactional = isThreadMarkedTransactional();
-        if (isCallerTransactional) clearThreadAsTransactional();
+        setTransactionalTransactionOperationsManger(true);
         try {
             if (getTransactionManager().getTransaction() != null)
                 throw new TransactionalException(
@@ -81,7 +80,7 @@ public class TransactionalInterceptorNever extends TransactionalInterceptorBase 
                                 "called inside a transaction context"));
             return proceed(ctx);
         } finally {
-            if (isCallerTransactional) markThreadAsTransactional();
+            resetTransactionOperationsManager();
         }
     }
 }

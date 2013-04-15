@@ -73,8 +73,7 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In NOT_SUPPORTED TransactionalInterceptor");
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
-        boolean isCallerTransactional = isThreadMarkedTransactional();
-        if (isCallerTransactional) clearThreadAsTransactional();
+        setTransactionalTransactionOperationsManger(true);
         try {
             Transaction transaction = null;
             if (getTransactionManager().getTransaction() != null) {
@@ -110,7 +109,7 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
             return proceed;
 
         } finally {
-            if (isCallerTransactional) markThreadAsTransactional();
+            resetTransactionOperationsManager();
         }
     }
 }

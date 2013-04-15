@@ -46,6 +46,8 @@ import java.io.ObjectStreamException;
 import java.util.Properties;
 import java.util.logging.*;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.transaction.*;
 
 import com.sun.enterprise.util.i18n.StringManager;
@@ -142,17 +144,13 @@ public class UserTransactionImpl implements UserTransaction, Serializable
         throws IllegalStateException, SystemException {
         TransactionOperationsManager toMgr = 
                 (TransactionOperationsManager)inv.getTransactionOperationsManager();
+
         if ( toMgr != null && checkEjbAccess ) {
             if( !toMgr.userTransactionMethodsAllowed() ) {
                 throw new IllegalStateException(sm.getString("enterprise_distributedtx.operation_not_allowed"));
             }
         }
-
-        if ( transactionManager.isThreadMarkedTransactional() )
-            throw new IllegalStateException(
-                    "Use of UserTransaction not allowed from within method or bean annotated with @Transactional");
     }
-
 
     public void begin() throws NotSupportedException, SystemException
     {

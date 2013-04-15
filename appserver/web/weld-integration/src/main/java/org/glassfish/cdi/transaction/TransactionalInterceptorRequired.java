@@ -72,8 +72,7 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
     public Object transactional(InvocationContext ctx) throws Exception {
         _logger.info("In REQUIRED TransactionalInterceptor");
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
-        boolean isCallerTransactional = isThreadMarkedTransactional();
-        if (!isCallerTransactional) markThreadAsTransactional();
+        setTransactionalTransactionOperationsManger(false);
         try {
             boolean isTransactionStarted = false;
             if (getTransactionManager().getTransaction() == null) {
@@ -109,7 +108,7 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
             }
             return proceed;
         } finally {
-            if (!isCallerTransactional) clearThreadAsTransactional();
+            resetTransactionOperationsManager();
         }
     }
 }
