@@ -99,10 +99,8 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
     @Override
     public Object handle(String name) throws NamingException {
 
-        initializeBeanManagerNamingProxy();
-
         // delegate to the java:comp/BeanManager handler to obtain the appropriate BeanManager
-        BeanManager beanManager = (BeanManager) beanManagerNamingProxy.handle(BEAN_MANAGER_CONTEXT);
+        BeanManager beanManager = obtainBeanManager();
 
         if (VALIDATOR_FACTORY_CONTEXT.equals(name)) {
             try {
@@ -146,7 +144,7 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
      *
      * @throws NamingException
      */
-    private synchronized void initializeBeanManagerNamingProxy() throws NamingException {
+    private synchronized BeanManager obtainBeanManager() throws NamingException {
         if (beanManagerNamingProxy == null) {
             IndexedFilter f = new IndexedFilter() {
                 @Override
@@ -189,9 +187,7 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
 
                 throw ne;
             }
-
         }
+        return (BeanManager) beanManagerNamingProxy.handle(BEAN_MANAGER_CONTEXT);
     }
-
-
 }
