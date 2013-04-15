@@ -194,14 +194,9 @@
                                 <artifactId>javax.mail</artifactId>
                                 <version>${mail.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>1.4</specVersion>
-                            <newSpecVersion>1.5</newSpecVersion>
-                            <implVersion>1.4.4</implVersion>
-                            <newImplVersion>1.5</newImplVersion>
-                            <specBuild>02</specBuild>
-                            <implBuild>02</implBuild>
+                            <specVersion>1.5</specVersion>
+                            <implVersion>1.5.0</implVersion>
                             <apiPackage>javax.mail</apiPackage>
                             <implNamespace>com.sun.mail</implNamespace>
                         </spec>
