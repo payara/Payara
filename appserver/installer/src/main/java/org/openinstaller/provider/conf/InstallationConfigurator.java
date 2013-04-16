@@ -174,11 +174,11 @@ public final class InstallationConfigurator implements Configurator, Notificatio
         String installDir = productRef.getInstallLocation();
         if (!OSUtils.isWindows()) {
             LOGGER.log(Level.INFO, Msg.get("SETTING_EXECUTE_PERMISSIONS_FOR_GLASSFISH", null));
-            org.glassfish.installer.util.FileUtils.setExecutable(installDir + "/glassfish/bin/asadmin");
-            org.glassfish.installer.util.FileUtils.setExecutable(installDir + "/glassfish/bin/stopserv");
-            org.glassfish.installer.util.FileUtils.setExecutable(installDir + "/glassfish/bin/startserv");
-            org.glassfish.installer.util.FileUtils.setExecutable(installDir + "/glassfish/bin/jspc");
-            org.glassfish.installer.util.FileUtils.setExecutable(installDir + "/bin/asadmin");
+            org.glassfish.installer.util.FileUtils.setAllFilesExecutable(installDir + "/glassfish/bin");          
+            org.glassfish.installer.util.FileUtils.setAllFilesExecutable(installDir + "/bin");
+            if (org.glassfish.installer.util.FileUtils.isFileExist(installDir + "/mq/bin")) {
+                org.glassfish.installer.util.FileUtils.setAllFilesExecutable(installDir + "/mq/bin");
+            }
         }
 
 
@@ -425,27 +425,15 @@ public final class InstallationConfigurator implements Configurator, Notificatio
                 modifiedInstallDir + aboutFilesLocation.replace("\\", "\\\\") + aboutFile.replace("\\", "\\\\"));
     }
 
-    //get JDK directory from java.home property and use it to define asadmin
-    //execution environment PATH    
+   
     private void updateConfigFile() throws EnhancedException {
 
         
 	// for SDK cobundles with JDK - see if cobundled JDK exists and use that
-        // checks for both jdk7 and jdk directories since we are adding JDK 7 cobundles 
+        // checks for jdk7 directory since we only have JDK 7 cobundles 
        
         
-        if (org.glassfish.installer.util.FileUtils.isFileExist(productRef.getInstallLocation() + File.separator + "jdk")){
-	   jdkHome = productRef.getInstallLocation() + File.separator + "jdk";
-           
-           // on Unix, set executable permissions to jdk/bin/* and jdk/jre/bin/* 
-           if (!OSUtils.isWindows()) {
-              org.glassfish.installer.util.FileUtils.setAllFilesExecutable(productRef.getInstallLocation() + File.separator + "jdk" 
-                  + File.separator + "bin");
-              org.glassfish.installer.util.FileUtils.setAllFilesExecutable(productRef.getInstallLocation() + File.separator + "jdk" 
-                  + File.separator + "jre" + File.separator + "bin");
-           }
-         }
-         else if (org.glassfish.installer.util.FileUtils.isFileExist(productRef.getInstallLocation() + File.separator + "jdk7")){
+        if (org.glassfish.installer.util.FileUtils.isFileExist(productRef.getInstallLocation() + File.separator + "jdk7")){
 	   jdkHome = productRef.getInstallLocation() + File.separator + "jdk7";
            
            // on Unix, set executable permissions to jdk7/bin/* and jdk7/jre/bin/* 
@@ -456,26 +444,25 @@ public final class InstallationConfigurator implements Configurator, Notificatio
                   + File.separator + "jre" + File.separator + "bin");
            }
          }
+
          else {
  
-	    // For advanced mode, fetch JAVA_HOME from panel.
-            if (ConfigHelper.getStringValue("InstallUserType.Option.USER_TYPE").equals("ADVANCED_USER")) {
-                try {
-                    jdkHome = ConfigHelper.getStringValue("JDKSelection.directory.SELECTED_JDK");
-                 } catch (Exception e) {
-                    jdkHome = new File(System.getProperty("java.home")).getParent();
-                     if (OSUtils.isMac() || OSUtils.isAix()) {
-                        jdkHome = System.getProperty("java.home");
-                     }
-                }
-            }
-            // For basic mode, fetch JAVA_HOME from environment.
-            else {
-                jdkHome = new File(System.getProperty("java.home")).getParent();
-                if (OSUtils.isMac() || OSUtils.isAix()) {
+	    // For all installation modes, fetch JAVA_HOME from panel;
+	    // on MacOS and AIX use java.home property since panel is skipped
+            
+             try {
+		 if (OSUtils.isMac() || OSUtils.isAix()) {
                     jdkHome = System.getProperty("java.home");
-                }
-            }
+                 } else {
+                    jdkHome = ConfigHelper.getStringValue("JDKSelection.directory.SELECTED_JDK");
+		 }
+             }
+	     catch (Exception e) {
+                 jdkHome = new File(System.getProperty("java.home")).getParent();
+                 if (OSUtils.isMac() || OSUtils.isAix()) {
+                    jdkHome = System.getProperty("java.home");
+                 }
+             }     
         }
         LOGGER.log(Level.INFO, Msg.get("UPDATE_CONFIG_HEADER", null));
         LOGGER.log(Level.INFO, Msg.get("JDK_HOME", new String[]{jdkHome}));
