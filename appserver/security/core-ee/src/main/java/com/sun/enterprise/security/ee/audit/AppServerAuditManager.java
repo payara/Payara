@@ -78,7 +78,7 @@ import org.glassfish.hk2.api.Rank;
 @Singleton
 @Rank(20) // so the app server prefers this impl to the non-EE one in nucleus
 public final class AppServerAuditManager extends BaseAuditManager<AuditModule> 
-        implements AuditManager {
+        {
     
     private static final String AUDIT_MGR_WS_INVOCATION_KEY = 
         "auditmgr.webServiceInvocation";
