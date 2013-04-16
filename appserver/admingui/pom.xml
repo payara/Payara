@@ -149,24 +149,7 @@
                   <goal>unpack-dependencies</goal>
                 </goals>
                 <configuration>
-                  <includeGroupIds>org.glassfish.docs.help</includeGroupIds>
-                  <excludeTransitive>true</excludeTransitive>
-                  <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-dependency-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>unpack-dependencies</id>
-                <goals>
-                  <goal>unpack-dependencies</goal>
-                </goals>
-                <configuration>
-                  <includeGroupIds>org.glassfish.docs-l10n.help-l10n</includeGroupIds>
+                  <includeGroupIds>org.glassfish.docs.help,org.glassfish.docs-l10n.help-l10n</includeGroupIds>
                   <excludeTransitive>true</excludeTransitive>
                   <outputDirectory>${project.build.outputDirectory}</outputDirectory>
                 </configuration>
@@ -175,26 +158,6 @@
           </plugin>
         </plugins>
       </build>
-<!--
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.glassfish.hk2</groupId>
-                <artifactId>hk2-maven-plugin</artifactId>
-                <configuration>
-                    <processors>
-                        <processor>
-                            <groupId>com.sun.jsftemplating</groupId>
-                            <artifactId>jsftemplating-dt</artifactId>
-                            <version>${jsftemplating.version}</version>
-                        </processor>
-                    </processors>
-                </configuration>
-                <extensions>true</extensions>
-            </plugin>
-        </plugins>
-    </build>
- -->
 
     <dependencies>
         <dependency>
