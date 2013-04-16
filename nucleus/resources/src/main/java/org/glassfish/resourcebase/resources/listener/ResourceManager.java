@@ -50,6 +50,7 @@ import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
+import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.resourcebase.resources.api.*;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.glassfish.resourcebase.resources.util.ResourceUtil;
@@ -76,7 +77,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  *
  * @author Jagadish Ramu
  */
-@RunLevel( value= 2, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+@RunLevel( value= InitRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 @Service(name="ResourceManager") // this name is used in ApplicationLoaderService
 public class ResourceManager implements PostConstruct, PreDestroy, ConfigListener {
 
