@@ -183,7 +183,7 @@
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>spec-version-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.1</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
                     <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.el.jar,javax.enterprise.concurrent.jar</excludes>
