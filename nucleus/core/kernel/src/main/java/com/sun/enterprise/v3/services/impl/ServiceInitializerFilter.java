@@ -54,8 +54,10 @@ import org.glassfish.grizzly.nio.NIOConnection;
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.SelectorHandler;
 import org.glassfish.grizzly.nio.SelectorRunner;
+import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
 
 /**
@@ -66,8 +68,9 @@ import org.glassfish.internal.grizzly.LazyServiceInitializer;
  * @author Vijay Ramachandran
  */
 public class ServiceInitializerFilter extends BaseFilter {
+    private final ServiceLocator locator;
     private volatile LazyServiceInitializer targetInitializer = null;
-    private List<ServiceHandle<LazyServiceInitializer>> initializerImplList = null;
+    private final List<ActiveDescriptor<?>> initializerImplList;
     
     protected final Logger logger;
 
@@ -78,7 +81,10 @@ public class ServiceInitializerFilter extends BaseFilter {
 
     public ServiceInitializerFilter(final ServiceInitializerListener listener,
             final ServiceLocator habitat, final Logger logger) {
-        initializerImplList = habitat.getAllServiceHandles(LazyServiceInitializer.class);
+        this.locator = habitat;
+        
+        initializerImplList =
+                habitat.getDescriptors(BuilderHelper.createContractFilter(LazyServiceInitializer.class.getName()));
 
         if (initializerImplList.isEmpty()) {
             throw new IllegalStateException("NO Lazy Initializer was found for port = " +
@@ -97,11 +103,11 @@ public class ServiceInitializerFilter extends BaseFilter {
             synchronized (LOCK_OBJ) {
                 if (targetInitializer == null) {
                     LazyServiceInitializer targetInitializerLocal = null;
-                    for (final ServiceHandle<LazyServiceInitializer> initializer : initializerImplList) {
+                    for (final ActiveDescriptor<?> initializer : initializerImplList) {
                         String listenerName = listener.getName();
-                        String serviceName = initializer.getActiveDescriptor().getName();
+                        String serviceName = initializer.getName();
                         if (serviceName != null && listenerName.equalsIgnoreCase(serviceName)) {
-                            targetInitializerLocal = initializer.getService();
+                            targetInitializerLocal = (LazyServiceInitializer) locator.getServiceHandle(initializer).getService();
                             break;
                         }
                     }
