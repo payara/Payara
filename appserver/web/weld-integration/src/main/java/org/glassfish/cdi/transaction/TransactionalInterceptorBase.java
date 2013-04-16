@@ -67,8 +67,14 @@ import java.util.logging.Logger;
  */
 public class TransactionalInterceptorBase implements Serializable {
     private static TransactionManager testTransactionManager;
-    private static TransactionManager transactionManager;
-    private TransactionOperationsManager preexistingTransactionOperationsManager;
+    volatile private static TransactionManager transactionManager;
+    transient private TransactionOperationsManager preexistingTransactionOperationsManager;
+    private static final TransactionOperationsManager
+            transactionalTransactionOperationsManagerTransactionMethodsAllowed =
+            new TransactionalTransactionOperationsManagerTransactionMethodsAllowed();
+    private static final TransactionOperationsManager
+            transactionalTransactionOperationsManagerTransactionMethodsNotAllowed =
+            new TransactionalTransactionOperationsManagerTransactionMethodsNotAllowed();
 
     private static Logger _logger = LogDomains.getLogger(
             TransactionalInterceptorBase.class, LogDomains.JTA_LOGGER);
@@ -96,7 +102,7 @@ public class TransactionalInterceptorBase implements Serializable {
         return transactionManager;
     }
 
-    void setTestTransactionManager(TransactionManager transactionManager) {
+    static void setTestTransactionManager(TransactionManager transactionManager) {
         testTransactionManager = transactionManager;
     }
 
@@ -166,8 +172,9 @@ public class TransactionalInterceptorBase implements Serializable {
             }
             preexistingTransactionOperationsManager =
                     (TransactionOperationsManager) currentInvocation.getTransactionOperationsManager();
-            currentInvocation.setTransactionOperationsManager(
-                    new TransactionalTransactionOperationsManager(userTransactionMethodsAllowed));
+            currentInvocation.setTransactionOperationsManager(userTransactionMethodsAllowed?
+                    transactionalTransactionOperationsManagerTransactionMethodsAllowed:
+                    transactionalTransactionOperationsManagerTransactionMethodsNotAllowed);
     }
 
     void resetTransactionOperationsManager() {
@@ -189,15 +196,25 @@ public class TransactionalInterceptorBase implements Serializable {
         return invocationManager == null ? null : invocationManager.getCurrentInvocation();
     }
 
-    private class TransactionalTransactionOperationsManager implements TransactionOperationsManager {
-        boolean isUserTransactionMethodsAllowed;
-
-        private TransactionalTransactionOperationsManager(boolean isUserTransactionMethodsAllowed) {
-            this.isUserTransactionMethodsAllowed = isUserTransactionMethodsAllowed;
-        }
+    private static final class TransactionalTransactionOperationsManagerTransactionMethodsAllowed
+            implements TransactionOperationsManager {
 
         public boolean userTransactionMethodsAllowed() {
-            return isUserTransactionMethodsAllowed;
+            return true;
+        }
+
+        public void userTransactionLookupAllowed() throws NameNotFoundException {
+        }
+
+        public void doAfterUtxBegin() {
+        }
+    }
+
+    private static final class TransactionalTransactionOperationsManagerTransactionMethodsNotAllowed
+            implements TransactionOperationsManager {
+
+        public boolean userTransactionMethodsAllowed() {
+            return false;
         }
 
         public void userTransactionLookupAllowed() throws NameNotFoundException {
