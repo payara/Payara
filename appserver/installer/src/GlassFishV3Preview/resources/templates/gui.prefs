@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -44,12 +44,12 @@
 dynamic_component_viewportborder_color=WHITE
 
 # Size for panels
-frame_size=790,632
-contentpanel_size=558,443
-contentpanel_size_m1=558,443
-contentpanel_size_m2=558,443
-contentpanel_size_m3=558,443
-contentpanel_size_m4=558,443
+frame_size=810,644
+contentpanel_size=595,446
+contentpanel_size_m1=595,446
+contentpanel_size_m2=595,446
+contentpanel_size_m3=595,446
+contentpanel_size_m4=595,446
 sizeAttr=preferredsize
 
 # Insets (GridBagConstraints) for panels
