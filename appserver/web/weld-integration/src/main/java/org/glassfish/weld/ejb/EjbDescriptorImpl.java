@@ -64,17 +64,19 @@ public class EjbDescriptorImpl<T> implements org.jboss.weld.ejb.spi.EjbDescripto
 
     private EjbDescriptor ejbDesc;
 
-    public EjbDescriptorImpl(EjbDescriptor e) {
-        ejbDesc = e;
+    public EjbDescriptorImpl(EjbDescriptor ejbDescriptor) {
+        ejbDesc = ejbDescriptor;
 
-        // Before handling application-level interceptors that are defined using 299 metadata,
-        // add the CDI impl-specific system-level interceptor that needs to be registered for ALL
-        // EJB components.  At runtime, this sets up the appropriate request context for invocations that
-        // do not originate via the web tier.  This interceptor must be registered *before*
-        // any application-level interceptors in the chain, so add it in the framework interceptor
-        // category within the ejb descriptor.
-        EjbInterceptor systemLevelCDIInterceptor = createSystemLevelCDIInterceptor();
-        ejbDesc.addFrameworkInterceptor(systemLevelCDIInterceptor);
+        if ( ejbDesc.getType().equals(EjbSessionDescriptor.TYPE) || ejbDesc.getType().equals(EjbMessageBeanDescriptor.TYPE ) ) {
+            // Before handling application-level interceptors that are defined using 299 metadata,
+            // add the CDI impl-specific system-level interceptor that needs to be registered for ALL
+            // EJB components.  At runtime, this sets up the appropriate request context for invocations that
+            // do not originate via the web tier.  This interceptor must be registered *before*
+            // any application-level interceptors in the chain, so add it in the framework interceptor
+            // category within the ejb descriptor.
+            EjbInterceptor systemLevelCDIInterceptor = createSystemLevelCDIInterceptor();
+            ejbDesc.addFrameworkInterceptor(systemLevelCDIInterceptor);
+        }
     }
 
 

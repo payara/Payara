@@ -466,8 +466,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             }
                         } else {
                             // Check for classes annotated with qualified annotations
-                            URI entryPath =
-                                  new File(context.getSourceDir().getAbsolutePath(), entry).toURI();
                             if (WeldUtils.isImplicitBeanArchive(context, weblibJarArchive)) {
                                 if (logger.isLoggable(FINE)) {
                                     logger.log(FINE,

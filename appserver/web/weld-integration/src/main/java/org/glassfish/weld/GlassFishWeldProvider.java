@@ -47,6 +47,7 @@ import org.jboss.weld.manager.BeanManagerImpl;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.CDIProvider;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -73,12 +74,13 @@ public class GlassFishWeldProvider implements CDIProvider {
 
             Map<BeanDeploymentArchive, BeanManagerImpl> beanDeploymentArchives =
                 Container.instance().beanDeploymentArchives();
-            Set<BeanDeploymentArchive> bdas = beanDeploymentArchives.keySet();
-            for ( BeanDeploymentArchive oneBda : bdas ) {
-                if ( oneBda instanceof AppBeanDeploymentArchive ) {
-                    return beanDeploymentArchives.get( oneBda );
+            Set<java.util.Map.Entry<BeanDeploymentArchive,BeanManagerImpl>> entries = beanDeploymentArchives.entrySet();
+            for (Map.Entry<BeanDeploymentArchive, BeanManagerImpl> entry : entries) {
+                if (entry.getKey() instanceof AppBeanDeploymentArchive) {
+                    return entry.getValue();
                 }
             }
+
             return super.unsatisfiedBeanManager(callerClassName);
         }
     }
