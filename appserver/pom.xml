@@ -60,7 +60,7 @@
     </scm>
     
     <properties>
-        <jms-api.version>2.0-b13</jms-api.version>
+        <jms-api.version>2.0</jms-api.version>
         <jsp-api.version>2.3.1</jsp-api.version>
         <jsp-impl.version>2.3.1</jsp-impl.version>
         <javax.el.version>3.0-b07</javax.el.version>
@@ -115,7 +115,7 @@
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
-        <mq.version>5.0-013</mq.version>
+        <mq.version>5.0-014</mq.version>
         <javadb.version>10.9.1.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.0.0.CR2</weld.version>
@@ -303,11 +303,10 @@
                                 <artifactId>javax.jms-api</artifactId>
                                 <version>${jms-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>     
-                            <specVersion>1.1</specVersion>
-                            <newSpecVersion>2.0</newSpecVersion>
-                            <specBuild>13</specBuild>
+                            <specVersion>2.0</specVersion>
+                            <specImplVersion>2.0</specImplVersion>
                             <apiPackage>javax.jms</apiPackage>
                         </spec>
                         <spec>
