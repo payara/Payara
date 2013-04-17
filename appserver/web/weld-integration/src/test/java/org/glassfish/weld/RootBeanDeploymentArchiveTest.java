@@ -56,15 +56,16 @@ import static org.easymock.EasyMock.*;
 
 import org.easymock.EasyMockSupport;
 
-import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import org.junit.Ignore;
 
 /**
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class RootBeanDeploymentArchiveTest {
+    @Ignore
     @Test
     public void testConstructor() throws Exception {
         String archiveName = "an";
