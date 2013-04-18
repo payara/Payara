@@ -87,6 +87,11 @@ public class RestApiHandlers {
                     String defaultV = defaultValues.get(origKey);
                     if (defaultV != null) {
                         orig.put(origKey, defaultV);
+                    }else{
+                        //this is a hack for 4.0. refer to GLASSFISH-20192
+                        if (origKey.equals("deploymentOrder")){
+                            orig.put(origKey, "100");
+                        }
                     }
                 }
                 handlerCtx.setOutputValue("valueMap", orig);
