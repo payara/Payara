@@ -151,38 +151,44 @@ public class GetSetModularityHelper {
     }
 
     public void getLocationForDottedName(String dottedName) {
-        //TODO temporary till all elements are supported
-        if (!dottedName.contains("mdb-container") ||
-                !dottedName.contains("ejb-container") ||
-                !dottedName.contains("web-container")
-                )
-            return;
-        //TODO improve performance to improve command execution time
-        checkForDependentElements(dottedName);
-        if (dottedName.startsWith("configs.config.")) {
-            Config c = null;
-            if ((getElement(dottedName, 3) != null)) {
-                c = getConfigForName(getElement(dottedName, 3));
+//        TODO temporary hard coded service names till all elements are supported, being tracked as part of FPP-121
+        if (dottedName.contains("monitor")) return;
+        if (
+                dottedName.contains("mdb-container")
+                || dottedName.contains("ejb-container")
+                || dottedName.contains("web-container")
+                || dottedName.contains("cdi-service")
+                || dottedName.contains("batch-runtime-configuration")
+                || dottedName.contains("managed-job-config")
+                ) {
+            //TODO improve performance to improve command execution time
+            checkForDependentElements(dottedName);
+            if (dottedName.startsWith("configs.config.")) {
+                Config c = null;
+                if ((getElement(dottedName, 3) != null)) {
+                    c = getConfigForName(getElement(dottedName, 3));
 
-            }
-            if (c != null && getElementClass(dottedName, 4) != null) {
-                c.getExtensionByType(getElementClass(dottedName, 4));
+                }
+                if (c != null && getElementClass(dottedName, 4) != null) {
+                    c.getExtensionByType(getElementClass(dottedName, 4));
+                }
+
+            } else if (!dottedName.startsWith("domain.")) {
+                Config c = null;
+                if ((getElement(dottedName, 1) != null)) {
+                    c = getConfigForName(getElement(dottedName, 1));
+
+                }
+                if (c != null && getElementClass(dottedName, 2) != null) {
+                    c.getExtensionByType(getElementClass(dottedName, 2));
+                }
             }
 
-        } else if (!dottedName.startsWith("domain.")) {
-            Config c = null;
-            if ((getElement(dottedName, 1) != null)) {
-                c = getConfigForName(getElement(dottedName, 1));
-
-            }
-            if (c != null && getElementClass(dottedName, 2) != null) {
-                c.getExtensionByType(getElementClass(dottedName, 2));
-            }
         }
     }
 
     private void checkForDependentElements(String dottedName) {
-        //Go over the dependent elements of a given config bean and try finding if the dependent elements match the dottedName
+        //Go over the dependent elements of custom configured config beans and try finding if the dependent elements match the dottedName
     }
 
     private Config getConfigForName(String name) {

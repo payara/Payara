@@ -100,7 +100,8 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
     private ConfigModularityUtils configModularityUtils;
 
     @Inject
-    private Domain domain;
+    private Domain domain
+            ;
     @Inject
     StartupContext startupContext;
 
@@ -173,6 +174,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                     "Creating all default configuration elements that are not present in the domain.xml under target {0}.", target));
             report.appendMessage(LINE_SEPARATOR);
             synchronized (configModularityUtils) {
+                boolean oldv = configModularityUtils.isCommandInvocation();
                 try {
                     configModularityUtils.setCommandInvocation(true);
                     createAllMissingElements(report);
@@ -185,7 +187,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                     report.setFailureCause(e);
                     return;
                 } finally {
-                    configModularityUtils.setCommandInvocation(false);
+                    configModularityUtils.setCommandInvocation(oldv);
                 }
             }
         } else if (serviceName != null) {
@@ -199,6 +201,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 return;
             }
             synchronized (configModularityUtils) {
+                boolean oldv = configModularityUtils.isCommandInvocation();
                 try {
                     if (dryRun) {
                         String serviceDefaultConfig = getDefaultConfigFor(configBeanType);
@@ -219,7 +222,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                     report.setFailureCause(e);
                     return;
                 } finally {
-                    configModularityUtils.setCommandInvocation(false);
+                    configModularityUtils.setCommandInvocation(oldv);
                 }
             }
         }

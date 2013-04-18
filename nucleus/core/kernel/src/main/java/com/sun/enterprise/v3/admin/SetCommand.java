@@ -120,6 +120,9 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
     @Optional
     GetSetModularityHelper modularityHelper;
 
+    @Inject
+    ConfigModularityUtils utils;
+
     @Param(primary = true, multiple = true)
     String[] values;
     final private static LocalStringManagerImpl localStrings =
@@ -165,10 +168,10 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         }
         return accessChecks;
     }
-    
-    
 
-    
+
+
+
     @Override
     public void execute(AdminCommandContext context) {
         for (SetOperation op : setOperations) {
@@ -188,8 +191,8 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         private final String pattern;
         private final boolean isProperty;
         private final String attrName;
-        
-        private SetOperation(final String target, final String value, final String pattern, 
+
+        private SetOperation(final String target, final String value, final String pattern,
                 final String attrName, final boolean isProperty) {
             this.target = target;
             this.value = value;
@@ -197,10 +200,10 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             this.attrName = attrName;
             this.isProperty = isProperty;
         }
-        
+
         /**
          * Returns the name of the resource being affected by this set operation.
-         * @return 
+         * @return
          */
         private String getResourceName() {
             StringBuilder dottedNameForResourceName = new StringBuilder();
@@ -216,15 +219,15 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             return dottedNameForResourceName.toString().replace('.', '/');
         }
     }
-    
+
     /**
      * Processes a single name/value pair just enough to figure out what kind
      * of entity the target is (an element, an attribute, a property) and saves
      * that information as a SetOperation instance.
-     * 
+     *
      * @param context admin command context
      * @param nameval a single name/value pair from the command
-     * @return 
+     * @return
      */
     private boolean prepare(AdminCommandContext context, String nameval) {
         int i = nameval.indexOf('=');
@@ -258,11 +261,11 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
             pattern = target.replaceAll("\\\\\\.", "\\.");
             isProperty = true;
         }
-        
+
         setOperations.add(new SetOperation(target, value, pattern, attrName, isProperty));
         return true;
     }
-    
+
     private boolean set(AdminCommandContext context, SetOperation op) {
 
         String pattern = op.pattern;
@@ -295,8 +298,14 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
         }
         String targetName = prefix + pattern;
 
-        if(modularityHelper!=null){
-        modularityHelper.getLocationForDottedName(targetName);}
+        if (modularityHelper != null) {
+            synchronized (utils) {
+                boolean oldv = utils.isCommandInvocation();
+                utils.setCommandInvocation(true);
+                modularityHelper.getLocationForDottedName(targetName);
+                utils.setCommandInvocation(oldv);
+            }
+        }
 
         Map<Dom, String> matchingNodes;
         boolean applyOverrideRules = false;
@@ -353,7 +362,7 @@ public class SetCommand extends V2DottedNameSupport implements AdminCommand, Pos
                 try {
                     if ( ! (parentNode instanceof ConfigBean)) {
                         final ClassCastException cce = new ClassCastException(parentNode.getClass().getName());
-                        fail(context, localStrings.getLocalString("admin.set.attribute.change.failure", 
+                        fail(context, localStrings.getLocalString("admin.set.attribute.change.failure",
                                 "Could not change the attributes: {0}",
                                 cce.getMessage(), cce));
                         return false;
