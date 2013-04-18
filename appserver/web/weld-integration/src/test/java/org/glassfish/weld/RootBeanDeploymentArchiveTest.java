@@ -65,7 +65,7 @@ import org.junit.Ignore;
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class RootBeanDeploymentArchiveTest {
-    @Ignore
+
     @Test
     public void testConstructor() throws Exception {
         String archiveName = "an";

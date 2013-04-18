@@ -760,7 +760,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             file = new File(file, beansXMLPath);
             url = file.toURI().toURL();
         } else {
-            url = new URL("jar:file:" + file.getAbsolutePath() + "!" + File.separatorChar + beansXMLPath);
+            url = new URL("jar:" + file.toURI() + "!/" + beansXMLPath);
         }
 
         return url;
