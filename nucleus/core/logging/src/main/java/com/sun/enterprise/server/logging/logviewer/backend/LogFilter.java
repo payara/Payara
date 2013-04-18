@@ -235,6 +235,7 @@ public class LogFilter {
                 // getting log file attribute value from logging.properties file
                 logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
                 logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
+                logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
                 return new Vector();
@@ -252,8 +253,8 @@ public class LogFilter {
         } else {
             try {
                 // getting log file attribute value from logging.properties file
-                String instanceLogFileDirectory = getInstanceLogFileDirectory(targetServer);
-                allInstanceFileNames = new LogFilterForInstance().getInstanceLogFileNames(habitat, targetServer, domain, LOGGER, instanceName, instanceLogFileDirectory);
+                String instanceLogFileDetails = getInstanceLogFileDetails(targetServer);
+                allInstanceFileNames = new LogFilterForInstance().getInstanceLogFileNames(habitat, targetServer, domain, LOGGER, instanceName, instanceLogFileDetails);
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, ex);
                 return new Vector();
@@ -266,7 +267,7 @@ public class LogFilter {
         This function is used to get log file details from logging.properties file for given target.
      */
 
-    private String getInstanceLogFileDirectory(Server targetServer) throws IOException {
+    private String getInstanceLogFileDetails(Server targetServer) throws IOException {
 
         String logFileDetailsForServer = "";
         String targetConfigName = "";
@@ -295,10 +296,11 @@ public class LogFilter {
             // getting log file for DAS from logging.properties and returning the same
             String logFileDetailsForServer = loggingConfig.getLoggingFileDetails();
             logFileDetailsForServer = TranslatedConfigView.getTranslatedValue(logFileDetailsForServer).toString();
+            logFileDetailsForServer = new File(logFileDetailsForServer).getAbsolutePath();
             return logFileDetailsForServer;
         } else {
             // getting log file for instance from logging.properties
-            String logFileDetailsForInstance = getInstanceLogFileDirectory(targetServer);
+            String logFileDetailsForInstance = getInstanceLogFileDetails(targetServer);
             Node node = domain.getNodes().getNode(serverNode);
             String loggingDir = "";
             String loggingFile = "";
@@ -362,7 +364,7 @@ public class LogFilter {
             String instanceLogFileName = "";
             try {
                 // getting lof file details for given target.
-                instanceLogFileName = getInstanceLogFileDirectory(targetServer);
+                instanceLogFileName = getInstanceLogFileDetails(targetServer);
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, LogFacade.ERROR_EXECUTING_LOG_QUERY, e);
                 return new AttributeList();

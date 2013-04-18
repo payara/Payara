@@ -97,8 +97,7 @@ public class LogParserFactory {
             case ODL_LOG_FORMAT:
                 return new ODLLogParser(logFile.getName());
             default:
-                throw new LogParserException(LOCAL_STRINGS.getLocalString("unknown.log.format",
-                        "The format of the log file {0} is not known.", logFile.getAbsolutePath()));
+                return new RawLogParser(logFile.getName());
             }
         } finally {
             if (reader != null) {
@@ -112,17 +111,18 @@ public class LogParserFactory {
     }
     
     private LogFormat detectLogFormat(String line) {
-        Matcher m = odlDateFormatPattern.matcher(line);
-        if (m.matches()) {
-            if (DEBUG) {
-                System.out.println("Matched ODL pattern for line:" + line);
-            }
-            return LogFormat.ODL_LOG_FORMAT;
-        } else if (LogFormatHelper.isUniformFormatLogHeader(line)) {
-            return LogFormat.UNIFORM_LOG_FORMAT;
-        } else {
-            return LogFormat.UNKNOWN_LOG_FORMAT;
-        }
+        if (line != null) {
+            Matcher m = odlDateFormatPattern.matcher(line);
+            if (m.matches()) {
+                if (DEBUG) {
+                    System.out.println("Matched ODL pattern for line:" + line);
+                }
+                return LogFormat.ODL_LOG_FORMAT;
+            } else if (LogFormatHelper.isUniformFormatLogHeader(line)) {
+                return LogFormat.UNIFORM_LOG_FORMAT;
+            }             
+        } 
+        return LogFormat.UNKNOWN_LOG_FORMAT;
     }                
     
 }

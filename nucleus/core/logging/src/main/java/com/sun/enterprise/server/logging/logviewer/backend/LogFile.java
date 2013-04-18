@@ -182,29 +182,31 @@ public class LogFile implements java.io.Serializable {
         BufferedReader reader = getLogFileReader(startPos);
         try {
             File logFile = new File(getLogFileName());
-            LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile );
-            logParser.parseLog(reader, new LogParserListener() {
-                
-                long recordNumber = (_recordIdx.size() - 1) * localIndexSize;
+            LogParser logParser = LogParserFactory.getInstance().createLogParser(logFile);
+            if (logParser != null) {
+                logParser.parseLog(reader, new LogParserListener() {
+                    
+                    long recordNumber = (_recordIdx.size() - 1) * localIndexSize;
 
-                @Override
-                public void outputSummary(BufferedWriter writer, Object... objects)
-                        throws IOException {
-                }
-                
-                @Override
-                public void foundLogRecord(long position, ParsedLogRecord object) {                    
-                    long modIndex = recordNumber % localIndexSize;
-                    if (modIndex == 0) {
-                        _recordIdx.add((Long)(startPos+position));
+                    @Override
+                    public void outputSummary(BufferedWriter writer, Object... objects)
+                            throws IOException {
                     }
-                    recordNumber++;
-                }
-                
-                @Override
-                public void close() throws IOException {                    
-                }
-            });
+                    
+                    @Override
+                    public void foundLogRecord(long position, ParsedLogRecord object) {                    
+                        long modIndex = recordNumber % localIndexSize;
+                        if (modIndex == 0) {
+                            _recordIdx.add((Long)(startPos+position));
+                        }
+                        recordNumber++;
+                    }
+                    
+                    @Override
+                    public void close() throws IOException {                    
+                    }
+                });                
+            }
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         } finally {

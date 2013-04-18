@@ -275,7 +275,7 @@ public class LogFilterForInstance {
     }
 
     public Vector getInstanceLogFileNames(ServiceLocator habitat, Server targetServer, Domain domain, Logger logger,
-                                          String instanceName, String instanceLogFileDirectory) throws IOException {
+                                          String instanceName, String instanceLogFileDetails) throws IOException {
 
         // helper method to get all log file names for given instance
         String sNode = targetServer.getNodeRef();
@@ -285,7 +285,7 @@ public class LogFilterForInstance {
 
         // this code is used when DAS and instances are running on the same machine
         if (node.isLocal()) {
-            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
+            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDetails, node, sNode, instanceName);
 
             File logsDir = new File(loggingDir);
             File allLogFileNames[] = logsDir.listFiles();
@@ -307,7 +307,7 @@ public class LogFilterForInstance {
 
             if (noFileFound) {
                 // this loop is used when user has changed value for server.log but not restarted the server.
-                loggingDir = getLoggingDirectoryForNodeWhenNoFilesFound(instanceLogFileDirectory, node, sNode, instanceName);
+                loggingDir = getLoggingDirectoryForNodeWhenNoFilesFound(instanceLogFileDetails, node, sNode, instanceName);
                 logsDir = new File(loggingDir);
                 allLogFileNames = logsDir.listFiles();
 
@@ -329,7 +329,7 @@ public class LogFilterForInstance {
 
             boolean noFileFound = true;
 
-            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
+            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDetails, node, sNode, instanceName);
 
             try {
                 instanceLogFileNames = sftpClient.ls(loggingDir);
@@ -350,7 +350,7 @@ public class LogFilterForInstance {
 
             if (noFileFound) {
                 // this loop is used when user has changed value for server.log but not restarted the server.
-                loggingDir = getLoggingDirectoryForNodeWhenNoFilesFound(instanceLogFileDirectory, node, sNode, instanceName);
+                loggingDir = getLoggingDirectoryForNodeWhenNoFilesFound(instanceLogFileDetails, node, sNode, instanceName);
                 instanceLogFileNames = sftpClient.ls(loggingDir);
 
 
@@ -368,7 +368,7 @@ public class LogFilterForInstance {
             sftpClient.close();
         } else if (node.getType().equals("DCOM")) {
 
-            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDirectory, node, sNode, instanceName);
+            String loggingDir = getLoggingDirectoryForNode(instanceLogFileDetails, node, sNode, instanceName);
 
             try {
                 DcomInfo info = new DcomInfo(node);

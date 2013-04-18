@@ -551,7 +551,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     public void preDestroy() {
         // stop the Queue consummer thread.
-        LogFacade.LOGGING_LOGGER.fine("Logger handler killed");
+        if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
+            LogFacade.LOGGING_LOGGER.fine("Logger handler killed");            
+        }
         done.tryReleaseShared(1);
         pump.interrupt();
 

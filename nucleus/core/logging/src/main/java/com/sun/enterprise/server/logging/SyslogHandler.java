@@ -116,8 +116,11 @@ public class SyslogHandler extends Handler implements PostConstruct, PreDestroy 
         pump.start();
 
     }
+    
     public void preDestroy() {
-        LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
+        if (LogFacade.LOGGING_LOGGER.isLoggable(Level.FINE)) {
+            LogFacade.LOGGING_LOGGER.fine("SysLog Logger handler killed");
+        }
     }
 
     /**
