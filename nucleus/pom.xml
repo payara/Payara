@@ -130,7 +130,7 @@
         <asm.version>3.1</asm.version>
         <shoal.version>1.6.18</shoal.version>
         <ha-api.version>3.1.8</ha-api.version>
-        <glassfishbuild.version>3.2.18</glassfishbuild.version>
+        <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.5</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.4</command-security-plugin.version>
