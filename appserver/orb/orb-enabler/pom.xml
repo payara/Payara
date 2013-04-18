@@ -81,10 +81,5 @@
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
         </dependency>         
-    	<dependency>
-            <groupId>org.glassfish.main.orb</groupId>
-            <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>         
     </dependencies>
 </project>
