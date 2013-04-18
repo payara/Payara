@@ -541,7 +541,10 @@ public class ComponentEnvManagerImpl
                                     "Please confirm if webservices module is installed ");
                 }
 
-            } else {
+            }else if (resourceRef.isJDBCResource() || resourceRef.isJMSConnectionFactory() ||
+                    resourceRef.isMailResource() || resourceRef.isResourceConnectionFactory()) {
+                value = namingUtils.createLazyInitializationNamingObjectFactory(name, physicalJndiName, false);
+            }else {
               value = namingUtils.createLazyNamingObjectFactory(name, physicalJndiName, false);
             }
 
