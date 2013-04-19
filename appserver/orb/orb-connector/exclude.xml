@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -57,5 +57,15 @@
             <Field name="totalWorkItemsAdded"/>
         </Or>
         <Bug pattern="IS2_INCONSISTENT_SYNC"/>
+    </Match>
+
+    <!--
+        This is a safe use of double-check locking.
+        http://en.wikipedia.org/wiki/Double-checked_locking
+    -->
+    <Match>
+        <Class name="org.glassfish.enterprise.iiop.api.GlassFishORBHelper"/>
+        <Method name="getORB"/>
+        <Bug pattern="UG_SYNC_SET_UNSYNC_GET"/>
     </Match>
 </FindBugsFilter>
