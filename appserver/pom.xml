@@ -183,7 +183,7 @@
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>spec-version-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
                     <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.el.jar,javax.enterprise.concurrent.jar</excludes>
@@ -228,12 +228,12 @@
                             <specVersion>2.1</specVersion>
                             <newSpecVersion>2.2</newSpecVersion>
                             <implVersion>2.1.20</implVersion>
-                            <specImplVersion>2.2-m13</specImplVersion>
-                            <newImplVersion>2.2-m13</newImplVersion>
-                            <specBuild>13</specBuild>
-                            <implBuild>13</implBuild>
+                            <specImplVersion>2.2-m14</specImplVersion>
+                            <newImplVersion>2.2-m14</newImplVersion>
+                            <specBuild>14</specBuild>
+                            <implBuild>14</implBuild>
                             <apiPackage>javax.faces</apiPackage>
-                            <implNamespace>org.glassfish.faces</implNamespace>
+                            <implNamespace>org.glassfish</implNamespace>
                         </spec>
                         <spec>
                             <artifact>
@@ -332,7 +332,7 @@
                             <jarType>api</jarType>     
                             <specVersion>3.0</specVersion>
                             <newSpecVersion>3.1</newSpecVersion>
-                            <specBuild>07</specBuild>
+                            <specBuild>08</specBuild>
                             <apiPackage>javax.servlet</apiPackage>
                         </spec>
                         <spec>
