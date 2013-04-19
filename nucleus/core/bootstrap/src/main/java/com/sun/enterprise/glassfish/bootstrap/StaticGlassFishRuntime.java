@@ -215,26 +215,40 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             throw new Exception("cannot create directory: " + instanceRoot.getAbsolutePath());
         }
         try {
-            String configDir = "config/";
-            String[] resources = new String[]{"keyfile", "server.policy",
-                    "cacerts.jks", "keystore.jks", "login.conf", "admin-keyfile"};
-            new File(instanceRoot, configDir).mkdirs();
+            String[] configFiles = new String[]{"config/keyfile",
+                    "config/server.policy",
+                    "config/cacerts.jks",
+                    "config/keystore.jks",
+                    "config/login.conf",
+                    "config/admin-keyfile",
+                    "org/glassfish/web/embed/default-web.xml",
+                    "org/glassfish/embed/domain.xml"
+            };
+            /**
+             * Create instance config directory
+             */
+            File instanceConfigDir = new File(instanceRoot, "config");
+            instanceConfigDir.mkdirs();
+            /**
+             * Create instance docroot directory.
+             */
             new File(instanceRoot, "docroot").mkdirs();
+            /**
+             * Copy all the config files from uber jar to the instanceConfigDir
+             */
             ClassLoader cl = getClass().getClassLoader();
-            for (String resource : resources) {
-                String resourceName = configDir + resource;
-                copy(cl.getResource(resourceName), new File(
-                        instanceRoot.getAbsolutePath(), resourceName), false);
+            for (String configFile : configFiles) {
+                copy(cl.getResource(configFile), new File(instanceConfigDir,
+                        configFile.substring(configFile.lastIndexOf('/') + 1)), false);
             }
+            /**
+             * If the user has specified a custom domain.xml then copy it.
+             */
             String configFileURI = gfProps.getConfigFileURI();
-            URL configFileRL = configFileURI == null ? getClass().getClassLoader().getResource(
-                    "org/glassfish/embed/domain.xml") : URI.create(configFileURI).toURL();
-                copy(configFileRL, new File(instanceRoot, configDir + "domain.xml"), false);
-            String configFileURI1 = gfProps.getConfigFileURI();
-
-            URL configFileRL1 = configFileURI1 == null ? getClass().getClassLoader().getResource(
-                    "org/glassfish/web/embed/default-web.xml") : URI.create(configFileURI1).toURL();
-                copy(configFileRL1, new File(instanceRoot, configDir + "default-web.xml"), false);
+            if(configFileURI != null) {
+                copy(URI.create(configFileURI).toURL(),
+                        new File(instanceConfigDir, "domain.xml"), true);
+            }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
