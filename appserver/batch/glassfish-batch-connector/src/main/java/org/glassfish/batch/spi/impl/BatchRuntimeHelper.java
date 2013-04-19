@@ -172,10 +172,15 @@ public class BatchRuntimeHelper
     private Set<String> tagNamesRequiringCleanup = new HashSet<>();
 
     private void registerIfBatchJobsDirExists(ApplicationInfo applicationInfo) {
-        if (applicationInfo != null) {
+        if (applicationInfo != null && applicationInfo.isLoaded()) {
+            ClassLoader appClassLoader = applicationInfo.getAppClassLoader();
+            if (appClassLoader != null && appClassLoader.getResource("META-INF/batch-jobs") != null) {
+                tagNamesRequiringCleanup.add(config.getName() + ":" + applicationInfo.getName());
+                return;
+            }
             for (ModuleInfo moduleInfo : applicationInfo.getModuleInfos()) {
-                ClassLoader cl = moduleInfo.getModuleClassLoader();
-                if (cl.getResource("META-INF/batch-jobs") != null) {
+                ClassLoader moduleClassLoader = moduleInfo.getModuleClassLoader();
+                if (moduleClassLoader != null && moduleClassLoader.getResource("META-INF/batch-jobs") != null) {
                     tagNamesRequiringCleanup.add(config.getName() + ":" + applicationInfo.getName());
                 }
             }
@@ -184,45 +189,47 @@ public class BatchRuntimeHelper
 
     @Override
     public void event(Event event) {
-
-        if (event.is(EventTypes.SERVER_READY)) {
-            for (String appName : applicationRegistry.getAllApplicationNames()) {
-                ApplicationInfo applicationInfo = applicationRegistry.get(appName);
-                registerIfBatchJobsDirExists(applicationInfo);
+        try {
+            if (event.is(EventTypes.SERVER_READY)) {
+                for (String appName : applicationRegistry.getAllApplicationNames()) {
+                    ApplicationInfo applicationInfo = applicationRegistry.get(appName);
+                    registerIfBatchJobsDirExists(applicationInfo);
+                }
+            } else if (event.is(Deployment.APPLICATION_LOADED)) {
+                if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
+                    ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+                    registerIfBatchJobsDirExists(applicationInfo);
+                }
             }
-        } else if (event.is(Deployment.APPLICATION_LOADED)) {
-            if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
-                ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                registerIfBatchJobsDirExists(applicationInfo);
-            }
-        }
-        if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
-            if (event.hook() != null && event.hook() instanceof DeploymentContextImpl) {
-                DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
-                Properties props = deploymentContext.getAppProps();
-                String appName = props.getProperty("defaultAppName");
-                if (!Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
-                    String tagName = config.getName() + ":" + appName;
-                    try {
-                        BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
-                        if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
-                            batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
-                            tagNamesRequiringCleanup.remove(tagName);
-                        } else if (tagNamesRequiringCleanup.contains(tagName)) {
-                            //Force initialization of BatchRuntime
-                            JobOperator jobOperator = BatchRuntime.getJobOperator();
-
-                            if (batchSPIManager.getBatchJobUtil() != null) {
+            if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
+                if (event.hook() != null && event.hook() instanceof DeploymentContextImpl) {
+                    DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
+                    Properties props = deploymentContext.getAppProps();
+                    String appName = props.getProperty("defaultAppName");
+                    if (!Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
+                        String tagName = config.getName() + ":" + appName;
+                        try {
+                            BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
+                            if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
                                 batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
                                 tagNamesRequiringCleanup.remove(tagName);
+                            } else if (tagNamesRequiringCleanup.contains(tagName)) {
+                                //Force initialization of BatchRuntime
+                                JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+                                if (batchSPIManager.getBatchJobUtil() != null) {
+                                    batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
+                                    tagNamesRequiringCleanup.remove(tagName);
+                                }
                             }
+                        } catch (Exception ex) {
+                            logger.log(Level.FINE, "Error while purging jobs", ex);
                         }
-                    } catch (Exception ex) {
-                        logger.log(Level.INFO, "Error while purging jobs: " + ex);
-                        logger.log(Level.FINE, "Error while purging jobs", ex);
                     }
                 }
             }
+        } catch (Exception ex) {
+            logger.log(Level.FINE, "Exception while handling event: " + event, ex);
         }
     }
 
