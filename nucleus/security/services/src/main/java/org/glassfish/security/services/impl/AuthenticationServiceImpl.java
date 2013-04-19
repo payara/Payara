@@ -40,20 +40,14 @@
 package org.glassfish.security.services.impl;
 
 import java.io.IOException;
-import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
-import org.glassfish.security.services.config.SecurityConfiguration;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
@@ -66,22 +60,22 @@ import javax.security.auth.login.Configuration;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.login.LoginException;
 
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
+import org.glassfish.security.services.api.authentication.AuthenticationService;
+import org.glassfish.security.services.api.authentication.ImpersonationService;
+import org.glassfish.security.services.config.LoginModuleConfig;
+import org.glassfish.security.services.config.SecurityConfiguration;
+import org.glassfish.security.services.config.SecurityProvider;
+import org.glassfish.security.services.config.SecurityProviderConfig;
+import org.jvnet.hk2.annotations.Service;
+
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
 import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.AppservAccessController;
-import java.util.logging.Logger;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
-
-import org.glassfish.internal.api.ServerContext;
-import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
-
-import org.glassfish.security.services.api.authentication.AuthenticationService;
-import org.glassfish.security.services.config.LoginModuleConfig;
-import org.glassfish.security.services.config.SecurityProvider;
-import org.glassfish.security.services.config.SecurityProviderConfig;
 
 /**
  * The Authentication Service Implementation.
@@ -99,6 +93,9 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
         
         @Inject
         private ServiceLocator locator;
+        
+        @Inject
+        private ImpersonationService impersonationService;
         
         private static final Logger LOG = Logger.getLogger(AuthenticationServiceImpl.class.getName());
 
@@ -267,43 +264,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	@Override
 	public Subject impersonate(String user, String[] groups, Subject subject, boolean virtual)
 			throws LoginException {
-		// Use the supplied Subject or create a new Subject
-		Subject _subject = subject;
-		if (_subject == null)
-			_subject = new Subject();
-
-		try {
-			// TODO - Add support for virtual = false
-			if (!virtual) {
-				throw new UnsupportedOperationException(
-						"Use of non-virtual parameter is not supported");
-			}
-			
-			// Build the Subject
-			if ((user != null) && (!user.isEmpty())) {
-				final Subject s = _subject;
-				final String userName = user;
-				final String[] groupNames = groups;
-				AppservAccessController.doPrivileged(new PrivilegedAction<Object>() {
-					public Object run() {
-						Set<Principal> principals = s.getPrincipals();
-						principals.add(new PrincipalImpl(userName));
-						if (groupNames != null) {
-							for (int i = 0; i < groupNames.length; i++)
-								principals.add(new Group(groupNames[i]));
-						}
-						return null;
-					}
-				});
-			}
-		} catch (Exception exc) {
-			// TODO - Address Audit/Log/Debug handling options
-			throw (LoginException) new LoginException(
-					"AuthenticationService: "+ exc.getMessage()).initCause(exc);
-		}
-
-		// Return the impersonated Subject
-		return _subject;
+	  return impersonationService.impersonate(user, groups, subject, virtual);
 	}
 
 	/**
