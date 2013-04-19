@@ -36,7 +36,7 @@
 						<artifactItems>
 						 <artifactItem>
 						   <groupId>org.eclipse.persistence</groupId>
-						   <artifactId>javax.persistence</artifactId>
+						   <artifactId>javax.persistence-api</artifactId>
 						   <includes>javax/persistence/orm*.xsd, javax/persistence/persistence*.xsd</includes>
 						   <outputDirectory>${jpa.schema.temp.location}</outputDirectory>
 						 </artifactItem>

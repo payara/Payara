@@ -109,8 +109,8 @@
         <jaxb.version>2.2.7-b63</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
         <javax.xml.registry-api.version>1.0.4</javax.xml.registry-api.version>
-        <eclipselink.version>2.5.0-M12</eclipselink.version>
-        <javax-persistence-api.version>2.1.0-M12</javax-persistence-api.version> 
+        <eclipselink.version>2.5.0-M13</eclipselink.version>
+        <javax-persistence-api.version>2.1.0-M13</javax-persistence-api.version> 
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
@@ -364,8 +364,8 @@
                         <spec>
                             <artifact>
                                 <groupId>org.eclipse.persistence</groupId>
-                                <artifactId>javax.persistence</artifactId>
-                                <version>2.0.110-SNAPSHOT</version>
+                                <artifactId>javax.persistence-api</artifactId>
+                                <version>2.0.113-SNAPSHOT</version>
                             </artifact>
                             <nonFinal>true</nonFinal>
                             <jarType>api</jarType>
@@ -563,7 +563,7 @@
             </dependency>
             <dependency>
                 <groupId>org.eclipse.persistence</groupId>
-                <artifactId>javax.persistence</artifactId>
+                <artifactId>javax.persistence-api</artifactId>
                 <version>${javax-persistence-api.version}</version>
             </dependency>
             <dependency>

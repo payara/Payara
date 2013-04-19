@@ -319,7 +319,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <artifactId>javax.persistence-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>

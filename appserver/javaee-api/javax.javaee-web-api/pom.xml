@@ -178,7 +178,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence</artifactId>
+            <artifactId>javax.persistence-api</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
