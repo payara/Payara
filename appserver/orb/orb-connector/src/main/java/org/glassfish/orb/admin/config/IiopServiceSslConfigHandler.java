@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,17 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.orb.admin.config.handler;
+
+package org.glassfish.orb.admin.config;
 
 import com.sun.enterprise.admin.commands.CreateSsl;
 import com.sun.enterprise.admin.commands.DeleteSsl;
-import org.glassfish.orb.admin.config.IiopListener;
+import com.sun.enterprise.admin.commands.SslConfigHandler;
 import org.glassfish.orb.admin.config.IiopService;
+import com.sun.enterprise.config.serverbeans.SslClientConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.jvnet.hk2.annotations.Service;
-import com.sun.enterprise.admin.commands.SslConfigHandler;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
@@ -55,53 +56,39 @@ import org.jvnet.hk2.config.TransactionFailure;
 import java.beans.PropertyVetoException;
 
 /**
- * SSL configuration handler for iiop-listener configuration
+ * SSL configuration handler for iiop-service.
  * @author Jerome Dochez
- *
  */
-@Service(name="iiop-listener")
-public class IiopSslConfigHandler implements SslConfigHandler {
+@Service(name="iiop-service")
+public class IiopServiceSslConfigHandler implements SslConfigHandler {
 
     final private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(CreateSsl.class);
 
-
     @Override
     public void create(final CreateSsl command, ActionReport report) {
-       IiopService iiopService = command.config.getExtensionByType(IiopService.class);
-        // ensure we have the specified listener
-        IiopListener iiopListener = null;
-        for (IiopListener listener : iiopService.getIiopListener()) {
-            if (listener.getId().equals(command.listenerId)) {
-                iiopListener = listener;
-            }
-        }
-        if (iiopListener == null) {
+        IiopService iiopSvc = command.config.getExtensionByType(IiopService.class);
+        if (iiopSvc.getSslClientConfig() != null) {
             report.setMessage(
-                localStrings.getLocalString("create.ssl.iiop.notfound",
-                    "IIOP Listener named {0} to which this ssl element is " +
-                        "being added does not exist.", command.listenerId));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-        if (iiopListener.getSsl() != null) {
-            report.setMessage(
-                localStrings.getLocalString("create.ssl.iiop.alreadyExists",
-                    "IIOP Listener named {0} to which this ssl element is " +
-                        "being added already has an ssl element.", command.listenerId));
+                localStrings.getLocalString(
+                    "create.ssl.iiopsvc.alreadyExists", "IIOP Service " +
+                        "already has been configured with SSL configuration."));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
         try {
-            ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
-                        public Object run(IiopListener param)
+            ConfigSupport.apply(new SingleConfigCode<IiopService>() {
+                        public Object run(IiopService param)
                                 throws PropertyVetoException, TransactionFailure {
-                            Ssl newSsl = param.createChild(Ssl.class);
+                            SslClientConfig newSslClientCfg =
+                                    param.createChild(SslClientConfig.class);
+                            Ssl newSsl = newSslClientCfg.createChild(Ssl.class);
                             command.populateSslElement(newSsl);
-                            param.setSsl(newSsl);
+                            newSslClientCfg.setSsl(newSsl);
+                            param.setSslClientConfig(newSslClientCfg);
                             return newSsl;
                         }
-                    }, iiopListener);
+                    }, iiopSvc);
 
         } catch (TransactionFailure e) {
             command.reportError(report, e);
@@ -111,39 +98,23 @@ public class IiopSslConfigHandler implements SslConfigHandler {
 
     @Override
     public void delete(DeleteSsl command, ActionReport report) {
-
-        IiopService iiopService = command.config.getExtensionByType(IiopService.class);
-        IiopListener iiopListener = null;
-        for (IiopListener listener : iiopService.getIiopListener()) {
-            if (listener.getId().equals(command.listenerId)) {
-                iiopListener = listener;
-            }
-        }
-
-        if (iiopListener == null) {
+        if (command.config.getExtensionByType(IiopService.class).getSslClientConfig() == null) {
             report.setMessage(localStrings.getLocalString(
-                    "delete.ssl.iiop.listener.notfound",
-                    "Iiop Listener named {0} not found", command.listenerId));
+                    "delete.ssl.element.doesnotexistforiiop",
+                    "Ssl element does not exist for IIOP service"));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        if (iiopListener.getSsl() == null) {
-            report.setMessage(localStrings.getLocalString(
-                    "delete.ssl.element.doesnotexist", "Ssl element does " +
-                    "not exist for Listener named {0}", command.listenerId));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
         try {
-            ConfigSupport.apply(new SingleConfigCode<IiopListener>() {
-                public Object run(IiopListener param)
-                throws PropertyVetoException {
-                    param.setSsl(null);
-                    return null;
-                }
-            }, iiopListener);
-        } catch(TransactionFailure e) {
+            ConfigSupport.apply(new SingleConfigCode<IiopService>() {
+                    public Object run(IiopService param)
+                            throws PropertyVetoException {
+                        param.setSslClientConfig(null);
+                        return null;
+                    }
+                }, command.config.getExtensionByType(IiopService.class));
+        } catch (TransactionFailure e) {
             command.reportError(report, e);
         }
     }
