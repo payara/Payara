@@ -1957,6 +1957,14 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
                 new Object[]{getName(), name}));
     }
 
+    @Override
+    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
+        if (env != null)
+            return env.getResourceDescriptors(type);
+        else
+            return super.getResourceDescriptors(type);
+    }
+
     /**
      * Return the set of resource environment references this ejb declares.
      */
