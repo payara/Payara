@@ -151,6 +151,7 @@
 
 
       <!--  Customizing pe bottom frame -->
+      <!--  Remove promotion frame.  Refer to GLASSFISH-20207
           <event>
           <!afterCreate
               if (!#{sessionScope._noNetwork}) {
@@ -160,6 +161,7 @@
               }
           />
           </event>
+          -->
 </define>
 </composition>
 
