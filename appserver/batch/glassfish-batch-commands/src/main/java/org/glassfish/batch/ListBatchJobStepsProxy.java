@@ -82,7 +82,7 @@ public class ListBatchJobStepsProxy
         extends AbstractListCommandProxy {
 
     @Param(primary = true)
-    String executionId;
+    Long executionId;
 
     @Override
     protected String getCommandName() {
@@ -92,7 +92,7 @@ public class ListBatchJobStepsProxy
     protected void fillParameterMap(ParameterMap parameterMap) {
         super.fillParameterMap(parameterMap);
         if (executionId != null)
-            parameterMap.add("DEFAULT", executionId);
+            parameterMap.add("DEFAULT", ""+executionId);
     }
 
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
