@@ -131,6 +131,11 @@ public abstract class LocalServerCommand extends CLICommand {
         serverDirs = sd;
     }
 
+    private void resetLocalPassword() throws IOException {
+        resetServerDirs();
+        setLocalPassword();
+    }
+
     protected final void setLocalPassword() {
         String pw = serverDirs == null ? null : serverDirs.getLocalPassword();
 
@@ -229,7 +234,7 @@ public abstract class LocalServerCommand extends CLICommand {
         // Sets the password into the launcher info.
         // Yes, returning master password as a string is not right ...
         final int RETRIES = 3;
-        long t0 = System.currentTimeMillis();
+        long t0 = now();
         String mpv = passwords.get(CLIConstants.MASTER_PASSWORD);
         if (mpv == null) { //not specified in the password file
             mpv = "changeit";  //optimization for the default case -- see 9592
@@ -244,7 +249,7 @@ public abstract class LocalServerCommand extends CLICommand {
             if (!verifyMasterPassword(mpv))
                 mpv = retry(RETRIES);
         }
-        long t1 = System.currentTimeMillis();
+        long t1 = now();
         logger.log(Level.FINER, "Time spent in master password extraction: {0} msec", (t1 - t0));       //TODO
         return mpv;
     }
@@ -277,6 +282,18 @@ public abstract class LocalServerCommand extends CLICommand {
         }
         catch (Exception ex) {
             return false;
+        }
+    }
+
+    protected final int getRemotePid() {
+        try {
+            return Integer.parseInt(
+                    new RemoteCLICommand("__locations", programOpts, env)
+                    .executeAndReturnActionReport(new String[]{"__locations"})
+                    .findProperty("Pid"));
+        }
+        catch (Exception e) {
+            return -1;
         }
     }
 
@@ -343,9 +360,48 @@ public abstract class LocalServerCommand extends CLICommand {
             return b.booleanValue();
     }
 
+    /**
+     * Byron Nevins Says: We have quite a historical assortment of ways to
+     * determine if a server has restarted. There are little teeny timing issues
+     * with all of them. I'm confident that this new technique will clear them
+     * all up. Here we are just monitoring the PID of the new server and
+     * comparing it to the pid of the old server. The oldServerPid is guaranteed
+     * to be either the PID of the "old" server or -1 if we couldn't get it --
+     * or it isn't running. If it is -1 then we make the assumption that once we
+     * DO get a valid pid that the server has started. If the old pid is valid
+     * we simply poll until we get a different pid. Notice that we will never
+     * get a valid pid back unless the server is officially up and running and
+     * "STARTED" Created April 2013
+     *
+     * @param oldServerPid The pid of the server which is being restarted.
+     * @throws CommandException if we time out.
+     */
+    protected final void waitForRestart(final int oldServerPid) throws CommandException {
+        long end = getEndTime();
+
+        while (now() < end) {
+            try {
+                resetLocalPassword();
+                int newServerPid = getRemotePid();
+
+                if (newServerPid > 0 && newServerPid != oldServerPid) {
+                    logger.log(Level.FINE, "oldserver-pid, newserver-pid = {0} --- {1}",
+                            new Object[]{oldServerPid, newServerPid});
+                    return;
+                }
+                Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
+            }
+            catch (Exception e) {
+                // continue
+            }
+        }
+        // if we get here -- we timed out
+        throw new CommandException(strings.get("restartDomain.noGFStart"));
+    }
+
     protected final void waitForRestart(File pwFile, long oldTimeStamp, long uptimeOldServer) throws CommandException {
         if (oldTimeStamp <= 0 || !usingLocalPassword())
-            waitForRestartRemote(uptimeOldServer);
+            deprecatedWaitForRestartRemote(uptimeOldServer);
         else
             waitForRestartLocal(pwFile, oldTimeStamp, uptimeOldServer);
     }
@@ -411,9 +467,9 @@ public abstract class LocalServerCommand extends CLICommand {
                     + "not be called unless using local password authentication.");
 
         long end = CLIConstants.WAIT_FOR_DAS_TIME_MS
-                + System.currentTimeMillis();
+                + now();
 
-        while (System.currentTimeMillis() < end) {
+        while (now() < end) {
             // when the server has restarted the passwordfile will be different
             // don't waste time reading the file again and again, just look
             // for the time stamp to change.
@@ -426,10 +482,10 @@ public abstract class LocalServerCommand extends CLICommand {
                 if (newTimeStamp > oldTimeStamp) {
                     // Server has restarted but may not be quite ready to handle commands
                     // automated tests would have issues if we returned right here...
-                    resetServerDirs();
-                    programOpts.setPassword(getServerDirs().getLocalPassword(), ProgramOptions.PasswordLocation.LOCAL_PASSWORD);
+                    resetLocalPassword();
                     // use the maximum old uptime because we know that the server has already restarted
-                    waitForRestartRemote(Long.MAX_VALUE);
+                    //waitForRestartRemote(Long.MAX_VALUE);
+                    deprecatedWaitForRestartRemote(0);
                     return;
                 }
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
@@ -445,11 +501,11 @@ public abstract class LocalServerCommand extends CLICommand {
     /**
      * Wait for the remote server to restart.
      */
-    private void waitForRestartRemote(long uptimeOldServer) throws CommandException {
+    private void deprecatedWaitForRestartRemote(long uptimeOldServer) throws CommandException {
         long end = CLIConstants.WAIT_FOR_DAS_TIME_MS
-                + System.currentTimeMillis();
+                + now();
 
-        while (System.currentTimeMillis() < end) {
+        while (now() < end) {
             try {
                 Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
                 long up = getUptime();
@@ -578,6 +634,16 @@ public abstract class LocalServerCommand extends CLICommand {
         return f;
     }
 
+    private long now() {
+        // it's just *so* ugly to call this directly!
+        return System.currentTimeMillis();
+    }
+
+    private long getEndTime() {
+        // it's a method in case we someday allow configuring this VERY long
+        // timeout at runtime.
+        return CLIConstants.WAIT_FOR_DAS_TIME_MS + now();
+    }
     ////////////////////////////////////////////////////////////////
     /// Section:  private variables
     ////////////////////////////////////////////////////////////////

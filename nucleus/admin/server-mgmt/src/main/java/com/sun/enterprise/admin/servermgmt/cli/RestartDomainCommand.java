@@ -93,25 +93,18 @@ public class RestartDomainCommand extends StopDomainCommand {
         if(!isRestartable())
             throw new CommandException(Strings.get("restartDomain.notRestartable"));
 
-        // find out how long the server has been up
-        long uptimeOldServer = getUptime();  // may throw CommandException
+        int oldServerPid = getRemotePid(); // might be < 0
 
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd =
                 new RemoteCLICommand("restart-domain", programOpts, env);
-
-        File pwFile = getServerDirs().getLocalPasswordFile();
-        long stamp = -1;
-
-        if (pwFile != null)
-            stamp = pwFile.lastModified();
 
         if (debug != null)
             cmd.executeAndReturnOutput("restart-domain", "--debug", debug.toString());
         else
             cmd.executeAndReturnOutput("restart-domain");
 
-        waitForRestart(pwFile, stamp, uptimeOldServer);
+        waitForRestart(oldServerPid);
 
         logger.info(strings.get("restartDomain.success"));
     }

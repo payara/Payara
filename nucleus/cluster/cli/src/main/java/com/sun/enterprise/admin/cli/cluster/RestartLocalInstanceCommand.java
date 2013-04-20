@@ -80,13 +80,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
         if(!isRestartable())
             throw new CommandException(Strings.get("restart.notRestartable"));
 
-        // find out how long the server has been up
-        long uptimeOldServer = getUptime();  // may throw CommandException
-
-        // get the timestamp BEFORE calling the server!
-        // it is null if this is a remote server call
-        File pwFile = getServerDirs().getLocalPasswordFile();
-        long timestamp = (pwFile != null) ? pwFile.lastModified() : -1;
+        int oldServerPid = getRemotePid(); // might be < 0
 
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd = new RemoteCLICommand("_restart-instance", programOpts, env);
@@ -96,7 +90,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
         else
             cmd.executeAndReturnOutput("_restart-instance");
 
-        waitForRestart(pwFile, timestamp, uptimeOldServer);
+        waitForRestart(oldServerPid);
         return 0;
     }
 
