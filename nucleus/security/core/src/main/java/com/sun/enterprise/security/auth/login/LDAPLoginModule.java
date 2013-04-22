@@ -38,7 +38,7 @@
  * holder.
  */
 
-package org.glassfish.security.services.impl;
+package com.sun.enterprise.security.auth.login;
 
 
 import com.sun.enterprise.security.auth.login.PasswordLoginModule;

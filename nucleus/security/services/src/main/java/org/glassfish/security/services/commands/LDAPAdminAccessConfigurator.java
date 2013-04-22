@@ -78,7 +78,7 @@ import org.glassfish.security.services.config.LoginModuleConfig;
 import org.glassfish.security.services.config.SecurityConfigurations;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.config.SecurityProviderConfig;
-import org.glassfish.security.services.impl.LDAPLoginModule;
+import com.sun.enterprise.security.auth.login.LDAPLoginModule;
 import org.jvnet.hk2.config.RetryableException;
 import org.jvnet.hk2.config.Transaction;
 

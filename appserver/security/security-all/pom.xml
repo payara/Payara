@@ -51,7 +51,7 @@
     </parent>    
     <artifactId>security-all</artifactId>
     <packaging>pom</packaging>
-    <name>Security Related Implementatios for GlassFish</name>
+    <name>Security Related Implementation for GlassFish</name>
     <developers>
         <developer>
             <id>kumarjayanti</id>
