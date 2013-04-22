@@ -385,7 +385,7 @@ public abstract class LocalServerCommand extends CLICommand {
                 int newServerPid = getRemotePid();
 
                 if (newServerPid > 0 && newServerPid != oldServerPid) {
-                    logger.log(Level.FINE, "oldserver-pid, newserver-pid = {0} --- {1}",
+                    logger.log(Level.FINER, "oldserver-pid, newserver-pid = {0} --- {1}",
                             new Object[]{oldServerPid, newServerPid});
                     return;
                 }
