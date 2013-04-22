@@ -51,9 +51,11 @@ import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import org.glassfish.api.admin.FileMonitoring;
+import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -89,6 +91,7 @@ import java.util.logging.Formatter;
 
 @Service
 @RunLevel(InitRunLevel.VAL)
+@Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
 public class LogManagerService implements PostConstruct, PreDestroy, org.glassfish.internal.api.LogManager {
 
     @Inject

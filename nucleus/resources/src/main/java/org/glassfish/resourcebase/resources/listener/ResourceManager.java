@@ -41,8 +41,8 @@
 package org.glassfish.resourcebase.resources.listener;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.IterableProvider;
 import org.glassfish.hk2.api.PostConstruct;
@@ -55,6 +55,7 @@ import org.glassfish.resourcebase.resources.api.*;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.glassfish.resourcebase.resources.util.ResourceUtil;
 import org.glassfish.resourcebase.resources.ResourceTypeOrderProcessor;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
@@ -91,6 +92,10 @@ public class ResourceManager implements PostConstruct, PreDestroy, ConfigListene
 
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ResourceManager.class);
+    
+    @SuppressWarnings("unused")
+    @Inject @Optional
+    private LogManagerService dependency0;  // The LogManager must come up prior to this service
 
     @Inject
     private ServiceLocator locator;

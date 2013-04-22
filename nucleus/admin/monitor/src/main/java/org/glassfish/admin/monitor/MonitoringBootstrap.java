@@ -57,8 +57,8 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.component.*;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import com.sun.enterprise.server.logging.LogManagerService;
 import com.sun.enterprise.config.serverbeans.*;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 
@@ -73,7 +73,6 @@ import com.sun.enterprise.module.ModuleState;
 import com.sun.enterprise.module.ModuleDefinition;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.ModuleLifecycleListener;
-import com.sun.logging.LogDomains;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -117,6 +116,9 @@ import static org.glassfish.admin.monitor.MLogger.*;
 @Service
 @RunLevel(InitRunLevel.VAL)
 public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventListener, ModuleLifecycleListener, ConfigListener {
+    @SuppressWarnings("unused")
+    @Inject @Optional
+    private LogManagerService dependency0;  // The LogManager must come up prior to this service
     @Inject
     private MonitoringRuntimeDataRegistry mrdr;
     @Inject

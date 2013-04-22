@@ -118,8 +118,7 @@ public class Globals {
      *
      */
     @Service
-    @RunLevel(value=InitRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
-    @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
+    @RunLevel(value=(InitRunLevel.VAL - 1), mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
     public static class GlobalsInitializer {
         @SuppressWarnings("unused")
         @Inject
