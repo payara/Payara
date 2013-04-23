@@ -58,6 +58,7 @@
                 <exclude>modules/cli-optional.jar</exclude>
                 <exclude>modules/appserver-cli.jar</exclude>
                 <exclude>bin/*</exclude>
+                <exclude>pkg_proto.py</exclude>
             </excludes>
         </fileSet>
         <fileSet>
@@ -92,6 +93,7 @@
                 <exclude>${install.dir.name}/**</exclude>
                 <exclude>glassfish/**</exclude>
                 <exclude>nucleus/**</exclude>
+                <exclude>pkg_proto.py</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
         </fileSet>
