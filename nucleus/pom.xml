@@ -91,6 +91,20 @@
             <archive>http://java.net/projects/glassfish/lists/commits/archive</archive>
         </mailingList>
     </mailingLists>
+    
+    <repositories>
+        <repository>
+            <id>jvnet-nexus-promoted</id>
+            <name>Java.net Promoted Repositories</name>
+            <url>https://maven.java.net/content/repositories/promoted/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
