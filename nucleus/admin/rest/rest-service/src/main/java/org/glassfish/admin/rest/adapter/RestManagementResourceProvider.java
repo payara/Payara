@@ -96,7 +96,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
         ResourceConfig rc = super.getResourceConfig(classes, sc, serviceLocator, additionalBinders);
         registerExtendedWadlConfig(classes, rc, serviceLocator);
         rc.register(ExceptionFilter.class);
-        rc.property(ServerProperties.RESOURCE_LOCATOR_VALIDATION_DISABLE, Boolean.TRUE);
+        rc.property(ServerProperties.RESOURCE_VALIDATION_DISABLE, Boolean.TRUE);
         return rc;
     }
 
@@ -184,7 +184,7 @@ public class RestManagementResourceProvider extends AbstractRestResourceProvider
                 ad = (ActiveDescriptor<JavadocWadlGeneratorConfig>) serviceLocator.reifyDescriptor(ad);
             }
             final Class<?> implementationClass = ad.getImplementationClass();
-            rc.property(ServerProperties.PROPERTY_WADL_GENERATOR_CONFIG, implementationClass.getName());
+            rc.property(ServerProperties.WADL_GENERATOR_CONFIG, implementationClass.getName());
             classes.add(implementationClass);
         }
 
