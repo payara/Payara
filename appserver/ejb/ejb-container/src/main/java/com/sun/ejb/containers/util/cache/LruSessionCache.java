@@ -516,9 +516,11 @@ public class LruSessionCache
             
             return true;
         } catch (java.io.NotSerializableException notSerEx) {
+            _logger.log(Level.FINE, "", notSerEx);
 	    throw notSerEx;
         } catch (Exception ex) {
             _logger.log(Level.WARNING, PASSIVATE_EJB_EXCEPTION_CAUGHT, new Object[]{cacheName, ex});
+            _logger.log(Level.FINE, "", ex);
         }
         return false;
     } //passivateEJB
@@ -542,8 +544,7 @@ public class LruSessionCache
             }  else {
 		//sfsbStoreMonitor.setActivationSize(data.length);
                 incrementLoadFromBackupCount();
-                object = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().deserializeObject(data, true,
-                        container.getClassLoader());
+                object = container.deserializeData(data);
             }
         } catch ( Exception ex ) {
             _logger.log(Level.SEVERE, EXCEPTION_LOADING_BACKUP_SESSION, new Object[]{cacheName, sessionKey, ex});
@@ -557,7 +558,7 @@ public class LruSessionCache
     private boolean saveStateToStore(Serializable sessionKey, StatefulEJBContext ctx)
 	throws java.io.NotSerializableException, java.io.IOException
     {
-        byte[] data = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(ctx.getSessionContext(), true);
+        byte[] data = container.serializeContext(ctx);
 
 	//If we are here then we were able to serialize the object successfully
         boolean status = false;

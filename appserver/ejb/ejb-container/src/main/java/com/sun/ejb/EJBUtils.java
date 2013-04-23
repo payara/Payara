@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -706,7 +706,16 @@ public class EJBUtils {
                                              ObjectOutputStream oos) 
         throws IOException {
 
-        Class clazz = instance.getClass().getSuperclass();
+        serializeObjectFields(instance, oos, true);
+    }
+
+    public static void serializeObjectFields(
+                                             Object instance,
+                                             ObjectOutputStream oos,
+                                             boolean usesSuperClass) 
+        throws IOException {
+
+        Class clazz = (usesSuperClass)? instance.getClass().getSuperclass() : instance.getClass();
         final ObjectOutputStream objOutStream = oos;
 
         // Write out list of fields eligible for serialization in sorted order.
@@ -714,8 +723,8 @@ public class EJBUtils {
 
             final Field nextField = next;
             final Object theInstance = instance;
-            try {
                 Object value = null;
+            try {
                 if(System.getSecurityManager() == null) {
                     if( !nextField.isAccessible() ) {
                         nextField.setAccessible(true);
@@ -732,8 +741,19 @@ public class EJBUtils {
                         }
                     });
                 }
+                if( _logger.isLoggable(Level.FINE) ) {
+                    _logger.log(Level.FINE, "=====> Serializing field: " + nextField);
+                }
+
                 objOutStream.writeObject(value);
             } catch(Throwable t) {
+                if( _logger.isLoggable(Level.FINE) ) {
+                    _logger.log(Level.FINE, "=====> failed serializing field: " + nextField + 
+                             " =====> of class: " + clazz + " =====> using: " + oos.getClass() + 
+                             " =====> serializing value of type: " + ((value == null)? null : value.getClass().getName()) + 
+                             " ===> Error: " + t);
+                    _logger.log(Level.FINE, "", t);
+                }
                 IOException ioe = new IOException();
                 Throwable cause = (t instanceof InvocationTargetException) ?
                     ((InvocationTargetException)t).getCause() : t;
@@ -748,7 +768,23 @@ public class EJBUtils {
                                                ObjectInputStream ois) 
         throws IOException {
 
-        Class clazz = instance.getClass().getSuperclass();
+        deserializeObjectFields(instance, ois, null, true);
+
+    }
+
+    public static void deserializeObjectFields(
+                                               Object instance,
+                                               ObjectInputStream ois,
+                                               Object replaceValue,
+                                               boolean usesSuperClass) 
+        throws IOException {
+
+        Class clazz = (usesSuperClass)? instance.getClass().getSuperclass() : instance.getClass();
+        if( _logger.isLoggable(Level.FINE) ) {
+            _logger.log(Level.FINE, "=====> Deserializing class: " + clazz);
+            if (replaceValue != null)
+                _logger.log(Level.FINE, "=====> Replace requested for value: " + replaceValue.getClass());
+        }
 
         // Use helper method to get sorted list of fields eligible
         // for deserialization.  This ensures that we correctly match
@@ -758,14 +794,27 @@ public class EJBUtils {
             try {
 
                 final Field nextField = next;
-                final Object value = ois.readObject();
+                if( _logger.isLoggable(Level.FINE) ) {
+                    _logger.log(Level.FINE, "=====> Deserializing field: " + nextField);
+                }
+
+                // Read value from the stream even if it is to be replaced to adjust the pointers
+                Object value = ois.readObject();
+                if (replaceValue != null && nextField.getType().isAssignableFrom(replaceValue.getClass())) {
+                    if( _logger.isLoggable(Level.FINE) ) {
+                        _logger.log(Level.FINE, "=====> Replacing field: " + nextField);
+                    }
+
+                    value = replaceValue;
+                }
+                final Object newValue = value;
                 final Object theInstance = instance;
                 
                 if(System.getSecurityManager() == null) {
                     if( !nextField.isAccessible() ) {
                         nextField.setAccessible(true);
                     }
-                    nextField.set(theInstance, value);
+                    nextField.set(theInstance, newValue);
                 } else {
                     java.security.AccessController.doPrivileged(
                             new java.security.PrivilegedExceptionAction() {
@@ -773,7 +822,7 @@ public class EJBUtils {
                             if( !nextField.isAccessible() ) {
                                 nextField.setAccessible(true);
                             }
-                            nextField.set(theInstance, value);
+                            nextField.set(theInstance, newValue);
                             return null;
                         }
                     });

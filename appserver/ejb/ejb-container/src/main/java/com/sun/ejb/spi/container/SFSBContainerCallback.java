@@ -40,6 +40,8 @@
 
 package com.sun.ejb.spi.container;
 
+import java.io.IOException;
+
 /**
  *@author Mahesh Kannan
  */
@@ -58,4 +60,9 @@ public interface SFSBContainerCallback {
     public boolean passivateEJB(StatefulEJBContext ctx);
 
     public boolean isPassivationCapable();
+
+    public byte[] serializeContext(StatefulEJBContext ctx) throws IOException;
+
+    public Object deserializeData(byte[] data) throws Exception;
+
 }

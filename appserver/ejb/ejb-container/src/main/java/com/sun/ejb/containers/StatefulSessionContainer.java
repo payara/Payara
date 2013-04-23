@@ -81,6 +81,7 @@ import javax.transaction.Transaction;
 import com.sun.appserv.util.cache.CacheListener;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
+import com.sun.ejb.EJBUtils;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.InvocationInfo;
 import com.sun.ejb.MethodLockInfo;
@@ -2143,7 +2144,7 @@ public final class StatefulSessionContainer
                             prePassivateInvInfo, CallbackType.PRE_PASSIVATE);
                     sc.setLastPersistedAt(System.currentTimeMillis());
                     long newCtxVersion = sc.incrementAndGetVersion();
-                    byte[] serializedState = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(sc, true);
+                    byte[] serializedState = serializeContext(sc);
                     simpleMetadata = new SimpleMetadata(sc.getVersion(),
                             System.currentTimeMillis(),
                             removalGracePeriodInSeconds*1000L, serializedState);
@@ -2623,6 +2624,7 @@ public final class StatefulSessionContainer
                 logTraceInfo(context, "Failed to activate");
             }
             _logger.log(Level.SEVERE, SFSB_ACTIVATION_ERROR, new Object[]{sessionKey, ex});
+            _logger.log(Level.SEVERE, "", ex);
 
             throw new EJBException("Unable to activate EJB for key: "
                     + sessionKey, ex);
@@ -2631,6 +2633,52 @@ public final class StatefulSessionContainer
             invocationManager.postInvoke(ejbInv);
             completeLifecycleCallbackTxIfUsed(ejbInv, context, needToDoPostInvokeTx);
         }
+    }
+
+    public byte[] serializeContext(StatefulEJBContext ctx) throws IOException {
+        return serializeContext((SessionContextImpl)ctx.getSessionContext());
+    }
+
+    public Object deserializeData(byte[] data) throws Exception {
+        Object o = ejbContainerUtilImpl.getJavaEEIOUtils().deserializeObject(data, true, getClassLoader());
+        if (o instanceof SessionContextImpl) {
+            SessionContextImpl ctx = (SessionContextImpl)o;
+            Object ejb = ctx.getEJB();
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "StatefulSessionContainer.deserializeData: " + ((ejb == null)? null : ejb.getClass()));
+            }
+
+            if (ejb instanceof SerializableEJB) {
+                SerializableEJB sejb = (SerializableEJB)ejb;
+                try (ByteArrayInputStream bis = new ByteArrayInputStream(sejb.serializedFields);
+                    ObjectInputStream ois = ejbContainerUtilImpl.getJavaEEIOUtils().createObjectInputStream(bis, true, getClassLoader());) {
+
+                    ejb = ejbClass.newInstance();
+                    EJBUtils.deserializeObjectFields(ejb, ois, o, false);
+                    ctx.setEJB(ejb);
+                }
+
+            }
+        }
+
+        return o;
+    }
+
+    /*********************************************************************/
+    /***********  END SFSBContainerCallback methods    *******************/
+    /**
+     * *****************************************************************
+     */
+
+    private byte[] serializeContext(SessionContextImpl ctx) throws IOException {
+        Object ejb = ctx.getEJB();
+        if (!(ejb instanceof Serializable || 
+                ejb.getClass().getName().equals(EJBUtils.getGeneratedSerializableClassName(ejbName)))) {
+
+            ctx.setEJB(null);
+            ctx.setEJB(new SerializableEJB(ejb));
+        }
+        return ejbContainerUtilImpl.getJavaEEIOUtils().serializeObject(ctx, true);
     }
 
     private void decrementRefCountsForEEMs(SessionContextImpl context) {
@@ -2675,11 +2723,8 @@ public final class StatefulSessionContainer
                             .lookupEntityManagerFactory(ComponentInvocation.ComponentInvocationType.EJB_INVOCATION,
                                     unitName, ejbDescriptor);
                     if (emf != null) {
-                        ObjectInputStream ois = null;
-                        ByteArrayInputStream bis = null;
-                        try {
-                            bis = new ByteArrayInputStream(refInfo.serializedEEM);
-                            ois = new ObjectInputStream(bis);
+                        try (ByteArrayInputStream bis = new ByteArrayInputStream(refInfo.serializedEEM);
+                            ObjectInputStream ois = new ObjectInputStream(bis);) {
                             eMgr = (EntityManager) ois.readObject();
                             newRefInfo = new EEMRefInfo(emRefName, unitName, refInfo.getSynchronizationType(), super.getContainerId(),
                                     sessionKey, eMgr, emf);
@@ -2693,19 +2738,6 @@ public final class StatefulSessionContainer
                                             + " refName: " + emRefName);
                             ejbEx.initCause(th);
                             throw ejbEx;
-                        } finally {
-                            if (ois != null) {
-                                try {
-                                    ois.close();
-                                } catch (Throwable th) {
-                                }
-                            }
-                            if (bis != null) {
-                                try {
-                                    bis.close();
-                                } catch (Throwable th) {
-                                }
-                            }
                         }
                     } else {
                         throw new EJBException(
@@ -2821,12 +2853,6 @@ public final class StatefulSessionContainer
     }
 
     ;
-
-    /*********************************************************************/
-    /***********  END SFSBContainerCallback methods    *******************/
-    /**
-     * *****************************************************************
-     */
 
     protected void doConcreteContainerShutdown(boolean appBeingUndeployed) {
 
@@ -3328,7 +3354,7 @@ public final class StatefulSessionContainer
                     byte[] serializedState = null;
                     try {
                         long newCtxVersion = sc.incrementAndGetVersion();
-                        serializedState = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().serializeObject(sc, true);
+                        serializedState = serializeContext(sc);
                         SimpleMetadata beanState =
                                new SimpleMetadata(
                                         sc.getVersion(), sc.getLastAccessTime(),
@@ -3473,6 +3499,7 @@ public final class StatefulSessionContainer
         EEMRefInfo(String emRefName, String uName, SynchronizationType synchronizationType, long containerID,
                    Object instanceKey, EntityManager eem,
                    EntityManagerFactory emf) {
+
             this.eemRefInfoKey = new EEMRefInfoKey(emRefName,
                     containerID, instanceKey);
             this.eem = eem;
@@ -3508,13 +3535,10 @@ public final class StatefulSessionContainer
         //Method of IndirectlySerializable
         public SerializableObjectFactory getSerializableObjectFactory()
                 throws IOException {
-            //First serialize the eem into serializedEEM
 
-            ByteArrayOutputStream bos = null;
-            ObjectOutputStream oos = null;
-            try {
-                bos = new ByteArrayOutputStream();
-                oos = new ObjectOutputStream(bos);
+            //Serialize the eem into the serializedEEM
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(bos);) {
                 oos.writeObject(eem);
                 oos.flush();
                 bos.flush();
@@ -3525,19 +3549,6 @@ public final class StatefulSessionContainer
             } catch (IOException ioEx) {
                 throw new EMNotSerializableException(
                         ioEx.toString(), ioEx);
-            } finally {
-                if (oos != null) {
-                    try {
-                        oos.close();
-                    } catch (Exception ex) {
-                    }
-                }
-                if (bos != null) {
-                    try {
-                        bos.close();
-                    } catch (Exception ex) {
-                    }
-                }
             }
 
             return this;
@@ -3562,6 +3573,35 @@ public final class StatefulSessionContainer
 
     }
 
+    static class SerializableEJB
+            implements IndirectlySerializable, SerializableObjectFactory {
+
+        private byte[] serializedFields;
+
+        SerializableEJB(Object ejb) throws IOException {
+            //Serialize the ejb fields into the serializedFields
+            try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = EjbContainerUtilImpl.getInstance().getJavaEEIOUtils().createObjectOutputStream(bos, true);) {
+                EJBUtils.serializeObjectFields(ejb, oos, false);
+                oos.flush();
+                bos.flush();
+                serializedFields = bos.toByteArray();
+            }
+
+        }
+
+        //Method of IndirectlySerializable
+        public SerializableObjectFactory getSerializableObjectFactory()
+                throws IOException {
+
+            return this;
+        }
+
+        //Method of SerializableObjectFactory
+        public Object createObject() throws IOException {
+            return this;
+        }
+    }
 }
 
 class PeriodicTask
