@@ -118,7 +118,7 @@
         <mq.version>5.0-014</mq.version>
         <javadb.version>10.9.1.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <weld.version>2.0.0.CR2</weld.version>
+        <weld.version>2.0.0.CR4</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.0-rc5</websocket-api.version>
         <tyrus.version>1.0-rc3</tyrus.version>
