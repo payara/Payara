@@ -72,6 +72,11 @@
         </developer>
     </developers>
     <dependencies>
+    	<dependency>
+            <groupId>org.glassfish.main.orb</groupId>
+            <artifactId>orb-enabler</artifactId>
+            <version>${project.version}</version>
+        </dependency>         
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>admin-util</artifactId>
