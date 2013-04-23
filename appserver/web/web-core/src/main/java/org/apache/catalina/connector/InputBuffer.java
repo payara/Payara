@@ -70,6 +70,8 @@ import java.util.logging.Logger;
 import javax.servlet.ReadListener;
 import javax.servlet.http.WebConnection;
 
+import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.StandardServer;
 import org.glassfish.grizzly.ReadHandler;
@@ -469,7 +471,8 @@ public class InputBuffer extends Reader
             }
 
             try {
-                ClassLoader newCL = request.getContext().getLoader().getClassLoader();
+                Context context = request.getContext();
+                ClassLoader newCL = context.getLoader().getClassLoader();
                 if (Globals.IS_SECURITY_ENABLED) {
                     PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
                     AccessController.doPrivileged(pa);
@@ -480,10 +483,15 @@ public class InputBuffer extends Reader
                 synchronized(this) {
                     prevIsReady = true;
                     try {
+                        context.fireContainerEvent(
+                            ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
                         readListener.onDataAvailable();
                     } catch(Throwable t) {
                         disable = true;
                         readListener.onError(t);
+                    } finally {
+                        context.fireContainerEvent(
+                            ContainerEvent.AFTER_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
                     }
                 }
             } finally {
@@ -523,7 +531,8 @@ public class InputBuffer extends Reader
             }
 
             try {
-                ClassLoader newCL = request.getContext().getLoader().getClassLoader();
+                Context context = request.getContext();
+                ClassLoader newCL = context.getLoader().getClassLoader();
                 if (Globals.IS_SECURITY_ENABLED) {
                     PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
                     AccessController.doPrivileged(pa);
@@ -534,10 +543,15 @@ public class InputBuffer extends Reader
                 synchronized(this) {
                     prevIsReady = true;
                     try {
+                        context.fireContainerEvent(
+                            ContainerEvent.BEFORE_READ_LISTENER_ON_ALL_DATA_READ, readListener);
                         readListener.onAllDataRead();
                     } catch(Throwable t) {
                         disable = true;
                         readListener.onError(t);
+                    } finally {
+                        context.fireContainerEvent(
+                            ContainerEvent.AFTER_READ_LISTENER_ON_ALL_DATA_READ, readListener);
                     }
                 }
             } finally {
@@ -579,7 +593,8 @@ public class InputBuffer extends Reader
             }
 
             try {
-                ClassLoader newCL = request.getContext().getLoader().getClassLoader();
+                Context context = request.getContext();
+                ClassLoader newCL = context.getLoader().getClassLoader();
                 if (Globals.IS_SECURITY_ENABLED) {
                     PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
                     AccessController.doPrivileged(pa);
@@ -594,6 +609,8 @@ public class InputBuffer extends Reader
                     final WebConnection wc = request.getWebConnection();
 
                     try {
+                        context.fireContainerEvent(
+                            ContainerEvent.BEFORE_READ_LISTENER_ON_ERROR, readListener);
                         readListener.onError(t);
                     } finally {
                         if (isUpgrade && wc != null) {
@@ -602,6 +619,9 @@ public class InputBuffer extends Reader
                             } catch (Exception ignored) {
                             }
                         }
+                        context.fireContainerEvent(
+                            ContainerEvent.AFTER_READ_LISTENER_ON_ERROR, readListener);
+
                     }
                 }
             } finally {

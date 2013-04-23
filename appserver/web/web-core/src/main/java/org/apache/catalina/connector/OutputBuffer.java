@@ -71,6 +71,8 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
 import org.apache.catalina.Session;
 import org.apache.catalina.core.StandardContext;
@@ -781,7 +783,8 @@ public class OutputBuffer extends Writer
             }
 
             try {
-                ClassLoader newCL = response.getContext().getLoader().getClassLoader();
+                Context context = response.getContext();
+                ClassLoader newCL = context.getLoader().getClassLoader();
                 if (Globals.IS_SECURITY_ENABLED) {
                     PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
                     AccessController.doPrivileged(pa);
@@ -792,10 +795,15 @@ public class OutputBuffer extends Writer
                 synchronized(this) {
                     prevIsReady = true;
                     try {
+                        context.fireContainerEvent(
+                            ContainerEvent.BEFORE_WRITE_LISTENER_ON_WRITE_POSSIBLE, writeListener);
                         writeListener.onWritePossible();
                     } catch(Throwable t) {
                         disable = true;
                         writeListener.onError(t);
+                    } finally {
+                        context.fireContainerEvent(
+                            ContainerEvent.AFTER_WRITE_LISTENER_ON_WRITE_POSSIBLE, writeListener);
                     }
                 }
             } finally {
@@ -836,7 +844,8 @@ public class OutputBuffer extends Writer
             }
 
             try {
-                ClassLoader newCL = response.getContext().getLoader().getClassLoader();
+                Context context = response.getContext();
+                ClassLoader newCL = context.getLoader().getClassLoader();
                 if (Globals.IS_SECURITY_ENABLED) {
                     PrivilegedAction<Void> pa = new PrivilegedSetTccl(newCL);
                     AccessController.doPrivileged(pa);
@@ -845,7 +854,14 @@ public class OutputBuffer extends Writer
                 }
 
                 synchronized(this) {
-                    writeListener.onError(t);
+                    try {
+                        context.fireContainerEvent(
+                            ContainerEvent.BEFORE_WRITE_LISTENER_ON_ERROR, writeListener);
+                        writeListener.onError(t);
+                    } finally {
+                        context.fireContainerEvent(
+                            ContainerEvent.AFTER_WRITE_LISTENER_ON_ERROR, writeListener);
+                    }
                 }
             } finally {
                 if (Globals.IS_SECURITY_ENABLED) {

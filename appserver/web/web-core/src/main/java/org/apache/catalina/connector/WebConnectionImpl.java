@@ -47,6 +47,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpUpgradeHandler;
 import javax.servlet.http.WebConnection;
 import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.Context;
 
 /**
  * Implementation of WebConnection for Servlet 3.1
@@ -103,11 +104,21 @@ public class WebConnectionImpl implements WebConnection {
         // Make sure we run close logic only once
         if (isClosed.compareAndSet(false, true)) {
             if ((request != null) && (request.isUpgrade())) {
+                Context context = request.getContext();
                 HttpUpgradeHandler httpUpgradeHandler =
                         request.getHttpUpgradeHandler();
                 Exception exception = null;
                 try {
-                    httpUpgradeHandler.destroy();
+                    try {
+                        context.fireContainerEvent(
+                            ContainerEvent.BEFORE_UPGRADE_HANDLER_DESTROYED,
+                            httpUpgradeHandler);
+                        httpUpgradeHandler.destroy();
+                    } finally {
+                        context.fireContainerEvent(
+                            ContainerEvent.AFTER_UPGRADE_HANDLER_DESTROYED,
+                            httpUpgradeHandler);
+                    }
                     request.setUpgrade(false);
                     if (response != null) {
                         response.setUpgrade(false);
@@ -123,7 +134,7 @@ public class WebConnectionImpl implements WebConnection {
                     } catch(Exception ex) {
                         exception = ex;
                     }
-                    (request.getContext()).fireContainerEvent(
+                    context.fireContainerEvent(
                         ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
                     request.getCoyoteRequest().getResponse().resume();
                 }

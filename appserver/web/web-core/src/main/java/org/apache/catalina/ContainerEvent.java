@@ -169,6 +169,47 @@ public final class ContainerEvent extends EventObject {
     public static final String AFTER_FILTER_DESTROYED
         = "afterFilterDestroyed";
 
+    public static final String BEFORE_UPGRADE_HANDLER_INITIALIZED
+        = "beforeUpgradeHandlerInitialized";
+
+    public static final String AFTER_UPGRADE_HANDLER_INITIALIZED
+        = "afterUpgradeHandlerInitialized";
+
+    public static final String BEFORE_UPGRADE_HANDLER_DESTROYED
+        = "beforeUpgradeHandlerDestroyed";
+
+    public static final String AFTER_UPGRADE_HANDLER_DESTROYED
+        = "afterUpgradeHandlerDestroyed";
+
+    public static final String BEFORE_READ_LISTENER_ON_DATA_AVAILABLE
+        = "beforeReadListenerOnDataAvailable";
+
+    public static final String AFTER_READ_LISTENER_ON_DATA_AVAILABLE
+        = "afterReadListenerOnDataAvailable";
+
+    public static final String BEFORE_READ_LISTENER_ON_ALL_DATA_READ
+        = "beforeReadListenerOnAllDataRead";
+
+    public static final String AFTER_READ_LISTENER_ON_ALL_DATA_READ
+        = "afterReadListenerOnAllDataRead";
+
+    public static final String BEFORE_READ_LISTENER_ON_ERROR
+        = "beforeReadListenerOnError";
+
+    public static final String AFTER_READ_LISTENER_ON_ERROR
+        = "afterReadListenerOnError";
+
+    public static final String BEFORE_WRITE_LISTENER_ON_WRITE_POSSIBLE
+        = "beforeWriteListenerOnWritePossible";
+
+    public static final String AFTER_WRITE_LISTENER_ON_WRITE_POSSIBLE
+        = "afterWriteListenerOnWritePossible";
+
+    public static final String BEFORE_WRITE_LISTENER_ON_ERROR
+        = "beforeWriteListenerOnError";
+
+    public static final String AFTER_WRITE_LISTENER_ON_ERROR
+        = "afterWriteListenerOnError";
 
     /**
      * The Container on which this event occurred.

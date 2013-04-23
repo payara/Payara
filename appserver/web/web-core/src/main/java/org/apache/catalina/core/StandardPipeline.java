@@ -771,7 +771,13 @@ public class StandardPipeline
                     if (response instanceof org.apache.catalina.connector.Response) {
                         wc.setResponse((org.apache.catalina.connector.Response) response);
                     }
-                    handler.init(wc);
+                    Context context = req.getContext();
+                    try {
+                        context.fireContainerEvent(ContainerEvent.BEFORE_UPGRADE_HANDLER_INITIALIZED, handler);
+                        handler.init(wc);
+                    } finally {
+                        context.fireContainerEvent(ContainerEvent.AFTER_UPGRADE_HANDLER_INITIALIZED, handler);
+                    }
                 } else {
                     log.log(Level.SEVERE, PROTOCOL_HANDLER_REQUIRED_EXCEPTION);
                 }

@@ -102,6 +102,13 @@ public final class WebContainerListener
         beforeEvents.add(ContainerEvent.BEFORE_SESSION_VALUE_UNBOUND);
         beforeEvents.add(ContainerEvent.BEFORE_FILTER_INITIALIZED);
         beforeEvents.add(ContainerEvent.BEFORE_FILTER_DESTROYED);
+        beforeEvents.add(ContainerEvent.BEFORE_UPGRADE_HANDLER_INITIALIZED);
+        beforeEvents.add(ContainerEvent.BEFORE_UPGRADE_HANDLER_DESTROYED);
+        beforeEvents.add(ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE);
+        beforeEvents.add(ContainerEvent.BEFORE_READ_LISTENER_ON_ALL_DATA_READ);
+        beforeEvents.add(ContainerEvent.BEFORE_READ_LISTENER_ON_ERROR);
+        beforeEvents.add(ContainerEvent.BEFORE_WRITE_LISTENER_ON_WRITE_POSSIBLE);
+        beforeEvents.add(ContainerEvent.BEFORE_WRITE_LISTENER_ON_ERROR);
 
         // postInvoke events
         afterEvents.add(ContainerEvent.AFTER_CONTEXT_INITIALIZED);
@@ -120,6 +127,14 @@ public final class WebContainerListener
         afterEvents.add(ContainerEvent.AFTER_SESSION_VALUE_UNBOUND);
         afterEvents.add(ContainerEvent.AFTER_FILTER_INITIALIZED);
         afterEvents.add(ContainerEvent.AFTER_FILTER_DESTROYED);
+        afterEvents.add(ContainerEvent.AFTER_UPGRADE_HANDLER_INITIALIZED);
+        afterEvents.add(ContainerEvent.AFTER_UPGRADE_HANDLER_DESTROYED);
+        afterEvents.add(ContainerEvent.AFTER_READ_LISTENER_ON_DATA_AVAILABLE);
+        afterEvents.add(ContainerEvent.AFTER_READ_LISTENER_ON_ALL_DATA_READ);
+        afterEvents.add(ContainerEvent.AFTER_READ_LISTENER_ON_ERROR);
+        afterEvents.add(ContainerEvent.AFTER_WRITE_LISTENER_ON_WRITE_POSSIBLE);
+        afterEvents.add(ContainerEvent.AFTER_WRITE_LISTENER_ON_ERROR);
+
     }
 
     private InvocationManager invocationMgr;
