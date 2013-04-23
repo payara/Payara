@@ -45,7 +45,6 @@ import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.enterprise.concurrent.ManagedScheduledExecutorService;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 
@@ -60,19 +59,14 @@ public class DefaultManagedScheduledExecutorService implements NamedNamingObject
 
     static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE = "java:comp/DefaultManagedScheduledExecutorService";
     static final String DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PHYS = "concurrent/__defaultManagedScheduledExecutorService";
-    private ManagedScheduledExecutorService managedScheduledExecutorService;
-    
+
     // Ensure that config for this object has been created
     @Inject org.glassfish.concurrent.config.ManagedScheduledExecutorService.ManagedScheduledExecutorServiceConfigActivator config;
 
     @Override
     public Object handle(String name) throws NamingException {
-        if(managedScheduledExecutorService == null) {
-            javax.naming.Context ctx = new javax.naming.InitialContext();
-            // cache the managed executor service to avoid JNDI lookup overheads
-            managedScheduledExecutorService = (ManagedScheduledExecutorService)ctx.lookup(DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PHYS);
-        }
-        return managedScheduledExecutorService;
+        javax.naming.Context ctx = new javax.naming.InitialContext();
+        return ctx.lookup(DEFAULT_MANAGED_SCHEDULED_EXECUTOR_SERVICE_PHYS);
     }
 
     @Override

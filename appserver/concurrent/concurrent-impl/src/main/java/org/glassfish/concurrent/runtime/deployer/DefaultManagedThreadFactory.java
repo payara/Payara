@@ -45,7 +45,6 @@ import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.enterprise.concurrent.ManagedThreadFactory;
 import javax.inject.Inject;
 import javax.naming.NamingException;
 
@@ -60,19 +59,14 @@ public class DefaultManagedThreadFactory implements NamedNamingObjectProxy, Defa
 
     static final String DEFAULT_MANAGED_THREAD_FACTORY = "java:comp/DefaultManagedThreadFactory";
     static final String DEFAULT_MANAGED_THREAD_FACTORY_PHYS = "concurrent/__defaultManagedThreadFactory";
-    private ManagedThreadFactory managedThreadFactory;
-    
+
     // Ensure that config for this object has been created
     @Inject org.glassfish.concurrent.config.ManagedThreadFactory.ManagedThreadFactoryConfigActivator config;
 
     @Override
     public Object handle(String name) throws NamingException {
-        if(managedThreadFactory == null) {
-            javax.naming.Context ctx = new javax.naming.InitialContext();
-            // cache the managed executor service to avoid JNDI lookup overheads
-            managedThreadFactory = (ManagedThreadFactory)ctx.lookup(DEFAULT_MANAGED_THREAD_FACTORY_PHYS);
-        }
-        return managedThreadFactory;
+        javax.naming.Context ctx = new javax.naming.InitialContext();
+        return ctx.lookup(DEFAULT_MANAGED_THREAD_FACTORY_PHYS);
     }
 
     @Override
