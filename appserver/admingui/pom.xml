@@ -136,6 +136,8 @@
         <module>ejb-lite-l10n</module>
         <module>core-l10n</module>
         <module>concurrent-l10n</module>
+        <module>webui-jsf-plugin-l10n</module>
+        <module>webui-jsf-suntheme-plugin-l10n</module>
     </modules>
     <build>
         <plugins>
