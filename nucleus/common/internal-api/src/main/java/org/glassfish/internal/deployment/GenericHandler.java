@@ -159,7 +159,7 @@ public abstract class GenericHandler implements ArchiveHandler {
         return getDefaultApplicationNameFromArchiveName(archive);
     }
 
-    protected String getDefaultApplicationNameFromArchiveName(ReadableArchive archive) {
+    public String getDefaultApplicationNameFromArchiveName(ReadableArchive archive) {
         String appName = archive.getName();
         int lastDot = appName.lastIndexOf('.');
         if (lastDot != -1) {

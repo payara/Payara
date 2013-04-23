@@ -50,6 +50,7 @@ import org.glassfish.api.deployment.MetaData;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.internal.deployment.GenericHandler;
 import org.glassfish.javaee.core.deployment.JavaEEDeployer;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -139,7 +140,7 @@ public class WebDeployer extends JavaEEDeployer<WebContainer, WebApplication>{
                 contextRoot = params.previousContextRoot;
             }
             if(contextRoot==null)
-                contextRoot = dc.getOriginalSource().getName();
+                contextRoot = ((GenericHandler)dc.getArchiveHandler()).getDefaultApplicationNameFromArchiveName(dc.getOriginalSource());
 
             if (!contextRoot.startsWith("/")) {
                 contextRoot = "/" + contextRoot;
