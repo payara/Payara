@@ -145,6 +145,16 @@
             <artifactId>console-cluster-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admingui</groupId>
+            <artifactId>webui-jsf-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admingui</groupId>
+            <artifactId>webui-jsf-suntheme-plugin-l10n</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 
