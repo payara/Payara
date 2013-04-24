@@ -75,6 +75,9 @@ import com.sun.enterprise.util.Utility;
 
 import java.io.Reader;
 import java.util.Arrays;
+
+import org.glassfish.hk2.api.ActiveDescriptor;
+import org.glassfish.hk2.utilities.BuilderHelper;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -135,7 +138,7 @@ public final class JDBCRealm extends DigestRealmBase {
 
 
     
-    private ConnectorRuntime cr ;
+    private ActiveDescriptor<ConnectorRuntime> cr ;
     
     
     /**
@@ -149,6 +152,7 @@ public final class JDBCRealm extends DigestRealmBase {
      * @exception NoSuchRealmException If the configuration parameters
      *     specify a realm which doesn't exist.
      */
+    @SuppressWarnings("unchecked")
     public synchronized void init(Properties props)
             throws BadRealmException, NoSuchRealmException{
         super.init(props);
@@ -166,7 +170,8 @@ public final class JDBCRealm extends DigestRealmBase {
         String groupTable = props.getProperty(PARAM_GROUP_TABLE);
         String groupNameColumn = props.getProperty(PARAM_GROUP_NAME_COLUMN);
         String groupTableUserNameColumn = props.getProperty(PARAM_GROUP_TABLE_USER_NAME_COLUMN,userNameColumn);
-        cr = Util.getDefaultHabitat().getService(ConnectorRuntime.class);
+        cr = (ActiveDescriptor<ConnectorRuntime>)
+                Util.getDefaultHabitat().getBestDescriptor(BuilderHelper.createContractFilter(ConnectorRuntime.class.getName()));
         
         if (jaasCtx == null) {
             String msg = sm.getString(
@@ -564,8 +569,9 @@ public final class JDBCRealm extends DigestRealmBase {
                 //V3 Commented (DataSource)ConnectorRuntime.getRuntime().lookupNonTxResource(dsJndi,false);
                 //replacement code suggested by jagadish
                (DataSource)ic.lookup(nonTxJndiName);*/
+            ConnectorRuntime connectorRuntime = Util.getDefaultHabitat().getServiceHandle(cr).getService();
             final DataSource dataSource = 
-                (DataSource)cr.lookupNonTxResource(dsJndi,false);
+                (DataSource) connectorRuntime.lookupNonTxResource(dsJndi,false);
          //(DataSource)ConnectorRuntime.getRuntime().lookupNonTxResource(dsJndi,false);
             Connection connection = null;
             if (dbUser != null && dbPassword != null) {
