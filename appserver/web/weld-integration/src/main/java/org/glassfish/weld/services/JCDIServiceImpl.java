@@ -78,7 +78,6 @@ import javax.inject.Scope;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.ServletContext;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.HashSet;
@@ -286,6 +285,25 @@ public class JCDIServiceImpl implements JCDIService {
         it.inject(managedObject, cc);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <T> T createInterceptorInstance(Class<T> interceptorClass,  BundleDescriptor bundle) {
+        BundleDescriptor topLevelBundleDesc = (BundleDescriptor) bundle.getModuleDescriptor().getDescriptor();
+
+        // First get BeanDeploymentArchive for this ejb
+        BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
+        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
+        BeanManager beanManager = bootstrap.getManager(bda);
+        CreationalContext cc = beanManager.createCreationalContext(null);
+
+        AnnotatedType annotatedType = beanManager.createAnnotatedType(interceptorClass);
+        InjectionTarget it =
+            ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
+        T interceptorInstance = (T) it.produce(cc);
+        it.inject(interceptorInstance, cc);
+
+        return interceptorInstance;
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> JCDIInjectionContext<T> createManagedObject(Class<T> managedClass, BundleDescriptor bundle,
                                                     boolean invokePostConstruct) {
@@ -296,7 +314,6 @@ public class JCDIServiceImpl implements JCDIService {
 
         // First get BeanDeploymentArchive for this ejb
         BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(topLevelBundleDesc);
-        //BeanDeploymentArchive bda = getBDAForBeanClass(topLevelBundleDesc, managedClass.getName());
 
         WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
 

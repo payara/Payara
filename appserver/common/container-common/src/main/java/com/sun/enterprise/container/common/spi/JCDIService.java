@@ -41,12 +41,12 @@
 package com.sun.enterprise.container.common.spi;
 
 
-import org.jvnet.hk2.annotations.Contract;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import org.jvnet.hk2.annotations.Contract;
 
-import javax.servlet.ServletContext;
 import javax.naming.NamingException;
+import javax.servlet.ServletContext;
 
 /**
  */
@@ -66,6 +66,8 @@ public interface JCDIService {
                                                     boolean invokePostConstruct);
 
     public void injectManagedObject(Object managedObject, BundleDescriptor bundle);
+
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle);
 
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc);
     public <T> JCDIInjectionContext<T> createJCDIInjectionContext(EjbDescriptor ejbDesc, T instance);

@@ -48,6 +48,7 @@ import com.sun.enterprise.deployment.EjbDescriptor;
 import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 import org.jboss.weld.environment.se.Weld;
 import org.jboss.weld.environment.se.WeldContainer;
+import org.jboss.weld.manager.api.WeldManager;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -182,6 +183,29 @@ public class ACCJCDIServiceImpl implements JCDIService {
 
             target.inject(managedObject, cc);
         }
+    }
+
+
+    @Override
+    public <T> T createInterceptorInstance(Class<T> interceptorClass, BundleDescriptor bundle) {
+
+        T interceptorInstance = null;
+
+        WeldContainer wc = getWeldContainer();
+        if (wc != null) {
+            BeanManager beanManager = wc.getBeanManager();
+
+            AnnotatedType annotatedType = beanManager.createAnnotatedType(interceptorClass);
+            InjectionTarget target =
+                ((WeldManager) beanManager).getInjectionTargetFactory(annotatedType).createInterceptorInjectionTarget();
+
+            CreationalContext cc = beanManager.createCreationalContext(null);
+
+            interceptorInstance = (T) target.produce(cc);
+            target.inject(interceptorInstance, cc);
+        }
+
+        return interceptorInstance;
     }
 
 
