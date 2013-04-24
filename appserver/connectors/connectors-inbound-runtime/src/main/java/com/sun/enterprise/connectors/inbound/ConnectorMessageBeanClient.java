@@ -62,7 +62,6 @@ import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.connectors.ActiveResourceAdapter;
-import com.sun.enterprise.connectors.BootstrapContextImpl;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.SetMethodAction;
@@ -162,40 +161,8 @@ public final class ConnectorMessageBeanClient
 
         messageBeanPM_ = messageBeanPM;
 
-        String resourceAdapterMid = descriptor_.getResourceAdapterMid();
+        String resourceAdapterMid = getResourceAdapterMid(descriptor_);
 
-        if (resourceAdapterMid == null) {
-            resourceAdapterMid = System.getProperty(RA_MID);
-        }
-
-        if (resourceAdapterMid == null) {
-            String messageListener = descriptor_.getMessageListenerType();
-            //DOL of MDB descriptor has default value as "javax.jms.MessageListener" which
-            //will take care of the case when the message-listener-type is not specified in the DD
-            if(ConnectorConstants.JMS_MESSAGE_LISTENER.equals(messageListener)){
-                resourceAdapterMid = ConnectorRuntime.DEFAULT_JMS_ADAPTER;
-                logger.fine("No ra-mid is specified, using default JMS Resource Adapter for message-listener-type " +
-                        "["+descriptor_.getMessageListenerType()+"]");
-            }else{
-                List<String> resourceAdapters =
-                        ConnectorRegistry.getInstance().getConnectorsSupportingMessageListener(messageListener);
-                if(resourceAdapters.size() == 1){
-                    resourceAdapterMid = resourceAdapters.get(0);
-                    String message = localStrings.getString("msg-bean-client.defaulting.message-listener.supporting.rar",
-                            resourceAdapterMid, messageListener);
-                    logger.info(message);
-                }else if(resourceAdapters.size()<=0){
-                    String message = localStrings.getString("msg-bean-client.could-not-detect-ra-mid",
-                            descriptor_.getMessageListenerType() );
-
-                    throw new ConnectorRuntimeException(message);
-                }else{
-                    String message = localStrings.getString("msg-bean-client.multiple-ras-supporting-message-listener",
-                            messageListener);
-                    throw new ConnectorRuntimeException(message);
-                }
-            }
-        }
         ActiveInboundResourceAdapter aira = getActiveResourceAdapter(resourceAdapterMid);
 
         aira.updateMDBRuntimeInfo(descriptor_,
@@ -251,6 +218,53 @@ public final class ConnectorMessageBeanClient
             //FIXME  throw some exception here.
             throw new Exception("Unsupported message listener type");
         }
+    }
+
+    /**
+     * derive the resource-adapter-mid in the following order <br/>
+     * a) specified in the glassfish-ejb-jar / sun-ejb-jar descriptor<br/>
+     * b) jms-ra message-listener of type javax.jms.MessageListener<br/>
+     * c) Check the resource-adapters supporting the message-listener-type and
+     * if there is only one use it, otherwise fail.<br/>
+     * @param descriptor_ EJB Descriptor
+     * @return resource-adapter-mid (resource-adapter-name)
+     * @throws ConnectorRuntimeException
+     */
+    private String getResourceAdapterMid(EjbMessageBeanDescriptor descriptor_) throws ConnectorRuntimeException {
+        String resourceAdapterMid = descriptor_.getResourceAdapterMid();
+        if (resourceAdapterMid == null) {
+            resourceAdapterMid = System.getProperty(RA_MID);
+        }
+
+        if (resourceAdapterMid == null) {
+            String messageListener = descriptor_.getMessageListenerType();
+            //DOL of MDB descriptor has default value as "javax.jms.MessageListener" which
+            //will take care of the case when the message-listener-type is not specified in the DD
+            if(ConnectorConstants.JMS_MESSAGE_LISTENER.equals(messageListener)){
+                resourceAdapterMid = ConnectorRuntime.DEFAULT_JMS_ADAPTER;
+                logger.fine("No ra-mid is specified, using default JMS Resource Adapter for message-listener-type " +
+                        "["+descriptor_.getMessageListenerType()+"]");
+            }else{
+                List<String> resourceAdapters =
+                        ConnectorRegistry.getInstance().getConnectorsSupportingMessageListener(messageListener);
+                if(resourceAdapters.size() == 1){
+                    resourceAdapterMid = resourceAdapters.get(0);
+                    String message = localStrings.getString("msg-bean-client.defaulting.message-listener.supporting.rar",
+                            resourceAdapterMid, messageListener);
+                    logger.info(message);
+                }else if(resourceAdapters.size()<=0){
+                    String message = localStrings.getString("msg-bean-client.could-not-detect-ra-mid",
+                            descriptor_.getMessageListenerType() );
+
+                    throw new ConnectorRuntimeException(message);
+                }else{
+                    String message = localStrings.getString("msg-bean-client.multiple-ras-supporting-message-listener",
+                            messageListener);
+                    throw new ConnectorRuntimeException(message);
+                }
+            }
+        }
+        return resourceAdapterMid;
     }
 
     private ActivationSpec getActivationSpec(ActiveInboundResourceAdapter aira, String activationSpecClassName)
@@ -341,7 +355,13 @@ public final class ConnectorMessageBeanClient
         started_ = false; //no longer available
 
 
-        String resourceAdapterMid = getDescriptor().getResourceAdapterMid();
+        String resourceAdapterMid = null;
+        try {
+            resourceAdapterMid = getResourceAdapterMid(descriptor_);
+        } catch (ConnectorRuntimeException e) {
+            String message = localStrings.getString("msg-bean-client.could-not-derive-ra-mid", descriptor_.getName());
+            logger.log(Level.WARNING, message, e);
+        }
 
         ActiveResourceAdapter activeRar =
                 registry_.getActiveResourceAdapter(resourceAdapterMid);
