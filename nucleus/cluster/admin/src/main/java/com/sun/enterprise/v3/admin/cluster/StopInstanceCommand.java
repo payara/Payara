@@ -280,10 +280,11 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
             ParameterMap map = new ParameterMap();
             map.add("force", Boolean.toString(force));
             rac.executeCommand(map);
-        }
-        catch (CommandException ex) {
-            return Strings.get("stop.instance.racError", instanceName,
-                    ex.getLocalizedMessage());
+       } catch (Exception e) {
+            // The instance server may have died so fast we didn't have time to
+            // get the (always successful!!) return data.  This is NOT AN ERROR!
+            // see: http://java.net/jira/browse/GLASSFISH-19672
+            // also see StopDomainCommand which does the same thing.
         }
 
         return null;
