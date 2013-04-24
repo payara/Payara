@@ -366,13 +366,13 @@ public class RelativePathResolver {
             return (at);
         }
         final String          an = RelativePathResolver.getAlias(at);
-        final boolean     exists = domainPasswordAliasStore.containsKey(an);
+        final boolean     exists = getDomainPasswordAliasStore().containsKey(an);
         if (!exists) {
             final StringManager lsm = StringManager.getManager(RelativePathResolver.class);
             final String msg = lsm.getString("no_such_alias", an, at);
             throw new IllegalArgumentException(msg);
         }
-        final String real = new String(domainPasswordAliasStore.get(an));
+        final String real = new String(getDomainPasswordAliasStore().get(an));
         return ( real );
     }    
 }
