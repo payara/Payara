@@ -124,7 +124,7 @@
         <tyrus.version>1.0-rc3</tyrus.version>
         <jsonp.version>1.0-b06</jsonp.version>
         <concurrent-api.version>1.0-b06</concurrent-api.version>
-        <concurrent.version>1.0-b07</concurrent.version>
+        <concurrent.version>1.0-b08</concurrent.version>
         <javax.batch-api.version>1.0-b26</javax.batch-api.version>
         <com.ibm.jbatch-runtime-all.version>1.0-b26</com.ibm.jbatch-runtime-all.version>
         <com.ibm.jbatch-ri-spi.version>1.0-b26</com.ibm.jbatch-ri-spi.version>
