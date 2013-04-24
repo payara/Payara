@@ -47,8 +47,11 @@ import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.ContainerListener;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
+import javax.naming.NamingException;
+import javax.validation.ValidatorFactory;
 import java.lang.String;
 import java.text.MessageFormat;
 import java.util.HashSet;
@@ -80,6 +83,11 @@ public final class WebContainerListener
             cause = "An exception occurred during destroyManagedObject",
             action = "Check the exception for the error")
     public static final String EXCEPTION_DURING_DESTROY_MANAGED_OBJECT = "AS-WEB-GLUE-00271";
+
+    @LogMessageInfo(
+        message = "Exception getting Validator Factory from JNDI: {0}",
+        level = "WARNING")
+    public static final String EXCEPTION_GETTING_VALIDATOR_FACTORY = "AS-WEB-GLUE-00285";
 
     static private HashSet<String> beforeEvents = new HashSet<String>();
     static private HashSet<String> afterEvents = new HashSet<String>();
@@ -139,11 +147,14 @@ public final class WebContainerListener
 
     private InvocationManager invocationMgr;
     private InjectionManager injectionMgr;
+    private NamedNamingObjectProxy validationNamingProxy;
 
     public WebContainerListener(InvocationManager invocationMgr,
-                                InjectionManager injectionMgr) {
+                                InjectionManager injectionMgr,
+                                NamedNamingObjectProxy validationNamingProxy) {
         this.invocationMgr = invocationMgr;
         this.injectionMgr = injectionMgr;
+        this.validationNamingProxy = validationNamingProxy;
     }
 
     public void containerEvent(ContainerEvent event) {
@@ -160,6 +171,22 @@ public final class WebContainerListener
             WebModule wm = (WebModule) event.getContainer();
             if (beforeEvents.contains(type)) {
                 preInvoke(wm);
+
+                if ( type.equals(ContainerEvent.BEFORE_CONTEXT_DESTROYED ) ) {
+                    try {
+                        // must close the validator factory
+                        if ( validationNamingProxy != null ) {
+                            Object validatorFactory = validationNamingProxy.handle("java:comp/ValidatorFactory");
+                            if (validatorFactory != null) {
+                                ((ValidatorFactory)validatorFactory).close();
+                            }
+                        }
+                    } catch (NamingException exc) {
+                        if(_logger.isLoggable(Level.WARNING)) {
+                            _logger.log(Level.FINEST, EXCEPTION_GETTING_VALIDATOR_FACTORY, exc );
+                        }
+                    }
+                }
             } else if (afterEvents.contains(type)) {
                 if (type.equals(ContainerEvent.AFTER_FILTER_DESTROYED) ||
                         type.equals(ContainerEvent.AFTER_CONTEXT_DESTROYED)) {

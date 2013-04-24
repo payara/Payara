@@ -40,8 +40,6 @@
 
 package org.glassfish.weld;
 
-import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
-import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
@@ -53,6 +51,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.naming.NamingException;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
@@ -65,6 +64,7 @@ import java.util.Set;
  */
 @Service
 @NamespacePrefixes({ValidationNamingProxy.VALIDATOR_CONTEXT, ValidationNamingProxy.VALIDATOR_FACTORY_CONTEXT})
+@Named("ValidationNamingProxy")
 public class ValidationNamingProxy implements NamedNamingObjectProxy {
 
     @Inject

@@ -55,6 +55,7 @@ import org.apache.catalina.core.StandardEngine;
 import org.apache.catalina.startup.ContextConfig;
 import org.apache.catalina.startup.Embedded;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.internal.api.ServerContext;
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -99,6 +100,8 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
 
     private InjectionManager injectionManager;
 
+    private NamedNamingObjectProxy validationNamingProxy;
+
     /*
      * The value of the 'file' attribute of the log-service element
      */
@@ -136,6 +139,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
     public void postConstruct() {
         invocationManager = services.getService(InvocationManager.class);
         injectionManager = services.getService(InjectionManager.class);
+        validationNamingProxy = services.getService(NamedNamingObjectProxy.class, "ValidationNamingProxy");
     }
     
     /**
@@ -235,7 +239,7 @@ public final class EmbeddedWebContainer extends Embedded implements PostConstruc
         context.addLifecycleListener(new WebModuleListener(webContainer, wmInfo.getDescriptor()));
 
         context.addContainerListener(
-                new WebContainerListener(invocationManager, injectionManager));
+                new WebContainerListener(invocationManager, injectionManager, validationNamingProxy));
 
         for( WebModuleDecorator d : services.<WebModuleDecorator>getAllServices(WebModuleDecorator.class)) {
             d.decorate(context);
