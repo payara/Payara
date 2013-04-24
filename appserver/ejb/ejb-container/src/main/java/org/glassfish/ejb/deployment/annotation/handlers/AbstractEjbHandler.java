@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,8 +42,8 @@ package org.glassfish.ejb.deployment.annotation.handlers;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -360,6 +360,15 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         boolean emptyRemoteBusAnn = false;
         if( remoteBusAnn != null ) {
             for(Class next : remoteBusAnn.value()) {
+                if (next.getAnnotation(Local.class) != null) {
+                    AnnotationProcessorException fatalException =
+                            new AnnotationProcessorException(localStrings.getLocalString(
+                                    "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
+                                    "The interface {0} cannot be both a local and a remote business interface.",
+                                    new Object[]{next.getName()}));
+                    fatalException.setFatal(true);
+                    throw fatalException;
+                }
                 clientInterfaces.add(next);
                 remoteBusIntfs.add(next);
             }
@@ -369,15 +378,28 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         Local localBusAnn = (Local) ejbClass.getAnnotation(Local.class); 
         if( localBusAnn != null ) {
             for(Class next : localBusAnn.value()) {
+                if (next.getAnnotation(Remote.class) != null) {
+                    AnnotationProcessorException fatalException =
+                            new AnnotationProcessorException(localStrings.getLocalString(
+                                    "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
+                                    "The interface {0} cannot be both a local and a remote business interface.",
+                                    new Object[]{next.getName()}));
+                    fatalException.setFatal(true);
+                    throw fatalException;
+                }
                 clientInterfaces.add(next);
                 localBusIntfs.add(next);
             }
         }
 
-        List<Class> eligibleInterfaces = new LinkedList<Class>();
+        List<Class> imlementingInterfaces = new ArrayList<Class>();
+        List<Class> implementedDesignatedInterfaces = new ArrayList<Class>();
         for(Class next : ejbClass.getInterfaces()) {
             if( !excludedFromImplementsClause(next) ) {
-                eligibleInterfaces.add(next);
+                if( next.getAnnotation(Local.class) != null || next.getAnnotation(Remote.class) != null ) {
+                    implementedDesignatedInterfaces.add(next);
+                }
+                imlementingInterfaces.add(next);
             }
         }
 
@@ -387,13 +409,14 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
         }
 
         // total number of local/remote business interfaces declared
-        // outside of the implements clause
-        int nonImplementsClauseBusinessInterfaceCount =
+        // outside of the implements clause plus implemented designated interfaces
+        int designatedInterfaceCount =
             remoteBusIntfs.size() + localBusIntfs.size() +
             ejbDesc.getRemoteBusinessClassNames().size() +
-            ejbDesc.getLocalBusinessClassNames().size();
+            ejbDesc.getLocalBusinessClassNames().size() +
+            implementedDesignatedInterfaces.size();
         
-        for(Class next : eligibleInterfaces) {
+        for(Class next : imlementingInterfaces) {
             String nextIntfName = next.getName();
 
             if( remoteBusIntfs.contains(next)
@@ -419,7 +442,7 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
 
             } else {
 
-                if( (nonImplementsClauseBusinessInterfaceCount == 0) &&
+                if( (designatedInterfaceCount == 0) &&
                     (!ejbDesc.isLocalBean()) ) {
 
                     // If there's an empty @Remote annotation on the class,
@@ -440,6 +463,18 @@ public abstract class AbstractEjbHandler extends AbstractHandler {
                     // descriptor or a @Remote/@Local annotation is ignored.
 
                 }
+            }
+        }
+
+        for (Class next : clientInterfaces) {
+            if (remoteBusIntfs.contains(next) && localBusIntfs.contains(next)) {
+                AnnotationProcessorException fatalException =
+                        new AnnotationProcessorException(localStrings.getLocalString(
+                                "enterprise.deployment.annotation.handlers.invalidbusinessinterface",
+                                "The interface {0} cannot be both a local and a remote business interface.",
+                                new Object[]{next.getName()}));
+                fatalException.setFatal(true);
+                throw fatalException;
             }
         }
 
