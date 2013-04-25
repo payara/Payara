@@ -40,12 +40,18 @@
 
 package org.glassfish.weld;
 
-import org.glassfish.api.naming.GlassfishNamingManager;
+import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.NamedNamingObjectProxy;
 import org.glassfish.api.naming.NamespacePrefixes;
-import org.glassfish.hk2.api.Descriptor;
-import org.glassfish.hk2.api.IndexedFilter;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.jboss.weld.bootstrap.WeldBootstrap;
+import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.enterprise.inject.spi.Bean;
@@ -53,10 +59,10 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.NamingException;
+import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -70,11 +76,21 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
     @Inject
     ServiceLocator serviceLocator;
 
-    BeanManagerNamingProxy beanManagerNamingProxy;
+    @Inject
+    private ComponentEnvManager compEnvManager;
+
+    @Inject
+    private InvocationManager invocationManager;
+
+    @Inject
+    private WeldDeployer weldDeployer;
+
+    private ValidatorFactory validatorFactory;
+    private Validator validator;
+
 
     static final String VALIDATOR_CONTEXT = "java:comp/Validator";
     static final String VALIDATOR_FACTORY_CONTEXT = "java:comp/ValidatorFactory";
-    static final String BEAN_MANAGER_CONTEXT = "java:comp/BeanManager";
 
     /**
      * get and create an instance of a bean from the beanManager
@@ -102,7 +118,13 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
         // delegate to the java:comp/BeanManager handler to obtain the appropriate BeanManager
         BeanManager beanManager = obtainBeanManager();
 
+
         if (VALIDATOR_FACTORY_CONTEXT.equals(name)) {
+
+            if (beanManager == null) {
+                return getValidatorFactory();
+            }
+
             try {
 
                 ValidatorFactory validatorFactory = (ValidatorFactory) getAndCreateBean(beanManager, ValidatorFactory.class);
@@ -119,6 +141,10 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
                 throw ne;
             }
         } else if (VALIDATOR_CONTEXT.equals(name)) {
+            if (beanManager == null) {
+               return getValidator();
+            }
+
             try {
 
                 Validator validator = (Validator) getAndCreateBean(beanManager, Validator.class);
@@ -145,49 +171,73 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
      * @throws NamingException
      */
     private synchronized BeanManager obtainBeanManager() throws NamingException {
-        if (beanManagerNamingProxy == null) {
-            IndexedFilter f = new IndexedFilter() {
-                @Override
-                public boolean matches(Descriptor d) {
-                    boolean matches = false;
-                    Map<String, List<String>> metadata = d.getMetadata();
 
-                    List<String> namespaces = metadata.get(GlassfishNamingManager.NAMESPACE_METADATA_KEY);
+        BeanManager beanManager = null;
 
-                    if (namespaces.contains(BEAN_MANAGER_CONTEXT))
-                        matches = true;
+        // Use invocation context to find applicable BeanDeploymentArchive.
+        ComponentInvocation inv = invocationManager.getCurrentInvocation();
 
-                    return matches;
+        if( inv != null ) {
+
+            JndiNameEnvironment componentEnv = compEnvManager.getJndiNameEnvironment(inv.getComponentId());
+
+            if( componentEnv != null ) {
+
+                BundleDescriptor bundle = null;
+
+                if( componentEnv instanceof EjbDescriptor) {
+                    bundle = (BundleDescriptor)
+                            ((EjbDescriptor) componentEnv).getEjbBundleDescriptor().
+                                    getModuleDescriptor().getDescriptor();
+
+                } else if( componentEnv instanceof WebBundleDescriptor) {
+                    bundle = (BundleDescriptor) componentEnv;
+
                 }
 
-                @Override
-                public String getAdvertisedContract() {
-                    return NamedNamingObjectProxy.class.getName();
+                if( bundle != null ) {
+                    BeanDeploymentArchive bda = weldDeployer.getBeanDeploymentArchiveForBundle(bundle);
+                    if( bda != null ) {
+                        WeldBootstrap bootstrap = weldDeployer.getBootstrapForApp(bundle.getApplication());
+
+                        beanManager = bootstrap.getManager(bda);
+                    }
                 }
 
-                @Override
-                public String getName() {
-                    return null;  //To change body of implemented methods use File | Settings | File Templates.
-                }
-            };
+            }
+        }
 
+        return beanManager;
+    }
 
+    private Validator getValidator() throws NamingException {
+        if (null == validator) {
             try {
-                List<?> services = serviceLocator.getAllServices(f);
-
-                if (services.size() != 0) {
-                    beanManagerNamingProxy = (BeanManagerNamingProxy) services.iterator().next();
-
-                } else {
-                    throw new NamingException("Cannot find " + BEAN_MANAGER_CONTEXT + " handler");
-                }
-            } catch (Throwable e) {
-                NamingException ne = new NamingException();
-                ne.setRootCause(e);
-
+                ValidatorFactory factory = getValidatorFactory();
+                ValidatorContext validatorContext = factory.usingContext();
+                validator = validatorContext.getValidator();
+            } catch (Throwable t) {
+                NamingException ne = new NamingException("Error retrieving Validator for " + VALIDATOR_CONTEXT + " lookup");
+                ne.initCause(t);
                 throw ne;
             }
         }
-        return (BeanManager) beanManagerNamingProxy.handle(BEAN_MANAGER_CONTEXT);
+        return validator;
     }
+
+    private ValidatorFactory getValidatorFactory() throws NamingException {
+
+        if (null == validatorFactory) {
+            try {
+                validatorFactory = Validation.buildDefaultValidatorFactory();
+            } catch (Throwable t) {
+                NamingException ne = new NamingException("Error retrieving ValidatorFactory for " + VALIDATOR_FACTORY_CONTEXT + " lookup");
+                ne.initCause(t);
+                throw ne;
+            }
+        }
+
+        return validatorFactory;
+    }
+
 }
