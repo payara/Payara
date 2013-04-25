@@ -78,7 +78,7 @@
         <javax.faces-api.version>2.2-m12</javax.faces-api.version>
         <cdi-api.version>1.1-PRD</cdi-api.version>
         <javax.inject.version>1</javax.inject.version>
-        <javax.resource-api.version>1.7-b04</javax.resource-api.version>
+        <javax.resource-api.version>1.7-b05</javax.resource-api.version>
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
         <javax.security.jacc-api.version>1.4</javax.security.jacc-api.version>
         <javax.security.auth.message-api.version>1.0</javax.security.auth.message-api.version>
@@ -397,7 +397,7 @@
                             <jarType>api</jarType>
                             <specVersion>1.6</specVersion>
                             <newSpecVersion>1.7</newSpecVersion>
-                            <specBuild>04</specBuild>
+                            <specBuild>05</specBuild>
                             <apiPackage>javax.resource</apiPackage>
                         </spec>
                         <spec>
