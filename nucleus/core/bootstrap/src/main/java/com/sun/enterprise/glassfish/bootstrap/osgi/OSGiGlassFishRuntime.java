@@ -72,6 +72,8 @@ public class OSGiGlassFishRuntime extends GlassFishRuntimeDecorator {
             return; // already shutdown
         }
         try {
+            super.shutdown();
+            
             framework.stop();
             framework.waitForStop(0);
         } catch (InterruptedException ex) {
@@ -79,8 +81,9 @@ public class OSGiGlassFishRuntime extends GlassFishRuntimeDecorator {
         } catch (BundleException ex) {
             throw new GlassFishException(ex);
         }
-        super.shutdown();
-        framework = null; // guard against repeated calls.
+        finally {
+            framework = null; // guard against repeated calls.
+        }
     }
 
     @Override
