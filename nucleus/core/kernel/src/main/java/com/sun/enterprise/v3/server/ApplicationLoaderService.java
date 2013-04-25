@@ -448,9 +448,25 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         // stop all running applications including user and system applications
         // which are registered in the domain.xml
         List<Application> allApplications = new ArrayList<Application>();
+
+        List<Application> standaloneAdapters =
+            applications.getApplicationsWithSnifferType(ServerTags.CONNECTOR, true);
+
         allApplications.addAll(applications.getApplications());
         allApplications.addAll(systemApplications.getApplications());
+
+        //stop applications that are not of type "standalone" connectors
         for (Application app : allApplications) {
+            if (app.isStandaloneModule() &&
+                app.containsSnifferType(ServerTags.CONNECTOR)) {
+                continue;
+            }
+            ApplicationInfo appInfo = deployment.get(app.getName());
+            stopApplication(app, appInfo);
+        }
+
+        //stop applications that are "standalone" connectors
+        for (Application app : standaloneAdapters) {
             ApplicationInfo appInfo = deployment.get(app.getName());
             stopApplication(app, appInfo);
         }
