@@ -44,6 +44,7 @@ import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.reader.CliActionReport;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReader;
 import com.sun.enterprise.admin.remote.reader.ProprietaryReaderFactory;
+import com.sun.enterprise.admin.remote.reader.StringProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
@@ -815,35 +816,41 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                 } else {
                     ProprietaryReader<ParamsWithPayload> reader
                             = ProprietaryReaderFactory.getReader(ParamsWithPayload.class, resultMediaType);
-                    final InputStream is;
                     if (urlConnection.getResponseCode() == HttpURLConnection.HTTP_INTERNAL_ERROR) {
-                        is = urlConnection.getErrorStream();
-                    } else {
-                        is = urlConnection.getInputStream();
-                    }
-                    ParamsWithPayload pwp = reader.readFrom(is, resultMediaType);
-                    if (pwp.getPayloadInbound() == null) {
-                        setActionReport(pwp.getActionReport());
-                    } else if (resultMediaType.startsWith("multipart/")) {
-                        RestPayloadImpl.Inbound inbound = pwp.getPayloadInbound();
-                        setActionReport(pwp.getActionReport());
-                        if (logger.isLoggable(Level.FINER)) {
-                            logger.log(Level.FINER, "------ PAYLOAD ------");
-                            Iterator<Payload.Part> parts = inbound.parts();
-                            while (parts.hasNext()) {
-                                Payload.Part part = parts.next();
-                                logger.log(Level.FINER, " - {0} [{1}]", new Object[]{part.getName(), part.getContentType()});
-                            }
-                            logger.log(Level.FINER, "---- END PAYLOAD ----");
+                        ActionReport report;
+                        if (reader == null) {
+                            report = new CliActionReport();
+                            report.setActionExitCode(ExitCode.FAILURE);
+                            report.setMessage(urlConnection.getResponseMessage());
+                        } else {
+                            report = reader.readFrom(urlConnection.getErrorStream(), resultMediaType).getActionReport();
                         }
-                        PayloadFilesManager downloadedFilesMgr =
-                                new PayloadFilesManager.Perm(fileOutputDir, null, logger, null);
-                        try {
-                            downloadedFilesMgr.processParts(inbound);
-                        } catch (CommandException cex) {
-                            throw cex;
-                        } catch (Exception ex) {
-                            throw new CommandException(ex.getMessage(), ex);
+                        setActionReport(report);
+                    } else {
+                        ParamsWithPayload pwp = reader.readFrom(urlConnection.getInputStream(), resultMediaType);
+                        if (pwp.getPayloadInbound() == null) {
+                            setActionReport(pwp.getActionReport());
+                        } else if (resultMediaType.startsWith("multipart/")) {
+                            RestPayloadImpl.Inbound inbound = pwp.getPayloadInbound();
+                            setActionReport(pwp.getActionReport());
+                            if (logger.isLoggable(Level.FINER)) {
+                                logger.log(Level.FINER, "------ PAYLOAD ------");
+                                Iterator<Payload.Part> parts = inbound.parts();
+                                while (parts.hasNext()) {
+                                    Payload.Part part = parts.next();
+                                    logger.log(Level.FINER, " - {0} [{1}]", new Object[]{part.getName(), part.getContentType()});
+                                }
+                                logger.log(Level.FINER, "---- END PAYLOAD ----");
+                            }
+                            PayloadFilesManager downloadedFilesMgr =
+                                    new PayloadFilesManager.Perm(fileOutputDir, null, logger, null);
+                            try {
+                                downloadedFilesMgr.processParts(inbound);
+                            } catch (CommandException cex) {
+                                throw cex;
+                            } catch (Exception ex) {
+                                throw new CommandException(ex.getMessage(), ex);
+                            }
                         }
                     }
                 }
