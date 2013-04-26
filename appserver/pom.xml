@@ -71,7 +71,7 @@
         <jsf-ext.version>0.2</jsf-ext.version>
         <woodstock.version>4.0.2.10</woodstock.version>
         <javax.ejb-api.version>3.2-b02</javax.ejb-api.version>
-        <javax.interceptor-api.version>1.2-b06</javax.interceptor-api.version>
+        <javax.interceptor-api.version>1.2</javax.interceptor-api.version>
         <javax.xml.rpc-api.version>1.1</javax.xml.rpc-api.version>
         <javax.transaction-api.version>1.2-b03</javax.transaction-api.version>
         <jaxws-api.version>2.2.8</jaxws-api.version>
@@ -186,7 +186,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.el.jar,javax.enterprise.concurrent.jar, javax.persistence-api.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.el.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
                     <specs>
                         <spec>
                             <artifact>
@@ -380,11 +380,10 @@
                                 <artifactId>javax.interceptor-api</artifactId>
                                 <version>${javax.interceptor-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.1</specVersion>
-                            <newSpecVersion>1.2</newSpecVersion>
-                            <specBuild>06</specBuild>
+                            <specVersion>${javax.interceptor-api.version}</specVersion>
+			    <specImplVersion>${javax.interceptor-api.version}</specImplVersion>
                             <apiPackage>javax.interceptor</apiPackage>
                         </spec>
                         <spec>
