@@ -66,7 +66,6 @@ public class StopDomainCommand extends LocalDomainCommand {
     Boolean force;
     @Param(optional = true, defaultValue = "false")
     Boolean kill;
-    private boolean local;
     private static final long WAIT_FOR_DAS_TIME_MS = 60000; // 1 minute
 
     @Override
@@ -74,7 +73,6 @@ public class StopDomainCommand extends LocalDomainCommand {
             throws CommandException {
         setDomainName(userArgDomainName);
         super.validate(); // which calls initDomain() !!
-        local = getServerDirs().getServerName() != null;
     }
 
     /**
@@ -85,6 +83,11 @@ public class StopDomainCommand extends LocalDomainCommand {
     @Override
     protected void initDomain() throws CommandException {
         // only initialize local domain information if it's a local operation
+
+        // TODO Byron said in April 2013 that we should probably just check if
+        // NetUtils says that the getHost() --> isThisMe() rather than merely
+        // checking for the magic "localhost" string.  Too risky to fool with it today.
+
         if (programOpts.getHost().equals(CLIConstants.DEFAULT_HOSTNAME))
             super.initDomain();
         else if (userArgDomainName != null)   // remote case
@@ -96,11 +99,11 @@ public class StopDomainCommand extends LocalDomainCommand {
     protected int executeCommand()
             throws CommandException {
 
-        if (local) {
+        if (isLocal()) {
             // if the local password isn't available, the domain isn't running
             // (localPassword is set by initDomain)
             if (getServerDirs().getLocalPassword() == null)
-                return dasNotRunning(local);
+                return dasNotRunning();
 
             programOpts.setHostAndPort(getAdminAddress());
             logger.finer("Stopping local domain on port "
@@ -115,14 +118,14 @@ public class StopDomainCommand extends LocalDomainCommand {
 
             // in the local case, make sure we're talking to the correct DAS
             if (!isThisDAS(getDomainRootDir()))
-                return dasNotRunning(local);
+                return dasNotRunning();
 
             logger.finer("It's the correct DAS");
         }
         else { // remote
             // Verify that the DAS is running and reachable
             if (!DASUtils.pingDASQuietly(programOpts, env))
-                return dasNotRunning(local);
+                return dasNotRunning();
 
             logger.finer("DAS is running");
             programOpts.setInteractive(false);
@@ -143,9 +146,9 @@ public class StopDomainCommand extends LocalDomainCommand {
      * Print message and return exit code when
      * we detect that the DAS is not running.
      */
-    protected int dasNotRunning(boolean local) throws CommandException {
+    protected int dasNotRunning() throws CommandException {
         if (kill) {
-            if (local)
+            if (isLocal())
                 return kill();
             else // remote.  We can NOT kill and we can't ask it to kill itself.
                 throw new CommandException(Strings.get("StopDomain.dasNotRunningRemotely"));
@@ -153,7 +156,7 @@ public class StopDomainCommand extends LocalDomainCommand {
 
         // by definition this is not an error
         // https://glassfish.dev.java.net/issues/show_bug.cgi?id=8387
-        if (local)
+        if (isLocal())
             logger.warning(Strings.get("StopDomain.dasNotRunning", getDomainRootDir()));
         else
             logger.warning(Strings.get("StopDomain.dasNotRunningRemotely"));
@@ -176,7 +179,7 @@ public class StopDomainCommand extends LocalDomainCommand {
         try {
             waitForDeath();
         } catch (CommandException ex) {
-            if (kill && local) {
+            if (kill && isLocal()) {
                 kill();
             } else {
                 throw ex;

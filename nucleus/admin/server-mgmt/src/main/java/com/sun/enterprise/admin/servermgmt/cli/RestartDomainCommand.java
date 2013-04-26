@@ -113,8 +113,8 @@ public class RestartDomainCommand extends StopDomainCommand {
      * If the server isn't running, try to start it.
      */
     @Override
-    protected int dasNotRunning(boolean local) throws CommandException {
-        if (!local)
+    protected int dasNotRunning() throws CommandException {
+        if (!isLocal())
             throw new CommandException(
                 Strings.get("restart.dasNotRunningNoRestart"));
         logger.warning(strings.get("restart.dasNotRunning"));

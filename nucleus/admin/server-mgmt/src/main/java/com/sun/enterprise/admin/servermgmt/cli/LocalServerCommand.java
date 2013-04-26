@@ -131,10 +131,19 @@ public abstract class LocalServerCommand extends CLICommand {
         serverDirs = sd;
     }
 
-    private void resetLocalPassword() throws IOException {
+    protected final boolean isLocal() {
+        return serverDirs != null && serverDirs.getServerName() != null;
+    }
+
+    protected final boolean isRemote() {
+        return !isLocal();
+    }
+
+    private final void resetLocalPassword() throws IOException {
         resetServerDirs();
         setLocalPassword();
     }
+
 
     protected final void setLocalPassword() {
         String pw = serverDirs == null ? null : serverDirs.getLocalPassword();
@@ -381,7 +390,9 @@ public abstract class LocalServerCommand extends CLICommand {
 
         while (now() < end) {
             try {
-                resetLocalPassword();
+                if(isLocal())
+                    resetLocalPassword();
+
                 int newServerPid = getRemotePid();
 
                 if (newServerPid > 0 && newServerPid != oldServerPid) {
