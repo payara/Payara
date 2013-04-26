@@ -133,13 +133,19 @@ public class SecuritySupportImpl extends SecuritySupport {
         char[] keyStorePass = null;
         char[] trustStorePass = null;
         if (!isInstantiated()) {
-            if (masterPasswordHelper == null && Globals.getDefaultHabitat() != null) {
-                masterPasswordHelper = Globals.getDefaultHabitat().getService(MasterPasswordImpl.class);
+            if (habitat == null) {
+                habitat = Globals.getDefaultHabitat();
+            }
+            if (masterPasswordHelper == null && habitat != null) {
+                masterPasswordHelper = habitat.getService(MasterPasswordImpl.class);
             }
             if (masterPasswordHelper != null) {
                 keyStorePass = masterPasswordHelper.getMasterPassword();
                 trustStorePass = keyStorePass;
             }
+        }
+        if (penv == null && habitat != null) {
+            penv = habitat.getService(ProcessEnvironment.class);
         }
         /*
          * If we don't have a keystore password yet check the properties.
