@@ -147,6 +147,13 @@ public class InjectionServicesImpl implements InjectionServices {
     }
 
     public <T> void registerInjectionTarget(InjectionTarget<T> injectionTarget, AnnotatedType<T> annotatedType) {
+        if ( bundleContext instanceof EjbBundleDescriptor ) {
+            // we can't handle validting producer fields for ejb bundles because the JNDI environment is not setup
+            // yet for ejbs and so we can't get the correct JndiNameEnvironment to call getInjectionInfoByClass.
+            // getInjectionInfoByClass caches the results and so causes subsequent calls to return invalid information.
+            return;
+        }
+
         // We are only validating producer fields of resources.  See spec section 3.7.1
         Class annotatedClass = annotatedType.getJavaClass();
         JndiNameEnvironment jndiNameEnvironment = (JndiNameEnvironment) bundleContext;
@@ -352,5 +359,4 @@ public class InjectionServicesImpl implements InjectionServices {
     public void cleanup() {
 
     }
-
 }
