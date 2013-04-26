@@ -66,6 +66,7 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.SimpleDeployer;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
+import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.weld.services.*;
 import org.jboss.weld.bootstrap.WeldBootstrap;
@@ -136,7 +137,6 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
     @Inject
     ArchiveFactory archiveFactory;
-
 
     private Map<Application, WeldBootstrap> appToBootstrap =
             new HashMap<Application, WeldBootstrap>();
@@ -468,6 +468,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             BootstrapConfigurationImpl bootstrapConfiguration = new BootstrapConfigurationImpl();
             deploymentImpl.getServices().add(BootstrapConfiguration.class, bootstrapConfiguration);
+
+            addWeldListenerToAllWars(context);
         } else {
             deploymentImpl.scanArchive(archive, ejbs, context);
         }
@@ -485,7 +487,9 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
             if( wDesc != null) {
                 wDesc.setExtensionProperty(WELD_EXTENSION, "true");
-                // Add the Weld Listener if it does not already exist..
+
+                // Add the Weld Listener.  We have to do it here too in case addWeldListenerToAllWars wasn't
+                // able to do it.
                 wDesc.addAppListenerDescriptorToFirst(new AppListenerDescriptorImpl(WELD_LISTENER));
                 // Add Weld Context Listener - this listener will ensure the WeldELContextListener is used
                 // for JSP's..
@@ -549,6 +553,21 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         appInfo.addTransientAppMetaData(WELD_DEPLOYMENT, deploymentImpl);
 
         return wbApp;
+    }
+
+    private void addWeldListenerToAllWars(DeploymentContext context) {
+        // if there's at least 1 ejb jar then add the listener to all wars
+        ApplicationHolder applicationHolder = context.getModuleMetaData(ApplicationHolder.class);
+        if ( applicationHolder != null ) {
+            if ( applicationHolder.app.getBundleDescriptors(EjbBundleDescriptor.class).size() > 0 ) {
+                Set<WebBundleDescriptor> webBundleDescriptors = applicationHolder.app.getBundleDescriptors(WebBundleDescriptor.class);
+                for ( WebBundleDescriptor oneWebBundleDescriptor : webBundleDescriptors ) {
+                    // Add the Weld Listener if it does not already exist..
+                    // we have to do this regardless because the war may not be cdi-enabled but an ejb is.
+                    oneWebBundleDescriptor.addAppListenerDescriptorToFirst(new AppListenerDescriptorImpl(WELD_LISTENER));
+                }
+            }
+        }
     }
 
     private EjbBundleDescriptor getEjbBundleFromContext(DeploymentContext context) {
