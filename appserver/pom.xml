@@ -80,8 +80,8 @@
         <javax.inject.version>1</javax.inject.version>
         <javax.resource-api.version>1.7-b05</javax.resource-api.version>
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
-        <javax.security.jacc-api.version>1.4</javax.security.jacc-api.version>
-        <javax.security.auth.message-api.version>1.0</javax.security.auth.message-api.version>
+        <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
+        <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
         
         <product.name>GlassFish Server Open Source Edition</product.name>
         <brief_product_name>GlassFish Server</brief_product_name>
@@ -243,8 +243,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>             
-                            <specVersion>1.4</specVersion>
-                            <specImplVersion>1.4</specImplVersion>
+                            <specVersion>${javax.security.jacc-api.version}</specVersion>
+                            <specImplVersion>${javax.security.jacc-api.version}</specImplVersion>
                             <apiPackage>javax.security.jacc</apiPackage>
                         </spec>
                         <spec>
@@ -255,8 +255,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>             
-                            <specVersion>1.0</specVersion>
-                            <specImplVersion>1.0</specImplVersion>
+                            <specVersion>${javax.security.auth.message-api.version}</specVersion>
+                            <specImplVersion>${javax.security.auth.message-api.version}</specImplVersion>
                             <apiPackage>javax.security.auth.message</apiPackage>
                         </spec>
                         <spec>
