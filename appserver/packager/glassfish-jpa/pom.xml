@@ -155,7 +155,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.jpa.modelgen</artifactId>
+            <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
             <version>${eclipselink.version}</version>
         </dependency>
         <dependency>

@@ -84,7 +84,7 @@
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
-            <artifactId>javax.persistence-api</artifactId>
+            <artifactId>javax.persistence</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
