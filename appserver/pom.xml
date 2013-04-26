@@ -354,11 +354,10 @@
                                 <artifactId>javax.ws.rs-api</artifactId>
                                 <version>${jax-rs-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>1.1</specVersion>
-                            <newSpecVersion>2.0</newSpecVersion>
-                            <specBuild>19</specBuild>
+                            <specVersion>${jax-rs-api.version}</specVersion>
+                            <specImplVersion>${jax-rs-api.version}</specImplVersion>
                             <apiPackage>javax.ws.rs</apiPackage>
                         </spec>
                         <spec>
