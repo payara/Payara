@@ -328,11 +328,10 @@
                                 <artifactId>javax.servlet-api</artifactId>
                                 <version>${servlet-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>     
-                            <specVersion>3.0</specVersion>
-                            <newSpecVersion>3.1</newSpecVersion>
-                            <specBuild>08</specBuild>
+                            <specVersion>3.1</specVersion>
+                            <specImplVersion>${servlet-api.version}</specImplVersion>
                             <apiPackage>javax.servlet</apiPackage>
                         </spec>
                         <spec>
