@@ -120,8 +120,8 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.0.0.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <websocket-api.version>1.0-rc5</websocket-api.version>
-        <tyrus.version>1.0-rc3</tyrus.version>
+        <websocket-api.version>1.0</websocket-api.version>
+        <tyrus.version>1.0-rc4</tyrus.version>
         <jsonp.version>1.0-b06</jsonp.version>
         <concurrent-api.version>1.0-b06</concurrent-api.version>
         <concurrent.version>1.0-b08</concurrent.version>
@@ -352,11 +352,10 @@
                                 <artifactId>javax.websocket-api</artifactId>
                                 <version>${websocket-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>     
-                            <specVersion>0.0</specVersion>
-                            <newSpecVersion>1.0</newSpecVersion>
-                            <specBuild>18</specBuild>
+                            <specVersion>1.0</specVersion>
+                            <specImplVersion>${websocket-api.version}</specImplVersion>
                             <apiPackage>javax.websocket</apiPackage>
                         </spec>
                         <spec>
