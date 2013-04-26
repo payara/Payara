@@ -140,6 +140,10 @@
             <artifactId>weld-integration-fragment</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.hk2.external</groupId>
+            <artifactId>bean-validator-cdi</artifactId>
+        </dependency>
     </dependencies>
 </project>
 
