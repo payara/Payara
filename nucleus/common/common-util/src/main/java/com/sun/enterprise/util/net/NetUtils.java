@@ -39,8 +39,8 @@
  */
 package com.sun.enterprise.util.net;
 
+import com.sun.enterprise.util.CULoggerInfo;
 import com.sun.enterprise.util.StringUtils;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import java.net.*;
 import java.util.*;
 import java.io.*;
@@ -52,7 +52,9 @@ public class NetUtils {
     private final static int IS_RUNNING_DEFAULT_TIMEOUT = 3000;
     private final static boolean asDebug =
             Boolean.parseBoolean(System.getenv("AS_DEBUG"));
-
+    private final static Logger logger = CULoggerInfo.getLogger();
+    private static Boolean badHostErrorWasReportedAlready = Boolean.FALSE;
+    private final static Object SYNC_OBJECT = new Object();
     private static void printd(String string) {
         if (asDebug) {
             System.out.println(string);
@@ -578,6 +580,14 @@ public class NetUtils {
         // We want to be aggressively disqualifying ports rather than the other
         // way around
 
+        // JIRA 19391 April 2013  Byron Nevins
+        // If DNS can not resolve the hostname, then
+        // InetAddress.getLocalHost() will throw an UnknownHostException
+        // Before this change we caught ALL Exceptions and returned false.
+        // So if, say, the system has a bad hostname setup, this method
+        // would say the port is in use.  Which probably is not true.
+        // Change:  log it as a warning the first time and then log it as a FINE.
+
         try {
             byte[] allZero = new byte[]{0, 0, 0, 0};
             InetAddress add = InetAddress.getByAddress(allZero);
@@ -585,7 +595,23 @@ public class NetUtils {
             if (isPortFreeServer(port, add) == false)
                 return false;   // return immediately on "not-free"
 
-            add = InetAddress.getLocalHost();
+            try {
+                add = InetAddress.getLocalHost();
+            }
+            catch (UnknownHostException uhe) {
+                // Byron says: We don't want to report this error over and over
+                // and over again at WARNING level.
+                Level level = Level.WARNING;
+
+                // careful: many threads may call in here!
+                synchronized (SYNC_OBJECT) {
+                    if (badHostErrorWasReportedAlready)
+                        level = Level.FINE;
+                    else
+                        badHostErrorWasReportedAlready = true;
+                }
+                logger.log(level, CULoggerInfo.badNetworkConfig, uhe.toString());
+            }
 
             if (isPortFreeServer(port, add) == false)
                 return false;   // return immediately on "not-free"
@@ -598,7 +624,6 @@ public class NetUtils {
             // If we can't get an IP address then we can't check
             return false;
         }
-
     }
 
     private static boolean isPortFreeServer(int port, InetAddress add) {
