@@ -41,25 +41,10 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.tests</groupId>
-        <artifactId>cdi</artifactId>
-        <version>4.0-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
+<web-app version="2.5"
+  xmlns="http://java.sun.com/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  
+</web-app>
 
-    <groupId>org.glassfish.tests.cdi</groupId>
-    <artifactId>cases</artifactId>
-    <packaging>pom</packaging>
-    <version>4.0-SNAPSHOT</version>
-
-    <name>GlassFish CDI Test Cases</name>  
-    <modules>
-        <module>multiBeansXml</module>
-        <module>preDestroyScoping</module>
-        <module>runner</module>
-    </modules>
-</project>

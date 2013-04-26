@@ -45,76 +45,29 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.tests.cdi</groupId>
-        <artifactId>cases</artifactId>
+        <groupId>org.glassfish.tests.cdi.cases</groupId>
+        <artifactId>preDestroyScoping</artifactId>
         <version>4.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>org.glassfish.tests.cdi.cases</groupId>
-    <artifactId>runner</artifactId>
+    <groupId>org.glassfish.tests.cdi.cases.preDestroyScoping</groupId>
+    <artifactId>lib</artifactId>
+    <version>4.0-SNAPSHOT</version>
 
-    <name>CDI Test Case Runner</name>
-    
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.12</version>
-                <configuration>
-                    <systemPropertyVariables>
-                        <nucleus.home>${glassfish.home}</nucleus.home>
-                        <source.home>${source.home}</source.home>
-                    </systemPropertyVariables>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+    <name>GlassFish library for PreDestroyScoping test</name>  
 
     <dependencies>
-       <dependency>
-            <groupId>org.glassfish.tests.cdi.cases.multiBeansXml</groupId>
-            <artifactId>ejb1</artifactId>
-            <version>${project.version}</version>
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.1-PRD</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.tests.cdi.cases.multiBeansXml</groupId>
-            <artifactId>ejb2</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-       <dependency>
-            <groupId>org.glassfish.tests.cdi.cases.multiBeansXml</groupId>
-            <artifactId>multiBeansApp</artifactId>
-            <type>ear</type>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tests.cdi.cases.preDestroyScoping</groupId>
-            <artifactId>preDestroyScoping</artifactId>
-            <type>ear</type>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tests.cdi.cases.preDestroyScoping</groupId>
-            <artifactId>lib</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.5.2</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.tests</groupId>
-            <artifactId>utils-ng</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.appclient</groupId>
-            <artifactId>gf-client</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax.ejb</groupId>
+            <artifactId>javax.ejb-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

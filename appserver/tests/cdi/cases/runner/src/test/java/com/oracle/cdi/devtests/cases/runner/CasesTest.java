@@ -39,8 +39,10 @@
  */
 package com.oracle.cdi.devtests.cases.runner;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -54,6 +56,7 @@ import org.testng.annotations.Test;
 
 import com.oracle.cdi.cases.devtests.multiejb1.MultiBeansXmlEjb1;
 import com.oracle.cdi.cases.devtests.multiejb2.MultiBeansXmlEjb2;
+import com.oracle.cdi.cases.devtests.predestroy.lib.PreDestroyConstants;
 
 /**
  * 
@@ -94,6 +97,7 @@ public class CasesTest extends NucleusStartStopTest {
     private final static String MULTI_BEANS_XML_APP = "multiBeansApp";
     private final static String MULTI_BEANS_EJB1_JNDI = "java:global/multiBeansApp/ejb1/InterceptedEjb1!com.oracle.cdi.cases.devtests.multiejb1.MultiBeansXmlEjb1";
     private final static String MULTI_BEANS_EJB2_JNDI = "java:global/multiBeansApp/ejb2/InterceptedEjb2!com.oracle.cdi.cases.devtests.multiejb2.MultiBeansXmlEjb2";
+    
     @Test
     public void testMultiBeansXml() throws NamingException {
         deploy(MULTI_BEANS_XML_JAR);
@@ -133,6 +137,56 @@ public class CasesTest extends NucleusStartStopTest {
         }
         finally {
             undeploy(MULTI_BEANS_XML_APP);
+        }
+        
+    }
+    
+    private final static String PRE_DESTROY_SCOPING_JAR = "cases/preDestroyScoping/ear/target/preDestroyScoping.ear";
+    private final static String PRE_DESTROY_SCOPING_APP = "preDestroyScoping";
+    private final static String BEAN_URL = "http://localhost:8080/web/bean";
+    private final static String LOGOUT_BASE_URL = "http://localhost:8080/web/logout;jsessionid=";
+    private final static String EVENTS_URL = "http://localhost:8080/web/events";
+    
+    private static List<String> getLines(String lines) {
+        StringTokenizer st = new StringTokenizer(lines, "\n");
+        
+        List<String> retVal = new ArrayList<String>();
+        
+        while (st.hasMoreTokens()) {
+            retVal.add(st.nextToken());
+        }
+        
+        return retVal;
+    }
+    
+    /**
+     * This test case is from https://java.net/jira/browse/GLASSFISH-18435
+     */
+    @Test
+    public void testPreDestroyScoping() {
+        deploy(PRE_DESTROY_SCOPING_JAR);
+        try {
+            String lines = NucleusTestUtils.getURL(BEAN_URL);
+            
+            List<String> asArray = getLines(lines);
+            Assert.assertEquals(asArray.size(), 2, "Did not get the proper number of strings from getURL return of " + lines);
+            
+            String uuid = asArray.get(1);
+            
+            NucleusTestUtils.getURL(LOGOUT_BASE_URL + uuid);
+            
+            lines = NucleusTestUtils.getURL(EVENTS_URL);
+            
+            List<String> results = getLines(lines);
+            
+            Assert.assertEquals(results.size(), 3);
+            
+            Assert.assertEquals(results.get(0), PreDestroyConstants.CREATED + asArray.get(0));
+            Assert.assertEquals(results.get(1), PreDestroyConstants.PRODUCER_PRE_DESTROY_IN);
+            Assert.assertEquals(results.get(2), PreDestroyConstants.EXPECTED_EXCEPTION);
+        }
+        finally {
+            undeploy(PRE_DESTROY_SCOPING_APP);
         }
         
     }
