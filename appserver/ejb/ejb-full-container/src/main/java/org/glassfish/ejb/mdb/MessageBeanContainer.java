@@ -59,8 +59,10 @@ import javax.transaction.xa.XAResource;
 
 import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.ejb.api.MessageBeanListener;
 import org.glassfish.ejb.api.MessageBeanProtocolManager;
 import org.glassfish.ejb.api.ResourcesExceededException;
@@ -77,6 +79,7 @@ import com.sun.appserv.connectors.internal.api.TransactedPoolManager;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.containers.EJBContextImpl;
 import com.sun.ejb.containers.EJBContextImpl.BeanState;
 import com.sun.ejb.containers.EJBLocalRemoteObject;
@@ -175,7 +178,7 @@ public final class MessageBeanContainer extends BaseContainer implements
 
         EjbMessageBeanDescriptor msgBeanDesc = (EjbMessageBeanDescriptor) desc;
 
-        EjbInvocation ejbInvocation = null;
+        ComponentInvocation componentInvocation = null;
         try {
 
             Class<?> beanClass = loader.loadClass(desc.getEjbClassName());
@@ -243,9 +246,9 @@ public final class MessageBeanContainer extends BaseContainer implements
             messageBeanClient_ = clientFactory
                     .createMessageBeanClient(msgBeanDesc);
 
-            ejbInvocation = createEjbInvocation();
-            ejbInvocation.container = this;
-            invocationManager.preInvoke(ejbInvocation);
+            componentInvocation = createComponentInvocation();
+            componentInvocation.container = this;
+            invocationManager.preInvoke(componentInvocation);
             messageBeanClient_.setup(this);
 
             registerMonitorableComponents(msgListenerMethods);
@@ -263,8 +266,8 @@ public final class MessageBeanContainer extends BaseContainer implements
             _logger.log(Level.SEVERE, ex.getClass().getName(), ex);
             throw ex;
         } finally {
-            if(ejbInvocation != null) {
-                invocationManager.postInvoke(ejbInvocation);
+            if(componentInvocation != null) {
+                invocationManager.postInvoke(componentInvocation);
             }
         }
     }
@@ -918,10 +921,24 @@ public final class MessageBeanContainer extends BaseContainer implements
         }
     }
 
+    private ComponentInvocation createComponentInvocation() {
+        EjbBundleDescriptor ejbBundleDesc = getEjbDescriptor().getEjbBundleDescriptor();
+        ComponentInvocation newInv = new ComponentInvocation(
+                getComponentId(),
+                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
+                this,
+                ejbBundleDesc.getApplication().getAppName(),
+                ejbBundleDesc.getModuleName()
+        );
+        //newInv.setJNDIEnvironment(getJNDIEnvironment());   ???
+        return newInv;
+    }
+
     private void cleanupResources() {
+        ComponentInvocation componentInvocation = createComponentInvocation();
 
         ASyncClientShutdownTask task = new ASyncClientShutdownTask(appEJBName_,
-                messageBeanClient_, loader, messageBeanPool_);
+                messageBeanClient_, loader, messageBeanPool_, componentInvocation);
         long timeout = 0;
         try { 
                     ConnectorRuntime cr = ejbContainerUtilImpl.getServices()
@@ -1003,19 +1020,23 @@ public final class MessageBeanContainer extends BaseContainer implements
         MessageBeanClient mdbClient;
         ClassLoader clsLoader;
         AbstractPool mdbPool;
+        ComponentInvocation componentInvocation;
 
         ASyncClientShutdownTask(String appName, MessageBeanClient mdbClient,
-                ClassLoader loader, AbstractPool mdbPool) {
+                ClassLoader loader, AbstractPool mdbPool, ComponentInvocation componentInvocation) {
             this.appName = appName;
             this.mdbClient = mdbClient;
             this.clsLoader = loader;
             this.mdbPool = mdbPool;
+            this.componentInvocation = componentInvocation;
         }
 
         public void run() {
             ClassLoader previousClassLoader = null;
+            InvocationManager invocationManager = EjbContainerUtilImpl.getInstance().getInvocationManager();
             try {
                 previousClassLoader = Utility.setContextClassLoader(clsLoader);
+                invocationManager.preInvoke(componentInvocation);
                 // Cleanup the message bean client resources.
                 mdbClient.close();
                 _logger
@@ -1035,6 +1056,7 @@ public final class MessageBeanContainer extends BaseContainer implements
                 } catch (Exception ex) {
                     _logger.log(Level.FINE, "Exception while closing pool", ex);
                 }
+                invocationManager.postInvoke(componentInvocation);
                 if (previousClassLoader != null) {
                     Utility.setContextClassLoader(previousClassLoader);
                 }
