@@ -122,7 +122,7 @@
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.0</websocket-api.version>
         <tyrus.version>1.0-rc4</tyrus.version>
-        <jsonp.version>1.0-b06</jsonp.version>
+        <jsonp.version>1.0</jsonp.version>
         <concurrent-api.version>1.0-b06</concurrent-api.version>
         <concurrent.version>1.0-b08</concurrent.version>
         <javax.batch-api.version>1.0-b26</javax.batch-api.version>
@@ -206,14 +206,10 @@
                                 <artifactId>javax.json</artifactId>
                                 <version>${jsonp.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>
-                            <specVersion>0.0</specVersion>
-                            <newSpecVersion>1.0</newSpecVersion>
-                            <implVersion>0.0</implVersion>
-                            <newImplVersion>1.0</newImplVersion>
-                            <specBuild>06</specBuild>
-                            <implBuild>06</implBuild>
+                            <specVersion>1.0</specVersion>
+                            <implVersion>1.0</implVersion>
                             <apiPackage>javax.json</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
