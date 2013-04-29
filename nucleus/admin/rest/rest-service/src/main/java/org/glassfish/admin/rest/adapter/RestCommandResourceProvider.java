@@ -51,8 +51,15 @@ import org.glassfish.admin.rest.readers.JsonParameterMapProvider;
 import org.glassfish.admin.rest.readers.MultipartFDPayloadReader;
 import org.glassfish.admin.rest.readers.ParameterMapFormReader;
 import org.glassfish.admin.rest.resources.admin.CommandResource;
+import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.utilities.Binder;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.jersey.media.sse.SseFeature;
+import org.glassfish.jersey.message.MessageProperties;
+import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.ServerProperties;
+import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 
 /**
  * Responsible for providing ReST resources for {@code asadmin} and {@code cadmin} communication.
@@ -118,4 +125,26 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
     public String getContextRoot() {
         return org.glassfish.admin.restconnector.Constants.REST_COMMAND_CONTEXT_ROOT;
     }
+    
+    @Override
+    public ResourceConfig getResourceConfig(Set<Class<?>> classes,
+                                            final ServerContext sc,
+                                            final ServiceLocator habitat,
+                                            final Set<? extends Binder> additionalBinders)
+            throws EndpointRegistrationException {
+        ResourceConfig rc = new ResourceConfig(classes);
+        rc.property(ServerProperties.MEDIA_TYPE_MAPPINGS, getMimeMappings());
+        rc.register(CsrfProtectionFilter.class);
+        for (Binder b : additionalBinders) {
+            rc.register(b);
+        }
+        rc.property(MessageProperties.LEGACY_WORKERS_ORDERING, true);
+        //Disable as much as possible
+        rc.property(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, true);
+        rc.property(ServerProperties.WADL_FEATURE_DISABLE, true);
+        rc.property(ServerProperties.BV_FEATURE_DISABLE, true);
+        rc.property(ServerProperties.RESOURCE_VALIDATION_DISABLE, true);
+        return rc;
+    }
+    
 }

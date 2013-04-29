@@ -39,7 +39,6 @@
  */
 package org.glassfish.admin.rest.adapter;
 
-import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -52,8 +51,6 @@ import javax.inject.Inject;
 import javax.security.auth.Subject;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.CommandRunner;
-import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
@@ -65,8 +62,8 @@ import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.utilities.Binder;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.internal.api.InternalSystemAdministrator;
 import org.glassfish.internal.api.ServerContext;
+import org.glassfish.jersey.internal.ServiceFinder;
 import org.glassfish.jersey.internal.inject.ReferencingFactory;
 import org.glassfish.jersey.internal.util.collection.Ref;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -86,9 +83,6 @@ public class JerseyContainerCommandService implements PostConstruct {
     @Inject
     protected ServiceLocator habitat;
 
-    @Inject
-    private InternalSystemAdministrator kernelIdentity;
-    
     private Future<JerseyContainer> future = null;
 
     @Override
@@ -101,16 +95,6 @@ public class JerseyContainerCommandService implements PostConstruct {
                                                      return result;
                                                  }
                                              });
-        executor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CommandRunner cr = habitat.getService(CommandRunner.class);
-                                    final CommandRunner.CommandInvocation invocation =
-                                                    cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
-                                    invocation.parameters(new ParameterMap());
-                                    invocation.execute();
-                                }
-                            });
         executor.shutdown();
     }
 
@@ -154,13 +138,19 @@ public class JerseyContainerCommandService implements PostConstruct {
     }
 
     private JerseyContainer getJerseyContainer(ResourceConfig rc) {
-        final HttpHandler httpHandler = ContainerFactory.createContainer(HttpHandler.class, rc);
-        return new JerseyContainer() {
-            @Override
-            public void service(Request request, Response response) throws Exception {
-                httpHandler.service(request, response);
-            }
-        };
+        AdminJerseyServiceIteratorProvider iteratorProvider = new AdminJerseyServiceIteratorProvider();
+        try {
+            ServiceFinder.setIteratorProvider(iteratorProvider);
+            final HttpHandler httpHandler = ContainerFactory.createContainer(HttpHandler.class, rc);
+            return new JerseyContainer() {
+                @Override
+                public void service(Request request, Response response) throws Exception {
+                    httpHandler.service(request, response);
+                }
+            };
+        } finally {
+            iteratorProvider.disable();
+        }
     }
 
     private Set<? extends Binder> getAdditionalBinders() {
