@@ -63,8 +63,8 @@
         <jms-api.version>2.0</jms-api.version>
         <jsp-api.version>2.3.1</jsp-api.version>
         <jsp-impl.version>2.3.1</jsp-impl.version>
-        <javax.el.version>3.0-b07</javax.el.version>
-        <javax.el-api.version>3.0-b08</javax.el-api.version>
+        <javax.el.version>3.0.0</javax.el.version>
+        <javax.el-api.version>3.0.0</javax.el-api.version>
         <jstl-impl.version>1.2.2</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.0-m14</mojarra.version>
@@ -186,7 +186,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.el.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence-api.jar</excludes>
                     <specs>
                         <spec>
                             <artifact>
@@ -467,6 +467,18 @@
                             <specVersion>2.3</specVersion>
                             <specImplVersion>2.3.1</specImplVersion>
                             <apiPackage>javax.servlet.jsp</apiPackage>
+                        </spec>
+                        <spec>
+                            <artifact>
+                                <groupId>org.glassfish</groupId>
+                                <artifactId>javax.el</artifactId>
+                                <version>${javax.el.version}</version>
+                            </artifact>
+                            <jarType>impl</jarType>
+                            <specVersion>3.0</specVersion>
+                            <implVersion>3.0.0</implVersion>
+                            <apiPackage>javax.el</apiPackage>
+                            <implNamespace>com.sun.el</implNamespace>
                         </spec>
                     </specs>
                 </configuration>
