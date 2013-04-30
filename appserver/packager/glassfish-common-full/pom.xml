@@ -213,7 +213,10 @@
             <groupId>org.glassfish</groupId>
             <artifactId>javax.enterprise.concurrent</artifactId>
         </dependency>
-       
+        <dependency>
+            <groupId>javax.xml.rpc</groupId>
+            <artifactId>javax.xml.rpc-api</artifactId>
+        </dependency>  
     </dependencies>
 </project>
 

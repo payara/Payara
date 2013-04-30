@@ -381,13 +381,13 @@
                         <phase>initialize</phase>
                         <configuration>
                             <filesets>
-<!--                                <fileset>
+                                <fileset>
                                     <directory>${settings.localRepository}</directory>
                                     <includes>
                                         <include>javax/ejb/**</include>
                                         <include>javax/transaction/**</include>
                                     </includes>
-                                </fileset>-->
+                                </fileset>
                             </filesets>
                         </configuration>
                     </execution>
