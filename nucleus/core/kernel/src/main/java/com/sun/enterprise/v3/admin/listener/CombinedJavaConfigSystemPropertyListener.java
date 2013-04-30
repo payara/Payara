@@ -246,7 +246,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                             return addToDomain(sp);
                         } else if (proxy instanceof Config && p == ConfigSupport.getImpl(config)) {
                             return addToConfig(sp);
-                        } else if (proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
+                        } else if (cluster != null && proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
                             return addToCluster(sp);
                         } else if (proxy instanceof Server && p == ConfigSupport.getImpl(server)) {
                             return addToServer(sp);                           
@@ -256,7 +256,7 @@ public final class CombinedJavaConfigSystemPropertyListener implements PostConst
                             return removeFromDomain(sp);
                         } else if (proxy instanceof Config && p == ConfigSupport.getImpl(config)) {
                             return removeFromConfig(sp);
-                        } else if (proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
+                        } else if (cluster != null && proxy instanceof Cluster && p == ConfigSupport.getImpl(cluster)) {
                             return removeFromCluster(sp);
                         } else if (proxy instanceof Server && p == ConfigSupport.getImpl(server)) {
                             return removeFromServer(sp);
