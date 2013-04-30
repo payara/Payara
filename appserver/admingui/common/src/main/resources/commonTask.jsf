@@ -46,7 +46,9 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
 />
-<!composition template="/templates/default.layout" guiTitle="$resource{i18n.commonTasks.title}" guiOnLoad="if (frameOnload) {frameOnload();};">
+<!composition template="/templates/default.layout" guiTitle="$resource{i18n.commonTasks.title}"
+      <!-- GLASSFISH-20207 guiOnLoad="if (frameOnload) {frameOnload();};"  -->
+    >
 <!define name="guiExtraHead">
 <f:verbatim>
     <style type="text/css">
@@ -151,7 +153,7 @@
 
 
       <!--  Customizing pe bottom frame -->
-      <!--  Remove promotion frame.  Refer to GLASSFISH-20207
+      <!--  Remove promotion frame.  Refer to GLASSFISH-20207; also look at guiOnLoad() above.
           <event>
           <!afterCreate
               if (!#{sessionScope._noNetwork}) {
