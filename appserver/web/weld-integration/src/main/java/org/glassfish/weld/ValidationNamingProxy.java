@@ -66,10 +66,9 @@ import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 /**
- * Proxy for javax.validation based lookups (java:comp/Validator, java:comp/ValidatorFactory)
+ * Proxy for javax.validation based lookups (java:comp/Validator, java:comp/ValidatorFactory) when CDI enabled
  */
 @Service
-@NamespacePrefixes({ValidationNamingProxy.VALIDATOR_CONTEXT, ValidationNamingProxy.VALIDATOR_FACTORY_CONTEXT})
 @Named("ValidationNamingProxy")
 public class ValidationNamingProxy implements NamedNamingObjectProxy {
 
@@ -84,10 +83,6 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
 
     @Inject
     private WeldDeployer weldDeployer;
-
-    private ValidatorFactory validatorFactory;
-    private Validator validator;
-
 
     static final String VALIDATOR_CONTEXT = "java:comp/Validator";
     static final String VALIDATOR_FACTORY_CONTEXT = "java:comp/ValidatorFactory";
@@ -118,12 +113,11 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
         // delegate to the java:comp/BeanManager handler to obtain the appropriate BeanManager
         BeanManager beanManager = obtainBeanManager();
 
+        if (beanManager == null) {
+          return null; // There is no bean manager available, return and let BeanValidatorNamingProxy handle lookup..
+        }
 
         if (VALIDATOR_FACTORY_CONTEXT.equals(name)) {
-
-            if (beanManager == null) {
-                return getValidatorFactory();
-            }
 
             try {
 
@@ -141,9 +135,6 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
                 throw ne;
             }
         } else if (VALIDATOR_CONTEXT.equals(name)) {
-            if (beanManager == null) {
-               return getValidator();
-            }
 
             try {
 
@@ -209,35 +200,4 @@ public class ValidationNamingProxy implements NamedNamingObjectProxy {
 
         return beanManager;
     }
-
-    private Validator getValidator() throws NamingException {
-        if (null == validator) {
-            try {
-                ValidatorFactory factory = getValidatorFactory();
-                ValidatorContext validatorContext = factory.usingContext();
-                validator = validatorContext.getValidator();
-            } catch (Throwable t) {
-                NamingException ne = new NamingException("Error retrieving Validator for " + VALIDATOR_CONTEXT + " lookup");
-                ne.initCause(t);
-                throw ne;
-            }
-        }
-        return validator;
-    }
-
-    private ValidatorFactory getValidatorFactory() throws NamingException {
-
-        if (null == validatorFactory) {
-            try {
-                validatorFactory = Validation.buildDefaultValidatorFactory();
-            } catch (Throwable t) {
-                NamingException ne = new NamingException("Error retrieving ValidatorFactory for " + VALIDATOR_FACTORY_CONTEXT + " lookup");
-                ne.initCause(t);
-                throw ne;
-            }
-        }
-
-        return validatorFactory;
-    }
-
 }
