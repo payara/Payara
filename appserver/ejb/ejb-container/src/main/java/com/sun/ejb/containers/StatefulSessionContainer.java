@@ -3035,7 +3035,7 @@ public final class StatefulSessionContainer
      */
     private boolean callLifecycleCallbackInTxIfUsed(EjbInvocation ejbInv, EJBContextImpl ctx, 
             InvocationInfo invInfo, CallbackType callbackType)  throws Throwable {
-        boolean inTx = (invInfo.txAttr != -1);
+        boolean inTx = (invInfo.txAttr != -1 && invInfo.txAttr != Container.TX_BEAN_MANAGED);
         if (inTx) {
             ((SessionContextImpl)ctx).setInLifeCycleCallback(true);
 
