@@ -372,6 +372,7 @@ public class AdminMain {
             // find closest match with local or remote commands
             logger.severe(ice.getMessage());
             try {
+                po.setEcho(false); 
                 CLIUtil.displayClosestMatch(command,
                         CLIUtil.getAllCommands(cliContainer, po, env),
                         strings.get("ClosestMatchedLocalAndRemoteCommands"), logger);
