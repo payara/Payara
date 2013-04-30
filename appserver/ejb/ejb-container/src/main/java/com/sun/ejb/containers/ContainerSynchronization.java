@@ -141,10 +141,19 @@ final class ContainerSynchronization implements Synchronization
             BaseContainer container = (BaseContainer)context.getContainer();
             try {
                 if( container != null ) {
+                    boolean allowTxCompletion = true;
 		    if (container.isUndeployed()) {
-			_logger.log(Level.WARNING, "Marking Tx for rollback "
-			    + " because container for " + container
-			    + " is undeployed");
+                        if (context instanceof SessionContextImpl) {
+                            allowTxCompletion = ((SessionContextImpl) context).getInLifeCycleCallback();
+                        } else {
+                            allowTxCompletion = false;
+		            _logger.log(Level.WARNING, "Marking Tx for rollback "
+        		        + " because container for " + container
+        		        + " is undeployed");
+                        }
+                    }
+
+                    if (!allowTxCompletion) {
 			try {
 			    tx.setRollbackOnly();
 			} catch (SystemException sysEx) {
