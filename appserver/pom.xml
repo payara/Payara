@@ -266,7 +266,7 @@
                             <jarType>api</jarType>             
                             <specVersion>1.2</specVersion>
                             <specImplVersion>1.2.1</specImplVersion>
-                            <apiPackage>javax.servlet.jsp.jstl-api</apiPackage>
+                            <apiPackage>javax.servlet.jsp.jstl</apiPackage>
                         </spec>
                         <spec>
                             <artifact>
