@@ -109,7 +109,7 @@
         <jaxb-api.version>2.2.7</jaxb-api.version>
         <jaxb.version>2.2.7</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
-        <javax.xml.registry-api.version>1.0.4</javax.xml.registry-api.version>
+        <javax.xml.registry-api.version>1.0.5</javax.xml.registry-api.version>
         <eclipselink.version>2.5.0-RC1</eclipselink.version>
         <javax-persistence-api.version>2.1.0-RC1</javax-persistence-api.version> 
         <dbschema.version>3.1.1</dbschema.version>
@@ -411,7 +411,7 @@
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
                             <specVersion>1.0</specVersion>
-                            <specImplVersion>1.0.4</specImplVersion>
+                            <specImplVersion>${javax.xml.registry-api.version}</specImplVersion>
                             <apiPackage>javax.xml.registry</apiPackage>
                         </spec>
                         <spec>
