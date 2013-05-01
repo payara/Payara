@@ -187,7 +187,7 @@
                 <version>1.2</version>
                 <configuration>
                     <dir>${stage.dir}/${install.dir.name}/glassfish/modules</dir>
-                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence-api.jar</excludes>
+                    <excludes>javax.inject.jar,javax.servlet.jsp.jstl.jar,javax.servlet.jsp.jar,javax.enterprise.concurrent.jar, javax.persistence.jar</excludes>
                     <specs>
                         <spec>
                             <artifact>
@@ -225,10 +225,10 @@
                             <specVersion>2.1</specVersion>
                             <newSpecVersion>2.2</newSpecVersion>
                             <implVersion>2.1.20</implVersion>
-                            <specImplVersion>2.2-m14</specImplVersion>
-                            <newImplVersion>2.2-m14</newImplVersion>
-                            <specBuild>14</specBuild>
-                            <implBuild>14</implBuild>
+                            <specImplVersion>2.2-m15</specImplVersion>
+                            <newImplVersion>2.2-m15</newImplVersion>
+                            <specBuild>15</specBuild>
+                            <implBuild>15</implBuild>
                             <apiPackage>javax.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
