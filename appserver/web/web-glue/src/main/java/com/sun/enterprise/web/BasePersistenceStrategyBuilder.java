@@ -171,6 +171,8 @@ public abstract class BasePersistenceStrategyBuilder
 
         ctx.setBackgroundProcessorDelay(reapInterval);
 
+        StandardContext sctx = (StandardContext)ctx;
+        sctx.restrictedSetPipeline(new WebPipeline(sctx));
     }
     
     public void setDefaultParams(Context ctx, SessionManager smBean) {
