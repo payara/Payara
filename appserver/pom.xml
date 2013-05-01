@@ -57,6 +57,7 @@
     <scm>
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver</developerConnection>
+        <url>https://svn.java.net/svn/glassfish~svn/trunk/main/appserver</url>
     </scm>
     
     <properties>

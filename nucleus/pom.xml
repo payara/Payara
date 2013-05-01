@@ -59,6 +59,7 @@
     <scm>
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</developerConnection>
+        <url>https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</url>
     </scm>
     <issueManagement>
         <system>IssueTracker</system>
