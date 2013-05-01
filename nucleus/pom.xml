@@ -388,6 +388,7 @@
                                         <include>javax/ejb/**</include>
                                         <include>javax/transaction/**</include>
 					<include>javax/resource/**</include>
+                                        <include>javax/enterprise/concurrent/**</include>
                                     </includes>
                                 </fileset>
                             </filesets>
