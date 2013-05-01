@@ -71,6 +71,11 @@
             </roles>
         </developer>
     </developers>
+    
+    <properties>
+        <!-- we don't process the rpc classes inlined in ejb-api -->
+        <extra.excludes>javax/xml/rpc/**</extra.excludes>
+    </properties>
 
     <build>
         <plugins>

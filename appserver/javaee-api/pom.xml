@@ -61,6 +61,10 @@
         <module>javax.javaee-endorsed-api</module>
     </modules>
     
+    <properties>
+        <extra.excludes></extra.excludes>
+    </properties>    
+    
     <build>                
         <resources>
             <resource>
@@ -148,7 +152,7 @@
                             <configuration>
                                 <attachSources>true</attachSources>
                                 <excludeArtifactIds>tools-jar,servlet-api,javax.faces</excludeArtifactIds>
-                                <excludes>javax/help/**</excludes>
+                                <excludes>javax/help/**,${extra.excludes}</excludes>
                                 <includes>javax/**</includes>
                                 <excludeTransitive>true</excludeTransitive>
                             </configuration>
