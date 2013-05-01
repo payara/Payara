@@ -52,6 +52,10 @@
     <name>Verifier Package</name>
     <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the Verifier package</description>
+    
+    <properties>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
+    </properties>    
 
     <build>
         <plugins>
