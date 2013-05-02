@@ -49,49 +49,50 @@
         <version>4.0.1-SNAPSHOT</version>
     </parent>
 
-  <groupId>org.glassfish</groupId>
-  <artifactId>scattered</artifactId>
-  <packaging>pom</packaging>
-  <version>4.0.1-SNAPSHOT</version>
+    <groupId>org.glassfish</groupId>
+    <artifactId>scattered</artifactId>
+    <packaging>pom</packaging>
+    <version>4.0.1-SNAPSHOT</version>
 
-  <name>Maven deploy test</name>
+    <name>Maven deploy test</name>
 
-  <build>
-  <defaultGoal>install</defaultGoal>
-  <plugins>
-    <plugin>
-      <groupId>org.glassfish.embedded</groupId>
-      <artifactId>maven-embedded-glassfish-plugin</artifactId>
-      <configuration>
-        <goalPrefix>glassfish</goalPrefix>
-        <rootdirectory>src/main/web</rootdirectory>
-        <port>8080</port> 
-        <name>test</name>
-      </configuration>
-      <executions>
-        <execution>
-          <phase>install</phase>
-          <goals>
-            <goal>runscatteredarchive</goal>
-          </goals>
-        </execution>
-      </executions>
-    </plugin>
-  </plugins>
-   </build>
+    <build>
+        <defaultGoal>install</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.embedded</groupId>
+                <artifactId>maven-embedded-glassfish-plugin</artifactId>
+                <version>4.0-SNAPSHOT</version>
+                <configuration>
+                    <goalPrefix>glassfish</goalPrefix>
+                    <rootdirectory>src/main/web</rootdirectory>
+                    <port>8080</port> 
+                    <name>test</name>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>runscatteredarchive</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-plugin-api</artifactId>
-      <version>2.0</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.maven</groupId>
-      <artifactId>maven-project</artifactId>
-      <version>2.0</version>
-    </dependency>
-  </dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-plugin-api</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-project</artifactId>
+            <version>2.0</version>
+        </dependency>
+    </dependencies>
 
 </project>
 

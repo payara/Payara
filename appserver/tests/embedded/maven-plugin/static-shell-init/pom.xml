@@ -65,7 +65,7 @@
                     <dependency>
                         <groupId>org.glassfish.main.extras</groupId>
                         <artifactId>glassfish-embedded-static-shell</artifactId>
-                        <version>${project.version}</version>
+                        <version>4.0-SNAPSHOT</version>
 			<scope>system</scope>
 			<systemPath>${env.S1AS_HOME}/lib/embedded/glassfish-embedded-static-shell.jar
 			</systemPath>
