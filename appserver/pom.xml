@@ -300,8 +300,8 @@
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>     
-                            <specVersion>2.0</specVersion>
-                            <specImplVersion>2.0</specImplVersion>
+                            <specVersion>${jms-api.version}</specVersion>
+                            <specImplVersion>${jms-api.version}</specImplVersion>
                             <apiPackage>javax.jms</apiPackage>
                         </spec>
                         <spec>
@@ -310,11 +310,10 @@
                                 <artifactId>javax.enterprise.concurrent-api</artifactId>
                                 <version>${concurrent-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>     
-                            <specVersion>0.0</specVersion>
-                            <newSpecVersion>1.0</newSpecVersion>
-                            <specBuild>06</specBuild>
+                            <specVersion>${concurrent-api.version}</specVersion>
+                            <specImplVersion>${concurrent-api.version}</specImplVersion>
                             <apiPackage>javax.enterprise.concurrent</apiPackage>
                         </spec>
                         <spec>
