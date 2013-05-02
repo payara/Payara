@@ -46,13 +46,13 @@
     <parent>
         <groupId>org.glassfish.tests</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
 
   <groupId>org.glassfish</groupId>
   <artifactId>scattered</artifactId>
   <packaging>pom</packaging>
-  <version>4.0-SNAPSHOT</version>
+  <version>4.0.1-SNAPSHOT</version>
 
   <name>Maven deploy test</name>
 

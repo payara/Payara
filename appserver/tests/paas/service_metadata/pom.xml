@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>service_metadata</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Service Metadata PaaS samples</name>
     <packaging>pom</packaging>
     <modules>

@@ -43,7 +43,7 @@
 
 <project name="Web IPS distribution" default="create-web-distributions" basedir=".">
     <import file="../distributions.xml" />
-    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0 Web Profile"/>
+    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0.1 Web Profile"/>
     
     <target name="install-packages">
         <install.package name="json"/>

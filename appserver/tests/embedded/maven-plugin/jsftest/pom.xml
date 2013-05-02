@@ -49,7 +49,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>jsftest</artifactId>
     <packaging>war</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Test JSF (maven-plugin/jsftest)</name>
 
     <build>
@@ -75,7 +75,7 @@
             <plugin>
                 <groupId>org.glassfish.embedded</groupId>
                 <artifactId>maven-embedded-glassfish-plugin</artifactId>
-                <version>4.0-SNAPSHOT</version>
+                <version>4.0.1-SNAPSHOT</version>
                 <configuration>
                     <goalPrefix>glassfish</goalPrefix>
                     <app>target/jsftest.war</app>

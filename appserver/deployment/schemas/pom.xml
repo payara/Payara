@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>deployment</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>schemas</artifactId>
     <packaging>distribution-fragment</packaging>
@@ -54,7 +54,7 @@
                         <configuration>
                             <tasks>
 								<copy todir="${project.build.directory}/classes/glassfish/lib/schemas" flatten="true">
-								  <fileset dir="${jpa.schema.temp.location}/javax/persistence"/>
+								  <fileset dir="${jpa.schema.temp.location}/javax/persistence" />
 								 </copy> 
                             </tasks>
                         </configuration>

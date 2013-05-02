@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>gf-ejb-connector</artifactId>

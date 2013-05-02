@@ -48,12 +48,12 @@
     <parent>
         <groupId>org.glassfish.main.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>console-devtests</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Admin Console Dev Tests</name>
     <description>This module contains the dev tests for the admin console</description>

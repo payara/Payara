@@ -48,7 +48,7 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-embedded-nucleus</artifactId>
@@ -89,9 +89,9 @@
                         <configuration>
                             <tasks>
                                 <ant dir="." antfile="../build.xml" target="create.distribution">
-                                    <property name="bundlename" value="org.glassfish.main.embedded.nucleus"/>
-                                    <property name="finaljar" value="${project.build.directory}/glassfish-embedded-nucleus.jar"/>
-                                    <property name="install.dir.name" value="${install.dir.name}"/>                                    
+                                    <property name="bundlename" value="org.glassfish.main.embedded.nucleus" />
+                                    <property name="finaljar" value="${project.build.directory}/glassfish-embedded-nucleus.jar" />
+                                    <property name="install.dir.name" value="${install.dir.name}" />                                    
                                 </ant>
                             </tasks>
                         </configuration>

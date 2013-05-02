@@ -48,7 +48,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>websockets</artifactId>
     <packaging>war</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>WebSocket Test (maven-plugin/websockets)</name>
 
     <build>
@@ -65,7 +65,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <copy file="target/websockets-4.0-SNAPSHOT.war"
+                                <copy file="target/websockets-4.0.1-SNAPSHOT.war"
                                       tofile="target/websockets.war"/>
                             </tasks>
                         </configuration>

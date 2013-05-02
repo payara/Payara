@@ -41,9 +41,7 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <!--
         This module builds the free-standing JAR file for the app client
@@ -63,7 +61,7 @@
     <parent>
         <groupId>org.glassfish.main.appclient</groupId>
         <artifactId>client</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -169,11 +167,11 @@ this or the downstream JARs and so attempts to find things fail.
                       </goals>
                       <configuration>
                           <target>
-                              <property name="output.file" value="${project.build.finalName}.jar"/>
-                              <property name="output.dir" value="${project.build.directory}"/>
-                              <property name="stage.dir" value="${project.build.directory}/stage"/>
-                              <property name="classpath.file" value="${classpath.file}"/>
-                              <ant antfile="${basedir}/fixup.xml"/>
+                              <property name="output.file" value="${project.build.finalName}.jar" />
+                              <property name="output.dir" value="${project.build.directory}" />
+                              <property name="stage.dir" value="${project.build.directory}/stage" />
+                              <property name="classpath.file" value="${classpath.file}" />
+                              <ant antfile="${basedir}/fixup.xml" />
                           </target>
                       </configuration>
                   </execution>

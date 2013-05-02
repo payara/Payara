@@ -45,7 +45,7 @@
   <parent>
     <artifactId>jdbc-ra</artifactId>
     <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -65,20 +65,20 @@
             <configuration>
 	      <tasks>
                 <!-- Resolving jdbc-core, jdbc30 and jdbc40 artifacts -->			
-                <resolveArtifact artifactId="jdbc-core" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc-core" property="core.jar"/>
-                <resolveArtifact artifactId="jdbc30" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc30" property="30.jar"/>
-                <resolveArtifact artifactId="jdbc40" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc40" property="40.jar"/>
-		<resolveArtifact artifactId="templates" groupId="org.glassfish.main.jdbc" property="templates.jar"/>
+                <resolveArtifact artifactId="jdbc-core" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc-core" property="core.jar" />
+                <resolveArtifact artifactId="jdbc30" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc30" property="30.jar" />
+                <resolveArtifact artifactId="jdbc40" groupId="org.glassfish.main.jdbc.jdbc-ra.jdbc40" property="40.jar" />
+		<resolveArtifact artifactId="templates" groupId="org.glassfish.main.jdbc" property="templates.jar" />
 
-	        <unjar src="${core.jar}" dest="target/classes"/>
-	        <unjar src="${30.jar}" dest="target/classes"/>
-	        <unjar src="${40.jar}" dest="target/classes"/>
-		<unjar src="${templates.jar}" dest="target/classes/templates"/>
+	        <unjar src="${core.jar}" dest="target/classes" />
+	        <unjar src="${30.jar}" dest="target/classes" />
+	        <unjar src="${40.jar}" dest="target/classes" />
+		<unjar src="${templates.jar}" dest="target/classes/templates" />
 
 		<!-- Creating jars/rars done using ant build.xml -->
-            	<property name="compile_classpath" refid="maven.compile.classpath"/>
-	        <property name="build.compiler" value="extJavac"/>
-	        <ant dir="." antfile="build.xml" target="all"/>
+            	<property name="compile_classpath" refid="maven.compile.classpath" />
+	        <property name="build.compiler" value="extJavac" />
+	        <ant dir="." antfile="build.xml" target="all" />
 
             	<!-- TODO: Kohsuke to come back here and make sure mvn install puts a zip file, not .distribution-fragment -->
 	        <attachArtifact file="target/jdbc-ra.zip" />

@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.admin</groupId>
         <artifactId>admin</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>appserver-domain</artifactId>

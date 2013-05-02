@@ -48,7 +48,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>sessionDestroyed</artifactId>
     <packaging>war</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Session Lifecyle Test (maven-plugin/sessionDestroyed)</name>
 
     <build>
@@ -65,7 +65,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <copy file="target/sessionDestroyed-4.0-SNAPSHOT.war"
+                                <copy file="target/sessionDestroyed-4.0.1-SNAPSHOT.war"
                                       tofile="target/sessionDestroyed.war"/>
                             </tasks>
                         </configuration>

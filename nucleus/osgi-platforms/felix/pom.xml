@@ -59,13 +59,12 @@
    distribution from Felix project and installs. The only difference being we keep
    the bundles in glassfish/modules dir as opposed to bundle dir in felix.
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
       <groupId>org.glassfish.main.osgi-platforms</groupId>
       <artifactId>osgi-platforms</artifactId>
-      <version>4.0-SNAPSHOT</version>
+      <version>4.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>felix</artifactId>
@@ -114,7 +113,7 @@
                 <artifactId>maven-antrun-extended-plugin</artifactId>
                 <configuration>
                     <tasks>
-                        <ant dir="." antfile="build.xml" target="create.bundle"/>
+                        <ant dir="." antfile="build.xml" target="create.bundle" />
                     </tasks>
                 </configuration>
                 <executions>

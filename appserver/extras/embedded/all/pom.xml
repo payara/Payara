@@ -46,11 +46,11 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-embedded-all</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Embedded GlassFish All-In-One</name>
 
     <packaging>jar</packaging>
@@ -90,9 +90,9 @@
             <configuration>
               <tasks>
                   <ant dir="." antfile="../build.xml" target="create.distribution">
-                      <property name="finaljar" value="${project.build.directory}/glassfish-embedded-all.jar"/>
-                      <property name="bundlename" value="org.glassfish.main.embedded.all"/>
-                      <property name="install.dir.name" value="${install.dir.name}"/>                    
+                      <property name="finaljar" value="${project.build.directory}/glassfish-embedded-all.jar" />
+                      <property name="bundlename" value="org.glassfish.main.embedded.all" />
+                      <property name="install.dir.name" value="${install.dir.name}" />                    
                   </ant>
               </tasks>
             </configuration>

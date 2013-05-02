@@ -41,13 +41,12 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
 
     <developers>
@@ -287,20 +286,20 @@
                             <configuration>
                                 <target>
                                     <apply executable="pack200" dest="${stage.dir}/glassfish/modules" parallel="false">
-                                        <targetfile/>
-                                        <srcfile/>
+                                        <targetfile />
+                                        <srcfile />
                                         <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.jar" excludes="**/javahelp.jar,**/org.eclipse.persistence.*.jar" />
-                                        <mapper type="glob" from="*.jar" to="*.pack.gz"/>
+                                        <mapper type="glob" from="*.jar" to="*.pack.gz" />
                                     </apply>
                                     <apply executable="unpack200" dest="${stage.dir}/glassfish/modules" parallel="false">
-                                        <srcfile/>
-                                        <targetfile/>
-                                        <fileset dir="${stage.dir}/glassfish/modules"  includes="**/*.pack.gz" />
-                                        <mapper type="glob" from="*.pack.gz" to="*.jar"/>
+                                        <srcfile />
+                                        <targetfile />
+                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz" />
+                                        <mapper type="glob" from="*.pack.gz" to="*.jar" />
                                     </apply>
                                     <!--remove *.pack.gz files-->
                                     <delete>
-                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz"/>
+                                        <fileset dir="${stage.dir}/glassfish/modules" includes="**/*.pack.gz" />
                                     </delete>
                                 </target>
                             </configuration>                         

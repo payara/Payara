@@ -41,12 +41,12 @@
 
 -->
 
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../../common/pom.xml</relativePath>
     </parent>
 
@@ -95,10 +95,8 @@
                         <phase>generate-sources</phase>
                         <configuration>
                             <tasks>
-                                <resolveArtifact artifactId="btrace-agent"
-                                   tofile="target/classes/glassfish/lib/monitor/btrace-agent.jar"/>
-                                <resolveArtifact artifactId="btrace-boot"
-                                   tofile="target/classes/glassfish/lib/monitor/btrace-boot.jar"/>
+                                <resolveArtifact artifactId="btrace-agent" tofile="target/classes/glassfish/lib/monitor/btrace-agent.jar" />
+                                <resolveArtifact artifactId="btrace-boot" tofile="target/classes/glassfish/lib/monitor/btrace-boot.jar" />
                             </tasks>
                         </configuration>
                         <goals>

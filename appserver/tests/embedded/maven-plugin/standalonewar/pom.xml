@@ -48,7 +48,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>standalonewar</artifactId>
     <packaging>war</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Standalone WAR Test (maven-plugin/standalonewar)</name>
 
     <build>
@@ -65,7 +65,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <copy file="target/standalonewar-4.0-SNAPSHOT.war"
+                                <copy file="target/standalonewar-4.0.1-SNAPSHOT.war"
                                       tofile="target/standalonewar.war"/>
                             </tasks>
                         </configuration>

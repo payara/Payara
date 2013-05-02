@@ -47,12 +47,12 @@
         <groupId>net.java</groupId>
         <artifactId>jvnet-parent</artifactId>
         <version>4</version>
-	<relativePath></relativePath>
+	<relativePath />
     </parent>
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -113,7 +113,7 @@
         <build.id>${user.name}-private</build.id>
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
-        <findbugs.exclude></findbugs.exclude>
+        <findbugs.exclude />
         <findbugs.version>2.4.0</findbugs.version>
         
         <glassfish-corba.version>4.0.0-b007</glassfish-corba.version>
@@ -489,7 +489,7 @@
                 <artifactId>maven-bundle-plugin</artifactId>
                 <configuration>
                     <!-- By default, we don't export anything. -->
-                    <Export-Package></Export-Package>
+                    <Export-Package />
                     <instructions>
                         <!-- Read all the configuration from osgi.bundle file, if it exists.
                              See Felix-699 to find out why we use ${basedir}.

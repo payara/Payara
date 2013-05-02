@@ -48,7 +48,7 @@
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>queryString</artifactId>
     <packaging>war</packaging>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0.1-SNAPSHOT</version>
     <name>Query String Test (maven-plugin/queryString)</name>
 
     <build>
@@ -65,7 +65,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <copy file="target/queryString-4.0-SNAPSHOT.war"
+                                <copy file="target/queryString-4.0.1-SNAPSHOT.war"
                                       tofile="target/queryString.war"/>
                             </tasks>
                         </configuration>

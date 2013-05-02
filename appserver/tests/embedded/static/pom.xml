@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.tests</groupId>
         <artifactId>embedded</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.tests.embedded</groupId>

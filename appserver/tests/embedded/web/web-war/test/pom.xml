@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.tests</groupId>
         <artifactId>embedded-web-war</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -165,7 +165,7 @@
         <dependency>
             <groupId>org.glassfish.transaction</groupId>
             <artifactId>jta</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>4.0.1-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>        
         <dependency>

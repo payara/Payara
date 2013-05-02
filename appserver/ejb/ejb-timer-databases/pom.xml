@@ -43,12 +43,12 @@
 <!--
   This module is meant to serve as the example of how to add additional files to the GlassFish distribution.
 -->
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.ejb</groupId>
         <artifactId>ejb</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>ejb-timer-databases</artifactId>
@@ -97,8 +97,7 @@
                         <configuration>
                             <tasks>
                                 <!-- place the ejb timer app jar into the location -->
-                                <resolveArtifact artifactId="ejb-timer-service-app"
-                                   tofile="target/classes/glassfish/lib/install/applications/ejb-timer-service-app.war"/>
+                                <resolveArtifact artifactId="ejb-timer-service-app" tofile="target/classes/glassfish/lib/install/applications/ejb-timer-service-app.war" />
                             </tasks>
                         </configuration>
                         <goals>
