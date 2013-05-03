@@ -410,13 +410,6 @@ public abstract class LocalServerCommand extends CLICommand {
         throw new CommandException(strings.get("restartDomain.noGFStart"));
     }
 
-    protected final void waitForRestart(File pwFile, long oldTimeStamp, long uptimeOldServer) throws CommandException {
-        if (oldTimeStamp <= 0 || !usingLocalPassword())
-            deprecatedWaitForRestartRemote(uptimeOldServer);
-        else
-            waitForRestartLocal(pwFile, oldTimeStamp, uptimeOldServer);
-    }
-
     // todo move prevpid to ServerDirs ???
     protected final int getPrevPid() {
         try {
@@ -463,76 +456,6 @@ public abstract class LocalServerCommand extends CLICommand {
         else
             return isRunning(programOpts.getHost(), // remote case
                     programOpts.getPort());
-    }
-
-    /**
-     * Wait for the local server to restart.
-     */
-    private void waitForRestartLocal(File pwFile, long oldTimeStamp, long uptimeOldServer) throws CommandException {
-        // we are using local-password for authentication to the local server.  We need
-        // to use the NEW password that will be soon generated.  After that we can
-        // do Uptime calls to make sure V3 is ready to receive commands
-
-        if (!usingLocalPassword())
-            throw new CommandException("Internal Error - waitForRestartLocal should "
-                    + "not be called unless using local password authentication.");
-
-        long end = CLIConstants.WAIT_FOR_DAS_TIME_MS
-                + now();
-
-        while (now() < end) {
-            // when the server has restarted the passwordfile will be different
-            // don't waste time reading the file again and again, just look
-            // for the time stamp to change.
-            // Careful -- there is a slice of time where the file does not exist!
-            try {
-                long newTimeStamp = pwFile.lastModified(); // could be 0L
-                logger.log(Level.FINER,"Checking timestamp of local-password. old: {0}, new: {1}",
-                        new Object[]{oldTimeStamp, newTimeStamp});
-
-                if (newTimeStamp > oldTimeStamp) {
-                    // Server has restarted but may not be quite ready to handle commands
-                    // automated tests would have issues if we returned right here...
-                    resetLocalPassword();
-                    // use the maximum old uptime because we know that the server has already restarted
-                    //waitForRestartRemote(Long.MAX_VALUE);
-                    deprecatedWaitForRestartRemote(0);
-                    return;
-                }
-                Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
-            }
-            catch (Exception e) {
-                // continue
-            }
-        }
-        // if we get here -- we timed out
-        throw new CommandException(strings.get("restartDomain.noGFStart"));
-    }
-
-    /**
-     * Wait for the remote server to restart.
-     */
-    private void deprecatedWaitForRestartRemote(long uptimeOldServer) throws CommandException {
-        long end = CLIConstants.WAIT_FOR_DAS_TIME_MS
-                + now();
-
-        while (now() < end) {
-            try {
-                Thread.sleep(CLIConstants.RESTART_CHECK_INTERVAL_MSEC);
-                long up = getUptime();
-                logger.log(Level.FINER, "oldserver-uptime, newserver-uptime = {0} --- {1}",
-                        new Object[]{uptimeOldServer, up});
-
-                if (up > 0 && up < uptimeOldServer) {
-                    return;
-                }
-            }
-            catch (Exception e) {
-                // continue
-            }
-        }
-        // if we get here -- we timed out
-        throw new CommandException(strings.get("restartDomain.noGFStart"));
     }
 
     /**
