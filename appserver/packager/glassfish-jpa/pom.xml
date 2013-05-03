@@ -141,11 +141,6 @@
            <artifactId>glassfish-oracle-jdbc-driver-packages</artifactId>
 	   <version>${project.version}</version>
         </dependency>
-        <dependency>
-           <groupId>org.glassfish.main.persistence</groupId>
-           <artifactId>jaxb-exporting-fragment</artifactId>
-	   <version>${project.version}</version>
-        </dependency>
        <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.core</artifactId>
