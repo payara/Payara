@@ -216,7 +216,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
 					 Map properties,
 					 String layer, String appContext,
 					 String description) {
-        //XXX do we need doPrivilege here
+    	//XXX factory must check permission
+    	SecurityManager sm = System.getSecurityManager();
+    	if (sm != null) {
+    		sm.checkPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
+    	}
+    	//XXX do we need doPrivilege here    	
         AuthConfigProvider provider =
             _constructProvider(className, properties, null);
         return _register(provider,properties,
@@ -226,6 +231,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     @Override
     public String registerConfigProvider(AuthConfigProvider provider,
             String layer, String appContext, String description) {
+    	//XXX factory must check permission
+    	SecurityManager sm = System.getSecurityManager();
+    	if (sm != null) {
+    		sm.checkPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
+    	}
+    	
 	return _register(provider,null,layer,appContext,description,false);
     }
 
@@ -246,6 +257,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      */
     @Override
     public boolean removeRegistration(String registrationID) {
+    	//XXX factory must check permission
+    	SecurityManager sm = System.getSecurityManager();
+    	if (sm != null) {
+    		sm.checkPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
+    	}
+    	
         return _unRegister(registrationID);
     }
 
@@ -273,6 +290,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
     @Override
     public String[] detachListener(RegistrationListener listener,
             String layer, String appContext) {
+    	//XXX factory must check permission
+    	SecurityManager sm = System.getSecurityManager();
+    	if (sm != null) {
+    		sm.checkPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
+    	}
+    	
         ArrayList<String> list = new ArrayList<String>();
         String regisID = getRegistrationID(layer, appContext);
         wLock.lock();
@@ -370,6 +393,12 @@ public abstract class BaseAuthConfigFactory extends AuthConfigFactory {
      */
     @Override
     public void refresh() {
+    	//XXX factory must check permission
+    	SecurityManager sm = System.getSecurityManager();
+    	if (sm != null) {
+    		sm.checkPermission(AuthConfigFactory.providerRegistrationSecurityPermission);
+    	}
+    	
         Map<String, List<RegistrationListener>> preExistingListenersMap;
         wLock.lock();
         try {
