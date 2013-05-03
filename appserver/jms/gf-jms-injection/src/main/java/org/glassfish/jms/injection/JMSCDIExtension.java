@@ -65,7 +65,16 @@ public class JMSCDIExtension implements Extension {
 
     private Bean createLocalBean(BeanManager beanManager, Class beanClass) {
         AnnotatedType annotatedType = beanManager.createAnnotatedType(beanClass);
-        LocalBean localBean = new LocalPassivationCapableBean(beanClass);
+        boolean isPassivationCapable = false;
+        try {
+            beanClass.asSubclass(PassivationCapable.class);
+            isPassivationCapable = true;
+        } catch (ClassCastException cce) {}
+        LocalBean localBean = null;
+        if (isPassivationCapable)
+            localBean = new LocalPassivationCapableBean(beanClass);
+        else
+            localBean = new LocalBean(beanClass);
         InjectionTargetFactory injectionTargetFactory = beanManager.getInjectionTargetFactory(annotatedType);
         localBean.setInjectionTarget(injectionTargetFactory.createInjectionTarget(localBean));
         return localBean;
