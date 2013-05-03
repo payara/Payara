@@ -63,5 +63,6 @@
         <module>entitybean-container</module>
         <module>jpa-container-l10n</module>
         <module>cmp-l10n</module>
+        <module>jaxb-exporting-fragment</module>
     </modules>
 </project>
