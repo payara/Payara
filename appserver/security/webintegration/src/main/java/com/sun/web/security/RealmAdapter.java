@@ -1813,6 +1813,10 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         public boolean authenticate(HttpRequest request,
                 HttpResponse response,
                 LoginConfig config) throws IOException {
+            if(cache) {
+                getSession(request, true);
+            }
+
             register(request, response, this.principal, this.authType,
                     this.principal.getName(), null);
             return true;
