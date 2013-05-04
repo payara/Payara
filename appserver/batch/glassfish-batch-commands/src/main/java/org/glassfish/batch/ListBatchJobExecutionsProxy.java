@@ -82,10 +82,10 @@ public class ListBatchJobExecutionsProxy
     extends AbstractListCommandProxy {
 
     @Param(name = "executionid", shortName = "x", optional = true)
-    Long executionId;
+    String executionId;
 
     @Param(primary = true, optional = true)
-    Long instanceId;
+    String instanceId;
 
 //    @Override
 //    protected boolean preInvoke(AdminCommandContext context) {
@@ -106,12 +106,25 @@ public class ListBatchJobExecutionsProxy
         return "_ListBatchJobExecutions";
     }
 
+    @Override
+    protected boolean preInvoke(AdminCommandContext ctx, ActionReport subReport) {
+        if (executionId != null && !isLongNumber(executionId)) {
+            subReport.setMessage("execution ID must be a number");
+            return false;
+        }
+        if (instanceId != null && !isLongNumber(instanceId)) {
+            subReport.setMessage("instance ID must be a number");
+            return false;
+        }
+        return true;
+    }
+
     protected void fillParameterMap(ParameterMap parameterMap) {
         super.fillParameterMap(parameterMap);
         if (executionId != null)
-            parameterMap.add("executionid", ""+executionId);
+            parameterMap.add("executionid", executionId);
         if (instanceId != null)
-            parameterMap.add("DEFAULT", ""+instanceId);
+            parameterMap.add("DEFAULT", instanceId);
     }
 
     protected void postInvoke(AdminCommandContext context, ActionReport subReport) {
