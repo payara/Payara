@@ -82,11 +82,20 @@ public class ListBatchJobStepsProxy
         extends AbstractListCommandProxy {
 
     @Param(primary = true)
-    Long executionId;
+    String executionId;
 
     @Override
     protected String getCommandName() {
         return "_ListBatchJobSteps";
+    }
+    @Override
+    protected boolean preInvoke(AdminCommandContext ctx, ActionReport subReport) {
+        if (executionId != null && !isLongNumber(executionId)) {
+            subReport.setMessage("execution ID must be a number");
+            return false;
+        }
+
+        return true;
     }
 
     protected void fillParameterMap(ParameterMap parameterMap) {

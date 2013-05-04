@@ -97,10 +97,10 @@ public class ListBatchJobExecutions
     private static final String STEP_COUNT = "stepCount";
 
     @Param(name = "executionid", shortName = "x", optional = true)
-    Long executionId;
+    String executionId;
 
     @Param(primary = true, optional = true)
-    Long instanceId;
+    String instanceId;
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps)

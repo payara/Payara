@@ -105,6 +105,11 @@ public abstract class AbstractListCommandProxy
         }
 
         ActionReport subReport = null;
+        if (! preInvoke(context, actionReport)) {
+            commandsExitCode = ActionReport.ExitCode.FAILURE;
+            return;
+        }
+
         if (targetUtil.isCluster(target)) {
             for (Server serverInst : targetUtil.getInstances(target)) {
                 try {
@@ -135,6 +140,10 @@ public abstract class AbstractListCommandProxy
         actionReport.setActionExitCode(commandsExitCode);
     }
 
+    protected boolean preInvoke(AdminCommandContext ctx, ActionReport subReport) {
+        return true;
+    }
+
     protected abstract String getCommandName();
 
     protected abstract void postInvoke(AdminCommandContext context, ActionReport subReport);
@@ -162,5 +171,15 @@ public abstract class AbstractListCommandProxy
             parameterMap.add("header", ""+header);
         if (useLongFormat)
             parameterMap.add("long", ""+useLongFormat);
+    }
+
+    protected boolean isLongNumber(String str) {
+        try {
+            long val = Long.parseLong(str);
+        } catch (NumberFormatException nEx) {
+            return false;
+        }
+
+        return true;
     }
 }
