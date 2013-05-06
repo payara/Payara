@@ -129,7 +129,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
     protected AdminAccessController adminAuthenticator;
 
     private volatile JerseyContainer adapter = null;
-    private AdminEndpointDecider epd;
 
     protected RestAdapter() {
         setAllowEncodedSlash(true);
@@ -137,7 +136,6 @@ public abstract class RestAdapter extends HttpHandler implements ProxiedRestAdap
 
     @Override
     public void postConstruct() {
-        epd = new AdminEndpointDecider(config, RestLogging.restLogger);
         latch.countDown();
     }
 

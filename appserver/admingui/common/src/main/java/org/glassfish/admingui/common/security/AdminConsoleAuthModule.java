@@ -193,7 +193,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
         }
 
         // See if we've already calculated the serverName / serverPort
-        if (session.getValue(REST_SERVER_NAME) == null) {
+        if ((session != null) && (session.getValue(REST_SERVER_NAME) == null)) {
             // Save this for use later...
             URL url = null;
             try {

@@ -81,7 +81,9 @@ public class DetachedCommandHelper implements Runnable, AdminCommandEventBroker.
         JobManagerService jobManagerService = Globals.getDefaultHabitat().getService(JobManagerService.class);
         jobManagerService.getThreadPool().execute(helper);
         try {
-            latch.await(10, TimeUnit.SECONDS);
+            if (!latch.await(10, TimeUnit.SECONDS)) {
+                RestLogging.restLogger.log(Level.FINE, "latch.await() returned false");
+            }
         } catch (InterruptedException ex) {
             RestLogging.restLogger.log(Level.SEVERE, null, ex);
         }

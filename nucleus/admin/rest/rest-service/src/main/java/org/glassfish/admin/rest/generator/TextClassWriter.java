@@ -46,6 +46,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.logging.Level;
+import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -68,7 +70,8 @@ public class TextClassWriter implements ClassWriter {
         File file = new File(generationDir, className + ".java");
         boolean success = file.createNewFile();
         if (!success) {
-            // Ignore. The generated files will be the same
+            RestLogging.restLogger.log(Level.FINE, "Error creating file: {0} in {1}", 
+                    new String[] { className+".java", generationDir.getAbsolutePath() });
         }
         FileWriter fstream = new FileWriter(file);
         writer = new BufferedWriter(fstream);

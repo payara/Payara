@@ -108,7 +108,7 @@ public class RestUtil {
     public static final String REST_TOKEN_COOKIE = "gfresttoken";
     private static Client JERSEY_CLIENT;
 
-    public static Client getJerseyClient() {
+    public static synchronized Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = initialize(ClientBuilder.newBuilder()).build();
             JERSEY_CLIENT.register(new RequiredHeadersFilter())

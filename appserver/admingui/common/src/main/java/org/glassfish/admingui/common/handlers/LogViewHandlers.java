@@ -309,12 +309,6 @@ public class LogViewHandlers {
             map.put(key, val.toString());
         }
     }
-    
-    private static void notNullStringPut(MultivaluedHashMap<String, Object> map, String key, Object val) {
-        if (val != null) {
-            map.add(key, val.toString());
-        }
-    }
 
     /**
      * This method converts a date/time string to a Date.
@@ -621,7 +615,7 @@ public class LogViewHandlers {
      * The following constant defines the valid delimiters that can be used to
      * seperate custom loggers on input. (" \t\n\r\f,;:")
      */
-    public static final String[] CUSTOM_LOGGER_DELIMITERS = {" \t", "\r\n", "\f", ",", ";", ":"};
+    protected static final String[] CUSTOM_LOGGER_DELIMITERS = {" \t", "\r\n", "\f", ",", ";", ":"};
     /**
      * The following constant defines the valid delimiters that can be used to
      * seperate nvp entries on input. (" \t\n\r\f,;:")

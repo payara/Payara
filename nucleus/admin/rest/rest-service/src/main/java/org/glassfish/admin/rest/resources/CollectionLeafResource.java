@@ -274,7 +274,6 @@ public abstract class CollectionLeafResource extends AbstractResource {
             String attributeName = data.get("DEFAULT");
 
             if (null != commandName) {
-                String typeOfResult = ResourceUtil.getResultType(requestHeaders);
                 RestActionReporter actionReport = ResourceUtil.runCommand(commandName,
                     data, getSubject());
 
