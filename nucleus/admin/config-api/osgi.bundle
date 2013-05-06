@@ -51,4 +51,5 @@ Import-Package: \
     com.sun.enterprise.config.modularity.annotation; \
     com.sun.enterprise.config.modularity; \
     com.sun.enterprise.config.modularity.customization; \
+    com.sun.enterprise.config.modularity.parser; \
     org.glassfish.config.support; version=${project.osgi.version}
