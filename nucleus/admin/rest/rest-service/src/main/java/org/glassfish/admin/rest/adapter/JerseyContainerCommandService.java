@@ -81,7 +81,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 //@RunLevel(value= InitRunLevel.VAL)
-@RunLevel(value= StartupRunLevel.VAL)
+//@RunLevel(value= StartupRunLevel.VAL)
 public class JerseyContainerCommandService implements PostConstruct {
 
     @Inject
@@ -94,31 +94,35 @@ public class JerseyContainerCommandService implements PostConstruct {
 
     @Override
     public void postConstruct() {
-        ExecutorService executor = Executors.newFixedThreadPool(2);
-        this.future = executor.submit(new Callable<JerseyContainer>() {
-                                                 @Override
-                                                 public JerseyContainer call() throws Exception {
-                                                     JerseyContainer result = exposeContext();
-                                                     return result;
-                                                 }
-                                             });
-        executor.execute(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CommandRunner cr = habitat.getService(CommandRunner.class);
-                                    final CommandRunner.CommandInvocation invocation =
-                                                    cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
-                                    invocation.parameters(new ParameterMap());
-                                    invocation.execute();
-                                }
-                            });
-        executor.shutdown();
+//        ExecutorService executor = Executors.newFixedThreadPool(2);
+//        this.future = executor.submit(new Callable<JerseyContainer>() {
+//                                                 @Override
+//                                                 public JerseyContainer call() throws Exception {
+//                                                     JerseyContainer result = exposeContext();
+//                                                     return result;
+//                                                 }
+//                                             });
+//        executor.execute(new Runnable() {
+//                                @Override
+//                                public void run() {
+//                                    CommandRunner cr = habitat.getService(CommandRunner.class);
+//                                    final CommandRunner.CommandInvocation invocation =
+//                                                    cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
+//                                    invocation.parameters(new ParameterMap());
+//                                    invocation.execute();
+//                                }
+//                            });
+//        executor.shutdown();
     }
 
 
     public JerseyContainer getJerseyContainer() throws EndpointRegistrationException {
         try {
-            return future.get();
+            if (future == null) {
+                return exposeContext();
+            } else {
+                return future.get();
+            }
         } catch (InterruptedException ex) {
             return exposeContext();
         } catch (ExecutionException ex) {
