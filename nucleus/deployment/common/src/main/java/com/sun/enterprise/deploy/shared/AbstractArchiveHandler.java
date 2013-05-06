@@ -58,7 +58,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLResolver;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.internal.deployment.GenericHandler;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
@@ -74,9 +73,6 @@ public abstract class AbstractArchiveHandler extends GenericHandler {
 
     @LogMessageInfo(message = "Exception while getting manifest classpath: ", level="WARNING")
     private static final String MANIFEST_CLASSPATH_ERROR = "NCLS-DEPLOYMENT-00024";
-
-    static final protected Logger _logger = LogDomains.getLogger(DeploymentUtils.class, LogDomains.DPL_LOGGER);
-
     private static XMLInputFactory xmlInputFactory;
 
     static {

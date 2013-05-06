@@ -108,7 +108,7 @@ public class AutoUndeploymentOperation extends AutoOperation {
     private AdminCommand undeployCommand;
     
     @LogMessageInfo(message = "Attempt to create file {0} failed; no further information.", level="WARNING")
-    private static final String CREATE_FAILED = "NCLS-DEPLOYMENT-00039";
+    private static final String CREATE_FAILED = "NCLS-DEPLOYMENT-02039";
 
     /**
      * Completes the intialization of the object.

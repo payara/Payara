@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,16 +68,16 @@ public class AutoDeployedFilesManager {
         org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
 
     @LogMessageInfo(message = "Attempt to create file {0} failed; no further information.", level="WARNING")
-    private static final String CREATE_FAILED = "NCLS-DEPLOYMENT-00041";
+    private static final String CREATE_FAILED = "NCLS-DEPLOYMENT-02041";
 
     @LogMessageInfo(message = "Attempt to set last modified date/time of file {0} failed; no further information.", level="WARNING")
-    private static final String MODIFIED_DATE_FAILED = "NCLS-DEPLOYMENT-00042";
+    private static final String MODIFIED_DATE_FAILED = "NCLS-DEPLOYMENT-02042";
 
     @LogMessageInfo(message = "Attempt to delete file {0} failed; no further information.", level="WARNING")
-    private static final String DELETE_FAILED = "NCLS-DEPLOYMENT-00043";
+    private static final String DELETE_FAILED = "NCLS-DEPLOYMENT-02043";
 
     @LogMessageInfo(message = "Attempt to create directory {0} failed; no further information.", level="WARNING")
-    private static final String MKDIRS_FAILED = "NCLS-DEPLOYMENT-00044";
+    private static final String MKDIRS_FAILED = "NCLS-DEPLOYMENT-02044";
 
     static final String STATUS_DIR_NAME = ".autodeploystatus";
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -116,7 +116,7 @@ public class AutoDeploymentOperation extends AutoOperation {
         org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
 
     @LogMessageInfo(message = "Attempt to create file {0} failed; no further information.", level="WARNING")
-    private static final String CREATE_FILE_FAILED = "NCLS-DEPLOYMENT-00034";
+    private static final String CREATE_FILE_FAILED = "NCLS-DEPLOYMENT-02034";
 
     /**
      * Completes the initialization of the object.

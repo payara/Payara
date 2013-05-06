@@ -142,13 +142,13 @@ public class AutodeployRetryManager implements PostConstruct {
         org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
 
     @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#seconds|1#second|1<seconds} will be used but seems very large")
-    private static final String LARGE_TIMEOUT = "NCLS-DEPLOYMENT-00031";
+    private static final String LARGE_TIMEOUT = "NCLS-DEPLOYMENT-02031";
 
     @LogMessageInfo(message = "Configured timeout value of {0} second{0,choice,0#seconds|1#second|1<seconds} is too small; using previous value of {1}second {1,choice,0#seconds|1#second|1<seconds}", level="WARNING")
-    private static final String SMALL_TIMEOUT = "NCLS-DEPLOYMENT-00032";
+    private static final String SMALL_TIMEOUT = "NCLS-DEPLOYMENT-02032";
 
     @LogMessageInfo(message = "Could not convert configured timeout value of \"{0}\" to a number; using previous value of {1} second{1,choice,0#seconds|1#second|1<seconds", level="WARNING")
-    private static final String INVALID_TIMEOUT = "NCLS-DEPLOYMENT-00033";
+    private static final String INVALID_TIMEOUT = "NCLS-DEPLOYMENT-02033";
 
     public void postConstruct() {
         setTimeout();

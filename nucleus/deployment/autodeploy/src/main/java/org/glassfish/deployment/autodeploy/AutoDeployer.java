@@ -98,20 +98,22 @@ public class AutoDeployer {
     @LogMessagesResourceBundle
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
 
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    // Reserve this range [NCLS-DEPLOYMENT-02001, NCLS-DEPLOYMENT-04000]
+    // for message ids used in this deployment autodeploy module
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment logger for autodeploy module", publish=true)
     private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.autodeploy";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     @LogMessageInfo(message = "Exception caught:  {0}", cause="An exception was caught when the application was autodeployed.", action="See the exception to determine how to fix the error", level="SEVERE")
-    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00025";
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-02025";
 
     @LogMessageInfo(message = "Autoundeploying application:  {0}", level="INFO")
-    private static final String AUTODEPLOYING_APPLICATION = "NCLS-DEPLOYMENT-00026";
+    private static final String AUTODEPLOYING_APPLICATION = "NCLS-DEPLOYMENT-02026";
 
     @LogMessageInfo(message = "Selecting file {0} for autodeployment", level="INFO")
-    private static final String SELECTING_FILE = "NCLS-DEPLOYMENT-00027";
+    private static final String SELECTING_FILE = "NCLS-DEPLOYMENT-02027";
 
     /*
      *Represent the result of attempting autodeployment of a single file.

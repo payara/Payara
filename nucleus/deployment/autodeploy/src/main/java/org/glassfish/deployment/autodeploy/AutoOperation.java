@@ -78,16 +78,16 @@ public abstract class AutoOperation {
         org.glassfish.deployment.autodeploy.AutoDeployer.deplLogger;
 
     @LogMessageInfo(message = "{0}", level="INFO")
-    private static final String INFO_MSG = "NCLS-DEPLOYMENT-00035";
+    private static final String INFO_MSG = "NCLS-DEPLOYMENT-02035";
 
     @LogMessageInfo(message = "{0}", level="WARNING")
-    private static final String WARNING_MSG = "NCLS-DEPLOYMENT-00036";
+    private static final String WARNING_MSG = "NCLS-DEPLOYMENT-02036";
 
     @LogMessageInfo(message = "Error occurred: ", cause="An exception was caught when the operation was attempted", action="See the exception to determine how to fix the error", level="SEVERE")
-    private static final String EXCEPTION_OCCURRED = "NCLS-DEPLOYMENT-00037";
+    private static final String EXCEPTION_OCCURRED = "NCLS-DEPLOYMENT-02037";
 
     @LogMessageInfo(message = "Attempt to delete file {0} failed; no further information.", level="WARNING")
-    private static final String DELETE_FAILED = "NCLS-DEPLOYMENT-00038";
+    private static final String DELETE_FAILED = "NCLS-DEPLOYMENT-02038";
 
     final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AutoDeployer.class);
 

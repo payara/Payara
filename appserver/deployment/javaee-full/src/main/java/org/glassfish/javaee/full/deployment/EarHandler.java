@@ -80,7 +80,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.io.*;
-import java.util.logging.Level;
+import java.util.logging.*;
 import java.util.Map;
 import java.net.URLClassLoader;
 import java.net.URL;
@@ -120,6 +120,8 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
     private static LocalStringsImpl strings = new LocalStringsImpl(EarHandler.class);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarHandler.class);
+
+    private static final Logger _logger = EarDeployer.deplLogger;
 
     //declaredPermission
     protected PermissionCollection earDeclaredPC;

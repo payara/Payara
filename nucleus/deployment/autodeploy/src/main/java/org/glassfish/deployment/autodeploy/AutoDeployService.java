@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -116,13 +116,13 @@ public class AutoDeployService implements PostConstruct, PreDestroy, ConfigListe
     public static Logger deplLogger;
 
     @LogMessageInfo(message = "Error parsing configured polling-interval-in-seconds {0} as an integer; {1} {2}", level="WARNING")
-    private static final String PARSING_POLLING_INTERVAL_ERROR = "NCLS-DEPLOYMENT-00028";
+    private static final String PARSING_POLLING_INTERVAL_ERROR = "NCLS-DEPLOYMENT-02028";
 
     @LogMessageInfo(message = "Exception caught:  {0}", cause="An exception was caught when the application was autodeployed.", action="See the exception to determine how to fix the error", level="SEVERE")
-    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-00029";
+    private static final String EXCEPTION_CAUGHT = "NCLS-DEPLOYMENT-02029";
 
     @LogMessageInfo(message = "Error processing configuration change of {0} from {1} to {2}; {3} {4}", level="WARNING")
-    private static final String CONFIGURATION_CHANGE_ERROR = "NCLS-DEPLOYMENT-00030";
+    private static final String CONFIGURATION_CHANGE_ERROR = "NCLS-DEPLOYMENT-02030";
 
     private static final String DEFAULT_POLLING_INTERVAL_IN_SECONDS = "2";
     private static final String DEFAULT_AUTO_DEPLOY_ENABLED = "true";

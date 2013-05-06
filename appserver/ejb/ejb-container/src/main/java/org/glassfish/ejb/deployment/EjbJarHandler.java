@@ -53,6 +53,7 @@ import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.ejb.deployment.archive.EjbJarDetector;
+import org.glassfish.ejb.LogFacade;
 import org.glassfish.loader.util.ASClassLoaderUtil;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -67,6 +68,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -78,6 +80,8 @@ import static javax.xml.stream.XMLStreamConstants.*;
 public class EjbJarHandler extends AbstractArchiveHandler {
 
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EjbJarHandler.class);
+
+    private static final Logger _logger  = LogFacade.getLogger();
 
     @Inject @Named(EjbJarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;

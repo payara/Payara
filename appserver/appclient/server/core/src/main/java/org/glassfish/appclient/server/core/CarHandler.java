@@ -62,6 +62,7 @@ import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.net.URL;
 
 import static javax.xml.stream.XMLStreamConstants.*;
@@ -74,6 +75,8 @@ public class CarHandler extends AbstractArchiveHandler {
 
     @Inject @Named(CarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
+
+    private static final Logger _logger = Logger.getLogger(CarHandler.class.getName());
 
     @Override
     public String getArchiveType() {
