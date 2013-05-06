@@ -73,6 +73,8 @@ import org.glassfish.web.valve.GlassFishValve;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -1178,9 +1180,17 @@ public class Embedded  extends StandardService {
      * Set the security package access/protection.
      */
     protected void setSecurityProtection(){
-        SecurityConfig securityConfig = SecurityConfig.newInstance();
-        securityConfig.setPackageDefinition();
-        securityConfig.setPackageAccess();
+        if (System.getSecurityManager() != null) {
+            AccessController.doPrivileged(new PrivilegedAction<Void>() {
+                @Override
+                public Void run() {
+                    SecurityConfig securityConfig = SecurityConfig.newInstance();
+                    securityConfig.setPackageDefinition();
+                    securityConfig.setPackageAccess();
+                    return null;
+                }
+            });
+        }
     }
 
 }
