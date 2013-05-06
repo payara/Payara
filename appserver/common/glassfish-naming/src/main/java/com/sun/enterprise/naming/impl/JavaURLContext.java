@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -154,9 +154,7 @@ public final class JavaURLContext implements Context, Cloneable {
         try {
             Object obj = null;
             // If we know for sure it's an entry within an environment namespace
-            if (fullName.startsWith("java:comp/env/") ||
-                fullName.startsWith("java:module/env/") ||
-                fullName.startsWith("java:app/env/") ) {
+            if (isLookingUpEnv(fullName)) {
                 // refers to a dependency defined by the application
                 obj = namingManager.lookup(fullName, serialContext);
             } else {
@@ -192,7 +190,8 @@ public final class JavaURLContext implements Context, Cloneable {
 
                 Object obj = null;
 
-                if( !fullName.startsWith("java:app/env/")) {
+                if (!fullName.startsWith("java:app/env/")
+                    || !"java:app/env".equals(fullName)) {
                     try {
 
                         // Translate the java:app name into the equivalent java:global name so that
@@ -549,6 +548,22 @@ public final class JavaURLContext implements Context, Cloneable {
     public String getNameInNamespace() throws NamingException {
         return myName;
     }
+    
+
+  private boolean isLookingUpEnv(String fullName) {
+    boolean result = false;
+    if (fullName.startsWith("java:comp/env/")
+        || fullName.startsWith("java:module/env/")
+        || fullName.startsWith("java:app/env/")) {
+      result = true;
+    } else if ("java:comp/env".equals(fullName)
+        || "java:module/env".equals(fullName)
+        || "java:app/env".equals(fullName)) {
+      result = true;
+    }
+    return result;
+  }
+
 }
 
 
