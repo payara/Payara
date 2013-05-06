@@ -221,18 +221,19 @@ public class CommandSecurityChecker implements PostConstruct {
         final List<AccessCheckWork> accessChecks = new ArrayList<AccessCheckWork>();
         /*
          * The CRUD classes such as GenericCreateCommand implement AccessRequired.AccessCheckProvider
-         * and so provide their own AccessCheck objects.  So the addChecksFromAuthorizer
+         * and so provide their own AccessCheck objects.  So the addChecksFromAccessCheckProvider
          * method will cover the CRUD commands.
          */
-        addChecksFromAccessCheckProvider(command, accessChecks, isTaggable, subject);
+        final boolean isCommandAccessCheckProvider = addChecksFromAccessCheckProvider(command, accessChecks, isTaggable, subject);
         addChecksFromExplicitAccessRequiredAnnos(command, accessChecks, isTaggable);
         addChecksFromReSTEndpoints(command, accessChecks, isTaggable);
 
         /*
-         * If this command has no access requirements specified, use
+         * If this command has no access requirements specified and does not
+         * implement AccessCheckProvider, use
          * one from the "unguarded" part of the resource tree.
          */
-        if (accessChecks.isEmpty()) {
+        if (accessChecks.isEmpty() && ! isCommandAccessCheckProvider) {
             accessChecks.add(new UnguardedCommandAccessCheckWork(command));
         }
         
@@ -353,7 +354,7 @@ public class CommandSecurityChecker implements PostConstruct {
                 accessChecks.add(new AccessCheckWork(ac,
                         isTaggable ? "  Class's getAccessChecks()"  : null));
             }
-            return ! checks.isEmpty();
+            return true;
         }
         return false;
     }
