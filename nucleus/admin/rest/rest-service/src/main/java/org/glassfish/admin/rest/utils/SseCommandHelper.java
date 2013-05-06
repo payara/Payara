@@ -108,7 +108,8 @@ public class SseCommandHelper implements Runnable, AdminCommandEventBroker.Admin
             try {
                 eventOuptut.close();
             } catch (IOException ex) {
-                RestLogging.restLogger.log(Level.WARNING, null, ex);
+                RestLogging.restLogger.log(Level.WARNING, RestLogging.IO_EXCEPTION, 
+                        ex.getMessage());
             }
         }
     }

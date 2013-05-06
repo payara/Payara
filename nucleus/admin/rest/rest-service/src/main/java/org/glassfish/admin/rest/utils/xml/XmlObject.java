@@ -157,46 +157,10 @@ public class XmlObject {
             }
             transformer.transform(source, result);
 
-/*
-            Source xmlInput = new StreamSource(new StringReader(input));
-            StringWriter stringWriter = new StringWriter();
-            StreamResult xmlOutput = new StreamResult(stringWriter);
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-
-            transformer.transform(xmlInput, xmlOutput);
-            return xmlOutput.getWriter().toString();
-*/
-
             return stringWriter.getBuffer().toString();
         } catch (Exception ex) {
-            RestLogging.restLogger.log(Level.SEVERE, null, ex);
             throw new RuntimeException(ex);
         }
-
-
     }
-
-
-
-
-//    public static class XmlNumber extends XmlObject {
-//        private Number value;
-//
-//        public XmlNumber(Number value) {
-//            this("", value);
-//        }
-//
-//        public XmlNumber(String name, Number value) {
-//            super(name);
-//            this.value = value;
-//        }
-//
-//        Node createNode(Document document) {
-//            Node numberNode = document.createElement("number");
-//            numberNode.setTextContent(value.toString());
-//            return numberNode;
-//        }
-//    }
 }
 

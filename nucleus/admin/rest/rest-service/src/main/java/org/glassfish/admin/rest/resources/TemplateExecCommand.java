@@ -61,8 +61,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -93,8 +91,6 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
     protected String commandMethod;
     protected String commandAction;
     protected boolean isLinkedToParent = false;
-
-
 
     public TemplateExecCommand(String resourceName, String commandName, String commandMethod, String commandAction,
                                String commandDisplayName,
@@ -131,7 +127,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
         OptionsResult optionsResult = new OptionsResult(resourceName);
         Map<String, MethodMetaData> mmd = new HashMap<String, MethodMetaData>();
         MethodMetaData methodMetaData = ResourceUtil.getMethodMetaData(commandName, getCommandParams(),
-                locatorBridge.getRemoteLocator(), RestLogging.restLogger);
+                locatorBridge.getRemoteLocator());
 
         optionsResult.putMethodMetaData(commandMethod, methodMetaData);
         mmd.put(commandMethod, methodMetaData);
@@ -226,7 +222,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
                 try {
                     data.add(key, URLDecoder.decode(value, "UTF-8"));
                 } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(TemplateExecCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new RuntimeException(ex);
                 }
             }
         }

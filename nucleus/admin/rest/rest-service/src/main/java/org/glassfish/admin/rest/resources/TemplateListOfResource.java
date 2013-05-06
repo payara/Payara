@@ -71,7 +71,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.glassfish.admin.rest.RestLogging;
 
 import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -355,7 +354,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
         //POST meta data
         String command = getPostCommand();
         if (command != null) {
-            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(command, locatorBridge.getRemoteLocator(), RestLogging.restLogger);
+            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(command, locatorBridge.getRemoteLocator());
             if (Util.getResourceName(uriInfo).equals("Application")) {
                 postMethodMetaData.setIsFileUploadOperation(true);
             }

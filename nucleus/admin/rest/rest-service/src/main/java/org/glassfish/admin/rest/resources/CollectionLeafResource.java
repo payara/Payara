@@ -68,7 +68,6 @@ import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.jvnet.hk2.config.Dom;
@@ -225,14 +224,14 @@ public abstract class CollectionLeafResource extends AbstractResource {
         //POST meta data
         String postCommand = getPostCommand();
         if (postCommand != null) {
-            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(postCommand, locatorBridge.getRemoteLocator(), RestLogging.restLogger);
+            MethodMetaData postMethodMetaData = ResourceUtil.getMethodMetaData(postCommand, locatorBridge.getRemoteLocator());
             mmd.put("POST", postMethodMetaData);
         }
 
         //DELETE meta data
         String deleteCommand = getDeleteCommand();
         if (deleteCommand != null) {
-            MethodMetaData deleteMethodMetaData = ResourceUtil.getMethodMetaData(deleteCommand, locatorBridge.getRemoteLocator(), RestLogging.restLogger);
+            MethodMetaData deleteMethodMetaData = ResourceUtil.getMethodMetaData(deleteCommand, locatorBridge.getRemoteLocator());
             mmd.put("DELETE", deleteMethodMetaData);
         }
 

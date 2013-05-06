@@ -94,7 +94,6 @@ import org.glassfish.api.ActionReport.ExitCode;
 
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 import java.net.URLDecoder;
-import java.util.logging.Logger;
 
 /**
  * @author Ludovic Champenois ludo@java.net
@@ -616,7 +615,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
                 deleteMethodMetaData = new MethodMetaData();
             } else {
                 deleteMethodMetaData = ResourceUtil.getMethodMetaData(
-                        command, locatorBridge.getRemoteLocator(), RestLogging.restLogger);
+                        command, locatorBridge.getRemoteLocator());
 
                 //In case of delete operation(command), do not  display/provide id attribute.
                 deleteMethodMetaData.removeParamMetaData("id");

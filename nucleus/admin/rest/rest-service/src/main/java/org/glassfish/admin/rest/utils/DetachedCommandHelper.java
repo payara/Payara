@@ -85,7 +85,7 @@ public class DetachedCommandHelper implements Runnable, AdminCommandEventBroker.
                 RestLogging.restLogger.log(Level.FINE, "latch.await() returned false");
             }
         } catch (InterruptedException ex) {
-            RestLogging.restLogger.log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
         }
         return helper.jobId;
     }

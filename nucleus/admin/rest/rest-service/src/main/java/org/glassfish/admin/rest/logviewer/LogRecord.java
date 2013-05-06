@@ -155,7 +155,7 @@ public class LogRecord {
             obj.put("messageID", messageID);
             obj.put("Message", message); //.replaceAll("\n", Matcher.quoteReplacement("\\\n")).replaceAll("\"", Matcher.quoteReplacement("\\\"")));
         } catch (JSONException ex) {
-            RestLogging.restLogger.log(Level.SEVERE, null, ex);
+            throw new RuntimeException(ex);
         }
         return obj.toString();
     }

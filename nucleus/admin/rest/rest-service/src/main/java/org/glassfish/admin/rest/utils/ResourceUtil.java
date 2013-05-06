@@ -61,7 +61,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
@@ -81,7 +80,6 @@ import static org.glassfish.admin.rest.provider.ProviderUtil.getElementLink;
 import org.glassfish.admin.rest.results.ActionReportResult;
 import static org.glassfish.admin.rest.utils.Util.eleminateHypen;
 import static org.glassfish.admin.rest.utils.Util.getHtml;
-import static org.glassfish.admin.rest.utils.Util.localStrings;
 import static org.glassfish.admin.rest.utils.Util.methodNameFromDtdName;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.admin.restconnector.RestConfig;
@@ -148,7 +146,7 @@ public class ResourceUtil {
             bytes = buffer.toByteArray();
             buffer.close();
         } catch (IOException ex) {
-            RestLogging.restLogger.log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION, ex.getMessage());
         }
 
         return bytes;
@@ -323,8 +321,8 @@ public class ResourceUtil {
      * @param logger the logger to use
      * @return MethodMetaData the meta-data store for the resource method.
      */
-    public static MethodMetaData getMethodMetaData(String command, ServiceLocator habitat, Logger logger) {
-        return getMethodMetaData(command, null, habitat, logger);
+    public static MethodMetaData getMethodMetaData(String command, ServiceLocator habitat) {
+        return getMethodMetaData(command, null, habitat);
     }
 
     /**
@@ -338,15 +336,15 @@ public class ResourceUtil {
      * @return MethodMetaData the meta-data store for the resource method.
      */
     public static MethodMetaData getMethodMetaData(String command, HashMap<String, String> commandParamsToSkip,
-            ServiceLocator habitat, Logger logger) {
+            ServiceLocator habitat) {
         MethodMetaData methodMetaData = new MethodMetaData();
 
         if (command != null) {
             Collection<CommandModel.ParamModel> params;
             if (commandParamsToSkip == null) {
-                params = getParamMetaData(command, habitat, logger);
+                params = getParamMetaData(command, habitat);
             } else {
-                params = getParamMetaData(command, commandParamsToSkip.keySet(), habitat, logger);
+                params = getParamMetaData(command, commandParamsToSkip.keySet(), habitat);
             }
 
             if (params != null) {
@@ -550,8 +548,8 @@ public class ResourceUtil {
      * method.
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
-            String commandName, ServiceLocator habitat, Logger logger) {
-        final CommandModel model = habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, logger);
+            String commandName, ServiceLocator habitat) {
+        final CommandModel model = habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, RestLogging.restLogger);
         if (model == null) {
             return null;
         }
@@ -572,8 +570,8 @@ public class ResourceUtil {
      */
     public static Collection<CommandModel.ParamModel> getParamMetaData(
             String commandName, Collection<String> commandParamsToSkip,
-            ServiceLocator habitat, Logger logger) {
-        CommandModel cm = habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, logger);
+            ServiceLocator habitat) {
+        CommandModel cm = habitat.<CommandRunner>getService(CommandRunner.class).getModel(commandName, RestLogging.restLogger);
         Collection<String> parameterNames = cm.getParametersNames();
 
         ArrayList<CommandModel.ParamModel> metaData = new ArrayList<CommandModel.ParamModel>();
@@ -582,20 +580,7 @@ public class ResourceUtil {
             paramModel = cm.getModelFor(name);
             String parameterName = (paramModel.getParam().primary()) ? "id" : paramModel.getName();
 
-            boolean skipParameter = false;
-            try {
-                skipParameter = commandParamsToSkip.contains(parameterName);
-            } catch (Exception e) {
-                // TODO: logging bundle lookup?
-                String errorMessage = localStrings.getLocalString("rest.metadata.skip.error",
-                        "Parameter \"{0}\" may be redundant and not required.",
-                        new Object[]{parameterName});
-                // TODO: Why are we logging twice?
-                RestLogging.restLogger.log(Level.INFO, null, errorMessage);
-                RestLogging.restLogger.log(Level.INFO, null, e);
-            }
-
-            if (!skipParameter) {
+            if (!commandParamsToSkip.contains(parameterName)) {
                 metaData.add(paramModel);
             }
         }
@@ -608,7 +593,6 @@ public class ResourceUtil {
     public static void purgeEmptyEntries(Map<String, String> data) {
 
         //hack-2 : remove empty entries if the form has a hidden param for __remove_empty_entries__
-
         if ("true".equals(data.get("__remove_empty_entries__"))) {
             data.remove("__remove_empty_entries__");
             //findbug
@@ -696,7 +680,7 @@ public class ResourceUtil {
                 try {
                     data.put(URLDecoder.decode(key, "UTF-8"), URLDecoder.decode(value, "UTF-8")); // TODO: Last one wins? Can't imagine we'll see List.size() > 1, but...
                 } catch (UnsupportedEncodingException ex) {
-                    Logger.getLogger(ResourceUtil.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new RuntimeException(ex);
                 }
             }
         }

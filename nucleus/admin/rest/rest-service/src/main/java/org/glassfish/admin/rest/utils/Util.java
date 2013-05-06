@@ -512,14 +512,16 @@ public class Util {
             }
             return f;
         } catch (IOException ex) {
-            RestLogging.restLogger.log(Level.SEVERE, null, ex);
+            RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION,
+                    ex.getMessage());
         } finally {
             try {
                 if (out != null) {
                     out.close();
                 }
             } catch (IOException ex) {
-                RestLogging.restLogger.log(Level.SEVERE, null, ex);
+                RestLogging.restLogger.log(Level.SEVERE, RestLogging.IO_EXCEPTION, 
+                        ex.getMessage());
             }
         }
         return null;
