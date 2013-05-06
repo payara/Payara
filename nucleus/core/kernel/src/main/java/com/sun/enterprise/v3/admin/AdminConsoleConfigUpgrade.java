@@ -60,15 +60,13 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
-
 /**
  * Adds the needed message-security-config information to domain.xml
  * during an upgrade from a v2.X server. For more information see:
  * https://glassfish.dev.java.net/issues/show_bug.cgi?id=13443
  */
 @Service
-public class AdminConsoleConfigUpgrade
-    implements ConfigurationUpgrade, PostConstruct {
+public class AdminConsoleConfigUpgrade implements ConfigurationUpgrade, PostConstruct {
 
     private static final String AUTH_LAYER = "HttpServlet";
     private static final String PROVIDER_TYPE = "server";
@@ -89,7 +87,9 @@ public class AdminConsoleConfigUpgrade
 
     // This will force the Grizzly upgrade code to run before
     // AdminConsoleConfigUpgrade runs. Issue GLASSFISH-15599
-    @Inject @Named("grizzlyconfigupgrade") @Optional
+    @Inject
+    @Named("grizzlyconfigupgrade")
+    @Optional
     ConfigurationUpgrade precondition = null;
 
     @Override
@@ -153,15 +153,14 @@ public class AdminConsoleConfigUpgrade
             pConfig.setResponsePolicy(resPol);
 
             // get admin port property from config
-            String adminPort = DEFAULT_ADMIN_PORT;
             Config parent = service.getParent(Config.class);
-            NetworkListener nl = parent.getAdminListener();
-            if (nl != null) {
-                adminPort = nl.getPort();
-            } else {
-                LogRecord lr = new LogRecord(Level.WARNING, String.format(
-                    "Couldn't get admin port from config '%s'. Using default %s",
-                    parent.getName(), DEFAULT_ADMIN_PORT));
+            if (parent.getAdminListener() == null) {
+                LogRecord lr = new LogRecord(Level.WARNING, 
+                        String.format(
+                            "Couldn't get admin port from config '%s'. Using default %s",
+                            parent.getName(),
+                            DEFAULT_ADMIN_PORT)
+                );
                 lr.setLoggerName(getClass().getName());
                 EarlyLogHandler.earlyMessages.add(lr);                
             }
