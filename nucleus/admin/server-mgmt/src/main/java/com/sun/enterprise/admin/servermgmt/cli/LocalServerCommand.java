@@ -294,7 +294,7 @@ public abstract class LocalServerCommand extends CLICommand {
         }
     }
 
-    protected final int getRemotePid() {
+    protected final int getServerPid() {
         try {
             return Integer.parseInt(
                     new RemoteCLICommand("__locations", programOpts, env)
@@ -342,18 +342,21 @@ public abstract class LocalServerCommand extends CLICommand {
     }
 
     /**
-     * convenience method for the local machine
-     */
-    protected final boolean isRunning(int port) {
-        return isRunning(null, port);
-    }
-
-    /**
      * Is the server still running?
      * This is only called when we're hanging around waiting for the server to die.
      * Byron Nevins, Nov 7, 2010 - Check to see if the process itself is still running
      * We use OS tools to figure this out.  See ProcessUtils for details.
      * Failover to the JPS check if necessary
+     *
+     * bnevins, May 2013
+     * http://serverfault.com/questions/181015/how-do-you-free-up-a-port-being-held-open-by-dead-process
+     * In WIndows the admin port may be held open for a while -- if there happens to
+     * be an attached running child process.  This is the key message from the url:
+     *
+     * If your program spawned any processes while it was running, try killing them.
+     * That should cause its process record to be freed and the TCP port to be
+     * cleaned up. Apparently windows does this when the record is released not
+     * when the process exits as I would have expected.
      */
     protected boolean isRunning() {
         int pp = getPrevPid();
@@ -393,7 +396,7 @@ public abstract class LocalServerCommand extends CLICommand {
                 if(isLocal())
                     resetLocalPassword();
 
-                int newServerPid = getRemotePid();
+                int newServerPid = getServerPid();
 
                 if (newServerPid > 0 && newServerPid != oldServerPid) {
                     logger.log(Level.FINER, "oldserver-pid, newserver-pid = {0} --- {1}",

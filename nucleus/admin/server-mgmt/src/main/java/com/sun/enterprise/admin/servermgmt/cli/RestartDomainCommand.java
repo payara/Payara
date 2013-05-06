@@ -93,7 +93,7 @@ public class RestartDomainCommand extends StopDomainCommand {
         if(!isRestartable())
             throw new CommandException(Strings.get("restartDomain.notRestartable"));
 
-        int oldServerPid = getRemotePid(); // might be < 0
+        int oldServerPid = getServerPid(); // might be < 0
 
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd =

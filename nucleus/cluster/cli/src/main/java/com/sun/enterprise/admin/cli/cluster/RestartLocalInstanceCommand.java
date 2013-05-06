@@ -80,7 +80,7 @@ public class RestartLocalInstanceCommand extends StopLocalInstanceCommand {
         if(!isRestartable())
             throw new CommandException(Strings.get("restart.notRestartable"));
 
-        int oldServerPid = getRemotePid(); // might be < 0
+        int oldServerPid = getServerPid(); // might be < 0
 
         // run the remote restart-domain command and throw away the output
         RemoteCLICommand cmd = new RemoteCLICommand("_restart-instance", programOpts, env);
