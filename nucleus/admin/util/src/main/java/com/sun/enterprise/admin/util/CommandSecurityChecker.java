@@ -573,7 +573,11 @@ public class CommandSecurityChecker implements PostConstruct {
                 return savedResourceName;
             }
         }
-        return f.get(command).toString();
+        final Object fieldValue = f.get(command);
+        if (fieldValue == null) {
+            throw new IllegalArgumentException(command.getClass().getName() + "." + f.getName() + "== null");
+        }
+        return fieldValue.toString();
     }
     
     private void addChecksFromReSTEndpoints(final AdminCommand command, 
