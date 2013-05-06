@@ -73,6 +73,7 @@
         <dependency>
             <groupId>javax.enterprise</groupId>
             <artifactId>cdi-api</artifactId>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
