@@ -71,12 +71,12 @@ public class JspTest {
     @Test
     public void testWeb() throws Exception {
         // test non secure access.
-        goGet("http://localhost:8080/firstapp", "Hi, my name is Bhavani. What's yours?");
-        goGet("http://localhost:8080/firstapp/JspTestServlet", "Hi from JspTestServlet");
+        goGet("http://localhost:8080/test", "Hi, my name is Bhavani. What's yours?");
+        goGet("http://localhost:8080/test/JspTestServlet", "Hi from JspTestServlet");
 
         // test secure access
-        goGet("https://localhost:8181/firstapp", "Hi, my name is Bhavani. What's yours?");
-        goGet("https://localhost:8181/firstapp/JspTestServlet", "Hi from JspTestServlet");
+        goGet("https://localhost:8181/test", "Hi, my name is Bhavani. What's yours?");
+        goGet("https://localhost:8181/test/JspTestServlet", "Hi from JspTestServlet");
 
         // test second app
         goGet("http://localhost:8080/secondapp", "Hi, my name is Duke. What's yours?");

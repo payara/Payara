@@ -76,7 +76,7 @@ public class SecureWebAppTest {
                               String result, String contextPath) throws Exception {
         try {
             disableCertValidation();
-            URL servlet = new URL("https://localhost:8181/securewebapp/SecureWebAppTestServlet");
+            URL servlet = new URL("https://localhost:8181/test/SecureWebAppTestServlet");
             HttpsURLConnection uc = (HttpsURLConnection) servlet.openConnection();
             System.out.println("URLConnection = " + uc);
             if (uc.getResponseCode() != 200) {

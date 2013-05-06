@@ -61,13 +61,13 @@ public class JSFTest {
 
         disableCertValidation();
 
-        goGet("http://localhost:8080/hellojsf/JSFTestServlet", "Created viewRoot");
+        goGet("http://localhost:8080/test/JSFTestServlet", "Created viewRoot");
         
         // test non secure access.
-        goGet("http://localhost:8080/hellojsf", "BHAVANI", "SHANKAR", "Mr. X");
+        goGet("http://localhost:8080/test", "BHAVANI", "SHANKAR", "Mr. X");
 
         // test secure access.
-        goGet("https://localhost:8181/hellojsf", "BHAVANI", "SHANKAR", "Mr. X");
+        goGet("https://localhost:8181/test", "BHAVANI", "SHANKAR", "Mr. X");
     }
 
     private static void goGet(String url, String... match) throws Exception {

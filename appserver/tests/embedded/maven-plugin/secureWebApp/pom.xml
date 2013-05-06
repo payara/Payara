@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,47 +45,22 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
+    <parent>
+        <groupId>org.glassfish.tests.embedded</groupId>
+        <artifactId>maven-plugin</artifactId>
+        <version>4.0.1-SNAPSHOT</version>        
+    </parent>
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>securewebapp</artifactId>
     <packaging>war</packaging>
-    <version>4.0.1-SNAPSHOT</version>
     <name>Test https and other plugin configurations (maven-plugin/secureWebApp)</name>
 
     <build>
-        <defaultGoal>install</defaultGoal>
-        <testSourceDirectory>src/test/java</testSourceDirectory>
-	<finalName>securewebapp</finalName>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
-                <configuration>
-		    <failOnMissingWebXml>false</failOnMissingWebXml>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.glassfish.embedded</groupId>
                 <artifactId>maven-embedded-glassfish-plugin</artifactId>
-    	        <version>4.0-SNAPSHOT</version>
                 <configuration>
-                    <goalPrefix>glassfish</goalPrefix>
-                    <app>target/securewebapp.war</app>
-                    <port>8080</port>
-                    <name>securewebapp</name>
-                    <serverID>embedded</serverID>
-		    <ports>
-			<http-listener>8080</http-listener>
-			<https-listener>8181</https-listener>
-		    </ports>
 		    <bootstrapProperties>
 			<property>test_key=test_value</property>
 		    </bootstrapProperties>
@@ -110,24 +85,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>integration-test</phase>
-                        <goals>
-                            <goal>test</goal>
-                        </goals>
-                        <configuration>
-                            <skip>false</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 
@@ -135,33 +92,23 @@
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>
-            <version>2.0</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-project</artifactId>
-            <version>2.0</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
-            <version>3.0.1</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>
-            <version>3.2-b01</version>
-	    <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.3.1</version>
         </dependency>
     </dependencies>
-
 </project>
 

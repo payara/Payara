@@ -75,7 +75,7 @@ public class WebTest {
     private static void goGet(String host, int port,
                               String result, String contextPath) throws Exception {
         try {
-            URL servlet = new URL("http://localhost:8080/webservice/SimpleWebServiceService?wsdl");
+            URL servlet = new URL("http://localhost:8080/test/SimpleWebServiceService?wsdl");
             URLConnection yc = servlet.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     yc.getInputStream()));

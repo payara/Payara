@@ -73,7 +73,7 @@ public class WebTest {
     private static void goGet(String host, int port,
                               String result, String contextPath) throws Exception {
         try {
-            URL servlet = new URL("http://localhost:8080/grizzly-websockets-chat");
+            URL servlet = new URL("http://localhost:8080/test");
             URLConnection yc = servlet.openConnection();
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     yc.getInputStream()));
