@@ -272,6 +272,12 @@
                 <version>2.1</version>
                 <scope>provided</scope>
             </dependency>                    
+            <dependency>
+                <groupId>javax.jms</groupId>
+                <artifactId>javax.jms-api</artifactId>
+                <scope>provided</scope>
+                <version>2.0-b10</version>
+            </dependency>                    
         </dependencies>
     </dependencyManagement>
 </project>

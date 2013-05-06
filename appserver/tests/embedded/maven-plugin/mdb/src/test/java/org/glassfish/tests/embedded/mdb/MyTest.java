@@ -53,7 +53,7 @@ public class MyTest {
 
     @Test
     public void test() throws Exception {
-        URL url = new URL("http://localhost:8080/mdb/TesterServlet");
+        URL url = new URL("http://localhost:8080/test/TesterServlet");
         HttpURLConnection uc = (HttpURLConnection) url.openConnection();
         System.out.println("Test status : " + uc.getResponseMessage());
         if (uc.getResponseCode() != 200) {
