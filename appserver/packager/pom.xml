@@ -87,6 +87,7 @@
     <modules>
         <module>external</module> 
         <module>legal</module>
+        <module>pkg-bootstrap</module>
         <module>appserver-base</module>
         <module>felix</module>
         <module>glassfish-hk2</module>
