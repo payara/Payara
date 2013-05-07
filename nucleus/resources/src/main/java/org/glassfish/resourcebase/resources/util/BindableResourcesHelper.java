@@ -42,7 +42,6 @@ package org.glassfish.resourcebase.resources.util;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.resourcebase.resources.api.ResourceStatus;
@@ -53,7 +52,6 @@ import java.lang.reflect.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.resourcebase.resources.ResourceLoggingConstansts;
 import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
@@ -79,7 +77,7 @@ public class BindableResourcesHelper {
 
     public static final String LOGGER = "javax.enterprise.resources.util";
 
-    private static final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
+    private final Logger _logger = Logger.getLogger(LOGGER, LOGMESSAGE_RESOURCE);
 
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(BindableResourcesHelper.class);
