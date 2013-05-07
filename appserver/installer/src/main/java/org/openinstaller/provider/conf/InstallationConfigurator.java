@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,8 +43,6 @@ import org.openinstaller.config.PropertySheet;
 import org.openinstaller.util.*;
 import org.glassfish.installer.util.*;
 import com.sun.pkg.bootstrap.Bootstrap;
-import com.sun.pkg.client.Image;
-import com.sun.pkg.client.SystemInfo;
 import javax.management.Notification;
 import javax.management.NotificationListener;
 import java.io.File;
@@ -240,17 +238,6 @@ public final class InstallationConfigurator implements Configurator, Notificatio
             }
             LOGGER.log(Level.INFO, Msg.get("BOOTSTRAPPING_UPDATETOOL", null));
             LOGGER.log(Level.FINEST, props.toString());
-
-            // explicitly refreshing catalogs, workaround for bootstrap issue
-            // proceed to bootstrap if there is an exception
-            try {
-                SystemInfo.initUpdateToolProps(props);
-                Image img = new Image(productRef.getInstallLocation());
-                img.refreshCatalogs();
-            } catch (Exception e) {
-                LOGGER.log(Level.FINEST, e.getMessage());
-            }
-
             //invoke bootstrap
             Bootstrap.main(props, LOGGER);
 

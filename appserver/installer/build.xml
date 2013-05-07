@@ -147,7 +147,6 @@
 				<pathelement location="${stage.dir}/${bundle.name}_engine_tmp/install/lib/config.jar" />
 				<pathelement location="${stage.dir}/${bundle.name}_engine_tmp/install/lib/providers/providers.jar" />
 				<pathelement location="${pkg-bootstrap.jar}" />
-				<pathelement location="${pkg-client.jar}" />
 			</classpath>
 		</javac>
 	</target>
