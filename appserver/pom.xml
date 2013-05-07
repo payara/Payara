@@ -62,7 +62,7 @@
     <properties>
         <jms-api.version>2.0</jms-api.version>
         <jsp-api.version>2.3.1</jsp-api.version>
-        <jsp-impl.version>2.3.1</jsp-impl.version>
+        <jsp-impl.version>2.3.2</jsp-impl.version>
         <javax.el.version>3.0.0</javax.el.version>
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <jstl-impl.version>1.2.2</jstl-impl.version>
