@@ -126,7 +126,7 @@
         <hk2.plugin.version>2.1.93</hk2.plugin.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.0-b003</pfl.version>
-        <gmbal.version>3.2.0-b003</gmbal.version>
+        <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
         <jersey.version>2.0-rc2</jersey.version>
