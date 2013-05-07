@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -214,7 +214,13 @@ public class SecurityContext extends AbstractSecurityContext  {
  	this.initiator = null;
  	this.setServerGeneratedCredentials();
         // read only is only done for guest logins.
- 	this.subject.setReadOnly();
+        AppservAccessController.doPrivileged(new PrivilegedAction(){
+            @Override
+            public Object run() {
+                subject.setReadOnly();
+                return null;
+            }
+        });
     }
     
     /**
