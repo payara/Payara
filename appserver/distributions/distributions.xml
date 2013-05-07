@@ -55,18 +55,13 @@
     <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0.1"/>
     <property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
     <property name="dev.authority" value="dev.glassfish.org"/>
-    <property name="contrib.authority" value="contrib.glassfish.org"/>
-    <property name="stable.authority" value="stable.glassfish.org"/>
+    <property name="release.authority" value="release.glassfish.org"/>
+    <property name="release.native.authority" value="release.native.glassfish.org"/>
 
-    <property name="repository.url" value="http://pkg.glassfish.org/v3"/>
+    <property name="repository.url" value="http://pkg.glassfish.org/4"/>
     <property name="dev.repository.url" value="${repository.url}/dev/"/>
-    <property name="contrib.repository.url" value="${repository.url}/contrib/"/>
-    <property name="stable.repository.url" value="${repository.url}/stable/"/>
-
-    <property name="sun.contrib.authority" value="contrib.glassfish.oracle.com"/>
-    <property name="javaeesdk.release.authority" value="release.javaeesdk.oracle.com"/>
-    <property name="javaeesdk.release.repository.url" value="http://pkg.oracle.com/javaeesdk/6/release/"/>
-    <property name="sun.contrib.repository.url" value="http://pkg.oracle.com/glassfish/v3/contrib/"/>
+    <property name="release.repository.url" value="${repository.url}/release/"/>
+    <property name="release.native.repository.url" value="${repository.url}/native/release/"/>
 
     <target name="init">
         <condition property="windows">
@@ -167,7 +162,9 @@
     <macrodef name="create.local.image">
         <attribute name="image.dir" default="${image.dir}"/>
         <attribute name="repo.url" default="${repo.url}"/>
-        <attribute name="authority" default="${dev.authority}"/>
+        <attribute name="authority" default="${release.authority}"/>
+        <attribute name="native.authority" default="${release.native.authority}"/>
+        <attribute name="native.authority.url" default="${release.native.repository.url}"/>
         <attribute name="title" default="${title}"/>
         <attribute name="description" default="${description}"/>
         <sequential>
@@ -177,6 +174,8 @@
             <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property title '@{title}'" />
             <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property image-tou-url 'http://glassfish-repo.java.net/terms.html'"/>
             <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property description '@{description}'" />
+	    <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-authority -P -O @{repo.url} '@{authority}'" />
+	    <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-authority -O @{native.authority.url} '@{native.authority}'" />
         </sequential>
     </macrodef>
     <macrodef name="pkg">
@@ -227,17 +226,29 @@
         <attribute name="image.dir" />
         <attribute name="fname" />
         <attribute name="from" default="${repo.url}" />
-        <attribute name="to" default="${dev.repository.url}" />
+        <attribute name="to" default="${release.repository.url}" />
         <attribute name="image.name" default="${image.name}" />
         <attribute name="backup" default="${basedir}/cfg_cache.bak"/>
         <attribute name="cfgcache" default="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"/>
         <attribute name="deleteIncludes" />
         <attribute name="zipBaseDir" default="@{image.dir}"/>
         <sequential>
+<!-- replacing pkg-bootstub script copy with the extraction of
+     pkg-bootstrap-fragment archive until we can integrate UC release
+     with the fix for non-preferred repository UC client bootstrap
+
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/updatetool"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/updatetool.bat"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/pkg"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/pkg.bat"/>    
+-->
+
+            <resolveArtifact artifactId="pkg-bootstrap-fragment" groupId="org.glassfish.main.packager" property="pkg-bootstrap-fragment.zip"/>
+            <unzip src="${pkg-bootstrap-fragment.zip}" dest="@{image.dir}">
+                <patternset>
+                    <exclude name="META-INF/**"/>
+                </patternset>
+            </unzip>
                        
             <chmod file="@{image.dir}/${install.dir.name}/bin/*" perm="ugo+rx"/>
             <chmod file="@{image.dir}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
