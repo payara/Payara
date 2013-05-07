@@ -484,6 +484,10 @@ public class CompositeUtil {
         RestActionReporter ar = ResourceUtil.runCommand(command, parameters, subject);
         ExitCode code = ar.getActionExitCode();
         if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
+            Throwable t = ar.getFailureCause();
+            if (t instanceof SecurityException) {
+              throw new WebApplicationException(Response.status(Status.UNAUTHORIZED).build());
+            }
             if (includeFailureMessage) {
                 throw new WebApplicationException(Response.status(status).entity(ar.getCombinedMessage()).build());
             } else {
