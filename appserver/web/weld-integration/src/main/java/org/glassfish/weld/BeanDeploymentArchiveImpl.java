@@ -210,9 +210,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             //XXX: This is a workaround for issue https://issues.jboss.org/browse/WELD-781.
             //Remove this as soon as the SPI comes in.
             Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
-        } else {
-            int i =0;
-            i++;
         }
         return s;
     }
