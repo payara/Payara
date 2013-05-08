@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -98,6 +98,7 @@ import com.sun.enterprise.security.jmac.config.GFServerConfigProvider;
 import com.sun.enterprise.security.jmac.config.HandlerContext;
 import org.glassfish.security.common.MasterPassword;
 import com.sun.enterprise.security.store.PasswordAdapter;
+import com.sun.enterprise.security.web.integration.WebPrincipal;
 import com.sun.enterprise.server.pluggable.SecuritySupport;
 import com.sun.logging.LogDomains;
 import java.util.Set;
@@ -224,11 +225,184 @@ abstract class BaseContainerCallbackHandler
         }
     }
 
+    
+    /**
+     * This method will distinguish the initiator principal (of the
+     * SecurityContext obtained from the WebPrincipal) as the caller principal,
+     * and copy all the other principals into the subject....
+     *
+     * It is assumed that the input WebPrincipal is coming from a SAM, and
+     * that it was created either by the SAM (as described below) or by
+     * calls to the LoginContextDriver made by an Authenticator.
+     *
+     * A WebPrincipal constructed by the RealmAdapter will include a DPC;
+     * other constructions may not; this method interprets the absence of a
+     * DPC as evidence that the resulting WebPrincipal was not constructed
+     * by the RealmAdapter as described below. Note that presence of a DPC
+     * does not necessarily mean that the resulting WebPrincipal was
+     * constructed by the RealmAdapter... since some authenticators also
+     * add the credential).
+     *
+     * A. handling of CPCB by CBH:
+     *
+     *  1. handling of CPC by CBH modifies subject
+     *      a. constructs principalImpl if called by name
+     *      b. uses LoginContextDriver to add group principals for name
+     *      c. puts principal in principal set, and DPC in public credentials
+     *
+     * B. construction of WebPrincipal by RealmAdapter (occurs after SAM
+     * uses CBH to set other than an unauthenticated result in the subject:
+     *
+     *  a. SecurityContext construction done with subject (returned by SAM).
+     *     Construction sets initiator/caller principal within SC from
+     *     DPC set by CBH in public credentials of subject
+     *
+     *  b WebPrincipal is constructed with initiator principal and SecurityContext
+     *
+     * @param fs receiving Subject
+     * @param wp WebPrincipal
+     *
+     * @return true when Security Context has been obtained from webPrincipal,
+     * and CB is finished. returns false when more CB processing is required.
+     */
+    private boolean reuseWebPrincipal(final Subject fs, final WebPrincipal wp) {
+
+        SecurityContext sc = wp.getSecurityContext();
+        final Subject wps = sc != null ? sc.getSubject() : null;
+        final Principal callerPrincipal = sc != null ? sc.getCallerPrincipal() : null;
+        final Principal defaultPrincipal = SecurityContext.getDefaultCallerPrincipal();
+
+        return ((Boolean) AppservAccessController.doPrivileged(new PrivilegedAction() {
+
+            /**
+             * this method uses 4 (numbered) criteria to determine if the
+             * argument WebPrincipal can be reused
+             */
+            public Boolean run() {
+
+                /*
+                 * 1. WebPrincipal must contain a SecurityContext and SC must
+                 * have a non-null, non-default callerPrincipal and a Subject
+                 */
+                if (callerPrincipal == null ||
+                    callerPrincipal.equals(defaultPrincipal) || wps == null) {
+                    return Boolean.FALSE;
+                }
+
+                boolean hasObject = false;
+                Set<DistinguishedPrincipalCredential> distinguishedCreds =
+                        wps.getPublicCredentials(DistinguishedPrincipalCredential.class);
+                if (distinguishedCreds.size() == 1) {
+                    for (DistinguishedPrincipalCredential cred : distinguishedCreds) {
+                        if (cred.getPrincipal().equals(callerPrincipal)) {
+                            hasObject = true;
+                        }
+                    }
+                }
+
+                /**
+                 * 2. Subject within SecurityContext must contain a single
+                 * DPC that identifies the Caller Principal
+                 */
+                if (!hasObject) {
+                    return Boolean.FALSE;
+                }
+
+                hasObject = wps.getPrincipals().contains(callerPrincipal);
+
+                /**
+                 * 3. Subject within SecurityContext must contain the caller
+                 * principal
+                 */
+                if (!hasObject) {
+                    return Boolean.FALSE;
+                }
+
+                /**
+                 * 4. The webPrincipal must have a non null name that equals
+                 * the name of the callerPrincipal.
+                 */
+                if (wp.getName() == null ||
+                    !wp.getName().equals(callerPrincipal.getName())) {
+                    return Boolean.FALSE;
+                }
+
+                /*
+                 * remove any existing DistinguishedPrincipalCredentials from
+                 * receiving Subject
+                 *
+                 */
+                Iterator iter = fs.getPublicCredentials().iterator();
+                while (iter.hasNext()) {
+                    Object obj = iter.next();
+                    if (obj instanceof DistinguishedPrincipalCredential) {
+                        iter.remove();
+                    }
+                }
+
+                /**
+                 * Copy principals from Subject within SecurityContext
+                 * to receiving Subject
+                 */
+
+                for (Principal p : wps.getPrincipals()) {
+                    fs.getPrincipals().add(p);
+                }
+
+                /**
+                 * Copy public credentials from Subject within SecurityContext
+                 * to receiving Subject
+                 */
+                for (Object publicCred : wps.getPublicCredentials()) {
+                    fs.getPublicCredentials().add(publicCred);
+                }
+
+                /**
+                 * Copy private credentials from Subject within SecurityContext
+                 * to receiving Subject
+                 */
+                for (Object privateCred : wps.getPrivateCredentials()) {
+                    fs.getPrivateCredentials().add(privateCred);
+                }
+
+                return Boolean.TRUE;
+            }
+        })).booleanValue();
+    } 
+    
 
     private void processCallerPrincipal(CallerPrincipalCallback cpCallback) {
         final Subject fs = cpCallback.getSubject();
         Principal principal = cpCallback.getPrincipal();
 
+        if (principal instanceof WebPrincipal) {
+            WebPrincipal wp = (WebPrincipal) principal;
+            /**
+             * Check if the WebPrincipal satisfies the criteria for reuse. If
+             * it does, the CBH will have already copied its contents into the
+             * Subject, and established the caller principal.
+             */
+            if (reuseWebPrincipal(fs,wp)) {
+                return;
+            }
+            /**
+             * Otherwise the webPrincipal must be distinguished as the
+             * callerPrincipal, but the contents of its internal SecurityContext
+             * will not be copied.
+             * For the special case where the WebPrincipal represents
+             * the defaultCallerPrincipal, the argument principal is set to
+             * null to cause the handler to assign its representation of the
+             * unauthenticated caller in the Subject.
+             */
+            Principal dp = SecurityContext.getDefaultCallerPrincipal();
+            SecurityContext sc = wp.getSecurityContext();
+            Principal cp = sc != null ? sc.getCallerPrincipal() : null;
+
+            if (wp.getName() == null || wp.equals(dp) || cp == null || cp.equals(dp)) {
+                principal = null;
+            }
+        } 
+        
         String realmName = null;
         if (handlerContext != null) {
             realmName = handlerContext.getRealmName();
