@@ -234,6 +234,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     //for Bean classloading to succeed. The TCL is reset
                     //to its old value here.
                     Thread.currentThread().setContextClassLoader(oldTCL);
+                    deploymentComplete( deploymentImpl );
                 }
             }
         } else if ( event.is(org.glassfish.internal.deployment.Deployment.APPLICATION_STOPPED) ||
@@ -290,6 +291,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
             if (deploymentImpl != null) {
                 deploymentImpl.cleanup();
             }
+        }
+    }
+
+    private void deploymentComplete(DeploymentImpl deploymentImpl) {
+        for ( BeanDeploymentArchive oneBda : deploymentImpl.getBeanDeploymentArchives()) {
+            (( BeanDeploymentArchiveImpl) oneBda ).setDeploymentComplete( true );
         }
     }
 
