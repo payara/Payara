@@ -166,7 +166,19 @@ public abstract class AuthenticatorBase
     protected static final String REALM_NAME = "Authentication required";
 
 
-    // ----------------------------------------------------- Instance Variables    
+    // ----------------------------------------------------- Instance Variables
+    /**
+     * Should a session always be used once a user is authenticated? This may
+     * offer some performance benefits since the session can then be used to
+     * cache the authenticated Principal, hence removing the need to
+     * authenticate the user via the Realm on every request. This may be of help
+     * for combinations such as BASIC authentication used with the JNDIRealm or
+     * DataSourceRealms. However there will also be the performance cost of
+     * creating and GC'ing the session. By default, a session will not be
+     * created.
+     */
+    protected boolean alwaysUseSession = false;
+
     /**
      * Should we cache authenticated Principals if the request is part of
      * an HTTP session?
@@ -248,7 +260,16 @@ public abstract class AuthenticatorBase
     
 
     // ------------------------------------------------------------- Properties
-        
+    public boolean getAlwaysUseSession() {
+        return alwaysUseSession;
+    }
+
+
+    public void setAlwaysUseSession(boolean alwaysUseSession) {
+        this.alwaysUseSession = alwaysUseSession;
+    }
+
+
     /**
      * Return the cache authenticated Principals flag.
      */
@@ -869,6 +890,8 @@ public abstract class AuthenticatorBase
         Session session = getSession(request, false);
         if (session != null && changeSessionIdOnAuthentication) {
             request.changeSessionId();
+        } else if (alwaysUseSession) {
+            session = getSession(request, true);
         }
         
         // Cache the authentication information in our session, if any
