@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.deployment.admin;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.DeploymentTargetResolver;
@@ -122,6 +123,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
     @Inject
     Applications apps;
+
+    @Inject
+    ApplicationRegistry appRegistry;
 
     @Inject
     VersioningService versioningService;
@@ -293,12 +297,16 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
             if (source == null) {
                 logger.fine("Cannot get source archive for undeployment");
-                // remove the application from the domain.xml so at least server is
-                // in a consistent state
+                // remove the application from the domain.xml so at least
+                // server is in a consistent state after restart
                 try {
                     deployment.unregisterAppFromDomainXML(appName, target);
                 } catch(TransactionFailure e) {
                     logger.warning("Module " + appName + " not found in configuration");
+                }
+                // also remove application from runtime registry 
+                if (info != null) {
+                    appRegistry.remove(appName);
                 }
                 return;
             }
@@ -306,13 +314,17 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
             File sourceFile = new File(source.getURI());
             if (!source.exists()) {
                 logger.log(Level.WARNING, "Cannot find application bits at " +
-                    sourceFile.getPath());
-                // remove the application from the domain.xml so at least server is
-                // in a consistent state
+                    sourceFile.getPath() + ". Please restart server to ensure server is in a consistent state before redeploy the application.");
+                // remove the application from the domain.xml so at least 
+                // server is in a consistent state after restart
                 try {
                     deployment.unregisterAppFromDomainXML(appName, target);
                 } catch(TransactionFailure e) {
                     logger.warning("Module " + appName + " not found in configuration");
+                }
+                // also remove application from runtime registry
+                if (info != null) {
+                    appRegistry.remove(appName);
                 }
                 return;
             }
