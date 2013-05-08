@@ -112,6 +112,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private Collection<String> cdiAnnotatedClassNames = null;
 
+    private boolean deploymentComplete = false;
 
     /**
      * Produce a <code>BeanDeploymentArchive</code> form information contained
@@ -204,10 +205,15 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                        CDILoggerInfo.SETTING_CONTEXT_CLASS_LOADER,
                        new Object[]{this.id, this.moduleClassLoaderForBDA});
         }
-        Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
-        //The TCL is unset at the end of deployment of CDI beans in WeldDeployer.event
-        //XXX: This is a workaround for issue https://issues.jboss.org/browse/WELD-781.
-        //Remove this as soon as the SPI comes in.
+        if ( ! isDeploymentComplete() ) {
+            //The TCL is unset at the end of deployment of CDI beans in WeldDeployer.event
+            //XXX: This is a workaround for issue https://issues.jboss.org/browse/WELD-781.
+            //Remove this as soon as the SPI comes in.
+            Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
+        } else {
+            int i =0;
+            i++;
+        }
         return s;
     }
 
@@ -767,4 +773,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
 
+    public boolean isDeploymentComplete() {
+        return deploymentComplete;
+    }
+
+    public void setDeploymentComplete(boolean deploymentComplete) {
+        this.deploymentComplete = deploymentComplete;
+    }
 }
