@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -260,7 +260,7 @@ abstract class BaseContainerCallbackHandler
      *  b WebPrincipal is constructed with initiator principal and SecurityContext
      *
      * @param fs receiving Subject
-     * @param wp WebPrincipla
+     * @param wp WebPrincipal
      *
      * @return true when Security Context has been obtained from webPrincipal,
      * and CB is finished. returns false when more CB processing is required.
@@ -328,7 +328,7 @@ abstract class BaseContainerCallbackHandler
                 }
 
                 /*
-                 * remove any exiting DistinguishedPrincipalCredentials from
+                 * remove any existing DistinguishedPrincipalCredentials from
                  * receiving Subject
                  *
                  */
