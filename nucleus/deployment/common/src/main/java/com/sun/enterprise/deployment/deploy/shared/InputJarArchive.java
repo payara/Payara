@@ -325,7 +325,6 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
             deplLogger.log(Level.WARNING,
                            INVALID_ZIP_FILE,
                            new Object[] { e.getLocalizedMessage(), additionalInfo } );
-            throw new IOException(additionalInfo);
         }
         return jf;
     }       
