@@ -391,6 +391,7 @@
                                         <include>javax/enterprise/concurrent/**</include>
                                         <include>javax/ws/rs/**</include>
                                         <include>org/glassfish/jersey/**</include>
+					<include>javax/xml/registry/**</include>
                                     </includes>
                                 </fileset>
                             </filesets>
