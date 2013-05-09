@@ -219,15 +219,10 @@
                                 <artifactId>javax.faces</artifactId>
                                 <version>${mojarra.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>impl</jarType>             
-                            <specVersion>2.1</specVersion>
-                            <newSpecVersion>2.2</newSpecVersion>
-                            <implVersion>2.1.20</implVersion>
-                            <specImplVersion>2.2-m15</specImplVersion>
-                            <newImplVersion>2.2-m15</newImplVersion>
-                            <specBuild>15</specBuild>
-                            <implBuild>15</implBuild>
+                            <specVersion>2.2</specVersion>
+                            <implVersion>${mojarra.version}</implVersion>
                             <apiPackage>javax.faces</apiPackage>
                             <implNamespace>org.glassfish</implNamespace>
                         </spec>
@@ -285,11 +280,10 @@
                                 <artifactId>javax.batch-api</artifactId>
                                 <version>${javax.batch-api.version}</version>
                             </artifact>
-                            <nonFinal>true</nonFinal>
+                            <nonFinal>false</nonFinal>
                             <jarType>api</jarType>     
-                            <specVersion>0.0</specVersion>
-                            <newSpecVersion>1.0</newSpecVersion>
-                            <specBuild>23</specBuild>
+                            <specVersion>1.0</specVersion>
+			    <specImplVersion>${javax.batch-api.version}</specImplVersion>
                             <apiPackage>javax.batch</apiPackage>
                         </spec>
                         <spec>
