@@ -60,8 +60,9 @@
     <property name="jdbc-config.classpath.additions" value="../modules/jdbc-config.jar"/>
     <property name="aix.additions" value="../modules/aixporting-repackaged.jar"/>
     <property name="entitybean-container.additions" value="../modules/entitybean-container.jar"/>
+    <property name="weld.classpath.additions" value="../modules/weld-osgi-bundle.jar"/>
     
-    <property name="classpath.additions" value=" ${resources-runtime.classpath.additions} ${javamail-connector.classpath.additions} ${javamail-runtime.classpath.additions} ${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions} ${jdbc-runtime.classpath.additions} ${jdbc-config.classpath.additions}"/>
+    <property name="classpath.additions" value=" ${resources-runtime.classpath.additions} ${javamail-connector.classpath.additions} ${javamail-runtime.classpath.additions} ${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions} ${jdbc-runtime.classpath.additions} ${jdbc-config.classpath.additions} ${weld.classpath.additions}"/>
     <property name="classpath.conditional.additions" value="${aix.additions}"/>
     <target name="fixup.library">
         <unzip src="${output.dir}/${output.file}" dest="${stage.dir}">
@@ -80,7 +81,7 @@
             <replacefilter token="../modules/javax.annotation-api.jar" value="../modules/endorsed/javax.annotation-api.jar"/>
             <replacefilter token="../modules/jaxb-api-osgi.jar" value="../modules/endorsed/jaxb-api-osgi.jar"/>
             <replacefilter token="../modules/webservices-api-osgi.jar" value="../modules/endorsed/webservices-api-osgi.jar"/>
-            <replacefilter token="../modules/weld-se.jar" value="../lib/appclient/weld-se.jar"/>
+            <replacefilter token="../modules/weld-se-core.jar" value="../lib/appclient/weld-se-core.jar"/>
 
             <!--
                 The javax.mail JAR will reference activation.jar, because it is
