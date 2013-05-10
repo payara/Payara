@@ -4725,10 +4725,13 @@ public abstract class BaseContainer
             ejbProbeListener.addMethods(getContainerId(), appName, modName, ejbName, getMonitoringMethodsArray());
             ejbProbeListener.register();
 
-	    _logger.log(Level.FINE, "Created MonitoringRegistry: appName: "
-                + appName + "; modName: " + modName + "; ejbName: " + ejbName);
+            if (_logger.isLoggable(Level.FINE)) {
+	        _logger.log(Level.FINE, "Created MonitoringRegistry: " + 
+                        EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName));
+            }
 	} catch (Exception ex) {
-	    _logger.log(Level.SEVERE, "[**BaseContainer**] Could not create MonitorRegistryMediator. appName: " + appName + "; modName: " + modName + "; ejbName: " + ejbName, ex);
+	    _logger.log(Level.SEVERE, "[**BaseContainer**] Could not create MonitorRegistryMediator. " + 
+                        EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName), ex);
 	}
 
         // Always create to avoid NPE

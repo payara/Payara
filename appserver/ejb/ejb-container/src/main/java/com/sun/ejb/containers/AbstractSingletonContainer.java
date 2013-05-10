@@ -289,6 +289,10 @@ public abstract class AbstractSingletonContainer
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
     {	
+	    ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
+                containerInfo.appName, containerInfo.modName,
+                containerInfo.ejbName);
+
         // No access checks needed because this is called as a result
         // of an internal creation, not a user-visible create method.
         return (localBeanView)

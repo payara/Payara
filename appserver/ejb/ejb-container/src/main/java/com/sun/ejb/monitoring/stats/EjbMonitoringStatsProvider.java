@@ -108,7 +108,8 @@ public abstract class EjbMonitoringStatsProvider {
 
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "[EJBMonitoringStatsProvider] : "
-                        + appName + ":" + moduleName + ":" + beanName + ":" + methodMonitorMap.size());
+                        + EjbMonitoringUtils.getLoggingName(appName, moduleName, beanName)
+                        + ":" + methodMonitorMap.size());
             }
         }
     }
@@ -137,7 +138,7 @@ public abstract class EjbMonitoringStatsProvider {
         if (registered) {
             if (debug) {
                 _logger.log(Level.FINE, "[EJBMonitoringStatsProvider] unregister: " 
-                       + appName + ":" + moduleName + ":" + beanName);
+                       + EjbMonitoringUtils.getLoggingName(appName, moduleName, beanName));
             }
             registered = false;
             StatsProviderManager.unregister(this);
@@ -228,7 +229,7 @@ public abstract class EjbMonitoringStatsProvider {
     protected void log(String mname, String provider) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("===> In " + provider + " for: [" 
-                    + mname + "] " + appName + "::" + moduleName + "::" + beanName);
+                    + mname + "] " + EjbMonitoringUtils.getLoggingName(appName, moduleName, beanName));
         }
     }
 
@@ -239,7 +240,7 @@ public abstract class EjbMonitoringStatsProvider {
     private void log(String mname, Method m) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("===> In EjbMonitoringStatsProvider for: [" 
-                    + mname + "] " + appName + "::" + moduleName + "::" + beanName
+                    + mname + "] " + EjbMonitoringUtils.getLoggingName(appName, moduleName, beanName)
                     + "::" + EjbMonitoringUtils.stringify(m));
         }
     }

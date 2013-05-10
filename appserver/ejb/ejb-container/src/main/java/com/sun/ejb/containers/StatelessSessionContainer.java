@@ -280,13 +280,15 @@ public class StatelessSessionContainer
     {
         // No access check since this is an internal operation.
 
-	ejbProbeNotifier.ejbBeanCreatedEvent(
-                getContainerId(), containerInfo.appName, containerInfo.modName,
-                containerInfo.ejbName);
-
+	ejbBeanCreatedEvent();
         return theRemoteBusinessObjectImpl;
     }
 
+    private void ejbBeanCreatedEvent() {
+	ejbProbeNotifier.ejbBeanCreatedEvent(
+                getContainerId(), containerInfo.appName, containerInfo.modName,
+                containerInfo.ejbName);
+    }
 	
     /**
      *
@@ -303,9 +305,7 @@ public class StatelessSessionContainer
                 ejbDescriptor, homeCreateMethod, null);
         }
         */
-	ejbProbeNotifier.ejbBeanCreatedEvent(
-                getContainerId(), containerInfo.appName, containerInfo.modName,
-                containerInfo.ejbName);
+	ejbBeanCreatedEvent();
 
         // For stateless EJBs, EJB2.0 Section 7.8 says that 
         // Home.create() need not do any real creation.
@@ -328,9 +328,7 @@ public class StatelessSessionContainer
                 ejbDescriptor, localHomeCreateMethod, null);
         }
         */
-	ejbProbeNotifier.ejbBeanCreatedEvent(
-                getContainerId(), containerInfo.appName, containerInfo.modName,
-                containerInfo.ejbName);
+	ejbBeanCreatedEvent();
 
         // For stateless EJBs, EJB2.0 Section 7.8 says that 
         // Home.create() need not do any real creation.
@@ -344,6 +342,8 @@ public class StatelessSessionContainer
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
     {	
+	ejbBeanCreatedEvent();
+
         // No access checks needed because this is called as a result
         // of an internal creation, not a user-visible create method.
         return (localBeanView)

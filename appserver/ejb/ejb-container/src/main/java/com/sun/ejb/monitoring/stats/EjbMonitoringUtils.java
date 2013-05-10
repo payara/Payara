@@ -75,7 +75,7 @@ public class EjbMonitoringUtils {
                     PluginPoint.APPLICATIONS, beanSubTreeNode, listener, null, invokerId);
         } catch (Exception ex) {
             _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not register listener for " 
-                    + "appName: " + appName + "; modName: " + moduleName + "; beanName: " + beanName, ex);
+                    + getDetailedLoggingName(appName, moduleName, beanName), ex);
 
             return null;
         }
@@ -94,8 +94,7 @@ public class EjbMonitoringUtils {
                     PluginPoint.APPLICATIONS, subTreeNode, listener, null, invokerId);
         } catch (Exception ex) {
             _logger.log(Level.SEVERE, "[**EjbMonitoringUtils**] Could not register subnode ["
-                    + subNode + "] listener for appName: " + appName 
-                    + "; modName: " + moduleName + "; beanName: " + beanName, ex);
+                    + subNode + "] listener for " + getDetailedLoggingName(appName, moduleName, beanName), ex);
 
             return null;
         }
@@ -158,7 +157,28 @@ public class EjbMonitoringUtils {
     }
 
     public static String getInvokerId(String appName, String modName, String beanName) {
+        if (appName == null) {
+            return "_" + modName + "_" + beanName;
+        }
+
         return "_" + appName + "_" + modName + "_" + beanName;
+    }
+
+
+    public static String getDetailedLoggingName(String appName, String modName, String beanName) {
+        if (appName == null) {
+            return "modName=" + modName + "; beanName=" + beanName;
+        }
+
+        return "appName=" + appName + "; modName=" + modName + "; beanName=" + beanName;
+    }
+
+    public static String getLoggingName(String appName, String modName, String beanName) {
+        if (appName == null) {
+            return modName + ":" + beanName;
+        }
+
+        return appName + ":" + modName + ":" + beanName;
     }
 
 }
