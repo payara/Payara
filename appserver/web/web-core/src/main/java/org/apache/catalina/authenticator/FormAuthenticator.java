@@ -487,7 +487,7 @@ public class FormAuthenticator
                                       HttpResponse response,
                                       LoginConfig config) {
 
-        if (isChangeSessionIdOnAuthentication()) {
+        if (isChangeSessionIdOnAuthentication() && getSession(request, false) != null) {
             request.changeSessionId();
         }
 
