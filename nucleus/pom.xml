@@ -392,6 +392,7 @@
                                         <include>javax/ws/rs/**</include>
                                         <include>org/glassfish/jersey/**</include>
 					<include>javax/xml/registry/**</include>
+					<include>javax/websocket/**</include>
                                     </includes>
                                 </fileset>
                             </filesets>
