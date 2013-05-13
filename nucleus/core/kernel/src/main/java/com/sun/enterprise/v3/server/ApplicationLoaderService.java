@@ -186,16 +186,16 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
          */
         systemApplications = domain.getSystemApplications();
         for (Application systemApp : systemApplications.getApplications()) {
-          appOrderInfoMap.put(systemApp.getName(), new Integer(appOrder++));
+          appOrderInfoMap.put(systemApp.getName(), Integer.valueOf(appOrder++));
         }
         List<Application> standaloneAdapters =
             applications.getApplicationsWithSnifferType(ServerTags.CONNECTOR, true);
         for (Application standaloneAdapter : standaloneAdapters) {
-          appOrderInfoMap.put(standaloneAdapter.getName(), new Integer(appOrder++));
+          appOrderInfoMap.put(standaloneAdapter.getName(), Integer.valueOf(appOrder++));
         }
         List<Application> allApplications = applications.getApplications();
         for (Application app : allApplications) {
-          appOrderInfoMap.put(app.getName(), new Integer(appOrder++));
+          appOrderInfoMap.put(app.getName(), Integer.valueOf(appOrder++));
         }
         
         for (Application systemApp : systemApplications.getApplications()) {
