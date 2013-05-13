@@ -98,7 +98,7 @@
         
         <javaee.major_version>7</javaee.major_version>
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
-        <javaee.version>${javaee.major_version}.${minor_version}${javaee.version_qualifier}</javaee.version>
+        <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
         
         <jsftemplating.version>2.1.0</jsftemplating.version>
         <uc-pkg-client.version>1.122-56.2852</uc-pkg-client.version>
