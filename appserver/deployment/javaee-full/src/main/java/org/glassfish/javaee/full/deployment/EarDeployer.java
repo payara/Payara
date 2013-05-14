@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -112,17 +112,19 @@ public class EarDeployer implements Deployer {
     @LogMessagesResourceBundle
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
 
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
-    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.javaee";
+    // Reserve this range [AS-DEPLOYMENT-02001, AS-DEPLOYMENT-04000]
+    // for message ids used in this deployment javaee-full module
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment logger for javaee-full module", publish=true)
+    private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.javaeefull";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     @LogMessageInfo(message = "Skipped processing for module {0} as its module type was not recognized", level="WARNING")
-    private static final String UNRECOGNIZED_MODULE_TYPE = "AS-DEPLOYMENT-00015";
+    private static final String UNRECOGNIZED_MODULE_TYPE = "AS-DEPLOYMENT-02015";
 
     @LogMessageInfo(message = "Error occurred", level="WARNING")
-    private static final String ERROR_OCCURRED = "AS-DEPLOYMENT-00016";
+    private static final String ERROR_OCCURRED = "AS-DEPLOYMENT-02016";
 
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(EarDeployer.class);
 

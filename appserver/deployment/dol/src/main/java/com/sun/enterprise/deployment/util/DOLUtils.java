@@ -117,7 +117,9 @@ public class DOLUtils {
     @LogMessagesResourceBundle
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
 
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    // Reserve this range [AS-DEPLOYMENT-00001, AS-DEPLOYMENT-02000]
+    // for message ids used in this deployment dol module
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment logger for dol module", publish=true)
     private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.dol";
 
     public static final Logger deplLogger =

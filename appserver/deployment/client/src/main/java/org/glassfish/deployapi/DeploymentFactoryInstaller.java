@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,7 +83,7 @@ public class DeploymentFactoryInstaller {
     public static final Logger deplLogger = org.glassfish.deployment.client.AbstractDeploymentFacility.deplLogger;
 
     @LogMessageInfo(message = "Deployment manager load failure.  Unable to find {0}",cause="A deployment manager is not available.",action="Correct the reference to the deployment manager.", level="SEVERE")
-    private static final String NO_DEPLOYMENT_MANAGER = "AS-DEPLOYMENT-00018";
+    private static final String NO_DEPLOYMENT_MANAGER = "AS-DEPLOYMENT-04018";
 
     /** Creates a single instance of DeploymentManagerFactoryResolver */
     private DeploymentFactoryInstaller() {

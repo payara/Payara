@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,14 +100,16 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
     @LogMessagesResourceBundle
     private static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.deployment.LogMessages";
 
-    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment System Logger", publish=true)
+    // Reserve this range [AS-DEPLOYMENT-04001, AS-DEPLOYMENT-06000]
+    // for message ids used in this deployment dol module
+    @LoggerInfo(subsystem = "DEPLOYMENT", description="Deployment logger for client module", publish=true)
     private static final String DEPLOYMENT_LOGGER = "javax.enterprise.system.tools.deployment.client";
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
 
     @LogMessageInfo(message = "Error in deleting file {0}", level="WARNING")
-    private static final String FILE_DELETION_ERROR = "AS-DEPLOYMENT-00017";
+    private static final String FILE_DELETION_ERROR = "AS-DEPLOYMENT-04017";
 
     /**
      * Defines behavior implemented in the local or remote deployment facility
