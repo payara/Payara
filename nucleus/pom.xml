@@ -61,10 +61,20 @@
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</url>
     </scm>
+    
     <issueManagement>
         <system>IssueTracker</system>
         <url>http://java.net/jira/browse/GLASSFISH</url>
     </issueManagement>
+    
+    <licenses>
+      <license>
+        <name>CDDL + GPLv2 with classpath exception</name>
+        <url>http://glassfish.java.net/nonav/public/CDDL+GPL.html</url>
+        <distribution>repo</distribution>
+        <comments>A business-friendly OSS license</comments>
+      </license>
+    </licenses>    
 
     <mailingLists>
         <mailingList>
