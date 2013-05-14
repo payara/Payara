@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,7 @@ import com.sun.ejb.containers.EjbContainerUtilImpl;
 // Need to be added to derived classes to define the individual types.
 public abstract class EjbMonitoringStatsProvider {
 
-    Map<Method, EjbMethodStatsProvider> methodMonitorMap;
+    Map<String, EjbMethodStatsProvider> methodMonitorMap;
 
     String appName = null;
     String moduleName = null;
@@ -91,19 +91,17 @@ public abstract class EjbMonitoringStatsProvider {
     public void addMethods(long beanId, String appName, String moduleName,
             String beanName, Method[] methods) {
 
-        Map<String, EjbMethodStatsProvider> tempMap = new HashMap<String, EjbMethodStatsProvider>();
         int bucketSz = (methods.length == 0) ? 16 : methods.length << 1;
-        methodMonitorMap = new HashMap<Method, EjbMethodStatsProvider>(bucketSz);
+        methodMonitorMap = new HashMap<String, EjbMethodStatsProvider>(bucketSz);
 
         if (this.beanId == beanId) {
             for (Method m : methods) {
-                String mname = EjbMonitoringUtils.stringify(m);
-                EjbMethodStatsProvider monitor = tempMap.get(mname);
+                String stringified = EjbMonitoringUtils.stringify(m);
+                EjbMethodStatsProvider monitor = methodMonitorMap.get(stringified);
                 if (monitor == null) {
-                    monitor = new EjbMethodStatsProvider(mname);
-                    tempMap.put(mname, monitor);
+                    monitor = new EjbMethodStatsProvider(stringified);
+                    methodMonitorMap.put(stringified, monitor);
                 }
-                methodMonitorMap.put(m, monitor);
             }
 
             if (_logger.isLoggable(Level.FINE)) {
@@ -120,7 +118,7 @@ public abstract class EjbMonitoringStatsProvider {
                 appName, moduleName, beanName, this, invokerId);
         if (beanSubTreeNode != null) {
             registered = true;
-            for (Map.Entry<Method, EjbMethodStatsProvider> entry : methodMonitorMap.entrySet()) {
+            for (Map.Entry<String, EjbMethodStatsProvider> entry : methodMonitorMap.entrySet()) {
                 EjbMethodStatsProvider monitor = entry.getValue();
                 if (!monitor.isRegistered()) {
                     String node = EjbMonitoringUtils.registerMethod(beanSubTreeNode,
@@ -166,7 +164,7 @@ public abstract class EjbMonitoringStatsProvider {
             @ProbeParam("method") Method method) {
         if (this.beanId == beanId) {
             log ("ejbMethodStartEvent", method);
-            EjbMethodStatsProvider monitor = methodMonitorMap.get(method);
+            EjbMethodStatsProvider monitor = methodMonitorMap.get(EjbMonitoringUtils.stringify(method));
             if (monitor != null) {
                 monitor.methodStart();
             }
@@ -183,7 +181,7 @@ public abstract class EjbMonitoringStatsProvider {
             @ProbeParam("method") Method method) {
         if (this.beanId == beanId) {
             log ("ejbMethodEndEvent", method);
-            EjbMethodStatsProvider monitor = methodMonitorMap.get(method);
+            EjbMethodStatsProvider monitor = methodMonitorMap.get(EjbMonitoringUtils.stringify(method));
             if (monitor != null) {
                 monitor.methodEnd((exception == null));
             }
