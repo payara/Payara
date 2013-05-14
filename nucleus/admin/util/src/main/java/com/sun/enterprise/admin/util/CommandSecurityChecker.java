@@ -39,9 +39,11 @@
  */
 package com.sun.enterprise.admin.util;
 
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.*;
@@ -95,6 +97,7 @@ public class CommandSecurityChecker implements PostConstruct {
     private static final String LOG_MESSAGES_RB = "com.sun.enterprise.admin.util.LogMessages";
 
     static final Logger ADMSEC_AUTHZ_LOGGER = Logger.getLogger(ADMSEC_AUTHZ_LOGGER_NAME, LOG_MESSAGES_RB);
+    private static final String RESOURCE_NAME_URL_ENCODING = "UTF-8";
     
     private static final Level PROGRESS_LEVEL = Level.FINE;
     private static final String LINE_SEP = System.getProperty("line.separator");
@@ -244,7 +247,7 @@ public class CommandSecurityChecker implements PostConstruct {
             final Map<String,Object> env,
             final AdminCommand command,
             final List<AccessCheckWork> accessChecks) 
-                throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, URISyntaxException {
+                throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, URISyntaxException, UnsupportedEncodingException {
         
         final boolean isTaggable = ADMSEC_AUTHZ_LOGGER.isLoggable(PROGRESS_LEVEL);
         boolean result = true;
@@ -359,13 +362,13 @@ public class CommandSecurityChecker implements PostConstruct {
         return false;
     }
     
-    private URI resourceURIFromAccessCheck(final AccessCheck c) throws URISyntaxException {
+    private URI resourceURIFromAccessCheck(final AccessCheck c) throws URISyntaxException, UnsupportedEncodingException {
         return new URI(ADMIN_RESOURCE_SCHEME,
                         resourceNameFromAccessCheck(c) /* ssp */,
                         null /* fragment */);
     }
     
-    private String resourceNameFromAccessCheck(final AccessCheck c) {
+    private String resourceNameFromAccessCheck(final AccessCheck c) throws UnsupportedEncodingException {
         String resourceName = c.resourceName();
         if (resourceName == null) {
             resourceName = AccessRequired.Util.resourceNameFromConfigBeanType(c.parent(), null, c.childType());
@@ -373,7 +376,7 @@ public class CommandSecurityChecker implements PostConstruct {
         if ( ! resourceName.startsWith("/")) {
             resourceName = '/' + resourceName;
         }
-        return resourceName;
+        return URLEncoder.encode(resourceName, RESOURCE_NAME_URL_ENCODING);
     }
     
     private boolean addChecksFromExplicitAccessRequiredAnnos(final AdminCommand command,
