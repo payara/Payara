@@ -458,7 +458,68 @@ public class SSHLauncher {
         openConnection();
         final Session sess = connection.openSession();
 
-        int status = exec(sess, command, os, listInputStream(stdinLines));
+        int status = exec(sess, command, os, listInputStream(stdinLines), true);
+
+        // XXX: Should we close connection after each command or cache it
+        // and re-use it?
+        SSHUtil.unregister(connection);
+        connection = null;
+        return status;
+    }
+
+    /**
+     * Executes a command on the remote system via ssh without normalizing
+     * the command line
+     *
+     * @param command    the command to execute
+     * @param os         stream to receive the output from the command
+     * @param stdinLines optional data to be sent to the process's System.in
+     *                   stream; null if no input should be sent
+     * @param env        list of environment variables to set before executing the command. each array cell is like varname=varvalue. This only supports on csh, t-csh and bash
+     * @return
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public int runCommandAsIs(List<String> command, OutputStream os,
+                              List<String> stdinLines, String[] env) throws IOException,
+            InterruptedException {
+        return runCommandAsIs(commandListToQuotedString(command), os, stdinLines, env);
+    }
+
+    private int runCommandAsIs(String command, OutputStream os,
+                               List<String> stdinLines, String[] env) throws IOException,
+            InterruptedException {
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("Running command " + command + " on host: " + this.host);
+        }
+
+        openConnection();
+        final Session sess = connection.openSession();
+        if (env != null) {
+            //first check the shell type
+            OutputStream ous = new ByteArrayOutputStream();
+            exec(sess, "ps -p $$ | tail -1 | awk '{print $NF}'", ous, null, false);
+            String prefix;
+            if (ous.toString().contains("csh")) {
+                logger.warning("CSH shell");
+                prefix = "setenv";
+            } else {
+                logger.warning("BASH shell");
+                prefix = "export";
+            }
+            for (String st : env) {
+                String cmd = prefix + " " + st;
+                sess.execCommand(cmd);
+                int result = sess.getExitStatus();
+                logger.warning("Result for env setting: " + cmd + " is: " + result);
+            }
+        }
+
+        OutputStream out = new ByteArrayOutputStream();
+        int st = exec(sess, "env", out, listInputStream(stdinLines), true);
+        logger.warning("current env vars: " + out.toString());
+
+        int status = exec(sess, command, os, listInputStream(stdinLines), true);
 
         // XXX: Should we close connection after each command or cache it
         // and re-use it?
@@ -468,7 +529,7 @@ public class SSHLauncher {
     }
 
     private int exec(final Session session, final String command, final OutputStream os,
-            final InputStream is)
+                     final InputStream is, boolean closeSession)
             throws IOException, InterruptedException {
         try {
             session.execCommand(command);
@@ -492,7 +553,9 @@ public class SSHLauncher {
             if(r!=null) return r.intValue();
             return -1;
         } finally {
+            if(closeSession){
             session.close();
+            }
         }
     }
 
