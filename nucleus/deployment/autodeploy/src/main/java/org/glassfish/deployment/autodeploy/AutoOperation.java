@@ -168,6 +168,9 @@ public abstract class AutoOperation {
                              INFO_MSG,
                              getMessageString(ds, file));
             } else {
+                if(report.getMessage() != null){
+                    deplLogger.log(Level.WARNING, report.getMessage());
+                }
               deplLogger.log(Level.WARNING,
                              WARNING_MSG,
                              getMessageString(ds, file));
