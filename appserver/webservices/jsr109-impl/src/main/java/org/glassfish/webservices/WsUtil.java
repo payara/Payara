@@ -386,7 +386,7 @@ public class WsUtil {
             }
             logger.log(Level.SEVERE, LogUtils.ERROR_OCCURED, x);
         } catch (Exception sxe) {
-            logger.log(Level.SEVERE, LogUtils.WSDL_PARSING_ERROR, sxe.getMessage());
+            logger.log(Level.SEVERE, LogUtils.WSDL_PARSING_ERROR, sxe);
         } finally {
             try {
                 if(is != null) {
