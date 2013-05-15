@@ -320,9 +320,7 @@ public class TimerWrapper
             return timer;
         }
 
-// XXX? Is it ever called from outside ???
-
-        public static TimerWrapper getTimerInternal(TimerPrimaryKey timerId) 
+        private TimerWrapper getTimerInternal(TimerPrimaryKey timerId) 
             throws NoSuchObjectLocalException, EJBException {
 
             TimerWrapper timer = null;
