@@ -458,7 +458,7 @@ public class SSHLauncher {
         openConnection();
         final Session sess = connection.openSession();
 
-        int status = exec(sess, command, os, listInputStream(stdinLines), true);
+        int status = exec(sess, command, os, listInputStream(stdinLines));
 
         // XXX: Should we close connection after each command or cache it
         // and re-use it?
@@ -494,32 +494,27 @@ public class SSHLauncher {
         }
 
         openConnection();
-        final Session sess = connection.openSession();
+        StringBuffer buff = new StringBuffer();
         if (env != null) {
-            //first check the shell type
+            Session tempSession = connection.openSession();
             OutputStream ous = new ByteArrayOutputStream();
-            exec(sess, "ps -p $$ | tail -1 | awk '{print $NF}'", ous, null, false);
+            exec(tempSession, "ps -p $$ | tail -1 | awk '{print $NF}'", ous, null);
             String prefix;
             if (ous.toString().contains("csh")) {
-                logger.warning("CSH shell");
+                logger.fine("CSH shell");
                 prefix = "setenv";
             } else {
-                logger.warning("BASH shell");
+                logger.fine("BASH shell");
                 prefix = "export";
             }
             for (String st : env) {
                 String cmd = prefix + " " + st;
-                sess.execCommand(cmd);
-                int result = sess.getExitStatus();
-                logger.warning("Result for env setting: " + cmd + " is: " + result);
+                buff.append(cmd).append(";");
             }
         }
-
-        OutputStream out = new ByteArrayOutputStream();
-        int st = exec(sess, "env", out, listInputStream(stdinLines), true);
-        logger.warning("current env vars: " + out.toString());
-
-        int status = exec(sess, command, os, listInputStream(stdinLines), true);
+        buff.append(command);
+        final Session sess = connection.openSession();
+        int status = exec(sess, buff.toString(), os, listInputStream(stdinLines));
 
         // XXX: Should we close connection after each command or cache it
         // and re-use it?
@@ -529,7 +524,7 @@ public class SSHLauncher {
     }
 
     private int exec(final Session session, final String command, final OutputStream os,
-                     final InputStream is, boolean closeSession)
+                     final InputStream is)
             throws IOException, InterruptedException {
         try {
             session.execCommand(command);
@@ -553,9 +548,7 @@ public class SSHLauncher {
             if(r!=null) return r.intValue();
             return -1;
         } finally {
-            if(closeSession){
             session.close();
-            }
         }
     }
 
