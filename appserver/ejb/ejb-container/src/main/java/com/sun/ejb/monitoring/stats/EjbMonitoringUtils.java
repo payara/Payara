@@ -121,7 +121,7 @@ public class EjbMonitoringUtils {
 
 
 
-    static String stringify(Method m) {
+    public static String stringify(Method m) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("==> Converting method to String: " + m);
         }

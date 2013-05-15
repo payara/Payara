@@ -3020,6 +3020,7 @@ public abstract class BaseContainer
         throws EJBException {
 
         InvocationInfo invInfo = new InvocationInfo(method);
+        invInfo.str_method_sig = EjbMonitoringUtils.stringify(method);
 
         invInfo.ejbName = ejbDescriptor.getName();
         invInfo.txAttr = txAttr;
@@ -4074,35 +4075,35 @@ public abstract class BaseContainer
     }
 
     final void onEjbMethodStart(int methodIndex) {
-        Method method = ejbIntfMethods[methodIndex];
-        if (method != null) {
-            onEjbMethodStart(method);
+        InvocationInfo info = ejbIntfMethodInfo[methodIndex];
+        if (info != null) {
+            onEjbMethodStart(info.str_method_sig);
         }
     }
 
     final void onEjbMethodEnd(int methodIndex, Throwable th) {
-        Method method = ejbIntfMethods[methodIndex];
-        if (method != null) {
-            onEjbMethodEnd(method, th);
+        InvocationInfo info = ejbIntfMethodInfo[methodIndex];
+        if (info != null) {
+            onEjbMethodEnd(info.str_method_sig, th);
         }
     }
 
-    final void onEjbMethodStart(Method method) {
+    final void onEjbMethodStart(String method_sig) {
         ejbProbeNotifier.ejbMethodStartEvent(getContainerId(),
                 callFlowInfo.getApplicationName(),
                 callFlowInfo.getModuleName(),
                 callFlowInfo.getComponentName(),
-                method);
+                method_sig);
         //callFlowAgent.ejbMethodStart(callFlowInfo);
     }
     
-    final void onEjbMethodEnd(Method method, Throwable th) {
+    final void onEjbMethodEnd(String method_sig, Throwable th) {
         ejbProbeNotifier.ejbMethodEndEvent(getContainerId(),
                 callFlowInfo.getApplicationName(),
                 callFlowInfo.getModuleName(),
                 callFlowInfo.getComponentName(),
                 th,
-                method);
+                method_sig);
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
     }
     
@@ -4110,7 +4111,7 @@ public abstract class BaseContainer
             Object[] params, com.sun.enterprise.security.SecurityManager mgr)
             throws Throwable {
         try {
-            onEjbMethodStart(inv.method);
+            onEjbMethodStart(inv.invocationInfo.str_method_sig);
             if (inv.useFastPath) {
                 return inv.getBeanMethod().invoke(inv.ejb, inv.methodParams);
             } else {
@@ -4125,7 +4126,7 @@ public abstract class BaseContainer
             inv.exception = c;
             throw c;
         } finally {
-            onEjbMethodEnd(inv.method, inv.exception);
+            onEjbMethodEnd(inv.invocationInfo.str_method_sig, inv.exception);
         }
     }
     
@@ -4663,13 +4664,13 @@ public abstract class BaseContainer
         Object result = null;
         if (interceptorManager.hasInterceptors()) {
             try {
-                onEjbMethodStart(inv.method);
+                onEjbMethodStart(inv.invocationInfo.str_method_sig);
                 result = interceptorManager.intercept(inv.getInterceptorChain(), inv);
             } catch(Throwable t) {
                 inv.exception = t;
                 throw new InvocationTargetException(t);
             } finally {
-                onEjbMethodEnd(inv.method,  inv.exception);
+                onEjbMethodEnd(inv.invocationInfo.str_method_sig,  inv.exception);
             }
         } else { // invoke() has the same exc. semantics as Method.invoke
             result = this.invokeTargetBeanMethod(inv.getBeanMethod(), inv, inv.ejb,
@@ -4751,30 +4752,30 @@ public abstract class BaseContainer
 
     }
 
-    protected Method[] getMonitoringMethodsArray() {
+    protected String[] getMonitoringMethodsArray() {
         return getMonitoringMethodsArray((monitoredGeneratedClasses.size() > 0));
     }
 
-    protected Method[] getMonitoringMethodsArray(boolean hasGeneratedClasses) {
-        Method[] methods = null;
+    protected String[] getMonitoringMethodsArray(boolean hasGeneratedClasses) {
+        String[] method_sigs = null;
         if (hasGeneratedClasses) {
-            List<Method> methodList = new ArrayList<Method>();
+            List<String> methodList = new ArrayList<String>();
             for (Class clz : monitoredGeneratedClasses) {
                 for (Method m : clz.getDeclaredMethods()) {
-                    methodList.add(m);
+                    methodList.add(EjbMonitoringUtils.stringify(m));
                 }
             }
-            methods = methodList.toArray(new Method[methodList.size()]);
+            method_sigs = methodList.toArray(new String[methodList.size()]);
         } else {
             Vector methodVec = ejbDescriptor.getMethods();
             int sz = methodVec.size();
-            methods = new Method[sz];
+            method_sigs = new String[sz];
             for (int i = 0; i < sz; i++) {
-                methods[i] = (Method) methodVec.get(i);
+                method_sigs[i] = EjbMonitoringUtils.stringify((Method) methodVec.get(i));
             }
         }
 
-        return methods;
+        return method_sigs;
     }
 
     protected void doFlush( EjbInvocation inv ) {

@@ -40,7 +40,6 @@
 
 package com.sun.ejb.monitoring.stats;
 
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -89,18 +88,17 @@ public abstract class EjbMonitoringStatsProvider {
     }
 
     public void addMethods(long beanId, String appName, String moduleName,
-            String beanName, Method[] methods) {
+            String beanName, String[] method_sigs) {
 
-        int bucketSz = (methods.length == 0) ? 16 : methods.length << 1;
+        int bucketSz = (method_sigs.length == 0) ? 16 : method_sigs.length << 1;
         methodMonitorMap = new HashMap<String, EjbMethodStatsProvider>(bucketSz);
 
         if (this.beanId == beanId) {
-            for (Method m : methods) {
-                String stringified = EjbMonitoringUtils.stringify(m);
-                EjbMethodStatsProvider monitor = methodMonitorMap.get(stringified);
+            for (String method_sig : method_sigs) {
+                EjbMethodStatsProvider monitor = methodMonitorMap.get(method_sig);
                 if (monitor == null) {
-                    monitor = new EjbMethodStatsProvider(stringified);
-                    methodMonitorMap.put(stringified, monitor);
+                    monitor = new EjbMethodStatsProvider(method_sig);
+                    methodMonitorMap.put(method_sig, monitor);
                 }
             }
 
@@ -161,10 +159,10 @@ public abstract class EjbMonitoringStatsProvider {
             @ProbeParam("appName") String appName,
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName,
-            @ProbeParam("method") Method method) {
+            @ProbeParam("method") String method_sig) {
         if (this.beanId == beanId) {
-            log ("ejbMethodStartEvent", method);
-            EjbMethodStatsProvider monitor = methodMonitorMap.get(EjbMonitoringUtils.stringify(method));
+            _log("ejbMethodStartEvent", method_sig);
+            EjbMethodStatsProvider monitor = methodMonitorMap.get(method_sig);
             if (monitor != null) {
                 monitor.methodStart();
             }
@@ -178,10 +176,10 @@ public abstract class EjbMonitoringStatsProvider {
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName,
             @ProbeParam("exception") Throwable exception,
-            @ProbeParam("method") Method method) {
+            @ProbeParam("method") String method_sig) {
         if (this.beanId == beanId) {
-            log ("ejbMethodEndEvent", method);
-            EjbMethodStatsProvider monitor = methodMonitorMap.get(EjbMonitoringUtils.stringify(method));
+            _log("ejbMethodEndEvent", method_sig);
+            EjbMethodStatsProvider monitor = methodMonitorMap.get(method_sig);
             if (monitor != null) {
                 monitor.methodEnd((exception == null));
             }
@@ -195,7 +193,7 @@ public abstract class EjbMonitoringStatsProvider {
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName) {
         if (this.beanId == beanId) {
-            log ("ejbBeanCreatedEvent");
+            _log("ejbBeanCreatedEvent");
             createStat.increment();
         }
     }
@@ -207,7 +205,7 @@ public abstract class EjbMonitoringStatsProvider {
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName) {
         if (this.beanId == beanId) {
-            log ("ejbBeanDestroyedEvent");
+            _log("ejbBeanDestroyedEvent");
             removeStat.increment();
         }
     }
@@ -231,15 +229,15 @@ public abstract class EjbMonitoringStatsProvider {
         }
     }
 
-    private void log(String mname) {
+    private void _log(String mname) {
         log(mname, "EjbMonitoringStatsProvider");
     }
 
-    private void log(String mname, Method m) {
+    private void _log(String mname, String method_sig) {
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("===> In EjbMonitoringStatsProvider for: [" 
                     + mname + "] " + EjbMonitoringUtils.getLoggingName(appName, moduleName, beanName)
-                    + "::" + EjbMonitoringUtils.stringify(m));
+                    + "::" + method_sig);
         }
     }
 

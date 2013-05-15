@@ -101,7 +101,8 @@ public class InvocationInfo {
 
     private boolean asyncMethodFlag;
 
-
+    // Stringified method signature to be used for monitoring
+    public String str_method_sig;
 
     public InvocationInfo() {}
     

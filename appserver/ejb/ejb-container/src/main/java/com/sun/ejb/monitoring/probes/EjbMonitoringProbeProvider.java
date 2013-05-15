@@ -40,7 +40,6 @@
 
 package com.sun.ejb.monitoring.probes;
 
-import java.lang.reflect.Method;
 import org.glassfish.external.probe.provider.annotations.*;
 import org.glassfish.gmbal.Description;
 
@@ -72,7 +71,7 @@ public class EjbMonitoringProbeProvider {
             @ProbeParam("appName") String appName,
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName,
-            @ProbeParam("method") Method method) {}
+            @ProbeParam("method") String method_sig) {}
 
     @Probe(name="methodEndEvent", hidden=true)
     public void ejbMethodEndEvent(
@@ -81,7 +80,7 @@ public class EjbMonitoringProbeProvider {
             @ProbeParam("modName") String modName,
             @ProbeParam("ejbName") String ejbName,
             @ProbeParam("exception") Throwable exception,
-            @ProbeParam("method") Method method) {}
+            @ProbeParam("method") String method_sig) {}
 
     @Probe(name="beanCreatedEvent")
     public void ejbBeanCreatedEvent(
