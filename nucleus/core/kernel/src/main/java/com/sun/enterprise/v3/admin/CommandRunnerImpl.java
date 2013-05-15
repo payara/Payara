@@ -510,31 +510,30 @@ public class CommandRunnerImpl implements CommandRunner {
             @Override
             public void execute(final AdminCommandContext context) {
                 Thread thread = Thread.currentThread();
-                ClassLoader origCL = thread.getContextClassLoader();
-                ClassLoader ccl = sc.getCommonClassLoader();
-                if (origCL != ccl) {
-                    try {
+                final ClassLoader origCL = thread.getContextClassLoader();
+                final ClassLoader ccl = sc.getCommonClassLoader();
+                try {
+                    if (origCL != ccl) {
                         thread.setContextClassLoader(ccl);
-                        /*
-                         * Execute the command in the security context of the 
-                         * previously-authenticated subject.
-                         */
-                        Subject.doAs(context.getSubject(), 
-                                new PrivilegedAction<Void> () {
+                    }
+                    /*
+                     * Execute the command in the security context of the 
+                     * previously-authenticated subject.
+                     */
+                    Subject.doAs(context.getSubject(), 
+                            new PrivilegedAction<Void> () {
 
-                            @Override
-                            public Void run() {
-                                command.execute(context);
-                                return null;
-                            }
-                                    
-                        });
-                        
-                    } finally {
+                        @Override
+                        public Void run() {
+                            command.execute(context);
+                            return null;
+                        }
+
+                    });
+                } finally {
+                    if (origCL != ccl) {
                         thread.setContextClassLoader(origCL);
                     }
-                } else {
-                    command.execute(context);
                 }
             }
         };
