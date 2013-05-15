@@ -65,7 +65,7 @@ public class JMSCDIExtension implements Extension {
 
     private Bean createLocalBean(BeanManager beanManager, Class beanClass) {
         AnnotatedType annotatedType = beanManager.createAnnotatedType(beanClass);
-        LocalBean localBean = new LocalPassivationCapableBean(beanClass);
+        LocalPassivationCapableBean localBean = new LocalPassivationCapableBean(beanClass);
         InjectionTargetFactory injectionTargetFactory = beanManager.getInjectionTargetFactory(annotatedType);
         localBean.setInjectionTarget(injectionTargetFactory.createInjectionTarget(localBean));
         return localBean;
@@ -115,15 +115,16 @@ public class JMSCDIExtension implements Extension {
         return new AnnotationLiteral<Any>() {};
     }
 
-    public class LocalBean implements Bean {
+    public class LocalPassivationCapableBean implements Bean, PassivationCapable {
+        private String id = UUID.randomUUID().toString();
         private Class beanClass;
         private InjectionTarget injectionTarget;
 
-        public LocalBean(Class beanClass) {
+        public LocalPassivationCapableBean(Class beanClass) {
             this.beanClass = beanClass;
         }
 
-        public LocalBean(Class beanClass, InjectionTarget injectionTarget) {
+        public LocalPassivationCapableBean(Class beanClass, InjectionTarget injectionTarget) {
             this.beanClass = beanClass;
             this.injectionTarget = injectionTarget;
         }
@@ -215,18 +216,6 @@ public class JMSCDIExtension implements Extension {
             injectionTarget.preDestroy(instance);
             injectionTarget.dispose(instance);
             ctx.release();
-        }
-    }
-
-    public class LocalPassivationCapableBean extends LocalBean implements PassivationCapable {
-        private String id = UUID.randomUUID().toString();
-
-        public LocalPassivationCapableBean(Class beanClass) {
-            super(beanClass);
-        }
-
-        public LocalPassivationCapableBean(Class beanClass, InjectionTarget injectionTarget) {
-            super(beanClass, injectionTarget);
         }
 
         @Override
