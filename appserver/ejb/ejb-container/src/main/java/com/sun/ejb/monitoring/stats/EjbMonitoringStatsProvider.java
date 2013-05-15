@@ -72,7 +72,7 @@ public abstract class EjbMonitoringStatsProvider {
     protected long beanId;
 
     private CountStatisticImpl createStat = new CountStatisticImpl("CreateCount", 
-            "count", "Number of times EJB create method is called");
+            "count", "Number of times EJB create method is called or 3.x bean is looked up");
 
     private CountStatisticImpl removeStat = new CountStatisticImpl("RemoveCount", 
             "count", "Number of times EJB remove method is called");
