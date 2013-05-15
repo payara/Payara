@@ -243,6 +243,9 @@
 			<excludes>
 			   <exclude>**/.ade_path/**</exclude>
 			</excludes>
+                        <testExcludes>
+                           <testExclude>**/.ade_path/**</testExclude>
+                        </testExcludes>
                     </configuration>
                 </plugin>
                 <plugin>
