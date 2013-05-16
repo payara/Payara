@@ -506,12 +506,13 @@ public class CommandRunnerImpl implements CommandRunner {
 
         // We need to set context CL to common CL before executing
         // the command. See issue #5596
+        final Thread thread = Thread.currentThread();
+        final ClassLoader origCL = thread.getContextClassLoader();
+        final ClassLoader ccl = sc.getCommonClassLoader();
+            
         AdminCommand wrappedCommand = new WrappedAdminCommand(command) {
             @Override
             public void execute(final AdminCommandContext context) {
-                Thread thread = Thread.currentThread();
-                final ClassLoader origCL = thread.getContextClassLoader();
-                final ClassLoader ccl = sc.getCommonClassLoader();
                 try {
                     if (origCL != ccl) {
                         thread.setContextClassLoader(ccl);
@@ -539,16 +540,35 @@ public class CommandRunnerImpl implements CommandRunner {
         };
 
         // look for other wrappers using CommandAspect annotation
-        wrappedCommand = CommandSupport.createWrappers(habitat, model, wrappedCommand, report);
-        
+        final AdminCommand otherWrappedCommand = CommandSupport.createWrappers(habitat, model, wrappedCommand, report);
+            
         try {
-            wrappedCommand.execute(progressHelper.wrapContext4MainCommand(context));
+            Subject.doAs(context.getSubject(), 
+                            new PrivilegedAction<Void> () {
+
+                        @Override
+                        public Void run() {
+                            try {
+                                if (origCL != ccl) {
+                                    thread.setContextClassLoader(ccl);
+                                }
+                                otherWrappedCommand.execute(progressHelper.wrapContext4MainCommand(context));
+                                return null;
+                            } finally {
+                                if (origCL != ccl) {
+                                    thread.setContextClassLoader(origCL);
+                                }
+                            }
+                        }
+
+                    });
+            
         } catch (Throwable e) {
             logger.log(Level.SEVERE, KernelLoggerInfo.invocationException, e);
             report.setMessage(e.toString());
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
-        }
+            }
         
         return context.getActionReport();
     }
