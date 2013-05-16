@@ -384,29 +384,26 @@
             <!-- force cleaning of the local repository -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-clean-plugin</artifactId>
-                <inherited>false</inherited>
+                <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>clean-local-repo</id>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
+                        <id>purge-local-dependencies</id>
                         <phase>initialize</phase>
+                        <goals>
+                            <goal>purge-local-repository</goal>
+                        </goals>
                         <configuration>
-                            <filesets>
-                                <fileset>
-                                    <directory>${settings.localRepository}</directory>
-                                    <includes>
-                                        <include>javax/ejb/**</include>
-                                        <include>javax/transaction/**</include>
-                                        <include>javax/resource/**</include>
-                                        <include>javax/enterprise/concurrent/**</include>
-                                        <include>javax/ws/rs/**</include>
-                                        <include>org/glassfish/jersey/**</include>                                        
-                                    </includes>
-                                </fileset>
-                            </filesets>
+                            <resolutionFuzziness>groupId</resolutionFuzziness>
+                            <includes>
+                                <include>javax.ejb</include>
+                                <include>javax.transaction</include>
+                                <include>javax.resource</include>
+                                <include>javax.enterprise.concurrent</include>
+                                <include>javax.ws.rs</include>
+                                <include>javax.xml.registry</include>
+                                <include>javax.websocket</include>
+                                <include>org.glassfish.jersey</include>
+                            </includes>
                         </configuration>
                     </execution>
                 </executions>
