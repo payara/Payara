@@ -385,7 +385,7 @@ public class SecurityUtil{
             
         } while (!unique);
 
-        return app.getRegistrationName() + "/" + pseudonym;
+        return VersioningUtils.getRepositoryName(app.getRegistrationName()) + "/" + pseudonym;
     }
 
     public static String getContextID(EjbBundleDescriptor ejbBundleDesc) {
