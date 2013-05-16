@@ -49,6 +49,7 @@ import com.sun.appserv.server.util.Version;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.config.ContextRootInfo;
 import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.http.server.AfterServiceListener;
@@ -65,6 +66,7 @@ import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MimeType;
 import org.glassfish.internal.grizzly.V3Mapper;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * Container's mapper which maps {@link ByteBuffer} bytes representation to an  {@link HttpHandler}, {@link
@@ -77,7 +79,7 @@ import org.glassfish.internal.grizzly.V3Mapper;
 @SuppressWarnings({"NonPrivateFieldAccessedInSynchronizedContext"})
 public class ContainerMapper extends StaticHttpHandler {
 
-    private static final Logger LOGGER = Logger.getLogger(ContainerMapper.class.getName());
+    private static final Logger LOGGER = KernelLoggerInfo.getLogger();
     private final static String ROOT = "";
     private Mapper mapper;
     private final GrizzlyListener listener;
@@ -257,13 +259,13 @@ public class ContainerMapper extends StaticHttpHandler {
             try {
                 response.setStatus(500);
                 if (LOGGER.isLoggable(Level.WARNING)) {
-                    LOGGER.log(Level.WARNING, "Internal Server error: "
-                            + request.getRequest().getRequestURIRef().getDecodedRequestURIBC(), ex);
+                    LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.exceptionMapper, ex, 
+                            request.getRequest().getRequestURIRef().getDecodedRequestURIBC());
                 }
                 customizedErrorPage(request, response);
             } catch (Exception ex2) {
                 if (LOGGER.isLoggable(Level.WARNING)) {
-                    LOGGER.log(Level.WARNING, "Unable to error page", ex2);
+                    LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
                 }
             }
         }

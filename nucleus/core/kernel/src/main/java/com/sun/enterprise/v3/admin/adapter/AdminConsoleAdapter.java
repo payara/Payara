@@ -500,7 +500,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
         initState();
         
         try {
-            epd = new AdminEndpointDecider(serverConfig, logger);
+            epd = new AdminEndpointDecider(serverConfig);
             contextRoot = epd.getGuiContextRoot();
         } catch (Exception ex) {
             logger.log(Level.INFO, KernelLoggerInfo.consoleCannotInitialize, ex);
@@ -613,7 +613,7 @@ public final class AdminConsoleAdapter extends HttpHandler implements Adapter, P
      *
      */
     private void startThread() {
-        new InstallerThread(this, habitat, domain, env, contextRoot, logger, epd.getGuiHosts()).start();
+        new InstallerThread(this, habitat, domain, env, contextRoot, epd.getGuiHosts()).start();
     }
 
     /**

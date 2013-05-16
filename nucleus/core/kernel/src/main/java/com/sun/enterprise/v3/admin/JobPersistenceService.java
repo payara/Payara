@@ -40,25 +40,19 @@
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
-import org.glassfish.api.admin.JobManager;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.progress.JobInfo;
-import org.glassfish.api.admin.progress.JobInfos;
-import org.glassfish.api.admin.progress.JobPersistence;
-import org.glassfish.hk2.api.PostConstruct;
-import org.jvnet.hk2.annotations.Service;
-
+import java.io.File;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-import java.io.File;
-import java.io.IOException;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.Logger;
+import org.glassfish.api.admin.progress.JobInfo;
+import org.glassfish.api.admin.progress.JobInfos;
+import org.glassfish.api.admin.progress.JobPersistence;
+import org.glassfish.kernel.KernelLoggerInfo;
+import org.jvnet.hk2.annotations.Service;
 
 
 /**
@@ -79,7 +73,7 @@ public class JobPersistenceService implements JobPersistence {
 
     protected JAXBContext jaxbContext;
 
-    protected final static Logger logger = LogDomains.getLogger(JobPersistenceService.class, LogDomains.ADMIN_LOGGER);
+    protected final static Logger logger = KernelLoggerInfo.getLogger();
 
 
     protected static final LocalStringManagerImpl adminStrings =
@@ -98,8 +92,9 @@ public class JobPersistenceService implements JobPersistence {
         File file = jobInfo.getJobsFile();
         synchronized (file) {
 
-            if (jobInfos == null)
+            if (jobInfos == null) {
                 jobInfos = new JobInfos();
+            }
 
             try {
                 JAXBContext jaxbContext = JAXBContext.newInstance(JobInfos.class);

@@ -59,6 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -103,7 +104,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
     }
 
     public void postConstruct() {
-        logger = Logger.getLogger(DynamicReloadService.class.getName());
+        logger = KernelLoggerInfo.getLogger();
         /*
          * Create the dynamic reloader right away, even if its use is disabled 
          * currently.  This way any initialization errors will appear early 
@@ -124,7 +125,7 @@ public class DynamicReloadService implements ConfigListener, PostConstruct, PreD
             }
             logger.fine("[Reloader] Service start-up complete");
         } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getLocalizedMessage(), e); 
+            logger.log(Level.SEVERE, KernelLoggerInfo.exceptionDRS, e); 
         }
 
     }

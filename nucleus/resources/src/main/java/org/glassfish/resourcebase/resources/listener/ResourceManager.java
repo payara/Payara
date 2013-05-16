@@ -78,7 +78,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  *
  * @author Jagadish Ramu
  */
-@RunLevel( value= InitRunLevel.VAL, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
+@RunLevel( value= InitRunLevel.VAL + 1, mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING)
 @Service(name="ResourceManager") // this name is used in ApplicationLoaderService
 public class ResourceManager implements PostConstruct, PreDestroy, ConfigListener {
 

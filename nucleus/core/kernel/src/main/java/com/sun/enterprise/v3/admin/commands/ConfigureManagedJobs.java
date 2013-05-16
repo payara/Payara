@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.logging.Logger;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 
 
@@ -112,10 +113,9 @@ public class ConfigureManagedJobs implements AdminCommand {
 
         ManagedJobConfig managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
         if (managedJobConfig == null ) {
-            String msg = "unable.to.get.ManagedJobConfig";
-            logger.warning(msg);
+           logger.warning(KernelLoggerInfo.getFailManagedJobConfig);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            report.setMessage(msg);
+            report.setMessage(KernelLoggerInfo.getLogger().getResourceBundle().getString(KernelLoggerInfo.getFailManagedJobConfig));
             return;
         }
 
@@ -139,7 +139,7 @@ public class ConfigureManagedJobs implements AdminCommand {
             }, managedJobConfig);
 
         } catch(TransactionFailure e) {
-            logger.warning("failed.to.configure.ManagedJobConfig" );
+            logger.warning(KernelLoggerInfo.configFailManagedJobConfig);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(e.getMessage());
         }

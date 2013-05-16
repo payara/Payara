@@ -571,7 +571,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 for ( WebBundleDescriptor oneWebBundleDescriptor : webBundleDescriptors ) {
                     // Add the Weld Listener if it does not already exist..
                     // we have to do this regardless because the war may not be cdi-enabled but an ejb is.
-                    oneWebBundleDescriptor.addAppListenerDescriptorToFirst(new AppListenerDescriptorImpl(WELD_LISTENER));
+                    oneWebBundleDescriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_LISTENER));
                 }
             }
         }

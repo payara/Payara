@@ -82,7 +82,7 @@ public abstract class AbstractProxyRestAdapter implements Adapter {
 
     private synchronized AdminEndpointDecider getEpd() {
         if (aed == null) {
-            aed = new AdminEndpointDecider(getConfig(), Logging.logger);
+            aed = new AdminEndpointDecider(getConfig());
         }
         return aed;
     }

@@ -73,6 +73,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * Init run level service to take care of vm related tasks.
@@ -96,7 +97,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
     @Inject
     Domain domain;
 
-    Logger _logger = Logger.getLogger(SystemTasks.class.getName());
+    Logger _logger = KernelLoggerInfo.getLogger();
 
     private final static LocalStringsImpl strings = new LocalStringsImpl(SystemTasks.class);
 
@@ -158,11 +159,13 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
 
         }
         catch (Exception ex) {
-            if (_logger != null)
-                _logger.log(Level.SEVERE, "cannot determine host name, will use localhost exclusively", ex);
+            if (_logger != null) {
+                _logger.log(Level.SEVERE, KernelLoggerInfo.exceptionHostname, ex);
+            }
         }
-        if (_logger != null)
+        if (hostname != null) {
             setSystemProperty(SystemPropertyConstants.HOST_NAME_PROPERTY, hostname);
+        }
     }
 
     private void setSystemPropertiesFromDomainXml() {

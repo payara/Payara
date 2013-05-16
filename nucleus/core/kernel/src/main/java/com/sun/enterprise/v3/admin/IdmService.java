@@ -62,6 +62,7 @@ import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.PasswordAliasStore;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.security.services.impl.JCEKSPasswordAliasStore;
 
 /** An implementation of the @link {IdentityManagement} that manages the password needs of the server.
@@ -140,7 +141,7 @@ public class IdmService implements PostConstruct, IdentityManagement {
             for (String arg : args) {
                 if (PASSWORDFILE_OPTION_TO_ASMAIN.equals(arg)) {
                     if (index == (args.length-1)) {  //-passwordfile is the last argument
-                        logger.warning("-passwordfile specified, but the actual file was not, ignoring ...");
+                        logger.warning(KernelLoggerInfo.optionButNoArg);
                         return false;
                     }
                     pwf = new File(args[index+1]);

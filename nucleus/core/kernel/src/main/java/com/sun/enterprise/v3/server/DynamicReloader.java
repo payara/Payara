@@ -63,6 +63,7 @@ import org.glassfish.api.admin.config.ApplicationName;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.InternalSystemAdministrator;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * Triggers reloads of deployed applications depending on the presence of and
@@ -101,7 +102,7 @@ public class DynamicReloader implements Runnable {
     
     private Applications applications;
     
-    private Logger logger = Logger.getLogger(getClass().getName());
+    private Logger logger = KernelLoggerInfo.getLogger();
     
     private ServiceLocator habitat;
     

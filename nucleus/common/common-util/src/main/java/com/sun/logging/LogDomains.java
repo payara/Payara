@@ -467,7 +467,9 @@ public class LogDomains {
         // I created this method to make it very very clear what is going on
 
         synchronized (Logger.class) {
-            return LogManager.getLogManager().addLogger(logger);
+            synchronized (LogManager.getLogManager()) {
+                return LogManager.getLogManager().addLogger(logger);
+            }
         }
     }
 }

@@ -41,12 +41,11 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.File;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.hk2.api.ServiceLocator;
-
-import java.io.File;
-import java.util.logging.Logger;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * A class to house identical code for stopping instances and DAS
@@ -60,9 +59,9 @@ public class StopServer {
      * All running services are stopped.
      * LookupManager is flushed.
      */
-    protected final void doExecute(ServiceLocator habitat, ServerEnvironment env, Logger logger, boolean force) {
+    protected final void doExecute(ServiceLocator habitat, ServerEnvironment env, boolean force) {
         try {
-            logger.info(localStrings.getLocalString("stop.domain.init", "Server shutdown initiated"));
+            KernelLoggerInfo.getLogger().info(KernelLoggerInfo.serverShutdownInit);
             // Don't shutdown GlassFishRuntime, as that can bring the OSGi framework down which is wrong
             // when we are embedded inside an existing runtime. So, just stop the glassfish instance that
             // we are supposed to stop. Leave any cleanup to some other code.
@@ -83,10 +82,12 @@ public class StopServer {
         }
 
 
-        if(force)
+        if (force) {
             System.exit(0);
-        else
+        }
+        else {
             deletePidFile(env);
+        }
     }
 
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(StopServer.class);
@@ -101,7 +102,8 @@ public class StopServer {
     private void deletePidFile(ServerEnvironment env) {
         File pidFile = new File(env.getConfigDirPath(), "pid");
 
-        if (pidFile.isFile())
+        if (pidFile.isFile()) {
             FileUtils.deleteFileNowOrLater(pidFile);
+        }
     }
 }

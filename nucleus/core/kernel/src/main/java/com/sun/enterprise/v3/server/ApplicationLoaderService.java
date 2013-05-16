@@ -240,7 +240,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         while (iter.hasNext()) {
           Application app = (Application)iter.next();
           ApplicationRef appRef = server.getApplicationRef(app.getName());
-          processApplication(app, appRef, logger);
+          processApplication(app, appRef);
         }
 
         // does the user want us to run a particular application
@@ -345,8 +345,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
     }
 
 
-    public void processApplication(Application app, ApplicationRef appRef, 
-        final Logger log) {
+    public void processApplication(Application app, ApplicationRef appRef) {
 
         long operationStartTime = Calendar.getInstance().getTimeInMillis();
 
@@ -405,7 +404,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     new ApplicationConfigInfo(app).store(depContext.getAppProps());
 
                     deployment.deploy(deployment.getSniffersFromApp(app), depContext);
-                    loadApplicationForTenants(app, appRef, report, logger);
+                    loadApplicationForTenants(app, appRef, report);
                     if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
                         if (tracing!=null) {
                             tracing.print(System.out);
@@ -498,12 +497,12 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             } catch (Exception e) {
                 logger.log(Level.SEVERE, KernelLoggerInfo.loadingApplicationErrorDisable, e);
             }
-            unloadApplicationForTenants(app, dummy, logger);
+            unloadApplicationForTenants(app, dummy);
             appRegistry.remove(appInfo.getName());
         }
     }
 
-    private void unloadApplicationForTenants(Application app, ActionReport report, Logger logger) {
+    private void unloadApplicationForTenants(Application app, ActionReport report) {
         if (app == null || app.getAppTenants() == null) {
             return;
         }
@@ -521,7 +520,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             ActionReport subReport = report.addSubActionsReport();
 
             try {
-                ExtendedDeploymentContext deploymentContext = deployment.getBuilder(logger, parameters, subReport).source(appInfo.getSource()).build();
+                ExtendedDeploymentContext deploymentContext = deployment.getBuilder(KernelLoggerInfo.getLogger(), parameters, subReport).source(appInfo.getSource()).build();
 
                 deploymentContext.getAppProps().putAll(
                     app.getDeployProperties());
@@ -543,7 +542,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
         }
     }
 
-    private void loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report, Logger logger) {
+    private void loadApplicationForTenants(Application app, ApplicationRef appRef, ActionReport report) {
         if (app.getAppTenants() == null) {
             return;
         }
@@ -566,7 +565,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
                     archive = archiveFactoryProvider.get().openArchive(file);
 
                     ExtendedDeploymentContext deploymentContext =
-                        deployment.getBuilder(logger, commandParams, subReport).source(archive).build();
+                        deployment.getBuilder(KernelLoggerInfo.getLogger(), commandParams, subReport).source(archive).build();
 
                     deploymentContext.getAppProps().putAll(app.getDeployProperties());
                     deploymentContext.getAppProps().putAll(tenant.getDeployProperties());

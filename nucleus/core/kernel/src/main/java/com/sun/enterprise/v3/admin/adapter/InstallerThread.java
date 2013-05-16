@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.glassfish.server.ServerEnvironmentImpl;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigCode;
@@ -68,14 +69,14 @@ final class InstallerThread extends Thread {
     private final String contextRoot;
     private final AdminConsoleAdapter adapter;
     private final ServiceLocator habitat;
-    private final Logger log;
+    private final Logger log = KernelLoggerInfo.getLogger();
     private final List<String> vss;
 
 
     /**
      * Constructor.
      */
-    InstallerThread(AdminConsoleAdapter adapter, ServiceLocator habitat, Domain domain, ServerEnvironmentImpl env, String contextRoot, Logger log, List<String> vss) {
+    InstallerThread(AdminConsoleAdapter adapter, ServiceLocator habitat, Domain domain, ServerEnvironmentImpl env, String contextRoot, List<String> vss) {
 
         this.adapter = adapter;
         this.habitat = habitat;
@@ -83,7 +84,6 @@ final class InstallerThread extends Thread {
         this.env = env;
         this.contextRoot = contextRoot;
         this.vss = vss;  //defensive copying is not required here
-        this.log = log;
     }
 
     /**
@@ -104,7 +104,7 @@ final class InstallerThread extends Thread {
         } catch (Exception ex) {
             adapter.setInstalling(false);
             adapter.setStateMsg(AdapterState.APPLICATION_NOT_INSTALLED);
-            log.log(Level.INFO, "Problem while attempting to install admin console!", ex);
+            log.log(Level.INFO, KernelLoggerInfo.adminGuiInstallProblem, ex);
         }
     }
 
@@ -208,7 +208,7 @@ final class InstallerThread extends Thread {
         String sn = env.getInstanceName();
 // FIXME: An exception may not be thrown... check for errors!
         ApplicationRef ref = domain.getApplicationRefInServer(sn, AdminConsoleAdapter.ADMIN_APP_NAME);
-        habitat.<ApplicationLoaderService>getService(ApplicationLoaderService.class).processApplication(config, ref, log);
+        habitat.<ApplicationLoaderService>getService(ApplicationLoaderService.class).processApplication(config, ref);
 
         // Set adapter state
         adapter.setStateMsg(AdapterState.APPLICATION_LOADED);

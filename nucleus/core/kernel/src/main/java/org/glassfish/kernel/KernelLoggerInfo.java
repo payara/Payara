@@ -522,8 +522,114 @@ public class KernelLoggerInfo {
             level = "SEVERE")
     public static final String exceptionCleaningJobs = LOGMSG_PREFIX + "-00076";
 
+    @LogMessageInfo(
+            message = "-passwordfile specified, but the actual file was not, ignoring ...",
+            cause="A software error is causing an incorrect argument sequence.",
+            action="No action necessary.",
+            level = "WARNING")
+    public static final String optionButNoArg = LOGMSG_PREFIX + "-00077";
 
+    @LogMessageInfo(
+            message = "Invalid context root for the admin console application, using default: {0}",
+            level = "INFO")
+    public static final String invalidContextRoot = LOGMSG_PREFIX + "-00078";
 
-
+    @LogMessageInfo(
+            message = "Admin Console Adapter: context root: {0}",
+            level = "INFO")
+    public static final String contextRoot = LOGMSG_PREFIX + "-00079";
     
+    @LogMessageInfo(
+            message = "Failed to configure the ManagedJobConfig bean",
+            cause="While running the configure-managed-jobs command, a write transaction to the ManagedJobConfig bean failed.",
+            action="Check the system logs and contact Oracle support.",
+            level = "WARNING")
+    public static final String configFailManagedJobConfig = LOGMSG_PREFIX + "-00080";
+
+    @LogMessageInfo(
+            message = "Unable to get the ManagedJobConfig bean.",
+            cause="While running the configure-managed-jobs command, access to the ManagedJobConfig bean failed.",
+            action="Check the system logs and contact Oracle support.",
+            level = "WARNING")
+    public static final String getFailManagedJobConfig = LOGMSG_PREFIX + "-00081";
+
+    @LogMessageInfo(
+            message = "Exiting after upgrade",
+            level = "INFO")
+    public static final String exitUpgrade = LOGMSG_PREFIX + "-00082";
+    
+    @LogMessageInfo(
+            message = "Exception while attempting to shutdown after upgrade",
+            cause="An exception occured when shutting down the server after an upgrade.",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String exceptionUpgrade = LOGMSG_PREFIX + "-00083";
+
+    @LogMessageInfo(
+            message = "Cannot find port information from domain.xml",
+            cause="No port value is available in the NetworkListener config bean",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String noPort = LOGMSG_PREFIX + "-00084";
+
+    @LogMessageInfo(
+            message = "Cannot parse port value: {0}, using port 8080",
+            cause="There is an invalid port value in the domain.xml file.",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String badPort = LOGMSG_PREFIX + "-00085";
+
+    @LogMessageInfo(
+            message = "Unknown address {0}",
+            cause="There is an invalid address value in the domain.xml file.",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String badAddress = LOGMSG_PREFIX + "-00086";
+
+    @LogMessageInfo(
+            message = "Grizzly Framework {0} started in: {1}ms - bound to [{2}{3}{4}{5}",
+            level = "INFO")
+    public static final String grizzlyStarted = LOGMSG_PREFIX + "-00087";
+    
+    @LogMessageInfo(
+            message = "Exception during postConstruct of DynamicReloadService",
+            cause="An unexpected exception occured.",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String exceptionDRS = LOGMSG_PREFIX + "-00088";
+
+    @LogMessageInfo(
+            message = "Cannot determine host name, will use localhost exclusively",
+            cause="An unexpected exception occured.",
+            action="Check the system logs and contact Oracle support.",
+            level = "SEVERE")
+    public static final String exceptionHostname = LOGMSG_PREFIX + "-00089";
+  
+    @LogMessageInfo(
+            message = "Internal Server error: {0}",
+            cause="An unexpected exception occured.",
+            action="Check the system logs and contact Oracle support.",
+            level = "WARNING")
+    public static final String exceptionMapper = LOGMSG_PREFIX + "-00090";
+  
+    @LogMessageInfo(
+            message = "Unable to set customized error page",
+            cause="An unexpected exception occured.",
+            action="Check the system logs and contact Oracle support.",
+            level = "WARNING")
+    public static final String exceptionMapper2 = LOGMSG_PREFIX + "-00091";
+
+    @LogMessageInfo(
+            message = "Server shutdown initiated",
+            level = "INFO")
+    public static final String serverShutdownInit = LOGMSG_PREFIX + "-00092";
+    
+    @LogMessageInfo(
+            message = "Problem while attempting to install admin console!",
+            level = "INFO")
+    public static final String adminGuiInstallProblem = LOGMSG_PREFIX + "-00093";
+    
+    
+
+
 }

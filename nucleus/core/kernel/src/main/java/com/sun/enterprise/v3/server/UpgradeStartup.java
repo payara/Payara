@@ -75,6 +75,7 @@ import java.net.URISyntaxException;
 import java.net.URI;
 import java.io.*;
 import java.beans.PropertyVetoException;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * Very simple ModuleStartup that basically force an immediate shutdown.
@@ -221,7 +222,7 @@ public class UpgradeStartup implements ModuleStartup {
         cleanupLeftOverDirectories();
 
         // stop-the server.
-        Logger.getAnonymousLogger().info("Exiting after upgrade");
+        KernelLoggerInfo.getLogger().info(KernelLoggerInfo.exitUpgrade);
         try {
             Thread.sleep(3000);
             if (runner!=null) {
@@ -229,7 +230,7 @@ public class UpgradeStartup implements ModuleStartup {
             }
 
         } catch (InterruptedException e) {
-            Logger.getAnonymousLogger().log(Level.SEVERE, "Exception while attempting to shutdown after upgrade", e);
+            KernelLoggerInfo.getLogger().log(Level.SEVERE, KernelLoggerInfo.exceptionUpgrade, e);
         }
 
     }

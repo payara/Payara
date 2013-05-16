@@ -93,6 +93,6 @@ public class StopInstanceInstanceCommand extends StopServer implements AdminComm
             return;
         }
 
-        doExecute(habitat, env, context.getLogger(), force);
+        doExecute(habitat, env, force);
     }
 }

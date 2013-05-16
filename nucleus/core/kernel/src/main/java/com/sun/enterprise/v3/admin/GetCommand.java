@@ -60,6 +60,7 @@ import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.types.Property;
@@ -211,10 +212,12 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
         
         String s = "Get Command: " + mr.toString();
 
-        if (Boolean.parseBoolean(System.getenv("AS_DEBUG")))
-            ctxt.getLogger().info(s);
-        else
-            ctxt.getLogger().fine(s);
+        if (Boolean.parseBoolean(System.getenv("AS_DEBUG"))) {
+            KernelLoggerInfo.getLogger().info(s);
+        }
+        else {
+            KernelLoggerInfo.getLogger().fine(s);
+        }
 
         mr.execute();
     }

@@ -54,11 +54,13 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.enterprise.util.Result;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.impl.FutureImpl;
 import org.glassfish.grizzly.impl.UnsafeFutureImpl;
+import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
  * This class is responsible for configuring Grizzly.
@@ -101,18 +103,18 @@ public class GrizzlyProxy implements NetworkProxy {
         String port = networkListener.getPort();
         portNumber = 8080;
         if (port == null) {
-            logger.severe("Cannot find port information from domain.xml");
+            logger.severe(KernelLoggerInfo.noPort);
             throw new RuntimeException("Cannot find port information from domain configuration");
         }
         try {
             portNumber = Integer.parseInt(port);
         } catch (NumberFormatException e) {
-            logger.log(Level.SEVERE, "Cannot parse port value : {0}, using port 8080", port);
+            logger.log(Level.SEVERE, KernelLoggerInfo.badPort, port);
         }
         try {
             address = InetAddress.getByName(networkListener.getAddress());
         } catch (UnknownHostException ex) {
-            logger.log(Level.SEVERE, "Unknown address " + address, ex);
+            LogHelper.log(logger, Level.SEVERE, KernelLoggerInfo.badAddress, ex, address);
         }
 
         createGrizzlyListener(networkListener);
@@ -230,7 +232,7 @@ public class GrizzlyProxy implements NetworkProxy {
         grizzlyListener.start();
 
         if (logger.isLoggable(Level.INFO)) {
-            logger.log(Level.INFO, "Grizzly Framework {0} started in: {1}ms - bound to [{2}{3}{4}{5}",
+            logger.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
                     new Object[]{Grizzly.getDotedVersion(),
                     System.currentTimeMillis() - t1,
                     grizzlyListener.getAddress(), ':', grizzlyListener.getPort(), ']'});
