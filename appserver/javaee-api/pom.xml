@@ -73,6 +73,7 @@
                     <useDefaultManifestFile>true</useDefaultManifestFile>
                     <archive>
                         <manifest>
+                            <addClasspath>false</addClasspath>
                             <addDefaultSpecificationEntries>false</addDefaultSpecificationEntries>
                             <addDefaultImplementationEntries>false</addDefaultImplementationEntries>
                         </manifest>
