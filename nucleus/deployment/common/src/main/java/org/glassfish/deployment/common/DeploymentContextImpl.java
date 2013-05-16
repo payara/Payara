@@ -66,6 +66,8 @@ import java.net.MalformedURLException;
 import java.net.URLClassLoader;
 
 import org.glassfish.hk2.api.PreDestroy;
+
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.hk2.classmodel.reflect.Parser;
 import org.glassfish.hk2.classmodel.reflect.Types;
@@ -90,6 +92,8 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
 
     public static final Logger deplLogger =
         Logger.getLogger(DEPLOYMENT_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeploymentContextImpl.class);
 
     private static final String INTERNAL_DIR_NAME = "__internal";
     private static final String APP_TENANTS_SUBDIR_NAME = "__app-tenants";
@@ -446,7 +450,13 @@ public class DeploymentContextImpl implements ExtendedDeploymentContext, PreDest
                 ASClassLoaderUtil.getDeployParamLibrariesAsURLs(
                     parameters.libraries(), env);
             for (URL url : urls) {
-                libURIs.add(url.toURI());
+                File file = new File(url.getFile());
+                deplLogger.log(Level.FINE, "Specified library jar: "+file.getAbsolutePath());
+                if (file.exists()){
+                    libURIs.add(url.toURI());
+                } else {
+                    throw new IllegalArgumentException(localStrings.getLocalString("enterprise.deployment.nonexist.libraries", "Specified library jar {0} does not exist: {1}", file.getName(), file.getAbsolutePath()));
+                }
             }
         }
 
