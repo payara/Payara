@@ -41,7 +41,6 @@ package org.glassfish.security.services.impl.authorization;
 
 import java.net.URI;
 import java.security.Permission;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +52,6 @@ import java.security.CodeSource;
 import java.security.CodeSigner;
 import javax.security.auth.Subject;
 
-// import org.glassfish.internal.api.ServerContext;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
 import org.glassfish.security.services.api.authorization.AzAction;
 import org.glassfish.security.services.api.authorization.AzResource;
@@ -62,7 +60,7 @@ import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.context.SecurityContextService;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
-
+import org.glassfish.security.services.impl.ServiceLogging;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -71,15 +69,16 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.logging.LogDomains;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.logging.annotation.LogMessageInfo;
+
 import org.glassfish.security.services.api.authorization.*;
 import org.glassfish.security.services.api.common.Attributes;
-
 import org.glassfish.security.services.config.SecurityProvider;
-import org.glassfish.security.services.spi.AuthorizationProvider;
-
+import org.glassfish.security.services.spi.authorization.AuthorizationProvider;
 
 /**
  * <code>AuthorizationServiceImpl</code> implements
@@ -91,16 +90,13 @@ import org.glassfish.security.services.spi.AuthorizationProvider;
 @Service
 @Singleton
 public final class AuthorizationServiceImpl implements AuthorizationService, PostConstruct {
-
+    private static final Level DEBUG_LEVEL = Level.FINER;
     private static final Logger logger =
-        LogDomains.getLogger(AuthorizationServiceImpl.class, LogDomains.SECURITY_LOGGER);
-
+        Logger.getLogger(ServiceLogging.SEC_SVCS_LOGGER,ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
+    private static LocalStringManagerImpl localStrings =
+        new LocalStringManagerImpl(AuthorizationServiceImpl.class);
     @Inject
     private volatile Domain domain;
-
-//    //TODO: do context switch??
-//    @Inject
-//    private volatile ServerContext serverContext;
 
     @Inject
     private volatile ServiceLocator serviceLocator;
@@ -113,6 +109,8 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
     private volatile SecurityProvider atzPrvConfig;
     
     private volatile AuthorizationProvider atzProvider;
+    // Support non-authorization packaged SPI provider class for compatibility
+    private volatile org.glassfish.security.services.spi.AuthorizationProvider provider = null;
     
     private static final CodeSource NULL_CODESOURCE = new CodeSource(null, (CodeSigner[])null);
 
@@ -122,11 +120,15 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
         FAILED_INIT
     }
     private volatile InitializationState initialized = InitializationState.NOT_INITIALIZED;
-    private volatile String reasonInitFailed = "Authorization Service never initialized.";
+    private volatile String reasonInitFailed =
+    		localStrings.getLocalString("service.atz.never_init","Authorization Service never initialized.");
 
     private final List<AzAttributeResolver> attributeResolvers =
             Collections.synchronizedList(new java.util.ArrayList<AzAttributeResolver>());
 
+	private boolean isDebug() {
+		return logger.isLoggable(DEBUG_LEVEL);
+	}
 
     /**
      * Initialize the security service instance with the specific security service configuration.
@@ -143,43 +145,52 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
         try {
             // Get service level config
             if ( !( securityServiceConfiguration instanceof org.glassfish.security.services.config.AuthorizationService ) ) {
-                throw new IllegalStateException( "The Authorization service is not configured in the domain configuration file." );
+                throw new IllegalStateException(
+                		localStrings.getLocalString("service.atz.not_config","The Authorization service is not configured in the domain configuration file."));
             }
             atzSvCfg = (org.glassfish.security.services.config.AuthorizationService) securityServiceConfiguration;
 
             // Get provider level config, consider only one provider for now and take the first provider found.
             List<SecurityProvider> providersConfig = atzSvCfg.getSecurityProviders();
             if ( (providersConfig == null) || ( (atzPrvConfig = providersConfig.get(0)) == null ) ) {
-                throw new IllegalStateException("No provider configured for the Authorization service in the domain configuration file." );
+                throw new IllegalStateException(
+                		localStrings.getLocalString("service.atz.no_prov_config","No provider configured for the Authorization service in the domain configuration file."));
             }
 
             // Get the provider
             final String providerName = atzPrvConfig.getName();
-            if ( logger.isLoggable(Level.FINEST) ) {
-                logger.log(Level.FINEST, "Attempting to get Authorization provider \"{0}\".", providerName );
+            if ( isDebug() ) {
+                logger.log(DEBUG_LEVEL, "Attempting to get Authorization provider \"{0}\".", providerName );
             }
             atzProvider = serviceLocator.getService(AuthorizationProvider.class, providerName);
             if (atzProvider == null) {
-                throw new IllegalStateException("Authorization provider \"" + providerName + "\" not found." );
+                // Check for non-authorization packaged SPI provider class for compatibility
+                provider = serviceLocator.getService(org.glassfish.security.services.spi.AuthorizationProvider.class, providerName);
+                if (provider == null) {
+                    throw new IllegalStateException(
+                        localStrings.getLocalString("service.atz.not_provider","Authorization Provider {0} not found.", providerName));
+                }
+            }
+
+            // Use non-authorization packaged SPI provider type to call SPI methods
+            if (provider == null) {
+                provider = (org.glassfish.security.services.spi.AuthorizationProvider)atzProvider;
             }
 
             // Initialize the provider
-            atzProvider.initialize(atzPrvConfig);
+            provider.initialize(atzPrvConfig);
 
             initialized = InitializationState.SUCCESS_INIT;
             reasonInitFailed = null;
 
-            if (logger.isLoggable( Level.INFO )) {
-                logger.log(  Level.INFO , "Authorization Service has successfully initialized." );
-            }
+            logger.log(Level.INFO, ATZSVC_INITIALIZED);
 
         } catch ( Exception e ) {
-            reasonInitFailed = MessageFormat.format(
-                "Authorization Service initialization failed, exception=\"{0}\", message=\"{1}\".",
-                e.getClass().getName(), e.getMessage());
-            if ( logger.isLoggable( Level.WARNING ) ) {
-                logger.log( Level.WARNING, reasonInitFailed, e );
-            }
+            String eMsg = e.getMessage();
+            String eClass = e.getClass().getName();
+            reasonInitFailed = localStrings.getLocalString("service.atz.init_failed",
+                "Authorization Service initialization failed, exception {0}, message {1}", eClass, eMsg);
+            logger.log(Level.WARNING, ATZSVC_INIT_FAILED, new Object[] {eClass, eMsg});
             throw new RuntimeException( reasonInitFailed, e );
         } finally {
             if ( InitializationState.SUCCESS_INIT != initialized ) {
@@ -213,10 +224,10 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 
         // Validate inputs
         if ( null == subject ) {
-            throw new IllegalArgumentException( "Illegal null Subject." );
+            throw new IllegalArgumentException(localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
         }
         if ( null == permission ) {
-            throw new IllegalArgumentException( "Illegal null Permission." );
+            throw new IllegalArgumentException(localStrings.getLocalString("service.permission_null","The supplied Permission is null."));
         }
 
         Set<Principal> principalset = subject.getPrincipals();
@@ -267,10 +278,10 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 
         // Validate inputs
         if ( null == subject ) {
-            throw new IllegalArgumentException( "Illegal null Subject." );
+            throw new IllegalArgumentException(localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
         }
         if ( null == resource ) {
-            throw new IllegalArgumentException( "Illegal null resource URI." );
+            throw new IllegalArgumentException(localStrings.getLocalString("service.resource_null", "The supplied Resource is null."));
         }
         // Note: null action means all actions (i.e., no action condition)
 
@@ -322,8 +333,11 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
         checkServiceAvailability();
 
         // Validate inputs
-        if ( (null == subject) || (null == resource) ) {
-            throw new IllegalArgumentException( "Illegal null AzSubject or AzResource." );
+        if ( null == subject ) {
+            throw new IllegalArgumentException(localStrings.getLocalString("service.subject_null", "The supplied Subject is null."));
+        }
+        if ( null == resource ) {
+            throw new IllegalArgumentException(localStrings.getLocalString("service.resource_null", "The supplied Resource is null."));
         }
 
         // TODO: setup current AzEnvironment instance. Should a null or empty instance to represent current environment?
@@ -333,11 +347,11 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
             env.addAttribute(attrName, attrs.getAttributeValue(attrName), true);
         }
 
-        AzResult result =  atzProvider.getAuthorizationDecision(
+        AzResult result =  provider.getAuthorizationDecision(
             subject, resource, action, env, attributeResolvers );
 
-        if ( logger.isLoggable(Level.FINEST) ) {
-            logger.log(Level.FINEST,
+        if ( isDebug() ) {
+            logger.log(DEBUG_LEVEL,
             "Authorization Service result for {0} was {1}.",
             new String[]{ subject.toString(), result.toString() } );
         }
@@ -413,7 +427,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 
         // TODO: Unsupported Operation Exception undocumented, not optional
 
-        return atzProvider.findOrCreateDeploymentContext(appContext);
+        return provider.findOrCreateDeploymentContext(appContext);
 	}
 
 
@@ -455,7 +469,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
     @Override
     public boolean appendAttributeResolver(AzAttributeResolver resolver) {
         if ( null == resolver ) {
-            throw new IllegalArgumentException( "Illegal null AzAttributeResolver." );
+            throw new IllegalArgumentException(localStrings.getLocalString("service.resolver_null","The supplied Attribute Resolver is null."));
         }
         synchronized ( attributeResolvers ) {
             if ( !attributeResolvers.contains( resolver ) ) {
@@ -479,7 +493,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
     @Override
     public void setAttributeResolvers(List<AzAttributeResolver> resolverList) {
         if ( null == resolverList ) {
-            throw new IllegalArgumentException( "Illegal null List<AzAttributeResolver>." );
+            throw new IllegalArgumentException(localStrings.getLocalString("service.resolver_null","The supplied Attribute Resolver is null."));
         }
 
         synchronized ( attributeResolvers ) {
@@ -554,9 +568,22 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
     final void checkServiceAvailability() {
         if ( InitializationState.SUCCESS_INIT != getInitializationState() ) {
             throw new IllegalStateException(
-                "The Authorization service is unavailable. " +
+                localStrings.getLocalString("service.atz.not_avail","The Authorization service is not available.") +
                 getReasonInitializationFailed() );
         }
     }
 
+	//
+	// Log Messages
+	//
+
+	@LogMessageInfo(
+			message = "Authorization Service has successfully initialized.",
+			level = "INFO")
+	private static final String ATZSVC_INITIALIZED = "SEC-SVCS-00100";
+
+	@LogMessageInfo(
+			message = "Authorization Service initialization failed, exception {0}, message {1}",
+			level = "WARNING")
+	private static final String ATZSVC_INIT_FAILED = "SEC-SVCS-00101";
 }

@@ -54,7 +54,7 @@ import org.junit.Test;
 
 import org.jvnet.hk2.testing.junit.HK2Runner;
 
-import org.glassfish.security.services.spi.AuthorizationProvider;
+import org.glassfish.security.services.spi.authorization.AuthorizationProvider;
 
 public class SimpleAtzProviderTest extends HK2Runner {
     

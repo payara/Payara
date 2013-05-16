@@ -61,6 +61,11 @@
         <authorization-provider-config support-policy-deploy="false" name="simpleAuthorizationProviderConfig"></authorization-provider-config>
       </security-provider>
     </authorization-service>
+    <role-mapping-service default="true" name="rolemappingService">
+      <security-provider name="simpleRoleMapping" type="Simple" provider-name="simpleRoleMappingProvider">
+        <role-mapping-provider-config support-role-deploy="false" name="simpleRoleMappingProviderConfig"></role-mapping-provider-config>
+      </security-provider>
+    </role-mapping-service>
   </security-configurations>
   <system-applications/>
   <applications/>

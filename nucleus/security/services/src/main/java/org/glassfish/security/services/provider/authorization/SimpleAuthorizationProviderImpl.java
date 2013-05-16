@@ -52,30 +52,30 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 import org.glassfish.security.services.api.authorization.*;
 import org.glassfish.security.services.api.authorization.AzResult.Decision;
 import org.glassfish.security.services.api.authorization.AzResult.Status;
 import org.glassfish.security.services.api.authorization.AuthorizationService.PolicyDeploymentContext;
-
+import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 import org.glassfish.security.services.config.SecurityProvider;
-import org.glassfish.security.services.spi.AuthorizationProvider;
+import org.glassfish.security.services.spi.authorization.AuthorizationProvider;
+import org.glassfish.security.services.impl.ServiceLogging;
 import org.glassfish.security.services.impl.authorization.AzResultImpl;
 import org.glassfish.security.services.impl.authorization.AzObligationsImpl;
 
-import org.glassfish.hk2.api.PerLookup;
-
 import org.jvnet.hk2.annotations.Service;
-
-import com.sun.logging.LogDomains;
+import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
 
 @Service (name="simpleAuthorization")
 @PerLookup
 public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
 
     private final static Level DEBUG_LEVEL = Level.FINER;
+    private static final Logger _logger =
+        Logger.getLogger(ServiceLogging.SEC_PROV_LOGGER,ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
     
     private AuthorizationProviderConfig cfg; 
     private boolean deployable;
@@ -91,9 +91,6 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
     
     private SecureAdmin secureAdmin = null;
     
-    protected static final Logger _logger = 
-        LogDomains.getLogger(SimpleAuthorizationProviderImpl.class, LogDomains.SECURITY_LOGGER);
-
     private Decider decider;
     
     @Override
@@ -104,9 +101,9 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
         version = cfg.getVersion();
         domain = serviceLocator.getService(Domain.class);
         secureAdmin = domain.getSecureAdmin();
-        if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, "provide to do policy deploy: " + deployable);
-            _logger.log(Level.FINE, "provide version to use: " + version);
+        if (isDebug()) {
+            _logger.log(DEBUG_LEVEL, "provide to do policy deploy: " + deployable);
+            _logger.log(DEBUG_LEVEL, "provide version to use: " + version);
         }
     }
     
@@ -143,7 +140,8 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
              * scheme, but go ahead anyway and make the authorization decision.
              */
             final String resourceName = resource.getUri() == null ? "null" : resource.getUri().toASCIIString();
-            _logger.log(Level.WARNING, resourceName, new IllegalArgumentException(resourceName));
+            _logger.log(Level.WARNING, ATZPROV_BAD_RESOURCE, resourceName);
+            _logger.log(Level.WARNING, "IllegalArgumentException", new IllegalArgumentException(resourceName));
         }
         return getAdminDecision(subject, resource, action, environment);
     }
@@ -275,4 +273,9 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
             return false;
         }
     }
+
+	@LogMessageInfo(
+			message = "Authorization Provider supplied an invalid resource: {0}",
+			level = "WARNING")
+	private static final String ATZPROV_BAD_RESOURCE = "SEC-PROV-00100";
 }
