@@ -578,6 +578,10 @@ public class InputJarArchive extends JarArchive implements ReadableArchive {
 
         private ArchiveJarEntrySource(final URI archiveURI) throws IOException {
             sourceJarFile = getJarFile(archiveURI);
+            if (sourceJarFile == null){
+                throw new IOException(localStrings.getString(
+                        "enterprise.deployment.invalid_zip_file", archiveURI));
+            }
             jarEntries = sourceJarFile.entries();
         }
 
