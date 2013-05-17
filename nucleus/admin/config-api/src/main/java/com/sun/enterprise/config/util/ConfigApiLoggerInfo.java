@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 /* Module private */
 public class ConfigApiLoggerInfo {
-    public static final String LOGMSG_PREFIX = "NCLS-ADMIN";
+    public static final String LOGMSG_PREFIX = "CONFIG-API";
 
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.config.util.LogMessages";
