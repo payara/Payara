@@ -74,7 +74,7 @@ import static com.sun.enterprise.util.StringUtils.ok;
 @AnnotationHandlerFor(EJB.class)
 public class EJBHandler extends AbstractResourceHandler {
 
-    protected static LocalStringManagerImpl localStrings =
+    protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(EJBHandler.class);
     
     public EJBHandler() {

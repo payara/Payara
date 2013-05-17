@@ -83,7 +83,7 @@ import org.glassfish.apf.HandlerProcessingResult;
  */
 public abstract class AbstractAttributeHandler extends AbstractHandler {
 
-    protected static LocalStringManagerImpl localStrings =
+    protected final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(AbstractAttributeHandler.class);
     
     /**
