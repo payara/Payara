@@ -61,6 +61,7 @@ import com.sun.enterprise.deployment.annotation.context.EjbBundleContext;
 import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbsContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -91,7 +92,10 @@ import org.glassfish.internal.deployment.AnnotationTypesProvider;
 public abstract class AbstractEjbHandler extends AbstractHandler {
 
     private AnnotationTypesProvider provider = null;
-            
+
+    protected final static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(AbstractEjbHandler.class);
+    
     public AbstractEjbHandler() {
         ServiceLocator h = Globals.getDefaultHabitat();
         if( h != null ) {

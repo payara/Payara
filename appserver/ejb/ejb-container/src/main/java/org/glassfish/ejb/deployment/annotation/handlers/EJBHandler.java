@@ -54,6 +54,7 @@ import com.sun.enterprise.deployment.InjectionTarget;
 import com.sun.enterprise.deployment.MetadataSource;
 import com.sun.enterprise.deployment.annotation.context.ResourceContainerContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractResourceHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.AnnotationHandlerFor;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -72,6 +73,9 @@ import static com.sun.enterprise.util.StringUtils.ok;
 @Service
 @AnnotationHandlerFor(EJB.class)
 public class EJBHandler extends AbstractResourceHandler {
+
+    protected static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(EJBHandler.class);
     
     public EJBHandler() {
     }

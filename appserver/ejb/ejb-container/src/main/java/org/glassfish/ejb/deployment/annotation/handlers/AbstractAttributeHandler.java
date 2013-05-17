@@ -51,6 +51,7 @@ import com.sun.enterprise.deployment.annotation.context.EjbContext;
 import com.sun.enterprise.deployment.annotation.context.EjbInterceptorContext;
 import com.sun.enterprise.deployment.annotation.context.EjbsContext;
 import com.sun.enterprise.deployment.annotation.handlers.AbstractHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.apf.AnnotatedElementHandler;
 import org.glassfish.apf.AnnotationInfo;
 import org.glassfish.apf.AnnotationProcessorException;
@@ -81,6 +82,10 @@ import org.glassfish.apf.HandlerProcessingResult;
  * @author Shing Wai Chan
  */
 public abstract class AbstractAttributeHandler extends AbstractHandler {
+
+    protected static LocalStringManagerImpl localStrings =
+            new LocalStringManagerImpl(AbstractAttributeHandler.class);
+    
     /**
      * Process Annotation with given EjbContexts.
      * @param ainfo
