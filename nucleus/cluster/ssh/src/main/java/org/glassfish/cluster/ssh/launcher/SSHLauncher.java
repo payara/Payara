@@ -514,6 +514,7 @@ public class SSHLauncher {
         }
         buff.append(command);
         final Session sess = connection.openSession();
+        logger.log(Level.FINE, "executing on remote: {0} command", buff.toString());
         int status = exec(sess, buff.toString(), os, listInputStream(stdinLines));
 
         // XXX: Should we close connection after each command or cache it
