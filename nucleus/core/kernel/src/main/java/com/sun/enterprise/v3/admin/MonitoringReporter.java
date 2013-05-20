@@ -796,11 +796,6 @@ public class MonitoringReporter extends V2DottedNameSupport {
         reporter.setActionExitCode(SUCCESS);
     }
 
-    private void setSuccess(String msg) {
-        setSuccess();
-        appendStatusMessage(msg);
-    }
-
     private void appendStatusMessage(String newMessage) {
         if (plainReporter != null)
             cliOutput.append(newMessage).append('\n');
