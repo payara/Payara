@@ -515,10 +515,6 @@ public abstract class LocalServerCommand extends CLICommand {
         }
     }
 
-    private boolean usingLocalPassword() {
-        return programOpts.getPasswordLocation() == ProgramOptions.PasswordLocation.LOCAL_PASSWORD;
-    }
-
     private File getJKS() {
         if (serverDirs == null)
             return null;
