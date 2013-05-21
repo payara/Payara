@@ -115,7 +115,7 @@ public class JMSCDIExtension implements Extension {
         return new AnnotationLiteral<Any>() {};
     }
 
-    public class LocalPassivationCapableBean implements Bean, PassivationCapable {
+    public static class LocalPassivationCapableBean implements Bean, PassivationCapable {
         private String id = UUID.randomUUID().toString();
         private Class beanClass;
         private InjectionTarget injectionTarget;
