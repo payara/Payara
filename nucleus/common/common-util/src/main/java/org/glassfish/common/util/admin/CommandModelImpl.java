@@ -184,6 +184,10 @@ public class CommandModelImpl extends CommandModel {
     public boolean unknownOptionsAreOperands() {
         return dashOk;
     }
+    
+    public void addParam(String name, CommandModel.ParamModel param) {
+        params.put(name, param);
+    }
 
     private static void add(Map<String, ParamModel> results, AnnotatedElement e, I18n parentI18n, LocalStringManager localStrings) {
         Param param = e.getAnnotation(Param.class);

@@ -39,6 +39,7 @@
  */
 package org.glassfish.api.admin.progress;
 
+import java.io.Serializable;
 import java.util.*;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.ProgressStatus;
@@ -48,9 +49,11 @@ import org.glassfish.api.admin.ProgressStatus;
  * @author mmares
  */
 //TODO: Move to utils if possible. It is now in API only because ProgressStatusImpl is here, too
-public abstract class ProgressStatusBase implements ProgressStatus {
+public abstract class ProgressStatusBase implements ProgressStatus, Serializable {
     
-    public static class ChildProgressStatus {
+	private static final long serialVersionUID = -2501719606059507140L;
+
+	public static class ChildProgressStatus implements Serializable {
         
         private final int allocatedSteps;
         private final ProgressStatusBase progressStatus;

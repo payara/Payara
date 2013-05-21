@@ -42,8 +42,10 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -399,6 +401,21 @@ public class JobManagerService implements JobManager,PostConstruct {
 
     public ConcurrentHashMap<String, CompletedJob> getCompletedJobsInfo() {
          return completedJobsInfo;
+    }
+    
+    @Override
+    public void checkpoint(AdminCommand command, AdminCommandContext context) throws IOException {
+        if (!StringUtils.ok(context.getJobId())) {
+            throw new IllegalArgumentException("Command is not managed");
+        }
+        Job job = get(context.getJobId());
+        File dist = job.getJobsFile();
+        if (dist == null) {
+            dist = getJobsFile();
+        }
+        dist = new File(dist.getParentFile(), context.getJobId()+".checkpoint");
+        Checkpoint chkp = new Checkpoint(job, command, context);
+        CheckpointHelper.save(chkp, dist);
     }
 
     /* This method will look for completed jobs from the jobs.xml

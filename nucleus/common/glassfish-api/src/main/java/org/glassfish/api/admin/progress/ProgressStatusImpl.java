@@ -39,13 +39,17 @@
  */
 package org.glassfish.api.admin.progress;
 
+import java.io.Serializable;
+
 /** {@code ProgressStatus} implementation suggested for {@code AdminCommand}
  * implementation.
  *
  * @author mmares
  */
 //TODO: Move to admin-utils if possible. It is now in API only because ProgressStatusImpl is here, too
-public class ProgressStatusImpl extends ProgressStatusBase {
+public class ProgressStatusImpl extends ProgressStatusBase implements Serializable {
+    
+    private static final long serialVersionUID = 1;
     
     /** Constructor for instancing dummy (without propagation) instance.
      */

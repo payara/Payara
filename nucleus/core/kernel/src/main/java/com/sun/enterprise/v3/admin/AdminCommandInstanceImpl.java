@@ -41,6 +41,7 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.admin.JobPersistenceService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -68,15 +69,17 @@ import java.util.List;
 
 public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements Job {
     
+    private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminCommandInstanceImpl.class);
+    
     private CommandProgress commandProgress;
-    private Payload.Outbound payload;
-    private final AdminCommandEventBroker broker;
+    private transient Payload.Outbound payload;
+    private transient final AdminCommandEventBroker broker;
 
     private final long executionDate;
 
     private final String commandName;
 
-    private final Subject subject;
+    private transient Subject subject;
 
     private final String scope;
 
@@ -85,8 +88,6 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     private File jobsFile;
 
     private long completionDate;
-
-
 
     protected AdminCommandInstanceImpl(String id, String name,String commandScope,Subject sub,boolean managedJob) {
         super(id);
@@ -137,8 +138,6 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     public String getName() {
         return commandName;
     }
-
-
 
     @Override
     protected void setState(State state) {
@@ -193,6 +192,15 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     @Override
     public long getCommandCompletionDate() {
          return completionDate;
+    }
+    
+    @Override
+    public void setFailedRetryable() {
+        if (state == State.RUNNING || state == State.RUNNING_RETRYABLE) {
+            this.state = State.FAILED_RETRYABLE;
+        } else {
+            throw new IllegalStateException(adminStrings.getLocalString("job.state.invalid.FAILED", "State must be RUNNING or RUNNING_RETRYABLE"));
+        }
     }
 
 }

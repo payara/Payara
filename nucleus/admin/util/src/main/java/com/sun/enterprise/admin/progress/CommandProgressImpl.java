@@ -40,6 +40,7 @@
 package com.sun.enterprise.admin.progress;
 
 import com.sun.enterprise.util.StringUtils;
+import java.io.Serializable;
 import java.util.Date;
 import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.CommandProgress;
@@ -55,9 +56,11 @@ import org.glassfish.api.admin.progress.ProgressStatusMirroringImpl;
  *
  * @author mmares
  */
-public class CommandProgressImpl extends ProgressStatusImpl implements CommandProgress {
+public class CommandProgressImpl extends ProgressStatusImpl implements CommandProgress, Serializable {
+    
+    private static final long serialVersionUID = 1;
 
-    public class LastChangedMessage implements ProgressStatusMessage {
+    public class LastChangedMessage implements ProgressStatusMessage, Serializable {
         
         private String sourceId;
         private String message;
@@ -109,7 +112,8 @@ public class CommandProgressImpl extends ProgressStatusImpl implements CommandPr
     private long eTag = 0;
     private Date startTime;
     private Date endTime;
-    private AdminCommandEventBroker eventBroker;
+    //TODO: Set after resurection
+    private transient AdminCommandEventBroker eventBroker;
     private boolean spinner = false;
     
     public CommandProgressImpl(String name, String id) {

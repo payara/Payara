@@ -1107,7 +1107,8 @@ public class CommandRunnerImpl implements CommandRunner {
         ParameterMap parameters;
         final AdminCommandContext context = new AdminCommandContextImpl(
                 logger, report, inv.inboundPayload(), inv.outboundPayload(), 
-                commandInstance.getEventBroker());
+                commandInstance.getEventBroker(),
+                commandInstance.getId());
         context.setSubject(subject);
         List<RuntimeType> runtimeTypes = new ArrayList<RuntimeType>();
         FailurePolicy fp = null;

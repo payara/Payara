@@ -40,6 +40,7 @@
 package com.sun.enterprise.admin.event;
 
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
+import com.sun.enterprise.util.StringUtils;
 import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -182,6 +183,20 @@ public class AdminCommandEventBrokerImpl<T> implements AdminCommandEventBroker<T
             fireEvent(BrokerListenerRegEvent.EVENT_NAME_LISTENER_UNREG, 
                 new BrokerListenerRegEvent(this, listener));
         }
+    }
+    
+    @Override
+    public EventBrokerUtils getUtils() {
+        return new EventBrokerUtils() {
+
+            @Override
+            public void sendMessage(String message) {
+                if (StringUtils.ok(message)) {
+                    fireEvent(USER_MESSAGE_NAME, message);
+                }
+            }
+            
+        };
     }
     
 }

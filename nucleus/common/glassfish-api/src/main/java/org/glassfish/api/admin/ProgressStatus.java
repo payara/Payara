@@ -39,6 +39,8 @@
  */
 package org.glassfish.api.admin;
 
+import java.io.Serializable;
+
 /** API for providing information about work progress in {@link AdminCommand} 
  * implementations. 
  * 
@@ -153,7 +155,7 @@ package org.glassfish.api.admin;
  * @see org.glassfish.api.Progress
  * @author mmares
  */
-public interface ProgressStatus {
+public interface ProgressStatus extends Serializable {
     
     /** Number of steps necessary to complete the operation. 
      * Value is used to determine percentage of work completed.  This method

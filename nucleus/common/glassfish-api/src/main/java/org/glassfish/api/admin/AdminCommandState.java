@@ -51,7 +51,7 @@ public interface AdminCommandState {
     public static final String EVENT_STATE_CHANGED = "AdminCommandInstance/stateChanged";
     
     public enum State {
-        PREPARED, RUNNING, COMPLETED, RECORDED, FAILED;
+        PREPARED, RUNNING, COMPLETED, RECORDED, RUNNING_RETRYABLE, FAILED_RETRYABLE, REVERTING;
     }
     
     public State getState();
@@ -70,7 +70,7 @@ public interface AdminCommandState {
     public boolean isOutboundPayloadEmpty();
     
     public String getId();
-
-
     
+    
+
 }

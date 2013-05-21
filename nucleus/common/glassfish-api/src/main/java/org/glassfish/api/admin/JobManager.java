@@ -40,6 +40,8 @@
 package org.glassfish.api.admin;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.Iterator;
 
 import org.glassfish.api.admin.progress.JobInfo;
@@ -63,6 +65,37 @@ import javax.xml.bind.JAXBContext;
 
 @Contract
 public interface JobManager {
+    
+    /** Container for checkpoint related objects
+     */
+    public class Checkpoint implements Serializable {
+        
+        private static final long serialVersionUID = 1L;
+        
+        private Job job;
+        private AdminCommand command;
+        private AdminCommandContext context;
+
+        public Checkpoint(Job job, AdminCommand command, AdminCommandContext context) {
+            this.job = job;
+            this.command = command;
+            this.context = context;
+        }
+
+        public Job getJob() {
+            return job;
+        }
+
+        public AdminCommand getCommand() {
+            return command;
+        }
+
+        public AdminCommandContext getContext() {
+            return context;
+        }
+        
+    }
+            
 
     /**
      * This method is used to generate a unique id for a managed job
@@ -123,5 +156,9 @@ public interface JobManager {
      * @return the location of the job file
      */
     public File getJobsFile();
+    
+    /** Stores current command state.
+     */
+    public void checkpoint(AdminCommand command, AdminCommandContext context) throws IOException;
 
 }

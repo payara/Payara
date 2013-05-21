@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,68 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.admin.remote;
+package com.sun.enterprise.v3.admin;
 
-import java.io.Serializable;
+import static org.junit.Assert.assertEquals;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 import org.glassfish.api.ActionReport;
-import org.glassfish.api.admin.AdminCommandState;
+import org.glassfish.api.admin.AdminCommandContext;
+import org.glassfish.api.admin.AdminCommandContextImpl;
+import org.junit.Test;
 
-/** Basic implementation. Good for unmarshaling. 
- *
- * @author mmares
- */
-public class AdminCommandStateImpl implements AdminCommandState, Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    
-    protected State state = State.PREPARED;
-    private ActionReport actionReport;
-    private boolean payloadIsEmpty;
-    protected String id;
+import com.sun.enterprise.v3.common.DoNothingActionReporter;
+import com.sun.enterprise.v3.common.PlainTextActionReporter;
 
+public class AdminCommandContextTest {
 
-    public AdminCommandStateImpl(final State state, final ActionReport actionReport, 
-            final boolean payloadIsEmpty, final String id) {
-        this.state = state;
-        this.actionReport = actionReport;
-        this.payloadIsEmpty = payloadIsEmpty;
-        this.id = id;
-    }
-
-    public AdminCommandStateImpl(String id) {
-        this(State.PREPARED, null, true, id);
-    }
-    
-    @Override
-    public State getState() {
-        return this.state;
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        ActionReport report = new PlainTextActionReporter();
+        AdminCommandContext context = new AdminCommandContextImpl(null /* logger */, report);
+        report.setFailureCause(new RuntimeException("Test"));
+        oos.writeObject(context);
+        ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
+        ObjectInputStream ois = new ObjectInputStream(is);
+        AdminCommandContext restored = (AdminCommandContextImpl) ois.readObject();
+        assertEquals("failureCause", "Test", restored.getActionReport().getFailureCause().getMessage());
+        // context.setPayload
     }
 
-    @Override
-    public void complete(ActionReport actionReport) {
-        this.actionReport = actionReport;
-        if (state != State.FAILED_RETRYABLE) {
-            setState(State.COMPLETED);
-        }
-    }
-
-    @Override
-    public ActionReport getActionReport() {
-        return this.actionReport;
-    }
-
-    @Override
-    public boolean isOutboundPayloadEmpty() {
-        return this.payloadIsEmpty;
-    }
-    
-    @Override
-    public String getId() {
-        return this.id;
-    }
-    
-    protected void setState(State state) {
-        this.state = state;
-    }
-    
 }

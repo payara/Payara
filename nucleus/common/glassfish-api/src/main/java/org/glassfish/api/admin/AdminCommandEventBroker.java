@@ -81,6 +81,20 @@ public interface AdminCommandEventBroker<T> {
      */
     public boolean listening(String eventName);
     
+    /** Pack of utility methods related to this instance of event broker.
+     */
+    public EventBrokerUtils getUtils();
+    
+    /** Place relevant for utility methods
+     */
+    public interface EventBrokerUtils {
+        
+        static final String USER_MESSAGE_NAME = "usermessage";
+        
+        public void sendMessage(String message);
+        
+    }
+    
     /** Listener for AdminCommand events.
      * 
      * @param <T> Type of event
@@ -112,5 +126,5 @@ public interface AdminCommandEventBroker<T> {
         }
         
     }
-    
+
 }

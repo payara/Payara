@@ -52,10 +52,6 @@ import java.io.File;
  */
 public interface Job extends AdminCommandState {
     
-    /** Id of command instance.
-     */
-    public String getId();
-    
     /** Command progress only if it is supported by command
      */
     public CommandProgress getCommandProgress();
@@ -81,5 +77,10 @@ public interface Job extends AdminCommandState {
     public String getScope();
 
     public long getCommandCompletionDate();
+    
+    /** Job will be considered as retryable after fail. It means that checkpoint
+     * will not be deleted and revert or continue can be decided by the user.
+     */
+    public void setFailedRetryable();
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,8 +60,10 @@ import java.util.logging.Level;
  * @author Jerome Dochez
  */
 @Contract
-public abstract class ActionReport {
+public abstract class ActionReport implements Serializable {
     
+    private static final long serialVersionUID = -238144192513668688L;
+
     public enum ExitCode { SUCCESS, WARNING, FAILURE ;
 
         public boolean isWorse(final ExitCode other) {
@@ -141,7 +143,9 @@ public abstract class ActionReport {
      */
     public abstract boolean hasFailures();
 
-    public static class MessagePart {
+    public static class MessagePart implements Serializable {
+
+        private static final long serialVersionUID = -8708934987452414280L;
 
         Properties props = new Properties();
         String message;
