@@ -40,6 +40,7 @@
 package org.glassfish.security.services.provider.authorization;
 
 import java.security.Principal;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -48,6 +49,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
+import org.glassfish.security.services.api.authorization.AzAttributeResolver;
+import org.glassfish.security.services.api.authorization.AzEnvironment;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.authorization.RoleMappingService;
@@ -80,8 +83,7 @@ public class SimpleRoleMappingProviderImpl implements RoleMappingProvider {
 	}
 
 	private boolean containsAdminGroup(AzSubject subject) {
-		// Checking for principal name
-		// TODO: Decide on explicit principal group type check and for which type?
+		// Only checking for principal name
 		for (Principal p : subject.getSubject().getPrincipals()) {
 			if (AuthorizationAdminConstants.ADMIN_GROUP.equals(p.getName())) {
 				return true;
@@ -104,7 +106,7 @@ public class SimpleRoleMappingProviderImpl implements RoleMappingProvider {
 	}
 
 	@Override
-	public boolean isUserInRole(String appContext, AzSubject subject, AzResource resource, String role) {
+	public boolean isUserInRole(String appContext, AzSubject subject, AzResource resource, String role, AzEnvironment environment, List<AzAttributeResolver> resolvers) {
 		boolean result = false;
 		if (isDebug()) _logger.log(DEBUG_LEVEL, "isUserInRole() - " + role);
 

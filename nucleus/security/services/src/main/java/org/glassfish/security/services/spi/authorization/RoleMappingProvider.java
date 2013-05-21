@@ -39,6 +39,10 @@
  */
 package org.glassfish.security.services.spi.authorization;
 
+import java.util.List;
+
+import org.glassfish.security.services.api.authorization.AzAttributeResolver;
+import org.glassfish.security.services.api.authorization.AzEnvironment;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.authorization.RoleMappingService;
@@ -61,14 +65,28 @@ public interface RoleMappingProvider extends SecurityProvider {
 	 * Determine whether the user (<code>AzSubject</code>) has the indicated role
 	 * for a given resource (<code>AzResource</code>) and application context.
 	 *
+	 * @param appContext The application context for the query (can be null).
+	 * @param subject The target <code>Subject</code>.
+	 * @param resource The <code>URI</code> resource for the query.
+	 * @param role The target role.
+	 * @param environment The attributes collection representing the environment.
+	 * @param attributeResolvers The ordered list of attribute resolvers.
+	 *
 	 * @see {@link org.glassfish.security.services.api.authorization.RoleMappingService#isUserInRole(String, AzSubject, AzResource, String)}
 	 */
-	public boolean isUserInRole(String appContext, AzSubject subject, AzResource resource, String role);
+	public boolean isUserInRole(String appContext,
+			AzSubject subject,
+			AzResource resource,
+			String role,
+			AzEnvironment environment,
+			List<AzAttributeResolver> attributeResolvers);
 
 	/**
 	 * Find an existing <code>RoleDeploymentContext</code>, or create a new one if one does not
 	 * already exist for the specified application context. 
 	 *
+	 * @param appContext The application context for which the <code>RoleDeploymentContext</code> is desired.
+	 * 
 	 * @see {@link org.glassfish.security.services.api.authorization.RoleMappingService#findOrCreateDeploymentContext(String)}
 	 */
 	public RoleMappingService.RoleDeploymentContext findOrCreateDeploymentContext(String appContext);
