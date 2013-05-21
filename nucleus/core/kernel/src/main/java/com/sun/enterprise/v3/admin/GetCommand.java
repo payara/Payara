@@ -47,6 +47,7 @@ import com.sun.enterprise.config.modularity.GetSetModularityHelper;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
@@ -210,15 +211,10 @@ public class GetCommand extends V2DottedNameSupport implements AdminCommand,
 
     private void getMonitorAttributes(AdminCommandContext ctxt) {
         
-        String s = "Get Command: " + mr.toString();
-
-        if (Boolean.parseBoolean(System.getenv("AS_DEBUG"))) {
-            KernelLoggerInfo.getLogger().info(s);
+        Logger l = KernelLoggerInfo.getLogger();
+        if (l.isLoggable(Level.FINE)) {
+            l.log(Level.FINE, "Get Command: {0}", mr.toString());
         }
-        else {
-            KernelLoggerInfo.getLogger().fine(s);
-        }
-
         mr.execute();
     }
     
