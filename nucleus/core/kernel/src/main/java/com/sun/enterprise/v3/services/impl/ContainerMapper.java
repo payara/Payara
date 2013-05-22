@@ -46,6 +46,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.appserv.server.util.Version;
+import java.io.CharConversionException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.glassfish.api.container.Adapter;
 import org.glassfish.api.container.Sniffer;
 import org.glassfish.api.deployment.ApplicationContainer;
@@ -84,7 +87,6 @@ public class ContainerMapper extends StaticHttpHandler {
     private Mapper mapper;
     private final GrizzlyListener listener;
     private String defaultHostName = "server";
-//    private final UDecoder urlDecoder;
     private final GrizzlyService grizzlyService;
     protected final static Note<MappingData> MAPPING_DATA =
             Request.<MappingData>createNote("MappingData");
@@ -92,7 +94,9 @@ public class ContainerMapper extends StaticHttpHandler {
     // (@see org.apache.catalina.connector.CoyoteAdapter)
     private final static Note<DataChunk> DATA_CHUNK =
             Request.<DataChunk>createNote("DataChunk");
+    private final ReentrantReadWriteLock mapperLock;
 
+    
     private String version;
     private static final AfterServiceListener afterServiceListener =
             new AfterServiceListenerImpl();
@@ -104,8 +108,8 @@ public class ContainerMapper extends StaticHttpHandler {
     public ContainerMapper(final GrizzlyService service,
             final GrizzlyListener grizzlyListener) {
         listener = grizzlyListener;
-//        urlDecoder = embeddedHttp.getUrlDecoder();
         grizzlyService = service;
+        mapperLock = service.obtainMapperLock();
 
         version = System.getProperty("product.name");
         if (version == null) {
@@ -118,8 +122,13 @@ public class ContainerMapper extends StaticHttpHandler {
      *
      * @param defaultHost
      */
-    protected synchronized void setDefaultHost(String defaultHost) {
-        defaultHostName = defaultHost;
+    protected void setDefaultHost(String defaultHost) {
+        mapperLock.writeLock().lock();
+        try {
+            defaultHostName = defaultHost;
+        } finally {
+            mapperLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -134,33 +143,21 @@ public class ContainerMapper extends StaticHttpHandler {
     /**
      * Configure the {@link V3Mapper}.
      */
-    protected synchronized void configureMapper() {
-        mapper.setDefaultHostName(defaultHostName);
-        mapper.addHost(defaultHostName, new String[]{}, null);
-        mapper.addContext(defaultHostName, ROOT,
-                new ContextRootInfo(this, null),
-                new String[]{"index.html", "index.htm"}, null);
-        // Container deployed have the right to override the default setting.
-        Mapper.setAllowReplacement(true);
+    protected void configureMapper() {
+        mapperLock.writeLock().lock();
+
+        try {
+            mapper.setDefaultHostName(defaultHostName);
+            mapper.addHost(defaultHostName, new String[]{}, null);
+            mapper.addContext(defaultHostName, ROOT,
+                    new ContextRootInfo(this, null),
+                    new String[]{"index.html", "index.htm"}, null);
+            // Container deployed have the right to override the default setting.
+            Mapper.setAllowReplacement(true);
+        } finally {
+            mapperLock.writeLock().unlock();
+        }
     }
-    
-//    private static void dispatch(HttpHandler adapter,
-//            ClassLoader cl,
-//            Request req,
-//            Response res) throws Exception {
-//        ClassLoader currentCL = Thread.currentThread().getContextClassLoader();
-//        try {
-//            if (cl==null) {
-//                cl = adapter.getClass().getClassLoader();
-//            }
-//            Thread.currentThread().setContextClassLoader(cl);
-//
-//            adapter.service(req, res);
-//        }
-//        finally {
-//            Thread.currentThread().setContextClassLoader(currentCL);
-//        }
-//    }
 
     /**
      * Map the request to its associated {@link Adapter}.
@@ -172,89 +169,11 @@ public class ContainerMapper extends StaticHttpHandler {
      */
     @Override
     public void service(final Request request, final Response response) throws Exception {
-        MappingData mappingData;
         try {
-
             request.addAfterServiceListener(afterServiceListener);
-
-            // If we have only one Adapter deployed, invoke that Adapter
-            // directly.
-            // TODO: Not sure that will works with JRuby.
-            if (!mapMultipleAdapter && mapper instanceof V3Mapper) {
-                // Remove the MappingData as we might delegate the request
-                // to be serviced directly by the WebContainer
-                final HttpHandler httpHandler = ((V3Mapper) mapper).getHttpHandler();
-                if (httpHandler != null) {
-                    request.setNote(MAPPING_DATA, null);
-//                    req.setNote(MAPPED_ADAPTER, a);
-                    httpHandler.service(request, response);
-                    return;
-                }
-            }
-
-            final DataChunk decodedURI = request.getRequest()
-                    .getRequestURIRef().getDecodedRequestURIBC(isAllowEncodedSlash());
-
-            mappingData = request.getNote(MAPPING_DATA);
-            if (mappingData == null) {
-                mappingData = new MappingData();
-                request.setNote(MAPPING_DATA, mappingData);
-            } else {
-                mappingData.recycle();
-            }
-            HttpHandler httpService;
-
-            final CharChunk decodedURICC = decodedURI.getCharChunk();
-            final int semicolon = decodedURICC.indexOf(';', 0);
-
-            // Map the request without any trailling.
-            httpService = mapUriWithSemicolon(request, decodedURI, semicolon, mappingData);
-            if (httpService == null || httpService instanceof ContainerMapper) {
-                String ext = decodedURI.toString();
-                String type = "";
-                if (ext.lastIndexOf(".") > 0) {
-                    ext = "*" + ext.substring(ext.lastIndexOf("."));
-                    type = ext.substring(ext.lastIndexOf(".") + 1);
-                }
-
-                if (!MimeType.contains(type) && !"/".equals(ext)) {
-                    initializeFileURLPattern(ext);
-                    mappingData.recycle();
-                    httpService = mapUriWithSemicolon(request, decodedURI, semicolon, mappingData);
-                } else {
-                    super.service(request, response);
-                    return;
-                }
-            }
-
-            if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Request: {0} was mapped to Adapter: {1}",
-                        new Object[]{decodedURI.toString(), httpService});
-            }
-
-            // The Adapter used for servicing static pages doesn't decode the
-            // request by default, hence do not pass the undecoded request.
-            if (httpService == null || httpService instanceof ContainerMapper) {
-                super.service(request, response);
-            } else {
-//                req.setNote(MAPPED_ADAPTER, adapter);
-
-//                ContextRootInfo contextRootInfo = null;
-//                if (mappingData.context != null && mappingData.context instanceof ContextRootInfo) {
-//                    contextRootInfo = (ContextRootInfo) mappingData.context;
-//                }
-
-                //if (contextRootInfo == null) {
-                    httpService.service(request, response);
-//                } else {
-//                    ClassLoader cl = null;
-//                    if (contextRootInfo.getContainer() instanceof ApplicationContainer) {
-//                        cl = ((ApplicationContainer) contextRootInfo.getContainer()).getClassLoader();
-//                    }
-//
-//                    dispatch(httpService, cl, request, response);
-//                }
-            }
+            
+            final Callable handler = lookupHandler(request, response);
+            handler.call();
         } catch (Exception ex) {
             try {
                 response.setStatus(500);
@@ -271,7 +190,85 @@ public class ContainerMapper extends StaticHttpHandler {
         }
     }
 
-    public synchronized void initializeFileURLPattern(String ext) {
+    private Callable lookupHandler(final Request request,
+            final Response response) throws CharConversionException, Exception {
+        MappingData mappingData;
+        
+        mapperLock.readLock().lock();
+        
+        try {
+            // If we have only one Adapter deployed, invoke that Adapter directly.
+            if (!mapMultipleAdapter && mapper instanceof V3Mapper) {
+                // Remove the MappingData as we might delegate the request
+                // to be serviced directly by the WebContainer
+                final HttpHandler httpHandler = ((V3Mapper) mapper).getHttpHandler();
+                if (httpHandler != null) {
+                    request.setNote(MAPPING_DATA, null);
+//                    httpHandler.service(request, response);
+//                    return;
+                    return new HttpHandlerCallable(httpHandler,
+                            request, response);
+                }
+            }
+
+            final DataChunk decodedURI = request.getRequest()
+                    .getRequestURIRef().getDecodedRequestURIBC(isAllowEncodedSlash());
+
+            mappingData = request.getNote(MAPPING_DATA);
+            if (mappingData == null) {
+                mappingData = new MappingData();
+                request.setNote(MAPPING_DATA, mappingData);
+            } else {
+                mappingData.recycle();
+            }
+            HttpHandler httpHandler;
+
+            final CharChunk decodedURICC = decodedURI.getCharChunk();
+            final int semicolon = decodedURICC.indexOf(';', 0);
+
+            // Map the request without any trailling.
+            httpHandler = mapUriWithSemicolon(request, decodedURI,
+                    semicolon, mappingData);
+            if (httpHandler == null || httpHandler instanceof ContainerMapper) {
+                String ext = decodedURI.toString();
+                String type = "";
+                if (ext.lastIndexOf(".") > 0) {
+                    ext = "*" + ext.substring(ext.lastIndexOf("."));
+                    type = ext.substring(ext.lastIndexOf(".") + 1);
+                }
+
+                if (!MimeType.contains(type) && !"/".equals(ext)) {
+                    initializeFileURLPattern(ext);
+                    mappingData.recycle();
+                    httpHandler = mapUriWithSemicolon(request, decodedURI,
+                            semicolon, mappingData);
+                } else {
+//                    super.service(request, response);
+//                    return;
+                    return new SuperCallable(request, response);
+                }
+            }
+
+            if (LOGGER.isLoggable(Level.FINE)) {
+                LOGGER.log(Level.FINE, "Request: {0} was mapped to Adapter: {1}",
+                        new Object[]{decodedURI.toString(), httpHandler});
+            }
+
+            // The Adapter used for servicing static pages doesn't decode the
+            // request by default, hence do not pass the undecoded request.
+            if (httpHandler == null || httpHandler instanceof ContainerMapper) {
+//                super.service(request, response);
+                return new SuperCallable(request, response);
+            } else {
+//                httpHandler.service(request, response);
+                return new HttpHandlerCallable(httpHandler, request, response);
+            }
+        } finally {
+            mapperLock.readLock().unlock();
+        }         
+    }
+    
+    private void initializeFileURLPattern(String ext) {
         for (Sniffer sniffer : grizzlyService.getHabitat().<Sniffer>getAllServices(Sniffer.class)) {
             boolean match = false;
             if (sniffer.getURLPatterns() != null) {
@@ -283,18 +280,26 @@ public class ContainerMapper extends StaticHttpHandler {
                     }
                 }
 
-                HttpHandler adapter;
+                HttpHandler httpHandler;
                 if (match) {
-                    adapter = grizzlyService.getHabitat().getService(SnifferAdapter.class);
-                    ((SnifferAdapter) adapter).initialize(sniffer, this);
-                    ContextRootInfo c = new ContextRootInfo(adapter, null);
+                    httpHandler = grizzlyService.getHabitat().getService(SnifferAdapter.class);
+                    ((SnifferAdapter) httpHandler).initialize(sniffer, this);
+                    ContextRootInfo c = new ContextRootInfo(httpHandler, null);
 
-                    for (String pattern : sniffer.getURLPatterns()) {
-                        for (String host : grizzlyService.hosts) {
-                            mapper.addWrapper(host, ROOT, pattern, c,
-                                    "*.jsp".equals(pattern) || "*.jspx".equals(pattern));
+                    mapperLock.readLock().unlock();
+                    mapperLock.writeLock().lock();
+                    try {
+                        for (String pattern : sniffer.getURLPatterns()) {
+                            for (String host : grizzlyService.hosts) {
+                                mapper.addWrapper(host, ROOT, pattern, c,
+                                        "*.jsp".equals(pattern) || "*.jspx".equals(pattern));
+                            }
                         }
+                    } finally {
+                        mapperLock.readLock().lock();
+                        mapperLock.writeLock().unlock();
                     }
+                    
                     return;
                 }
             }
@@ -313,36 +318,43 @@ public class ContainerMapper extends StaticHttpHandler {
      * @return
      * @throws Exception
      */
-    final HttpHandler mapUriWithSemicolon(final Request req, final DataChunk decodedURI,
-            int semicolonPos, final MappingData mappingData) throws Exception {
+    final HttpHandler mapUriWithSemicolon(final Request req,
+            final DataChunk decodedURI, int semicolonPos,
+            final MappingData mappingData) throws Exception {
 
-        final CharChunk charChunk = decodedURI.getCharChunk();
-        final int oldStart = charChunk.getStart();
-        final int oldEnd = charChunk.getEnd();
-
-        if (semicolonPos == 0) {
-            semicolonPos = decodedURI.indexOf(';', 0);
-        }
-
-        DataChunk localDecodedURI = decodedURI;
-        if (semicolonPos >= 0) {
-            charChunk.setEnd(semicolonPos);
-            // duplicate the URI path, because Mapper may corrupt the attributes,
-            // which follow the path
-            localDecodedURI = req.getNote(DATA_CHUNK);
-            if (localDecodedURI == null) {
-                localDecodedURI = DataChunk.newInstance();
-                req.setNote(DATA_CHUNK, localDecodedURI);
-            }
-            localDecodedURI.duplicate(decodedURI);
-        }
-
+        mapperLock.readLock().lock();
 
         try {
-            return map(req, localDecodedURI, mappingData);
+            final CharChunk charChunk = decodedURI.getCharChunk();
+            final int oldStart = charChunk.getStart();
+            final int oldEnd = charChunk.getEnd();
+
+            if (semicolonPos == 0) {
+                semicolonPos = decodedURI.indexOf(';', 0);
+            }
+
+            DataChunk localDecodedURI = decodedURI;
+            if (semicolonPos >= 0) {
+                charChunk.setEnd(semicolonPos);
+                // duplicate the URI path, because Mapper may corrupt the attributes,
+                // which follow the path
+                localDecodedURI = req.getNote(DATA_CHUNK);
+                if (localDecodedURI == null) {
+                    localDecodedURI = DataChunk.newInstance();
+                    req.setNote(DATA_CHUNK, localDecodedURI);
+                }
+                localDecodedURI.duplicate(decodedURI);
+            }
+
+
+            try {
+                return map(req, localDecodedURI, mappingData);
+            } finally {
+                charChunk.setStart(oldStart);
+                charChunk.setEnd(oldEnd);
+            }
         } finally {
-            charChunk.setStart(oldStart);
-            charChunk.setEnd(oldEnd);
+            mapperLock.readLock().unlock();
         }
     }
 
@@ -367,37 +379,13 @@ public class ContainerMapper extends StaticHttpHandler {
                 contextRootInfo = (ContextRootInfo) mappingData.context;
             }
             return contextRootInfo.getHttpHandler();
-        } else if (mappingData.context != null
-                && "com.sun.enterprise.web.WebModule".equals(mappingData.context.getClass().getName())) {
+        } else if (mappingData.context != null &&
+                "com.sun.enterprise.web.WebModule".equals(mappingData.context.getClass().getName())) {
             return ((V3Mapper) mapper).getHttpHandler();
         }
         return null;
     }
 
-    /**
-     * Recycle the mapped {@link Adapter} and this instance.
-     *
-     * @param req
-     * @param res
-     *
-     * @throws Exception
-     */
-//    @Override
-//    public void afterService(Request req, Response res) throws Exception {
-//        MappingData mappingData = (MappingData) req.getNote(MAPPING_DATA);
-//        try {
-//            HttpHandler adapter = (HttpHandler) req.getNote(MAPPED_ADAPTER);
-//            if (adapter != null) {
-//                adapter.afterService(req, res);
-//            }
-//            super.afterService(req, res);
-//        } finally {
-//            req.setNote(MAPPED_ADAPTER, null);
-//            if (mappingData != null){
-//                mappingData.recycle();
-//            }
-//        }
-//    }
     /**
      * Return an error page customized for GlassFish v3.
      *
@@ -434,18 +422,8 @@ public class ContainerMapper extends StaticHttpHandler {
             LOGGER.log(Level.FINE, "MAPPER({0}) REGISTER contextRoot: {1} adapter: {2} container: {3} port: {4}",
                     new Object[]{this, contextRoot, httpService, container, listener.getPort()});
         }
-        /*
-         * In the case of CoyoteAdapter, return, because the context will
-         * have already been registered with the mapper by the connector's
-         * MapperListener, in response to a JMX event
-         */
-//        if ("org.apache.catalina.connector.CoyoteAdapter".equals(httpService.getClass().getName())) {
-//            return;
-//        }
 
         mapMultipleAdapter = true;
-//        String ctx = getContextPath(contextRoot);
-//        String wrapper = getWrapperPath(ctx, contextRoot);
         ContextRootInfo c = new ContextRootInfo(httpService, container);
         for (String host : vs) {
             mapper.addContext(host, contextRoot, c, new String[0], null);
@@ -457,47 +435,6 @@ public class ContainerMapper extends StaticHttpHandler {
         }
     }
 
-    /*
-    private String getWrapperPath(String ctx, String mapping) {
-    if (mapping.indexOf("*.") > 0) {
-    return mapping.substring(mapping.lastIndexOf("/") + 1);
-    } else if (!"".equals(ctx)) {
-    return mapping.substring(ctx.length());
-    } else {
-    return mapping;
-    }
-    }
-
-    private String getContextPath(String mapping) {
-    String ctx;
-    int slash = mapping.indexOf("/", 1);
-    if (slash != -1) {
-    ctx = mapping.substring(0, slash);
-    } else {
-    ctx = mapping;
-    }
-
-    if (ctx.startsWith("/*.") ||ctx.startsWith("*.") ) {
-    if (ctx.indexOf("/") == ctx.lastIndexOf("/")){
-    ctx = "";
-    } else {
-    ctx = ctx.substring(1);
-    }
-    }
-
-
-    if (ctx.startsWith("/*") || ctx.startsWith("*")) {
-    ctx = "";
-    }
-
-    // Special case for the root context
-    if ("/".equals(ctx)) {
-    ctx = "";
-    }
-
-    return ctx;
-    }
-     */
     public void unregister(String contextRoot) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "MAPPER ({0}) UNREGISTER contextRoot: {1}",
@@ -512,19 +449,8 @@ public class ContainerMapper extends StaticHttpHandler {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "MAPPER({0}) REGISTER endpoint: {1}", endpoint);
         }
-        /*
-         * In the case of CoyoteAdapter, return, because the context will
-         * have already been registered with the mapper by the connector's
-         * MapperListener, in response to a JMX event
-         */
-//        if ("org.apache.catalina.connector.CoyoteAdapter".equals(
-//                endpoint.getEndpointHandler().getClass().getName())) {
-//            return;
-//        }
 
         mapMultipleAdapter = true;
-//        String ctx = getContextPath(contextRoot);
-//        String wrapper = getWrapperPath(ctx, contextRoot);
         final String contextRoot = endpoint.getContextRoot();
         final Collection<String> vs = endpoint.getVirtualServers();
         
@@ -554,7 +480,40 @@ public class ContainerMapper extends StaticHttpHandler {
         unregister(endpoint.getContextRoot());
     }
 
+    private final static class HttpHandlerCallable implements Callable {
+        private final HttpHandler httpHandler;
+        private final Request request;
+        private final Response response;
 
+        public HttpHandlerCallable(final HttpHandler httpHandler,
+                final Request request, final Response response) {
+            this.httpHandler = httpHandler;
+            this.request = request;
+            this.response = response;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            httpHandler.service(request, response);
+            return null;
+        }
+    }
+
+    private final class SuperCallable implements Callable {
+        final Request req;
+        final Response res;
+
+        public SuperCallable(Request req, Response res) {
+            this.req = req;
+            this.res = res;
+        }
+
+        @Override
+        public Object call() throws Exception {
+            ContainerMapper.super.service(req, res);
+            return null;
+        }
+    }
     
     private static final class AfterServiceListenerImpl implements AfterServiceListener {
 

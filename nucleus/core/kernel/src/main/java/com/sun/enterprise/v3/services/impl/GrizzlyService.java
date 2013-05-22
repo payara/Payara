@@ -54,13 +54,16 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -127,9 +130,12 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
 
     private static final String NETWORK_CONFIG_PREFIX = "";
 
-    private final ConcurrentLinkedQueue<MapperUpdateListener> mapperUpdateListeners =
-            new ConcurrentLinkedQueue<MapperUpdateListener>();
+    private final Set<MapperUpdateListener> mapperUpdateListeners =
+            Collections.newSetFromMap(
+            new ConcurrentHashMap<MapperUpdateListener, Boolean>());
 
+    private final ReentrantReadWriteLock mapperLock = new ReentrantReadWriteLock();
+        
     private DynamicConfigListener configListener;
 
     public GrizzlyService() {
@@ -347,6 +353,14 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         }
     }
 
+    /**
+     * Returns HTTP {@link Mapper} lock to prevent concurrent access to a
+     * {@link Mapper} object.
+     */
+    public ReentrantReadWriteLock obtainMapperLock() {
+        return mapperLock;
+    }
+    
     /**
      * Gets the logger.
      *
