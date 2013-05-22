@@ -552,4 +552,12 @@ public final class LogUtils {
             level = "WARNING")
     public static final String DESTORY_ON_HANDLER_FAILED = LOGMSG_PREFIX + "-00120";
 
+    @LogMessageInfo(
+            message = "Module type '{0}' is not supported.",
+            comment = "{0} - module type name",
+            level = "SEVERE",
+            cause = "Deployed module is not a web application nor ejb module.",
+            action = "Make sure web service is implemented in EJB module or Web Application.")
+    public static final String UNSUPPORTED_MODULE_TYPE = LOGMSG_PREFIX + "-00121";
+
 }

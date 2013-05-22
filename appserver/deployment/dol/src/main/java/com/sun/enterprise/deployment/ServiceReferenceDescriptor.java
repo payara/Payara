@@ -291,7 +291,7 @@ public class ServiceReferenceDescriptor extends EnvironmentProperty
     }
 
     public boolean hasWsdlFile() {
-        return (wsdlFileUri != null);
+        return (wsdlFileUri != null && wsdlFileUri.length() > 0);
     }
 
     /**

@@ -623,14 +623,24 @@ public class WebServicesDeployer extends JavaEEDeployer<WebServicesContainer,Web
             if(wsUtil.isJAXWSbasedService(next) && (!next.hasFilePublishing())) {
                 for(WebServiceEndpoint wsep : next.getEndpoints()) {
                     URL finalWsdlURL = wsep.composeFinalWsdlUrl(wsUtil.getWebServerInfoForDAS().getWebServerRootURL(wsep.isSecure()));
-                    if (webBundleDesc!= null) {
-                        //if there's service-ref to this service update its
-                        // wsdl-file value to point to the just exposed URL
-                        for (ServiceReferenceDescriptor srd: webBundleDesc.getServiceReferenceDescriptors()) {
-                            if (srd.getServiceName().equals(wsep.getServiceName())
-                                    && srd.getServiceNamespaceUri().equals(wsep.getWsdlService().getNamespaceURI())) {
-                                srd.setWsdlFileUri(finalWsdlURL.toExternalForm() + "?WSDL");
-                            }
+                    Set<ServiceReferenceDescriptor> serviceRefs = new HashSet<ServiceReferenceDescriptor>();
+                    if (webBundleDesc != null) {
+                        serviceRefs = webBundleDesc.getServiceReferenceDescriptors();
+                    } else {
+                        EjbBundleDescriptor ejbBundleDesc = dc.getModuleMetaData(EjbBundleDescriptor.class);
+                        if (ejbBundleDesc != null) {
+                            serviceRefs = ejbBundleDesc.getEjbServiceReferenceDescriptors();
+                        } else {
+                            logger.log(Level.SEVERE, LogUtils.UNSUPPORTED_MODULE_TYPE,
+                                    DOLUtils.getCurrentBundleForContext(dc).getModuleType());
+                        }
+                    }
+                    //if there's service-ref to this service update its
+                    // wsdl-file value to point to the just exposed URL
+                    for (ServiceReferenceDescriptor srd : serviceRefs) {
+                        if (srd.getServiceName().equals(wsep.getServiceName())
+                                && srd.getServiceNamespaceUri().equals(wsep.getWsdlService().getNamespaceURI())) {
+                            srd.setWsdlFileUri(finalWsdlURL.toExternalForm() + "?WSDL");
                         }
                     }
                 }
