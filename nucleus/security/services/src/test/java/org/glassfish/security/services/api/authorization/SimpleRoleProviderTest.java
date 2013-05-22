@@ -72,7 +72,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 		boolean result = simpleRoleProvider.isUserInRole(null,
 				authorizationService.makeAzSubject(adminSubject()),
 				authorizationService.makeAzResource(URI.create("admin://my/respath")),
-				"admin", null, null);
+				"Admin", null, null);
 		Assert.assertEquals(true, result);
 	}
 
@@ -89,7 +89,7 @@ public class SimpleRoleProviderTest extends HK2Runner {
 		boolean result = simpleRoleProvider.isUserInRole(null,
 				authorizationService.makeAzSubject(nonAdminSubject()),
 				authorizationService.makeAzResource(URI.create("admin://negative")),
-				"admin", null, null);
+				"Admin", null, null);
 		Assert.assertEquals(false, result);
 	}
 

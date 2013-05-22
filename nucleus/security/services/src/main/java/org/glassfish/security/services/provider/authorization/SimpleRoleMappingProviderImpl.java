@@ -67,7 +67,7 @@ public class SimpleRoleMappingProviderImpl implements RoleMappingProvider {
 	private static final Logger _logger =
 			Logger.getLogger(ServiceLogging.SEC_PROV_LOGGER,ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
 
-	private static final String ADMIN = "admin";
+	private static final String ADMIN = "Admin";
 
 	private RoleMappingProviderConfig cfg; 
 	private boolean deployable;

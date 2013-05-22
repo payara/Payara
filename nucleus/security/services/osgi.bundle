@@ -46,6 +46,7 @@
                         org.glassfish.security.services.api.context; \
                         org.glassfish.security.services.spi; \
                         org.glassfish.security.services.spi.authentication; \
+                        org.glassfish.security.services.spi.authorization; \
                         org.glassfish.security.services.common; \
                         org.glassfish.security.services.commands; \
                         org.glassfish.security.services.impl; \
