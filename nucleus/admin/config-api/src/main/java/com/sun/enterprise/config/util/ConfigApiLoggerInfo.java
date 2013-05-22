@@ -859,6 +859,37 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String transactionException = LOGMSG_PREFIX + "-00098";
-    //Remaining packages: The GenericCrudCommand and below in support package
-    //Entire modularity package
+    
+    @LogMessageInfo(
+            message = "Exception while persisting domain.xml, changes will not be available on server restart.",
+            cause = "unknown",
+            action = "unknown",
+            publish = true,
+            level = "SEVERE")
+    public final static String glassFishDocumentIOException = LOGMSG_PREFIX + "-00099";
+
+    @LogMessageInfo(
+            message = "Exception while persisting domain.xml, file a bug at http://glassfish.java.net",
+            cause = "unknown",
+            action = "unknown",
+            publish = true,
+            level = "SEVERE")
+    public final static String glassFishDocumentXmlException = LOGMSG_PREFIX + "-00100";
+
+    @LogMessageInfo(
+            message = "config.getHttpService() null for config '{0}'",
+            cause = "unknown",
+            action = "unknown",
+            publish = true,
+            level = "SEVERE")
+    public final static String nullHttpService = LOGMSG_PREFIX + "-00101";
+
+    @LogMessageInfo(
+            message = "Failure while upgrading domain.xml",
+            cause = "unknown",
+            action = "unknown",
+            publish = true,
+            level = "SEVERE")
+    public final static String failUpgradeDomain = LOGMSG_PREFIX + "-00102";
+    
 }

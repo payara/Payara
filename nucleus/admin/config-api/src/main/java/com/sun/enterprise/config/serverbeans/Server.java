@@ -53,7 +53,6 @@ import com.sun.enterprise.config.util.PortManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.util.net.NetUtils;
-import com.sun.logging.LogDomains;
 import java.io.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -86,6 +85,7 @@ import javax.validation.constraints.Pattern;
 
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.logging.LogHelper;
 
 /**
  *
@@ -793,7 +793,7 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
 
         @Override
         public void decorate(AdminCommandContext context, Servers parent, final Server child) throws PropertyVetoException, TransactionFailure {
-            final Logger logger = LogDomains.getLogger(Server.class, LogDomains.ADMIN_LOGGER);
+            final Logger logger = ConfigApiLoggerInfo.getLogger();
             LocalStringManagerImpl localStrings = new LocalStringManagerImpl(Server.class);
             final ActionReport report = context.getActionReport();
             Transaction t = Transaction.getTransaction(parent);
@@ -839,9 +839,8 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                     }
                 }
                 catch (TransactionFailure ex) {
-                    logger.log(Level.SEVERE,
-                            localStrings.getLocalString("deleteConfigFailed",
-                            "Unable to remove config {0}", instanceConfig), ex);
+                	LogHelper.log(logger, Level.SEVERE, 
+                			ConfigApiLoggerInfo.deleteConfigFailed, ex, instanceConfig);
                     String msg = ex.getMessage() != null ? ex.getMessage()
                             : localStrings.getLocalString("deleteConfigFailed",
                             "Unable to remove config {0}", instanceConfig);
@@ -871,7 +870,8 @@ public interface Server extends ConfigBeanProxy, PropertyBag, Named, SystemPrope
                         }
                     }
                     catch (TransactionFailure ex) {
-                        logger.log(Level.SEVERE,ConfigApiLoggerInfo.deleteServerRefFailed,new Object[]{ instanceName, cluster.getName(), ex});
+                        LogHelper.log(logger, Level.SEVERE,ConfigApiLoggerInfo.deleteServerRefFailed,
+                        		ex, instanceName, cluster.getName());
                         String msg = ex.getMessage() != null ? ex.getMessage()
                                 : localStrings.getLocalString("deleteServerRefFailed",
                                 "Unable to remove server-ref {0} from cluster {1}", instanceName, cluster.getName());

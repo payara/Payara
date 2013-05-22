@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,8 +53,8 @@ import java.util.logging.Level;
 import java.util.concurrent.ExecutorService;
 import java.io.IOException;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.appserv.server.util.Version;
 
 /**
@@ -65,7 +65,7 @@ import com.sun.appserv.server.util.Version;
  */
 public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
 
-    Logger logger = LogDomains.getLogger(GlassFishDocument.class, LogDomains.CORE_LOGGER);
+    Logger logger = ConfigApiLoggerInfo.getLogger();
 
     public GlassFishDocument(final ServiceLocator habitat, final ExecutorService executor) {
         super(habitat);
@@ -85,13 +85,11 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                         }
                         pers.save(doc);
                     } catch (IOException e) {
-                        logger.log(Level.SEVERE, "GlassFishDocument.IOException",
-                                new String[] { e.getMessage() });
-                        logger.log(Level.FINE, e.getMessage(), e);
+                        logger.log(Level.SEVERE, 
+                        	ConfigApiLoggerInfo.glassFishDocumentIOException,e);
                     } catch (XMLStreamException e) {
-                        logger.log(Level.SEVERE, "GlassFishDocument.XMLException",
-                                new String[] { e.getMessage() });
-                        logger.log(Level.SEVERE, e.getMessage(), e);
+                        logger.log(Level.SEVERE, 
+                        	ConfigApiLoggerInfo.glassFishDocumentXmlException,e);
                     }
                 }
             }

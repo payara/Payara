@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,8 +54,8 @@ import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.ThreadPools;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
 import org.glassfish.grizzly.config.dom.FileCache;
 import org.glassfish.grizzly.config.dom.Http;
@@ -91,7 +91,7 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
     private static final String ASADMIN_LISTENER = "admin-listener";
     private static final String ASADMIN_VIRTUAL_SERVER = "__asadmin";
 
-    static final Logger logger = LogDomains.getLogger(GrizzlyConfigSchemaMigrator.class, LogDomains.ADMIN_LOGGER);
+    static final Logger logger = ConfigApiLoggerInfo.getLogger();
     
     public void postConstruct() {
         for (Config config : configs.getConfig()) {
@@ -109,13 +109,13 @@ public class GrizzlyConfigSchemaMigrator implements ConfigurationUpgrade, PostCo
                         currentConfig.getHttpService());
                 } else {
                     // this only happens during some unit tests
-                    logger.log(Level.WARNING, "GrizzlyConfigSchemaMigrator.nullHttpService",
+                    logger.log(Level.WARNING, ConfigApiLoggerInfo.nullHttpService,
                             new String[] { currentConfig.getName() });
                 }
                 promoteSystemProperties();
                 addAsadminProtocol(currentConfig.getNetworkConfig());
             } catch (TransactionFailure tf) {
-                logger.log(Level.SEVERE, "GrizzlyConfigSchemaMigrator.failUpgradeDomain", tf);
+                logger.log(Level.SEVERE, ConfigApiLoggerInfo.failUpgradeDomain, tf);
                 throw new RuntimeException(tf);
             }
         }

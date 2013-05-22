@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,8 +40,8 @@
 
 package org.glassfish.config.support;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModelProvider;
@@ -95,7 +95,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
     @Inject @Self
     private ActiveDescriptor<?> myself;
 
-    final protected static Logger logger = LogDomains.getLogger(GenericCrudCommand.class, LogDomains.ADMIN_LOGGER);
+    final protected static Logger logger = ConfigApiLoggerInfo.getLogger();
     final protected static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(GenericCrudCommand.class);
 
     protected String commandName;
@@ -156,8 +156,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     parentTypeName, e.getMessage());
-            Object[] params = new Object[] { parentTypeName, e.getMessage()};
-            logger.log(Level.SEVERE, "GenericCrudCommand.configbean_not_found",params);
+            logger.log(Level.SEVERE, msg, e);
             throw new RuntimeException(msg, e);
         }
 
@@ -185,8 +184,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     parentTypeName, methodName);
-            Object[] params = new Object[] { parentTypeName, methodName};
-            logger.log(Level.SEVERE,"GenericCrudCommand.configbean_not_found", params);
+            logger.log(Level.SEVERE,msg);
             throw new RuntimeException(msg);
         }
         
@@ -199,8 +197,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     targetTypeName, e.getMessage());
-            Object[] params = new Object[] { targetTypeName, e.getMessage()};
-            logger.log(Level.SEVERE, "GenericCrudCommand.configbean_not_found",params);
+            logger.log(Level.SEVERE, msg, e);
             throw new RuntimeException(msg, e);
         }
     }
@@ -245,8 +242,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     "GenericCrudCommand.invalid_type",
                                     "Invalid annotated type {0} passed to InjectionResolver:getValue()",
                                     annotated.getClass().toString());
-                            Object[] params = new Object[] { annotated.getClass().toString()};
-                            logger.log(Level.SEVERE, "GenericCrudCommand.invalid_type", params);
+                            logger.log(Level.SEVERE, msg);
                             throw new MultiException(new IllegalArgumentException(msg));
                         }
                     } catch (IllegalAccessException e) {
@@ -254,16 +250,14 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.invocation_failure",
                                 "Failure {0} while getting List<?> values from component",
                                 e.getMessage());
-                        Object[] params = new Object[] { e.getMessage()};
-                        logger.log(Level.SEVERE, "GenericCrudCommand.invocation_failure", params);
+                        logger.log(Level.SEVERE,msg);
                         throw new MultiException(new IllegalStateException(msg, e));
                     } catch (InvocationTargetException e) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.invocation_failure",
                                 "Failure {0} while getting List<?> values from component",
                                 e.getMessage());
-                        Object[] params = new Object[] { e.getMessage()};
-                        logger.log(Level.SEVERE, "GenericCrudCommand.invocation_failure", params);
+                        logger.log(Level.SEVERE, msg);
                         throw new MultiException(new IllegalStateException(msg, e));
                     }
                     Object value = delegate.getValue(component, annotated, genericType, type);
@@ -293,8 +287,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     "GenericCrudCommand.nongeneric_type",
                                     "The List type returned by {0} must be a generic type",
                                     annotated.toString());
-                            Object[] params = new Object[] {annotated.toString()};
-                            logger.log(Level.SEVERE, "GenericCrudCommand.nongeneric_type", params);
+                            logger.log(Level.SEVERE, msg);
                             throw new MultiException(new IllegalArgumentException(msg));
                     }
                     if (!ConfigBeanProxy.class.isAssignableFrom(itemType)) {
@@ -302,8 +295,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.wrong_type",
                                 "The generic type {0} is not supported, only List<? extends ConfigBeanProxy> is",
                                 annotated.toString());
-                        Object[] params = new Object[] { annotated.toString()};
-                        logger.log(Level.SEVERE, "GenericCrudCommand.wrong_type", params);
+                        logger.log(Level.SEVERE, msg);
                         throw new MultiException(new IllegalArgumentException(msg));
                         
                     }
@@ -321,8 +313,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.introspection_failure",
                                 "Failure {0} while instrospecting {1} to find all getters and setters",
                                 e.getMessage(), itemType.getName());
-                        Object[] params = new Object[] { e.getMessage(), itemType.getName()};
-                        logger.log(Level.SEVERE, "GenericCrudCommand.introspection_failure", params);
+                        logger.log(Level.SEVERE, msg);
                         throw new MultiException(new IllegalStateException(msg, e));
                     }
                     for (final Map.Entry<Object, Object> entry : props.entrySet()) {
@@ -372,8 +363,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.transactionException",
                                 "Transaction exception {0} while injecting {1}",
                                 transactionFailure.getMessage(), itemType);
-                            Object[] params = new Object[] { transactionFailure.getMessage(), itemType};
-                            logger.log(Level.SEVERE, "GenericCrudCommand.transactionException", params);
+                            logger.log(Level.SEVERE, msg);
                             throw new MultiException(new IllegalStateException(msg, transactionFailure));
                         }
 
