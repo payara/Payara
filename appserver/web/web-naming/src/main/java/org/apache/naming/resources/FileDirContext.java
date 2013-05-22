@@ -289,7 +289,7 @@ public class FileDirContext extends BaseDirContext {
         // Validate that the document base is an existing directory
         if (!base.exists() || !base.isDirectory() || !base.canRead())
             throw new IllegalArgumentException
-                    (rb.getString(MessageFormat.format(FILE_RESOURCES_BASE, docBase)));
+                    (MessageFormat.format(rb.getString(FILE_RESOURCES_BASE), docBase));
         this.absoluteBase = base.getAbsolutePath();
         super.setDocBase(docBase);
 
@@ -372,7 +372,7 @@ public class FileDirContext extends BaseDirContext {
         } else {
             result = new FileResource(file);
         }
-        
+
         return result;
         
     }
