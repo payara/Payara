@@ -52,7 +52,7 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
       This is the XML Schema for the EJB 3.2 deployment descriptor.
       
       All EJB deployment descriptors must indicate
@@ -727,7 +727,7 @@
   <xsd:complexType name="ejb-classType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The ejb-classType contains the fully-qualified name of the
         enterprise bean's class. It is used by ejb-class elements. 
         
@@ -819,7 +819,7 @@
                    minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The optional ejb-client-jar element specifies a JAR
             file that contains the class files necessary for a
             client program to access the
@@ -888,7 +888,7 @@
   <xsd:complexType name="ejb-nameType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The ejb-nameType specifies an enterprise bean's name. It is
         used by ejb-name elements. This name is assigned by the
         file producer to name the enterprise bean in the
@@ -967,7 +967,7 @@
   <xsd:complexType name="ejb-relationship-roleType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The ejb-relationship-roleType describes a role within a
         relationship. There are two roles in each relationship.
         
@@ -1762,7 +1762,7 @@
   <xsd:complexType name="interceptor-bindingType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The interceptor-bindingType element describes the binding of
         interceptor classes to beans within the ejb-jar file or .war file.
         It consists of :
@@ -2114,7 +2114,7 @@
   <xsd:complexType name="methodType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The methodType is used to denote a method of an enterprise
         bean.  The method may be any of the following or a set of
         any of the following methods may be designated:
@@ -2644,7 +2644,7 @@
   <xsd:complexType name="query-methodType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The query-method specifies the method for a finder or select
         query.
         

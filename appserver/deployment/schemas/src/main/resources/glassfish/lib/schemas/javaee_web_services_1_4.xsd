@@ -60,7 +60,7 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
       The webservices element is the root element for the web services
       deployment descriptor.  It specifies the set of web service
       descriptions that are to be deployed into the Java EE Application
@@ -183,7 +183,7 @@
                    type="javaee:string">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The port-component-name element specifies a port component's
             name.  This name is assigned by the module producer to name
             the service implementation bean in the module's deployment
@@ -314,7 +314,7 @@
                    maxOccurs="1">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The service-endpoint-interface element contains the
             fully-qualified name of the port component's Service Endpoint
             Interface.
@@ -400,7 +400,7 @@
   <xsd:complexType name="servlet-linkType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The servlet-link element is used in the service-impl-bean element
         to specify that a Service Implementation Bean is defined as a
         JAX-RPC Service Endpoint.
@@ -530,7 +530,7 @@
         <xsd:key name="port-component-name-key">
           <xsd:annotation>
             <xsd:documentation>
-              <![CDATA[[
+              <![CDATA[
               	The port-component-name element specifies a port
               	component's name.  This name is assigned by the module
               	producer to name the service implementation bean in the

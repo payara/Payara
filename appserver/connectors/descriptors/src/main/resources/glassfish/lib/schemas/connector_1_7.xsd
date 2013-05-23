@@ -96,7 +96,7 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
       This is the XML Schema for the Connector 1.7 deployment
       descriptor.  The deployment descriptor must be named
       "META-INF/ra.xml" in the connector's rar file.  All Connector
@@ -185,7 +185,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element activationspec-class specifies the fully
             qualified Java class name of the activation
             specification class. This class must implement the
@@ -249,7 +249,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element adminobject-interface specifies the
             fully qualified name of the Java type of the
             interface implemented by an administered object.
@@ -266,7 +266,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element adminobject-class specifies the fully
             qualified Java class name of an administered object.
             
@@ -318,7 +318,7 @@
                    type="javaee:xsdStringType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element authentication-mechanism-type specifies
             type of an authentication mechanism.
             
@@ -350,7 +350,7 @@
   <xsd:complexType name="config-property-nameType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The config-property-nameType contains the name of a
         configuration property.
         
@@ -391,7 +391,7 @@
   <xsd:complexType name="config-property-typeType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The config-property-typeType contains the fully
         qualified Java type of a configuration property.
         
@@ -459,7 +459,7 @@
                    minOccurs="0">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element config-property-value contains the value
             of a configuration entry. Note, it is possible for a
             resource adapter deployer to override this
@@ -551,7 +551,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element managedconnectionfactory-class specifies
             the fully qualified name of the Java class that
             implements the
@@ -578,7 +578,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element connectionfactory-interface specifies
             the fully qualified name of the ConnectionFactory
             interface supported by the resource adapter.
@@ -600,7 +600,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element connectionfactory-impl-class specifies
             the fully qualified name of the ConnectionFactory
             class that implements resource adapter
@@ -619,7 +619,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The connection-interface element specifies the fully
             qualified name of the Connection interface supported
             by the resource adapter.
@@ -637,7 +637,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The connection-impl-classType specifies the fully
             qualified name of the Connection class that
             implements resource adapter specific Connection
@@ -963,7 +963,7 @@
                    type="javaee:fully-qualified-classType">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
             The element messagelistener-type specifies the fully
             qualified name of the Java type of a message
             listener interface.
@@ -1067,7 +1067,7 @@
   <xsd:complexType name="required-config-propertyType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
         The required-config-propertyType contains a declaration
         of a single configuration property used for specifying a
         required configuration property name. It is used

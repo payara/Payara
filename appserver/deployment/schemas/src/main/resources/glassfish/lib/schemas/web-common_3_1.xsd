@@ -52,7 +52,7 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
       This is the common XML Schema for the Servlet 3.1 deployment descriptor.
       This file is in turn used by web.xml and web-fragment.xml
       web application's war file.  All Servlet deployment descriptors

@@ -52,7 +52,7 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
       This is the XML Schema for the application client 7
       deployment descriptor.  The deployment descriptor must
       be named "META-INF/application-client.xml" in the

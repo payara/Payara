@@ -52,7 +52,7 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
       This is the XML Schema for the application or module declared permissions 7.
       The declared permissions file must be named "META-INF/permissions.xml" in the
       application's ear file, or in a module's META-INF/permissions.xml if

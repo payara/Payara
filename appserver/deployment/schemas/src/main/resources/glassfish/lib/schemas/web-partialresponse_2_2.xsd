@@ -53,7 +53,8 @@
 
   <xsd:annotation>
     <xsd:documentation>
-      <![CDATA[[
+      <![CDATA[
+      [
       <p>
       
       The XML Schema for the JavaServer Faces (Version 2.2)  
@@ -72,7 +73,8 @@
                type="javaee:partial-responseType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "partial-response" element is the root of the
@@ -85,6 +87,7 @@
         UIViewRoot to which this response pertains.
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -96,7 +99,8 @@
   <xsd:complexType name="partial-responseType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "partial-response" element is the root of the
@@ -107,6 +111,7 @@
         <p>
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -129,7 +134,8 @@
                    use="required">
       <xsd:annotation>
         <xsd:documentation>
-          <![CDATA[[
+          <![CDATA[
+          [
           <p class="changed_added_2_2">This element must have an "id" attribute whose value
           is the return from calling getContainerClientId() on the
           UIViewRoot to which this response pertains.<p> 
@@ -146,7 +152,8 @@
   <xsd:complexType name="partial-response-changesType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "changes" element contains a collection of child elements,
@@ -154,6 +161,7 @@
         view in the user agent.
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -171,13 +179,15 @@
                    type="xsd:string">
         <xsd:annotation>
           <xsd:documentation>
-            <![CDATA[[
+            <![CDATA[
+            [
             <p>
             
             The "eval" element enables this element's
             contents to be executed as JavaScript.
             
             </p>
+            
             ]]>
           </xsd:documentation>
         </xsd:annotation>
@@ -193,13 +203,15 @@
   <xsd:complexType name="partial-response-updateType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "update" element enables DOM elements matching the "id"
         attribute to be updated with the contents of this element. 
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -218,7 +230,8 @@
   <xsd:complexType name="partial-response-insertType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "insert" element enables content to be inserted into the DOM
@@ -227,6 +240,7 @@
         "after" are mutually exclusive - one of them must be specified. 
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -273,13 +287,15 @@
   <xsd:complexType name="partial-response-deleteType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "delete" element enables DOM elements matching the "id"
         attribute to be removed. 
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -294,7 +310,8 @@
   <xsd:complexType name="partial-response-attributesType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "attributes" element enables attributes of DOM elements matching the "id"
@@ -302,6 +319,7 @@
         least one "attribute" element. 
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -333,13 +351,15 @@
   <xsd:complexType name="partial-response-redirectType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "redirect" element enables a redirect to the location as specified by the
         "url" attribute. 
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -354,12 +374,14 @@
   <xsd:complexType name="partial-response-errorType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         
         The "error" element contains error information from the server. 
         
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
@@ -381,11 +403,13 @@
   <xsd:complexType name="partial-response-extensionType">
     <xsd:annotation>
       <xsd:documentation>
-        <![CDATA[[
+        <![CDATA[
+        [
         <p>
         Extension element for partial response.  It may contain
         implementation specific content.
         </p>
+        
         ]]>
       </xsd:documentation>
     </xsd:annotation>
