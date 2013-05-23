@@ -41,6 +41,8 @@ package org.glassfish.admin.rest.adapter;
 
 import com.sun.enterprise.v3.common.PropsFileActionReporter;
 import java.util.Collections;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -81,7 +83,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 //@RunLevel(value= InitRunLevel.VAL)
-//@RunLevel(value= StartupRunLevel.VAL)
+@RunLevel(value= StartupRunLevel.VAL)
 public class JerseyContainerCommandService implements PostConstruct {
 
     @Inject
@@ -94,25 +96,27 @@ public class JerseyContainerCommandService implements PostConstruct {
 
     @Override
     public void postConstruct() {
-//        ExecutorService executor = Executors.newFixedThreadPool(2);
-//        this.future = executor.submit(new Callable<JerseyContainer>() {
-//                                                 @Override
-//                                                 public JerseyContainer call() throws Exception {
-//                                                     JerseyContainer result = exposeContext();
-//                                                     return result;
-//                                                 }
-//                                             });
-//        executor.execute(new Runnable() {
-//                                @Override
-//                                public void run() {
-//                                    CommandRunner cr = habitat.getService(CommandRunner.class);
-//                                    final CommandRunner.CommandInvocation invocation =
-//                                                    cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
-//                                    invocation.parameters(new ParameterMap());
-//                                    invocation.execute();
-//                                }
-//                            });
-//        executor.shutdown();
+        if (Boolean.valueOf(System.getenv("AS_INIT_REST_EAGER"))) {
+            ExecutorService executor = Executors.newFixedThreadPool(2);
+            this.future = executor.submit(new Callable<JerseyContainer>() {
+                                                     @Override
+                                                     public JerseyContainer call() throws Exception {
+                                                         JerseyContainer result = exposeContext();
+                                                         return result;
+                                                     }
+                                                 });
+            executor.execute(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        CommandRunner cr = habitat.getService(CommandRunner.class);
+                                        final CommandRunner.CommandInvocation invocation =
+                                                        cr.getCommandInvocation("uptime", new PropsFileActionReporter(), kernelIdentity.getSubject());
+                                        invocation.parameters(new ParameterMap());
+                                        invocation.execute();
+                                    }
+                                });
+            executor.shutdown();
+        }
     }
 
 
