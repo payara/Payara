@@ -49,9 +49,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>config</artifactId>
+    <artifactId>grizzly-config</artifactId>
     <version>4.0.1-SNAPSHOT</version>
-    <name>config</name>
+    <name>grizzly-config</name>
     <packaging>glassfish-jar</packaging>
     <build>
         <resources>
