@@ -47,7 +47,7 @@ import org.glassfish.grizzly.nio.SelectionKeyHandler;
 import java.io.IOException;
 import java.nio.channels.SelectionKey;
 
-public class TestSelectionKeyHandler implements SelectionKeyHandler {
+public class DummySelectionKeyHandler implements SelectionKeyHandler {
 
     private final SelectionKeyHandler delegate = new DefaultSelectionKeyHandler();
 

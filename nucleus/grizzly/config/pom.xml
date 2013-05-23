@@ -59,6 +59,16 @@
                 <directory>src/main/resources</directory>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <!--<inherited>true</inherited>-->
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <forkMode>always</forkMode>
+                </configuration>
+            </plugin>            
+        </plugins>
     </build>
     <dependencies>
         <dependency>

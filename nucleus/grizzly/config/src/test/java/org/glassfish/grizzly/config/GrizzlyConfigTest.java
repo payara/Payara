@@ -169,7 +169,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
             GenericGrizzlyListener genericGrizzlyListener =
                     (GenericGrizzlyListener) getListener(grizzlyConfig, "http-listener-1");
             NIOTransport transport = (NIOTransport) genericGrizzlyListener.getTransport();
-            assertNotSame(TestSelectionKeyHandler.class.getName(), transport.getSelectionKeyHandler().getClass().getName());
+            assertNotSame(DummySelectionKeyHandler.class.getName(), transport.getSelectionKeyHandler().getClass().getName());
         } finally {
             if (grizzlyConfig != null) {
                 grizzlyConfig.shutdownNetwork();
