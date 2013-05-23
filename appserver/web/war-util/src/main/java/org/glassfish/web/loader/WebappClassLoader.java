@@ -64,7 +64,9 @@ import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
+import org.apache.naming.resources.JarFileResourcesProvider;
 import org.apache.naming.resources.ProxyDirContext;
+import org.apache.naming.resources.WebDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.api.deployment.InstrumentableClassLoader;
@@ -76,8 +78,6 @@ import org.glassfish.web.util.IntrospectionUtils;
 import org.glassfish.hk2.api.PreDestroy;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.integration.PermsHolder;
-import com.sun.enterprise.security.perms.PermissionsProcessor;
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 
 import javax.naming.Binding;
 import javax.naming.NameClassPair;
@@ -148,7 +148,8 @@ import java.util.logging.Logger;
  */
 public class WebappClassLoader
     extends URLClassLoader
-    implements Reloader, InstrumentableClassLoader, PreDestroy, DDPermissionsLoader 
+    implements Reloader, InstrumentableClassLoader, PreDestroy,
+        DDPermissionsLoader, JarFileResourcesProvider
 {
     // ------------------------------------------------------- Static Variables
 
@@ -533,6 +534,11 @@ public class WebappClassLoader
      */
     private String contextName = "unknown";
 
+    /**
+     * Use anti JAR locking code, which does URL rerouting when accessing
+     * resources.
+     */
+    boolean antiJARLocking = false;
 
     // ----------------------------------------------------------- Constructors
 
@@ -634,9 +640,15 @@ public class WebappClassLoader
     public void setResources(DirContext resources) {
         this.resources = resources;
 
-        
+        DirContext res = resources;
         if (resources instanceof ProxyDirContext) {
-            contextName = ((ProxyDirContext) resources).getContextName();
+            ProxyDirContext proxyRes = (ProxyDirContext)res;
+            contextName = proxyRes.getContextName();
+            res = proxyRes.getDirContext();
+        }
+
+        if (res instanceof WebDirContext) {
+            ((WebDirContext)res).setJarFileResourcesProvider(this);
         }
     }
 
@@ -692,6 +704,32 @@ public class WebappClassLoader
         this.delegate = delegate;
 
     }
+
+
+    /**
+     * @return Returns the antiJARLocking.
+     */
+    public boolean getAntiJARLocking() {
+        return antiJARLocking;
+    }
+
+
+    /**
+     * @param antiJARLocking The antiJARLocking to set.
+     */
+    public void setAntiJARLocking(boolean antiJARLocking) {
+        this.antiJARLocking = antiJARLocking;
+    }
+
+
+    @Override
+    public JarFile[] getJarFiles() {
+        if (!openJARs()) {
+            return null;
+        }
+        return jarFiles;
+    }
+
 
     /**
      * If there is a Java SecurityManager create a read FilePermission
@@ -807,7 +845,7 @@ public class WebappClassLoader
         try {
             canonicalLoaderDir = this.loaderDir.getCanonicalPath();
             if (!canonicalLoaderDir.endsWith(File.separator)) {
-                 canonicalLoaderDir += File.separator;
+                canonicalLoaderDir += File.separator;
             }
         } catch (IOException ioe) {
             canonicalLoaderDir = null;
@@ -1269,11 +1307,6 @@ public class WebappClassLoader
      */
     @Override
     public URL findResource(String name) {
-        return findResource(name, false);
-    }
-
-    private URL findResource(String name, boolean fromJarsOnly) {
-
         if (logger.isLoggable(Level.FINER))
             logger.log(Level.FINER, "    findResource(" + name + ")");
 
@@ -1285,7 +1318,7 @@ public class WebappClassLoader
 
         ResourceEntry entry = resourceEntries.get(name);
         if (entry == null) {
-            entry = findResourceInternal(name, name, fromJarsOnly);
+            entry = findResourceInternal(name, name);
         }
         if (entry != null) {
             url = entry.source;
@@ -1354,14 +1387,6 @@ public class WebappClassLoader
 
     }
 
-    /**
-     * From the resource with the given name.  This is the same as findResouce
-     * except that the resources from the local files are excluded.  This is
-     * primarily used form locating resources in /META-INF/resources/ in jars.
-     */
-    public URL getResourceFromJars(String name) {
-        return getResource(name, true);
-    }
 
     /**
      * Find the resource with the given name.  A resource is some data
@@ -1387,10 +1412,6 @@ public class WebappClassLoader
      */
     @Override
     public URL getResource(String name) {
-        return getResource(name, false);
-    }
-
-    private URL getResource(String name, boolean fromJarsOnly) {
         if (logger.isLoggable(Level.FINER))
             logger.log(Level.FINER, "getResource(" + name + ")");
         URL url = null;
@@ -1414,22 +1435,24 @@ public class WebappClassLoader
         }
 
         // (2) Search local repositories
-        url = findResource(name, fromJarsOnly);
+        url = findResource(name);
         if (url != null) {
-            // Locating the repository for special handling in the case
-            // of a JAR
-            ResourceEntry entry = resourceEntries.get(name);
-            try {
-                String repository = entry.codeBase.toString();
-                if ((repository.endsWith(".jar"))
-                        && !(name.endsWith(".class"))
-                        && !(name.endsWith(".jar"))) {
-                    // Copy binary content to the work directory if not present
-                    File resourceFile = new File(loaderDir, name);
-                    url = resourceFile.toURI().toURL();
+            if (antiJARLocking) {
+                // Locating the repository for special handling in the case
+                // of a JAR
+                ResourceEntry entry = resourceEntries.get(name);
+                try {
+                    String repository = entry.codeBase.toString();
+                    if ((repository.endsWith(".jar"))
+                            && !(name.endsWith(".class"))
+                            && !(name.endsWith(".jar"))) {
+                        // Copy binary content to the work directory if not present
+                        File resourceFile = new File(loaderDir, name);
+                        url = resourceFile.toURI().toURL();
+                    }
+                } catch (Exception e) {
+                    // Ignore
                 }
-            } catch (Exception e) {
-                // Ignore
             }
             if (logger.isLoggable(Level.FINER))
                 logger.log(Level.FINER, "  --> Returning '" + url.toString() + "'");
@@ -2809,12 +2832,6 @@ public class WebappClassLoader
      * @return the loaded resource, or null if the resource isn't found
      */
     protected ResourceEntry findResourceInternal(String name, String path) {
-        return findResourceInternal(name, path, false);
-    }
-
-    private ResourceEntry findResourceInternal(String name, String path,
-                                               boolean fromJarsOnly) {
-
         if (!started) {
                 throw new IllegalStateException(
                 getString(NOT_STARTED, name));
@@ -2831,9 +2848,7 @@ public class WebappClassLoader
             return null;
         }
 
-        if (! fromJarsOnly) {
-            entry = findResourceInternalFromRepositories(name, path);
-        }
+        entry = findResourceInternalFromRepositories(name, path);
 
         if (entry == null) {
             synchronized (jarFiles) {
@@ -2991,7 +3006,7 @@ public class WebappClassLoader
                 }
 
                 // Extract resources contained in JAR to the workdir
-                if (!(path.endsWith(".class"))) {
+                if (antiJARLocking && !(path.endsWith(".class"))) {
                     File resourceFile = new File
                         (loaderDir, jarEntry.getName());
                     if (!resourceFile.exists()) {
@@ -3009,7 +3024,7 @@ public class WebappClassLoader
     }
 
     private synchronized void extractResources() {
-        if (resourcesExtracted) {
+        if (!antiJARLocking || resourcesExtracted) {
             return;
         }
 
@@ -3082,7 +3097,6 @@ public class WebappClassLoader
         File extractedResource = new File(loaderDir, path);
         return (extractedResource.exists() ? extractedResource : null);
     }
-
 
     /**
      * Reads the resource's binary data from the given input stream.

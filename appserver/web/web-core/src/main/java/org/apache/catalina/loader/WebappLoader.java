@@ -834,12 +834,19 @@ public class WebappLoader
             return;
 
         // Process a relevant property change
-        if (event.getPropertyName().equals("reloadable")) {
+        String propName = event.getPropertyName();
+        if ("reloadable".equals(propName)) {
             try {
                 setReloadable
                     ( ((Boolean) event.getNewValue()).booleanValue() );
             } catch (NumberFormatException e) {
                 log.log(Level.SEVERE, SET_RELOADABLE_PROPERTY_EXCEPTION, event.getNewValue().toString());
+            }
+        } else if ("antiJARLocking".equals(propName)) {
+            ClassLoader cloader = Thread.currentThread().getContextClassLoader();
+            if (cloader instanceof WebappClassLoader) {
+                ((WebappClassLoader)cloader).setAntiJARLocking(
+                        ((Boolean)event.getNewValue()).booleanValue());
             }
         }
     }

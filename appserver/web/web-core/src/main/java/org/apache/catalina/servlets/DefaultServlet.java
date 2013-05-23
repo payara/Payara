@@ -846,63 +846,6 @@ public class DefaultServlet
         }
 
         if (!cacheEntry.exists) {
-            // Try looking up resource in
-            // WEB-INF/lib/[*.jar]/META-INF/resources
-            ClassLoader cl = Thread.currentThread().getContextClassLoader();
-            String metaInfResPath = Globals.META_INF_RESOURCES + path;
-            if (cl instanceof WebappClassLoader) {
-                WebappClassLoader wcl = (WebappClassLoader)cl;
-                final URL resourceUrl = wcl.getResourceFromJars(metaInfResPath);
-                if (resourceUrl != null) {
-                    // XXX Remove dependency on WebappClassLoader
-                    ConcurrentHashMap<String, ResourceEntry> resourceEntries =
-                        wcl.getResourceEntries();
-                    ResourceEntry resourceEntry = resourceEntries.get(metaInfResPath);
-                    if (resourceEntry != null) {
-                        // create a CacheEntry to continue the processing
-                        cacheEntry = new CacheEntry();
-                        try {
-                            URI resourceUri = resourceUrl.toURI();
-                            if ("file".equals(resourceUri.getScheme()) &&
-                                    (new File(resourceUri)).isDirectory()) {
-                                if (!path.endsWith("/")) {
-                                    response.sendRedirect(
-                                        response.encodeRedirectUrl(
-                                            request.getContextPath() + path + "/"));
-                                    return;
-                                }
-
-                                FileDirContext fileDirContext = new FileDirContext();
-                                String base = resourceUrl.getPath();
-                                int index = base.lastIndexOf(path);
-                                if (index != -1) {
-                                    base = base.substring(0, index);
-                                }
-                                fileDirContext.setDocBase(base);
-                                proxyDirContext = new ProxyDirContext(
-                                        new Hashtable<String, String>(), fileDirContext);
-
-                                cacheEntry.context = proxyDirContext;
-                            } else {
-                                cacheEntry.resource = new Resource() {
-                                        public InputStream streamContent() throws IOException {
-                                            return resourceUrl.openStream();
-                                        }
-                                    };
-                            }
-                        } catch(Exception ex) {
-                            throw new IOException(ex);
-                        }
-
-                        cacheEntry.name = path;
-                        cacheEntry.attributes = new ResourceAttributes();
-                        cacheEntry.exists = true;
-                    }
-                }
-            }
-        }
-
-        if (!cacheEntry.exists) {
             // Check if we're included so we can return the appropriate 
             // missing resource name in the error
             String requestUri = (String) request.getAttribute(

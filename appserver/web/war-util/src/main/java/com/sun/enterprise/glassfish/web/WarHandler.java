@@ -48,7 +48,7 @@ import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import org.apache.naming.resources.FileDirContext;
+import org.apache.naming.resources.WebDirContext;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
 import org.glassfish.api.deployment.DeploymentContext;
@@ -185,7 +185,7 @@ public class WarHandler extends AbstractArchiveHandler {
             }
         });
         try {
-            FileDirContext r = new FileDirContext();
+            WebDirContext r = new WebDirContext();
             File base = new File(context.getSource().getURI());
             r.setDocBase(base.getAbsolutePath());
 
