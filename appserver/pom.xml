@@ -102,11 +102,11 @@
         <jsftemplating.version>2.1.0</jsftemplating.version>
         <uc-pkg-client.version>1.122-56.2852</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-56.2852</uc-pkg-bootstrap.version>
-        <webservices.version>2.3.1-b104</webservices.version>
+        <webservices.version>2.3</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.1.2</woodstox.version>
-        <jaxb-api.version>2.2.9</jaxb-api.version>
-        <jaxb.version>2.2.8-b01</jaxb.version>
+        <jaxb-api.version>2.2.7</jaxb-api.version>
+        <jaxb.version>2.2.7</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
         <javax.xml.registry-api.version>1.0.5</javax.xml.registry-api.version>
         <eclipselink.version>2.5.0-RC2</eclipselink.version>
@@ -128,7 +128,7 @@
         <javax.batch-api.version>1.0</javax.batch-api.version>
         <com.ibm.jbatch-runtime-all.version>1.0</com.ibm.jbatch-runtime-all.version>
         <com.ibm.jbatch-ri-spi.version>1.0</com.ibm.jbatch-ri-spi.version>
-	<javax.xml.soap-api.version>1.3.6</javax.xml.soap-api.version>
+	<javax.xml.soap-api.version>1.3.5</javax.xml.soap-api.version>
 	<javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
     </properties>
 
@@ -636,7 +636,7 @@
             </dependency>
             <dependency>
                 <groupId>javax.xml.bind</groupId>
-                <artifactId>jaxb-api</artifactId>
+                <artifactId>jaxb-api-osgi</artifactId>
                 <version>${jaxb-api.version}</version>
             </dependency>
 	    <dependency>

@@ -384,10 +384,10 @@
          <artifactId>javax.annotation-api</artifactId>
      </dependency>
 
-     <!-- endorsed: jaxb-api.jar -->
+     <!-- endorsed: jaxb-api-osgi.jar -->
      <dependency>
          <groupId>javax.xml.bind</groupId>
-         <artifactId>jaxb-api</artifactId>
+         <artifactId>jaxb-api-osgi</artifactId>
      </dependency>
 
      <dependency>

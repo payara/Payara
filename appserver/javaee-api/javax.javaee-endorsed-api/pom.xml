@@ -133,7 +133,7 @@
         </dependency>
         <dependency>
             <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
+            <artifactId>jaxb-api-osgi</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>

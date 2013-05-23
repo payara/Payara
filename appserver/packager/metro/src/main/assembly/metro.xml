@@ -54,7 +54,7 @@
         <fileSet>
             <directory>${temp.dir}/glassfish</directory>
             <excludes>
-                <exclude>modules/jaxb-api.jar</exclude>
+                <exclude>modules/jaxb-api-osgi.jar</exclude>
                 <exclude>modules/webservices-api-osgi.jar</exclude>
             </excludes>
             <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
@@ -62,7 +62,7 @@
         <fileSet>
             <directory>${temp.dir}/glassfish/modules</directory>
             <includes>
-                <include>jaxb-api.jar</include>
+                <include>jaxb-api-osgi.jar</include>
                 <include>webservices-api-osgi.jar</include>
             </includes>
             <outputDirectory>${install.dir.name}/glassfish/modules/endorsed</outputDirectory>

@@ -43,7 +43,7 @@
 
 <project name="glassfish v3, embedded shell fix-up" default="fixup.library" basedir=".">
     <property name="derby.jar.classpath.additions" value="../../../javadb/lib/derby.jar ../../../javadb/lib/derbyclient.jar ../../../javadb/lib/derbynet.jar ../../../javadb/lib/derbytools.jar ../../../javadb/lib/derbyrun.jar"/>
-    <property name="endorsed.jar.classpath.additions" value="../../modules/endorsed/javax.annotation-api.jar ../../modules/endorsed/jaxb-api.jar ../../modules/endorsed/webservices-api-osgi.jar"/>
+    <property name="endorsed.jar.classpath.additions" value="../../modules/endorsed/javax.annotation-api.jar ../../modules/endorsed/jaxb-api-osgi.jar ../../modules/endorsed/webservices-api-osgi.jar"/>
     <property name="classpath.additions" value="${derby.jar.classpath.additions} ${endorsed.jar.classpath.additions}"/>
     <target name="fixup.library">
         <unzip src="${output.dir}/${output.file}" dest="${stage.dir}">
