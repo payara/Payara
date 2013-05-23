@@ -312,7 +312,7 @@ public class SSHLauncher {
             } catch (IOException iex) {
                 message = "SSH authentication with password failed: " +
                                 ExceptionUtil.getRootCause(iex).getMessage();
-                logger.warning(message);
+                logger.log(Level.WARNING,message,iex);
             }
       }
 
@@ -326,7 +326,7 @@ public class SSHLauncher {
             } catch (IOException iex) {
                 message = "SSH authentication with private key failed: " +
                                 ExceptionUtil.getRootCause(iex).getMessage();
-                logger.warning(message);
+                logger.log(Level.WARNING,message,iex);
             }
         }
       
@@ -346,7 +346,7 @@ public class SSHLauncher {
                     message = "SSH authentication with key file " + key +
                                     " failed: " +
                                 ExceptionUtil.getRootCause(iex).getMessage();
-                    logger.warning(message);
+                    logger.log(Level.WARNING,message,iex);
                 }
 
             }
