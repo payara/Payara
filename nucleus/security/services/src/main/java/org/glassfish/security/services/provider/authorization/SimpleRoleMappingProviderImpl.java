@@ -79,7 +79,7 @@ public class SimpleRoleMappingProviderImpl implements RoleMappingProvider {
 	}
 
 	private boolean isAdminResource(AzResource resource) {
-		return ADMIN.equals(resource.getUri().getScheme());
+		return "admin".equals(resource.getUri().getScheme());
 	}
 
 	private boolean containsAdminGroup(AzSubject subject) {
