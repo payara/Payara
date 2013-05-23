@@ -158,7 +158,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.grizzly</groupId>
-            <artifactId>config</artifactId>
+            <artifactId>grizzly-config</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
