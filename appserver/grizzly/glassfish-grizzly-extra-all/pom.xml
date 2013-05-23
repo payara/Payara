@@ -111,7 +111,8 @@
                             org.glassfish.grizzly.websockets.*;version=${grizzly.version},
                             org.glassfish.grizzly.http.ajp.*;version=${grizzly.version},
                             org.glassfish.grizzly.servlet.*;version=${grizzly.version},
-                            org.glassfish.grizzly.extras.*;version=${project.version}
+                            org.glassfish.grizzly.extras.*;version=${project.version},
+                            org.glassfish.extras.grizzly.*;version=${project.version}
                         </Export-Package>
                         <Import-Package>*</Import-Package>
                         <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
