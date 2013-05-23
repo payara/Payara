@@ -157,15 +157,9 @@
             <artifactId>core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
+            <groupId>org.glassfish.main.grizzly</groupId>
             <artifactId>grizzly-config</artifactId>
-	    <!-- grizzly was bringing in the following old hk2 jar that we don't want on the classpath -->
-            <exclusions>
-               <exclusion>
-                  <groupId>org.glassfish.hk2</groupId>
-                  <artifactId>config-types</artifactId>
-               </exclusion>
-           </exclusions>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
