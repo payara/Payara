@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.glassfish.main.grizzly</groupId>
+        <artifactId>glassfish-grizzly</artifactId>
+        <version>4.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>glassfish-spdy</artifactId>
+    <packaging>jar</packaging>
+    <name>glassfish-spdy</name>
+    <description>Glassfish SPDY support based on Grizzly SPDY</description>
+
+    <developers>
+        <developer>
+            <id>oleksiys</id>
+            <name>Oleksiy Stashok</name>
+            <url>http://blogs.oracle.com/oleksiys</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>       
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                 <artifactId>hk2-inhabitant-generator</artifactId>
+                <executions>
+                    <execution>
+                        <id>generate-inhabitants</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>generate-inhabitants</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>consolidatedbundle-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>processhk2headers</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>hk2-generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+
+                <configuration>
+                    <instructions>
+                        <Import-Package>
+                            org.glassfish.grizzly.npn*;version="[1.0,${npn.version})",
+                            org.glassfish.grizzly.http.server.*;version="[2.3,${grizzly.version}]";resolution:=optional,
+                            org.glassfish.grizzly.*;version="[2.3,${grizzly.version}]",
+                            org.glassfish.api.*;resolution:=optional,
+                            org.glassfish.internal.*;resolution:=optional,
+                            org.glassfish.config.*;resolution:=optional,
+                            org.glassfish.hk2.*;resolution:=optional,
+                            org.jvnet.hk2.*;resolution:=optional,
+                            javax.inject.*;resolution:=optional,
+                            com.sun.enterprise.config.serverbeans.*;resolution:=optional,
+                            *
+                        </Import-Package>
+                        <Export-Package>
+                            <!-- temporarly exlude org.glassfish.grizzly.spdy.glassfish package, it will be deleted in next Grizzly release -->
+                            !org.glassfish.grizzly.spdy.glassfish;version=${grizzly.version}, 
+                            org.glassfish.grizzly.spdy.*;version=${grizzly.version},
+                            org.glassfish.grizzly.extras.*;version=${project.version}
+                        </Export-Package>
+                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                        <DynamicImport-Package>*</DynamicImport-Package>
+                    </instructions>
+                    
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    
+                    <unpackBundle>true</unpackBundle>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-spdy</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.grizzly</groupId>
+            <artifactId>grizzly-npn-api</artifactId>
+            <scope>provided</scope>
+            <version>${npn.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.grizzly</groupId>
+            <artifactId>grizzly-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>        
+    </dependencies>
+    
+    <properties>
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+        <npn.version>1.0</npn.version>
+    </properties>    
+</project>
