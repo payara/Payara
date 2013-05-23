@@ -77,6 +77,10 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
         
         habitat.<Transactions>getService(Transactions.class).addTransactionsListener(new TransactionListener() {
             public void transactionCommited(List<PropertyChangeEvent> changes) {
+                if (!isGlassFishDocumentChanged(changes)) {
+                    return;
+                }
+                
                 for (ConfigurationPersistence pers : habitat.<ConfigurationPersistence>getAllServices(ConfigurationPersistence.class)) {
                     try {
                         if (doc.getRoot().getProxyType().equals(Domain.class)) {
@@ -92,6 +96,18 @@ public class GlassFishDocument extends DomDocument<GlassFishConfigBean> {
                         	ConfigApiLoggerInfo.glassFishDocumentXmlException,e);
                     }
                 }
+            }
+
+            // make sure domain.xml is changed
+            private boolean isGlassFishDocumentChanged(
+                    List<PropertyChangeEvent> changes) {
+                for (PropertyChangeEvent event : changes) {
+                    ConfigBeanProxy source = (ConfigBeanProxy) event.getSource();
+                    if (Dom.unwrap(source) instanceof GlassFishConfigBean) {
+                        return true;
+                    }
+                }
+                return false;
             }
 
             public void unprocessedTransactedEvents(List<UnprocessedChangeEvents> changes) {
