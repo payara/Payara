@@ -56,12 +56,12 @@ public class AppBeanDeploymentArchiveTest {
         String appId = "ai";
         EasyMockSupport mockSupport = new EasyMockSupport();
 
-        DeploymentContext deploymentContext = mockSupport.createMock(DeploymentContext.class);
+        DeploymentContext deploymentContext = mockSupport.createNiceMock(DeploymentContext.class);
         mockSupport.replayAll();
         AppBeanDeploymentArchive appBda = new AppBeanDeploymentArchive(appId, deploymentContext);
 
-        assertNull(appBda.getBeansXml() );
-        assertEquals( WeldUtils.BDAType.UNKNOWN, appBda.getBDAType() );
+        assertNull(appBda.getBeansXml());
+        assertEquals( WeldUtils.BDAType.UNKNOWN, appBda.getBDAType());
         assertEquals(appId, appBda.getId());
 
         assertEquals(0, appBda.getBeanClasses().size());
@@ -70,7 +70,7 @@ public class AppBeanDeploymentArchiveTest {
         assertEquals(0, appBda.getModuleBeanClassObjects().size());
         assertEquals(0, appBda.getEjbs().size());
 
-        assertEquals( 0, appBda.getBeanDeploymentArchives().size() );
+        assertEquals(0, appBda.getBeanDeploymentArchives().size());
 
 
         mockSupport.verifyAll();

@@ -90,6 +90,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private ReadableArchive archive;
     private String id;
+    private List<String> moduleClassNames = null; // Names of classes in the module
+    private List<String> beanClassNames = null; // Names of bean classes in the module
     private List<Class<?>> moduleClasses = null; // Classes in the module
     private List<Class<?>> beanClasses = null; // Classes identified as Beans through Weld SPI
     private List<URL> beansXmlURLs = null;
@@ -129,7 +131,9 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                                      DeploymentContext ctx,
                                      String bdaID) {
         this.beanClasses = new ArrayList<Class<?>>();
+        this.beanClassNames = new ArrayList<String>();
         this.moduleClasses = new ArrayList<Class<?>>();
+        this.moduleClassNames = new ArrayList<String>();
         this.beansXmlURLs = new CopyOnWriteArrayList<URL>();
         this.archive = archive;
         if (bdaID == null) {
@@ -151,14 +155,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         }
         this.archive = null;
 
-        //set to the current TCL
-        this.moduleClassLoaderForBDA = Thread.currentThread().getContextClassLoader();
+        // This assigns moduleClassLoaderForBDA
+        getClassLoader();
     }
 
     private void populateEJBsForThisBDA(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
         for (com.sun.enterprise.deployment.EjbDescriptor next : ejbs) {
-            for (Class c : this.moduleClasses) {
-                if (c.getName().equals(next.getEjbClassName())) {
+            for (String className : moduleClassNames) {
+                if (className.equals(next.getEjbClassName())) {
                     EjbDescriptorImpl wbEjbDesc = new EjbDescriptorImpl(next);
                     ejbDescImpls.add(wbEjbDesc);
                 }
@@ -176,6 +180,14 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.id = id;
         this.moduleClasses = wClasses;
         this.beanClasses = new ArrayList<Class<?>>(wClasses);
+
+        this.moduleClassNames = new ArrayList<String>();
+        this.beanClassNames = new ArrayList<String>();
+        for (Class c : wClasses) {
+            moduleClassNames.add(c.getName());
+            beanClassNames.add(c.getName());
+        }
+
         this.beansXmlURLs = beansXmlUrls;
         this.ejbDescImpls = new HashSet<EjbDescriptor<?>>();
         this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
@@ -183,8 +195,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
         populateEJBsForThisBDA(ejbs);
 
-        //set to the current TCL
-        this.moduleClassLoaderForBDA = Thread.currentThread().getContextClassLoader();
+        // This assigns moduleClassLoaderForBDA
+        getClassLoader();
     }
 
 
@@ -193,11 +205,6 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     public Collection<String> getBeanClasses() {
-        List<String> s = new ArrayList<String>();
-        for (Iterator<Class<?>> iterator = beanClasses.iterator(); iterator.hasNext();) {
-            String classname = iterator.next().getName();
-            s.add(classname);
-        }
         //This method is called during BeanDeployment.deployBeans, so this would
         //be the right time to place the module classloader for the BDA as the TCL
         if (logger.isLoggable(FINER)) {
@@ -211,7 +218,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
             //Remove this as soon as the SPI comes in.
             Thread.currentThread().setContextClassLoader(this.moduleClassLoaderForBDA);
         }
-        return s;
+        return beanClassNames;
     }
 
     public Collection<Class<?>> getBeanClassObjects() {
@@ -219,12 +226,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     }
 
     public Collection<String> getModuleBeanClasses() {
-        List<String> s = new ArrayList<String>();
-        for (Iterator<Class<?>> iterator = moduleClasses.iterator(); iterator.hasNext(); ) {
-            String classname = iterator.next().getName();
-            s.add(classname);
-        }
-        return s;
+        return beanClassNames;
     }
 
     public Collection<Class<?>> getModuleBeanClassObjects() {
@@ -234,13 +236,18 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     public void addBeanClass(String beanClassName) {
         boolean added = false;
-        for (Iterator<Class<?>> iterator = moduleClasses.iterator(); iterator.hasNext(); ) {
-            Class c = iterator.next();
-            if (c.getName().equals(beanClassName)) {
+        for (Iterator<String> iterator = moduleClassNames.iterator(); iterator.hasNext(); ) {
+            String c = iterator.next();
+            if (c.equals(beanClassName)) {
                 if (logger.isLoggable(FINE)) {
-                    logger.log(FINE, CDILoggerInfo.ADD_BEAN_CLASS, new Object[]{c, beanClasses});
+                    logger.log(FINE, CDILoggerInfo.ADD_BEAN_CLASS, new Object[]{c, beanClassNames});
                 }
-                beanClasses.add(c);
+                beanClassNames.add(c);
+                try {
+                    beanClasses.add(getClassLoader().loadClass(c));
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
                 added = true;
             }
         }
@@ -415,9 +422,10 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                         String className = filenameToClassname(entry);
                         try {
                             if (hasBeansXml || isCDIAnnotatedClass(className)) {
+                                beanClassNames.add(className);
                                 beanClasses.add(getClassLoader().loadClass(className));
                             }
-                            moduleClasses.add(getClassLoader().loadClass(className));
+                            moduleClassNames.add(className);
                         } catch (Throwable t) {
                             if (logger.isLoggable(Level.WARNING)) {
                                 logger.log(Level.WARNING,
@@ -628,10 +636,11 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                     // based on its annotation(s)
                     if (hasBeansXml || isCDIAnnotatedClass(className)) {
                         beanClasses.add(getClassLoader().loadClass(className));
+                        beanClassNames.add(className);
                     }
                 }
                 // Add the class as a module class
-                moduleClasses.add(getClassLoader().loadClass(className));
+                moduleClassNames.add(className);
             } catch (Throwable t) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING,
