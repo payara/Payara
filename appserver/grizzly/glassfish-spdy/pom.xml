@@ -172,7 +172,6 @@
     </dependencies>
     
     <properties>
-        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
         <npn.version>1.0</npn.version>
     </properties>    
 </project>
