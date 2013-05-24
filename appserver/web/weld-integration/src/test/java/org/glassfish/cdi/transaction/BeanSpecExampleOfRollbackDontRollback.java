@@ -40,53 +40,16 @@
 
 package org.glassfish.cdi.transaction;
 
-import javax.transaction.*;
-import javax.transaction.xa.XAResource;
+import javax.transaction.Transactional;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 
-/**
- * User: paulparkinson
- * Date: 12/18/12
- * Time: 11:50 AM
- */
-public class Transaction implements javax.transaction.Transaction {
-    private static int counter;
-    private int txid;
-    public boolean isMarkedRollback;
-
-    public Transaction() {
-        txid = counter++;
+@Transactional(rollbackOn={SQLException.class}, dontRollbackOn={SQLWarning.class})
+public class BeanSpecExampleOfRollbackDontRollback {
+    public String throwSQLException() throws SQLException {
+      throw new SQLException("test SQLException");
     }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof Transaction &&  ((Transaction)o).txid == this.txid;
-    }
-
-    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
-        
-    }
-
-    public boolean delistResource(XAResource xaRes, int flag) throws IllegalStateException, SystemException {
-        return false;  
-    }
-
-    public boolean enlistResource(XAResource xaRes) throws RollbackException, IllegalStateException, SystemException {
-        return false;  
-    }
-
-    public int getStatus() throws SystemException {
-        return 0;  
-    }
-
-    public void registerSynchronization(Synchronization sync) throws RollbackException, IllegalStateException, SystemException {
-        
-    }
-
-    public void rollback() throws IllegalStateException, SystemException {
-        
-    }
-
-    public void setRollbackOnly() throws IllegalStateException, SystemException {
-        
+    public String throwSQLWarning() throws SQLWarning {
+        throw new SQLWarning("test SQLWarning");
     }
 }

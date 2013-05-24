@@ -59,13 +59,13 @@ import java.util.logging.Logger;
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
+@javax.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NEVER)
 public class TransactionalInterceptorNever extends TransactionalInterceptorBase {
 
     private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
+            TransactionalInterceptorNever.class, LogDomains.JTA_LOGGER);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {

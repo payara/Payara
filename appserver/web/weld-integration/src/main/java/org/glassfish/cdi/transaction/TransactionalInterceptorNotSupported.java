@@ -61,7 +61,7 @@ import java.util.logging.Logger;
  *
  * @author Paul Parkinson
  */
-@javax.annotation.Priority(Interceptor.Priority.LIBRARY_BEFORE + 10)
+@javax.annotation.Priority(Interceptor.Priority.PLATFORM_BEFORE + 200)
 @Interceptor
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {

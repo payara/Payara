@@ -48,10 +48,16 @@ public class TransactionManager implements javax.transaction.TransactionManager 
     ThreadLocal transactionThreadLocal = new ThreadLocal();
 
     public void begin() throws NotSupportedException, SystemException {
+        if (getTransaction()!=null) throw new NotSupportedException("attempt to start tx when one already exists");
         transactionThreadLocal.set(new Transaction());
     }
 
-    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException, SecurityException, IllegalStateException, SystemException {
+    public void commit() throws RollbackException, HeuristicMixedException, HeuristicRollbackException,
+            SecurityException, IllegalStateException, SystemException {
+        if(((Transaction)getTransaction()).isMarkedRollback) {
+            suspend();
+            throw new RollbackException("test tx was marked for rollback");
+        }
         suspend();
     }
 
@@ -72,7 +78,8 @@ public class TransactionManager implements javax.transaction.TransactionManager 
     }
 
     public void setRollbackOnly() throws IllegalStateException, SystemException {
-        
+        Transaction transaction = (Transaction) getTransaction();
+        if(transaction!=null) transaction.isMarkedRollback = true;
     }
 
     public void setTransactionTimeout(int seconds) throws SystemException {

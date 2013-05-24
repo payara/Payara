@@ -42,9 +42,9 @@ package org.glassfish.cdi.transaction;
 
 import junit.framework.TestCase;
 
-import javax.transaction.InvalidTransactionException;
-import javax.transaction.TransactionRequiredException;
-import javax.transaction.TransactionalException;
+import javax.transaction.*;
+import java.sql.SQLException;
+import java.sql.SQLWarning;
 
 /**
  * User: paulparkinson
@@ -177,6 +177,163 @@ public class TransactionalAnnotationTest extends TestCase {
         transactionManager.begin();
         transactionalInterceptorSUPPORTS.transactional(ctx);
         transactionManager.commit();
+    }
+
+    public void testSpecRollbackOnDontRollbackOnSample() throws Exception {
+
+        TransactionalInterceptorRequired transactionalInterceptorREQUIRED =
+                new TransactionalInterceptorRequired();
+        javax.transaction.TransactionManager transactionManager = new TransactionManager();
+        transactionalInterceptorREQUIRED.setTestTransactionManager(transactionManager);
+        javax.interceptor.InvocationContext ctx = new InvocationContext(
+                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLException"), null) {
+            @Override
+            public Object getTarget() {
+                return new BeanSpecExampleOfRollbackDontRollback();
+            }
+
+            @Override
+            public Object proceed() throws Exception {
+                throw new SQLException("test SQLException");
+            }
+        };
+        transactionManager.begin();
+        try {
+            transactionalInterceptorREQUIRED.transactional(ctx);
+        } catch (SQLException sqlex) {
+        }
+        try {
+            transactionManager.commit();
+            fail("should have thrown RollbackException due to mark for rollback");
+        } catch (RollbackException rbe) {
+        }
+
+        // Now with a child of SQLException
+        ctx = new InvocationContext(
+                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLException"), null) {
+            @Override
+            public Object getTarget() {
+                return new BeanSpecExampleOfRollbackDontRollback();
+            }
+
+            @Override
+            public Object proceed() throws Exception {
+                throw new SQLExceptionExtension();
+            }
+        };
+        transactionManager.begin();
+        try {
+            transactionalInterceptorREQUIRED.transactional(ctx);
+        } catch (SQLExceptionExtension sqlex) {
+        }
+        try {
+            transactionManager.commit();
+            fail("should have thrown RollbackException due to mark for rollback");
+        } catch (RollbackException rbe) {
+        }
+
+        // now with a child of SQLException but one that is specified as dontRollback
+        ctx = new InvocationContext(
+                BeanSpecExampleOfRollbackDontRollback.class.getMethod("throwSQLWarning"), null) {
+            @Override
+            public Object proceed() throws Exception {
+                throw new SQLWarning("test SQLWarning");
+            }
+
+            @Override
+            public Object getTarget() {
+                return new BeanSpecExampleOfRollbackDontRollback();
+            }
+
+        };
+        transactionManager.begin();
+        try {
+            transactionalInterceptorREQUIRED.transactional(ctx);
+        } catch (SQLWarning sqlex) {
+        }
+        try {
+            transactionManager.commit();
+        } catch (Exception rbe) {
+            fail("should not thrown Exception");
+        }
+
+
+        // now with a child of SQLWarning but one that is specified as rollback
+        // ie testing this
+        // @Transactional(
+        //  rollbackOn = {SQLException.class, SQLWarningExtension.class},
+        //  dontRollbackOn = {SQLWarning.class})
+        //   where dontRollbackOn=SQLWarning overrides rollbackOn=SQLException,
+        //   but rollbackOn=SQLWarningExtension overrides dontRollbackOn=SQLWarning
+        // ie...
+//        SQLException isAssignableFrom SQLWarning
+//        SQLWarning isAssignableFrom SQLWarningExtensionExtension
+//        SQLWarningExtensionExtension isAssignableFrom SQLWarningExtension
+
+        ctx = new InvocationContext(
+                BeanSpecExampleOfRollbackDontRollbackExtension.class.getMethod("throwSQLWarning"), null) {
+            @Override
+            public Object proceed() throws Exception {
+                throw new SQLWarningExtension();
+            }
+
+            @Override
+            public Object getTarget() {
+                return new BeanSpecExampleOfRollbackDontRollbackExtension();
+            }
+
+        };
+        transactionManager.begin();
+        try {
+            transactionalInterceptorREQUIRED.transactional(ctx);
+        } catch (SQLWarningExtension sqlex) {
+        }
+        try {
+            transactionManager.commit();
+            fail("should have thrown RollbackException due to mark for rollback");
+        } catch (RollbackException rbe) {
+        }
+
+        //same as above test but with extension just to show continued inheritance...
+        ctx = new InvocationContext(
+                BeanSpecExampleOfRollbackDontRollbackExtension.class.getMethod("throwSQLWarning"), null) {
+            @Override
+            public Object proceed() throws Exception {
+                throw new SQLWarningExtensionExtension();
+            }
+
+            @Override
+            public Object getTarget() {
+                return new BeanSpecExampleOfRollbackDontRollbackExtension();
+            }
+
+        };
+        transactionManager.begin();
+        try {
+            transactionalInterceptorREQUIRED.transactional(ctx);
+        } catch (SQLWarningExtensionExtension sqlex) {
+        }
+        try {
+            transactionManager.commit();
+            fail("should have thrown RollbackException due to mark for rollback");
+        } catch (RollbackException rbe) {
+        }
+
+
+    }
+
+    class SQLExceptionExtension extends SQLException {
+    }
+
+    class SQLWarningExtension extends SQLWarning {
+    }
+
+    class SQLWarningExtensionExtension extends SQLWarningExtension {
+    }
+
+    @Transactional(rollbackOn = {SQLException.class, SQLWarningExtension.class}, dontRollbackOn = {SQLWarning.class})
+    class BeanSpecExampleOfRollbackDontRollbackExtension extends BeanSpecExampleOfRollbackDontRollback {
+
     }
 
 }
