@@ -326,7 +326,7 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    rb.getString(MessageFormat.format(NAME_NOT_BOUND, name.get(0))));
+                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
         }
         
         if (name.size() > 1) {
@@ -417,7 +417,7 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    rb.getString(MessageFormat.format(NAME_NOT_BOUND, name.get(0))));
+                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
         }
         
         if (entry.type != NamingEntry.CONTEXT) {
@@ -469,7 +469,7 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    rb.getString(MessageFormat.format(NAME_NOT_BOUND, name.get(0))));
+                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
         }
         
         if (entry.type != NamingEntry.CONTEXT) {
@@ -535,7 +535,7 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    rb.getString(MessageFormat.format(NAME_NOT_BOUND, name.get(0))));
+                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
         }
         
         if (name.size() > 1) {
@@ -842,7 +842,7 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    rb.getString(MessageFormat.format(NAME_NOT_BOUND, name.get(0))));
+                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
         }
         
         if (name.size() > 1) {
@@ -916,7 +916,7 @@ public class NamingContext implements Context {
         if (name.size() > 1) {
             if (entry == null) {
                 throw new NameNotFoundException(
-                        rb.getString(MessageFormat.format(NAME_NOT_BOUND, name.get(0))));
+                        MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
             }
             if (entry.type == NamingEntry.CONTEXT) {
                 if (rebind) {
@@ -931,7 +931,7 @@ public class NamingContext implements Context {
         } else {
             if ((!rebind) && (entry != null)) {
                 throw new NamingException(
-                        rb.getString(MessageFormat.format(ALREADY_BOUND, name.get(0))));
+                        MessageFormat.format(rb.getString(ALREADY_BOUND), name.get(0)));
             } else {
                 // Getting the type of the object and wrapping it within a new
                 // NamingEntry
