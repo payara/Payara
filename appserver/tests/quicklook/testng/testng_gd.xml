@@ -213,12 +213,10 @@
         <class name="test.clusterteardown.ClusterTeardownTest"/>
     </classes>
   </test>
-<!--
   <test name="jms_injection_jmsContext">
     <classes>
 	    <class name="test.jms.injection.ClientTestNG"/>
     </classes>
   </test>
--->
 </suite>
 

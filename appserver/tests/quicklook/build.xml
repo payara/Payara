@@ -260,7 +260,7 @@
         <ant dir="ejb/singleton" target="build-deploy"/>
         <ant dir="ejb/cmp" target="build-deploy"/>
         <ant dir="ejb/mdb" target="build"/>
-        <!--<ant dir="jms/injection" target="build-deploy"/>-->
+        <ant dir="jms/injection" target="build-deploy"/>
         <!-- Temporarily jruby test is commented, because we need to integrate a newer version
              for the test to pass. We are waiting for RE to release a newer version.
         <ant dir="web/jruby" target="build-deploy"/>
@@ -286,7 +286,7 @@
         <ant dir="weld/numberguess" target="undeploy"/>
         <ant dir="weld/osgiweld" target="undeploy"/>
         <ant dir="weld/extensions" target="undeploy"/>
-        <!--<ant dir="jms/injection" target="undeploy"/>-->
+        <ant dir="jms/injection" target="undeploy"/>
         <record name="${basedir}/undeploy.output" action="stop"/>
     </target>
 
