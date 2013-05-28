@@ -58,26 +58,21 @@
 
 package org.apache.naming.resources;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.io.File;
-import java.io.InputStream;
-import java.io.IOException;
 
 import javax.naming.Binding;
 import javax.naming.NameClassPair;
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
-import javax.naming.NameNotFoundException;
-import javax.naming.OperationNotSupportedException;
-import javax.naming.NameAlreadyBoundException;
-import javax.naming.directory.DirContext;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.ModificationItem;
-import javax.naming.directory.SearchControls;
-import javax.naming.directory.SearchResult;
 
 import org.apache.naming.NamingEntry;
 import org.apache.naming.NamingContextBindingsEnumeration;
@@ -528,13 +523,10 @@ public class WebDirContext extends FileDirContext {
         // --------------------------------------------------- Member Variables
         
         
-        protected JarEntry jarEntry;
+        protected transient JarEntry jarEntry;
         
         
         protected boolean accessed = false;
-
-
-        protected String canonicalPath = null;
         
         
         // ----------------------------------------- ResourceAttributes Methods
@@ -652,7 +644,15 @@ public class WebDirContext extends FileDirContext {
             return null;
         }
 
+        // ----------------------------------------- Serializables Methods
 
+        private void readObject(ObjectInputStream ois) throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        private void writeObject(ObjectOutputStream oos) throws IOException {
+            throw new UnsupportedOperationException();
+        }
     }
 }
 
