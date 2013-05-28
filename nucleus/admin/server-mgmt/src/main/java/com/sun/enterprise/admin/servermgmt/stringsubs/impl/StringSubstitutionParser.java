@@ -58,6 +58,7 @@ import javax.xml.validation.SchemaFactory;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionException;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.StringsubsDefinition;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -67,8 +68,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 public class StringSubstitutionParser {
 
-    private static final Logger _logger = 
-            Logger.getLogger(StringSubstitutionParser.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger(); 
+            
     private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionParser.class);
     // Path where schema resides i.e Parent directory for schema. 
     private final static String DEFAULT_SCHEMA = "xsd/schema/stringsubs.xsd";
@@ -108,7 +109,9 @@ public class StringSubstitutionParser {
                     configStream.close();
                     configStream = null;
                 } catch(IOException e) {
-                    _logger.log(Level.FINER, _strings.get("errorInClosingStream"));
+                	if (_logger.isLoggable(Level.FINER)) {
+                		_logger.log(Level.FINER, _strings.get("errorInClosingStream"));
+                	}
                 }
             }
         }

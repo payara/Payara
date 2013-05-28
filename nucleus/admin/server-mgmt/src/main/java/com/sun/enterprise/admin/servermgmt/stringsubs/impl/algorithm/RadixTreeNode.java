@@ -48,14 +48,15 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Node for {@link RadixTree}.
  */
 class RadixTreeNode {
-    private static final Logger _logger = 
-            Logger.getLogger(RadixTreeNode.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
+    
     private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTreeNode.class);
 
     // Node key.
@@ -153,8 +154,8 @@ class RadixTreeNode {
         }
         RadixTreeNode oldNode = _childNodes.put(c, node);
         if (oldNode != null) {
-            _logger.log(Level.WARNING, "Parent node (" + this + ") contain child node :" + oldNode
-                    + " whose key starts with same character as the key of given node : " + node);
+            _logger.log(Level.WARNING, SLogger.CHILD_NODE_EXISTS, 
+            		new Object[] {this.toString(), oldNode.toString(), node.toString()});
             oldNode._parentNode = null;
         }
         node._parentNode = this;
@@ -176,7 +177,6 @@ class RadixTreeNode {
                 node = _childNodes.remove(c);
                 node._parentNode = null;
             } else {
-                _logger.log(Level.WARNING, _strings.get("errorInChildNodeDeletion", node, this));
                 throw new IllegalArgumentException(_strings.get("invalidChildNode", node, this));
             }
         }

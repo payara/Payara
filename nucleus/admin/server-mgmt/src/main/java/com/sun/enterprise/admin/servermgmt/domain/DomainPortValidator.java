@@ -40,10 +40,12 @@
 package com.sun.enterprise.admin.servermgmt.domain;
 
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.domain.SubstitutableTokens;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.net.NetUtils;
@@ -51,7 +53,7 @@ import com.sun.enterprise.util.net.NetUtils;
 public class DomainPortValidator {
 
     /* These properties are public interfaces, handle with care */
-    private static final Logger _logger = Logger.getLogger(DomainPortValidator.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
     private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainPortValidator.class);
 
     public static final int PORT_MAX_VAL = 65535;
@@ -194,31 +196,31 @@ public class DomainPortValidator {
             int newport = NetUtils.getFreePort();
             if (portNotSpecified) {
                 if (defaultPortUsed) {
-                    _logger.info(_strings.get("DefaultPortInUse",
-                            name, defaultPort, Integer.toString(newport)));
+                    _logger.log(Level.INFO, SLogger.DEFAULT_PORT_IN_USE,
+                            new Object[] {name, defaultPort, Integer.toString(newport)});
                 }
                 else {
-                    _logger.info(_strings.get("PortNotSpecified",
-                            name, Integer.toString(newport)));
+                    _logger.log(Level.INFO, SLogger.PORT_NOT_SPECIFIED,
+                            new Object[] {name, Integer.toString(newport)});
                 }
             }
             else if (invalidPortSpecified) {
-                _logger.info(_strings.get("InvalidPortRangeMsg",
-                        name, Integer.toString(newport)));
+                _logger.log(Level.INFO, SLogger.INVALID_PORT_RANGE,
+                        new Object[] {name, Integer.toString(newport)});
             }
             else {
-                _logger.info(_strings.get("PortInUse",
-                        name, Integer.toString(port), Integer.toString(newport)));
+                _logger.log(Level.INFO, SLogger.PORT_IN_USE,
+                        new Object[] {name, Integer.toString(port), Integer.toString(newport)});
             }
             port = newport;
         }
         else if (defaultPortUsed) {
-            _logger.info(_strings.get("UsingDefaultPort",
-                    name, Integer.toString(port)));
+            _logger.log(Level.INFO, SLogger.USING_DEFAULT_PORT,
+                    new Object[] {name, Integer.toString(port)});
         }
         else {
-            _logger.info(_strings.get("UsingPort",
-                    name, Integer.toString(port)));
+            _logger.log(Level.INFO, SLogger.USING_PORT,
+                    new Object[] {name, Integer.toString(port)});
         }
 
         if (properties != null) {

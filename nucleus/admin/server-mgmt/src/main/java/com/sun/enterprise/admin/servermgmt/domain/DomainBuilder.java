@@ -63,6 +63,7 @@ import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.RepositoryException;
 import com.sun.enterprise.admin.servermgmt.RepositoryManager;
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.pe.PEDomainConfigValidator;
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutionFactory;
 import com.sun.enterprise.admin.servermgmt.stringsubs.StringSubstitutor;
@@ -80,7 +81,7 @@ import com.sun.enterprise.util.io.FileUtils;
  */
 public class DomainBuilder {
 
-    private static final Logger _logger = Logger.getLogger(DomainBuilder.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
     private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainBuilder.class);
 
     /** The default stringsubs configuration file name. */
@@ -154,7 +155,7 @@ public class DomainBuilder {
                 }
                 _extractedEntries.add(je.getName());
             } else {
-                _logger.log(Level.WARNING, _strings.get("missingFile", STRINGSUBS_FILE));
+                _logger.log(Level.WARNING, SLogger.MISSING_FILE, STRINGSUBS_FILE);
             }
             _domainTempalte = new DomainTemplate(templateInfoHolder, stringSubstitutor, templateJarPath);
 
@@ -236,7 +237,7 @@ public class DomainBuilder {
                     File dir = new File(domainDir, jarEntry.getName());
                     if (!dir.exists()) {
                         if (!dir.mkdir()) {
-                            _logger.log(Level.WARNING, _strings.get("directoryCreationError", dir.getName())); 
+                            _logger.log(Level.WARNING, SLogger.DIR_CREATION_ERROR, dir.getName()); 
                         }
                     }
                     continue;

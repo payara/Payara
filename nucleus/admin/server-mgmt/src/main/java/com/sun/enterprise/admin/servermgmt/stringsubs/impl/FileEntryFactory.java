@@ -50,6 +50,9 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.glassfish.api.logging.LogHelper;
+
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.FileEntry;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -59,8 +62,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 class FileEntryFactory {
 
-    private static final Logger _logger = 
-            Logger.getLogger(FileEntryFactory.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
     private static final LocalStringsImpl _strings = new LocalStringsImpl(FileEntryFactory.class);
 
     /**
@@ -97,7 +99,9 @@ class FileEntryFactory {
                         if(matchingFile.exists() && matchingFile.canRead() && matchingFile.canWrite()) {
                             retrievedFiles.add(matchingFile);
                         } else {
-                            _logger.log(Level.FINER, _strings.get("skipFileFromSubstitution", matchingFile.getAbsolutePath()));
+                        	if (_logger.isLoggable(Level.FINER)) {
+                        		_logger.log(Level.FINER, _strings.get("skipFileFromSubstitution", matchingFile.getAbsolutePath()));
+                        	}
                         }
                     }
                 }
@@ -107,7 +111,9 @@ class FileEntryFactory {
                 retrievedFiles = fileLocator.getFiles(fileEntry.getName());
             }
             if (retrievedFiles == null || retrievedFiles.isEmpty()) {
-                _logger.log(Level.FINER, _strings.get("noMatchedFile", pathEntry));
+            	if (_logger.isLoggable(Level.FINER)) {
+            		_logger.log(Level.FINER, _strings.get("noMatchedFile", pathEntry));
+            	}
                 continue;
             }
             if (substituables == null) {
@@ -120,7 +126,7 @@ class FileEntryFactory {
                                 new LargeFileSubstitutionHandler(retrievedFile) : new SmallFileSubstitutionHandler(retrievedFile);
                                 substituables.add(substituable);
                     } catch (FileNotFoundException e) {
-                        _logger.log(Level.WARNING, _strings.get("invalidFileLocation", retrievedFile), e );
+                    	LogHelper.log(_logger, Level.WARNING, SLogger.INVALID_FILE_LOCATION, e, retrievedFile);
                     }
                 }
             }

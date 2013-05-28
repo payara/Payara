@@ -48,19 +48,18 @@ import java.util.logging.Logger;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 
+import org.glassfish.api.logging.LogHelper;
+
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.xml.domaininfo.DomainInfo;
 import com.sun.enterprise.admin.servermgmt.xml.domaininfo.ObjectFactory;
 import com.sun.enterprise.admin.servermgmt.xml.domaininfo.TemplateRef;
 import com.sun.enterprise.admin.servermgmt.xml.templateinfo.TemplateInfo;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
 
 public class DomainInfoManager {
 
-    private static final Logger _logger = LogDomains.getLogger(DomainInfoManager.class,
-            LogDomains.ADMIN_LOGGER);
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(DomainInfoManager.class);
+    private static final Logger _logger = SLogger.getLogger();
 
     private static final String JAVA_HOME = "JAVA_HOME";
 
@@ -74,7 +73,7 @@ public class DomainInfoManager {
             TemplateInfo templateInfo = domainTemplate.getInfo();
             File infoDir = new File(domainDir, DomainConstants.INFO_DIRECTORY);
             if(!infoDir.exists() && !infoDir.mkdirs()) {
-                _logger.log(Level.INFO, _strings.get("directoryCreationError", infoDir.getAbsolutePath()));
+                _logger.log(Level.INFO, SLogger.DIR_CREATION_ERROR, infoDir.getAbsolutePath());
                 return;
             }
             File domainInfoXML = new File(infoDir, DomainConstants.DOMAIN_INFO_XML);
@@ -99,7 +98,9 @@ public class DomainInfoManager {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
             marshaller.marshal(objFactory.createDomainInfo(domainInfo), outputStream);
         } catch (Exception e) {
-            _logger.log(Level.WARNING, _strings.get("directoryCreationError", DomainConstants.DOMAIN_INFO_XML), e);
+        	LogHelper.log(_logger, Level.WARNING, 
+        		SLogger.DOMAIN_INFO_CREATION_ERROR, e, 
+        		DomainConstants.DOMAIN_INFO_XML);
         } finally {
             if (outputStream != null) {
                 try {

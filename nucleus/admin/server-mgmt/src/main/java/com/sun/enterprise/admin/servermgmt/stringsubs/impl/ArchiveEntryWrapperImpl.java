@@ -60,6 +60,9 @@ import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.glassfish.api.logging.LogHelper;
+
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Archive;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.MemberEntry;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -70,10 +73,10 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * after substitution operation.
  */
 public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
-    private static final Logger _logger = 
-            Logger.getLogger(ArchiveEntryWrapperImpl.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
+    
     private static final LocalStringsImpl _strings = new LocalStringsImpl(ArchiveEntryWrapperImpl.class);
-
+    
     // Prefix for the extraction directory.
     private static final String EXTRACTION_DIR_PREFIX  = "ext";
     // A buffer for better jar performance during extraction.
@@ -140,7 +143,7 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
             }
             catch (IOException e) {
                 SubstitutionFileUtil.removeDir(_extractDir);
-                _logger.log(Level.WARNING, _strings.get("errorInArchiveSubstitution", _archive.getName()), e);
+                LogHelper.log(_logger, Level.WARNING, SLogger.ERR_ARCHIVE_SUBSTITUTION, e, _archive.getName());
             }
         }
     }
@@ -178,7 +181,8 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
                 getAllArchiveMemberList().add(new ArchiveMemberHandler(file, this));
                 _noOfExtractedEntries.incrementAndGet();
             } else {
-                _logger.log(Level.WARNING, _strings.get("invalidArchiveEntry", object, _archive.getName()));
+            	_logger.log(Level.WARNING, SLogger.INVALID_ARCHIVE_ENTRY, 
+            			new Object[] {object, _archive.getName()});
             }
         }
     }
@@ -215,13 +219,13 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
 
         JarEntry jarEntry = _jar.getJarEntry(name);
         if (jarEntry == null) {
-            _logger.log(Level.FINE, _strings.get("invalidArchiveEntry", name, _jar.getName()));
-            throw new IllegalArgumentException();
+    		String msg = _strings.get("invalidArchiveEntry", name, _jar.getName());
+            throw new IllegalArgumentException(msg);
         }
 
         if (jarEntry.isDirectory() && !file.exists()) {
             if (!file.mkdirs()) {
-                _logger.log(Level.INFO, _strings.get("directoryCreationError", file.getAbsolutePath()));
+                _logger.log(Level.INFO, SLogger.DIR_CREATION_ERROR, file.getAbsolutePath());
             }
             return;
         }
@@ -240,14 +244,18 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
                 try {
                     in.close();
                 } catch (Exception e) {
-                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", _jar.getName()), e);
+                	if (_logger.isLoggable(Level.FINER)) {
+                        _logger.log(Level.FINER, _strings.get("errorInClosingStream", _jar.getName()), e);                		
+                	}
                 }
             }
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (Exception e) {
-                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", file.getPath()), e);
+                	if (_logger.isLoggable(Level.FINER)) {
+                        _logger.log(Level.FINER, _strings.get("errorInClosingStream", file.getPath()), e);                		
+                	}
                 }
             }
         }
@@ -260,7 +268,9 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
      */
     void updateArchive() throws IOException {
         if (_extractedEntries.isEmpty()) {
-            _logger.log(Level.FINER, _strings.get("noArchiveEntryToUpdate", _archive.getName())); 
+        	if (_logger.isLoggable(Level.FINER)) {
+                _logger.log(Level.FINER, _strings.get("noArchiveEntryToUpdate", _archive.getName()));        		
+        	}
             return;
         }
         if (_jar == null) {
@@ -297,32 +307,37 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
             success = true;
         }
         catch (Exception e) {
-            _logger.log(Level.SEVERE, _strings.get("errorInClosingStream",
-                    _archive.getName()), e);
+        	LogHelper.log(_logger, Level.SEVERE, SLogger.ERR_CLOSING_STREAM, e, _archive.getName());
         } finally {
             if (jos != null) {
                 try {
                     jos.close();
                 } catch(IOException e) {
-                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", jarFile.getPath()), e);
+                	if (_logger.isLoggable(Level.FINER)) {
+                		_logger.log(Level.FINER, _strings.get("errorInClosingStream", jarFile.getPath()), e);
+                	}
                 }
             }
             if (fos != null) {
                 try {
                     fos.close();
                 } catch(IOException e) {
-                    _logger.log(Level.FINER, _strings.get("errorInClosingStream", jarFile.getPath()), e);
+                	if (_logger.isLoggable(Level.FINER)) {
+                		_logger.log(Level.FINER, _strings.get("errorInClosingStream", jarFile.getPath()), e);
+                	}
                 }
             }
             try {
                 _jar.close();
             } catch(IOException e) {
-                _logger.log(Level.FINER, "Problem occurred while closing the jar file : " + jarFile.getPath(), e);
+            	if (_logger.isLoggable(Level.FINER)) {
+            		_logger.log(Level.FINER, "Problem occurred while closing the jar file : " + jarFile.getPath(), e);
+            	}
             }
 
             if(jarFile != null && !jarFile.delete()) {
                 if (tempJarFile != null && !tempJarFile.delete()) {
-                    _logger.log(Level.INFO, _strings.get("errorInClosingStream", tempJarFile.getAbsolutePath()));
+                    _logger.log(Level.SEVERE, SLogger.ERR_CLOSING_STREAM, tempJarFile.getAbsolutePath());
                 }
                 throw new IOException(jarFile.getPath() + " did not get updated. Unable to delete.");
             } else if(!success) {
@@ -331,8 +346,8 @@ public class ArchiveEntryWrapperImpl implements ArchiveEntryWrapper {
                 }
             }
             else if (tempJarFile != null && !tempJarFile.renameTo(jarFile)) {
-                _logger.log(Level.SEVERE, _strings.get("errorInRenamingJar",
-                        tempJarFile.getName(),  jarFile.getName()));
+                _logger.log(Level.SEVERE, SLogger.ERR_RENAMING_JAR,
+                        new Object[] {tempJarFile.getName(),  jarFile.getName()});
             }
         }
     }

@@ -45,11 +45,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
 import com.sun.enterprise.admin.servermgmt.stringsubs.SubstitutableFactory;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Archive;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.FileEntry;
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
  * Default {@link SubstitutableFactory} implementation to retrieve the
@@ -57,9 +57,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 public class SubstituableFactoryImpl implements SubstitutableFactory {
 
-    private static final Logger _logger = 
-            Logger.getLogger(ArchiveEntryWrapperImpl.class.getPackage().getName());
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(SubstituableFactoryImpl.class);
+    private static final Logger _logger = SLogger.getLogger();            
 
     @Override
     public List<? extends Substitutable> getFileEntrySubstituables(
@@ -73,7 +71,7 @@ public class SubstituableFactoryImpl implements SubstitutableFactory {
         try {
             return new ArchiveEntryWrapperImpl(archive).getSubstitutables();
         } catch (IOException e) {
-            _logger.log(Level.INFO, _strings.get("errorInRetrievingSubstitutableEntries", archive.getName()));
+            _logger.log(Level.INFO, SLogger.ERR_RETRIEVING_SUBS_ENTRIES, archive.getName());
         }
         return null;
     }

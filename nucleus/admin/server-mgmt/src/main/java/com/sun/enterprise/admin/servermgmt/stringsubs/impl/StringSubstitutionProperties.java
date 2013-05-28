@@ -46,17 +46,15 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.enterprise.universal.i18n.LocalStringsImpl;
+import com.sun.enterprise.admin.servermgmt.SLogger;
 
 /**
  * Load and retrieves the string substitution properties.
  */
 public class StringSubstitutionProperties {
 
-    private static final Logger _logger = 
-            Logger.getLogger(StringSubstitutionProperties.class.getPackage().getName());
-    private static final LocalStringsImpl _strings = new LocalStringsImpl(StringSubstitutionProperties.class);
-
+    private static final Logger _logger = SLogger.getLogger();
+    
     private static final String STRINGSUBS_PROPERTIES = "/com/sun/enterprise/admin/servermgmt/stringsubs/stringsubs.properties";
     private static Properties _properties = null;
 
@@ -70,7 +68,7 @@ public class StringSubstitutionProperties {
             _properties = new Properties();
             _properties.load(in);
         } catch (IOException e) {
-            _logger.log(Level.INFO, _strings.get("invalidFileLocation", STRINGSUBS_PROPERTIES));
+            _logger.log(Level.INFO, SLogger.INVALID_FILE_LOCATION, STRINGSUBS_PROPERTIES);
         } finally {
             if (in != null) {
                 try {

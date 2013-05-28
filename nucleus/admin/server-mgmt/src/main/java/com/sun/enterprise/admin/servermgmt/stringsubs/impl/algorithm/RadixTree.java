@@ -43,6 +43,7 @@ package com.sun.enterprise.admin.servermgmt.stringsubs.impl.algorithm;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
@@ -54,8 +55,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 class RadixTree {
 
-    private static final Logger _logger = 
-            Logger.getLogger(RadixTree.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
     private static final LocalStringsImpl _strings = new LocalStringsImpl(RadixTree.class);
     // Reference to root node.
     private RadixTreeNode _rootNode;
@@ -145,7 +145,7 @@ class RadixTree {
 
             if (noOfMatchedChars == keyLength) {
                 if (node.getValue() != null && !node.getValue().isEmpty()) {
-                    _logger.log(Level.INFO, _strings.get("changeInValue", node.getValue(), value));
+                    _logger.log(Level.INFO, SLogger.CHANGE_IN_VALUE, new Object[] {node.getValue(), value});
                 }
                 node.setValue(value);
                 break;

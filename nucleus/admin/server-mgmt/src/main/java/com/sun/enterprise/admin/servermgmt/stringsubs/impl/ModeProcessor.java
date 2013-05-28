@@ -41,8 +41,10 @@
 package com.sun.enterprise.admin.servermgmt.stringsubs.impl;
 
 import java.io.File;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.ChangePairRef;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.Group;
 import com.sun.enterprise.admin.servermgmt.xml.stringsubs.ModeType;
@@ -59,8 +61,7 @@ import com.sun.enterprise.admin.servermgmt.xml.stringsubs.ModeType;
  */
 public class ModeProcessor {
 
-    private static final Logger _logger = 
-            Logger.getLogger(ModeProcessor.class.getPackage().getName());
+    private static final Logger _logger = SLogger.getLogger();
     /**
      * Process the {@link ModeType} for a given string.
      * <li>
@@ -99,7 +100,7 @@ public class ModeProcessor {
                 input = input.replace(File.separator, "${/}");
                 break;
             default:
-                _logger.warning("No processing defined for " + modeType.toString() + " mode.");
+                _logger.log(Level.WARNING, SLogger.NO_PROCESSOR_DEFINED, modeType.toString());
                 break;
         }
         return input;

@@ -48,6 +48,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
@@ -55,8 +56,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  * It also handles the processing of wild-card in the given path.
  */
 final class FileLister {
-    private static final Logger _log = 
-            Logger.getLogger(FileLister.class.getPackage().getName());
+    private static final Logger _log = SLogger.getLogger(); 
+            
     private static final LocalStringsImpl _strings = new LocalStringsImpl(FileLister.class);
 
     final static String ASTERISK = "*";
@@ -87,7 +88,9 @@ final class FileLister {
             // get parent file of the head, add "temp" to handle input like /path/to/parent/* 
             File parent = (new File(head + "temp")).getParentFile();
             if (parent == null) {
-                _log.log(Level.FINEST, _strings.get("parentFileNotSpecified"));
+            	if (_log.isLoggable(Level.FINEST)){
+            		_log.log(Level.FINEST, _strings.get("parentFileNotSpecified"));
+            	}
                 parent = (new File(head + "temp").getAbsoluteFile()).getParentFile();
             }
 
@@ -150,7 +153,9 @@ final class FileLister {
             }
             else if (File.separator.equals("\\") && pathPattern.contains("/")) {
                 pathPattern = pathPattern.replace("/", File.separator);
-                _log.log(Level.FINEST, "detected \"/\" in pathWithPattern on Windows, replace with \"\\\"");
+                if (_log.isLoggable(Level.FINEST)) {
+                	_log.log(Level.FINEST, "detected \"/\" in pathWithPattern on Windows, replace with \"\\\"");
+                }
                 numTries++;
             } else {
                 break;
@@ -169,7 +174,7 @@ final class FileLister {
         List<File> retFiles = new LinkedList<File>();
         if (!rootfile.exists()) {
             // No operation, return empty list
-            _log.log(Level.INFO, _strings.get("invalidFileLocation", rootfile.getAbsolutePath()));
+            _log.log(Level.INFO, SLogger.INVALID_FILE_LOCATION, rootfile.getAbsolutePath());
         }
         else if (!rootfile.isDirectory()) {
             retFiles.add(rootfile);

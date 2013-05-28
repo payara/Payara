@@ -47,6 +47,7 @@ import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.stringsubs.Substitutable;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
@@ -57,8 +58,8 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
  */
 public abstract class FileSubstitutionHandler implements Substitutable {
 
-    protected static final Logger _logger = 
-            Logger.getLogger(FileSubstitutionHandler.class.getPackage().getName());
+    protected static final Logger _logger = SLogger.getLogger(); 
+            
     protected static final LocalStringsImpl _strings = new LocalStringsImpl(FileLister.class);
 
     /** A {@link Reader} to read the character stream from input file. */
@@ -89,14 +90,18 @@ public abstract class FileSubstitutionHandler implements Substitutable {
             try {
                 _reader.close();
             } catch (Exception e) {
-                _logger.log(Level.FINER, _strings.get("errorInClosingStream", _inputFile.getAbsolutePath() ), e);
+            	if (_logger.isLoggable(Level.FINER)) {
+            		_logger.log(Level.FINER, _strings.get("errorInClosingStream", _inputFile.getAbsolutePath() ), e);
+            	}
             }
         }
         if (_writer != null) {
             try {
                 _writer.close();
             } catch (Exception e) {
-                _logger.log(Level.FINER, _strings.get("errorInClosingStream"), e);
+            	if (_logger.isLoggable(Level.FINER)) {
+            		_logger.log(Level.FINER, _strings.get("errorInClosingStream"), e);
+            	}
             }
         }
     }
