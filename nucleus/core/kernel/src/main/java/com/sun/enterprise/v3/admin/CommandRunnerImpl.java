@@ -370,7 +370,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 }
             }
             String errorMsg;
-            final String usage = getUsageText(command, model);
+            final String usage = getUsageText(model);
             if (paramModel != null) {
                 String paramName = paramModel.getName();
                 String paramDesc = paramModel.getLocalizedDescription();
@@ -435,7 +435,7 @@ public class CommandRunnerImpl implements CommandRunner {
             report.setFailureCause(exception);
             ActionReport.MessagePart childPart =
                     report.getTopMessagePart().addChild();
-            childPart.setMessage(getUsageText(command, model));
+            childPart.setMessage(getUsageText(model));
             return report.getActionExitCode();
         }
         
@@ -579,12 +579,11 @@ public class CommandRunnerImpl implements CommandRunner {
      * If defined, then use the usagetext from LocalString.properties else
      * generate the usagetext from Param annotations in the command class.
      *
-     * @param command class
      * @param model command model
      * @return usagetext
      */
-    static String getUsageText(AdminCommand command, CommandModel model) {
-        StringBuffer usageText = new StringBuffer();
+    static String getUsageText(CommandModel model) {
+        StringBuilder usageText = new StringBuilder();
 
         String usage;
         if (ok(usage = model.getUsageText())) {
@@ -698,7 +697,7 @@ public class CommandRunnerImpl implements CommandRunner {
             hlp.append(formatGeneratedManPagePart(part.toString(), 5, 65)).append(ManifestUtils.EOL);
             //Usage
             hlp.append(ManifestUtils.EOL).append("SYNOPSIS").append(ManifestUtils.EOL);
-            hlp.append(formatGeneratedManPagePart(getUsageText(null, model), 5, 65));
+            hlp.append(formatGeneratedManPagePart(getUsageText(model), 5, 65));
             //Options
             hlp.append(ManifestUtils.EOL).append(ManifestUtils.EOL);
             hlp.append("OPTIONS").append(ManifestUtils.EOL);
@@ -806,7 +805,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     + model.getLocalizedDescription());
             report.getTopMessagePart().addProperty("SYNOPSIS",
                     encodeManPage(new BufferedReader(new StringReader(
-                    getUsageText(command, model)))));
+                    getUsageText(model)))));
             for (CommandModel.ParamModel param : model.getParameters()) {
                 addParamUsage(report, param);
             }
@@ -1196,7 +1195,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     report.setFailureCause(exception);
                     ActionReport.MessagePart childPart =
                             report.getTopMessagePart().addChild();
-                    childPart.setMessage(getUsageText(command, model));
+                    childPart.setMessage(getUsageText(model));
                     return;
                 }
 
@@ -1513,7 +1512,7 @@ public class CommandRunnerImpl implements CommandRunner {
                 report.setFailureCause(ex);
                 ActionReport.MessagePart childPart =
                         report.getTopMessagePart().addChild();
-                childPart.setMessage(getUsageText(command, model));
+                childPart.setMessage(getUsageText(model));
                 return;
             }
             /*

@@ -40,15 +40,9 @@
 package com.sun.enterprise.admin.util.cache;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.ServiceLoader;
 import java.util.regex.Pattern;
-import org.glassfish.hk2.api.ServiceHandle;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
 
 /** Tooling for AdminCache {@link DataProvider} implementation.
  *

@@ -89,7 +89,7 @@ public interface AdminCommandEventBroker<T> {
      */
     public interface EventBrokerUtils {
         
-        static final String USER_MESSAGE_NAME = "usermessage";
+        public static final String USER_MESSAGE_NAME = "usermessage";
         
         public void sendMessage(String message);
         

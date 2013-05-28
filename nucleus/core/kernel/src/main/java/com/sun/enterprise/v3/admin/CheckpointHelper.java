@@ -79,20 +79,28 @@ public class CheckpointHelper {
         oos.close();
         //TODO: Must imlement dirty tag to payloads
         //TODO: Must implement better sollution for unexpected IOException - Serialize to tmp first and then rename
-        File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-        instance.saveOutbound(checkpoint.getContext().getOutboundPayload(), outboundFile);
-        File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-        instance.saveInbound(checkpoint.getContext().getInboundPayload(), inboundFile);
+        if (checkpoint.getContext().getOutboundPayload() != null) {
+            File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
+            instance.saveOutbound(checkpoint.getContext().getOutboundPayload(), outboundFile);
+        }
+        if (checkpoint.getContext().getInboundPayload() != null) {
+            File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
+            instance.saveInbound(checkpoint.getContext().getInboundPayload(), inboundFile);
+        }
     }
 
     public void saveAdminCommandContext(AdminCommandContext context, File contextFile) throws IOException {
         ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
         oos.writeObject(context);
         oos.close();
-        File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-        saveOutbound(context.getOutboundPayload(), outboundFile);
-        File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-        saveInbound(context.getInboundPayload(), inboundFile);
+        if (context.getOutboundPayload() != null) {
+            File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
+            saveOutbound(context.getOutboundPayload(), outboundFile);
+        }
+        if (context.getInboundPayload() != null) {
+            File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
+            saveInbound(context.getInboundPayload(), inboundFile);
+        }
     }
 
     public AdminCommandContext loadAdminCommandContext(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {

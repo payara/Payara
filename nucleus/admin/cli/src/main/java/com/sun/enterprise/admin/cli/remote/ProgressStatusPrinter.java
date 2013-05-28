@@ -46,6 +46,7 @@ import com.sun.enterprise.util.StringUtils;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.progress.ProgressStatusDTO;
@@ -156,6 +157,7 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                 if (StringUtils.ok(commandProgress.getName()) && !StringUtils.ok(commandProgress.getLastMessage())) {
                     commandProgress.progress(strings.getString("progressstatus.message.starting", "Starting"));
                 }
+                printCommandProgress();
             } else if (CommandProgress.EVENT_PROGRESSSTATUS_CHANGE.equals(name)) {
                 if (commandProgress == null) {
                     logger.log(Level.WARNING, strings.get("progressstatus.event.applyerror", "Inapplicable progress status event"));
@@ -163,10 +165,46 @@ public class ProgressStatusPrinter implements AdminCommandListener<GfSseInboundE
                 }
                 ProgressStatusEvent pse = event.getData(ProgressStatusEvent.class, CONTENT_TYPE);
                 client.mirror(pse);
+                printCommandProgress();
+            } else if (AdminCommandEventBroker.EventBrokerUtils.USER_MESSAGE_NAME.equals(name)) {
+                String msg = event.getData();
+                printUserMessage(msg);
             }
         } catch (IOException ex) {
             logger.log(Level.SEVERE, strings.get("progressstatus.event.parseerror", "Can not parse progress status event"), ex);
         }
+    }
+    
+    private synchronized void printUserMessage(String message) {
+        if (message == null) {
+            return;
+        }
+        if (lastMsgLength > 0) {
+            if (disableAnimation || debugOutput) {
+                if (disableAnimation) {
+                    System.out.println();
+                }
+                System.out.println(message);
+                System.out.print(lastMessage);
+                if (debugOutput) {
+                    System.out.println();
+                }
+            } else {
+                System.out.print('\r');
+                System.out.println(message);
+                int spaceCount = lastMsgLength - message.length();
+                for (int i = 0; i < spaceCount; i++) {
+                    System.out.print(' ');
+                }
+                System.out.println();
+                System.out.print(lastMessage);
+            }
+        } else {
+            System.out.println(message);
+        }
+    }
+    
+    private synchronized void printCommandProgress() {
         //Now print
         if (commandProgress != null) {
             String message = ProgressStatusClient.composeMessageForPrint(commandProgress);

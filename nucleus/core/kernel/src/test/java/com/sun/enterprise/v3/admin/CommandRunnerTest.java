@@ -65,7 +65,7 @@ public class CommandRunnerTest {
         String expectedUsageText = "Usage: dummy-admin --foo=foo [--bar=false] --hello=there world ";
         DummyAdminCommand dac = new DummyAdminCommand();
         CommandModel model = new CommandModelImpl(DummyAdminCommand.class);
-        String actualUsageText = cr.getUsageText(dac, model);
+        String actualUsageText = cr.getUsageText(model);
         assertEquals(expectedUsageText, actualUsageText);
     }
 

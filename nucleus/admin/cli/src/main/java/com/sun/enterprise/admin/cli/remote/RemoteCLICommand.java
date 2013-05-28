@@ -68,6 +68,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
+import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandException;
@@ -144,6 +145,7 @@ public class RemoteCLICommand extends CLICommand {
             if (!programOpts.isTerse()) {
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_CHANGE, statusPrinter);
                 super.registerListener(CommandProgress.EVENT_PROGRESSSTATUS_STATE, statusPrinter);
+                super.registerListener(AdminCommandEventBroker.EventBrokerUtils.USER_MESSAGE_NAME, statusPrinter);
             }
             //Readtimeout
             String stimeout = env.getStringOption("READTIMEOUT");

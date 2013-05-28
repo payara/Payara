@@ -90,7 +90,7 @@ public class AdminMain {
     private final static int SUCCESS = 0;
     private final static int WARNING = 4;
     private final static String ADMIN_CLI_LOGGER =
-            "javax.enterprise.admin.cli";
+            "com.sun.enterprise.admin.cli";
     private static final String[] copyProps = {
         SystemPropertyConstants.INSTALL_ROOT_PROPERTY,
         SystemPropertyConstants.CONFIG_ROOT_PROPERTY,

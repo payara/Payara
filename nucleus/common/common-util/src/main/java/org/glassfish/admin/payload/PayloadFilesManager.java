@@ -609,8 +609,6 @@ public abstract class PayloadFilesManager {
 
         final Map<File,Properties> result = new LinkedHashMap<File,Properties>();
 
-        OutputStream os = null;
-
         boolean isReportProcessed = false;
         Part possibleUnrecognizedReportPart = null;
 

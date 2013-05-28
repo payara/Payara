@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.util;
 
+import com.sun.enterprise.util.StringUtils;
 import java.security.MessageDigest;
 import java.util.Comparator;
 import java.util.SortedSet;
@@ -154,6 +155,10 @@ public class CachedCommandModel extends CommandModelData {
                 }
                 if (param.alias() != null && !param.alias().isEmpty()) {
                     tag.append(param.alias());
+                }
+                if (StringUtils.ok(param.defaultValue())) {
+                    tag.append(param.defaultValue());
+                    tag.append("A"); //TODO: removeit
                 }
             }
         }

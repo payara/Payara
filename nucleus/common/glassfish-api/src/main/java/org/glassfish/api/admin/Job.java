@@ -43,6 +43,7 @@ import org.glassfish.api.ActionReport;
 
 import javax.security.auth.Subject;
 import java.io.File;
+import java.io.Serializable;
 
 /** Represents running (or finished) command instance.
  *
@@ -50,7 +51,7 @@ import java.io.File;
  * @author Martin Mares
  * @author Bhakti Mehta
  */
-public interface Job extends AdminCommandState {
+public interface Job extends AdminCommandState, Serializable {
     
     /** Command progress only if it is supported by command
      */
