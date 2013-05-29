@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.admin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
@@ -199,7 +198,7 @@ public class CheckpointTest {
     public void testSimpleInbound() throws Exception {
         ByteArrayInputStream inputStream = new ByteArrayInputStream("Hello world!".getBytes());
         Inbound inbound = PayloadImpl.Inbound.newInstance("text/plain", inputStream);
-        File inboundFile = File.createTempFile("inbound", "", topDir);
+        File inboundFile = new File(topDir, "inbound");
         checkpoint.saveInbound(inbound, inboundFile);
 
         Inbound inboundTest = checkpoint.loadInbound(inboundFile);
@@ -227,7 +226,7 @@ public class CheckpointTest {
         checkpoint.saveOutbound(outbound, outboundFile);
 
         Inbound inbound = PayloadImpl.Inbound.newInstance("application/zip", new FileInputStream(outboundFile));
-        File inboundFile = File.createTempFile("inbound", "", topDir);
+        File inboundFile = new File(topDir, "inbound");
         checkpoint.saveInbound(inbound, inboundFile);
 
         Inbound inboundTest = checkpoint.loadInbound(inboundFile);

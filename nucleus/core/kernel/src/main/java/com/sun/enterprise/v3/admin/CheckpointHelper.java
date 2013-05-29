@@ -74,32 +74,60 @@ public class CheckpointHelper {
     private static final CheckpointHelper instance = new CheckpointHelper();
     
     public static void save(JobManager.Checkpoint checkpoint, File contextFile) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
-        oos.writeObject(checkpoint);
-        oos.close();
-        //TODO: Must imlement dirty tag to payloads
-        //TODO: Must implement better sollution for unexpected IOException - Serialize to tmp first and then rename
-        if (checkpoint.getContext().getOutboundPayload() != null) {
-            File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-            instance.saveOutbound(checkpoint.getContext().getOutboundPayload(), outboundFile);
-        }
-        if (checkpoint.getContext().getInboundPayload() != null) {
-            File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-            instance.saveInbound(checkpoint.getContext().getInboundPayload(), inboundFile);
+        File outboundFile = null;
+        File inboundFile = null;
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
+            oos.writeObject(checkpoint);
+            oos.close();
+            Outbound outboundPayload = checkpoint.getContext().getOutboundPayload();
+            if (outboundPayload != null && outboundPayload.isDirty()) {
+                outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
+                instance.saveOutbound(outboundPayload, outboundFile);
+            }
+            Inbound inboundPayload = checkpoint.getContext().getInboundPayload();
+            if (inboundPayload != null) {
+                inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
+                instance.saveInbound(inboundPayload, inboundFile);
+            }
+        } catch (IOException e) {
+            contextFile.delete();
+            if (outboundFile != null) {
+                outboundFile.delete();
+            }
+            if (inboundFile != null) {
+                inboundFile.delete();
+            }
+            throw e;
         }
     }
 
     public void saveAdminCommandContext(AdminCommandContext context, File contextFile) throws IOException {
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
-        oos.writeObject(context);
-        oos.close();
-        if (context.getOutboundPayload() != null) {
-            File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-            saveOutbound(context.getOutboundPayload(), outboundFile);
-        }
-        if (context.getInboundPayload() != null) {
-            File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-            saveInbound(context.getInboundPayload(), inboundFile);
+        File outboundFile = null;
+        File inboundFile = null;
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
+            oos.writeObject(context);
+            oos.close();
+            Outbound outboundPayload = context.getOutboundPayload();
+            if (outboundPayload != null && outboundPayload.isDirty()) {
+                outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
+                saveOutbound(outboundPayload, outboundFile);
+            }
+            Inbound inboundPayload = context.getInboundPayload();
+            if (inboundPayload!= null) {
+                inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
+                saveInbound(inboundPayload, inboundFile);
+            }
+        } catch (IOException e) {
+            contextFile.delete();
+            if (outboundFile != null) {
+                outboundFile.delete();
+            }
+            if (inboundFile != null) {
+                inboundFile.delete();
+            }
+            throw e;
         }
     }
 
@@ -120,6 +148,7 @@ public class CheckpointHelper {
         FileOutputStream os = new FileOutputStream(outboundFile);
         // Outbound saves text/plain with one part as text with no any details, force zip
         writePartsTo(outbound.parts(), os);
+        outbound.resetDirty();
     }
 
     void loadOutbound(Outbound outbound, File outboundFile) throws IOException {
@@ -133,11 +162,14 @@ public class CheckpointHelper {
             FileUtils.copy(part.getInputStream(), new FileOutputStream(sourceFile), Long.MAX_VALUE);
             outbound.addPart(part.getContentType(), part.getName(), part.getProperties(), new FileInputStream(sourceFile));
         }
+        outbound.resetDirty();
     }
 
     void saveInbound(Payload.Inbound inbound, File inboundFile) throws IOException {
-        FileOutputStream os = new FileOutputStream(inboundFile);
-        writePartsTo(inbound.parts(), os);
+        if (!inboundFile.exists()) { // not saved yet
+            FileOutputStream os = new FileOutputStream(inboundFile);
+            writePartsTo(inbound.parts(), os);
+        }
     }
 
     Inbound loadInbound(File inboundFile) throws IOException {

@@ -86,6 +86,7 @@ class ZipPayloadImpl extends PayloadImpl {
      * Zip implementation of the Outbound Payload.
      */
     static class Outbound extends PayloadImpl.Outbound {
+        
 
         private void prepareEntry(final Payload.Part part, final ZipOutputStream zos) throws IOException {
             ZipEntry entry = new ZipEntry(part.getName());

@@ -40,7 +40,6 @@
 
 package org.glassfish.api.admin;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -355,6 +354,17 @@ public interface Payload {
          * @return Iterator over the outbound Parts
          */
         public Iterator<Part> parts();
+
+        /**
+         * Resets Payload dirty flag, indicating whether Payload was modified.
+         */
+        public void resetDirty();
+
+        /**
+         * Indicates whether Payload was modified since dirty flag was reset.
+         * @return <code>true</code> if Payload was modified.
+         */
+        public boolean isDirty();
 
     }
 

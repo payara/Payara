@@ -40,7 +40,6 @@
 
 package org.glassfish.admin.payload;
 
-import com.sun.xml.internal.xsom.impl.scd.Iterators;
 import java.io.*;
 import java.net.URI;
 import java.net.URLConnection;
@@ -48,8 +47,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.api.admin.Payload;
 
 /**
@@ -64,6 +61,8 @@ public class PayloadImpl implements Payload {
          * Partial implementation of the Outbound Payload.
          */
         private final ArrayList<Payload.Part> parts = new ArrayList<Payload.Part>();
+
+        private boolean dirty = false;
         
         @Override
         public int size() {
@@ -77,6 +76,7 @@ public class PayloadImpl implements Payload {
                 final Properties props,
                 final String content) throws IOException {
             parts.add(Part.newInstance(contentType, name, props, content));
+            dirty = true;
         }
 
         @Override
@@ -86,6 +86,7 @@ public class PayloadImpl implements Payload {
                 final Properties props,
                 final InputStream content) throws IOException {
             parts.add(Part.newInstance(contentType, name, props, content));
+            dirty = true;
         }
 
         @Override
@@ -97,6 +98,7 @@ public class PayloadImpl implements Payload {
                 final InputStream content
                 ) throws IOException {
             parts.add(index, Part.newInstance(contentType, name, props, content));
+            dirty = true;
         }
 
         @Override
@@ -106,6 +108,7 @@ public class PayloadImpl implements Payload {
                 final String dataRequestName,
                 final File file) throws IOException {
             attachFile(contentType, fileURI, dataRequestName, null /* props */, file, false /* isRecursive */);
+            dirty = true;
         }
 
         @Override
@@ -116,6 +119,7 @@ public class PayloadImpl implements Payload {
                 final File file,
                 final boolean isRecursive) throws IOException {
             attachFile(contentType, fileURI, dataRequestName, null /* props */, file, isRecursive);
+            dirty = true;
         }
 
         @Override
@@ -126,6 +130,7 @@ public class PayloadImpl implements Payload {
                 final Properties props,
                 final File file) throws IOException {
             attachFile(contentType, fileURI, dataRequestName, props, file, false /* isRecursive */);
+            dirty = true;
         }
 
         @Override
@@ -167,6 +172,7 @@ public class PayloadImpl implements Payload {
                         enhancedProps,
                         (file.isDirectory()) ? null : file));
             }
+            dirty = true;
         }
 
         @Override
@@ -220,6 +226,7 @@ public class PayloadImpl implements Payload {
                             enhancedProps,
                             file));
             }
+            dirty = true;
         }
 
         private void attachContainedFilesRecursively(
@@ -301,6 +308,7 @@ public class PayloadImpl implements Payload {
                 final String dataRequestName,
                 final Properties props) throws IOException {
             requestFileRemoval(fileURI, dataRequestName, props, false /* isRecursive */);
+            dirty = true;
         }
 
         @Override
@@ -321,6 +329,7 @@ public class PayloadImpl implements Payload {
                     fileURI.getRawPath(),
                     enhancedProps,
                     (String) null));
+            dirty = true;
         }
 
 
@@ -403,10 +412,20 @@ public class PayloadImpl implements Payload {
         public Iterator<Payload.Part> parts() {
             ArrayList<Payload.Part> prts = getParts();
             if (prts == null) {
-                return Collections.EMPTY_LIST.iterator();
+                return Collections.<Payload.Part>emptyList().iterator();
             } else {
                 return prts.iterator();
             }
+        }
+
+        @Override
+        public boolean isDirty() {
+            return dirty;
+        }
+
+        @Override
+        public void resetDirty() {
+            dirty = false;
         }
     }
 
@@ -449,7 +468,7 @@ public class PayloadImpl implements Payload {
 
             @Override
             public Iterator<Payload.Part> parts() {
-                return Collections.EMPTY_LIST.iterator();
+                return Collections.<Payload.Part>emptyList().iterator();
             }
 
         };
