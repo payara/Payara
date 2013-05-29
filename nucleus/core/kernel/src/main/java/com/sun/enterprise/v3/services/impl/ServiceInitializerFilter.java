@@ -114,14 +114,14 @@ public class ServiceInitializerFilter extends BaseFilter {
 
                     if (targetInitializerLocal == null) {
                         logger.log(Level.SEVERE, "NO Lazy Initialiser implementation was found for port = {0}",
-                                listener.getPort());
+                                String.valueOf(listener.getPort()));
                         nioConnection.close();
 
                         return ctx.getStopAction();
                     }
                     if (!targetInitializerLocal.initializeService()) {
                         logger.log(Level.SEVERE, "Lazy Service initialization failed for port = {0}",
-                                listener.getPort());
+                                String.valueOf(listener.getPort()));
 
                         nioConnection.close();
 

@@ -235,7 +235,7 @@ public class GrizzlyProxy implements NetworkProxy {
             logger.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
                     new Object[]{Grizzly.getDotedVersion(),
                     System.currentTimeMillis() - t1,
-                    grizzlyListener.getAddress(), ':', grizzlyListener.getPort(), ']'});
+                    grizzlyListener.getAddress(), ':', String.valueOf(grizzlyListener.getPort()), ']'});
         }
 
         future.result(new Result<Thread>(Thread.currentThread()));

@@ -420,7 +420,7 @@ public class ContainerMapper extends StaticHttpHandler {
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "MAPPER({0}) REGISTER contextRoot: {1} adapter: {2} container: {3} port: {4}",
-                    new Object[]{this, contextRoot, httpService, container, listener.getPort()});
+                    new Object[]{this, contextRoot, httpService, container, String.valueOf(listener.getPort())});
         }
 
         mapMultipleAdapter = true;
