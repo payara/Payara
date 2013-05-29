@@ -108,9 +108,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
 
     private volatile SecurityProvider atzPrvConfig;
     
-    private volatile AuthorizationProvider atzProvider;
-    // Support non-authorization packaged SPI provider class for compatibility
-    private volatile org.glassfish.security.services.spi.AuthorizationProvider provider = null;
+    private volatile AuthorizationProvider provider;
     
     private static final CodeSource NULL_CODESOURCE = new CodeSource(null, (CodeSigner[])null);
 
@@ -162,19 +160,10 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
             if ( isDebug() ) {
                 logger.log(DEBUG_LEVEL, "Attempting to get Authorization provider \"{0}\".", providerName );
             }
-            atzProvider = serviceLocator.getService(AuthorizationProvider.class, providerName);
-            if (atzProvider == null) {
-                // Check for non-authorization packaged SPI provider class for compatibility
-                provider = serviceLocator.getService(org.glassfish.security.services.spi.AuthorizationProvider.class, providerName);
-                if (provider == null) {
-                    throw new IllegalStateException(
-                        localStrings.getLocalString("service.atz.not_provider","Authorization Provider {0} not found.", providerName));
-                }
-            }
-
-            // Use non-authorization packaged SPI provider type to call SPI methods
+            provider = serviceLocator.getService(AuthorizationProvider.class, providerName);
             if (provider == null) {
-                provider = (org.glassfish.security.services.spi.AuthorizationProvider)atzProvider;
+                throw new IllegalStateException(
+                    localStrings.getLocalString("service.atz.not_provider","Authorization Provider {0} not found.", providerName));
             }
 
             // Initialize the provider
