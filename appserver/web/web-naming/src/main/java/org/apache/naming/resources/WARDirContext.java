@@ -193,7 +193,7 @@ public class WARDirContext extends BaseDirContext {
             this.base = new ZipFile(base);
         } catch (Exception e) {
 	    throw new IllegalArgumentException
-                (rb.getString(MessageFormat.format(INVALID_WAR, e.getMessage())));
+                (MessageFormat.format(rb.getString(INVALID_WAR), e.getMessage()));
         }
         super.setDocBase(docBase);
 
@@ -258,7 +258,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
         ZipEntry zipEntry = entry.getEntry();
         if (zipEntry.isDirectory())
             return new WARDirContext(base, entry);
@@ -343,7 +343,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
         return new NamingContextEnumeration(list(entry).iterator());
     }
 
@@ -387,7 +387,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
         return new NamingContextBindingsEnumeration(list(entry).iterator(), this);
     }
 
@@ -502,8 +502,8 @@ public class WARDirContext extends BaseDirContext {
             entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (rb.getString(MessageFormat.format(FileDirContext.RESOURCES_NOT_FOUND, name)));
-        
+                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
+
         ZipEntry zipEntry = entry.getEntry();
 
         ResourceAttributes attrs = new ResourceAttributes();
