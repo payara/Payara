@@ -467,7 +467,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public synchronized void stop() {
-        if(env.getStatus() != ServerEnvironment.Status.started) {
+        if(env.getStatus() == ServerEnvironment.Status.stopped) {
             // During shutdown because of shutdown hooks, we can be stopped multiple times.
             // In such a case, ignore any subsequent stop operations.
             logger.fine("Already stopped, so just returning");
