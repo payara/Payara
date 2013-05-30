@@ -56,8 +56,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -74,6 +77,10 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.container.EndpointRegistrationException;
 import org.glassfish.api.container.RequestDispatcher;
 import org.glassfish.api.deployment.ApplicationContainer;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.event.RestrictTo;
 import org.glassfish.common.util.Constants;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -82,7 +89,6 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.impl.FutureImpl;
-import org.glassfish.grizzly.impl.UnsafeFutureImpl;
 import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
@@ -107,7 +113,7 @@ import org.jvnet.hk2.config.Transactions;
 @Service
 @RunLevel(StartupRunLevel.VAL)
 @Rank(Constants.IMPORTANT_RUN_LEVEL_SERVICE)
-public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, FutureProvider<Result<Thread>> {
+public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDestroy, EventListener, FutureProvider<Result<Thread>> {
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -118,7 +124,10 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     @Inject
     Transactions transactions;
 
-    final Logger logger = KernelLoggerInfo.getLogger();
+    @Inject
+    Events events;
+    
+    private static final Logger LOGGER = KernelLoggerInfo.getLogger();
 
     private final Collection<NetworkProxy> proxies = new LinkedBlockingQueue<NetworkProxy>();
 
@@ -134,10 +143,21 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             Collections.newSetFromMap(
             new ConcurrentHashMap<MapperUpdateListener, Boolean>());
 
-    private final ReentrantReadWriteLock mapperLock = new ReentrantReadWriteLock();
+    /**
+     * HTTP Mapper update lock.
+     */
+    private final ReentrantReadWriteLock mapperLock =
+            new ReentrantReadWriteLock();
         
     private DynamicConfigListener configListener;
 
+    // Future to be set on server READY_EVENT
+    private final FutureImpl<Boolean> serverReadyFuture =
+            Futures.<Boolean>createSafeFuture();
+    // Listeners to be notified once server is in READY state.
+    private final Queue<Callable<Void>> serverReadyListeners =
+            new ConcurrentLinkedQueue<Callable<Void>>();
+    
     public GrizzlyService() {
         futures = new ArrayList<Future<Result<Thread>>>();
         monitoring = new GrizzlyMonitoring();
@@ -195,7 +215,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             try {
                 proxy.stop();
             } catch (IOException e) {
-                logger.log(Level.WARNING, KernelLoggerInfo.grizzlyStopProxy, e);
+                LOGGER.log(Level.WARNING, KernelLoggerInfo.grizzlyStopProxy, e);
             }
             
             proxy.destroy();
@@ -218,13 +238,13 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         try {
             listenerPort = Integer.parseInt(listener.getPort());
         } catch (NumberFormatException e) {
-            logger.log(Level.FINE, e.toString());
+            LOGGER.log(Level.FINE, e.toString());
         }
 
         try {
             address = InetAddress.getByName(listener.getAddress());
         } catch (UnknownHostException uhe) {
-            logger.log(Level.FINE, uhe.toString());
+            LOGGER.log(Level.FINE, uhe.toString());
         }
 
         if (listenerPort != -1) {
@@ -290,7 +310,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         }
         final Future future = createNetworkProxy(networkListener);
         if (future == null) {
-            logger.log(Level.FINE, "Skipping proxy registration for the listener {0}",
+            LOGGER.log(Level.FINE, "Skipping proxy registration for the listener {0}",
                     networkListener.getName());
             return;
         }
@@ -367,7 +387,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      * @return the logger
      */   
     public Logger getLogger() {
-        return logger;
+        return LOGGER;
     }
 
 
@@ -385,13 +405,74 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     }
 
     /**
+     * Return the {@link Future}, that might be used to monitor server startup state.
+     */
+    final Future<Boolean> getServerReadyFuture() {
+        return serverReadyFuture;
+    }
+
+    /**
+     * Add the {@link Callable} listener, which will be notified once server
+     * state switches to "SERVER_READY".
+     * 
+     * @param listener {@link Callable} listener.
+     */
+    final void addServerReadyListener(final Callable<Void> listener) {
+        if (serverReadyFuture.isDone()) {
+            try {
+                listener.call();
+            } catch (Exception ignored) {
+            }
+        }
+        
+        serverReadyListeners.add(listener);
+
+        if (serverReadyFuture.isDone() && serverReadyListeners.remove(listener)) {
+            try {
+                listener.call();
+            } catch (Exception ignored) {
+            }
+        }
+    }
+    
+    /**
+     * Removes the {@link Callable} listener, which will be notified once server
+     * state switches to "SERVER_READY".
+     * 
+     * @param listener {@link Callable} listener.
+     */
+    final boolean removeServerListener(final Callable<Void> listener) {
+        return serverReadyListeners.remove(listener);
+    }
+    
+    /**
+     * Method is invoked each time Glassfish state changes.
+     */
+    @Override
+    public void event(@RestrictTo(EventTypes.SERVER_READY_NAME) EventListener.Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            serverReadyFuture.result(Boolean.TRUE);
+            
+            Callable<Void> listener;
+            while((listener = serverReadyListeners.poll()) != null) {
+                try {
+                    listener.call();
+                } catch (Exception ignored) {
+                }
+            }
+        }
+    }
+    
+    /**
      * The component has been injected with any dependency and
      * will be placed into commission by the subsystem.
      */
     @Override
     public void postConstruct() {
-        NetworkConfig networkConfig = config.getNetworkConfig();
-        configListener = new DynamicConfigListener(config, logger);
+        events.register(this);
+        
+        final NetworkConfig networkConfig = config.getNetworkConfig();
+        configListener = new DynamicConfigListener(config, LOGGER);
         ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(networkConfig.getNetworkListeners());
         bean.addListener(configListener);
         bean = (ObservableBean) ConfigSupport.getImpl(config.getHttpService());
@@ -411,12 +492,12 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 registerContainerAdapters();
             }
         } catch(RuntimeException e) { // So far postConstruct can not throw any other exception type
-            logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyCantStart, e);
+            LOGGER.log(Level.SEVERE, KernelLoggerInfo.grizzlyCantStart, e);
             for(NetworkProxy proxy : proxies) {
                 try {
                     proxy.stop();
                 } catch(Exception proxyStopException) {
-                    logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyCloseException,
+                    LOGGER.log(Level.SEVERE, KernelLoggerInfo.grizzlyCloseException,
                             new Object[] {proxy.getPort(), proxyStopException});
                 }
             }
@@ -442,7 +523,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         if (!Boolean.valueOf(listener.getEnabled())) {
             addChangeListener(listener); // in case the listener will be enabled
 
-            logger.log(Level.INFO, KernelLoggerInfo.grizzlyPortDisabled,
+            LOGGER.log(Level.INFO, KernelLoggerInfo.grizzlyPortDisabled,
                     new Object[]{listener.getName(), listener.getPort()});
             return null;
         }
@@ -492,7 +573,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         } finally {
             if (future == null) {
                 final FutureImpl<Result<Thread>> errorFuture =
-                        UnsafeFutureImpl.create();
+                        Futures.<Result<Thread>>createUnsafeFuture();
                 errorFuture.result(new Result<Thread>(
                         new IllegalStateException("Unexpected error")));
                 future = errorFuture;
@@ -524,7 +605,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                     subAdapter.setRegistered(true);
                 }
             } catch(EndpointRegistrationException e) {
-                logger.log(Level.WARNING, 
+                LOGGER.log(Level.WARNING, 
                         KernelLoggerInfo.grizzlyEndpointRegistration, e);
             }
         }
@@ -540,7 +621,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
             try {
                 proxy.stop();
             } catch (IOException e) {
-                logger.log(Level.WARNING, KernelLoggerInfo.grizzlyStopProxy, e);
+                LOGGER.log(Level.WARNING, KernelLoggerInfo.grizzlyStopProxy, e);
             }
         }
         unregisterMonitoringStatsProviders();
@@ -694,7 +775,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 config.getHttpService().getVirtualServerByName(vs);
             if (virtualServer == null) {
                 // non-existent virtual server
-                logger.log(Level.WARNING, KernelLoggerInfo.grizzlyNonExistentVS, vs);
+                LOGGER.log(Level.WARNING, KernelLoggerInfo.grizzlyNonExistentVS, vs);
                 continue;
             }
             String vsNetworkListeners = virtualServer.getNetworkListeners();

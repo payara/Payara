@@ -54,12 +54,14 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.enterprise.util.Result;
+import java.util.concurrent.Callable;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.Grizzly;
+import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.GrizzlyListener;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.impl.FutureImpl;
-import org.glassfish.grizzly.impl.UnsafeFutureImpl;
+import org.glassfish.grizzly.utils.Futures;
 import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
@@ -117,25 +119,26 @@ public class GrizzlyProxy implements NetworkProxy {
             LogHelper.log(logger, Level.SEVERE, KernelLoggerInfo.badAddress, ex, address);
         }
 
-        createGrizzlyListener(networkListener);
+        grizzlyListener = createGrizzlyListener(networkListener);
 
         grizzlyListener.configure(grizzlyService.getHabitat(), networkListener);
     }
 
-    protected void createGrizzlyListener(final NetworkListener networkListener) {
+    protected GrizzlyListener createGrizzlyListener(
+            final NetworkListener networkListener) {
         if("light-weight-listener".equals(networkListener.getProtocol())) {
-            createServiceInitializerListener();
+            return createServiceInitializerListener();
         } else {
-            createGlassfishListener();
+            return createGlassfishListener();
         }
     }
 
-    protected void createGlassfishListener() {
-        grizzlyListener = new GlassfishNetworkListener(grizzlyService, logger);
+    protected GrizzlyListener createGlassfishListener() {
+        return new GlassfishNetworkListener(grizzlyService, logger);
     }
 
-    protected void createServiceInitializerListener() {
-        grizzlyListener = new ServiceInitializerListener(grizzlyService, logger);
+    protected GrizzlyListener createServiceInitializerListener() {
+        return new ServiceInitializerListener(grizzlyService, logger);
     }
 
     static ArrayList<String> toArray(String list, String token){
@@ -226,7 +229,35 @@ public class GrizzlyProxy implements NetworkProxy {
     
     @Override
     public Future<Result<Thread>> start() throws IOException {
-        final FutureImpl<Result<Thread>> future = UnsafeFutureImpl.<Result<Thread>>create();
+        final FutureImpl<Result<Thread>> future =
+                Futures.<Result<Thread>>createUnsafeFuture();
+        
+        if (!isAjpEnabled(grizzlyListener)) {
+            // If this is not AJP listener - initiate startup right now
+            start0();
+        } else {
+            // For AJP listener we have to wait until server is up and ready
+            // to process incoming requests
+            // Related to the GLASSFISH-18267
+            grizzlyService.addServerReadyListener(new Callable<Void>() {
+
+                @Override
+                public Void call() throws Exception {
+                    start0();
+                    return null;
+                }
+            });
+        }
+        
+        future.result(new Result<Thread>(Thread.currentThread()));
+        return future;
+    }
+
+    /**
+     * Start internal Grizzly listener.
+     * @throws IOException 
+     */
+    protected void start0() throws IOException {
         final long t1 = System.currentTimeMillis();
 
         grizzlyListener.start();
@@ -235,13 +266,10 @@ public class GrizzlyProxy implements NetworkProxy {
             logger.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,
                     new Object[]{Grizzly.getDotedVersion(),
                     System.currentTimeMillis() - t1,
-                    grizzlyListener.getAddress(), ':', String.valueOf(grizzlyListener.getPort()), ']'});
+                    grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
         }
-
-        future.result(new Result<Thread>(Thread.currentThread()));
-        return future;
     }
-
+    
     @Override
     public int getPort() {
         return portNumber;
@@ -254,5 +282,10 @@ public class GrizzlyProxy implements NetworkProxy {
 
     public GrizzlyListener getUnderlyingListener() {
         return grizzlyListener;
+    }
+
+    private static boolean isAjpEnabled(final GrizzlyListener grizzlyListener) {
+        return (grizzlyListener instanceof GenericGrizzlyListener) &&
+                ((GenericGrizzlyListener) grizzlyListener).isAjpEnabled();
     }
 }

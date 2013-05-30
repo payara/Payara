@@ -75,13 +75,10 @@ public interface GrizzlyListener {
     int getPort();
 
     /*
-    * Configures the given grizzlyListener.
-    *
-    * @param networkListener The NetworkListener to configure
-    */
-    
-    // TODO: Must get the information from domain.xml Config objects.
-    // TODO: Pending Grizzly issue 54
+     * Configures the given grizzlyListener.
+     *
+     * @param networkListener The NetworkListener to configure
+     */
     void configure(ServiceLocator habitat, NetworkListener networkListener) throws IOException;
 
     void processDynamicConfigurationChange(ServiceLocator habitat, PropertyChangeEvent[] events);

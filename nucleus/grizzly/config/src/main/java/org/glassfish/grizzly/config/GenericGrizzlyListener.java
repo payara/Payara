@@ -134,6 +134,15 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     private volatile ExecutorService auxExecutorService;
     private volatile DelayedExecutor delayedExecutor;
     private volatile long transactionTimeoutMillis = -1;
+    
+    // ajp enabled flag
+    protected volatile boolean isAjpEnabled;
+    // spdy enabled flag
+    protected volatile boolean isSpdyEnabled;
+    // websocket enabled flag
+    protected volatile boolean isWebSocketEnabled;
+    // comet enabled flag
+    protected volatile boolean isCometEnabled;
 
     @Override
     public String getName() {
@@ -200,6 +209,38 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
     public org.glassfish.grizzly.Transport getTransport() {
         return transport;
+    }
+
+    /**
+     * Returns <tt>true</tt> if AJP (or JK) is enabled for this listener, or
+     * <tt>false</tt> otherwise.
+     */
+    public boolean isAjpEnabled() {
+        return isAjpEnabled;
+    }
+
+    /**
+     * Returns <tt>true</tt> if SPDY is enabled for this listener, or
+     * <tt>false</tt> otherwise.
+     */
+    public boolean isSpdyEnabled() {
+        return isSpdyEnabled;
+    }
+
+    /**
+     * Returns <tt>true</tt> if WebSocket is enabled for this listener, or
+     * <tt>false</tt> otherwise.
+     */
+    public boolean isWebSocketEnabled() {
+        return isWebSocketEnabled;
+    }
+
+    /**
+     * Returns <tt>true</tt> if Comet is enabled for this listener, or
+     * <tt>false</tt> otherwise.
+     */
+    public boolean isCometEnabled() {
+        return isCometEnabled;
     }
     
     @SuppressWarnings({"unchecked"})
@@ -700,6 +741,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 // It will be important to keep this mock in sync with the details the
                 // addon requires.
                 spdyAddon.setup(createMockListener(), builder);
+                isSpdyEnabled = true;
             }
         }
     }
@@ -729,6 +771,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             if (cometAddOn != null) {
                 configureElement(habitat, networkListener, http, cometAddOn);
                 cometAddOn.setup(null, filterChainBuilder);
+                isCometEnabled = true;
             }
         }
     }
@@ -757,6 +800,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                     }
                 }
                 wsAddOn.setup(null, filterChainBuilder);
+                isWebSocketEnabled = true;
             }
         }
     }
@@ -775,6 +819,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             if (ajpAddOn != null) {
                 configureElement(habitat, networkListener, http, ajpAddOn);
                 ajpAddOn.setup(null, filterChainBuilder);
+                isAjpEnabled = true;
             }
         }
     }

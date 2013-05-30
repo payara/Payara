@@ -587,7 +587,7 @@ public class KernelLoggerInfo {
     public static final String badAddress = LOGMSG_PREFIX + "-00086";
 
     @LogMessageInfo(
-            message = "Grizzly Framework {0} started in: {1}ms - bound to [{2}{3}{4}{5}",
+            message = "Grizzly Framework {0} started in: {1}ms - bound to [{2}]",
             level = "INFO")
     public static final String grizzlyStarted = LOGMSG_PREFIX + "-00087";
     
