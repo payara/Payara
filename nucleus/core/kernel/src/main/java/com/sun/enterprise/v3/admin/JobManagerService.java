@@ -234,25 +234,26 @@ public class JobManagerService implements JobManager,PostConstruct {
      * and need to be purged
      * @return  list of jobs to be purged
      */
-    public synchronized ArrayList<JobInfo> getExpiredJobs(File file) {
+    public  ArrayList<JobInfo> getExpiredJobs(File file) {
         ArrayList<JobInfo> expiredJobs = new ArrayList<JobInfo>();
-        JobInfos jobInfos = getCompletedJobs(file);
-        for(JobInfo job:jobInfos.getJobInfoList()) {
+        synchronized (file)  {
+            JobInfos jobInfos = getCompletedJobs(file);
+            for(JobInfo job:jobInfos.getJobInfoList()) {
 
-            long executedTime = job.commandExecutionDate;
-            long currentTime = System.currentTimeMillis();
+                long executedTime = job.commandExecutionDate;
+                long currentTime = System.currentTimeMillis();
 
-            long jobsRetentionPeriod = 86400000;
+                long jobsRetentionPeriod = 86400000;
 
 
-            managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
-            jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
+                managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
+                jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
 
-            if (currentTime - executedTime > jobsRetentionPeriod &&
-                    job.state.equals(AdminCommandState.State.COMPLETED.name())) {
-                 expiredJobs.add(job);
+                if (currentTime - executedTime > jobsRetentionPeriod &&
+                        job.state.equals(AdminCommandState.State.COMPLETED.name())) {
+                    expiredJobs.add(job);
+                }
             }
-
         }
         return expiredJobs;
     }
@@ -300,7 +301,7 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @return JobsInfos which contains information about completed jobs
      */
     @Override
-    public  JobInfos getCompletedJobs(File jobsFile) {
+    public JobInfos getCompletedJobs(File jobsFile) {
         synchronized (jobsFile) {
             try {
                 if (jaxbContext == null)
