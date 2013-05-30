@@ -67,17 +67,15 @@ public class WeldContextListener implements ServletContextListener {
     /**
      * Stash the Weld EL Resolver and Weld EL Context Listener so it is recognized by JSP.
      */
-    public void contextInitialized(ServletContextEvent sce) {
+    public void contextInitialized(ServletContextEvent servletContextEvent) {
 
         if (null != beanManager) {
-            JspApplicationContext jspAppContext = JspFactory.getDefaultFactory().
-                getJspApplicationContext(sce.getServletContext());
-
+             JspApplicationContext jspAppContext = getJspApplicationContext(servletContextEvent);
              jspAppContext.addELResolver(beanManager.getELResolver());
 
              try {
                  Class weldClass = Class.forName("org.jboss.weld.el.WeldELContextListener");
-                 WeldELContextListener welcl = (WeldELContextListener)weldClass.newInstance(); 
+                 WeldELContextListener welcl = ( WeldELContextListener ) weldClass.newInstance();
                  jspAppContext.addELContextListener(welcl);
              } catch (Exception e) {
                  logger.log(Level.WARNING,
@@ -85,15 +83,18 @@ public class WeldContextListener implements ServletContextListener {
                             new Object [] {e});
              }
 
-            ((JspApplicationContextImpl)jspAppContext).setExpressionFactory(
+            ( ( JspApplicationContextImpl ) jspAppContext ).setExpressionFactory(
                 beanManager.wrapExpressionFactory(jspAppContext.getExpressionFactory()));
         }
-
     }
 
     public void contextDestroyed(ServletContextEvent sce) {
         if (null != beanManager) {
             beanManager = null;
         }
+    }
+
+    protected JspApplicationContext getJspApplicationContext(ServletContextEvent servletContextEvent) {
+        return JspFactory.getDefaultFactory().getJspApplicationContext(servletContextEvent.getServletContext());
     }
 }
