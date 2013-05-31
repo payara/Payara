@@ -103,7 +103,8 @@
                 <configuration>
                     <instructions>
                         <Import-Package>
-                            org.glassfish.grizzly.npn*;version="[1.0,${npn.version})",
+                            org.glassfish.grizzly.npn*;version="[1.0,${npn.version}]",
+                            org.glassfish.grizzly.config.*;version="${project.version}",
                             org.glassfish.grizzly.http.server.*;version="[2.3,${grizzly.version}]";resolution:=optional,
                             org.glassfish.grizzly.*;version="[2.3,${grizzly.version}]",
                             org.glassfish.api.*;resolution:=optional,
