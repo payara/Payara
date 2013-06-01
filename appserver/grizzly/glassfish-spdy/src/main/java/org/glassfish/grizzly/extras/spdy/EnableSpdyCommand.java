@@ -41,6 +41,7 @@ package org.glassfish.grizzly.extras.spdy;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.List;
 import java.util.Locale;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -66,6 +67,10 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import org.glassfish.grizzly.config.dom.NetworkListener;
+import org.glassfish.grizzly.config.dom.Transport;
+import org.glassfish.grizzly.config.dom.Transports;
+import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 
 @SuppressWarnings("UnusedDeclaration")
 @Service(name = "enable-spdy")
@@ -74,6 +79,8 @@ import javax.inject.Named;
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 public class EnableSpdyCommand implements AdminCommand {
 
+    private static final String SPDY_TRANSPORT_NAME = "tcp-spdy";
+    
     @Param(name = "protocolname", primary = true, optional = false)
     String protocolName;
 
@@ -105,7 +112,8 @@ public class EnableSpdyCommand implements AdminCommand {
      *
      * @param context information
      */
-    public void execute(AdminCommandContext context) {
+    @Override
+    public void execute(final AdminCommandContext context) {
         Target targetUtil = services.getService(Target.class);
         Config newConfig = targetUtil.getConfig(target);
         if (newConfig != null) {
@@ -133,7 +141,36 @@ public class EnableSpdyCommand implements AdminCommand {
         }
 
         try {
+            final String strategyName = SameThreadIOStrategy.class.getName();
+            Transport spdyTransport = null;
+
+            final List<NetworkListener> networkListeners =
+                    protocol.findNetworkListeners();
+            for (NetworkListener networkListener : networkListeners) {
+                final Transport transport = networkListener.findTransport();
+                if (transport != null &&
+                        !strategyName.equals(transport.getIoStrategy())) {
+                    if (spdyTransport == null) {
+                        spdyTransport = obtainSpdyTransport(networkConfig);
+                    }
+                    
+                    if (!spdyTransport.getName().equals(transport.getName())) {
+                        final String spdyTransportName = spdyTransport.getName();
+                        ConfigSupport.apply(new SingleConfigCode<NetworkListener>() {
+                            @Override
+                            public Object run(final NetworkListener listener) throws TransactionFailure {
+                                listener.setTransport(spdyTransportName);
+                                return listener;
+                            }
+                        }, networkListener);
+
+                        report.appendMessage(String.format(" **NOTE** In order to support SPDY %s network listener's transport has been changed to %s.\n", networkListener.getName(), spdyTransportName));
+                    }
+                }
+            }
+            
             ConfigSupport.apply(new SingleConfigCode<Http>() {
+                @Override
                 public Object run(Http param) throws TransactionFailure {
                     Spdy spdy = param.createChild(Spdy.class);
                     if (maxStreams != null) {
@@ -159,7 +196,7 @@ public class EnableSpdyCommand implements AdminCommand {
                         spdy.setMode(modeLocal);
                     }
                     param.setSpdy(spdy);
-                return spdy;
+                    return spdy;
                 }
             }, http);
         } catch (TransactionFailure transactionFailure) {
@@ -173,9 +210,53 @@ public class EnableSpdyCommand implements AdminCommand {
             report.setFailureCause(e);
             return;
         }
-        report.appendMessage("SPDY enabled.\n ** NOTE** This is an experimental feature!\nFor any issues with the SPDY implementation, please log issues here: http://java.net/jira/browse/GRIZZLY .");
+        report.appendMessage("SPDY enabled.\n **NOTE** This is an experimental feature!\nFor any issues with the SPDY implementation, please log issues here: http://java.net/jira/browse/GRIZZLY .");
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
+    }
+
+    /**
+     * Obtain SPDY transport.
+     * First it tries to find existing SPDY transport, if one doesn't exist -
+     * the new SPDY transport will be created.
+     * 
+     * @param networkConfig
+     * @return SPDY {@link Transport}.
+     * @throws TransactionFailure 
+     */
+    private Transport obtainSpdyTransport(final NetworkConfig networkConfig) throws TransactionFailure {
+        final String strategyName = SameThreadIOStrategy.class.getName();
+        
+        for (Transport transport : networkConfig.getTransports().getTransport()) {
+            if (SPDY_TRANSPORT_NAME.equals(transport.getName())) {
+                if (!strategyName.equals(transport.getIoStrategy())) {
+                    ConfigSupport.apply(new SingleConfigCode<Transport>() {
+                        @Override
+                        public Object run(final Transport transport) throws TransactionFailure {
+                            transport.setIoStrategy(strategyName);
+                            return transport;
+
+                        }
+                    }, transport);
+                }
+
+                return transport;
+            }
+        }
+        
+        return (Transport) ConfigSupport.apply(new SingleConfigCode<Transports>() {
+            @Override
+            public Object run(final Transports transports) throws TransactionFailure {
+                final Transport spdyTransport =
+                        transports.createChild(Transport.class);
+                spdyTransport.setName(SPDY_TRANSPORT_NAME);
+                spdyTransport.setIoStrategy(strategyName);
+                
+                transports.getTransport().add(spdyTransport);
+                
+                return spdyTransport;
+            }
+        }, networkConfig.getTransports());
     }
 
 }

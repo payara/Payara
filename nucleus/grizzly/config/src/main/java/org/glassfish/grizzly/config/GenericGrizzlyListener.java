@@ -332,7 +332,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         }
 
         transport.getKernelThreadPoolConfig().setPoolName(networkListener.getName() + "-kernel");
-        transport.setIOStrategy(loadIOStrategy(transportConfig.getIOStrategy()));
+        transport.setIOStrategy(loadIOStrategy(transportConfig.getIoStrategy()));
         transport.setNIOChannelDistributor(
                 new RoundRobinConnectionDistributor(
                 transport,

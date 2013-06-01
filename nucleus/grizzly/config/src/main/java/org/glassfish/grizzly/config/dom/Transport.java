@@ -130,9 +130,9 @@ public interface Transport extends ConfigBeanProxy, PropertyBag {
      * {@link IOStrategy} to be used by {@link Transport}.
      */
     @Attribute(dataType = String.class)
-    String getIOStrategy();
+    String getIoStrategy();
 
-    void setIOStrategy(String ioStrategy);
+    void setIoStrategy(String ioStrategy);
     
     /**
      * Flush Grizzly's internal configuration to the server logs (like number of threads created, how many polled
