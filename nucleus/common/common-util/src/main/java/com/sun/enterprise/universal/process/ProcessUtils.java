@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,19 +49,14 @@ import java.util.*;
 import static com.sun.enterprise.util.StringUtils.ok;
 
 /**
- * Includes a somewhat kludgy way to get the pid for "me". Another casualty of
- * the JDK catering to the LEAST common denominator. Some obscure OS might not
- * have a pid! The name returned from the JMX method is like so: 12345
- *
- * @mycomputername where 12345 is the PID
+ * Includes a somewhat kludgy way to get the pid for "me".
+ * Another casualty of the JDK catering to the LEAST common denominator.
+ * Some obscure OS might not have a pid!
+ * The name returned from the JMX method is like so:
+ * 12345@mycomputername where 12345 is the PID
  * @author bnevins
  */
 public final class ProcessUtils {
-    static final File jpsExe;
-    static final String jpsName;
-    static final File jstackExe;
-    static final String jstackName;
-
     private ProcessUtils() {
         // all static class -- no instances allowed!!
     }
@@ -80,9 +75,8 @@ public final class ProcessUtils {
     }
 
     /**
-     * Look for <strong>name</strong> in the Path. If it is found and if it is
-     * executable then return a File object pointing to it. Otherwise return nu
-     *
+     * Look for <strong>name</strong> in the Path.  If it is found and if it is
+     * executable then return a File object pointing to it.  Otherwise return nu
      * @param name the name of the file with no path
      * @return the File object or null
      */
@@ -99,7 +93,6 @@ public final class ProcessUtils {
 
     /**
      * Try and find the Process ID of "our" process.
-     *
      * @return the process id or -1 if not known
      */
     public static int getPid() {
@@ -108,10 +101,9 @@ public final class ProcessUtils {
 
     /**
      * Kill the process with the given Process ID.
-     *
      * @param pid
-     * @return a String if the process was not killed for any reason including
-     * if it does not exist. Return null if it was killed.
+     * @return a String if the process was not killed for any reason including if it does not exist.
+     *  Return null if it was killed.
      */
     public static String kill(int pid) {
         try {
@@ -144,13 +136,11 @@ public final class ProcessUtils {
     }
 
     /**
-     * Kill the JVM with the given main classname. The classname can be
-     * fully-qualified or just the classname (i.e. without the package name
-     * prepended).
-     *
+     * Kill the JVM with the given main classname.  The classname can be fully-qualified
+     * or just the classname (i.e. without the package name prepended).
      * @param pid
-     * @return a String if the process was not killed for any reason including
-     * if it does not exist. Return null if it was killed.
+     * @return a String if the process was not killed for any reason including if it does not exist.
+     *  Return null if it was killed.
      */
     public static String killJvm(String classname) {
         List<Integer> pids = Jps.getPid(classname);
@@ -174,10 +164,9 @@ public final class ProcessUtils {
     /**
      * If we can determine it -- find out if the process that owns the given
      * process id is running.
-     *
      * @param aPid
-     * @return true if it's running, false if not and null if we don't know. I.e
-     * the return value is a true tri-state Boolean.
+     * @return true if it's running, false if not and null if we don't know.
+     * I.e the return value is a true tri-state Boolean.
      */
     public static Boolean isProcessRunning(int aPid) {
         try {
@@ -195,9 +184,8 @@ public final class ProcessUtils {
     //////////////////////////////////////////////////////////////////////////
     private static final int pid;
     private static final String[] paths;
-   private static boolean debug;
 
-   private static boolean isProcessRunningWindows(int aPid) throws ProcessManagerException {
+    private static boolean isProcessRunningWindows(int aPid) throws ProcessManagerException {
         String pidString = Integer.toString(aPid);
         ProcessManager pm = new ProcessManager("tasklist", "/NH", "/FI", "\"pid eq " + pidString + "\"");
         pm.setEcho(false);
@@ -205,10 +193,10 @@ public final class ProcessUtils {
         String out = pm.getStdout() + pm.getStderr();
 
         /* output is either
-         (1)
-         INFO: No tasks running with the specified criteria.
-         (2)
-         java.exe                    3760 Console                 0     64,192 K
+        (1)
+        INFO: No tasks running with the specified criteria.
+        (2)
+        java.exe                    3760 Console                 0     64,192 K
          */
 
         if (debug) {
@@ -274,44 +262,6 @@ public final class ProcessUtils {
             paths = tempPaths.split(File.pathSeparator);
         else
             paths = new String[0];
-
-        if (OS.isWindows()) {
-            jpsName = "jps.exe";
-            jstackName = "jstack.exe";
-        }
-        else {
-            jpsName = "jps";
-            jstackName = "jstack";
-        }
-
-        // byron sez:
-        // looks VERY messy here.  Please feel free to clean up.  I just don't
-        // want to invest the time to do it right now.
-
-        final String javaroot = System.getProperty("java.home");
-        final String relpath = "/bin";
-        final File fhere1 = new File(javaroot + relpath + "/" + jpsName);
-        final File fhere2 = new File(javaroot + relpath + "/" + jstackName);
-        File fthere1 = new File(javaroot + "/.." + relpath + "/" + jpsName);
-        File fthere2 = new File(javaroot + "/.." + relpath + "/" + jstackName);
-
-        if (fhere1.isFile()) {
-            jpsExe = SmartFile.sanitize(fhere1);
-        }
-        else if (fthere1.isFile()) {
-            jpsExe = SmartFile.sanitize(fthere1);
-        }
-        else {
-            jpsExe = null;
-        }
-        if (fhere2.isFile()) {
-            jstackExe = SmartFile.sanitize(fhere2);
-        }
-        else if (fthere2.isFile()) {
-            jstackExe = SmartFile.sanitize(fthere2);
-        }
-        else {
-            jstackExe = null;
-        }
     }
+    private static boolean debug;
 }
