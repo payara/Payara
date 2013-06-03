@@ -73,7 +73,7 @@ public class Jstack {
         }
     }
 
-    static String getDump() {
+    public static String getDump() {
         StringBuilder sb = new StringBuilder();
 
         for (Map.Entry<Integer, String> e : set) {
@@ -84,7 +84,7 @@ public class Jstack {
         return sb.toString();
     }
 
-    static String getDump(int pid) {
+    public static String getDump(int pid) {
         try {
             if (jstackExe == null) {
                 return "";
