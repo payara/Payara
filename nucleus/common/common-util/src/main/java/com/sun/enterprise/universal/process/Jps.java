@@ -109,10 +109,10 @@ public class Jps {
 
     private Jps() {
         try {
-            if (jpsExe == null) {
+            if (ProcessUtils.jpsExe == null) {
                 return;
             }
-            ProcessManager pm = new ProcessManager(jpsExe.getPath(), "-l");
+            ProcessManager pm = new ProcessManager(ProcessUtils.jpsExe.getPath(), "-l");
             pm.setEcho(false);
             pm.execute();
             String jpsOutput = pm.getStdout();
@@ -223,30 +223,4 @@ public class Jps {
     }
 
     private Map<Integer, String> pidMap = new HashMap<Integer, String>();
-    private static final File jpsExe;
-    private static final String jpsName;
-
-    static {
-        if (OS.isWindows()) {
-            jpsName = "jps.exe";
-        }
-        else {
-            jpsName = "jps";
-        }
-
-        final String javaroot = System.getProperty("java.home");
-        final String relpath = "/bin/" + jpsName;
-        final File fhere = new File(javaroot + relpath);
-        File fthere = new File(javaroot + "/.." + relpath);
-
-        if (fhere.isFile()) {
-            jpsExe = SmartFile.sanitize(fhere);
-        }
-        else if (fthere.isFile()) {
-            jpsExe = SmartFile.sanitize(fthere);
-        }
-        else {
-            jpsExe = null;
-        }
-    }
 }
