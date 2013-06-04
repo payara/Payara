@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.naming.NamingContext;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.jvnet.hk2.annotations.ContractsProvided;
 import org.jvnet.hk2.annotations.Service;
@@ -80,9 +81,10 @@ public class ContextMapper extends Mapper {
         super.addWrapper(hostName, contextPath, path, wrapper, jspWildCard,
                 servletName, isEmptyPathSpecial);
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Wrapper-Host: " + hostName + " contextPath " + contextPath
-                + " wrapper " + wrapper + " path " + path + " jspWildcard " + jspWildCard +
-                " servletName " + servletName + " isEmptyPathSpecial " + isEmptyPathSpecial);
+            logger.log(Level.FINE, "Wrapper-Host: {0} contextPath {1} wrapper {2} "
+                    + "path {3} jspWildcard {4} servletName {5} isEmptyPathSpecial {6}",
+                    new Object[]{hostName, contextPath, wrapper, path, jspWildCard,
+                        servletName, isEmptyPathSpecial});
         }
     }
 
@@ -95,7 +97,8 @@ public class ContextMapper extends Mapper {
 
         super.addHost(name, aliases, host);
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Host-Host: " + name + " aliases " + Arrays.toString(aliases) + " host " + host);
+            logger.log(Level.FINE, "Host-Host: {0} aliases {1} host {2}",
+                    new Object[]{name, Arrays.toString(aliases), host});
         }
     }
 
@@ -104,10 +107,10 @@ public class ContextMapper extends Mapper {
      */
     @Override
     public void addContext(final String hostName, final String path, final Object context,
-        final String[] welcomeResources, final javax.naming.Context resources) {
+        final String[] welcomeResources, final NamingContext resources) {
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Context-Host: " + hostName + " path " + path + " context " + context +
-                " port " + getPort());
+            logger.log(Level.FINE, "Context-Host: {0} path {1} context {2} port {3}",
+                    new Object[]{hostName, path, context, getPort()});
         }
         // The WebContainer is registering new Context. In that case, we must
         // clean all the previously added information, specially the
@@ -126,7 +129,7 @@ public class ContextMapper extends Mapper {
     public synchronized void removeHost(final String name) {
         // Do let the WebContainer unconfigure us.
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Faking removal of host: " + name);
+            logger.log(Level.FINE, "Faking removal of host: {0}", name);
         }
     }
 

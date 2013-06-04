@@ -2716,7 +2716,7 @@ public class VirtualServer extends StandardHost
     // ---------------------------------------------------------- Nested Classes
 
 
-    private final class HttpProbeImpl implements HttpProbe {
+    private final class HttpProbeImpl extends HttpProbe.Adapter {
 
         boolean accessLoggingEnabled = false;
         NetworkListener listener = null;
@@ -2732,46 +2732,6 @@ public class VirtualServer extends StandardHost
 
         public void disableAccessLogging() {
             accessLoggingEnabled = false;
-        }
-
-        @Override
-        public void onDataReceivedEvent(Connection connection, Buffer buffer) {
-        }
-
-        @Override
-        public void onDataSentEvent(Connection connection, Buffer buffer) {
-        }
-
-        @Override
-        public void onHeaderParseEvent(Connection connection, HttpHeader header, int size) {
-        }
-
-        @Override
-        public void onHeaderSerializeEvent(Connection connection, HttpHeader header, Buffer buffer) {
-        }
-
-        @Override
-        public void onContentChunkParseEvent(Connection connection, HttpContent content) {
-        }
-
-        @Override
-        public void onContentChunkSerializeEvent(Connection connection, HttpContent content) {
-        }
-
-        @Override
-        public void onContentEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
-        }
-
-        @Override
-        public void onContentEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, ContentEncoding contentEncoding) {
-        }
-
-        @Override
-        public void onTransferEncodingParseEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
-        }
-
-        @Override
-        public void onTransferEncodingSerializeEvent(Connection connection, HttpHeader header, Buffer buffer, TransferEncoding transferEncoding) {
         }
 
         @Override
@@ -2814,7 +2774,7 @@ public class VirtualServer extends StandardHost
                 }
             }
         }
-
+        
     }
 
 }

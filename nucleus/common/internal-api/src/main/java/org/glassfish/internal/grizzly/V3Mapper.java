@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,6 +43,7 @@ package org.glassfish.internal.grizzly;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.http.server.naming.NamingContext;
 
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.jvnet.hk2.annotations.ContractsProvided;
@@ -79,8 +80,8 @@ public class V3Mapper extends ContextMapper {
             Object wrapper, boolean jspWildCard) {
         super.addWrapper(hostName, contextPath, path, wrapper, jspWildCard);
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Wrapper-Host: " + hostName + " contextPath " + contextPath
-                    + " wrapper " + wrapper + " path " + path + " jspWildcard " + jspWildCard);
+            logger.log(Level.FINE, "Wrapper-Host: {0} contextPath {1} wrapper {2} path {3} jspWildcard {4}",
+                    new Object[]{hostName, contextPath, wrapper, path, jspWildCard});
         }                          
     }
     
@@ -107,11 +108,11 @@ public class V3Mapper extends ContextMapper {
      */
     @Override
     public void addContext(String hostName, String path, Object context,
-            String[] welcomeResources, javax.naming.Context resources) {
+            String[] welcomeResources, NamingContext resources) {
         
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Context-Host: " + hostName + " path " + path + " context " + context +
-                    " port " + getPort());
+            logger.log(Level.FINE, "Context-Host: {0} path {1} context {2} port {3}",
+                    new Object[]{hostName, path, context, getPort()});
         }
         
         // Prevent any admin related artifacts from being registered on a

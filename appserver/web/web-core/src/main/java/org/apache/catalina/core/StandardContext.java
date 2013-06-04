@@ -2269,7 +2269,9 @@ public class StandardContext
             throw new IllegalStateException(rb.getString(RESOURCES_STARTED));
         }
 
-        DirContext oldResources = alternateDocBase.getWebappResources();
+        final DirContext oldResources = ContextsAdapterUtility.unwrap(
+                alternateDocBase.getWebappResources());
+        
         if (oldResources == resources)
             return;
 
@@ -2283,7 +2285,7 @@ public class StandardContext
             ((FileDirContext) resources).setCaseSensitive(isCaseSensitive());
             ((FileDirContext) resources).setAllowLinking(isAllowLinking());
         }
-        alternateDocBase.setWebappResources(resources);
+        alternateDocBase.setWebappResources(ContextsAdapterUtility.wrap(resources));
         // The proxied resources will be refreshed on start
         alternateDocBase.setResources(null);
     }
@@ -5577,14 +5579,15 @@ public class StandardContext
         env.put(ProxyDirContext.CONTEXT, getName());
         for(AlternateDocBase alternateDocBase : alternateDocBases) {
             String basePath = alternateDocBase.getBasePath();
-            DirContext alternateWebappResources = alternateDocBase.getWebappResources();
+            DirContext alternateWebappResources = ContextsAdapterUtility.unwrap(
+                    alternateDocBase.getWebappResources());
             try {
                 ProxyDirContext proxyDirContext = new ProxyDirContext(env, alternateWebappResources);
                 if(alternateWebappResources instanceof BaseDirContext) {
                     ((BaseDirContext)alternateWebappResources).setDocBase(basePath);
                     ((BaseDirContext)alternateWebappResources).allocate();
                 }
-                alternateDocBase.setResources(proxyDirContext);
+                alternateDocBase.setResources(ContextsAdapterUtility.wrap(proxyDirContext));
             } catch(Throwable t) {
                 if(log.isLoggable(Level.FINE)) {
                     String msg = MessageFormat.format(rb.getString(STARTING_RESOURCES_EXCEPTION), getName());
@@ -5636,7 +5639,8 @@ public class StandardContext
             return ok;
         }
         for(AlternateDocBase alternateDocBase : alternateDocBases) {
-            DirContext alternateResources = alternateDocBase.getResources();
+            final DirContext alternateResources = ContextsAdapterUtility.unwrap(
+                    alternateDocBase.getResources());
             if(alternateResources instanceof Lifecycle) {
                 try {
                     ((Lifecycle)alternateResources).stop();
@@ -5645,8 +5649,8 @@ public class StandardContext
                     ok = false;
                 }
             }
-            DirContext alternateWebappResources =
-                alternateDocBase.getWebappResources();
+            final DirContext alternateWebappResources = ContextsAdapterUtility.unwrap(
+                alternateDocBase.getWebappResources());
             if(alternateWebappResources instanceof BaseDirContext) {
                 try {
                     ((BaseDirContext)alternateWebappResources).release();
@@ -5911,7 +5915,7 @@ public class StandardContext
         }
 
         // Initialize associated mapper
-        mapper.setContext(getPath(), welcomeFiles, resources);
+        mapper.setContext(getPath(), welcomeFiles, ContextsAdapterUtility.wrap(resources));
 
         // Binding thread
         oldCCL = bindThread();
@@ -7469,7 +7473,7 @@ public class StandardContext
             AlternateDocBase match = AlternateDocBase.findMatch(
                                 path, alternateDocBases);
             if (match != null) {
-                resources = match.getResources();
+                resources = ContextsAdapterUtility.unwrap(match.getResources());
             } else {
                 // None of the url patterns for alternate doc bases matched
                 resources = getResources();
@@ -7529,7 +7533,7 @@ public class StandardContext
                 AlternateDocBase match = AlternateDocBase.findMatch(
                                                 path, alternateDocBases);
                 if (match != null) {
-                    resources = match.getResources();
+                    resources = ContextsAdapterUtility.unwrap(match.getResources());
                 } else {
                     // None of the url patterns for alternate doc bases matched
                     resources = getResources();
@@ -7586,7 +7590,7 @@ public class StandardContext
             AlternateDocBase match = AlternateDocBase.findMatch(
                                 path, alternateDocBases);
             if (match != null) {
-                resources = match.getResources();
+                resources = ContextsAdapterUtility.unwrap(match.getResources());
             } else {
                 // None of the url patterns for alternate doc bases matched
                 resources = getResources();

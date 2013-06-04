@@ -78,6 +78,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
@@ -98,6 +99,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.core.ContextsAdapterUtility;
 import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.URLEncoder;
@@ -838,7 +840,7 @@ public class DefaultServlet
             AlternateDocBase match = AlternateDocBase.findMatch(
                                             path, alternateDocBases);
             if (match != null) {
-                cacheEntry = ((ProxyDirContext) match.getResources()).lookupCache(path);
+                cacheEntry = ((ProxyDirContext) ContextsAdapterUtility.unwrap(match.getResources())).lookupCache(path);
             } else {
                 // None of the url patterns for alternate docbases matched
                 cacheEntry = proxyDirContext.lookupCache(path);

@@ -70,6 +70,7 @@ import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import org.apache.catalina.*;
 import org.apache.catalina.core.ContainerBase;
+import org.apache.catalina.core.ContextsAdapterUtility;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.core.StandardWrapper;
@@ -457,7 +458,7 @@ public class MapperListener implements NotificationListener, NotificationFilter{
         String[] welcomeFiles = context.getWelcomeFiles();
 
         mapper.addContext(hostName, contextName, context, 
-                          welcomeFiles, resources,
+                          welcomeFiles, ContextsAdapterUtility.wrap(resources),
                           context.getAlternateDocBases());
     }
 
