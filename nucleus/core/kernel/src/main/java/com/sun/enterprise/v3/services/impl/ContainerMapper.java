@@ -61,7 +61,6 @@ import org.glassfish.grizzly.http.server.HttpHandlerChain;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.Note;
 import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.grizzly.http.util.ByteChunk;
@@ -80,7 +79,7 @@ import org.glassfish.kernel.KernelLoggerInfo;
  * @author Alexey Stashok
  */
 @SuppressWarnings({"NonPrivateFieldAccessedInSynchronizedContext"})
-public class ContainerMapper extends StaticHttpHandler {
+public class ContainerMapper extends ADBAwareHttpHandler {
 
     private static final Logger LOGGER = KernelLoggerInfo.getLogger();
     private final static String ROOT = "";

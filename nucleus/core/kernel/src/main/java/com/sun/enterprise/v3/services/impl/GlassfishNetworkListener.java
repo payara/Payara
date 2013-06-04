@@ -61,7 +61,6 @@ import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.http.KeepAlive;
 import org.glassfish.grizzly.http.server.HttpHandler;
-import org.glassfish.grizzly.http.server.StaticHttpHandler;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
@@ -193,11 +192,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
 
                                 String docBase = mapping[1].substring("dir=".length());
                                 String urlPattern = mapping[0].substring("from=".length());
-                                final StaticHttpHandler staticResourceService =
-                                        new StaticHttpHandler(docBase);
-                                List<String> al = toArray(vs.getHosts(), ";");
-                                al.add(http.getDefaultVirtualServer());
-                                containerMapper.register(urlPattern, al, staticResourceService, null);
+                                containerMapper.addAlternateDocBase(urlPattern, docBase);
                             }
                         }
                     }
