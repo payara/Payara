@@ -359,10 +359,10 @@ public class FileDirContext extends BaseDirContext {
         throws NamingException {
         Object result = null;
         File file = file(name);
-        
+
         if (file == null)
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
         if (file.isDirectory()) {
             FileDirContext tempContext = new FileDirContext(env);
             tempContext.setDocBase(file.getPath());
@@ -399,14 +399,14 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NameNotFoundException
-                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
 
         // START S1AS8PE 4965170
         fileCache.remove(name);
         // END S1AS8PE 4965170
         if (!file.delete())
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_UNBIND_FAILED, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
 
     }
 
@@ -429,7 +429,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, oldName)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), oldName));
 
         // START S1AS8PE 4965170
         File newFile = fileCache.get(newName);
@@ -440,7 +440,7 @@ public class FileDirContext extends BaseDirContext {
         
         if (!file.renameTo(newFile)) {
             throw new NamingException(
-                    rb.getString(MessageFormat.format(RESOURCES_RENAME_FAIL, oldName, newName)));
+                    MessageFormat.format(rb.getString(RESOURCES_RENAME_FAIL), oldName, newName));
         }
     }
 
@@ -465,7 +465,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
 
         return new NamingContextEnumeration(list(file).iterator());
 
@@ -492,7 +492,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
 
         return new NamingContextBindingsEnumeration(list(file).iterator(),
                 this);
@@ -594,7 +594,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_NOT_FOUND, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
 
         return new FileResourceAttributes(file);
 
@@ -664,8 +664,8 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                (rb.getString(MessageFormat.format(RESOURCES_ALREADY_BOUND, name)));
-        
+                    (MessageFormat.format(rb.getString(RESOURCES_ALREADY_BOUND), name));
+
         rebind(file, obj, attrs);
         
     }
@@ -715,16 +715,16 @@ public class FileDirContext extends BaseDirContext {
             if (file.exists()) {
                 if (!file.delete())
                     throw new NamingException
-                        (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
+                            (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
             }
             if (!file.mkdir())
                 throw new NamingException
-                    (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
+                        (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
         }
         if (is == null)
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
-        
+                    (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
+
         // Open os
         
         try {
@@ -746,7 +746,7 @@ public class FileDirContext extends BaseDirContext {
             }
         } catch (IOException e) {
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, e)));
+                    (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), e));
         }
         
     }
@@ -775,10 +775,10 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                (rb.getString(MessageFormat.format(RESOURCES_ALREADY_BOUND, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_ALREADY_BOUND), name));
         if (!file.mkdir())
             throw new NamingException
-                (rb.getString(MessageFormat.format(RESOURCES_BIND_FAILED, name)));
+                    (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
         return (DirContext) lookup(name);
         
     }
