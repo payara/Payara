@@ -199,6 +199,24 @@ public interface Application extends ApplicationName, PropertyBag {
     void setAsyncReplication(String value) throws PropertyVetoException;
 
     /**
+     * Gets the value of the implicitCdiEnabled property.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute(defaultValue = "true", dataType = Boolean.class)
+    String getImplicitCdiEnabled();
+
+    /**
+     * Sets the value of the implicitCdiEnabled property.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setImplicitCdiEnabled(String value) throws PropertyVetoException;
+
+
+    /**
      * Gets the value of the directoryDeployed property.
      *
      * @return possible object is
@@ -395,6 +413,7 @@ public interface Application extends ApplicationName, PropertyBag {
             deploymentParams.libraries = app.getLibraries();
             deploymentParams.availabilityenabled = Boolean.parseBoolean(app.getAvailabilityEnabled());
             deploymentParams.asyncreplication = Boolean.parseBoolean(app.getAsyncReplication());
+            deploymentParams.implicitcdienabled = Boolean.parseBoolean(app.getImplicitCdiEnabled());
             if (appRef != null) {
                 deploymentParams.lbenabled = appRef.getLbEnabled();
             }

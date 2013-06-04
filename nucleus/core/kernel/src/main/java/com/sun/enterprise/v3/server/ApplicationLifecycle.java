@@ -1351,6 +1351,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
             }
             app.setAvailabilityEnabled(deployParams.availabilityenabled.toString());
             app.setAsyncReplication(deployParams.asyncreplication.toString());
+            app.setImplicitCdiEnabled(deployParams.implicitcdienabled.toString());
         }
         if (appProps.getProperty(ServerTags.OBJECT_TYPE) != null) {
             app.setObjectType(appProps.getProperty(
