@@ -52,7 +52,6 @@ import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
-import org.glassfish.hk2.api.MultiException;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.Rank;
@@ -404,30 +403,37 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
 
         Collection<Handler> handlers = getHandlerServices();        
         if (handlers != null && handlers.size() > 0) {
-            // Need to lock Logger.class first before locking LogManager to avoid deadlock.
-            // See GLASSFISH-7274 for more details.
-            synchronized(java.util.logging.Logger.class){
-                synchronized (logMgr) {
-                    // I need to reset the formatter for the existing console handlers
-                    Enumeration<String> loggerNames = logMgr.getLoggerNames();
-                    while (loggerNames.hasMoreElements()) {
-                        String loggerName = loggerNames.nextElement();
-                        Logger logger = logMgr.getLogger(loggerName);
-                        for (Handler handler : logger.getHandlers()) {
-                            Formatter formatter = handler.getFormatter();
-                            if (formatter != null && formatter  instanceof UniformLogFormatter) {
-                                ((UniformLogFormatter) formatter).setDelegate(agentDelegate);
-                            }
+            // add the new handlers to the root logger
+            for (Handler handler : handlers) {
+                addHandler(handler);
+            }            
+        }
+
+        // Need to lock Logger.class first before locking LogManager to avoid deadlock.
+        // See GLASSFISH-7274 for more details.
+        // The synchronization in Logger class is addressed in JDK 1.7 but in JDK 1.6
+        // Logger.getLogger() is still synchronized.
+        synchronized (java.util.logging.Logger.class) {
+            synchronized (logMgr) {
+                Enumeration<String> loggerNames = logMgr.getLoggerNames();
+                while (loggerNames.hasMoreElements()) {
+                    String loggerName = loggerNames.nextElement();
+                    Logger logger = logMgr.getLogger(loggerName);
+                    if (logger == null) {
+                        continue;
+                    }
+                    for (Handler handler : logger.getHandlers()) {
+                        Formatter formatter = handler.getFormatter();
+                        if (formatter != null
+                                && formatter instanceof UniformLogFormatter) {
+                            ((UniformLogFormatter) formatter)
+                                    .setDelegate(agentDelegate);
                         }
                     }
-                    // add the new handlers to the root logger
-                    for (Handler handler : handlers) {
-                        addHandler(handler);
-                    }
-
                 }
             }
         }
+        
         // add the filter if there is one
         try {
 
@@ -436,7 +442,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             String filterClassName = map.get(LoggingXMLNames.xmltoPropsMap.get("log-filter"));
             if (filterClassName != null) {
                 Filter filterClass = habitat.getService(Filter.class, filterClassName);
-                Logger rootLogger = Logger.global.getParent();
+                Logger rootLogger = Logger.getLogger("");
                 if (rootLogger != null) {
                     rootLogger.setFilter(filterClass);
                 }
@@ -481,7 +487,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                         Handler h = (Handler) gfHandlers.get(n);
                                         h.setLevel(l);
                                     } else if (n.equals("java.util.logging.ConsoleHandler")) {
-                                        Logger logger = Logger.global.getParent();
+                                        Logger logger = Logger.getLogger("");
                                         Handler[] h = logger.getHandlers();
                                         for (int i = 0; i < h.length; i++) {
                                             String name = h[i].toString();
@@ -685,7 +691,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     }
 
     public void addHandler(Handler handler) {
-        Logger rootLogger = Logger.global.getParent();
+        Logger rootLogger = Logger.getLogger("");
         if (rootLogger != null) {
             synchronized (gfHandlers) {
                 rootLogger.addHandler(handler);
