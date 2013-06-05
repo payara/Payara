@@ -47,7 +47,7 @@
         <groupId>net.java</groupId>
         <artifactId>jvnet-parent</artifactId>
         <version>4</version>
-	<relativePath />
+        <relativePath />
     </parent>
 
     <groupId>org.glassfish.main</groupId>
@@ -160,7 +160,7 @@
         <logging-annotation-processor.version>1.5</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.4</command-security-plugin.version>
         <mail.version>1.5.0</mail.version>
-	<javax.annotation-api.version>1.2</javax.annotation-api.version>
+        <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
@@ -182,8 +182,8 @@
         <module>security</module>
         <module>test-utils</module>
         <module>diagnostics</module>
-	<module>resources</module>
-	<module>resources-l10n</module>
+        <module>resources</module>
+        <module>resources-l10n</module>
     </modules>
     
     <build>
@@ -240,11 +240,11 @@
                         <compilerArgument>-Djava.endorsed.dirs=${project.build.directory}/endorsed</compilerArgument>
                         <source>1.6</source>
                         <target>1.6</target>
-			<excludes>
-			   <exclude>**/.ade_path/**</exclude>
-			</excludes>
+                        <excludes>
+                            <exclude>**/.ade_path/**</exclude>
+                        </excludes>
                         <testExcludes>
-                           <testExclude>**/.ade_path/**</testExclude>
+                            <testExclude>**/.ade_path/**</testExclude>
                         </testExcludes>
                     </configuration>
                 </plugin>
@@ -452,10 +452,10 @@
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
                 <artifactId>config-generator</artifactId>
-		<configuration>
-		    <excludes>**/.ade_path/**</excludes>
+                <configuration>
+                    <excludes>**/.ade_path/**</excludes>
                     <supportedProjectTypes>jar,glassfish-jar</supportedProjectTypes>
-		</configuration>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.glassfish.hk2</groupId>
@@ -477,7 +477,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-		    <useDefaultManifestFile>true</useDefaultManifestFile>
+                    <useDefaultManifestFile>true</useDefaultManifestFile>
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
@@ -520,9 +520,9 @@
                 <artifactId>maven-source-plugin</artifactId>
                 <configuration>
                     <includePom>true</includePom>
-		    <excludes>
-			<exclude>**/.ade_path/**</exclude>
-		    </excludes>
+                    <excludes>
+                        <exclude>**/.ade_path/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
             <plugin>
@@ -986,6 +986,11 @@
                 <groupId>jline</groupId>
                 <artifactId>jline</artifactId>
                 <version>2.9</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.8</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
