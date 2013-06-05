@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -145,6 +145,11 @@ public class DolProvider implements ApplicationMetaDataProvider<Application>,
 
         ClassLoader cl = dc.getClassLoader();
         DeployCommandParameters params = dc.getCommandParameters(DeployCommandParameters.class);
+
+        sourceArchive.addArchiveMetaData(DeploymentProperties.APP_PROPS,
+                        dc.getAppProps());
+        sourceArchive.addArchiveMetaData(DeploymentProperties.COMMAND_PARAMS,
+                        params);
 
         String name = params.name();
         String archiveType = dc.getArchiveHandler().getArchiveType();

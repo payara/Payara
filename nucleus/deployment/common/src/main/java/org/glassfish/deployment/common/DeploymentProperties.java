@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -549,6 +549,7 @@ public class DeploymentProperties extends Properties {
     public static final String DROP_TABLES = "droptables";
     public static final String ALT_DD = "altdd";
     public static final String RUNTIME_ALT_DD = "runtimealtdd";
+    public static final String COMMAND_PARAMS = "commandparams";
 
 
     public static final String PROTOCOL = "protocol";

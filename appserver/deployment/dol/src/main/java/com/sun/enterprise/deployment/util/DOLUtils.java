@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -525,8 +526,12 @@ public class DOLUtils {
         List<URI> classPathURIs = handler.getClassPathURIs(archive);
         classPathURIs.addAll(getLibraryJarURIs(app, archive));
         Types types = archive.getParentArchive().getExtraData(Types.class);
-        DeployCommandParameters parameters = new DeployCommandParameters(new File(archive.getURI()));
+        DeployCommandParameters parameters = archive.getParentArchive().getArchiveMetaData(DeploymentProperties.COMMAND_PARAMS, DeployCommandParameters.class);
+        Properties appProps = archive.getParentArchive().getArchiveMetaData(DeploymentProperties.APP_PROPS, Properties.class);
         ExtendedDeploymentContext context = new DeploymentContextImpl(null, archive, parameters, habitat.<ServerEnvironment>getService(ServerEnvironment.class));
+        if (appProps != null) {
+            context.getAppProps().putAll(appProps);
+        }
         context.setArchiveHandler(handler);
         context.addTransientAppMetaData(Types.class.getName(), types);
         Collection<Sniffer> sniffers = snifferManager.getSniffers(context, classPathURIs, types);

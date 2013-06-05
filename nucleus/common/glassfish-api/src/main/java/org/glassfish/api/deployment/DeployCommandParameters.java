@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -209,9 +209,6 @@ public class DeployCommandParameters extends OpsParams {
 
     @Param(optional=true, acceptableValues="true,false")
     public String lbenabled;
-
-    @Param(optional=true, defaultValue="true")
-    public Boolean implicitcdienabled = true;
 
     @Param(name=ParameterNames.DEPLOYMENT_ORDER, optional=true)
     public Integer deploymentorder = 100;
