@@ -56,6 +56,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
 
 import org.glassfish.grizzly.SocketBinder;
@@ -125,7 +126,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     /**
      * The logger to use for logging messages.
      */
-    static final Logger logger = Logger.getLogger(GrizzlyListener.class.getName());
+    private static final Logger LOGGER =
+            Grizzly.logger(GenericGrizzlyListener.class);
+    
     protected volatile String name;
     protected volatile InetAddress address;
     protected volatile int port;
@@ -307,8 +310,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         String selectorName = transportConfig.getSelectionKeyHandler();
         if (selectorName != null) {
             if (getSelectionKeyHandlerByName(selectorName, transportConfig) != null) {
-                if (logger.isLoggable(Level.INFO)) {
-                    logger.warning("Element, selection-key-handler, has been deprecated and is effectively ignored by the runtime.");
+                if (LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.warning("Element, selection-key-handler, has been deprecated and is effectively ignored by the runtime.");
                 }
             }
         }
@@ -394,7 +397,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         PUFilter.class, puFilterClassname, puFilterClassname);
                     configureElement(habitat, networkListener, pu, puFilter);
                 } catch (Exception e) {
-                    logger.log(Level.WARNING,
+                    LOGGER.log(Level.WARNING,
                         "Can not initialize port unification filter: "
                             + puFilterClassname + " default filter will be used instead", e);
                 }
@@ -447,20 +450,20 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         puFilter.register(protocolFinder, subProtocolFilterChainBuilder.build());
                     }
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Can not initialize sub protocol. Finder: "
+                    LOGGER.log(Level.WARNING, "Can not initialize sub protocol. Finder: "
                         + finderClassname, e);
                 }
             }
             filterChainBuilder.add(puFilter);
         } else if (protocol.getHttpRedirect() != null) {
-            filterChainBuilder.add(new org.glassfish.grizzly.http.HttpServerFilter());
+            filterChainBuilder.add(createHttpServerCodecFilter());
             final HttpRedirectFilter filter = new HttpRedirectFilter();
             filter.configure(habitat, networkListener, protocol.getHttpRedirect());
             filterChainBuilder.add(filter);
         } else {
             ProtocolChainInstanceHandler pcihConfig = protocol.getProtocolChainInstanceHandler();
             if (pcihConfig == null) {
-                logger.log(Level.WARNING, "Empty protocol declaration");
+                LOGGER.log(Level.WARNING, "Empty protocol declaration");
                 return;
             }
             ProtocolChain filterChainConfig = pcihConfig.getProtocolChain();
@@ -471,7 +474,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                     configureElement(habitat, networkListener, filterConfig, filter);
                     filterChainBuilder.add(filter);
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Can not initialize protocol filter: "
+                    LOGGER.log(Level.WARNING, "Can not initialize protocol filter: "
                         + filterClassname, e);
                     throw new IllegalStateException("Can not initialize protocol filter: "
                         + filterClassname);
@@ -532,7 +535,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 if (customThreadPool != null) {
                     if (!configureElement(habitat, networkListener,
                             threadPool, customThreadPool)) {
-                        logger.log(Level.INFO,
+                        LOGGER.log(Level.INFO,
                                 "The ThreadPool configuration bean can not be "
                                 + "passed to the custom thread-pool: {0}" +
                                 " instance, because it's not {1}.",
@@ -544,11 +547,11 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                     return;
                 }
                 
-                logger.log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Can not initalize custom thread pool: {0}", classname);
                 
             } catch (Throwable t) {
-                logger.log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "Can not initalize custom thread pool: " + classname, t);
             }
         }
@@ -558,7 +561,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             transport.setWorkerThreadPool(GrizzlyExecutorService.createInstance(
                 configureThreadPoolConfig(networkListener, threadPool)));
         } catch (NumberFormatException ex) {
-            logger.log(Level.WARNING, "Invalid thread-pool attribute", ex);
+            LOGGER.log(Level.WARNING, "Invalid thread-pool attribute", ex);
         }
     }
 
@@ -631,27 +634,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         transactionTimeoutMillis = Integer.parseInt(http.getRequestTimeoutSeconds()) * 1000;
         filterChainBuilder.add(new IdleTimeoutFilter(delayedExecutor, Integer.parseInt(http.getTimeoutSeconds()),
             TimeUnit.SECONDS));
-        int maxRequestHeaders;
-        try {
-            maxRequestHeaders = Integer.parseInt(http.getMaxRequestHeaders());
-        } catch (NumberFormatException nfe) {
-            maxRequestHeaders = MimeHeaders.MAX_NUM_HEADERS_DEFAULT;
-        }
-        int maxResponseHeaders;
-        try {
-            maxResponseHeaders = Integer.parseInt(http.getMaxResponseHeaders());
-        } catch (NumberFormatException nfe) {
-            maxResponseHeaders = MimeHeaders.MAX_NUM_HEADERS_DEFAULT;
-        }
         final org.glassfish.grizzly.http.HttpServerFilter httpServerFilter =
-            new org.glassfish.grizzly.http.HttpServerFilter(
-                Boolean.parseBoolean(http.getChunkingEnabled()),
-                Integer.parseInt(http.getHeaderBufferLengthBytes()),
-                http.getDefaultResponseType(),
-                configureKeepAlive(http),
-                delayedExecutor,
-                maxRequestHeaders,
-                maxResponseHeaders);
+            createHttpServerCodecFilter(http);
         final Set<ContentEncoding> contentEncodings =
             configureContentEncodings(http);
         for (ContentEncoding contentEncoding : contentEncodings) {
@@ -704,7 +688,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             // Spdy without NPN is supported, but warn that there may
             // be consequences to this configuration.
             if (!secure && isNpnMode) {
-                logger.log(Level.WARNING,
+                LOGGER.log(Level.WARNING,
                         "SSL is not enabled for listener {0}.  SPDY support will be enabled, but will not be secured.  Some clients may not be able to use SPDY in this configuration.",
                         listener.getName());
             }
@@ -720,8 +704,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 try {
                     spdyMode = Utils.loadClass("org.glassfish.grizzly.spdy.SpdyMode");
                 } catch (ClassNotFoundException cnfe) {
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("Unable to load class org.glassfish.grizzly.spdy.SpdyMode.  SPDY support cannot be enabled");
+                    if (LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Unable to load class org.glassfish.grizzly.spdy.SpdyMode.  SPDY support cannot be enabled");
                     }
                     return;
                 }
@@ -794,8 +778,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                         Method m = wsAddOn.getClass().getDeclaredMethod("setTimeoutInSeconds", Long.TYPE);
                         m.invoke(wsAddOn, Long.parseLong(http.getWebsocketsTimeoutSeconds()));
                     } catch (Exception e) {
-                        if (logger.isLoggable(Level.WARNING)) {
-                            logger.log(Level.WARNING, e.toString(), e);
+                        if (LOGGER.isLoggable(Level.WARNING)) {
+                            LOGGER.log(Level.WARNING, e.toString(), e);
                         }
                     }
                 }
@@ -854,6 +838,54 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         return Utils.newInstance(habitat, Filter.class, name, filterClassName, ctorArgTypes, ctorArgs);
     }
 
+    private org.glassfish.grizzly.http.HttpServerFilter createHttpServerCodecFilter() {
+        return createHttpServerCodecFilter(null);
+    }
+    
+    private org.glassfish.grizzly.http.HttpServerFilter createHttpServerCodecFilter(
+            final Http http) {
+        
+        int maxRequestHeaders = MimeHeaders.MAX_NUM_HEADERS_DEFAULT;
+        int maxResponseHeaders = MimeHeaders.MAX_NUM_HEADERS_DEFAULT;
+        boolean isChunkedEnabled = true;
+        int headerBufferLengthBytes = org.glassfish.grizzly.http.HttpServerFilter.DEFAULT_MAX_HTTP_PACKET_HEADER_SIZE;
+        
+        String defaultResponseType = null;
+        
+        if (http != null) {
+            isChunkedEnabled = Boolean.parseBoolean(http.getChunkingEnabled());
+            
+            headerBufferLengthBytes = Integer.parseInt(http.getHeaderBufferLengthBytes());
+            
+            defaultResponseType = http.getDefaultResponseType();
+
+            maxRequestHeaders = Integer.parseInt(http.getMaxRequestHeaders());
+
+            maxResponseHeaders = Integer.parseInt(http.getMaxResponseHeaders());
+        }
+        
+        return createHttpServerCodecFilter(http, isChunkedEnabled,
+                headerBufferLengthBytes, defaultResponseType,
+                configureKeepAlive(http), delayedExecutor,
+                maxRequestHeaders, maxResponseHeaders);
+    }
+    
+    protected org.glassfish.grizzly.http.HttpServerFilter createHttpServerCodecFilter(
+            final Http http,
+            final boolean isChunkedEnabled, final int headerBufferLengthBytes,
+            final String defaultResponseType, final KeepAlive keepAlive,
+            final DelayedExecutor delayedExecutor,
+            final int maxRequestHeaders, final int maxResponseHeaders) {
+        return new org.glassfish.grizzly.http.HttpServerFilter(
+                isChunkedEnabled,
+                headerBufferLengthBytes,
+                defaultResponseType,
+                keepAlive,
+                delayedExecutor,
+                maxRequestHeaders,
+                maxResponseHeaders);
+    }
+    
     protected ServerFilterConfiguration getHttpServerFilterConfiguration(Http http) {
         final ServerFilterConfiguration serverFilterConfiguration =
                 new ServerFilterConfiguration();
@@ -892,7 +924,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         return fileCache;
     }
 
-    protected KeepAlive configureKeepAlive(Http http) {
+    protected KeepAlive configureKeepAlive(final Http http) {
         int timeoutInSeconds = 60;
         int maxConnections = 256;
         if (http != null) {
@@ -902,7 +934,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //                String msg = _rb.getString("pewebcontainer.invalidKeepAliveTimeout");
                 String msg = "pewebcontainer.invalidKeepAliveTimeout";
                 msg = MessageFormat.format(msg, http.getTimeoutSeconds(), Integer.toString(timeoutInSeconds));
-                logger.log(Level.WARNING, msg, ex);
+                LOGGER.log(Level.WARNING, msg, ex);
             }
             try {
                 maxConnections = Integer.parseInt(http.getMaxConnections());
@@ -910,7 +942,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //                String msg = _rb.getString("pewebcontainer.invalidKeepAliveMaxConnections");
                 String msg = "pewebcontainer.invalidKeepAliveMaxConnections";
                 msg = MessageFormat.format(msg, http.getMaxConnections(), Integer.toString(maxConnections));
-                logger.log(Level.WARNING, msg, ex);
+                LOGGER.log(Level.WARNING, msg, ex);
             }
         }
         final KeepAlive keepAlive = new KeepAlive();

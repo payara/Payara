@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.services.impl;
 
+import com.sun.appserv.server.util.Version;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,6 +53,7 @@ import com.sun.enterprise.v3.services.impl.monitor.FileCacheMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.GrizzlyMonitoring;
 import com.sun.enterprise.v3.services.impl.monitor.KeepAliveMonitor;
 import com.sun.enterprise.v3.services.impl.monitor.ThreadPoolMonitor;
+import org.glassfish.grizzly.Buffer;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -59,11 +61,17 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
+import org.glassfish.grizzly.filterchain.FilterChainContext;
+import org.glassfish.grizzly.http.HttpHeader;
+import org.glassfish.grizzly.http.HttpRequestPacket;
+import org.glassfish.grizzly.http.HttpResponsePacket;
 import org.glassfish.grizzly.http.KeepAlive;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
+import org.glassfish.grizzly.http.util.Header;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
+import org.glassfish.grizzly.utils.DelayedExecutor;
 import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
 import org.glassfish.hk2.api.IndexedFilter;
@@ -109,22 +117,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         unregisterMonitoringStatsProviders();
         super.stop();
     }
-
-//    @Override
-//    public void destroy() {
-//        ServiceLocator locator = grizzlyService.getHabitat();
-//        IndexedFilter removeFilter = BuilderHelper.createNameAndContractFilter(Mapper.class.getName(),
-//                (address.toString() + port));
-//
-//        DynamicConfigurationService dcs = locator.getService(DynamicConfigurationService.class);
-//        DynamicConfiguration config = dcs.createDynamicConfiguration();
-//
-//        config.addUnbindFilter(removeFilter);
-//
-//        config.commit();
-//
-//        unregisterMonitoringStatsProviders();
-//    }
 
     @SuppressWarnings("unchecked")
     @Override
@@ -252,6 +244,25 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         return config;
     }
 
+    @Override
+    protected org.glassfish.grizzly.http.HttpServerFilter createHttpServerCodecFilter(
+            final Http http,
+            final boolean isChunkedEnabled, final int headerBufferLengthBytes,
+            final String defaultResponseType, final KeepAlive keepAlive,
+            final DelayedExecutor delayedExecutor,
+            final int maxRequestHeaders, final int maxResponseHeaders) {
+        
+        return new GlassfishHttpCodecFilter(
+                http == null || Boolean.parseBoolean(http.getXpoweredBy()),
+                isChunkedEnabled,
+                headerBufferLengthBytes,
+                defaultResponseType,
+                keepAlive,
+                delayedExecutor,
+                maxRequestHeaders,
+                maxResponseHeaders);
+    }
+
 
 
     protected void registerMonitoringStatsProviders() {
@@ -322,6 +333,78 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         @Override
         public String getWebAppRootPath() {
             return webAppRootPath;
+        }
+    }
+    
+    /**
+     * Glassfish specific HttpCodecFilter extension.
+     */
+    private static class GlassfishHttpCodecFilter extends org.glassfish.grizzly.http.HttpServerFilter {
+        private final String serverVersion;
+        private final String xPoweredBy;
+        
+        public GlassfishHttpCodecFilter(
+                final boolean isXPoweredByEnabled,
+                final boolean chunkingEnabled,
+                final int maxHeadersSize,
+                final String defaultResponseContentType,
+                final KeepAlive keepAlive, final DelayedExecutor executor,
+                final int maxRequestHeaders, final int maxResponseHeaders) {
+            super(chunkingEnabled, maxHeadersSize, defaultResponseContentType,
+                    keepAlive, executor, maxRequestHeaders, maxResponseHeaders);
+            
+            /*
+            * Set the server info.
+            * By default, the server info is taken from Version#getVersion.
+            * However, customers may override it via the product.name system
+            * property.
+            * Some customers prefer not to disclose the server info
+            * for security reasons, in which case they would set the value of the
+            * product.name system property to the empty string. In this case,
+            * the server name will not be publicly disclosed via the "Server"
+            * HTTP response header (which will be suppressed) or any container
+            * generated error pages. However, it will still appear in the
+            * server logs (see IT 6900).
+            * 
+            * Taken from com.sun.enterprise.web.WebContainer code
+            */
+            String serverInfo = System.getProperty("product.name");
+            
+            serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
+            
+            if (isXPoweredByEnabled) {
+                xPoweredBy = "Servlet/3.1 JSP/2.3 "
+                        + "(" + ((serverInfo != null && !serverInfo.isEmpty()) ? serverInfo : Version.getVersion())
+                        + " Java/"
+                        + System.getProperty("java.vm.vendor") + "/"
+                        + System.getProperty("java.specification.version") + ")";
+            } else {
+                xPoweredBy = null;
+            }
+        }
+        
+        @Override
+        protected boolean onHttpHeaderParsed(final HttpHeader httpHeader,
+                final Buffer buffer,
+                final FilterChainContext ctx) {
+            
+            final boolean result = super.onHttpHeaderParsed(httpHeader,
+                    buffer, ctx);
+            
+            final HttpRequestPacket request = (HttpRequestPacket) httpHeader;
+            final HttpResponsePacket response = request.getResponse();
+            
+            // Set response "Server" header
+            if (serverVersion != null && !serverVersion.isEmpty()) {
+                response.addHeader(Header.Server, serverVersion);
+            }
+            
+            // Set response "X-Powered-By" header
+            if (xPoweredBy != null) {
+                response.addHeader(Header.XPoweredBy, xPoweredBy);
+            }
+            
+            return result;
         }
     }
 }
