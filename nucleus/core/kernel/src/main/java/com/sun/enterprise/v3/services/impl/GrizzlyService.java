@@ -423,6 +423,8 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
                 listener.call();
             } catch (Exception ignored) {
             }
+            
+            return;
         }
         
         serverReadyListeners.add(listener);
