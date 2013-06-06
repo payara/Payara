@@ -87,6 +87,10 @@
             <sun:textField id="ctx" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.webApp.ContextRoot']}" text="#{pageSession.valueMap['contextRoot']}" />
         </sun:property>
 
+        <sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
+            <sun:checkbox id="implicitCdi" disabled="true" label="$resource{i18n.common.Enabled}" selected="#{pageSession.implicitCdiEnabled}" selectedValue="true" />
+        </sun:property>
+
         <sun:property id="availability" rendered="#{pageSession.finalShowAvail}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
             <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['availabilityEnabled']}" selectedValue="true" />
         </sun:property>
@@ -95,15 +99,6 @@
         <sun:property id="jw" rendered="#{pageSession.showJavaWebStart}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.JavaWebStart}" helpText="$resource{i18n.edit.JavaWebStartHelp}">
             <sun:checkbox id="jwc" disabled="true" label="$resource{i18n.common.Enabled}" selected="#{pageSession.javaWebStartEnabled}" selectedValue="true" >
             </sun:checkbox>
-            <!beforeCreate
-                setPageSessionAttribute(key="javaWebStartEnabled" value="true");
-                foreach (var="oneProp" list="#{pageSession.tableList}") {
-                    if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
-                        setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");
-                        //will be nice if we can break here
-                    }
-                }
-            />
         </sun:property>
 
         
@@ -124,6 +119,18 @@
             <sun:textField id="desc" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.valueMap['description']}" />
            "<br /><br />
         </sun:property>
+        <!beforeCreate
+            setPageSessionAttribute(key="javaWebStartEnabled" value="true");
+            setPageSessionAttribute(key="implicitCdiEnabled" value="true");
+            foreach (var="oneProp" list="#{pageSession.tableList}") {
+                if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
+                    setPageSessionAttribute(key="javaWebStartEnabled" value="#{requestScope.oneProp.value}");
+                }
+                if (#{requestScope.oneProp.name}=implicitCdiEnabled){
+                    setPageSessionAttribute(key="implicitCdiEnabled" value="#{requestScope.oneProp.value}");
+                }
+            }
+        />
     </sun:propertySheetSection>
 </sun:propertySheet>
 

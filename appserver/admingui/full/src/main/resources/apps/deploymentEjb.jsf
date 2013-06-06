@@ -48,7 +48,9 @@
         setAttribute(key="fieldMap" value="ejb");
         createMap(result="#{pageSession.ejb}")
         mapPut(map="#{pageSession.deployMap}", key="jar", value="#{pageSession.ejb}");
-        mapPut(map="#{pageSession.ejb}", key="convertToFalseList", value={ "enabled", "availabilityEnabled", "verify" ,"force" "keepState",  "PROPERTY-preserveAppScopedResources"} );
+        mapPut(map="#{pageSession.ejb}", key="convertToFalseList", value={ "enabled", "availabilityEnabled", "PROPERTY-implicitCdiEnabled", "verify" ,"force" "keepState",  "PROPERTY-preserveAppScopedResources"} );
+        mapPut(map="#{pageSession.ejb}", key="PROPERTY-implicitCdiEnabled", value="true");
+
      />
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{ejbId});
@@ -72,11 +74,14 @@
         />
     </sun:checkbox>
 </sun:property>
-        
+
+<sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
+    <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ejb['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
+</sun:property>
+
 <sun:property id="availability"  rendered="#{!pageSession.onlyDASExist}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
     <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ejb['availabilityEnabled']}" selectedValue="true" />
 </sun:property>
-
 
 <sun:property id="v2" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.run}" helpText="$resource{i18n.deploy.runHelp}">
         <sun:checkbox id="ver2" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ejb['verify']}" selectedValue="true" />

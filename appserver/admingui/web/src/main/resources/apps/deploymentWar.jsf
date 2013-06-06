@@ -49,7 +49,9 @@
     <!beforeCreate
         createMap(result="#{pageSession.war}")
         mapPut(map="#{pageSession.deployMap}", key="war", value="#{pageSession.war}");
-        mapPut(map="#{pageSession.war}", key="convertToFalseList", value={"enabled", "precompilejsp", "availabilityEnabled", "verify" ,"force", "keepState",  "PROPERTY-preserveAppScopedResources" } );
+        mapPut(map="#{pageSession.war}", key="convertToFalseList", value={"enabled", "precompilejsp", "availabilityEnabled","PROPERTY-implicitCdiEnabled", "verify" ,"force", "keepState",  "PROPERTY-preserveAppScopedResources" } );
+        mapPut(map="#{pageSession.war}", key="PROPERTY-implicitCdiEnabled", value="true");
+
      />
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{warId});

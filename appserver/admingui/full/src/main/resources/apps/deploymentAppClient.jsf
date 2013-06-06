@@ -48,8 +48,9 @@
         setAttribute(key="fieldMap" value="appClient");
         createMap(result="#{pageSession.appClient}")
         mapPut(map="#{pageSession.deployMap}", key="appClient", value="#{pageSession.appClient}");
-        mapPut(map="#{pageSession.appClient}", key="convertToFalseList", value={ "verify", ,"force" , "PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}"} );
+        mapPut(map="#{pageSession.appClient}", key="convertToFalseList", value={ "verify", "force" , "PROPERTY-implicitCdiEnabled", "PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}"} );
         mapPut(map="#{pageSession.appClient}", key="PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}" , value="true" );
+        mapPut(map="#{pageSession.appClient}", key="PROPERTY-implicitCdiEnabled", value="true");
      />
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{appClientId});
@@ -63,6 +64,10 @@
             getClientId(component="$this{component}" clientId=>$page{appNameId});
         />
     </sun:textField>
+</sun:property>
+
+<sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
+    <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.appClient['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
 </sun:property>
 
 <sun:property id="jw" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.JavaWebStart}" helpText="$resource{i18n.deploy.JavaWebStartHelp}">

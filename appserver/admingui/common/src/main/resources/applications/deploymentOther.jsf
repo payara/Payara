@@ -48,7 +48,8 @@
         setAttribute(key="fieldMap" value="other");
         createMap(result="#{pageSession.other}")
         mapPut(map="#{pageSession.deployMap}", key="other", value="#{pageSession.other}");
-        mapPut(map="#{pageSession.other}", key="convertToFalseList", value={"enabled", "precompilejsp" , "availabilityEnabled" "verify", "force", "keepState"} );
+        mapPut(map="#{pageSession.other}", key="convertToFalseList", value={"enabled", "precompilejsp" , "availabilityEnabled" "verify", "force", "keepState", "PROPERTY-implicitCdiEnabled" } );
+        mapPut(map="#{pageSession.other}", key="PROPERTY-implicitCdiEnabled", value="true");
      />
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{otherId});
