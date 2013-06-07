@@ -430,6 +430,15 @@ public interface Payload {
          * @return
          */
         public boolean isRecursive();
-
+        
+        /** Extractor of content can note where the content was extracted. 
+         * It can help next user of the same Part to read content.
+         * @param extractedFile 
+         */
+        public void setExtracted(File extractedFile);
+        
+        /** File where content was extracted from the payload.
+         */
+        public File getExtracted();
     }
 }

@@ -639,7 +639,7 @@ public final class FileRealmHelper
                     userTable.put(ud.getName(), ud);
                 }
             }
-        } catch (Exception e) {   
+        } catch (Exception e) {  
             throw new IOException(e.toString());
         } finally {
             if (input != null) {

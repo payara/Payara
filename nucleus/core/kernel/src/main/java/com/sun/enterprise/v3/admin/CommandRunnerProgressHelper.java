@@ -41,6 +41,7 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.progress.CommandProgressImpl;
 import com.sun.enterprise.admin.progress.ProgressStatusClient;
+import java.lang.annotation.Annotation;
 import java.util.UUID;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandProgress;
@@ -75,24 +76,26 @@ class CommandRunnerProgressHelper {
     private ProgressStatus progressForMainCommand = null;
     private ProgressStatusMirroringImpl progressMirroring = null;
     
-    public CommandRunnerProgressHelper(AdminCommand command, String name, Job commandInstance, ProgressStatus clientProgressStatus) {
+    public CommandRunnerProgressHelper(AdminCommand command, String name, Job job, ProgressStatus clientProgressStatus) {
         if (command instanceof GenericCrudCommand) {
             GenericCrudCommand gcc = (GenericCrudCommand) command;
             Class decorator = gcc.getDecoratorClass();
             if (decorator != null) {
                 progressAnnotation = (Progress) decorator.getAnnotation(Progress.class);
             }
+        } else if (command instanceof ProgressProvider) {
+            progressAnnotation = ((ProgressProvider) command).getProgress();
         } else {
             progressAnnotation = command.getClass().getAnnotation(Progress.class);
         }
         if (progressAnnotation != null) {
             if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
-                commandProgress = new CommandProgressImpl(name, createIdForCommandProgress(commandInstance));
+                commandProgress = new CommandProgressImpl(name, createIdForCommandProgress(job));
             } else {
-                commandProgress = new CommandProgressImpl(progressAnnotation.name(), createIdForCommandProgress(commandInstance));
+                commandProgress = new CommandProgressImpl(progressAnnotation.name(), createIdForCommandProgress(job));
             }
-            connectWithClientProgressStatus(commandInstance, clientProgressStatus);
-            commandInstance.setCommandProgress(commandProgress);
+            connectWithClientProgressStatus(job, clientProgressStatus);
+            job.setCommandProgress(commandProgress);
         }
     }
     

@@ -59,6 +59,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import org.glassfish.api.admin.ParameterMap;
 
 /** Represents running (or finished) command instance.
  *
@@ -88,8 +89,10 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     private File jobsFile;
 
     private long completionDate;
+    
+    private ParameterMap parameters;
 
-    protected AdminCommandInstanceImpl(String id, String name,String commandScope,Subject sub,boolean managedJob) {
+    protected AdminCommandInstanceImpl(String id, String name, String commandScope, Subject sub, boolean managedJob, ParameterMap parameters) {
         super(id);
         this.broker = new AdminCommandEventBrokerImpl();
         this.executionDate = new Date().getTime();
@@ -97,11 +100,11 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         this.scope= commandScope;
         isManagedJob = managedJob;
         this.subject = sub;
-
+        this.parameters = parameters;
     }
 
-    protected AdminCommandInstanceImpl( String name,String scope,Subject sub,boolean managedJob) {
-        this(null,name,scope,sub,managedJob);
+    protected AdminCommandInstanceImpl(String name, String scope, Subject sub, boolean managedJob, ParameterMap parameters) {
+        this(null, name, scope, sub, managedJob, parameters);
     }
     
     @Override
@@ -201,6 +204,11 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         } else {
             throw new IllegalStateException(adminStrings.getLocalString("job.state.invalid.FAILED", "State must be RUNNING or RUNNING_RETRYABLE"));
         }
+    }
+
+    @Override
+    public ParameterMap getParameters() {
+        return parameters;
     }
 
 }

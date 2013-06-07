@@ -76,7 +76,7 @@ public class CommandModelImpl extends CommandModel {
     final private I18n i18n;
     final private boolean dashOk;
     final private LocalStringManager localStrings;
-    final private boolean managedJob;
+    private boolean managedJob;
 
     public CommandModelImpl(Class<?> commandType) {
 
@@ -176,6 +176,11 @@ public class CommandModelImpl extends CommandModel {
     public boolean isManagedJob() {
         return managedJob;
     }
+    
+    public void setManagedJob(boolean value) {
+        this.managedJob = value;
+    }
+            
 
     /**
      * Should an unknown option be considered an operand by asadmin?

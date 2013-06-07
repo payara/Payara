@@ -37,51 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package com.sun.enterprise.v3.admin;
+package org.glassfish.api.admin;
 
-import org.glassfish.api.admin.Job;
-import org.glassfish.api.admin.JobCreator;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Service;
+import java.lang.annotation.Annotation;
 
-import javax.inject.Inject;
-import javax.security.auth.Subject;
-import java.io.File;
-import org.glassfish.api.admin.ParameterMap;
-
-/**
- * This service implements the <code>JobCreator</code> and is
- * used for creating Jobs
- * @author Bhakti Mehta
+/** Interface denoting administrative commands that provide their
+ * {@code Progress} annotation. It must be considered as Managed using
+ * {@code Managed} annotation or by {@code CommandModelProvider}
+ *
+ * @author martinmares
  */
-@Service (name="job-creator")
-public class JobCreatorService  implements JobCreator {
-
-    @Inject
-    private ServerEnvironment serverEnvironment;
-
-    @Inject JobManagerService jobManagerService;
-
-    private static final String JOBS_FILE = "jobs.xml";
-    /**
-     * This will create a new job with the name of command and a new unused id for the job
-     *
-     *
-     * @param scope The scope of the command or null if there is no scope
-     * @param name  The name of the command
-     * @return   a newly created job
-     */
-    @Override
-    public Job createJob(String id, String scope, String name, Subject subject, boolean isManagedJob, ParameterMap parameters) {
-        AdminCommandInstanceImpl job = null;
-        if (isManagedJob) {
-            job =  new AdminCommandInstanceImpl(id, name, scope, subject, true, parameters);
-            job.setJobsFile(jobManagerService.jobsFile);
-        } else {
-            job =  new AdminCommandInstanceImpl(name, scope, subject, false, parameters);
+public interface ProgressProvider {
+    
+    public Progress getProgress();
+    
+    public static class Utils {
+        public static Progress provide(final String name, final int totalStepCount) {
+            return new Progress() {
+                @Override
+                public String name() {
+                    return name;
+                }
+                @Override
+                public int totalStepCount() {
+                    return totalStepCount;
+                }
+                @Override
+                public Class<? extends Annotation> annotationType() {
+                    return Progress.class;
+                }
+            };
         }
-        return job;
+        
     }
-
-
+    
 }

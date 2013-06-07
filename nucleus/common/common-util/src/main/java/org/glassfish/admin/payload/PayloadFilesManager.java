@@ -558,10 +558,8 @@ public abstract class PayloadFilesManager {
              * parts more then ones. We have to tell that it was extracted to
              * some file
              */
-            if (part instanceof PayloadImpl.Part.Streamed) {
-                PayloadImpl.Part.Streamed sp = (PayloadImpl.Part.Streamed) part;
-                sp.extracted(extractedFile);
-            }
+            part.setExtracted(extractedFile);
+            
             final String lastModifiedString = part.getProperties().getProperty("last-modified");
             final long lastModified = (lastModifiedString != null ?
                 Long.parseLong(lastModifiedString) :

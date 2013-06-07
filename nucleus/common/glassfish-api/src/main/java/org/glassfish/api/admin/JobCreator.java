@@ -50,7 +50,7 @@ import javax.security.auth.Subject;
 @Contract
 public interface JobCreator {
 
-    public Job createJob(String id,String scope , String name, Subject subject, boolean isManagedJob);
+    public Job createJob(String id,String scope , String name, Subject subject, boolean isManagedJob, ParameterMap parameters);
 
 }
 

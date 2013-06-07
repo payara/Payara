@@ -482,6 +482,7 @@ public class PayloadImpl implements Payload {
         private String contentType;
         private Properties props;
         private boolean isRecursive;
+        private File extractedFile;
 
         /**
          * Creates a new Part implementation.
@@ -521,6 +522,34 @@ public class PayloadImpl implements Payload {
         @Override
         public boolean isRecursive() {
             return isRecursive;
+        }
+        
+        /** Some use cases need reentrantable implementation of this stream 
+         * implementation. Information about extraction can be used for it.
+         */
+        @Override
+        public void setExtracted(File extractedFile) {
+            if (extractedFile != null && extractedFile.exists() && extractedFile.isFile()) {
+                this.extractedFile = extractedFile;
+            }
+        }
+
+        @Override
+        public File getExtracted() {
+            return this.extractedFile;
+        }
+        
+        protected InputStream getExtractedInputStream() {
+            File file = getExtracted();
+            if (file != null) {
+                try {
+                    return new FileInputStream(file);
+                } catch (FileNotFoundException ex) {
+                    return null;
+                }
+            } else {
+                return null;
+            }
         }
 
         /**
@@ -585,13 +614,12 @@ public class PayloadImpl implements Payload {
                 }
             }
         }
-
+        
         /**
          * Implements Part using a stream.
          */
         static class Streamed extends PayloadImpl.Part {
             private final InputStream is;
-            private File extractedFile;
 
             /**
              * Creates a new stream-baesd Part.
@@ -611,25 +639,14 @@ public class PayloadImpl implements Payload {
 
             @Override
             public InputStream getInputStream() {
-                if (extractedFile == null) {
+                InputStream extrIS = getExtractedInputStream();
+                if (extrIS == null) {
                     return is;
                 } else {
-                    try {
-                        return new FileInputStream(extractedFile);
-                    } catch (FileNotFoundException ex) {
-                        return is;
-                    }
+                    return extrIS;
                 }
             }
             
-            /** Some use cases need reentrantable implementation of this stream 
-             * implementation. Information about extraction can be used for it.
-             */
-            public void extracted(File extractedFile) {
-                if (extractedFile != null && extractedFile.exists() && extractedFile.isFile()) {
-                    this.extractedFile = extractedFile;
-                }
-            }
         }
 
         /**

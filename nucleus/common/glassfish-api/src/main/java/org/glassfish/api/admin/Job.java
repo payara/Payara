@@ -84,4 +84,6 @@ public interface Job extends AdminCommandState, Serializable {
      */
     public void setFailedRetryable();
     
+    public ParameterMap getParameters();
+    
 }

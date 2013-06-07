@@ -111,7 +111,7 @@ public class CommandRunnerImpl implements CommandRunner {
     // This is used only for backword compatibility with old behavior
     private static final String OLD_PASSWORD_PARAM_PREFIX = "AS_ADMIN_";
 
-    private final InjectionManager injectionMgr = new InjectionManager();
+    private static final InjectionManager injectionMgr = new InjectionManager();
     @Inject
     private ServiceLocator habitat;
     @Inject
@@ -345,21 +345,18 @@ public class CommandRunnerImpl implements CommandRunner {
         return new ExecutionContext(scope, name, report, subject);
     }
 
-    private ActionReport.ExitCode injectParameters(final CommandModel model, final AdminCommand command,
+    public static boolean injectParameters(final CommandModel model, final Object injectionTarget,
             final InjectionResolver<Param> injector,
-            final AdminCommandContext context) {
+            final ActionReport report) {
 
-        ActionReport report = context.getActionReport();
-        report.setActionDescription(model.getCommandName() + " command");
-        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        if (command instanceof GenericCrudCommand) {
-            GenericCrudCommand c = GenericCrudCommand.class.cast(command);
+        if (injectionTarget instanceof GenericCrudCommand) {
+            GenericCrudCommand c = GenericCrudCommand.class.cast(injectionTarget);
             c.setInjectionResolver(injector);
         }
 
         // inject
         try {
-            injectionMgr.inject(command, injector);
+            injectionMgr.inject(injectionTarget, injector);
         } catch (UnsatisfiedDependencyException e) {
             Param param = e.getAnnotation(Param.class);
             CommandModel.ParamModel paramModel = null;
@@ -404,7 +401,7 @@ public class CommandRunnerImpl implements CommandRunner {
             ActionReport.MessagePart childPart =
                     report.getTopMessagePart().addChild();
             childPart.setMessage(usage);
-            return report.getActionExitCode();
+            return false;
         }
         catch (MultiException e) {
             // If the cause is UnacceptableValueException -- we want the message
@@ -436,11 +433,11 @@ public class CommandRunnerImpl implements CommandRunner {
             ActionReport.MessagePart childPart =
                     report.getTopMessagePart().addChild();
             childPart.setMessage(getUsageText(model));
-            return report.getActionExitCode();
+            return false;
         }
         
-        checkAgainstBeanConstraints(command, model.getCommandName());
-        return report.getActionExitCode();
+        checkAgainstBeanConstraints(injectionTarget, model.getCommandName());
+        return true;
     }
 
     private static synchronized void initBeanValidator() {
@@ -466,10 +463,10 @@ public class CommandRunnerImpl implements CommandRunner {
         }       
     }
     
-    private void checkAgainstBeanConstraints(AdminCommand component, String cname) {
+    private static void checkAgainstBeanConstraints(Object component, String cname) {
         initBeanValidator();
                 
-        Set<ConstraintViolation<AdminCommand>> constraintViolations = beanValidator.validate(component);
+        Set<ConstraintViolation<Object>> constraintViolations = beanValidator.validate(component);
         if (constraintViolations == null || constraintViolations.isEmpty()) {
             return;
         }
@@ -488,6 +485,7 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         throw new UnacceptableValueException(msg.toString());
     }
+    
     /**
      * Executes the provided command object.
      *
@@ -1103,6 +1101,8 @@ public class CommandRunnerImpl implements CommandRunner {
         }
         UploadedFilesManager ufm = null;
         ActionReport report = inv.report();
+        report.setActionDescription(model.getCommandName() + " command");
+        report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         ParameterMap parameters;
         final AdminCommandContext context = new AdminCommandContextImpl(
                 logger, report, inv.inboundPayload(), inv.outboundPayload(), 
@@ -1144,7 +1144,7 @@ public class CommandRunnerImpl implements CommandRunner {
                     InjectionResolver<Param> injectionTarget =
                             new DelegatedInjectionResolver(model, inv.typedParams(),
                             ufm.optionNameToFileMap());
-                    if (injectParameters(model, command, injectionTarget, context).equals(ActionReport.ExitCode.SUCCESS)) {
+                    if (injectParameters(model, command, injectionTarget, report)) {
                         inv.setReport(doCommand(model, command, context, progressHelper));
                     }
                     return;
@@ -1204,7 +1204,7 @@ public class CommandRunnerImpl implements CommandRunner {
                         new MapInjectionResolver(model, parameters,
                         ufm.optionNameToFileMap());
                 injectionMgr.setContext(context);
-                if (!injectParameters(model, command, injectionMgr, context).equals(ActionReport.ExitCode.SUCCESS)) {
+                if (!injectParameters(model, command, injectionMgr, report)) {
                     return;
                 }
 
@@ -1765,9 +1765,9 @@ public class CommandRunnerImpl implements CommandRunner {
 
             Job commandInstance = null;
             if (isManagedJob) {
-                commandInstance = jobCreator.createJob(jobManager.getNewId(),scope(),name(), subject,isManagedJob);
+                commandInstance = jobCreator.createJob(jobManager.getNewId(), scope(), name(), subject, isManagedJob, parameters());
             }  else {
-                commandInstance = jobCreator.createJob(null,scope(),name(), subject,isManagedJob);
+                commandInstance = jobCreator.createJob(null, scope(), name(), subject, isManagedJob, parameters());
             }
 
             //Register the brokers  else the detach functionality will not work

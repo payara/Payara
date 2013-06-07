@@ -60,6 +60,7 @@ import org.glassfish.jersey.message.MessageProperties;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
+import org.glassfish.jersey.server.filter.UriConnegFilter;
 
 /**
  * Responsible for providing ReST resources for {@code asadmin} and {@code cadmin} communication.
@@ -135,6 +136,7 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
         ResourceConfig rc = new ResourceConfig(classes);
         rc.property(ServerProperties.MEDIA_TYPE_MAPPINGS, getMimeMappings());
         rc.register(CsrfProtectionFilter.class);
+        rc.register(UriConnegFilter.class);
         for (Binder b : additionalBinders) {
             rc.register(b);
         }
