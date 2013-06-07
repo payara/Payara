@@ -169,7 +169,7 @@ public class WeldSniffer extends GenericSniffer {
 
     @Override
     public String[] getAnnotationNames(DeploymentContext context) {
-        return WeldUtils.isImplicitBeanDiscoveryEnabled() ? WeldUtils.getCDIEnablingAnnotations(context) : null;
+        return WeldUtils.isImplicitBeanDiscoveryEnabled(context) ? WeldUtils.getCDIEnablingAnnotations(context) : null;
     }
 
 

@@ -103,6 +103,9 @@ public class WeldUtils {
 
     public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
 
+    // The name of the deployment context property used to disable implicit bean discovery for a
+    // particular application deployment.
+    public static final String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
 
     protected static final List<String> cdiScopeAnnotations;
     static {
@@ -172,7 +175,7 @@ public class WeldUtils {
      * @return true, if it is an implicit bean deployment archive; otherwise, false.
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, URI archivePath) {
-        return isImplicitBeanDiscoveryEnabled() && hasCDIEnablingAnnotations(context, archivePath);
+        return (isImplicitBeanDiscoveryEnabled(context) && hasCDIEnablingAnnotations(context, archivePath));
     }
 
 
@@ -470,6 +473,22 @@ public class WeldUtils {
             if (config != null) {
                 result = Boolean.valueOf(config.getExtensionByType(CDIService.class).getEnableImplicitCdi());
             }
+        }
+
+        return result;
+    }
+
+
+    public static boolean isImplicitBeanDiscoveryEnabled(DeploymentContext context) {
+        boolean result = false;
+
+        if (isImplicitBeanDiscoveryEnabled()) {
+            // If implicit discovery is enabled for the server, then check if it's disabled for the
+            // deployment of this application.
+            Object propValue = context.getAppProps().get(IMPLICIT_CDI_ENABLED_PROP);
+
+            // If the property is not set, or it's value is true, then implicit discovery is enabled
+            result = (propValue == null || Boolean.parseBoolean((String) propValue));
         }
 
         return result;
