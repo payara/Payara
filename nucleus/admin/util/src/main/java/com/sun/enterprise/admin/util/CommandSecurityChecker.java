@@ -43,7 +43,6 @@ import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.util.*;
@@ -376,7 +375,7 @@ public class CommandSecurityChecker implements PostConstruct {
         if ( ! resourceName.startsWith("/")) {
             resourceName = '/' + resourceName;
         }
-        return URLEncoder.encode(resourceName, RESOURCE_NAME_URL_ENCODING);
+        return resourceName;
     }
     
     private boolean addChecksFromExplicitAccessRequiredAnnos(final AdminCommand command,

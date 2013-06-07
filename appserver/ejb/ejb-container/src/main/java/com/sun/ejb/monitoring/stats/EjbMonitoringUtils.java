@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.external.probe.provider.PluginPoint;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
+import com.sun.enterprise.util.StringUtils;
 
 import org.glassfish.external.statistics.*;
 import org.glassfish.external.statistics.impl.*;
@@ -132,6 +133,7 @@ public class EjbMonitoringUtils {
             sb.append(SEP).append(c.getName().replaceAll("_", "\\."));
         }
         String result = sb.toString().replaceAll("\\.", "\\\\.");
+        result = StringUtils.replace(result, "[", "_ARRAY_");
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("==> Converted method String: " + result);
         }
