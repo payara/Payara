@@ -114,6 +114,7 @@ public class CDIHK2Descriptor<T> extends AbstractActiveDescriptor<T> {
                 0,
                 null,
                 null,
+                null,
                 new HashMap<String, List<String>>());
                 
         this.manager = manager;
