@@ -133,7 +133,6 @@ public class EjbMonitoringUtils {
             sb.append(SEP).append(c.getName().replaceAll("_", "\\."));
         }
         String result = sb.toString().replaceAll("\\.", "\\\\.");
-        result = StringUtils.replace(result, "[", "_ARRAY_");
         if (_logger.isLoggable(Level.FINE)) {
             _logger.fine("==> Converted method String: " + result);
         }

@@ -41,6 +41,7 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.util.ClusterOperationUtil;
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.util.StringUtils;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import static com.sun.enterprise.util.StringUtils.ok;
 import com.sun.enterprise.v3.common.ActionReporter;
@@ -126,7 +127,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
         final Collection<AccessCheck> accessChecks = new ArrayList<AccessCheck>();
         for (Object obj : nodeTreeToProcess.keySet()) {
             final String name = obj.toString().replace('.', '/');
-            accessChecks.add(new AccessCheck(name, "read"));
+            accessChecks.add(new AccessCheck(sanitizeResourceName(name), "read"));
         }
         return accessChecks;
     }
@@ -141,11 +142,14 @@ public class MonitoringReporter extends V2DottedNameSupport {
              * in order to find out that it does or does not have children.
              */
             String name = tn1.getCompletePathName().replace('.', '/');
-            accessChecks.add(new AccessCheck(name, "read"));
+            accessChecks.add(new AccessCheck(sanitizeResourceName(name), "read"));
         }
         return accessChecks;
     }
 
+    private String sanitizeResourceName(final String resourceName) {
+        return StringUtils.replace(resourceName, "[", "_ARRAY_");
+    }
     public void prepareList(AdminCommandContext c, String arg) {
         prepare(c, arg, OutputType.LIST);
     }
