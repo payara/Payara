@@ -43,6 +43,7 @@ package org.glassfish.security.services.api.authorization;
 
 import org.glassfish.security.services.impl.authorization.*;
 import java.net.URI;
+
 import javax.security.auth.Subject;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.security.services.api.common.Attributes;
@@ -61,13 +62,26 @@ public class SimpleAtzProviderTest extends HK2Runner {
     private AuthorizationProvider simpleAtzPrv = null;
     private SecurityContextService contextService = null;
     
+    
     @Before
     public void before() {
         super.before();
         
+        String pf = System.getProperty("java.security.policy");
+        System.out.println("policy file = " + pf);
+        String bd = System.getProperty("build.dir");
+        System.out.println("build dir = " + bd);
+
+        String apsd = System.getProperty("appserver_dir");
+        System.out.println("appserver dir = " + apsd);
+
+        String local = System.getProperty("localRepository");
+        System.out.println("local repository dir = " + local);
+
         simpleAtzPrv = testLocator.getService(AuthorizationProvider.class, "simpleAuthorization");
-        Assert.assertNotNull(simpleAtzPrv);
         contextService = testLocator.getService(SecurityContextService.class);
+
+        Assert.assertNotNull(simpleAtzPrv);
         Assert.assertNotNull(contextService);
         
         contextService.getEnvironmentAttributes().addAttribute(

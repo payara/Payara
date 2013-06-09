@@ -37,64 +37,75 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.impl;
 
-import java.security.Principal;
+package org.glassfish.security.services.common;
+
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.inject.Singleton;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
+import org.glassfish.hk2.api.Descriptor;
+import org.glassfish.hk2.api.Filter;
 
-import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
-import org.glassfish.security.services.api.authentication.ImpersonationService;
-import org.glassfish.security.services.common.Secure;
-import org.jvnet.hk2.annotations.Service;
+public class SecurityAccessFilter implements Filter {
 
-/**
- * The Impersonation Service Implementation.
- * 
- * @author jazheng
- */
-@Service(name="impersonationService")
-@Singleton
-@Secure(accessPermissionName = "security/service/impersonation/simple")
-public class ImpersonationServiceImpl implements ImpersonationService {
+    private static final String SYS_PROP_JAVA_SEC_POLICY = "java.security.policy";
+    private static final Logger LOG = SecurityAccessValidationService.LOG;
 
-  static final Logger LOG = Logger
-      .getLogger(ImpersonationServiceImpl.class.getName());
+    private static boolean javaPolicySet =
+        AccessController.doPrivileged(new PrivilegedAction<Boolean>() {
 
-  @Override
-  public Subject impersonate(String user, String[] groups, Subject subject,
-      boolean virtual) throws LoginException {
-
-    // Use the supplied Subject or create a new Subject
-    final Subject _subject = 
-      (subject != null)? subject: new Subject();
+            @Override
+            public Boolean run() {
+                Boolean rtn = Boolean.FALSE;
+                
+                String wlsName = System.getProperty(SYS_PROP_JAVA_SEC_POLICY);
+                
+                if ( wlsName != null && !wlsName.isEmpty() )
+                        rtn = Boolean.TRUE;
+                
+                return rtn;
+            }
+        });
     
-    if (user == null || user.isEmpty()) {
-      return _subject;
-    }
     
-    // TODO - Add support for virtual = false after IdentityManager
-    // is available in open source 
-    if (!virtual) {
-      throw new UnsupportedOperationException(
-          "Use of non-virtual parameter is not supported");
-    } else {
-      // Build the Subject
-      Set<Principal> principals = _subject.getPrincipals();
-      principals.add(new PrincipalImpl(user));
-      if (groups != null) {
-        for (String group: groups) {
-          principals.add(new Group(group));
+    @Override
+    public boolean matches(Descriptor d) {
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Descripter: " + d );
         }
-      }
+
+        if (!javaPolicySet) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("java security policy is not set, so no validation for security servies.");
+            }
+
+            return false;
+        }
+        
+        if (d == null)
+            return false;
+
+        Set<String> qualifiers = d.getQualifiers();
+        if (qualifiers != null && qualifiers.size() != 0) {
+            for (String s : qualifiers) {
+                if (Secure.class.getCanonicalName().equals(s)) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("The instance is annotated with \'Secure\': " + s);                                
+                    }
+                    return true;
+                }
+            }
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("The instance has no \'Secure\' annotated ");
+        }
+
+        return false;
     }
- 
-    // Return the impersonated Subject
-    return _subject;
-  }
+
 }

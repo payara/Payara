@@ -37,64 +37,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.impl;
 
-import java.security.Principal;
-import java.util.Set;
+package org.glassfish.security.services.common;
+
 import java.util.logging.Logger;
 
 import javax.inject.Singleton;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
 
-import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
-import org.glassfish.security.services.api.authentication.ImpersonationService;
-import org.glassfish.security.services.common.Secure;
+import org.glassfish.hk2.api.Filter;
+import org.glassfish.hk2.api.ValidationService;
+import org.glassfish.hk2.api.Validator;
 import org.jvnet.hk2.annotations.Service;
 
-/**
- * The Impersonation Service Implementation.
- * 
- * @author jazheng
- */
-@Service(name="impersonationService")
+
+@Service 
 @Singleton
-@Secure(accessPermissionName = "security/service/impersonation/simple")
-public class ImpersonationServiceImpl implements ImpersonationService {
+public class SecurityAccessValidationService implements ValidationService {
 
-  static final Logger LOG = Logger
-      .getLogger(ImpersonationServiceImpl.class.getName());
-
-  @Override
-  public Subject impersonate(String user, String[] groups, Subject subject,
-      boolean virtual) throws LoginException {
-
-    // Use the supplied Subject or create a new Subject
-    final Subject _subject = 
-      (subject != null)? subject: new Subject();
     
-    if (user == null || user.isEmpty()) {
-      return _subject;
-    }
+    private SecurityAccessValidator commValidator = new SecurityAccessValidator();
+
+    private SecurityAccessFilter flt = new SecurityAccessFilter();
+
+    static final Logger LOG = Logger.getLogger("org.glassfish.security.services"); 
+        
     
-    // TODO - Add support for virtual = false after IdentityManager
-    // is available in open source 
-    if (!virtual) {
-      throw new UnsupportedOperationException(
-          "Use of non-virtual parameter is not supported");
-    } else {
-      // Build the Subject
-      Set<Principal> principals = _subject.getPrincipals();
-      principals.add(new PrincipalImpl(user));
-      if (groups != null) {
-        for (String group: groups) {
-          principals.add(new Group(group));
-        }
-      }
+    @Override
+    public Filter getLookupFilter() {
+        return flt;
     }
- 
-    // Return the impersonated Subject
-    return _subject;
-  }
+
+    @Override
+    public Validator getValidator() {
+        return commValidator;
+    }
+
 }

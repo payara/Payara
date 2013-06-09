@@ -52,11 +52,13 @@ import java.util.regex.Matcher;
 import java.util.logging.Logger;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.security.AccessController;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 
 /**
  * View that translate configured attributes containing properties like ${foo.bar}
@@ -158,7 +160,13 @@ public class TranslatedConfigView implements ConfigView {
     private static DomainScopedPasswordAliasStore domainPasswordAliasStore = null;
     private static synchronized DomainScopedPasswordAliasStore domainPasswordAliasStore() {
         if (domainPasswordAliasStore == null) {
-            domainPasswordAliasStore = habitat.getService(DomainScopedPasswordAliasStore.class);
+            domainPasswordAliasStore =
+                AccessController.doPrivileged(
+                        new PrivilegedAction<DomainScopedPasswordAliasStore>() {
+                            public DomainScopedPasswordAliasStore run() {
+            					    return habitat.getService(DomainScopedPasswordAliasStore.class);
+                            }
+                });
         }
         return domainPasswordAliasStore;
     }

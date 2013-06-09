@@ -54,6 +54,7 @@ import org.glassfish.security.services.api.authorization.AzEnvironment;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.authorization.RoleMappingService;
+import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.impl.ServiceLogging;
 import org.glassfish.security.services.spi.authorization.RoleMappingProvider;
@@ -61,6 +62,7 @@ import org.glassfish.security.services.spi.authorization.RoleMappingProvider;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 @Service (name="simpleRoleMapping")
+@Secure(accessPermissionName="security/service/rolemapper/provider/simple")
 @PerLookup
 public class SimpleRoleMappingProviderImpl implements RoleMappingProvider {
 	private static final Level DEBUG_LEVEL = Level.FINER;

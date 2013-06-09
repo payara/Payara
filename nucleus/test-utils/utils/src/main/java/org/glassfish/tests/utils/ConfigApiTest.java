@@ -41,7 +41,9 @@
 package org.glassfish.tests.utils;
 
 import java.lang.reflect.Method;
+import java.security.AccessController;
 import java.security.Principal;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
@@ -70,6 +72,7 @@ public abstract class ConfigApiTest {
         final ServiceLocator locator = getBaseServiceLocator();
         if (locator != null) {
             final List<ServiceHandle<? extends Object>> adminIdentities = 
+/*                
                     (List<ServiceHandle<? extends Object>>) getBaseServiceLocator().getAllServices(
                     new Filter() {
 
@@ -82,6 +85,29 @@ public abstract class ConfigApiTest {
                     return (contracts == null ? false : contracts.contains("org.glassfish.internal.api.InternalSystemAdmin"));
                 }
             });
+*/            
+                AccessController.doPrivileged(new PrivilegedAction<List<ServiceHandle<? extends Object>>>() {
+                    public List<ServiceHandle<? extends Object>> run() {
+                        
+                        List<ServiceHandle<? extends Object>> identities = (List<ServiceHandle<? extends Object>>)getBaseServiceLocator().getAllServices(
+                           new Filter() {
+        
+                                @Override
+                                public boolean matches(Descriptor d) {
+                                   if (d == null) {
+                                   return false;
+                                }
+                                final Set<String> contracts = d.getAdvertisedContracts();
+                                return (contracts == null ? false : contracts.contains("org.glassfish.internal.api.InternalSystemAdmin"));
+                              }
+                           });
+                        
+                        return identities;
+
+                    }
+                });
+
+            
             if ( ! adminIdentities.isEmpty()) {
                 final Object adminIdentity = adminIdentities.get(0);
                 try {

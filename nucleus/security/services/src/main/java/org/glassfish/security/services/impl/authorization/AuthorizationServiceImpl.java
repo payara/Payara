@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.security.AccessController;
 import java.security.Principal;
 import java.security.ProtectionDomain;
 import java.security.Policy;
@@ -58,6 +59,8 @@ import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.context.SecurityContextService;
+import org.glassfish.security.services.common.PrivilededLookup;
+import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
 import org.glassfish.security.services.impl.ServiceLogging;
@@ -89,6 +92,7 @@ import org.glassfish.security.services.spi.authorization.AuthorizationProvider;
  */
 @Service
 @Singleton
+@Secure(accessPermissionName = "security/service/authorization")
 public final class AuthorizationServiceImpl implements AuthorizationService, PostConstruct {
     private static final Level DEBUG_LEVEL = Level.FINER;
     private static final Logger logger =
@@ -160,7 +164,9 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
             if ( isDebug() ) {
                 logger.log(DEBUG_LEVEL, "Attempting to get Authorization provider \"{0}\".", providerName );
             }
-            provider = serviceLocator.getService(AuthorizationProvider.class, providerName);
+            provider =  AccessController.doPrivileged(
+                            new PrivilededLookup<AuthorizationProvider>(
+                                    serviceLocator, AuthorizationProvider.class, providerName)); 
             if (provider == null) {
                 throw new IllegalStateException(
                     localStrings.getLocalString("service.atz.not_provider","Authorization Provider {0} not found.", providerName));

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,12 +39,16 @@
  */
 package org.glassfish.security.services.impl;
 
+import java.security.AccessController;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 
+import org.glassfish.security.services.common.PrivilededLookup;
+import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.common.StateManager;
 import org.glassfish.security.services.common.SecurityScope;
 
@@ -56,6 +60,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
  * The factory of AuthenticationService instances used by the SecurityScopeContext.
  */
 @Singleton
+@Secure(accessPermissionName = "security/service/authentication")
 public class AuthenticationServiceFactory extends ServiceFactory implements Factory<AuthenticationService> {
     
     @Inject
@@ -69,7 +74,9 @@ public class AuthenticationServiceFactory extends ServiceFactory implements Fact
         String currentState = manager.getCurrent();
 
         // Get Service Instance
-        AuthenticationService atnService = serviceLocator.getService(AuthenticationService.class);
+        AuthenticationService atnService = AccessController.doPrivileged( 
+                new PrivilededLookup<AuthenticationService>(
+                        serviceLocator, AuthenticationService.class));
 
         // Get Service Configuration
         org.glassfish.security.services.config.AuthenticationService atnConfiguration =

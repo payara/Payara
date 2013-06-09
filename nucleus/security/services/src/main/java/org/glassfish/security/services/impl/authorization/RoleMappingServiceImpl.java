@@ -40,6 +40,7 @@
 package org.glassfish.security.services.impl.authorization;
 
 import java.net.URI;
+import java.security.AccessController;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,6 +58,8 @@ import org.glassfish.security.services.api.authorization.AzAttributeResolver;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.authorization.RoleMappingService;
+import org.glassfish.security.services.common.PrivilededLookup;
+import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.impl.ServiceFactory;
@@ -77,6 +80,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  */
 @Service
 @Singleton
+@Secure(accessPermissionName="security/service/rolemapper")
 public final class RoleMappingServiceImpl implements RoleMappingService, PostConstruct {
 	private static final Level DEBUG_LEVEL = Level.FINER;
 	private static final Logger logger =
@@ -161,7 +165,9 @@ public final class RoleMappingServiceImpl implements RoleMappingService, PostCon
 					if (isDebug()) {
 						logger.log(DEBUG_LEVEL, "Attempting to get Role Mapping Provider \"{0}\".", providerName );
 					}
-					provider = serviceLocator.getService(RoleMappingProvider.class, providerName);
+					provider = AccessController.doPrivileged(
+					        new PrivilededLookup<RoleMappingProvider>(serviceLocator, RoleMappingProvider.class, providerName) );    
+							
 					if (provider == null) {
 						throw new IllegalStateException(localStrings.getLocalString("service.role.not_provider",
 								"Role Mapping Provider {0} not found.", providerName));

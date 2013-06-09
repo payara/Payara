@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,19 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
 package org.glassfish.security.services.common;
 
-import static java.lang.annotation.ElementType.TYPE;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import javax.inject.Qualifier;
+import java.security.PrivilegedAction;
 
-/**
- * Qualifier used to enable a security check at the point of injection. 
- */
-@Retention(RUNTIME)
-@Qualifier
-@Target({ TYPE })
-public @interface SecureInject {
+import org.glassfish.hk2.api.ServiceLocator;
+
+public class PrivilededLookup<T> implements PrivilegedAction<T> {
+        
+    private ServiceLocator serviceLocator;
+    private Class<T> serviceClass;
+    private String serviceName;
+        
+    public PrivilededLookup(ServiceLocator serviceLocator,
+            Class<T> serviceClass, String serviceName) {
+        this.serviceLocator = serviceLocator;
+        this.serviceClass = serviceClass;
+        this.serviceName = serviceName;
+    }
+
+    public PrivilededLookup(ServiceLocator serviceLocator, Class<T> serviceClass) {
+        this(serviceLocator, serviceClass, null);
+    }
+
+    public T run() {
+        if (serviceName != null)
+            return serviceLocator.getService(serviceClass, serviceName);
+        else
+            return serviceLocator.getService(serviceClass);
+    }
 }

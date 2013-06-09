@@ -37,64 +37,48 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.security.services.impl;
+package org.glassfish.security.services.common;
 
-import java.security.Principal;
-import java.util.Set;
-import java.util.logging.Logger;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import javax.inject.Singleton;
-import javax.security.auth.Subject;
-import javax.security.auth.login.LoginException;
-
-import org.glassfish.security.common.Group;
-import org.glassfish.security.common.PrincipalImpl;
-import org.glassfish.security.services.api.authentication.ImpersonationService;
-import org.glassfish.security.services.common.Secure;
-import org.jvnet.hk2.annotations.Service;
+import javax.inject.Qualifier;
+import org.glassfish.hk2.api.Metadata;
 
 /**
- * The Impersonation Service Implementation.
- * 
- * @author jazheng
+ * Qualifier used to enable a security check at the point of service injection or lookup.
+ * Security Services, which are to protected against unqualified injection/look-up, should be annotated as something below
+ *   e.g.,   @Secure(accessPermissionName = "security/service/<service-type>/<some-specific-name>")
+ *   
+ * Any caller which injects or looks up the protected security service, the caller's jar/class should be granted the following policy
+ *   e.g.,  
+ *     grant codeBase "file:<path>/<to>/<caller-jar>" {
+ *         permission org.glassfish.security.services.common.SecureServiceAccessPermission "security/service/<service-type>/<some-specific-name>";
+ *     };
+ *
  */
-@Service(name="impersonationService")
-@Singleton
-@Secure(accessPermissionName = "security/service/impersonation/simple")
-public class ImpersonationServiceImpl implements ImpersonationService {
+@Retention(RUNTIME)
+@Qualifier
+@Inherited
+@Target({ TYPE })
+public @interface Secure {
+	
+	public static final String NAME = "accessPermissionName";
+	
+	public static final String PERMISSION_NAME_PREFIX = "security/service/";
+	
+    public static final String DEFAULT_PERM_NAME = PERMISSION_NAME_PREFIX + "default";
 
-  static final Logger LOG = Logger
-      .getLogger(ImpersonationServiceImpl.class.getName());
+	/**
+	 * the permission name to be protected
+	 * if the accessPermissionName is not specified, a default value of "security/service/default" is used.
+	 * @return name of the protected HK2 service
+	 */	
+	@Metadata(NAME)
+	public String accessPermissionName();
 
-  @Override
-  public Subject impersonate(String user, String[] groups, Subject subject,
-      boolean virtual) throws LoginException {
-
-    // Use the supplied Subject or create a new Subject
-    final Subject _subject = 
-      (subject != null)? subject: new Subject();
-    
-    if (user == null || user.isEmpty()) {
-      return _subject;
-    }
-    
-    // TODO - Add support for virtual = false after IdentityManager
-    // is available in open source 
-    if (!virtual) {
-      throw new UnsupportedOperationException(
-          "Use of non-virtual parameter is not supported");
-    } else {
-      // Build the Subject
-      Set<Principal> principals = _subject.getPrincipals();
-      principals.add(new PrincipalImpl(user));
-      if (groups != null) {
-        for (String group: groups) {
-          principals.add(new Group(group));
-        }
-      }
-    }
- 
-    // Return the impersonated Subject
-    return _subject;
-  }
+	
 }

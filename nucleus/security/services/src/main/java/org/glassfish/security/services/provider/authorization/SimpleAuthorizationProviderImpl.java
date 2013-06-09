@@ -59,6 +59,7 @@ import org.glassfish.security.services.api.authorization.AzResult.Decision;
 import org.glassfish.security.services.api.authorization.AzResult.Status;
 import org.glassfish.security.services.api.authorization.AuthorizationService.PolicyDeploymentContext;
 import org.glassfish.security.services.api.authorization.AuthorizationAdminConstants;
+import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.spi.authorization.AuthorizationProvider;
 import org.glassfish.security.services.impl.ServiceLogging;
@@ -71,6 +72,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 @Service (name="simpleAuthorization")
 @PerLookup
+@Secure(accessPermissionName = "security/service/authorization/provider/simple")
 public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
 
     private final static Level DEBUG_LEVEL = Level.FINER;

@@ -49,6 +49,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
+import java.security.AccessController;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -99,6 +100,7 @@ import org.glassfish.internal.api.AdminAccessController;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.jersey.media.sse.EventOutput;
 import org.glassfish.security.services.api.authorization.AuthorizationService;
+import org.glassfish.security.services.common.PrivilededLookup;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -1145,7 +1147,9 @@ public class ResourceUtil {
      * @throws URISyntaxException
      */
     public static boolean isAuthorized(final ServiceLocator habitat, final Subject subject, final String resource, final String action) throws URISyntaxException {
-        final AuthorizationService authorizationSvc = habitat.getService(AuthorizationService.class);
+        final AuthorizationService authorizationSvc = 
+            AccessController.doPrivileged(
+                    new PrivilededLookup<AuthorizationService>(habitat, AuthorizationService.class));
         return authorizationSvc.isAuthorized(subject, new URI("admin", resource, null), action);
     }
 }

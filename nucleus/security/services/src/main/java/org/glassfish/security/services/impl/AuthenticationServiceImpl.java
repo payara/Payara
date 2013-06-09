@@ -71,6 +71,7 @@ import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.config.SecurityProvider;
 import org.glassfish.security.services.config.SecurityProviderConfig;
 import org.jvnet.hk2.annotations.Service;
+import org.glassfish.security.services.common.Secure;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
@@ -84,6 +85,7 @@ import com.sun.enterprise.security.common.AppservAccessController;
  */
 @Service
 @Singleton
+@Secure(accessPermissionName = "security/service/authentication")
 public class AuthenticationServiceImpl implements AuthenticationService, PostConstruct {
 	@Inject
 	private Domain domain;
@@ -106,6 +108,7 @@ public class AuthenticationServiceImpl implements AuthenticationService, PostCon
 	private Configuration configuration = null;
 	private boolean usePasswordCredential = false;
 	private org.glassfish.security.services.config.AuthenticationService config = null;
+
 
 	/**
 	 * Initialize the Authentication Service configuration.
