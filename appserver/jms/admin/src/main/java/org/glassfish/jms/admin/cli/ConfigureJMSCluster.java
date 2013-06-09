@@ -65,6 +65,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -145,6 +146,12 @@ public class ConfigureJMSCluster implements AdminCommand {
     @Inject
     Domain domain;
 
+    @Inject
+    ServiceLocator habitat;
+
+    @Inject
+    CommandRunner commandRunner;
+
     Config config;
 
     /**
@@ -168,7 +175,28 @@ public class ConfigureJMSCluster implements AdminCommand {
         }
 
         List instances = cluster.getInstances();
-        
+
+        String warning = null;
+        if(instances.size() > 0) {
+            ActionReport listReport = habitat.getService(ActionReport.class);
+            ParameterMap parameters = new ParameterMap();
+            parameters.set("DEFAULT", clusterName);
+            commandRunner.getCommandInvocation("list-instances", listReport, context.getSubject()).parameters(parameters).execute();
+
+            if (ActionReport.ExitCode.FAILURE.equals(listReport.getActionExitCode())) {
+                warning = localStrings.getLocalString("configure.jms.cluster.clusterWithInstances",
+                                    "Warning: Please make sure running this command with all cluster instances stopped, otherwise it may lead to inconsistent JMS behavior and corruption of configuration and message stores.");
+            } else {
+                String result = listReport.getMessage();
+                String fixedResult = result.replaceAll("not running", "stopped");
+                if (fixedResult.indexOf("running") > -1) {
+                    warning = localStrings.getLocalString("configure.jms.cluster.clusterWithInstances",
+                                    "Warning: Please make sure running this command with all cluster instances stopped, otherwise it may lead to inconsistent JMS behavior and corruption of configuration and message stores.");
+                    warning = warning + "\r\n" + result + "\r\n";
+                }
+            }
+        }
+
         Config config = domain.getConfigNamed(cluster.getConfigRef());
         JmsService jmsService = config.getExtensionByType(JmsService.class);
 
@@ -331,11 +359,7 @@ public class ConfigureJMSCluster implements AdminCommand {
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(tfe);
         }
-        String warning = null;
-        if(instances.size() > 0){
-            warning=localStrings.getLocalString("configure.jms.cluster.clusterWithInstances",
-                                    "Warning: make sure that you have followed the instructions specified in the documentation before running this command with this option. Running this command without the required precautions can lead to inconsistent JMS behavior and corruption of configuration and message stores.");
-        }
+
         report.setMessage((warning == null ? "" : warning + "\n") + (changeIntegrationMode == null ? "" : changeIntegrationMode + "\n") +
                 localStrings.getLocalString("configure.jms.cluster.success", "JMS Cluster Configuration updated for Cluster {0}.", clusterName));
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
