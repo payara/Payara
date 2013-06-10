@@ -96,20 +96,36 @@ public class SecureServiceAccessPermission extends BasicPermission {
     private String target;  //not used for now
     private String actions; //not used for now
 
-    public SecureServiceAccessPermission(String name) {
-        this(name, null);
+    /**
+     * 
+     * @param accessPermissionName  the permission name used inside the 'Secure' annotation of the protected service
+     */
+    public SecureServiceAccessPermission(String accessPermissionName) {
+        this(accessPermissionName, null);
     }
 
-    public SecureServiceAccessPermission(String name, String actions) {
-        super(name, actions);
+    
+    /**
+     * 
+     * @param accessPermissionName the permission name used inside the 'Secure' annotation of the protected service
+     * @param actions  use null (not used for now) 
+     */
+    public SecureServiceAccessPermission(String accessPermissionName, String actions) {
+        super(accessPermissionName, actions);
         this.actions = actions;
-        initWildCardPath(name);
+        initWildCardPath(accessPermissionName);
         init(getMask(actions));
     }
 
-    public SecureServiceAccessPermission(String name, String actions,
+    /**
+     * 
+     * @param accessPermissionName the permission name used inside the 'Secure' annotation of the protected service
+     * @param actions use null (not used for now)
+     * @param targetName use null (not used for now)
+     */
+    public SecureServiceAccessPermission(String accessPermissionName, String actions,
             String targetName) {
-        this(name, actions);
+        this(accessPermissionName, actions);
         this.target = targetName;
     }
         
@@ -127,6 +143,7 @@ public class SecureServiceAccessPermission extends BasicPermission {
         this.mask = mask;
     }
 
+    //base on J2SE implementation
     private static int getMask(String actions) {
 
         int mask = NONE;
@@ -136,11 +153,11 @@ public class SecureServiceAccessPermission extends BasicPermission {
         }
 
         // Check against use of constants (used heavily within the JDK)
-        if (actions == READ_ACTION) {
+        if (actions.equalsIgnoreCase(READ_ACTION)) {
             return READ;
-        } if (actions == WRITE_ACTION) {
+        } if (actions.equalsIgnoreCase(WRITE_ACTION)) {
             return WRITE;
-        } else if (actions == RW_ACTION) {
+        } else if (actions.equalsIgnoreCase(RW_ACTION)) {
             return READ|WRITE;
         }
 
@@ -246,17 +263,18 @@ public class SecureServiceAccessPermission extends BasicPermission {
     //compare two strings
     private static boolean twoStringEq(String s1, String s2) {
             
-            if (s1==null && s2==null)
-                    return true;
+            if (s1 == null && s2 == null)
+                return true;
             
             if (s1 == null) {
-                    return twoStringEq(s2, s1);
+                //s2 not null, s1 is null
+                return false;
             } else 
-                    //s1 not null, and s2 not null
-                    return s1.equals(s2);
+                //s1 not null, 
+                return s1.equals(s2);
     }
     
-        @Override
+    @Override
     public int hashCode() {
         return getName().hashCode(); 
     }
@@ -267,6 +285,9 @@ public class SecureServiceAccessPermission extends BasicPermission {
         if ((p == null) || (p.getClass() != getClass()))
             return false;
 
+        if (!(p instanceof SecureServiceAccessPermission))
+            return false;
+        
         SecureServiceAccessPermission that = (SecureServiceAccessPermission) p;
 
         
@@ -371,10 +392,6 @@ final class SecurityAccessPermissionCollection extends PermissionCollection impl
          */
         private Class permClass;
 
-        /**
-         * Create an empty SecurityAccessPermissionCollection object.
-         * 
-         */
         
         private Logger log;
         private LocalStringManagerImpl localStrings;

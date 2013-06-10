@@ -49,7 +49,13 @@ public class PrivilededLookup<T> implements PrivilegedAction<T> {
     private ServiceLocator serviceLocator;
     private Class<T> serviceClass;
     private String serviceName;
-        
+    
+    /**
+     * 
+     * @param serviceLocator   the HK2 service locator
+     * @param serviceClass   the protected HK2 service to be looked up
+     * @param serviceName    the name of the service to be looked
+     */
     public PrivilededLookup(ServiceLocator serviceLocator,
             Class<T> serviceClass, String serviceName) {
         this.serviceLocator = serviceLocator;
@@ -57,6 +63,11 @@ public class PrivilededLookup<T> implements PrivilegedAction<T> {
         this.serviceName = serviceName;
     }
 
+    /**
+     * 
+     * @param serviceLocator   the HK2 service locator
+     * @param serviceClass   the protected HK2 service to be looked up
+     */
     public PrivilededLookup(ServiceLocator serviceLocator, Class<T> serviceClass) {
         this(serviceLocator, serviceClass, null);
     }

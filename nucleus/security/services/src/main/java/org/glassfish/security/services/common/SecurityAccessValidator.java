@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.Iterator;
 import java.security.AccessControlException;
 import java.security.AccessController;
 import java.security.Permission;
@@ -149,10 +150,13 @@ public class SecurityAccessValidator implements Validator {
         Map<String, List<String>> md = candidate.getMetadata();
         
         if (LOG.isLoggable(Level.FINE)) {            
-            for (String s : md.keySet()) {
-                for (String v : md.get(s)) {
-                    LOG.fine("$$ key= " + s + ", value= " + v);
-                }
+            Iterator<Map.Entry<String, List<String>>> itr = md.entrySet().iterator();
+            while (itr.hasNext()) {
+                Map.Entry<String, List<String>> entry = itr.next();
+                String k = entry.getKey();
+                for (String v : entry.getValue()) {
+                    LOG.fine("$$ key= " + k + ", value= " + v);
+                }                                
             }
         }
         
