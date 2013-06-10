@@ -39,9 +39,10 @@
  */
 package org.glassfish.security.services.impl.authorization;
 
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.common.Attributes;
+import org.glassfish.security.services.impl.ServiceLogging;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -52,8 +53,7 @@ import java.util.logging.Logger;
 public final class AzResourceImpl extends AzAttributesImpl implements AzResource {
 
 
-    private static final Logger logger = LogDomains.getLogger(
-        AzResourceImpl.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger logger = Logger.getLogger(ServiceLogging.SEC_SVCS_LOGGER,ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
 
     private static final boolean REPLACE = true;
 
@@ -160,10 +160,15 @@ public final class AzResourceImpl extends AzAttributesImpl implements AzResource
             output = URLDecoder.decode(input, "UTF-8");
         } catch ( UnsupportedEncodingException e ) {
             if ( logger.isLoggable( Level.WARNING ) ) {
-                logger.log( Level.WARNING, "Unable to decode URI: {0}.", e.getMessage() );
+                logger.log( Level.WARNING, URI_DECODING_ERROR, e.getLocalizedMessage() );
             }
         }
 
         return output;
     }
+    
+	@LogMessageInfo(
+			message = "Unable to decode URI: {0}.",
+			level = "WARNING")
+	private static final String URI_DECODING_ERROR = "SEC-SVCS-00102";
 }

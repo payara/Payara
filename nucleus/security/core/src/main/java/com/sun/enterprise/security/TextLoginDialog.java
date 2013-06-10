@@ -66,7 +66,7 @@ public final class TextLoginDialog implements LoginDialog {
     private static Logger _logger = null;
 
     static {
-        _logger = LogDomains.getLogger(TextLoginDialog.class, LogDomains.SECURITY_LOGGER);
+        _logger = SecurityLoggerInfo.getLogger();
     }
     private String username = null;
     private char[] password = null;
@@ -168,7 +168,7 @@ public final class TextLoginDialog implements LoginDialog {
             }
         } catch (Exception e) {
             _logger.log(Level.SEVERE,
-                    "java_security.name_password_entry_exception", e);
+                    SecurityLoggerInfo.usernamePasswordEnteringSecurityError, e);
         }
 
     }

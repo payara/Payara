@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.ssl;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.common.Util;
 import java.io.IOException;
 import java.security.Key;
@@ -89,7 +90,7 @@ public final class SSLUtils implements PostConstruct {
     public static final String HTTPS_OUTBOUND_KEY_ALIAS = "com.sun.enterprise.security.httpsOutboundKeyAlias";
     private static final String DEFAULT_SSL_PROTOCOL = "TLS";
 
-    private static final Logger _logger = LogDomains.getLogger(SSLUtils.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     @Inject
     private SecuritySupport secSupp;

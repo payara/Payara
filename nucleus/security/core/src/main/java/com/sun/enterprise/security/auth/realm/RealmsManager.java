@@ -66,7 +66,7 @@ import org.jvnet.hk2.config.types.Property;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.SecurityService;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 
 /**
  *
@@ -85,7 +85,7 @@ public class RealmsManager {
     // using value from server.xml
     private volatile String defaultRealmName="default";
     private final RealmsProbeProvider probeProvider = new RealmsProbeProvider();
-    private static final Logger _logger = LogDomains.getLogger(RealmsManager.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
     
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
@@ -278,7 +278,7 @@ public class RealmsManager {
             RealmConfig.createRealms(defaultRealm, realms, cfg.getName());
 
         } catch (Exception e) {
-            _logger.log(Level.SEVERE, "realmconfig.nogood", e);
+            _logger.log(Level.SEVERE, SecurityLoggerInfo.noRealmsError, e);
         }
     }
 

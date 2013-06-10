@@ -42,9 +42,9 @@ package com.sun.enterprise.security.common;
 
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.EmbeddedSecurity;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.server.pluggable.SecuritySupport;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -68,7 +68,7 @@ import org.jvnet.hk2.annotations.Service;
 public class EmbeddedSecurityLifeCycle
         implements EmbeddedLifecycle{
 
-    private static final Logger _logger = LogDomains.getLogger(EmbeddedSecurityLifeCycle.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     @Inject
     private EmbeddedSecurity embeddedSecurity;
@@ -107,12 +107,12 @@ public class EmbeddedSecurityLifeCycle
                 keystoreFile = Util.writeConfigFileToTempDir("keystore.jks").getAbsolutePath();
                 truststoreFile = Util.writeConfigFileToTempDir("cacerts.jks").getAbsolutePath();
             } catch (IOException ex) {
-                _logger.log(Level.SEVERE, "Error obtaining keystore and truststore files for embedded server", ex);
+                _logger.log(Level.SEVERE, SecurityLoggerInfo.obtainingKeyAndTrustStoresError, ex);
             }
             System.setProperty(SecuritySupport.keyStoreProp, keystoreFile);
             System.setProperty(SecuritySupport.trustStoreProp, truststoreFile);
         }catch(IOException ioEx) {
-           _logger.log(Level.WARNING,"IOException", ioEx);
+           _logger.log(Level.WARNING, SecurityLoggerInfo.copyingSecurityConfigFilesIOError, ioEx);
         }
     }
 

@@ -47,6 +47,7 @@
 package com.sun.enterprise.security.audit;
 
 import com.sun.enterprise.security.BaseAuditModule;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.config.serverbeans.AuditModule;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,7 +67,6 @@ import com.sun.enterprise.config.ConfigContext;
 import com.sun.enterprise.server.ApplicationServer;
  */
 import org.glassfish.internal.api.ServerContext;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.List;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -106,7 +106,7 @@ public class BaseAuditManager<T extends BaseAuditModule> implements AuditManager
     private Class<T> typedModuleClass = null; // typically set by postConstruct of a subclass invoking setTypeClass
     
     private static final Logger _logger = 
-             LogDomains.getLogger(BaseAuditManager.class, LogDomains.SECURITY_LOGGER);
+             SecurityLoggerInfo.getLogger();
 
     private static final LocalStringManagerImpl _localStrings =
 	new LocalStringManagerImpl(BaseAuditManager.class);

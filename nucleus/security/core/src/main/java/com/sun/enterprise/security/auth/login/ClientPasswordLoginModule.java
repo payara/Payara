@@ -51,6 +51,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.util.logging.*;
 import com.sun.logging.*;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.UsernamePasswordStore;
 
 /**
@@ -65,8 +66,7 @@ import com.sun.enterprise.security.UsernamePasswordStore;
 
 public class ClientPasswordLoginModule implements LoginModule {
 
-    private static final Logger _logger=
-        LogDomains.getLogger(ClientPasswordLoginModule.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     private static final String DEFAULT_REALMNAME = "default";
     private static final LocalStringManagerImpl localStrings =

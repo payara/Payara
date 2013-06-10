@@ -45,7 +45,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 
 import com.sun.enterprise.security.PrincipalGroupFactory;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 import javax.security.auth.*;
 import javax.security.auth.callback.*;
@@ -93,7 +92,7 @@ public abstract class BasePasswordLoginModule implements LoginModule
     protected String[] _groupsList = null;
 
     protected static final Logger _logger =
-        LogDomains.getLogger(BasePasswordLoginModule.class, LogDomains.SECURITY_LOGGER);
+        SecurityLoggerInfo.getLogger();
 
     protected final static StringManager sm =
         StringManager.getManager(LoginCallbackHandler.class);
@@ -334,11 +333,11 @@ public abstract class BasePasswordLoginModule implements LoginModule
                 }
             }
         } catch (Exception e) {
-            _logger.log(Level.WARNING, "passwordlm.nocreds", e.toString());
+            _logger.log(Level.WARNING, SecurityLoggerInfo.privateSubjectCredentialsError, e.toString());
         }
 
         if (pwdCred == null) {
-            _logger.log(Level.SEVERE, "passwordlm.nopwdcred");
+            _logger.log(Level.SEVERE, SecurityLoggerInfo.noPwdCredentialProvidedError);
             String msg = sm.getString("pwdlm.nocreds");
             throw new LoginException(msg);
         }

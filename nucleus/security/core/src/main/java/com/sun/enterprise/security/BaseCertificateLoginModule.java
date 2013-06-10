@@ -43,7 +43,6 @@ package com.sun.enterprise.security;
 import com.sun.enterprise.security.auth.realm.certificate.CertificateRealm;
 import com.sun.enterprise.security.PrincipalGroupFactory;
 import com.sun.enterprise.security.PrincipalGroupFactory;
-import com.sun.logging.LogDomains;
 import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.Iterator;
@@ -84,7 +83,7 @@ public abstract class BaseCertificateLoginModule implements LoginModule {
      * System Logger.
      */
     protected static final Logger _logger =
-            LogDomains.getLogger(BaseCertificateLoginModule.class, LogDomains.SECURITY_LOGGER);
+            SecurityLoggerInfo.getLogger();
     private CallbackHandler callbackHandler;
     private boolean success = false;
     private String[] groups = null;

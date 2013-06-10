@@ -55,6 +55,7 @@ import com.sun.logging.*;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.security.SecurityContext;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.security.common.AppservAccessController;
@@ -89,8 +90,7 @@ import org.glassfish.internal.api.Globals;
  */
 public class LoginContextDriver  {
 
-    private static final Logger _logger = 
-        LogDomains.getLogger(LoginContextDriver.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     private static final ServerLoginCallbackHandler
         dummyCallback = new ServerLoginCallbackHandler();
@@ -176,7 +176,7 @@ public class LoginContextDriver  {
             lg.login();
         } catch (Exception e) {
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, "java_security.audit_auth_refused", asrtCred.getUserName());
+                _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError, asrtCred.getUserName());
             }
             if (_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, "doPasswordLogin fails", e);
@@ -253,7 +253,7 @@ public class LoginContextDriver  {
             doX500Login(subject, null);
             
         } else {
-            _logger.log(Level.INFO, "java_security.unknown_credential",
+            _logger.log(Level.INFO, SecurityLoggerInfo.unknownCredentialError,
                         cls.toString());
             throw new
                 LoginException("Unknown credential type, cannot login.");
@@ -299,9 +299,9 @@ public class LoginContextDriver  {
             }
 
         } catch (InvalidOperationException ex) {
-            _logger.warning("Realm " + realmName + ": " + ex.toString());
+            _logger.log(Level.WARNING, SecurityLoggerInfo.invalidOperationForRealmError, new Object[] { username, realmName, ex.toString()});
         } catch (NoSuchUserException ex){
-            _logger.warning("Realm " + realmName + ": " + ex.toString());
+            _logger.log(Level.WARNING, SecurityLoggerInfo.noSuchUserInRealmError, new Object[] { username, realmName, ex.toString()});
         } catch (NoSuchRealmException ex) {
             LoginException lex = new LoginException(ex.toString());
             lex.initCause(ex);
@@ -466,7 +466,7 @@ public class LoginContextDriver  {
             lg.login();
         } catch (Exception e) {
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, "java_security.audit_auth_refused",
+                _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError,
                             username);
             }
             if(getAuditManager().isAuditOn()){
@@ -523,7 +523,7 @@ public class LoginContextDriver  {
             certRealm.authenticate(fs, x500Name);
         } catch(Exception ex) {
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, "java_security.audit_auth_refused",
+                _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError,
                             userName);
             }
             if (getAuditManager().isAuditOn()){
@@ -712,7 +712,7 @@ public class LoginContextDriver  {
                     getAuditManager().authentication(user, realm_name, true);
                 }
             } else {            
-                _logger.warning("certlogin.badrealm");            
+                _logger.warning(SecurityLoggerInfo.certLoginBadRealmError);            
                 realm_name = realm.getName();
                 setSecurityContext(user, s, realm_name);
             }
@@ -992,7 +992,7 @@ private static void setSecurityContext(String userName,
             lg.login();
         } catch (Exception e) {
             if (_logger.isLoggable(Level.INFO)) {
-                _logger.log(Level.INFO, "java_security.audit_auth_refused", digestCred.getUserName());
+                _logger.log(Level.INFO, SecurityLoggerInfo.auditAtnRefusedError, digestCred.getUserName());
             }
             if (_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, "doPasswordLogin fails", e);
@@ -1045,7 +1045,7 @@ private static void setSecurityContext(String userName,
             } catch (Exception e){
                 // should never come here 
                 _logger.log(Level.SEVERE,
-                            "java_security.accesscontroller_action_exception",
+                            SecurityLoggerInfo.securityAccessControllerActionError,
                             e);
             }
             if(obj instanceof PasswordCredential) {

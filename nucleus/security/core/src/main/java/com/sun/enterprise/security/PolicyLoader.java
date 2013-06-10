@@ -42,7 +42,6 @@ package com.sun.enterprise.security;
 
 import java.util.logging.*;
 
-import com.sun.logging.LogDomains;
 //V3:Commented import com.sun.enterprise.server.ApplicationServer;
 import com.sun.enterprise.config.serverbeans.JaccProvider;
 //V3:Commented import com.sun.enterprise.config.serverbeans.ElementProperty;
@@ -79,7 +78,7 @@ public class PolicyLoader{
      
     private static Logger _logger = null;
     static {
-        _logger = LogDomains.getLogger(PolicyLoader.class, LogDomains.SECURITY_LOGGER);
+        _logger = SecurityLoggerInfo.getLogger();
     }
     private static StringManager sm = StringManager.getManager(PolicyLoader.class);
 
@@ -125,7 +124,7 @@ public class PolicyLoader{
 
         if (javaPolicy !=null) {
             // inform user domain.xml is being ignored
-            _logger.log(Level.INFO, "policy.propoverride",
+            _logger.log(Level.INFO, SecurityLoggerInfo.policyProviderConfigOverrideMsg,
                         new String[] { POLICY_PROVIDER_14, javaPolicy } );
         } else {
             // otherwise obtain JACC policy-provider from domain.xml
@@ -139,7 +138,7 @@ public class PolicyLoader{
             if (javaPolicy != null) {
                 // warn user j2ee13 property is being used
                 j2ee13 = true;
-                _logger.log(Level.WARNING, "policy.propoverride",
+                _logger.log(Level.WARNING, SecurityLoggerInfo.policyProviderConfigOverrideWarning,
                             new String[] { POLICY_PROVIDER_13, javaPolicy} );
             }
         }
@@ -148,7 +147,7 @@ public class PolicyLoader{
         if (javaPolicy != null) {
 
             try {
-                _logger.log(Level.INFO, "policy.loading", javaPolicy);
+                _logger.log(Level.INFO, SecurityLoggerInfo.policyLoading, javaPolicy);
                 
                 //Object obj = Class.forName(javaPolicy).newInstance();
                 ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -185,8 +184,8 @@ public class PolicyLoader{
                 }
 
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, "policy.installerror",
-                            e.getMessage());
+                _logger.log(Level.SEVERE, SecurityLoggerInfo.policyInstallError,
+                            e.getLocalizedMessage());
                 throw new RuntimeException(e);
             }
             // Success.
@@ -195,7 +194,7 @@ public class PolicyLoader{
             
         } else {
             // no value for policy provider found
-            _logger.warning("policy.notloading");
+            _logger.warning(SecurityLoggerInfo.policyNotLoadingWarning);
         }
     }
 
@@ -213,10 +212,10 @@ public class PolicyLoader{
             String name = securityService.getJacc();
             jacc = getJaccProviderByName(name);
             if (jacc == null) {
-                _logger.log(Level.WARNING, "policy.nosuchname", name);
+                _logger.log(Level.WARNING, SecurityLoggerInfo.policyNoSuchName, name);
             }
         } catch (Exception e) {
-            _logger.warning("policy.errorreading");
+            _logger.warning(SecurityLoggerInfo.policyReadingError);
             jacc = null;
         }
         return jacc;
@@ -259,14 +258,14 @@ public class PolicyLoader{
         String prop = System.getProperty(POLICY_CONF_FACTORY);
         if (prop != null) {
             // warn user of override
-            _logger.log(Level.WARNING, "policy.factoryoverride",
+            _logger.log(Level.WARNING, SecurityLoggerInfo.policyFactoryOverride,
                         new String[] { POLICY_CONF_FACTORY, prop } );
             
         } else {
             // use domain.xml value by setting the property to it
             String factory = jacc.getPolicyConfigurationFactoryProvider();
             if (factory == null) {
-                _logger.log(Level.WARNING, "policy.nofactory");
+                _logger.log(Level.WARNING, SecurityLoggerInfo.policyConfigFactoryNotDefined);
             } else {
                 System.setProperty(POLICY_CONF_FACTORY, factory);
             }

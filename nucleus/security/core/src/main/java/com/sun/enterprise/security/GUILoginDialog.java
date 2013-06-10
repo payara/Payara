@@ -49,6 +49,7 @@ import javax.security.auth.callback.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 
 import java.util.logging.*;
+
 import com.sun.logging.*;
 import java.util.Arrays;
 import org.glassfish.internal.api.Globals;
@@ -62,8 +63,7 @@ import org.glassfish.internal.api.Globals;
  */
 public final class GUILoginDialog implements LoginDialog  {
 
-    private static final Logger _logger =
-	LogDomains.getLogger(GUILoginDialog.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     private String	entity;
     private PassphraseDialog passphraseDialog;

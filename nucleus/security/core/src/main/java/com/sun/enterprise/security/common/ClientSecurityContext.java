@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.common;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.integration.AppServSecurityContext;
 import java.security.Principal;
 import javax.security.auth.Subject;
@@ -63,8 +64,7 @@ import com.sun.logging.*;
  */
 public final class ClientSecurityContext extends AbstractSecurityContext {
     
-    private static final Logger _logger =
-        LogDomains.getLogger(ClientSecurityContext.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     public static final String IIOP_CLIENT_PER_THREAD_FLAG =
         "com.sun.appserv.iiopclient.perthreadauth";

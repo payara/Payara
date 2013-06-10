@@ -47,7 +47,6 @@ package com.sun.enterprise.security;
 import com.sun.enterprise.security.audit.AuditManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.admin.ServerEnvironment;
-import com.sun.logging.LogDomains;
 import java.util.logging.Logger;
 import javax.security.auth.callback.CallbackHandler;
 import org.jvnet.hk2.annotations.Service;
@@ -68,7 +67,7 @@ public class SecurityServicesUtil {
     
     private static final LocalStringManagerImpl _localStrings =
             new LocalStringManagerImpl(SecurityServicesUtil.class);
-    private static final Logger _logger = LogDomains.getLogger(SecurityServicesUtil.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
     // Using SharedSecureRandom from internal-api instead.
     // SecureRandom number used for HTTPS and IIOP/SSL.
     // This number is accessed by iiop/IIOPSSLSocketFactory

@@ -47,7 +47,7 @@ import com.sun.enterprise.security.auth.realm.ldap.LDAPRealm;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
+import org.glassfish.security.services.impl.ServiceLogging;
 import java.beans.PropertyChangeEvent;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
@@ -66,6 +66,7 @@ import javax.naming.InitialContext;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.naming.AuthenticationNotSupportedException;
 import org.glassfish.api.admin.*;
@@ -130,7 +131,7 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
     public static final String DEFAULT_SSL_LDAP_SOCKET_FACTORY = "com.sun.enterprise.security.auth.realm.ldap.CustomSocketFactory";
     public static final String LDAPS_URL = "ldaps://";
 
-    private static final Logger logger = LogDomains.getLogger(LDAPAdminAccessConfigurator.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger logger = Logger.getLogger(ServiceLogging.SEC_COMMANDS_LOGGER, ServiceLogging.SHARED_LOGMESSAGE_RESOURCE);
     
     private static final String AUTHENTICATION_SERVICE_PROVIDER_NAME = "adminAuth";
     private static final String FILE_REALM_SECURITY_PROVIDER_NAME = "adminFile";
@@ -369,7 +370,9 @@ public class LDAPAdminAccessConfigurator implements AdminCommand, AdminCommandSe
             return true;
         } catch(Exception e) {
             appendNL(sb,lsm.getString("ldap.na", url, e.getClass().getName(), e.getMessage()));
-            logger.info(StringUtils.getStackTrace(e));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, StringUtils.getStackTrace(e));
+            }
             return false;
         }
     }

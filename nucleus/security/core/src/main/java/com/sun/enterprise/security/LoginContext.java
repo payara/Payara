@@ -74,7 +74,7 @@ public final class LoginContext {
     
     private static Logger _logger=null;
     static{
-       _logger = LogDomains.getLogger(LoginContext.class, LogDomains.SECURITY_LOGGER);
+       _logger = SecurityLoggerInfo.getLogger();
    }
 
     private boolean guiAuth = false;

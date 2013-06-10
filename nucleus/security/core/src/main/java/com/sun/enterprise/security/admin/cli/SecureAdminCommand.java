@@ -45,6 +45,8 @@ import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminCommandException;
+import com.sun.enterprise.security.SecurityLoggerInfo;
+
 import org.glassfish.grizzly.config.dom.FileCache;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.HttpRedirect;
@@ -55,7 +57,6 @@ import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.ProtocolFinder;
 import org.glassfish.grizzly.config.dom.Protocols;
 import org.glassfish.grizzly.config.dom.Ssl;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyVetoException;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -101,8 +102,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
     static final String DAS_CONFIG_NAME = "server-config";
     final static String PORT_UNIF_PROTOCOL_NAME = "pu-protocol";
     
-    static final Logger logger = LogDomains.getLogger(SecureAdminCommand.class,
-                                        LogDomains.ADMIN_LOGGER);
+    static final Logger logger = SecurityLoggerInfo.getLogger();
 
 
     @Inject
@@ -855,7 +855,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
     }
     
     /*
-     * Exeutes the command with no action report.  Primarily useful from the
+     * Executes the command with no action report.  Primarily useful from the
      * upgrade class (which does not have a convenient action report).
      */
     void execute() throws TransactionFailure, SecureAdminCommandException {

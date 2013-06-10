@@ -41,8 +41,6 @@
 package com.sun.enterprise.security;
 
 import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.util.List;
@@ -50,7 +48,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigurationUpgrade;
-import org.glassfish.grizzly.config.dom.Ssl;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
@@ -88,10 +85,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
 
     private static final String JDBC_REALM_CLASSNAME = "com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm";
     public static final String PARAM_DIGEST_ALGORITHM = "digest-algorithm";
-    private static final Logger _logger = LogDomains.getLogger(SecurityUpgradeService.class, LogDomains.SECURITY_LOGGER);
-
-    private static final LocalStringManagerImpl localStrings =
-	new LocalStringManagerImpl(SecurityUpgradeService.class);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     
     public void postConstruct()  {
@@ -144,10 +138,10 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
                     }
                 }
             } catch (PropertyVetoException pve) {
-                _logger.log(Level.SEVERE, "security_upgrade_service_exception", pve);
+                _logger.log(Level.SEVERE, SecurityLoggerInfo.securityUpgradeServiceException, pve);
                 throw new RuntimeException(pve);
             } catch (TransactionFailure tf) {
-               _logger.log(Level.SEVERE, "security_upgrade_service_exception", tf);
+               _logger.log(Level.SEVERE, SecurityLoggerInfo.securityUpgradeServiceException, tf);
                 throw new RuntimeException(tf);
 
             }
@@ -157,8 +151,7 @@ public class SecurityUpgradeService implements ConfigurationUpgrade, PostConstru
 
         if (requiresSecureAdmin()) {
 
-            _logger.log(Level.WARNING, localStrings.getLocalString("enterprise.security.upgrade.warning", "Upgrade from v2 EE  to v3.1 requires manual steps."
-                    + "Please refer to the v3.1 Upgrade Guide for details."));
+            _logger.log(Level.WARNING, SecurityLoggerInfo.securityUpgradeServiceWarning);
         }
 
     }

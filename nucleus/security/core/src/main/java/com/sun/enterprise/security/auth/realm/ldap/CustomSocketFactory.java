@@ -40,10 +40,10 @@
 
 package com.sun.enterprise.security.auth.realm.ldap;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
@@ -72,7 +72,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
 
     public static final String SSL = "SSL";
     protected static final Logger _logger =
-        LogDomains.getLogger(CustomSocketFactory.class, LogDomains.SECURITY_LOGGER);
+        SecurityLoggerInfo.getLogger();
     protected static final StringManager sm =
         StringManager.getManager(CustomSocketFactory.class);
     private static final  CustomSocketFactory customSocketFactory = new CustomSocketFactory();
@@ -85,7 +85,7 @@ public class CustomSocketFactory extends SocketFactory implements Comparator<Soc
             sc.init(sslUtils.getKeyManagers(), sslUtils.getTrustManagers(), SharedSecureRandom.get());
             socketFactory = sc.getSocketFactory();
         } catch (Exception ex) {
-            _logger.log(Level.WARNING, "security.exception", ex);
+            _logger.log(Level.WARNING, SecurityLoggerInfo.securityExceptionError, ex);
         }        
     }
     

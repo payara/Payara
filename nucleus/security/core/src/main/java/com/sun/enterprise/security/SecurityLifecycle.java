@@ -54,7 +54,6 @@ import com.sun.enterprise.security.auth.realm.RealmsManager;
 import com.sun.enterprise.security.common.Util;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import org.glassfish.internal.api.ServerContext;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -108,7 +107,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
     private static final String SYS_PROP_LOGIN_CONF = "java.security.auth.login.config";
     private static final String SYS_PROP_JAVA_SEC_POLICY =  "java.security.policy";
  
-    private static final Logger _logger = LogDomains.getLogger(SecurityLifecycle.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     public SecurityLifecycle() {
 	try {
@@ -128,9 +127,9 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
             java.lang.SecurityManager secMgr = System.getSecurityManager();
             if (_logger.isLoggable(Level.INFO)) {
                 if (secMgr != null) {
-                    _logger.info("security.secmgron");
+                    _logger.info(SecurityLoggerInfo.secMgrEnabled);
                 } else {
-                    _logger.info("security.secmgroff");
+                    _logger.info(SecurityLoggerInfo.secMgrDisabled);
                 }
             }
 	} catch(Exception ex) {
@@ -144,7 +143,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
 
         try {
              if (_logger.isLoggable(Level.INFO)) {
-                 _logger.log(Level.INFO, "sec.service.startup.enter");
+                 _logger.log(Level.INFO, SecurityLoggerInfo.secServiceStartupEnter);
              }
 
              
@@ -178,7 +177,7 @@ public class SecurityLifecycle implements  PostConstruct, PreDestroy {
             //initRoleMapperFactory();
            
            if (_logger.isLoggable(Level.INFO)) {
-                 _logger.log(Level.INFO, "sec.service.startup.exit");
+                 _logger.log(Level.INFO, SecurityLoggerInfo.secServiceStartupExit);
              }
 
         } catch(Exception ex) {

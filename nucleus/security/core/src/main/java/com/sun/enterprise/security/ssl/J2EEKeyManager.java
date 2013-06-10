@@ -51,6 +51,7 @@ import javax.net.ssl.SSLEngine;
 import javax.net.ssl.X509KeyManager;
 import javax.security.auth.Subject;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 //import com.sun.enterprise.Switch;
 import com.sun.enterprise.security.common.ClientSecurityContext;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
@@ -79,7 +80,7 @@ import com.sun.enterprise.security.ssl.manager.UnifiedX509KeyManager;
  */
 public final class J2EEKeyManager /*implements X509KeyManager */ extends X509ExtendedKeyManager {
 
-    private static final Logger _logger = LogDomains.getLogger(J2EEKeyManager.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
 
     private X509KeyManager mgr = null; // delegate
     
@@ -417,7 +418,7 @@ public final class J2EEKeyManager /*implements X509KeyManager */ extends X509Ext
             } catch (Exception e){
                 // should never come here 
                 _logger.log(Level.SEVERE,
-                            "java_security.accesscontroller_action_exception",
+                            SecurityLoggerInfo.securityAccessControllerActionError,
                             e);
             }
             if(obj instanceof PasswordCredential) {

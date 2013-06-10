@@ -40,7 +40,7 @@
 
 package com.sun.enterprise.security.ssl;
 
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import org.glassfish.grizzly.ssl.SSLSupport;
 
 import java.io.ByteArrayInputStream;
@@ -59,7 +59,7 @@ import javax.net.ssl.SSLSocket;
  */
 public class GlassfishSSLSupport implements SSLSupport {
 
-    private final static Logger logger = LogDomains.getLogger(GlassfishSSLSupport.class, LogDomains.SECURITY_LOGGER);
+    private final static Logger logger = SecurityLoggerInfo.getLogger();
     private final SSLSocket socket;
     private final SSLEngine engine;
     private SSLSession session;
@@ -183,7 +183,7 @@ public class GlassfishSSLSupport implements SSLSupport {
                     logger.log(Level.FINE, "Cert #{0} = {1}", new Object[]{i, x509Certs[i]});
                 }
             } catch (Exception ex) {
-                logger.log(Level.INFO, "Error translating " + certs[i], ex);
+                logger.log(Level.INFO, SecurityLoggerInfo.convertingCertError, new Object[] {certs[i], ex.toString()});
                 return null;
             }
         }

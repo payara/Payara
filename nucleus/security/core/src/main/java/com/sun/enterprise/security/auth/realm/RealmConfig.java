@@ -41,8 +41,9 @@
 package com.sun.enterprise.security.auth.realm;
 
 import com.sun.enterprise.config.serverbeans.AuthRealm;
+import com.sun.enterprise.security.SecurityLoggerInfo;
+
 import org.jvnet.hk2.config.types.Property;
-import com.sun.logging.LogDomains;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -55,7 +56,7 @@ import java.util.logging.Logger;
 public class RealmConfig {
 
     private static Logger logger =
-            LogDomains.getLogger(RealmConfig.class, LogDomains.SECURITY_LOGGER);
+            SecurityLoggerInfo.getLogger();
 
     public static void createRealms(String defaultRealm, List<AuthRealm> realms) {
         createRealms(defaultRealm, realms, null);
@@ -89,8 +90,8 @@ public class RealmConfig {
                 }
             } catch (Exception e) {
                 logger.log(Level.WARNING,
-                           "realmconfig.disable", realmName);
-                logger.log(Level.WARNING, "security.exception", e);
+                           SecurityLoggerInfo.realmConfigDisabledError, realmName);
+                logger.log(Level.WARNING, SecurityLoggerInfo.securityExceptionError, e);
             }
         }
 
@@ -99,7 +100,7 @@ public class RealmConfig {
         // to the first one loaded (arbitrarily).
 
         if (goodRealm == null) {
-            logger.severe("realmconfig.nogood");
+            logger.severe(SecurityLoggerInfo.noRealmsError);
 
         } else {
             try {

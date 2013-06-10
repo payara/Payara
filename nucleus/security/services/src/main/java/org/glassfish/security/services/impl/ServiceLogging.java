@@ -54,4 +54,7 @@ public class ServiceLogging {
 
 	@LoggerInfo(subsystem="SECPROV", description="Security Provider Logger", publish=true)
 	public static final String SEC_PROV_LOGGER = "org.glassfish.security.services.provider";
+	
+	@LoggerInfo(subsystem="SECCMDS", description="Security Services Command Logger", publish=true)
+	public static final String SEC_COMMANDS_LOGGER = "org.glassfish.security.services.commands";
 }

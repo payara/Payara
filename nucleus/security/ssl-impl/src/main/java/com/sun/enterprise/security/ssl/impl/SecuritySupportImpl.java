@@ -57,7 +57,6 @@ import java.security.Provider;
 
 //V3:Commented import com.sun.enterprise.config.ConfigContext;
 import com.sun.enterprise.server.pluggable.SecuritySupport;
-import com.sun.logging.LogDomains;
 import java.io.IOException;
 import java.security.AccessControlException;
 import java.security.AccessController;
@@ -80,6 +79,10 @@ import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.embedded.Server;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
+
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 
@@ -96,9 +99,23 @@ import javax.inject.Singleton;
 public class SecuritySupportImpl extends SecuritySupport {
     private static final String DEFAULT_KEYSTORE_PASS = "changeit";
     private static final String DEFAULT_TRUSTSTORE_PASS = "changeit";
+    
+    @LogMessagesResourceBundle
+    public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.security.ssl.LogMessages";
+    
+    @LoggerInfo(subsystem = "SECURITY - SSL", description = "Security - SSL", publish = true)
+    public static final String SEC_SSL_LOGGER = "javax.enterprise.system.security.ssl";
 
     protected static final Logger _logger =
-            LogDomains.getLogger(SecuritySupportImpl.class, LogDomains.SECURITY_SSL_LOGGER);
+            Logger.getLogger(SEC_SSL_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
+    
+    @LogMessageInfo(
+			message = "The SSL certificate has expired: {0}",
+			level = "SEVERE",
+			cause = "Certificate expired.",
+			action = "Check the expiration date of the certicate.")
+	private static final String SSL_CERT_EXPIRED = "NCLS-SECURITY-05054";
+    
     private static boolean initialized = false;
     protected static final List<KeyStore> keyStores = new ArrayList<KeyStore>();
     protected static final List<KeyStore> trustStores = new ArrayList<KeyStore>();
@@ -351,9 +368,7 @@ public class SecuritySupportImpl extends SecuritySupport {
             Certificate cert = store.getCertificate(aliases.nextElement());
             if (cert instanceof X509Certificate) {
                 if (((X509Certificate) cert).getNotAfter().before(initDate)) {
-                    _logger.log(Level.SEVERE,
-                            "java_security.expired_certificate",
-                            cert);
+                    _logger.log(Level.SEVERE, SSL_CERT_EXPIRED, cert);
                 }
             }
         }

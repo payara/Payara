@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.security.auth.login;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.auth.login.common.X509CertificateCredential;
 import java.util.Map;
 import java.util.Enumeration;
@@ -78,7 +79,7 @@ public class ClientCertificateLoginModule implements LoginModule {
 
     private static Logger _logger=null;
     static {
-        _logger=LogDomains.getLogger(ClientCertificateLoginModule.class, LogDomains.SECURITY_LOGGER);
+        _logger=SecurityLoggerInfo.getLogger();
     }
 
     private static LocalStringManagerImpl localStrings =

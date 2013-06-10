@@ -59,7 +59,6 @@ import org.glassfish.security.common.PrincipalImpl;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.security.auth.login.DistinguishedPrincipalCredential;
 //V3:Comment import com.sun.enterprise.server.ApplicationServer;
-import com.sun.logging.*;
 import java.security.AccessController;
 import org.glassfish.api.admin.ServerEnvironment;
 
@@ -88,7 +87,7 @@ public class SecurityContext extends AbstractSecurityContext  {
    
     private static Logger _logger=null;
     static {
-        _logger=LogDomains.getLogger(SecurityContext.class, LogDomains.SECURITY_LOGGER);
+        _logger=SecurityLoggerInfo.getLogger();
     }
 
     private static InheritableThreadLocal<SecurityContext> currentSecCtx =
@@ -119,7 +118,7 @@ public class SecurityContext extends AbstractSecurityContext  {
 	if (s == null) {
 	    s = new Subject();
             if (_logger.isLoggable(Level.WARNING)) {
-	        _logger.warning("java_security.null_subject");
+	        _logger.warning(SecurityLoggerInfo.nullSubjectWarning);
             }
 	} 
 	this.initiator = new PrincipalImpl(userName);
@@ -143,7 +142,7 @@ public class SecurityContext extends AbstractSecurityContext  {
         if (subject == null) {
             subject = new Subject();
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.warning("java_security.null_subject");
+                _logger.warning(SecurityLoggerInfo.nullSubjectWarning);
             }
 	} 
 
@@ -186,7 +185,7 @@ public class SecurityContext extends AbstractSecurityContext  {
 	if (s == null) {
 	    s = new Subject();
             if (_logger.isLoggable(Level.WARNING)) {
-	        _logger.warning("java_security.null_subject");
+	        _logger.warning(SecurityLoggerInfo.nullSubjectWarning);
             }
 	}
     PrincipalGroupFactory factory = Globals.getDefaultHabitat().getService(PrincipalGroupFactory.class);
@@ -262,7 +261,7 @@ public class SecurityContext extends AbstractSecurityContext  {
 			    });
 		} catch (Exception e) {
 		    _logger.log(Level.SEVERE,
-				"java_security.default_user_login_Exception", e);
+				SecurityLoggerInfo.defaultUserLoginError, e);
 		} finally {
 		    if (guestUser == null) {
 			guestUser = "ANONYMOUS";
@@ -285,7 +284,7 @@ public class SecurityContext extends AbstractSecurityContext  {
 			});
 	    } catch(Exception e){
 		_logger.log(Level.SEVERE,
-			    "java_security.security_context_exception",e);
+			    SecurityLoggerInfo.defaultSecurityContextError,e);
 	    }
 	}
         return null;
@@ -345,15 +344,15 @@ public class SecurityContext extends AbstractSecurityContext  {
 		    }
  		    permitted = true;
  		} catch (java.lang.SecurityException se) {
- 		    _logger.log(Level.SEVERE, "java_security.security_context_permission_exception", se);
+ 		    _logger.log(Level.SEVERE, SecurityLoggerInfo.securityContextPermissionError, se);
  		} catch (Throwable t) {
- 		    _logger.log(Level.SEVERE, "java_security.security_context_unexpected_exception", t);
+ 		    _logger.log(Level.SEVERE, SecurityLoggerInfo.securityContextUnexpectedError, t);
  		}
  	    
  		if (permitted) {
 		    currentSecCtx.set(sc);
 		} else {
- 		    _logger.severe("java_security.security_context_nochange");
+ 		    _logger.severe(SecurityLoggerInfo.securityContextNotChangedError);
  		}
  	    }
  	} else {

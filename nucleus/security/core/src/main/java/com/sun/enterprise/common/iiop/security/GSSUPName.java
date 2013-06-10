@@ -40,6 +40,7 @@
 
 package com.sun.enterprise.common.iiop.security;
 
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.common.Util;
 import java.util.*;
 import java.util.logging.*;
@@ -55,7 +56,7 @@ import com.sun.logging.*;
 public class GSSUPName {
     private static java.util.logging.Logger _logger=null;
     static{
-       _logger=LogDomains.getLogger(GSSUPName.class, LogDomains.CORBA_LOGGER);
+       _logger=SecurityLoggerInfo.getLogger();
         }
     public static final char   AT_CHAR       = '@';
     public static final String AT_STRING     = "@";
@@ -98,7 +99,7 @@ public class GSSUPName {
             // extract from the "UTF8" encoding
             expname = new String(exportedname, "UTF8");
         } catch (Exception e) {
-             _logger.log(Level.SEVERE,"iiop.importname_exception" , e);
+             _logger.log(Level.SEVERE, SecurityLoggerInfo.iiopImportNameError , e.getLocalizedMessage());
 	}
 
 	if(_logger.isLoggable(Level.FINE)) {
@@ -240,7 +241,7 @@ public class GSSUPName {
             expname = gssUtils.createExportedName(
                        gssUtils.GSSUP_MECH_OID(), expname_utf8);
         } catch (Exception e) {
-             _logger.log(Level.SEVERE,"iiop.createexportedname_exception" , e);
+             _logger.log(Level.SEVERE, SecurityLoggerInfo.iiopCreateExportedNameError , e.getLocalizedMessage());
 	}
 
 	if(_logger.isLoggable(Level.FINE)) {

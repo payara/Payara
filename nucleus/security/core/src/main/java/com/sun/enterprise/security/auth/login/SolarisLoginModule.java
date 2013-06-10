@@ -44,7 +44,6 @@ import java.util.*;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.sun.logging.LogDomains;
 
 import javax.security.auth.*;
 import javax.security.auth.callback.*;

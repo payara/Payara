@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminCommandException;
 import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.security.ssl.SSLUtils;
 import java.io.IOException;
 import java.security.KeyStore;
@@ -264,7 +265,7 @@ public class EnableSecureAdminCommand extends SecureAdminCommand {
 
     @Override
     protected String transactionErrorMessageKey() {
-        return "enable.secure.admin.errenable";
+        return SecurityLoggerInfo.enablingSecureAdminError;
     }
 
     private void ensureSpecialAdminIndicatorIsUnique(final SecureAdmin secureAdmin_w) {

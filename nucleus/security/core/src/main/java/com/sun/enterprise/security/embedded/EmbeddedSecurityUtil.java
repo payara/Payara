@@ -43,9 +43,9 @@ package com.sun.enterprise.security.embedded;
 import com.sun.enterprise.config.serverbeans.AuthRealm;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.security.EmbeddedSecurity;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -80,7 +80,7 @@ import org.jvnet.hk2.config.types.Property;
 @Singleton
 public class EmbeddedSecurityUtil implements EmbeddedSecurity {
 
-    private static final Logger _logger = LogDomains.getLogger(EmbeddedSecurityUtil.class, LogDomains.SECURITY_LOGGER);
+    private static final Logger _logger = SecurityLoggerInfo.getLogger();
     
     public void copyConfigFiles(ServiceLocator habitat, File fromInstanceDir, File domainXml) {
         //For security reasons, permit only an embedded server instance to carry out the copy operations
@@ -135,9 +135,9 @@ public class EmbeddedSecurityUtil implements EmbeddedSecurity {
                 FileUtils.copyFile(new File(fileName), new File(toConfigDir, parseFileName(fileName)));
             }
         }catch(IOException e) {
-            _logger.log(Level.WARNING,"",e);
+            _logger.log(Level.WARNING, SecurityLoggerInfo.ioError, e);
         }catch(XMLStreamException e) {
-            _logger.log(Level.WARNING,"", e);
+            _logger.log(Level.WARNING, SecurityLoggerInfo.xmlStreamingError, e);
         }
 
 

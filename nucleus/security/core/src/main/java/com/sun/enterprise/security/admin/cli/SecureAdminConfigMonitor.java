@@ -42,7 +42,7 @@ package com.sun.enterprise.security.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.security.SecurityLoggerInfo;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Logger;
 
@@ -51,7 +51,6 @@ import org.glassfish.internal.api.PostStartupRunLevel;
 import javax.inject.Inject;
 
 import org.jvnet.hk2.annotations.Service;
-import javax.inject.Singleton;
 import org.jvnet.hk2.config.Changed;
 import org.jvnet.hk2.config.Changed.TYPE;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -80,9 +79,7 @@ public class SecureAdminConfigMonitor implements ConfigListener {
     @Inject
     private Domain domain;
 
-    private Logger logger = LogDomains.getLogger(
-            SecureAdminConfigMonitor.class,
-            LogDomains.ADMIN_LOGGER);
+    private Logger logger = SecurityLoggerInfo.getLogger();
 
     
     @Override
