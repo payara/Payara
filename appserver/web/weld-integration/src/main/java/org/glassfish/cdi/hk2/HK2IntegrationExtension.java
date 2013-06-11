@@ -62,7 +62,9 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- * The touch-point for hk2 integration with CDI
+ * A portable CDI extension, which is the touch-point for hk2 integration with CDI
+ *
+ * This extension is registered via META-INF/services/javax.enterprise.inject.spi.Extension
  *
  * @author jwells
  *
@@ -72,7 +74,7 @@ public class HK2IntegrationExtension implements Extension {
     private final ServiceLocator locator = HK2IntegrationUtilities.getApplicationServiceLocator();
 
     /**
-     * Called by CDI, gathers up all of the injection points known to hk2
+     * Called by CDI, gathers up all of the injection points known to hk2.
      *
      * @param pit The injection target even from CDI
      */
@@ -95,8 +97,8 @@ public class HK2IntegrationExtension implements Extension {
     }
 
     /**
-     * Called by CDI after going through all of the injection points.  For each
-     * service known to hk2 adds a CDI bean
+     * Called by CDI after going through all of the injection points. For each
+     * service known to hk2, adds a CDI bean.
      *
      * @param abd This is used just to mark the type of the event
      */

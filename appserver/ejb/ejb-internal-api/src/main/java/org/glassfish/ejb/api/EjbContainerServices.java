@@ -49,6 +49,7 @@ package org.glassfish.ejb.api;
 
 import org.jvnet.hk2.annotations.Contract;
 
+import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 
@@ -58,7 +59,7 @@ import java.lang.reflect.Member;
  */
 
 @Contract
-public interface EjbContainerServices {
+public interface EjbContainerServices extends Serializable {
 
 
     public <S> S  getBusinessObject(Object ejbRef, java.lang.Class<S> sClass);

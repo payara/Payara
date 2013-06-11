@@ -49,7 +49,7 @@ import org.glassfish.ejb.api.EjbContainerServices;
  */
 public class  SessionObjectReferenceImpl implements SessionObjectReference
 {
-    private transient EjbContainerServices ejbContainerServices;
+    private EjbContainerServices ejbContainerServices;
     private Object ejbRef;
 
     public SessionObjectReferenceImpl(EjbContainerServices s, Object ref) {

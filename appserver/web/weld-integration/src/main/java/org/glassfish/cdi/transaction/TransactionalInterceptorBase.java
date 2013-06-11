@@ -178,7 +178,7 @@ public class TransactionalInterceptorBase implements Serializable {
                     throw checkedException;
                 }
             }
-            if (rollbackOnClass!=null) markRollbackIfActiveTransaction();
+            markRollbackIfActiveTransaction();
             throw checkedException;
         }
         return object;
