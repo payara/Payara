@@ -46,7 +46,7 @@
   <parent>
     <groupId>org.glassfish.main.diagnostics</groupId>
     <artifactId>nucleus-diagnostics</artifactId>
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0</version>
   </parent>
   <artifactId>diagnostics-context</artifactId>
     <packaging>glassfish-jar</packaging>

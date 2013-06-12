@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -54,7 +54,7 @@
     <packaging>glassfish-jar</packaging>
     <name>JMS Connector Module for Runtime</name>
     
-    <version>4.0-SNAPSHOT</version>
+    <version>4.0</version>
     <developers>
         <developer>
             <id>vijc</id>
@@ -71,7 +71,7 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>4.0-SNAPSHOT</version>
+            <version>4.0</version>
         </dependency>
     </dependencies>
     <build>

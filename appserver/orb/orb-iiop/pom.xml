@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.orb</groupId>
         <artifactId>orb</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0</version>
     </parent>
     <artifactId>orb-iiop</artifactId>
     <packaging>glassfish-jar</packaging>

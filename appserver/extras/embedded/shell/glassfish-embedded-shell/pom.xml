@@ -49,7 +49,7 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-embedded-shell</artifactId>

@@ -65,7 +65,7 @@
     <parent>
       <groupId>org.glassfish.main.osgi-platforms</groupId>
       <artifactId>osgi-platforms</artifactId>
-      <version>4.0-SNAPSHOT</version>
+      <version>4.0</version>
     </parent>
 
     <artifactId>felix</artifactId>

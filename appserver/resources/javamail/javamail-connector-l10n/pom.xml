@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.resources</groupId>
         <artifactId>javamail</artifactId>
-        <version>4.0-SNAPSHOT</version>
+        <version>4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>javamail-connector-l10n</artifactId>
