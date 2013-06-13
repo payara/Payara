@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.admin;
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.v3.admin.JobPersistenceService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommandEventBroker;
@@ -56,7 +55,6 @@ import org.glassfish.security.services.common.SubjectUtil;
 
 import javax.security.auth.Subject;
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import org.glassfish.api.admin.ParameterMap;
@@ -74,7 +72,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     
     private CommandProgress commandProgress;
     private transient Payload.Outbound payload;
-    private transient final AdminCommandEventBroker broker;
+    private transient AdminCommandEventBroker broker;
 
     private final long executionDate;
 
@@ -91,6 +89,8 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     private long completionDate;
     
     private ParameterMap parameters;
+    
+    private boolean failToRetryable;
 
     protected AdminCommandInstanceImpl(String id, String name, String commandScope, Subject sub, boolean managedJob, ParameterMap parameters) {
         super(id);
@@ -122,6 +122,10 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     public AdminCommandEventBroker getEventBroker() {
         return this.broker;
     }
+    
+    public void setEventBroker(AdminCommandEventBroker eventBroker) {
+        this.broker = eventBroker;
+    }
 
     @Override
     public File getJobsFile() {
@@ -135,6 +139,10 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     @Override
     public Subject getSubject() {
         return subject;
+    }
+    
+    public void setSubject(Subject subject) {
+        this.subject = subject;
     }
 
     @Override
@@ -160,20 +168,29 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         if (commandProgress != null && report != null && report.getActionExitCode() == ExitCode.SUCCESS) {
             commandProgress.complete();
         }
+        super.actionReport = report;
         this.payload = outbound;
         this.completionDate = System.currentTimeMillis();
-        JobPersistence jobPersistenceService = null;
         if (isManagedJob) {
-            if (scope != null)   {
-                jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistence.class,scope+"job-persistence");
-            }  else  {
-                jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
+            if (getState().equals(State.RUNNING_RETRYABLE) && failToRetryable) {
+                JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
+                jobManager.getRetryableJobsInfo().put(id, new CompletedJob(id, completionDate, jobsFile));
+                jobManager.purgeJob(id);
+                setState(State.FAILED_RETRYABLE);
+            } else {
+                JobPersistence jobPersistenceService;
+                if (scope != null)   {
+                    jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistence.class,scope+"job-persistence");
+                }  else  {
+                    jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
+                }
+                List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
+                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),userList.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name(),completionDate));
+                setState(State.COMPLETED);
             }
-
-            List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
-            jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),userList.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name(),completionDate));
+        } else {
+            setState(State.COMPLETED);
         }
-        complete(report);
     }
 
     @Override
@@ -198,12 +215,8 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     }
     
     @Override
-    public void setFailedRetryable() {
-        if (state == State.RUNNING || state == State.RUNNING_RETRYABLE) {
-            this.state = State.FAILED_RETRYABLE;
-        } else {
-            throw new IllegalStateException(adminStrings.getLocalString("job.state.invalid.FAILED", "State must be RUNNING or RUNNING_RETRYABLE"));
-        }
+    public void setFailToRetryable(boolean value) {
+        this.failToRetryable = value;
     }
 
     @Override

@@ -52,7 +52,7 @@ public class AdminCommandStateImpl implements AdminCommandState, Serializable {
     private static final long serialVersionUID = 1L;
     
     protected State state = State.PREPARED;
-    private ActionReport actionReport;
+    protected ActionReport actionReport;
     private boolean payloadIsEmpty;
     protected String id;
 
@@ -77,9 +77,7 @@ public class AdminCommandStateImpl implements AdminCommandState, Serializable {
     @Override
     public void complete(ActionReport actionReport) {
         this.actionReport = actionReport;
-        if (state != State.FAILED_RETRYABLE) {
             setState(State.COMPLETED);
-        }
     }
 
     @Override

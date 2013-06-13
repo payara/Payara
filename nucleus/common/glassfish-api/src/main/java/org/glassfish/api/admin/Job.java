@@ -82,7 +82,7 @@ public interface Job extends AdminCommandState, Serializable {
     /** Job will be considered as retryable after fail. It means that checkpoint
      * will not be deleted and revert or continue can be decided by the user.
      */
-    public void setFailedRetryable();
+    public void setFailToRetryable(boolean value);
     
     public ParameterMap getParameters();
     

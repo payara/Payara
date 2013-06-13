@@ -130,6 +130,21 @@ public class CheckpointHelper {
             throw e;
         }
     }
+    
+    public static JobManager.Checkpoint load(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(contextFile));
+        JobManager.Checkpoint checkpoint = (JobManager.Checkpoint) ois.readObject();
+        ois.close();
+        if (outbound != null) {
+            File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
+            instance.loadOutbound(outbound, outboundFile);
+            checkpoint.getContext().setOutboundPayload(outbound);
+        }
+        File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
+        Inbound inbound = instance.loadInbound(inboundFile);
+        checkpoint.getContext().setInboundPayload(inbound);
+        return checkpoint;
+    }
 
     public AdminCommandContext loadAdminCommandContext(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(contextFile));
@@ -152,6 +167,9 @@ public class CheckpointHelper {
     }
 
     void loadOutbound(Outbound outbound, File outboundFile) throws IOException {
+        if (outbound == null || !outboundFile.exists()) {
+            return;
+        }
         Inbound outboundSource = loadInbound(outboundFile);
         Iterator<Part> parts = outboundSource.parts();
         File topDir = createTempDir("checkpoint", "");
@@ -173,6 +191,9 @@ public class CheckpointHelper {
     }
 
     Inbound loadInbound(File inboundFile) throws IOException {
+        if (inboundFile == null || !inboundFile.exists()) {
+            return null;
+        }
         FileInputStream is = new FileInputStream(inboundFile);
         Inbound inboundSource = PayloadImpl.Inbound.newInstance("application/zip", is);
         return inboundSource;

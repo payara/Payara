@@ -88,11 +88,14 @@ class CommandRunnerProgressHelper {
         } else {
             progressAnnotation = command.getClass().getAnnotation(Progress.class);
         }
+        this.commandProgress = (CommandProgressImpl) job.getCommandProgress(); //Possible from checkpoint
         if (progressAnnotation != null) {
-            if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
-                commandProgress = new CommandProgressImpl(name, createIdForCommandProgress(job));
-            } else {
-                commandProgress = new CommandProgressImpl(progressAnnotation.name(), createIdForCommandProgress(job));
+            if (commandProgress == null) {
+                if (progressAnnotation.name() == null || progressAnnotation.name().isEmpty()) {
+                    commandProgress = new CommandProgressImpl(name, createIdForCommandProgress(job));
+                } else {
+                    commandProgress = new CommandProgressImpl(progressAnnotation.name(), createIdForCommandProgress(job));
+                }
             }
             connectWithClientProgressStatus(job, clientProgressStatus);
             job.setCommandProgress(commandProgress);

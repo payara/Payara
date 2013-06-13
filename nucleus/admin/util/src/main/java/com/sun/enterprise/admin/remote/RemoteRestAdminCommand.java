@@ -803,6 +803,12 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                             logger.log(Level.FINEST, "Romote command holds data. Must load it");
                                             downloadPayloadFromManaged(instanceId);
                                         }
+                                    } else if (acs.getState() == AdminCommandState.State.FAILED_RETRYABLE) {
+                                        logger.log(Level.INFO, strings.get("remotecommand.failedretryable", acs.getId()));
+                                        if (acs.getActionReport() != null) {
+                                            setActionReport(acs.getActionReport());
+                                        }
+                                        closeSse = true;
                                     }
                                 }
                             }

@@ -629,7 +629,12 @@ public class KernelLoggerInfo {
             level = "INFO")
     public static final String adminGuiInstallProblem = LOGMSG_PREFIX + "-00093";
     
-    
+    @LogMessageInfo(
+            message = "Unable to load checkpoint",
+            cause="An unexpected exception occured.",
+            action="Check the system logs and contact Oracle support.",
+            level = "WARNING")
+    public static final String exceptionLoadCheckpoint = LOGMSG_PREFIX + "-00094";
 
 
 }

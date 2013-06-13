@@ -54,7 +54,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.security.auth.Subject;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
@@ -64,11 +63,10 @@ import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobInfos;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Globals;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import javax.xml.bind.Marshaller;
-import org.glassfish.api.logging.LogLevel;
+import org.glassfish.api.admin.AdminCommandState.State;
 
 /**
  *  This is the implementation for the JobManagerService
@@ -133,14 +131,13 @@ public class JobManagerService implements JobManager,PostConstruct {
     // time the JobManagerService is created, it will scan the
     //jobs.xml and load the information in memory
     private final ConcurrentHashMap<String,CompletedJob> completedJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
-
-
-
+    private final ConcurrentHashMap<String,CompletedJob> retryableJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
 
     /**
      * This will return a new id which is unused
      * @return
      */
+    @Override
     public synchronized String getNewId() {
 
         int nextId = lastId.incrementAndGet();
@@ -161,6 +158,7 @@ public class JobManagerService implements JobManager,PostConstruct {
         return null;
     }
 
+    @Override
     public JobInfo getCompletedJobForId(String id) {
          return getCompletedJobForId(id,getJobsFile());
     }
@@ -179,34 +177,33 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @return true if id is in use
      */
     private boolean idInUse(String id) {
-
-        if (jobRegistry.containsKey(id) || completedJobsInfo.containsKey(id)) {
-            return true;
-        }
-
-        return false;
+        return jobRegistry.containsKey(id) 
+                || completedJobsInfo.containsKey(id) 
+                || retryableJobsInfo.contains(id);
     }
 
 
 
     /**
      * This adds the jobs
-     * @param instance
+     * @param job
      * @throws IllegalArgumentException
      */
+    //TODO: Change to support reregistration of resurected job
     @Override
-    public synchronized void registerJob(Job instance) throws IllegalArgumentException {
-        if (instance == null) {
+    public synchronized void registerJob(Job job) throws IllegalArgumentException {
+        if (job == null) {
             throw new IllegalArgumentException(adminStrings.getLocalString("job.cannot.be.null","Job cannot be null"));
         }
-        if (jobRegistry.containsKey(instance.getId())) {
+        if (jobRegistry.containsKey(job.getId())) {
             throw new IllegalArgumentException(adminStrings.getLocalString("job.id.in.use","Job id is already in use."));
         }
 
-        jobRegistry.put(instance.getId(), instance);
+        retryableJobsInfo.remove(job.getId());
+        jobRegistry.put(job.getId(), job);
 
-        if (instance instanceof AdminCommandInstanceImpl) {
-            ((AdminCommandInstanceImpl) instance).setState(AdminCommandState.State.RUNNING);
+        if (job.getState() == State.PREPARED && (job instanceof AdminCommandInstanceImpl)) {
+            ((AdminCommandInstanceImpl) job).setState(AdminCommandState.State.RUNNING);
         }
     }
 
@@ -283,11 +280,8 @@ public class JobManagerService implements JobManager,PostConstruct {
      */
     @Override
     public synchronized void purgeJob(String id) {
-
         Job obj = jobRegistry.remove(id);
-
         logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
-
     }
 
     public ExecutorService getThreadPool() {
@@ -403,6 +397,11 @@ public class JobManagerService implements JobManager,PostConstruct {
     public ConcurrentHashMap<String, CompletedJob> getCompletedJobsInfo() {
          return completedJobsInfo;
     }
+
+    public ConcurrentHashMap<String, CompletedJob> getRetryableJobsInfo() {
+        return retryableJobsInfo;
+    }
+    
     
     @Override
     public void checkpoint(AdminCommand command, AdminCommandContext context) throws IOException {
@@ -414,9 +413,37 @@ public class JobManagerService implements JobManager,PostConstruct {
         if (dist == null) {
             dist = getJobsFile();
         }
-        dist = new File(dist.getParentFile(), context.getJobId()+".checkpoint");
+        dist = new File(dist.getParentFile(), context.getJobId() + ".checkpoint");
         Checkpoint chkp = new Checkpoint(job, command, context);
         CheckpointHelper.save(chkp, dist);
+        if (job instanceof AdminCommandInstanceImpl) {
+            ((AdminCommandInstanceImpl) job).setState(AdminCommandState.State.RUNNING_RETRYABLE);
+        }
+    }
+    
+    public Checkpoint loadCheckpoint(String jobId, Payload.Outbound outbound) throws IOException, ClassNotFoundException {
+        Job job = get(jobId);
+        File srcFile = null;
+        if (job == null) {
+            CompletedJob cj = getRetryableJobsInfo().get(jobId);
+            if (cj != null) {
+                srcFile = cj.getJobsFile();
+            }
+        } else {
+            srcFile = job.getJobsFile();
+        }
+        if (srcFile == null) {
+            srcFile = getJobsFile();
+        }
+        srcFile = new File(srcFile.getParentFile(), jobId + ".checkpoint");
+        Checkpoint result = CheckpointHelper.load(srcFile, outbound);
+        if (result != null) {
+            serviceLocator.inject(result.getJob());
+            serviceLocator.postConstruct(result.getJob());
+            serviceLocator.inject(result.getCommand());
+            serviceLocator.postConstruct(result.getCommand());
+        }
+        return result;
     }
 
     /* This method will look for completed jobs from the jobs.xml
