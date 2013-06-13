@@ -66,11 +66,11 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author martinmares
  */
-@Service(name = "continue")
-@PerLookup
-@CommandLock(CommandLock.LockType.NONE)
-@I18n("continue")
-@ManagedJob
+//@Service(name = "continue")
+//@PerLookup
+//@CommandLock(CommandLock.LockType.NONE)
+//@I18n("continue")
+//@ManagedJob
 public class ContinueCommand implements AdminCommand {
     
     protected final static LocalStringManagerImpl strings = new LocalStringManagerImpl(AttachCommand.class);
