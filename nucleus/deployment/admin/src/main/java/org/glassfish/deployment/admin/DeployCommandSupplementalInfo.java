@@ -40,6 +40,7 @@
 
 package org.glassfish.deployment.admin;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
@@ -51,9 +52,9 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
  *
  * @author Tim Quinn
  */
-public class DeployCommandSupplementalInfo {
+public class DeployCommandSupplementalInfo implements Serializable{
 
-    private ExtendedDeploymentContext dc = null;
+    private transient ExtendedDeploymentContext dc = null;
     private List<String> previousTargets = null;
     private Collection<? extends AccessCheck> accessChecks = null;
     
