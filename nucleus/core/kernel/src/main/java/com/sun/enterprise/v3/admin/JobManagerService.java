@@ -177,9 +177,9 @@ public class JobManagerService implements JobManager,PostConstruct {
      * @return true if id is in use
      */
     private boolean idInUse(String id) {
-        return jobRegistry.containsKey(id) 
+        return jobRegistry.containsKey(id)
                 || completedJobsInfo.containsKey(id) 
-                || retryableJobsInfo.contains(id);
+                || retryableJobsInfo.containsKey(id);
     }
 
 
