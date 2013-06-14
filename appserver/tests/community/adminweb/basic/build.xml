@@ -41,13 +41,13 @@
 
 -->
 
-<project name="adminweb" default="default" basedir=".">
+<project name="adminweb" default="usage" basedir=".">
     <property file="build.properties"/>
     
  <description>Builds, tests, and runs the GlassFish Admin GUI</description>
 <!-- <import file="nbproject/build-impl.xml"/>-->
 
-<target name="echo">
+<target name="usage">
     <echo message="Hello World"/>
 </target>
 <target name="sun-taskdef">
