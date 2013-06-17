@@ -824,12 +824,12 @@
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-javaee-base</artifactId>
-                <version>1.0.6</version>
+                <version>1.0.7</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
                 <artifactId>osgi-web-container</artifactId>
-                <version>1.0.6</version>
+                <version>2.0.0</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.fighterfish</groupId>
