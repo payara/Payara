@@ -146,7 +146,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
         }
 
         if (attached != null) {
-            String jobInitiator = SubjectUtil.getUsernamesFromSubject(attached.getSubject()).get(0);
+            String jobInitiator = attached.getSubjectUsernames().get(0);
             if (!attachedUser.equals( jobInitiator)) {
                 ar.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 ar.setMessage(strings.getLocalString("user.not.authorized",
@@ -178,7 +178,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
                     } catch (InterruptedException ex) {}
                 }
                 if (attached.getState().equals(COMPLETED)) {
-                    String commandUser = SubjectUtil.getUsernamesFromSubject(attached.getSubject()).get(0);
+                    String commandUser = attached.getSubjectUsernames().get(0);
                     //In most cases if the user who attaches to the command is the same
                     //as one who started it then purge the job once it is completed
                     if ((commandUser != null && commandUser.equals(attachedUser)) && attached.isOutboundPayloadEmpty())  {

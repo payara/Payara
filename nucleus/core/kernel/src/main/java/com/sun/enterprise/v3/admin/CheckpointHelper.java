@@ -52,6 +52,10 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.inject.Inject;
+import javax.security.auth.Subject;
+import javax.security.auth.login.LoginException;
+
 import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.Payload;
@@ -61,6 +65,8 @@ import org.glassfish.api.admin.Payload.Part;
 
 import com.sun.enterprise.util.io.FileUtils;
 import org.glassfish.api.admin.JobManager;
+import org.glassfish.security.services.api.authentication.AuthenticationService;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * This class is starting point for persistent CheckpointHelper, and currently only
@@ -69,11 +75,12 @@ import org.glassfish.api.admin.JobManager;
  * @author Andriy Zhdanov
  * 
  */
+@Service
 public class CheckpointHelper {
+    @Inject
+    AuthenticationService authenticationService;
     
-    private static final CheckpointHelper instance = new CheckpointHelper();
-    
-    public static void save(JobManager.Checkpoint checkpoint, File contextFile) throws IOException {
+    public void save(JobManager.Checkpoint checkpoint, File contextFile) throws IOException {
         File outboundFile = null;
         File inboundFile = null;
         try {
@@ -83,12 +90,12 @@ public class CheckpointHelper {
             Outbound outboundPayload = checkpoint.getContext().getOutboundPayload();
             if (outboundPayload != null && outboundPayload.isDirty()) {
                 outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-                instance.saveOutbound(outboundPayload, outboundFile);
+                saveOutbound(outboundPayload, outboundFile);
             }
             Inbound inboundPayload = checkpoint.getContext().getInboundPayload();
             if (inboundPayload != null) {
                 inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-                instance.saveInbound(inboundPayload, inboundFile);
+                saveInbound(inboundPayload, inboundFile);
             }
         } catch (IOException e) {
             contextFile.delete();
@@ -131,18 +138,25 @@ public class CheckpointHelper {
         }
     }
     
-    public static JobManager.Checkpoint load(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
+    public JobManager.Checkpoint load(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
         ObjectInputStream ois = new ObjectInputStream(new FileInputStream(contextFile));
         JobManager.Checkpoint checkpoint = (JobManager.Checkpoint) ois.readObject();
         ois.close();
         if (outbound != null) {
             File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-            instance.loadOutbound(outbound, outboundFile);
+            loadOutbound(outbound, outboundFile);
             checkpoint.getContext().setOutboundPayload(outbound);
         }
         File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-        Inbound inbound = instance.loadInbound(inboundFile);
+        Inbound inbound = loadInbound(inboundFile);
         checkpoint.getContext().setInboundPayload(inbound);
+        try {
+            String username = checkpoint.getJob().getSubjectUsernames().get(0);
+            Subject subject = authenticationService.impersonate(username, /* groups */ null, /* subject */ null, /* virtual */ false);
+            checkpoint.getContext().setSubject(subject);
+        } catch (LoginException e) {
+            throw new RuntimeException(e);
+        }
         return checkpoint;
     }
 

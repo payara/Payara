@@ -44,6 +44,7 @@ import org.glassfish.api.ActionReport;
 import javax.security.auth.Subject;
 import java.io.File;
 import java.io.Serializable;
+import java.util.List;
 
 /** Represents running (or finished) command instance.
  *
@@ -63,7 +64,7 @@ public interface Job extends AdminCommandState, Serializable {
     
     public AdminCommandEventBroker getEventBroker();
 
-    public Subject getSubject();
+    public List<String> getSubjectUsernames();
 
     public String getName();
 

@@ -48,9 +48,7 @@ import javax.security.auth.Subject;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AuthorizationPreprocessor;
 import org.glassfish.api.admin.Job;
-import org.glassfish.api.admin.JobManager;
 import org.glassfish.api.admin.progress.JobInfo;
-import org.glassfish.security.services.common.SubjectUtil;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -96,7 +94,7 @@ public class JobAuthorizationAttributeProcessor implements AuthorizationPreproce
          * the completed jobs store might not know about the job.
          */
         if (job != null) {
-            userID = SubjectUtil.getUsernamesFromSubject(job.getSubject()).get(0);
+            userID = job.getSubjectUsernames().get(0);
         } else {
             if (jobManager.getCompletedJobs(jobManager.getJobsFile()) != null) {
                     final JobInfo jobInfo = (JobInfo) jobManager.getCompletedJobForId(jobID);

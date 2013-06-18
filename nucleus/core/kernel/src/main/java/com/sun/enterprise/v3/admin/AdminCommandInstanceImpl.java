@@ -78,7 +78,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
 
     private final String commandName;
 
-    private transient Subject subject;
+    private List<String> subjectUsernames;
 
     private final String scope;
 
@@ -99,7 +99,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         this.commandName = name;
         this.scope= commandScope;
         isManagedJob = managedJob;
-        this.subject = sub;
+        this.subjectUsernames = SubjectUtil.getUsernamesFromSubject(sub);
         this.parameters = parameters;
     }
 
@@ -136,15 +136,12 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     public void setJobsFile(File jobsFile) {
         this.jobsFile = jobsFile;
     }
+    
     @Override
-    public Subject getSubject() {
-        return subject;
+    public List<String> getSubjectUsernames() {
+        return subjectUsernames;
     }
     
-    public void setSubject(Subject subject) {
-        this.subject = subject;
-    }
-
     @Override
     public String getName() {
         return commandName;
@@ -184,8 +181,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
                 }  else  {
                     jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
                 }
-                List<String> userList =  SubjectUtil.getUsernamesFromSubject(subject);
-                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),userList.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name(),completionDate));
+                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),subjectUsernames.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name(),completionDate));
                 setState(State.COMPLETED);
             }
         } else {

@@ -45,6 +45,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,6 +62,10 @@ import javax.xml.bind.Unmarshaller;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.progress.JobInfo;
 import org.glassfish.api.admin.progress.JobInfos;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.api.event.Events;
+import org.glassfish.api.event.RestrictTo;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.kernel.KernelLoggerInfo;
@@ -82,7 +87,7 @@ import org.glassfish.api.admin.AdminCommandState.State;
 
 @Service(name="job-manager")
 @Singleton
-public class JobManagerService implements JobManager,PostConstruct {
+public class JobManagerService implements JobManager,PostConstruct, EventListener {
 
 
     @Inject
@@ -124,7 +129,11 @@ public class JobManagerService implements JobManager,PostConstruct {
     @Inject
     private JobFileScanner jobFileScanner;
 
+    @Inject
+    Events events;
 
+    @Inject
+    CheckpointHelper checkpointHelper;
 
     // This will store the data related to completed jobs so that unique ids
     // can be generated for new jobs. This is populated lazily the first
@@ -374,10 +383,27 @@ public class JobManagerService implements JobManager,PostConstruct {
         // unique ids get generated
         for  (File jobfile : persistedJobFiles)   {
             reapCompletedJobs(jobfile);
+            // FIXME: if enabled
+            readRetryableJobs(jobfile);
         }
+        
+        events.register(this);
 
+    }
 
+    private void readRetryableJobs(File jobsFile) {
+        String[] checkpointFiles = jobsFile.getParentFile().list(new FilenameFilter() {
 
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".checkpoint");
+            }
+            
+        });
+        long now = Calendar.getInstance().getTimeInMillis();
+        for (String checkpointFile : checkpointFiles) {
+            retryableJobsInfo.put(checkpointFile, new CompletedJob(getNewId(), now, jobsFile));
+        }
     }
 
     @Override
@@ -415,7 +441,7 @@ public class JobManagerService implements JobManager,PostConstruct {
         }
         dist = new File(dist.getParentFile(), context.getJobId() + ".checkpoint");
         Checkpoint chkp = new Checkpoint(job, command, context);
-        CheckpointHelper.save(chkp, dist);
+        checkpointHelper.save(chkp, dist);
         if (job instanceof AdminCommandInstanceImpl) {
             ((AdminCommandInstanceImpl) job).setState(AdminCommandState.State.RUNNING_RETRYABLE);
         }
@@ -436,7 +462,7 @@ public class JobManagerService implements JobManager,PostConstruct {
             srcFile = getJobsFile();
         }
         srcFile = new File(srcFile.getParentFile(), jobId + ".checkpoint");
-        Checkpoint result = CheckpointHelper.load(srcFile, outbound);
+        Checkpoint result = checkpointHelper.load(srcFile, outbound);
         if (result != null) {
             serviceLocator.inject(result.getJob());
             serviceLocator.postConstruct(result.getJob());
@@ -457,6 +483,21 @@ public class JobManagerService implements JobManager,PostConstruct {
                 for (JobInfo jobInfo: jobInfos.getJobInfoList()) {
                     addToCompletedJobs(new CompletedJob(jobInfo.jobId,jobInfo.commandCompletionDate,jobInfo.getJobsFile()));
                 }
+            }
+        }
+    }
+
+    @Override
+    public void event(@RestrictTo(EventTypes.SERVER_READY_NAME) Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            if (retryableJobsInfo.size() > 0) {
+                logger.fine("Restarting retryable jobs");
+                for (String checkpointFile : retryableJobsInfo.keySet()) {
+                    //Checkpoint checkpoint = CheckpointHelper.load(checkpointFile); // context??
+                    
+                }
+            } else {
+                logger.fine("No retryable job found");
             }
         }
     }

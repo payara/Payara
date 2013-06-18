@@ -138,7 +138,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             JobInfo info = null;
 
             if (isSingleJobOK(oneJob)) {
-                List<String> userList =  SubjectUtil.getUsernamesFromSubject(oneJob.getSubject());
+                List<String> userList =  oneJob.getSubjectUsernames();
                 ActionReport actionReport = oneJob.getActionReport();
                 String message = actionReport == null ? "" : actionReport.getMessage();
 
@@ -163,7 +163,7 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
             for (Iterator<Job> iterator = jobManagerService.getJobs(); iterator.hasNext(); ) {
                 Job job = iterator.next();
                 if (isJobEligible(job)) {
-                    List<String> userList =  SubjectUtil.getUsernamesFromSubject(job.getSubject());
+                    List<String> userList =  job.getSubjectUsernames();
                     ActionReport actionReport = job.getActionReport();
 
                     String message = actionReport == null ? "" : actionReport.getMessage();

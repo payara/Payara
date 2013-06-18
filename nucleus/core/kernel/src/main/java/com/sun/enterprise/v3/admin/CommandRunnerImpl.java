@@ -1759,10 +1759,9 @@ public class CommandRunnerImpl implements CommandRunner {
                     }
                 });
             }
-            ((AdminCommandInstanceImpl) job).setSubject(subject);
             //TODO: End of to be removed part
+            //TODO: validate subject corresponds to job.getSubjectUsernames
             parameters(job.getParameters());
-            this.subject = job.getSubject();
             AdminCommandContext context = checkpoint.getContext();
             this.report = context.getActionReport();
             this.inbound = context.getInboundPayload();
