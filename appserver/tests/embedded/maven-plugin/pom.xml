@@ -190,7 +190,7 @@
                 <plugin>
                     <groupId>org.glassfish.embedded</groupId>
                     <artifactId>maven-embedded-glassfish-plugin</artifactId>
-                    <version>4.0-SNAPSHOT</version>
+                    <version>${project.version}</version>
                     <configuration>
                         <goalPrefix>glassfish</goalPrefix>
                         <app>target/${project.artifactId}.war</app>
@@ -206,12 +206,12 @@
                         <dependency>
                             <groupId>org.glassfish.main.common</groupId>
                             <artifactId>simple-glassfish-api</artifactId>
-                            <version>4.0.1-SNAPSHOT</version>
+                            <version>${project.version}</version>
                         </dependency>                    
                         <dependency>
                             <groupId>org.glassfish.main.extras</groupId>
                             <artifactId>glassfish-embedded-all</artifactId>
-                            <version>4.0.1-SNAPSHOT</version>
+                            <version>${project.version}</version>
                         </dependency>
                     </dependencies>
                 </plugin>                                    
@@ -257,7 +257,7 @@
             <dependency>
                 <groupId>org.glassfish.main.extras</groupId>
                 <artifactId>glassfish-embedded-all</artifactId>
-                <version>4.0-SNAPSHOT</version>
+                <version>${project.version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
