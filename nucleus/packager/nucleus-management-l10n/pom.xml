@@ -51,6 +51,10 @@
     <artifactId>nucleus-management-l10n</artifactId>
     <name>Nucleus Management l10n Package</name>
     <packaging>distribution-fragment</packaging>
+    
+    <properties>
+        <deploy.skip>true</deploy.skip>
+    </properties>
 
     <dependencies>
         <dependency>

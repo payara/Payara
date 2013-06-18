@@ -52,6 +52,10 @@
     <name>Nucleus Commons Package l10n package</name>
     <packaging>distribution-fragment</packaging>
 
+    <properties>
+        <deploy.skip>true</deploy.skip>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
