@@ -400,9 +400,11 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
             }
             
         });
-        long now = Calendar.getInstance().getTimeInMillis();
-        for (String checkpointFile : checkpointFiles) {
-            retryableJobsInfo.put(checkpointFile, new CompletedJob(getNewId(), now, jobsFile));
+        if (checkpointFiles != null) {
+            long now = Calendar.getInstance().getTimeInMillis();
+            for (String checkpointFile : checkpointFiles) {
+                retryableJobsInfo.put(checkpointFile, new CompletedJob(getNewId(), now, jobsFile));
+            }
         }
     }
 
