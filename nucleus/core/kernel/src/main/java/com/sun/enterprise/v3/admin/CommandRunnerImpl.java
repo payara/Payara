@@ -1744,23 +1744,11 @@ public class CommandRunnerImpl implements CommandRunner {
         
         private void executeFromCheckpoint(JobManager.Checkpoint checkpoint, boolean revert, AdminCommandEventBroker eventBroker) {
             Job job = checkpoint.getJob();
-            //TODO: Remove after correct subject reinjection after deserialisation
-            /*
-             * The caller should have set the subject explicitly.  In case
-             * it didn't, try setting it from the current access controller context
-             * since the command framework will have set that before invoking
-             * the original command's execute method.
-             */
             if (subject == null) {
-                subject = AccessController.doPrivileged(new PrivilegedAction<Subject>() {
-                    @Override
-                    public Subject run() {
-                        return Subject.getSubject(AccessController.getContext());
-                    }
-                });
+                subject = checkpoint.getContext().getSubject();
+            } else {
+                //TODO: validate subject corresponds to job.getSubjectUsernames
             }
-            //TODO: End of to be removed part
-            //TODO: validate subject corresponds to job.getSubjectUsernames
             parameters(job.getParameters());
             AdminCommandContext context = checkpoint.getContext();
             this.report = context.getActionReport();
