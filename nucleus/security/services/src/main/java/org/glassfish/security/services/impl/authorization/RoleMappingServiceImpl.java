@@ -58,7 +58,7 @@ import org.glassfish.security.services.api.authorization.AzAttributeResolver;
 import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.authorization.RoleMappingService;
-import org.glassfish.security.services.common.PrivilededLookup;
+import org.glassfish.security.services.common.PrivilegedLookup;
 import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.config.SecurityProvider;
@@ -166,7 +166,7 @@ public final class RoleMappingServiceImpl implements RoleMappingService, PostCon
 						logger.log(DEBUG_LEVEL, "Attempting to get Role Mapping Provider \"{0}\".", providerName );
 					}
 					provider = AccessController.doPrivileged(
-					        new PrivilededLookup<RoleMappingProvider>(serviceLocator, RoleMappingProvider.class, providerName) );    
+					        new PrivilegedLookup<RoleMappingProvider>(serviceLocator, RoleMappingProvider.class, providerName) );    
 							
 					if (provider == null) {
 						throw new IllegalStateException(localStrings.getLocalString("service.role.not_provider",

@@ -59,7 +59,7 @@ import org.glassfish.security.services.api.authorization.AzResource;
 import org.glassfish.security.services.api.authorization.AzResult;
 import org.glassfish.security.services.api.authorization.AzSubject;
 import org.glassfish.security.services.api.context.SecurityContextService;
-import org.glassfish.security.services.common.PrivilededLookup;
+import org.glassfish.security.services.common.PrivilegedLookup;
 import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.config.SecurityConfiguration;
 import org.glassfish.security.services.impl.ServiceFactory;
@@ -165,7 +165,7 @@ public final class AuthorizationServiceImpl implements AuthorizationService, Pos
                 logger.log(DEBUG_LEVEL, "Attempting to get Authorization provider \"{0}\".", providerName );
             }
             provider =  AccessController.doPrivileged(
-                            new PrivilededLookup<AuthorizationProvider>(
+                            new PrivilegedLookup<AuthorizationProvider>(
                                     serviceLocator, AuthorizationProvider.class, providerName)); 
             if (provider == null) {
                 throw new IllegalStateException(

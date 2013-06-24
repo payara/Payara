@@ -47,7 +47,7 @@ import javax.inject.Singleton;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
 
-import org.glassfish.security.services.common.PrivilededLookup;
+import org.glassfish.security.services.common.PrivilegedLookup;
 import org.glassfish.security.services.common.Secure;
 import org.glassfish.security.services.common.StateManager;
 import org.glassfish.security.services.common.SecurityScope;
@@ -75,7 +75,7 @@ public class AuthenticationServiceFactory extends ServiceFactory implements Fact
 
         // Get Service Instance
         AuthenticationService atnService = AccessController.doPrivileged( 
-                new PrivilededLookup<AuthenticationService>(
+                new PrivilegedLookup<AuthenticationService>(
                         serviceLocator, AuthenticationService.class));
 
         // Get Service Configuration
