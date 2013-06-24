@@ -173,6 +173,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
 
     private List<Header>        requestHeaders = new ArrayList<Header>();
     private boolean             closeSse = false;
+    
+    private boolean             enableCommandModelCache = true;
 
     //TODO: Remove it
     private OutputStream userOut;
@@ -365,6 +367,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         this.interactive = state;
     }
 
+    public void setEnableCommandModelCache(boolean enableCommandModelCache) {
+        this.enableCommandModelCache = enableCommandModelCache;
+    }
+    
     /**
      * Get the CommandModel for the command from the server.
      * If the CommandModel hasn't been set, it's fetched from
@@ -374,7 +380,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
      * @throws CommandException if the server can't be contacted
      */
     public CommandModel getCommandModel() throws CommandException {
-        if (commandModel == null) {
+        if (commandModel == null && enableCommandModelCache) {
             long startNanos = System.nanoTime();
             try {
                 commandModel = getCommandModelFromCache();

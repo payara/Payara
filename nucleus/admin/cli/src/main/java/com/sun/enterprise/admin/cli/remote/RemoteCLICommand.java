@@ -72,6 +72,7 @@ import org.glassfish.api.admin.AdminCommandEventBroker;
 import org.glassfish.api.admin.AdminCommandEventBroker.AdminCommandListener;
 import org.glassfish.api.admin.AdminCommandState;
 import org.glassfish.api.admin.CommandException;
+import org.glassfish.api.admin.CommandModel;
 import org.glassfish.api.admin.CommandModel.ParamModel;
 import org.glassfish.api.admin.CommandProgress;
 import org.glassfish.api.admin.CommandValidationException;
@@ -129,6 +130,11 @@ public class RemoteCLICommand extends CLICommand {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
                     authToken, true /* prohibitDirectoryUploads */);
 
+            //TODO: Remove when fix cache problem
+            if (programOpts.getCommandName() != null && programOpts.getCommandName().contains("cadmin")) {
+                super.setEnableCommandModelCache(false);
+            }
+            
             StringBuilder sessionFilePath = new StringBuilder();
 
             // Store the cache at: $GFCLIENT/cache/{host}_{port}/session
@@ -136,6 +142,7 @@ public class RemoteCLICommand extends CLICommand {
             sessionFilePath.append(host).append("_");
             sessionFilePath.append(port).append(File.separator);
             sessionFilePath.append("session");
+            
 
             sessionCache = new File(AsadminSecurityUtil.getDefaultClientDir(),
                     sessionFilePath.toString());
@@ -153,7 +160,7 @@ public class RemoteCLICommand extends CLICommand {
                 super.setReadTimeout(Integer.parseInt(stimeout));
             }
         }
-
+        
         @Override
         public void fetchCommandModel() throws CommandException {
             super.fetchCommandModel();
