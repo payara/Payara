@@ -181,19 +181,21 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
         // See if we've already checked...
         HttpSession session = request.getSession(true);
-        if (session != null) {
-            Subject savedClientSubject = (Subject) session.getValue(SAVED_SUBJECT);
-            if (savedClientSubject != null) {
-                // Copy all principals...
-                clientSubject.getPrincipals().addAll(savedClientSubject.getPrincipals());
-                clientSubject.getPublicCredentials().addAll(savedClientSubject.getPublicCredentials());
-                clientSubject.getPrivateCredentials().addAll(savedClientSubject.getPrivateCredentials());
-                return AuthStatus.SUCCESS;
-            }
+        if (session == null) {
+            return AuthStatus.FAILURE;
+        }
+
+        Subject savedClientSubject = (Subject) session.getValue(SAVED_SUBJECT);
+        if (savedClientSubject != null) {
+            // Copy all principals...
+            clientSubject.getPrincipals().addAll(savedClientSubject.getPrincipals());
+            clientSubject.getPublicCredentials().addAll(savedClientSubject.getPublicCredentials());
+            clientSubject.getPrivateCredentials().addAll(savedClientSubject.getPrivateCredentials());
+            return AuthStatus.SUCCESS;
         }
 
         // See if we've already calculated the serverName / serverPort
-        if ((session != null) && (session.getValue(REST_SERVER_NAME) == null)) {
+        if (session.getValue(REST_SERVER_NAME) == null) {
             // Save this for use later...
             URL url = null;
             try {
@@ -260,28 +262,26 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
             request.changeSessionId();
 
-            if (session != null) {
                 // Get the "extraProperties" section of the response...
-                Object obj = restResp.getResponse().get("data");
-                Map extraProperties = null;
+            Object obj = restResp.getResponse().get("data");
+            Map extraProperties = null;
+            if ((obj != null) && (obj instanceof Map)) {
+                obj = ((Map) obj).get("extraProperties");
                 if ((obj != null) && (obj instanceof Map)) {
-                    obj = ((Map) obj).get("extraProperties");
-                    if ((obj != null) && (obj instanceof Map)) {
-                        extraProperties = (Map) obj;
-                    }
+                    extraProperties = (Map) obj;
                 }
-
-                // Save the Rest Token...
-                if (extraProperties != null) {
-                    session.putValue(REST_TOKEN, extraProperties.get("token"));
-                }
-
-                // Save the Subject...
-                session.putValue(SAVED_SUBJECT, clientSubject);
-
-                // Save the userName
-                session.putValue(USER_NAME, username);
             }
+
+            // Save the Rest Token...
+            if (extraProperties != null) {
+                session.putValue(REST_TOKEN, extraProperties.get("token"));
+            }
+
+            // Save the Subject...
+            session.putValue(SAVED_SUBJECT, clientSubject);
+
+            // Save the userName
+            session.putValue(USER_NAME, username);
 
             try {
                 // Redirect...

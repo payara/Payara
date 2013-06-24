@@ -615,7 +615,7 @@ public class LogViewHandlers {
      * The following constant defines the valid delimiters that can be used to
      * seperate custom loggers on input. (" \t\n\r\f,;:")
      */
-    protected static final String[] CUSTOM_LOGGER_DELIMITERS = {" \t", "\r\n", "\f", ",", ";", ":"};
+    private static final String[] CUSTOM_LOGGER_DELIMITERS = {" \t", "\r\n", "\f", ",", ";", ":"};
     /**
      * The following constant defines the valid delimiters that can be used to
      * seperate nvp entries on input. (" \t\n\r\f,;:")
