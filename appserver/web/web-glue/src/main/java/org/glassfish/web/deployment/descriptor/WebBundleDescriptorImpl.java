@@ -54,6 +54,7 @@ import org.glassfish.deployment.common.DescriptorVisitor;
 import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.security.common.Role;
+import org.glassfish.web.deployment.node.WebBundleNode;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebBundleTracerVisitor;
 import org.glassfish.web.deployment.util.WebBundleValidator;
@@ -69,8 +70,6 @@ import java.util.*;
  */
 
 public class WebBundleDescriptorImpl extends WebBundleDescriptor {
-    //XXX the constant is duplicated here temporary
-    private static final String SPEC_VERSION = "3.0";
 
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
 
@@ -291,7 +290,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
      *         loaded by this descriptor
      */
     public String getDefaultSpecVersion() {
-        return SPEC_VERSION;
+        return WebBundleNode.SPEC_VERSION;
     }
 
     /**
