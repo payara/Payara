@@ -562,26 +562,29 @@ public class DeploymentImpl implements CDI11Deployment {
     }
 
     private void createLibJarBda(RootBeanDeploymentArchive rootLibBda) {
-        addBdaToDeploymentBdas(rootLibBda);
-
         BeanDeploymentArchive libModuleBda = rootLibBda.getModuleBda();
-        addBdaToDeploymentBdas(libModuleBda);
-        if (libJarRootBdas == null) {
-            libJarRootBdas = new ArrayList<>();
-        }
+        BeansXml moduleBeansXml = libModuleBda.getBeansXml();
+        if (moduleBeansXml == null || !moduleBeansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
+            addBdaToDeploymentBdas(rootLibBda);
+            addBdaToDeploymentBdas(libModuleBda);
+            if (libJarRootBdas == null) {
+                libJarRootBdas = new ArrayList<>();
+            }
 
-        for ( RootBeanDeploymentArchive existingLibJarRootBda : libJarRootBdas) {
-            rootLibBda.getBeanDeploymentArchives().add( existingLibJarRootBda );
-            rootLibBda.getBeanDeploymentArchives().add( existingLibJarRootBda.getModuleBda() );
-            rootLibBda.getModuleBda().getBeanDeploymentArchives().add( existingLibJarRootBda );
-            rootLibBda.getModuleBda().getBeanDeploymentArchives().add( existingLibJarRootBda.getModuleBda() );
+            for ( RootBeanDeploymentArchive existingLibJarRootBda : libJarRootBdas) {
+                rootLibBda.getBeanDeploymentArchives().add( existingLibJarRootBda );
+                rootLibBda.getBeanDeploymentArchives().add( existingLibJarRootBda.getModuleBda() );
+                rootLibBda.getModuleBda().getBeanDeploymentArchives().add( existingLibJarRootBda );
+                rootLibBda.getModuleBda().getBeanDeploymentArchives().add( existingLibJarRootBda.getModuleBda() );
 
-            existingLibJarRootBda.getBeanDeploymentArchives().add( rootLibBda );
-            existingLibJarRootBda.getBeanDeploymentArchives().add( rootLibBda.getModuleBda() );
-            existingLibJarRootBda.getModuleBda().getBeanDeploymentArchives().add( rootLibBda );
-            existingLibJarRootBda.getModuleBda().getBeanDeploymentArchives().add( rootLibBda.getModuleBda() );
+                existingLibJarRootBda.getBeanDeploymentArchives().add( rootLibBda );
+                existingLibJarRootBda.getBeanDeploymentArchives().add( rootLibBda.getModuleBda() );
+                existingLibJarRootBda.getModuleBda().getBeanDeploymentArchives().add( rootLibBda );
+                existingLibJarRootBda.getModuleBda().getBeanDeploymentArchives().add( rootLibBda.getModuleBda() );
+            }
+
+            libJarRootBdas.add(rootLibBda);
         }
-        libJarRootBdas.add(rootLibBda);
     }
 
     private void addBdaToDeploymentBdas( BeanDeploymentArchive bda ) {
@@ -619,7 +622,6 @@ public class DeploymentImpl implements CDI11Deployment {
                                                                       Collections.<EjbDescriptor>emptyList(),
                                                                       context,
                                                                       bdaId );
-
                                     libBdas.add(rootBda);
                                 }
                             } finally {
@@ -710,14 +712,13 @@ public class DeploymentImpl implements CDI11Deployment {
                                   DeploymentContext context) {
         RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context );
 
-        BeansXml beansXml = rootBda.getBeansXml();
-        if (beansXml == null || !beansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
-            addBdaToDeploymentBdas(rootBda);
-
             BeanDeploymentArchive moduleBda = rootBda.getModuleBda();
-            addBdaToDeploymentBdas(moduleBda);
-
-            addBeanDeploymentArchives(rootBda);
+            BeansXml moduleBeansXml = moduleBda.getBeansXml();
+            if (moduleBeansXml == null || !moduleBeansXml.getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
+                addBdaToDeploymentBdas(rootBda);
+                addBdaToDeploymentBdas(moduleBda);
+                addBeanDeploymentArchives(rootBda);
+            }
 
             // first check if the parent is an ear and if so see if there are app libs defined there.
             if ( ! earContextAppLibBdasProcessed && context instanceof DeploymentContextImpl ) {
@@ -732,7 +733,6 @@ public class DeploymentImpl implements CDI11Deployment {
 
             // then check the module
             processBdasForAppLibs(archive, context);
-        }
     }
 
 
