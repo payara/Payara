@@ -91,6 +91,9 @@ public class JSSE14Factory implements JSSEFactory {
     
     @Override
     public SSLSupport getSSLSupport(Socket socket) {
+        if (!(socket instanceof SSLSocket)) {
+            throw new IllegalArgumentException("The Socket has to be SSLSocket");
+        }
         return new JSSE14Support((SSLSocket)socket);
     }
 

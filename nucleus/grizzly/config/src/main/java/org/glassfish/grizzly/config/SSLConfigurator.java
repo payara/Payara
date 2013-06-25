@@ -578,6 +578,10 @@ public class SSLConfigurator extends SSLEngineConfigurator {
             }
         }
 
+        public String getConfigName() {
+            return configName;
+        }
+
         public String getCipherName() {
             return cipherName;
         }

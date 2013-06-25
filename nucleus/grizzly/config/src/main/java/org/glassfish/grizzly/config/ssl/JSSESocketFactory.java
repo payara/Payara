@@ -106,6 +106,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
     public JSSESocketFactory() {
     }
 
+    @Override
     public ServerSocket createSocket(int port) throws IOException {
         if (!initialized) {
             init();
@@ -115,6 +116,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         return socket;
     }
 
+    @Override
     public ServerSocket createSocket(int port, int backlog) throws IOException {
         if (!initialized) {
             init();
@@ -124,6 +126,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         return socket;
     }
 
+    @Override
     public ServerSocket createSocket(int port, int backlog, InetAddress ifAddress) throws IOException {
         if (!initialized) {
             init();
@@ -133,6 +136,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         return socket;
     }
 
+    @Override
     public Socket acceptSocket(ServerSocket socket) throws IOException {
         SSLSocket asock;
         try {
@@ -148,7 +152,12 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         return asock;
     }
 
+    @Override
     public void handshake(Socket sock) throws IOException {
+        if (!(sock instanceof SSLSocket)) {
+            throw new IllegalArgumentException("The Socket has to be SSLSocket");
+        }
+        
         ((SSLSocket) sock).startHandshake();
     }
 
@@ -237,11 +246,11 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
     protected KeyStore getKeystore(String pass) throws IOException {
         String keystoreFile = (String) attributes.get("keystore");
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Keystore file= " + keystoreFile);
+            logger.log(Level.FINE, "Keystore file= {0}", keystoreFile);
         }
         String keystoreType = (String) attributes.get("keystoreType");
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Keystore type= " + keystoreType);
+            logger.log(Level.FINE, "Keystore type= {0}", keystoreType);
         }
         return getStore(keystoreType, keystoreFile, pass);
     }
@@ -267,11 +276,11 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
         KeyStore ts = null;
         String truststore = (String) attributes.get("truststore");
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Truststore file= " + truststore);
+            logger.log(Level.FINE, "Truststore file= {0}", truststore);
         }
         String truststoreType = (String) attributes.get("truststoreType");
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Truststore type= " + truststoreType);
+            logger.log(Level.FINE, "Truststore type= {0}", truststoreType);
         }
         String truststorePassword = getTruststorePassword();
         if (truststore != null && truststorePassword != null) {
@@ -324,6 +333,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
      *
      * Place holder method to initialize the KeyStore, etc.
      */
+    @Override
     public abstract void init() throws IOException;
 
     /**
@@ -350,6 +360,10 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
      * authentication
      */
     protected void initServerSocket(ServerSocket ssocket) {
+        if (!(ssocket instanceof SSLServerSocket)) {
+            throw new IllegalArgumentException("The ServerSocket has to be SSLServerSocket");
+        }
+        
         SSLServerSocket socket = (SSLServerSocket) ssocket;
         if (attributes.get("ciphers") != null) {
             socket.setEnabledCipherSuites(enabledCiphers);

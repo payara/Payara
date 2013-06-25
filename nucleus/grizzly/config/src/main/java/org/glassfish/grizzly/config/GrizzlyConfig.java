@@ -93,7 +93,7 @@ public class GrizzlyConfig {
                 thread.start();
             }
             try {
-                Thread.sleep(1000); // wait for the system to finish setting up the listener
+                listeners.wait(1000); // wait for the system to finish setting up the listener
             } catch (InterruptedException e) {
                 logger.warning(e.getMessage());
                 throw new RuntimeException(e.getMessage());

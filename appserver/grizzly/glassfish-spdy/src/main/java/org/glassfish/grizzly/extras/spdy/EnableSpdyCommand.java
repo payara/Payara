@@ -164,7 +164,7 @@ public class EnableSpdyCommand implements AdminCommand {
                             }
                         }, networkListener);
 
-                        report.appendMessage(String.format(" **NOTE** In order to support SPDY %s network listener's transport has been changed to %s.\n", networkListener.getName(), spdyTransportName));
+                        report.appendMessage(String.format(" **NOTE** In order to support SPDY %s network listener's transport has been changed to %s.%n", networkListener.getName(), spdyTransportName));
                     }
                 }
             }

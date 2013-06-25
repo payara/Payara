@@ -470,7 +470,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             for (ProtocolFilter filterConfig : filterChainConfig.getProtocolFilter()) {
                 final String filterClassname = filterConfig.getClassname();
                 try {
-                    final Filter filter = (Filter) Utils.newInstance(filterClassname);
+                    final Filter filter = loadFilter(habitat,
+                            filterConfig.getName(), filterClassname);
                     configureElement(habitat, networkListener, filterConfig, filter);
                     filterChainBuilder.add(filter);
                 } catch (Exception e) {
@@ -631,7 +632,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             final NetworkListener networkListener,
             final Http http, final FilterChainBuilder filterChainBuilder,
             boolean secure) {
-        transactionTimeoutMillis = Integer.parseInt(http.getRequestTimeoutSeconds()) * 1000;
+        transactionTimeoutMillis = Long.parseLong(http.getRequestTimeoutSeconds()) * 1000;
         filterChainBuilder.add(new IdleTimeoutFilter(delayedExecutor, Integer.parseInt(http.getTimeoutSeconds()),
             TimeUnit.SECONDS));
         final org.glassfish.grizzly.http.HttpServerFilter httpServerFilter =
@@ -830,13 +831,13 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         return Utils.newInstance(habitat, Filter.class, name, filterClassName);
     }
     
-    private Filter loadFilter(ServiceLocator habitat,
-                              String name, 
-                              String filterClassName, 
-                              Class<?>[] ctorArgTypes, 
-                              Object[] ctorArgs) {
-        return Utils.newInstance(habitat, Filter.class, name, filterClassName, ctorArgTypes, ctorArgs);
-    }
+//    private Filter loadFilter(ServiceLocator habitat,
+//                              String name, 
+//                              String filterClassName, 
+//                              Class<?>[] ctorArgTypes, 
+//                              Object[] ctorArgs) {
+//        return Utils.newInstance(habitat, Filter.class, name, filterClassName, ctorArgTypes, ctorArgs);
+//    }
 
     private org.glassfish.grizzly.http.HttpServerFilter createHttpServerCodecFilter() {
         return createHttpServerCodecFilter(null);

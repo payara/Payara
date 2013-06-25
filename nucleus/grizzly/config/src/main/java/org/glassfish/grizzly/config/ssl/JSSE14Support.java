@@ -112,6 +112,7 @@ class JSSE14Support extends JSSESupport {
     }
     // END SJSAS 6439313
     
+    @Override
     protected void handShake() throws IOException {
         ssl.setNeedClientAuth(true);
         synchronousHandshake(ssl);        
@@ -133,10 +134,10 @@ class JSSE14Support extends JSSESupport {
         int maxTries = 60; // 60 * 1000 = example 1 minute time out
         for (int i = 0; i < maxTries; i++) {
 	    if(logger.isLoggable(Level.FINE)) 
-                logger.log(Level.FINE,"Reading for try #" +i);
+                logger.log(Level.FINE, "Reading for try #{0}", i);
             try {
-                //noinspection ResultOfMethodCallIgnored
-                in.read(b);
+                final int bytesRead = in.read(b);
+                assert bytesRead <= 0;
             } catch(SSLException sslex) {
                 //logger.log(Level.SEVERE,"SSL Error getting client Certs",sslex);
                 throw sslex;
@@ -156,6 +157,7 @@ class JSSE14Support extends JSSESupport {
     /** Return the X509certificates or null if we can't get them.
      *  XXX We should allow unverified certificates 
      */ 
+    @Override
     protected X509Certificate [] getX509Certificates(SSLSession session) 
 	throws IOException 
     {
@@ -189,7 +191,7 @@ class JSSE14Support extends JSSESupport {
 		}
 	    }
 	    if(logger.isLoggable(Level.FINE)) 
-                logger.log(Level.FINE,"Cert #" + i + " = " + x509Certs[i]);
+                logger.log(Level.FINE, "Cert #{0} = {1}", new Object[]{i, x509Certs[i]});
 	}
 	if(x509Certs.length < 1)
 	    return null;
@@ -199,6 +201,7 @@ class JSSE14Support extends JSSESupport {
 
     private static class Listener implements HandshakeCompletedListener {
         volatile boolean completed = false;
+        @Override
         public void handshakeCompleted(HandshakeCompletedEvent event) {
             completed = true;
         }

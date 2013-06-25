@@ -157,9 +157,8 @@ public class HttpRedirectFilter extends BaseFilter implements
 
         if (hostPort.length() > 0) {
             String path = requestURI.toString();
-            if (path == null) {
-                path = "/";
-            }
+            
+            assert path != null;
 
             final StringBuilder sb = new StringBuilder();
             sb.append((redirectToSecure ? "https://" : "http://"))
