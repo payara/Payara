@@ -74,9 +74,7 @@ public class BaseTestGrizzlyConfig {
                 }
                 return builder.toString();
             } finally {
-                if (reader != null) {
-                    reader.close();
-                }
+                reader.close();
                 if (inputStream != null) {
                     inputStream.close();
                 }
@@ -89,20 +87,23 @@ public class BaseTestGrizzlyConfig {
     }
 
     protected void addStaticHttpHandler(GenericGrizzlyListener listener, int count) {
-        final String name = System.getProperty("java.io.tmpdir", "/tmp") + "/"
-            + Dom.convertName(getClass().getSimpleName()) + count;
+        final String name = "target/tmp/"
+                + Dom.convertName(getClass().getSimpleName()) + count;
         File dir = new File(name);
         dir.mkdirs();
+        dir.deleteOnExit();
+        
         FileWriter writer;
         try {
-            writer = new FileWriter(new File(dir, "index.html"));
+            final File file = new File(dir, "index.html");
+            file.deleteOnExit();
+            
+            writer = new FileWriter(file);
             try {
                 writer.write("<html><body>You've found the server on port " + listener.getPort() + "</body></html>");
                 writer.flush();
             } finally {
-                if (writer != null) {
-                    writer.close();
-                }
+                writer.close();
             }
         } catch (IOException e) {
             Assert.fail(e.getMessage());
@@ -129,14 +130,17 @@ public class BaseTestGrizzlyConfig {
             // Create a trust manager that does not validate certificate chains
             TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {
+                    @Override
                     public X509Certificate[] getAcceptedIssuers() {
                         return null;
                     }
 
+                    @Override
                     public void checkClientTrusted(
                         X509Certificate[] certs, String authType) {
                     }
 
+                    @Override
                     public void checkServerTrusted(
                         X509Certificate[] certs, String authType) {
                     }
