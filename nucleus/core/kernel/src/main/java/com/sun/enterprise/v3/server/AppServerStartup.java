@@ -84,6 +84,8 @@ import org.glassfish.hk2.api.InstanceLifecycleListener;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.Rank;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.runlevel.ChangeableRunLevelFuture;
+import org.glassfish.hk2.runlevel.ErrorInformation;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.hk2.runlevel.RunLevelFuture;
@@ -694,17 +696,17 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         @Override
-        public void onError(RunLevelFuture future, Throwable error) {
+        public void onError(RunLevelFuture future, ErrorInformation info) {
             if (future.isDown()) {
                 // TODO: Need a log message
-                logger.log(Level.WARNING, "An error occured when the system was coming down", error);
+                logger.log(Level.WARNING, "An error occured when the system was coming down", info.getError());
                 return;
             }
             
-            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, error);
+            logger.log(Level.INFO, KernelLoggerInfo.shutdownRequested, info.getError());
             
             if (controller.getCurrentRunLevel() >= InitRunLevel.VAL) {
-                logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, error);
+                logger.log(Level.SEVERE, KernelLoggerInfo.startupFailure, info.getError());
                 events.send(new Event(EventTypes.SERVER_SHUTDOWN), false);
             }
             
@@ -713,7 +715,7 @@ public class AppServerStartup implements PostConstruct, ModuleStartup {
         }
 
         @Override
-        public void onProgress(RunLevelFuture future, int achievedLevel) {
+        public void onProgress(ChangeableRunLevelFuture future, int achievedLevel) {
             if (achievedLevel == PostStartupRunLevel.VAL) {
                 if (logger.isLoggable(level)) {
                     printModuleStatus(systemRegistry, level);
