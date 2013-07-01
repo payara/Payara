@@ -828,7 +828,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                             try { eventReceiver.close(); } catch (Exception exc) {}
                         }
                     } catch (IOException ioex) {
-                        if (instanceId != null && "Premature EOF".equals(ioex)) {
+                        if (instanceId != null && "Premature EOF".equals(ioex.getMessage())) {
                             if (retryableCommand) {
                                 throw new CommandException(strings.get("remotecommand.lostConnection.retryableCommand", new Object[] {instanceId}), ioex);
                             } else {
