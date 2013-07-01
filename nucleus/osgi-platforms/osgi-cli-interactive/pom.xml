@@ -52,7 +52,7 @@
     <artifactId>osgi-cli-interactive</artifactId>
     <packaging>glassfish-jar</packaging>
 
-    <name>Admin CLI interactive shell command to the OSGi Shell</name>
+    <name>Admin CLI, interactive OSGi shell command</name>
     <description>An interactive shell inside asadmin to access a remote OSGi shell</description>
 
     <developers>

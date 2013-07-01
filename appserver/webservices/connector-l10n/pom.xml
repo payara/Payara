@@ -51,7 +51,7 @@
     </parent>
     <artifactId>webservices-connector-l10n</artifactId>
 
-    <name>Connector for GlassFish Web Services Container l10n</name>
+    <name>Connector for Web Services Container l10n</name>
     
     <properties>
         <javadoc.skip>true</javadoc.skip>
