@@ -394,7 +394,7 @@
         </pluginManagement>
 
         <plugins>
-            <!-- force cleaning of the local repository -->
+            <!-- force cleaning of the local repository
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -421,6 +421,7 @@
                     </execution>
                 </executions>
             </plugin>
+	    -->
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
