@@ -77,7 +77,11 @@ public class AdminCommandStateImpl implements AdminCommandState, Serializable {
     @Override
     public void complete(ActionReport actionReport) {
         this.actionReport = actionReport;
+        if (getState().equals(State.REVERTING)) {
+            setState(State.REVERTED);
+        } else {
             setState(State.COMPLETED);
+        }
     }
 
     @Override

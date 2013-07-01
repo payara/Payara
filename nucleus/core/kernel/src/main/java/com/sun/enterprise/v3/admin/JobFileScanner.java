@@ -39,16 +39,13 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.JobLocator;
 import javax.inject.Singleton;
 import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.inject.Scope;
 import java.io.File;
 import java.util.Collection;
 import java.util.HashSet;

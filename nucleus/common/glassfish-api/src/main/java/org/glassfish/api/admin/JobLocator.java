@@ -42,7 +42,6 @@ package org.glassfish.api.admin;
 import org.jvnet.hk2.annotations.Contract;
 
 import java.io.File;
-import java.util.List;
 import java.util.Set;
 
 /**

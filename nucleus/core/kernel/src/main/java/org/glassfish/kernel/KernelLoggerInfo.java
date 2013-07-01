@@ -636,5 +636,14 @@ public class KernelLoggerInfo {
             level = "WARNING")
     public static final String exceptionLoadCheckpoint = LOGMSG_PREFIX + "-00094";
 
+    @LogMessageInfo(
+            message = "Resuming command {0} from its last checkpoint.",
+            level = "INFO")
+    public static final String checkpointAutoResumeStart = LOGMSG_PREFIX + "-00095";
+    
+    @LogMessageInfo(
+            message = "Automatically resumed command {0} finished with exit code {1}. \nMessage: {2}",
+            level = "INFO")
+    public static final String checkpointAutoResumeDone = LOGMSG_PREFIX + "-00096";
 
 }

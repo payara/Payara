@@ -39,6 +39,8 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
+import com.sun.enterprise.admin.remote.RestPayloadImpl;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -47,12 +49,15 @@ import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.xml.bind.JAXBContext;
@@ -71,6 +76,8 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import javax.xml.bind.Marshaller;
+import org.glassfish.admin.payload.PayloadImpl;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandState.State;
 
 /**
@@ -87,7 +94,7 @@ import org.glassfish.api.admin.AdminCommandState.State;
 
 @Service(name="job-manager")
 @Singleton
-public class JobManagerService implements JobManager,PostConstruct, EventListener {
+public class JobManagerService implements JobManager, PostConstruct, EventListener {
 
 
     @Inject
@@ -134,6 +141,9 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
 
     @Inject
     CheckpointHelper checkpointHelper;
+    
+    @Inject
+    CommandRunnerImpl commandRunner;
 
     // This will store the data related to completed jobs so that unique ids
     // can be generated for new jobs. This is populated lazily the first
@@ -198,7 +208,6 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
      * @param job
      * @throws IllegalArgumentException
      */
-    //TODO: Change to support reregistration of resurected job
     @Override
     public synchronized void registerJob(Job job) throws IllegalArgumentException {
         if (job == null) {
@@ -256,7 +265,8 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
                 jobsRetentionPeriod = convert(managedJobConfig.getJobRetentionPeriod());
 
                 if (currentTime - executedTime > jobsRetentionPeriod &&
-                        job.state.equals(AdminCommandState.State.COMPLETED.name())) {
+                        (job.state.equals(AdminCommandState.State.COMPLETED.name()) || 
+                        job.state.equals(AdminCommandState.State.REVERTED.name()))) {
                     expiredJobs.add(job);
                 }
             }
@@ -288,9 +298,26 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
      * @param id  The job id of the job to be removed
      */
     @Override
-    public synchronized void purgeJob(String id) {
-        Job obj = jobRegistry.remove(id);
-        logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  obj));
+    public synchronized void purgeJob(final String id) {
+        Job job = jobRegistry.remove(id);
+        logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  job));
+    }
+    
+    public void deleteCheckpoint(final Job job) {
+        File jobFile = job.getJobsFile();
+        if (jobFile == null) {
+            jobFile = getJobsFile();
+        }
+        //list all related files
+        File[] toDelete = jobFile.getParentFile().listFiles(new FilenameFilter() {
+                                   @Override
+                                   public boolean accept(File dir, String name) {
+                                       return name.startsWith(job.getId() + ".") || name.startsWith(job.getId() + "-");
+                                   }
+                               });
+        for (File td : toDelete) {
+            td.delete();
+        }
     }
 
     public ExecutorService getThreadPool() {
@@ -386,13 +413,11 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
             // FIXME: if enabled
             readRetryableJobs(jobfile);
         }
-        
         events.register(this);
-
     }
 
     private void readRetryableJobs(File jobsFile) {
-        String[] checkpointFiles = jobsFile.getParentFile().list(new FilenameFilter() {
+        File[] checkpointFiles = jobsFile.getParentFile().listFiles(new FilenameFilter() {
 
             @Override
             public boolean accept(File dir, String name) {
@@ -401,9 +426,10 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
             
         });
         if (checkpointFiles != null) {
-            long now = Calendar.getInstance().getTimeInMillis();
-            for (String checkpointFile : checkpointFiles) {
-                retryableJobsInfo.put(checkpointFile, new CompletedJob(getNewId(), now, jobsFile));
+            long now = System.currentTimeMillis();
+            for (File checkpointFile : checkpointFiles) {
+                String id = checkpointFile.getName().substring(0, checkpointFile.getName().indexOf('.'));
+                retryableJobsInfo.put(id, new CompletedJob(id, now, jobsFile));
             }
         }
     }
@@ -447,6 +473,34 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
         if (job instanceof AdminCommandInstanceImpl) {
             ((AdminCommandInstanceImpl) job).setState(AdminCommandState.State.RUNNING_RETRYABLE);
         }
+    }
+    
+    public void checkpointAttachement(String jobId, String attachId, Serializable data) throws IOException {
+        Job job = get(jobId);
+        File dist = job.getJobsFile();
+        if (dist == null) {
+            dist = getJobsFile();
+        }
+        dist = new File(dist.getParentFile(), jobId + "-" + attachId + ".checkpoint.attach");
+        checkpointHelper.saveAttachment(data, dist);
+    }
+    
+    public Serializable loadCheckpointAttachement(String jobId, String attachId) throws IOException, ClassNotFoundException {
+        Job job = get(jobId);
+        File srcFile = null;
+        if (job == null) {
+            CompletedJob cj = getRetryableJobsInfo().get(jobId);
+            if (cj != null) {
+                srcFile = cj.getJobsFile();
+            }
+        } else {
+            srcFile = job.getJobsFile();
+        }
+        if (srcFile == null) {
+            srcFile = getJobsFile();
+        }
+        srcFile = new File(srcFile.getParentFile(), jobId + "-" + attachId + ".checkpoint.attach");
+        return checkpointHelper.loadAttachment(srcFile);
     }
     
     public Checkpoint loadCheckpoint(String jobId, Payload.Outbound outbound) throws IOException, ClassNotFoundException {
@@ -494,13 +548,31 @@ public class JobManagerService implements JobManager,PostConstruct, EventListene
         if (event.is(EventTypes.SERVER_READY)) {
             if (retryableJobsInfo.size() > 0) {
                 logger.fine("Restarting retryable jobs");
-                for (String checkpointFile : retryableJobsInfo.keySet()) {
-                    //Checkpoint checkpoint = CheckpointHelper.load(checkpointFile); // context??
-                    
+                for (CompletedJob rJob : retryableJobsInfo.values()) {
+                    reexecuteJobFromCheckpoint(rJob.getId());
                 }
             } else {
                 logger.fine("No retryable job found");
             }
         }
     }
+    
+    private void reexecuteJobFromCheckpoint(String jobID) {
+        Checkpoint checkpoint = null;
+        try {
+            RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(true);
+            checkpoint = loadCheckpoint(jobID, outbound);
+        } catch (Exception ex) {
+            logger.log(Level.WARNING, KernelLoggerInfo.exceptionLoadCheckpoint);
+        }
+        if (checkpoint != null) {
+            logger.log(Level.INFO, KernelLoggerInfo.checkpointAutoResumeStart, 
+                    new Object[]{checkpoint.getJob().getName()});
+            commandRunner.executeFromCheckpoint(checkpoint, false, new AdminCommandEventBrokerImpl());
+            ActionReport report = checkpoint.getContext().getActionReport();
+            logger.log(Level.INFO, KernelLoggerInfo.checkpointAutoResumeDone, 
+                    new Object[]{checkpoint.getJob().getName(), report.getActionExitCode(), report.getTopMessagePart()});
+        }
+    }
+
 }

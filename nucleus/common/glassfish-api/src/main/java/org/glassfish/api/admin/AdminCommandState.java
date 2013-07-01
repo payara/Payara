@@ -51,7 +51,7 @@ public interface AdminCommandState {
     public static final String EVENT_STATE_CHANGED = "AdminCommandInstance/stateChanged";
     
     public enum State {
-        PREPARED, RUNNING, COMPLETED, RECORDED, RUNNING_RETRYABLE, FAILED_RETRYABLE, REVERTING;
+        PREPARED, RUNNING, COMPLETED, RECORDED, RUNNING_RETRYABLE, FAILED_RETRYABLE, REVERTING, REVERTED;
     }
     
     public State getState();

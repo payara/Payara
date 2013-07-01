@@ -68,7 +68,7 @@ import org.glassfish.api.admin.ParameterMap;
 
 public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements Job {
     
-    private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminCommandInstanceImpl.class);
+//    private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminCommandInstanceImpl.class);
     
     private CommandProgress commandProgress;
     private transient Payload.Outbound payload;
@@ -181,12 +181,25 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
                 }  else  {
                     jobPersistenceService = Globals.getDefaultHabitat().getService(JobPersistenceService.class);
                 }
-                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),subjectUsernames.get(0),report.getMessage(),getJobsFile(),State.COMPLETED.name(),completionDate));
-                setState(State.COMPLETED);
+                State finalState = State.COMPLETED;
+                if (getState().equals(State.REVERTING)) {
+                    finalState = State.REVERTED;
+                }
+                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),subjectUsernames.get(0),report.getMessage(),getJobsFile(),finalState.name(),completionDate));
+                if (getState().equals(State.RUNNING_RETRYABLE) || getState().equals(State.REVERTING)) {
+                    JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
+                    jobManager.deleteCheckpoint(this);
+                }
+                setState(finalState);
             }
         } else {
             setState(State.COMPLETED);
         }
+    }
+    
+    @Override
+    public void revert() {
+        setState(State.REVERTING);
     }
 
     @Override

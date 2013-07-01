@@ -64,7 +64,9 @@ import org.glassfish.api.admin.Payload.Outbound;
 import org.glassfish.api.admin.Payload.Part;
 
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.Serializable;
 import org.glassfish.api.admin.JobManager;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
 import org.jvnet.hk2.annotations.Service;
 
@@ -79,7 +81,10 @@ import org.jvnet.hk2.annotations.Service;
 public class CheckpointHelper {
     @Inject
     AuthenticationService authenticationService;
-    
+
+    @Inject
+    ServiceLocator serviceLocator;
+
     public void save(JobManager.Checkpoint checkpoint, File contextFile) throws IOException {
         File outboundFile = null;
         File inboundFile = null;
@@ -106,6 +111,17 @@ public class CheckpointHelper {
                 inboundFile.delete();
             }
             throw e;
+        }
+    }
+    
+    public void saveAttachment(Serializable data, File file) throws IOException {
+        ObjectOutputStream oos = null;
+        try {
+            oos = new ObjectOutputStream(new FileOutputStream(file));
+            oos.writeObject(data);
+        } finally {
+            try {oos.close();} catch (Exception ex) {
+            }
         }
     }
 
@@ -139,7 +155,7 @@ public class CheckpointHelper {
     }
     
     public JobManager.Checkpoint load(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(contextFile));
+        ObjectInputStream ois = new ObjectInputStreamWithServiceLocator(new FileInputStream(contextFile), serviceLocator);
         JobManager.Checkpoint checkpoint = (JobManager.Checkpoint) ois.readObject();
         ois.close();
         if (outbound != null) {
@@ -158,6 +174,17 @@ public class CheckpointHelper {
             throw new RuntimeException(e);
         }
         return checkpoint;
+    }
+    
+    public Serializable loadAttachment(File file) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = null;
+        try {
+            ois = new ObjectInputStreamWithServiceLocator(new FileInputStream(file), serviceLocator);
+            return (Serializable) ois.readObject();
+        } finally {
+            try {ois.close();} catch (Exception ex) {
+            }
+        }
     }
 
     public AdminCommandContext loadAdminCommandContext(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {

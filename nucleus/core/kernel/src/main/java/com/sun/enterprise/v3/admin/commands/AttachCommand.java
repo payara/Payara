@@ -59,6 +59,7 @@ import org.jvnet.hk2.annotations.Service;
 import static org.glassfish.api.admin.AdminCommandState.State.PREPARED;
 import static org.glassfish.api.admin.AdminCommandState.State.RUNNING;
 import static org.glassfish.api.admin.AdminCommandState.State.COMPLETED;
+import static org.glassfish.api.admin.AdminCommandState.State.REVERTED;
 
 
 /**
@@ -117,7 +118,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
             return;
         }
         if (AdminCommandStateImpl.EVENT_STATE_CHANGED.equals(name) && 
-                ((Job) event).getState().equals(COMPLETED)) {
+                (((Job) event).getState().equals(COMPLETED) || ((Job) event).getState().equals(REVERTED))) {
             synchronized (attached) {
                 attached.notifyAll();
             }
@@ -177,7 +178,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
                         attached.wait(1000*60*5); //5000L just to be sure
                     } catch (InterruptedException ex) {}
                 }
-                if (attached.getState().equals(COMPLETED)) {
+                if (attached.getState().equals(COMPLETED) || attached.getState().equals(REVERTED)) {
                     String commandUser = attached.getSubjectUsernames().get(0);
                     //In most cases if the user who attaches to the command is the same
                     //as one who started it then purge the job once it is completed
@@ -191,7 +192,7 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
             }
         } else {
 
-            if (jobInfo != null && jobInfo.state.equals(COMPLETED.toString())) {
+            if (jobInfo != null && (jobInfo.state.equals(COMPLETED.toString()) || jobInfo.state.equals(REVERTED.toString()))) {
 
                 //In most cases if the user who attaches to the command is the same
                 //as one who started it then purge the job once it is completed

@@ -39,15 +39,9 @@
  */
 package com.sun.enterprise.v3.admin;
 
-import org.glassfish.api.StartupRunLevel;
-
 import org.glassfish.api.admin.JobLocator;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.util.*;
 
@@ -65,7 +59,6 @@ public class JobLocatorService implements JobLocator {
     @Override
     public Set<File> locateJobXmlFiles() {
         return jobFiles;
-
     }
 
 

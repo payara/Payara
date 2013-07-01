@@ -62,6 +62,11 @@ public interface Job extends AdminCommandState, Serializable {
     
     public void complete(ActionReport report, Payload.Outbound outbound);
     
+    /** Change state to reverting. Command Can use it to send info about reverting
+     * to Job management infrastructure.
+     */
+    public void revert();
+    
     public AdminCommandEventBroker getEventBroker();
 
     public List<String> getSubjectUsernames();

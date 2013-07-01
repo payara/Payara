@@ -777,13 +777,14 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     logger.log(Level.FINER, "URL connection is {0}", urlConnection.getClass().getName());
                 }
                 if (resultMediaType != null && resultMediaType.startsWith(MEDIATYPE_SSE)) {
+                    String instanceId = null;
+                    boolean retryableCommand = false;
                     try {
                         logger.log(Level.FINEST, "Response is SSE - about to read events");
                         closeSse = false;
                         ProprietaryReader<GfSseEventReceiver> reader = new GfSseEventReceiverProprietaryReader();
                         GfSseEventReceiver eventReceiver = reader.readFrom(urlConnection.getInputStream(), resultMediaType);
                         GfSseInboundEvent event;
-                        String instanceId = null;
                         do {
                             event = eventReceiver.readEvent();
                             if (event != null) {
@@ -800,7 +801,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                         }
                                     }
                                     if (acs.getState() == AdminCommandState.State.COMPLETED ||
-                                            acs.getState() == AdminCommandState.State.RECORDED) {
+                                            acs.getState() == AdminCommandState.State.RECORDED ||
+                                            acs.getState() == AdminCommandState.State.REVERTED) {
                                         if (acs.getActionReport() != null) {
                                             setActionReport(acs.getActionReport());
                                         }
@@ -815,12 +817,25 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                             setActionReport(acs.getActionReport());
                                         }
                                         closeSse = true;
+                                    } else if (acs.getState() == AdminCommandState.State.FAILED_RETRYABLE) {
+                                        logger.log(Level.FINEST, "Command stores checkpoint and is retryable");
+                                        retryableCommand = true;
                                     }
                                 }
                             }
                         } while (event != null && !eventReceiver.isClosed() && !closeSse);
                         if (closeSse) {
                             try { eventReceiver.close(); } catch (Exception exc) {}
+                        }
+                    } catch (IOException ioex) {
+                        if (instanceId != null && "Premature EOF".equals(ioex)) {
+                            if (retryableCommand) {
+                                throw new CommandException(strings.get("remotecommand.lostConnection.retryableCommand", new Object[] {instanceId}), ioex);
+                            } else {
+                                throw new CommandException(strings.get("remotecommand.lostConnection", new Object[] {instanceId}), ioex);
+                            }
+                        } else {
+                            throw new CommandException(ioex.getMessage(), ioex);
                         }
                     } catch (Exception ex) {
                         throw new CommandException(ex.getMessage(), ex);

@@ -226,6 +226,31 @@ public abstract class ActionReport implements Serializable {
             return findPropertyImpl(key);
         }
         
+        protected String toString(int indent) {
+            StringBuilder result = new StringBuilder();
+            if (message != null && !message.isEmpty()) {
+                for (int i = 0; i < indent; i++) {
+                    result.append(' ');
+                }
+                result.append(message);
+            }
+            for (MessagePart child : children) {
+                String msg = child.toString(indent + 4);
+                if (msg != null && !msg.isEmpty()) {
+                    if (result.length() > 0) {
+                        result.append('\n');
+                    }
+                    result.append(msg);
+                }
+            }
+            return result.toString();
+        }
+        
+        @Override
+        public String toString() {
+            return toString(0);
+        }
+        
     }
 
     Properties extraProperties;
