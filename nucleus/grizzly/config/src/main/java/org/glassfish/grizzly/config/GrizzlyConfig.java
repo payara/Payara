@@ -85,18 +85,12 @@ public class GrizzlyConfig {
                     amm = (AbstractMemoryManager) mm;
                 }
                 listeners.add(grizzlyListener);
-                final Thread thread = new DefaultWorkerThread(Grizzly.DEFAULT_ATTRIBUTE_BUILDER,
-                    grizzlyListener.getName(),
-                    amm != null ? amm.createThreadLocalPool() : null,
-                    new ListenerRunnable(grizzlyListener));
-                thread.setDaemon(true);
-                thread.start();
-            }
-            try {
-                listeners.wait(1000); // wait for the system to finish setting up the listener
-            } catch (InterruptedException e) {
-                logger.warning(e.getMessage());
-                throw new RuntimeException(e.getMessage());
+                
+                try {
+                    grizzlyListener.start();
+                } catch (IOException e) {
+                    logger.log(Level.SEVERE, e.getMessage(), e);
+                }
             }
         }
     }
@@ -139,22 +133,5 @@ public class GrizzlyConfig {
         }
         final String v = value.trim();
         return "true".equals(v) || "yes".equals(v) || "on".equals(v) || "1".equals(v);
-    }
-
-    private static class ListenerRunnable implements Runnable {
-        private final GrizzlyListener grizzlyListener;
-
-        public ListenerRunnable(GrizzlyListener grizzlyListener) {
-            this.grizzlyListener = grizzlyListener;
-        }
-
-        public void run() {
-            try {
-                grizzlyListener.start();
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, e.getMessage(), e);
-                throw new RuntimeException(e.getMessage());
-            }
-        }
     }
 }
