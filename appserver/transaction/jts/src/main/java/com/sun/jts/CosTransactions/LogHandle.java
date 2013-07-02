@@ -1046,8 +1046,7 @@ class LogHandle {
             java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
                     public Object run(){
-                        LogControl.directory(logFileName,logControl.directoryPath).delete();
-                        return null;
+                        return LogControl.directory(logFileName,logControl.directoryPath).delete();
                     }
                 }
             );
@@ -1633,8 +1632,7 @@ class LogHandle {
             java.security.AccessController.doPrivileged(
                 new java.security.PrivilegedAction() {
                     public Object run(){
-                        logControl.cushionFile.delete();
-                        return null;
+                        return logControl.cushionFile.delete();
                     }
                 }
             );
@@ -1709,8 +1707,7 @@ class LogHandle {
                     java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
                             public Object run(){
-                                logControl.cushionFile.delete();
-                                return null;
+                                return logControl.cushionFile.delete();
                             }
                         }
                     );
@@ -1941,6 +1938,7 @@ class LogHandle {
      * @see
      */
     void dump() throws LogException {
+/**
         LogExtent logEDP;                       // Extent file descriptor
         LogCursor logCuDP;                      // ptr to cursor descriptor
 
@@ -1963,7 +1961,7 @@ class LogHandle {
         while( curs.hasNext() ) {
             logCuDP = (LogCursor)curs.next();
         }
-
+**/
     }
 
     /**Removes all extent information from the log file.
