@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.jms.admin.cli;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
@@ -67,6 +68,7 @@ public class MQJMXConnectorInfo {
     private String brokerInstanceName = null;
     private String brokerType = null;
     static Logger _logger = LogDomains.getLogger(MQJMXConnectorInfo.class, LogDomains.JMS_LOGGER);
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MQJMXConnectorInfo.class);
     private JMXConnector connector = null;
 
     public MQJMXConnectorInfo(String asInstanceName, String brokerInstanceName,
@@ -117,6 +119,11 @@ public class MQJMXConnectorInfo {
     //be shared with the consumer of this API
     public MBeanServerConnection getMQMBeanServerConnection() throws ConnectorRuntimeException {
         try {
+            if (getJMXServiceURL() == null || getJMXServiceURL().equals("")) {
+                String msg = localStrings.getLocalString("error.get.jmsserviceurl",
+                                "Failed to get MQ JMXServiceURL of {0}.", getASInstanceName());
+                throw new ConnectorRuntimeException(msg);
+            }
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE,
                 "creating MBeanServerConnection to MQ JMXServer with "+getJMXServiceURL());
