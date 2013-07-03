@@ -46,12 +46,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.memory.AbstractMemoryManager;
-import org.glassfish.grizzly.memory.MemoryManager;
-import org.glassfish.grizzly.threadpool.DefaultWorkerThread;
 import org.glassfish.hk2.api.ServiceLocator;
 
 public class GrizzlyConfig {
@@ -76,14 +72,9 @@ public class GrizzlyConfig {
     public void setupNetwork() throws IOException {
         validateConfig(config);
         synchronized (listeners) {
-            AbstractMemoryManager amm = null;
             for (final NetworkListener listener : config.getNetworkListeners().getNetworkListener()) {
                 final GenericGrizzlyListener grizzlyListener = new GenericGrizzlyListener();
                 grizzlyListener.configure(habitat, listener);
-                final MemoryManager mm = grizzlyListener.transport.getMemoryManager();
-                if (mm instanceof AbstractMemoryManager) {
-                    amm = (AbstractMemoryManager) mm;
-                }
                 listeners.add(grizzlyListener);
                 
                 try {
