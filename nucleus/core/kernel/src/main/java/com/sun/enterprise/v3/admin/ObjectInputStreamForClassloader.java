@@ -64,17 +64,13 @@ public class ObjectInputStreamForClassloader  extends ObjectInputStream {
     @Override
     protected Class<?> resolveClass(ObjectStreamClass classDesc)
             throws IOException, ClassNotFoundException {
-        int ind = 0;
         for (ClassLoader cl : classLoaders) {
             try {
                 Class<?> result = Class.forName(classDesc.getName(), false, cl);
-                System.out.println("KKKK: class FOUND: " + classDesc.getName() + " - " + ind);
-                ind++;
                 return result;
             } catch (ClassNotFoundException e) {
             }
         }
-        System.out.println("KKKK: class NOT: " + classDesc.getName());
         return super.resolveClass(classDesc);
     }
     
