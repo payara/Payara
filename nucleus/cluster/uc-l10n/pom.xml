@@ -55,6 +55,7 @@
     <properties>
         <javadoc.skip>true</javadoc.skip>
         <deploy.skip>true</deploy.skip>
+        <build.info.exclude>true</build.info.exclude>
     </properties>
     
     <build>
