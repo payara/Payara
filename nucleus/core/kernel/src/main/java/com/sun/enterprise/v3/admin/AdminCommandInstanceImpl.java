@@ -171,7 +171,7 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
         if (isManagedJob) {
             if (getState().equals(State.RUNNING_RETRYABLE) && failToRetryable) {
                 JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
-                jobManager.getRetryableJobsInfo().put(id, new CompletedJob(id, completionDate, jobsFile));
+                jobManager.getRetryableJobsInfo().put(id, CheckpointHelper.CheckpointFilename.createBasic(this));
                 jobManager.purgeJob(id);
                 setState(State.FAILED_RETRYABLE);
             } else {

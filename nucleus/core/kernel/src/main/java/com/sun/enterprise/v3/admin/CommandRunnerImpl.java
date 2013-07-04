@@ -1746,8 +1746,6 @@ public class CommandRunnerImpl implements CommandRunner {
             Job job = checkpoint.getJob();
             if (subject == null) {
                 subject = checkpoint.getContext().getSubject();
-            } else {
-                //TODO: validate subject corresponds to job.getSubjectUsernames
             }
             parameters(job.getParameters());
             AdminCommandContext context = checkpoint.getContext();

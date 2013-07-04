@@ -672,4 +672,11 @@ public class StringUtils {
         }
         return result.toString();
     }
+    
+    /** If given {@code String} is {@code null} then returns empty {@code String}
+     * otherwise returns given {@code String}
+     */
+    public static String nvl(String str) {
+        return str == null ? "" : str;
+    }
 }

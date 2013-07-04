@@ -37,58 +37,45 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.api.admin;
 
-import org.glassfish.api.ActionReport;
+package com.sun.enterprise.v3.admin;
 
-import java.io.File;
-import java.io.Serializable;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamClass;
+import java.util.Collection;
 
-/** Represents running (or finished) command instance.
+/** ObjectInputStream implementation with possibility to provide primary class 
+ * loader.
  *
- *
- * @author Martin Mares
- * @author Bhakti Mehta
+ * @author martinmares
  */
-public interface Job extends AdminCommandState, Serializable {
+public class ObjectInputStreamForClassloader  extends ObjectInputStream {
     
-    /** Command progress only if it is supported by command
-     */
-    public CommandProgress getCommandProgress();
+    private final Collection<ClassLoader> classLoaders;
+
+    public ObjectInputStreamForClassloader(InputStream in, Collection<ClassLoader> classLoaders) 
+            throws IOException {
+        super(in);
+        this.classLoaders = classLoaders;
+    }
     
-    public void setCommandProgress(CommandProgress commandProgress);
-    
-    public void complete(ActionReport report, Payload.Outbound outbound);
-    
-    /** Change state to reverting. Command Can use it to send info about reverting
-     * to Job management infrastructure.
-     */
-    public void revert();
-    
-    public AdminCommandEventBroker getEventBroker();
-
-    public List<String> getSubjectUsernames();
-
-    public String getName();
-
-    public long getCommandExecutionDate();
-
-    public Payload.Outbound getPayload();
-
-    public File getJobsFile() ;
-
-    public void setJobsFile(File jobsFile) ;
-
-    public String getScope();
-
-    public long getCommandCompletionDate();
-    
-    /** Job will be considered as retryable after fail. It means that checkpoint
-     * will not be deleted and revert or continue can be decided by the user.
-     */
-    public void setFailToRetryable(boolean value);
-    
-    public ParameterMap getParameters();
+    @Override
+    protected Class<?> resolveClass(ObjectStreamClass classDesc)
+            throws IOException, ClassNotFoundException {
+        int ind = 0;
+        for (ClassLoader cl : classLoaders) {
+            try {
+                Class<?> result = Class.forName(classDesc.getName(), false, cl);
+                System.out.println("KKKK: class FOUND: " + classDesc.getName() + " - " + ind);
+                ind++;
+                return result;
+            } catch (ClassNotFoundException e) {
+            }
+        }
+        System.out.println("KKKK: class NOT: " + classDesc.getName());
+        return super.resolveClass(classDesc);
+    }
     
 }

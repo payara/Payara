@@ -817,7 +817,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                             setActionReport(acs.getActionReport());
                                         }
                                         closeSse = true;
-                                    } else if (acs.getState() == AdminCommandState.State.FAILED_RETRYABLE) {
+                                    } else if (acs.getState() == AdminCommandState.State.RUNNING_RETRYABLE) {
                                         logger.log(Level.FINEST, "Command stores checkpoint and is retryable");
                                         retryableCommand = true;
                                     }

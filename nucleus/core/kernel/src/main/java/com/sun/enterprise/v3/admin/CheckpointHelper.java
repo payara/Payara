@@ -39,6 +39,8 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -64,7 +66,20 @@ import org.glassfish.api.admin.Payload.Outbound;
 import org.glassfish.api.admin.Payload.Part;
 
 import com.sun.enterprise.util.io.FileUtils;
+import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.CommandRunner;
+import org.glassfish.api.admin.Job;
+import org.glassfish.api.admin.JobCreator;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
@@ -79,92 +94,215 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 public class CheckpointHelper {
+    
+    public static class CheckpointFilename {
+        
+        enum ExtensionType {
+            BASIC, ATTACHMENT, PAYLOAD_INBOUD, PAYLOAD_OUTBOUND;
+        }
+        
+        private static final Map<ExtensionType, String> EXTENSIONS;
+        static {
+            Map<ExtensionType, String> extMap = new EnumMap<ExtensionType, String>(ExtensionType.class);
+            extMap.put(ExtensionType.BASIC, ".checkpoint");
+            extMap.put(ExtensionType.ATTACHMENT, ".checkpoint_attach");
+            extMap.put(ExtensionType.PAYLOAD_INBOUD, ".checkpoint_inb");
+            extMap.put(ExtensionType.PAYLOAD_OUTBOUND, ".checkpoint_outb");
+            EXTENSIONS = Collections.unmodifiableMap(extMap);
+        }
+        
+        private final ExtensionType ext;
+        private final String jobId;
+        private String attachmentId;
+        private final File parentDir;
+        
+        private CheckpointFilename(String jobId, File parentDir, ExtensionType ext) {
+            this.ext = ext;
+            this.jobId = jobId;
+            this.parentDir = parentDir;
+        }
+        
+        private CheckpointFilename(CheckpointFilename basic, ExtensionType ext) {
+            this.ext = ext;
+            this.jobId = basic.jobId;
+            this.attachmentId = basic.attachmentId;
+            this.parentDir = basic.parentDir;
+        }
+
+        private CheckpointFilename(Job job, String attachmentId) {
+            this(job.getId(), job.getJobsFile().getParentFile(), ExtensionType.ATTACHMENT);
+            this.attachmentId = attachmentId;
+        }
+        
+        public CheckpointFilename(File file) throws IOException {
+            this.parentDir = file.getParentFile();
+            String name = file.getName();
+            //Find extension
+            int ind = name.lastIndexOf('.');
+            if (ind <= 0) {
+                throw new IOException(strings.getLocalString("checkpointhelper.wrongfileextension", "Wrong checkpoint file extension {0}", file.getName()));
+            }
+            String extensionStr = name.substring(ind);
+            ExtensionType extension = null;
+            for (Map.Entry<ExtensionType, String> entry : EXTENSIONS.entrySet()) {
+                if (extensionStr.equals(entry.getValue())) {
+                    extension = entry.getKey();
+                    break;
+                }
+            }
+            if (extension == null) {
+                throw new IOException(strings.getLocalString("checkpointhelper.wrongfileextension", "Wrong checkpoint file extension {0}", file.getName()));
+            }
+            this.ext = extension;
+            //Parse id
+            name = name.substring(0, ind);
+            if (this.ext == ExtensionType.ATTACHMENT) {
+                ind = name.indexOf('-');
+                if (ind < 0) {
+                    throw new IOException(strings.getLocalString("checkpointhelepr.wrongfilename", "Wrong checkpoint filename format: {0}.", file.getName()));
+                }
+                this.jobId = name.substring(0, ind);
+                this.attachmentId = name.substring(ind + 1);
+            } else {
+                this.jobId = name;
+            }
+        }
+
+        public ExtensionType getExt() {
+            return ext;
+        }
+
+        public String getJobId() {
+            return jobId;
+        }
+
+        public String getAttachmentId() {
+            return attachmentId;
+        }
+
+        public File getParentDir() {
+            return parentDir;
+        }
+        
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder();
+            result.append(jobId);
+            if (ext == ExtensionType.ATTACHMENT) {
+                result.append("-").append(StringUtils.nvl(attachmentId));
+            }
+            result.append(EXTENSIONS.get(ext));
+            return result.toString();
+        }
+        
+        public File getFile() {
+            return new File(parentDir, toString());
+        }
+        
+        public CheckpointFilename getForPayload(boolean inbound) {
+            return new CheckpointFilename(this, inbound ? ExtensionType.PAYLOAD_INBOUD : ExtensionType.PAYLOAD_OUTBOUND);
+        }
+        
+        public static CheckpointFilename createBasic(Job job) {
+            return createBasic(job.getId(), job.getJobsFile().getParentFile());
+        }
+        
+        public static CheckpointFilename createBasic(String jobId, File dir) {
+            return new CheckpointFilename(jobId, dir, ExtensionType.BASIC);
+        }
+        
+        public static CheckpointFilename createAttachment(Job job, String attachmentId) {
+            return new CheckpointFilename(job, attachmentId);
+        }
+        
+    }
+    
+    private final static LocalStringManagerImpl strings = new LocalStringManagerImpl(CheckpointHelper.class);
+    
     @Inject
     AuthenticationService authenticationService;
 
     @Inject
     ServiceLocator serviceLocator;
+    
+    @Inject
+    CommandRunner runner;
 
-    public void save(JobManager.Checkpoint checkpoint, File contextFile) throws IOException {
-        File outboundFile = null;
-        File inboundFile = null;
+    public void save(JobManager.Checkpoint checkpoint) throws IOException {
+        CheckpointFilename cf = CheckpointFilename.createBasic(checkpoint.getJob());
+        ObjectOutputStream oos = null;
+        FileOutputStream fos = null;
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
+            fos = new FileOutputStream(cf.getFile());
+            writeHeader(fos, checkpoint.getJob());
+            oos = new ObjectOutputStream(fos);
             oos.writeObject(checkpoint);
             oos.close();
             Outbound outboundPayload = checkpoint.getContext().getOutboundPayload();
             if (outboundPayload != null && outboundPayload.isDirty()) {
-                outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-                saveOutbound(outboundPayload, outboundFile);
+                saveOutbound(outboundPayload, cf.getForPayload(false).getFile());
             }
             Inbound inboundPayload = checkpoint.getContext().getInboundPayload();
             if (inboundPayload != null) {
-                inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-                saveInbound(inboundPayload, inboundFile);
+                saveInbound(inboundPayload, cf.getForPayload(true).getFile());
             }
         } catch (IOException e) {
-            contextFile.delete();
-            if (outboundFile != null) {
-                outboundFile.delete();
+            try {oos.close();} catch (Exception ex) {
             }
-            if (inboundFile != null) {
-                inboundFile.delete();
+            try {fos.close();} catch (Exception ex) {
+            }
+            File file = cf.getFile();
+            if (file.exists()) {
+                file.delete();;
+            }
+            file = cf.getForPayload(true).getFile();
+            if (file.exists()) {
+                file.delete();
+            }
+            file = cf.getForPayload(false).getFile();
+            if (file.exists()) {
+                file.delete();
             }
             throw e;
         }
     }
     
-    public void saveAttachment(Serializable data, File file) throws IOException {
+    public void saveAttachment(Serializable data, Job job, String attachmentId) throws IOException {
         ObjectOutputStream oos = null;
+        FileOutputStream fos = null;
+        CheckpointFilename cf = CheckpointFilename.createAttachment(job, attachmentId);
         try {
-            oos = new ObjectOutputStream(new FileOutputStream(file));
+            fos = new FileOutputStream(cf.getFile());
+            writeHeader(fos, job);
+            oos = new ObjectOutputStream(fos);
             oos.writeObject(data);
         } finally {
             try {oos.close();} catch (Exception ex) {
             }
+            try {fos.close();} catch (Exception ex) {
+            }
         }
     }
 
-    public void saveAdminCommandContext(AdminCommandContext context, File contextFile) throws IOException {
-        File outboundFile = null;
-        File inboundFile = null;
+    public JobManager.Checkpoint load(CheckpointFilename cf, Outbound outbound) throws IOException, ClassNotFoundException {
+        FileInputStream fis = null;
+        ObjectInputStream ois = null;
+        JobManager.Checkpoint checkpoint;
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(contextFile));
-            oos.writeObject(context);
-            oos.close();
-            Outbound outboundPayload = context.getOutboundPayload();
-            if (outboundPayload != null && outboundPayload.isDirty()) {
-                outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-                saveOutbound(outboundPayload, outboundFile);
+            fis = new FileInputStream(cf.getFile());
+            ois = getObjectInputStream(fis, readHeader(fis));
+            checkpoint = (JobManager.Checkpoint) ois.readObject();
+        } finally {
+            try {ois.close();} catch (Exception ex) {
             }
-            Inbound inboundPayload = context.getInboundPayload();
-            if (inboundPayload!= null) {
-                inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-                saveInbound(inboundPayload, inboundFile);
+            try {fis.close();} catch (Exception ex) {
             }
-        } catch (IOException e) {
-            contextFile.delete();
-            if (outboundFile != null) {
-                outboundFile.delete();
-            }
-            if (inboundFile != null) {
-                inboundFile.delete();
-            }
-            throw e;
         }
-    }
-    
-    public JobManager.Checkpoint load(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStreamWithServiceLocator(new FileInputStream(contextFile), serviceLocator);
-        JobManager.Checkpoint checkpoint = (JobManager.Checkpoint) ois.readObject();
-        ois.close();
         if (outbound != null) {
-            File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-            loadOutbound(outbound, outboundFile);
+            loadOutbound(outbound, cf.getForPayload(false).getFile());
             checkpoint.getContext().setOutboundPayload(outbound);
         }
-        File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-        Inbound inbound = loadInbound(inboundFile);
+        Inbound inbound = loadInbound(cf.getForPayload(true).getFile());
         checkpoint.getContext().setInboundPayload(inbound);
         try {
             String username = checkpoint.getJob().getSubjectUsernames().get(0);
@@ -176,38 +314,124 @@ public class CheckpointHelper {
         return checkpoint;
     }
     
-    public Serializable loadAttachment(File file) throws IOException, ClassNotFoundException {
+    public Serializable loadAttachment(Job job, String attachmentId) throws IOException, ClassNotFoundException {
+        CheckpointFilename cf = CheckpointFilename.createAttachment(job, attachmentId);
+        File file = cf.getFile();
+        if (!file.exists()) {
+            return null;
+        }
         ObjectInputStream ois = null;
+        FileInputStream fis = null;
         try {
-            ois = new ObjectInputStreamWithServiceLocator(new FileInputStream(file), serviceLocator);
+            fis = new FileInputStream(cf.getFile());
+            ois = getObjectInputStream(fis, readHeader(fis));
             return (Serializable) ois.readObject();
         } finally {
             try {ois.close();} catch (Exception ex) {
             }
+            try {fis.close();} catch (Exception ex) {
+            }
         }
     }
-
-    public AdminCommandContext loadAdminCommandContext(File contextFile, Outbound outbound) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(contextFile));
-        AdminCommandContext context = (AdminCommandContext) ois.readObject();
-        ois.close();
-        File outboundFile = new File(contextFile.getAbsolutePath() + ".outbound");
-        loadOutbound(outbound, outboundFile);
-        context.setOutboundPayload(outbound);
-        File inboundFile = new File(contextFile.getAbsolutePath() + ".inbound");
-        Inbound inbound = loadInbound(inboundFile);
-        context.setInboundPayload(inbound);
-        return context;
+    
+    public Collection<CheckpointFilename> listCheckpoints(File dir) {
+        if (dir == null || !dir.exists()) {
+            return Collections.EMPTY_LIST;
+        }
+        final String extension = CheckpointFilename.EXTENSIONS.get(CheckpointFilename.ExtensionType.BASIC);
+        File[] checkpointFiles = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(extension);
+            }
+        });
+        if (checkpointFiles != null) {
+            Collection<CheckpointFilename> result = new ArrayList<CheckpointFilename>(checkpointFiles.length);
+            for (File checkpointFile : checkpointFiles) {
+                try {
+                    result.add(new CheckpointFilename(checkpointFile));
+                } catch (IOException ex) {
+                }
+            }
+            return result;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    private void writeHeader(OutputStream os, Job job) throws IOException {
+        writeHeader(os, StringUtils.nvl(job.getScope()) + job.getName());
+    }
+    
+    private void writeHeader(OutputStream os, String headerStr) throws IOException {
+        byte[] headerB = headerStr.getBytes("UTF-8");
+        int len = headerB.length;
+        while (len >= 255) {
+            os.write(255);
+            len -= 255;
+        }
+        os.write(len);
+        os.write(headerB);
+    }
+    
+    private String readHeader(InputStream is) throws IOException {
+        int length = 0;
+        int r;
+        while ((r = is.read()) == 255) {
+            length += 255;
+        }
+        if (r < 0) {
+            throw new IOException(strings.getLocalString("checkpointhelper.wrongheader", "Can not load checkpoint. Wrong header."));
+        }
+        length += r;
+        System.out.println("KKKKK: readHeader: length: " + length);
+        byte[] headerB = new byte[length];
+        int readLen = is.read(headerB);
+        if (readLen < length) {
+            throw new IOException(strings.getLocalString("checkpointhelper.wrongheader", "Can not load checkpoint. Wrong header."));
+        }
+        return new String(headerB, "UTF-8");
+    }
+    
+    private ObjectInputStream getObjectInputStream(InputStream is, String header) throws IOException {
+        System.out.println("KKKK: getObjectInputStream(" + header + ")");
+        if (!StringUtils.ok(header)) {
+            return new ObjectInputStream(is);
+        }
+        AdminCommand command = serviceLocator.getService(AdminCommand.class, header);
+        if (command == null) {
+            throw new IOException(strings.getLocalString("checkpointhelper.cannotlocatecommand", "Can not load checkpoint. Can not locate command {0}.", header));
+        } else {
+            System.out.println("KKKK: command class: " + command.getClass().getName());
+        }
+        List<ClassLoader> cls = new ArrayList<ClassLoader>(10);
+        cls.add(command.getClass().getClassLoader());
+        cls.add(this.getClass().getClassLoader());
+        cls.add(ClassLoader.getSystemClassLoader());
+        cls.addAll(getJobCreators());
+        return new ObjectInputStreamForClassloader(is, cls);
+    }
+    
+    private List<ClassLoader> getJobCreators() {
+        List<JobCreator> jcs = serviceLocator.getAllServices(JobCreator.class);
+        if (jcs == null) {
+            return Collections.EMPTY_LIST;
+        }
+        List<ClassLoader> result = new ArrayList<ClassLoader>(jcs.size());
+        for (JobCreator jc : jcs) {
+            result.add(jc.getClass().getClassLoader());
+        }
+        return result;
     }
 
-    void saveOutbound(Payload.Outbound outbound, File outboundFile) throws IOException {
+    private void saveOutbound(Payload.Outbound outbound, File outboundFile) throws IOException {
         FileOutputStream os = new FileOutputStream(outboundFile);
         // Outbound saves text/plain with one part as text with no any details, force zip
         writePartsTo(outbound.parts(), os);
         outbound.resetDirty();
     }
 
-    void loadOutbound(Outbound outbound, File outboundFile) throws IOException {
+    private void loadOutbound(Outbound outbound, File outboundFile) throws IOException {
         if (outbound == null || !outboundFile.exists()) {
             return;
         }
@@ -224,14 +448,14 @@ public class CheckpointHelper {
         outbound.resetDirty();
     }
 
-    void saveInbound(Payload.Inbound inbound, File inboundFile) throws IOException {
+    private void saveInbound(Payload.Inbound inbound, File inboundFile) throws IOException {
         if (!inboundFile.exists()) { // not saved yet
             FileOutputStream os = new FileOutputStream(inboundFile);
             writePartsTo(inbound.parts(), os);
         }
     }
 
-    Inbound loadInbound(File inboundFile) throws IOException {
+    private Inbound loadInbound(File inboundFile) throws IOException {
         if (inboundFile == null || !inboundFile.exists()) {
             return null;
         }
@@ -275,7 +499,7 @@ public class CheckpointHelper {
         }
     }
 
-    File createTempDir(final String prefix, final String suffix) throws IOException {
+    private File createTempDir(final String prefix, final String suffix) throws IOException {
         File temp = File.createTempFile(prefix, suffix);
         if ( ! temp.delete()) {
             throw new IOException("Cannot delete temp file " + temp.getAbsolutePath());

@@ -48,6 +48,7 @@ import org.jvnet.hk2.annotations.Service;
 import java.io.*;
 import java.lang.reflect.Array;
 import java.util.List;
+import org.glassfish.hk2.api.MultiException;
 
 /**
  * This subclass of ObjectInputStream uses HK2 to lookup classes not resolved by
@@ -83,6 +84,7 @@ public class ObjectInputStreamWithServiceLocator extends ObjectInputStream {
      *
      * @throws ClassNotFoundException if class can not be loaded
      */
+    @Override
     protected Class<?> resolveClass(ObjectStreamClass classDesc)
             throws IOException, ClassNotFoundException {
         try {
@@ -113,6 +115,7 @@ public class ObjectInputStreamWithServiceLocator extends ObjectInputStream {
     }
 
     private Class<?> loadClass(final String cname) throws ClassNotFoundException {
+        System.out.println("AAAAAAAA: BBBBBBB: loadClass(" + cname + ")");
         List<ActiveDescriptor<?>> descriptors;
         // non-services are not known by HK2
         if ("com.oracle.cloudlogic.accountmanager.cli.AccountAwareJobImpl".equals(cname)) {
@@ -121,8 +124,15 @@ public class ObjectInputStreamWithServiceLocator extends ObjectInputStream {
             descriptors = getDescriptors(cname);
         }
         if (descriptors.size() > 0) {
-            return descriptors.get(0).getLoader().loadClass(cname);
+            try {
+                return descriptors.get(0).getLoader().loadClass(cname);
+            } catch (MultiException ex) {
+                System.out.println("AAAAAAAA: BBBBBBB: loadClass(" + cname + ") : Ooooops");
+                ex.printStackTrace(System.out);
+                throw ex;
+            }
         } else {
+            System.out.println("AAAAAAAA: BBBBBBB: loadClass(" + cname + ") : emty descriptor");
             throw new ClassNotFoundException(cname);
         }
     }

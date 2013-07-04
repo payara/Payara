@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.v3.admin.CheckpointHelper.CheckpointFilename;
 import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
 import java.io.FilenameFilter;
@@ -149,8 +150,8 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
     // can be generated for new jobs. This is populated lazily the first
     // time the JobManagerService is created, it will scan the
     //jobs.xml and load the information in memory
-    private final ConcurrentHashMap<String,CompletedJob> completedJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
-    private final ConcurrentHashMap<String,CompletedJob> retryableJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
+    private final ConcurrentHashMap<String, CompletedJob> completedJobsInfo = new ConcurrentHashMap<String, CompletedJob>();
+    private final ConcurrentHashMap<String, CheckpointFilename> retryableJobsInfo = new ConcurrentHashMap<String, CheckpointFilename>();
 
     /**
      * This will return a new id which is unused
@@ -409,29 +410,16 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         // Check if there are jobs.xml files which have completed jobs so that
         // unique ids get generated
         for  (File jobfile : persistedJobFiles)   {
-            reapCompletedJobs(jobfile);
-            // FIXME: if enabled
-            readRetryableJobs(jobfile);
+            if (jobfile != null) {
+                reapCompletedJobs(jobfile);
+                // FIXME: if enabled
+                Collection<CheckpointFilename> listed = checkpointHelper.listCheckpoints(jobfile.getParentFile());
+                for (CheckpointFilename cf : listed) {
+                    this.retryableJobsInfo.put(cf.getJobId(), cf);
+                }
+            }
         }
         events.register(this);
-    }
-
-    private void readRetryableJobs(File jobsFile) {
-        File[] checkpointFiles = jobsFile.getParentFile().listFiles(new FilenameFilter() {
-
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.endsWith(".checkpoint");
-            }
-            
-        });
-        if (checkpointFiles != null) {
-            long now = System.currentTimeMillis();
-            for (File checkpointFile : checkpointFiles) {
-                String id = checkpointFile.getName().substring(0, checkpointFile.getName().indexOf('.'));
-                retryableJobsInfo.put(id, new CompletedJob(id, now, jobsFile));
-            }
-        }
     }
 
     @Override
@@ -452,7 +440,7 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
          return completedJobsInfo;
     }
 
-    public ConcurrentHashMap<String, CompletedJob> getRetryableJobsInfo() {
+    public ConcurrentHashMap<String, CheckpointFilename> getRetryableJobsInfo() {
         return retryableJobsInfo;
     }
     
@@ -463,13 +451,11 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
             throw new IllegalArgumentException("Command is not managed");
         }
         Job job = get(context.getJobId());
-        File dist = job.getJobsFile();
-        if (dist == null) {
-            dist = getJobsFile();
+        if (job.getJobsFile() == null) {
+            job.setJobsFile(getJobsFile());
         }
-        dist = new File(dist.getParentFile(), context.getJobId() + ".checkpoint");
         Checkpoint chkp = new Checkpoint(job, command, context);
-        checkpointHelper.save(chkp, dist);
+        checkpointHelper.save(chkp);
         if (job instanceof AdminCommandInstanceImpl) {
             ((AdminCommandInstanceImpl) job).setState(AdminCommandState.State.RUNNING_RETRYABLE);
         }
@@ -477,48 +463,36 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
     
     public void checkpointAttachement(String jobId, String attachId, Serializable data) throws IOException {
         Job job = get(jobId);
-        File dist = job.getJobsFile();
-        if (dist == null) {
-            dist = getJobsFile();
+        if (job.getJobsFile() == null) {
+            job.setJobsFile(getJobsFile());
         }
-        dist = new File(dist.getParentFile(), jobId + "-" + attachId + ".checkpoint.attach");
-        checkpointHelper.saveAttachment(data, dist);
+        checkpointHelper.saveAttachment(data, job, attachId);
     }
     
     public Serializable loadCheckpointAttachement(String jobId, String attachId) throws IOException, ClassNotFoundException {
         Job job = get(jobId);
-        File srcFile = null;
-        if (job == null) {
-            CompletedJob cj = getRetryableJobsInfo().get(jobId);
-            if (cj != null) {
-                srcFile = cj.getJobsFile();
-            }
-        } else {
-            srcFile = job.getJobsFile();
+        if (job.getJobsFile() == null) {
+            job.setJobsFile(getJobsFile());
         }
-        if (srcFile == null) {
-            srcFile = getJobsFile();
-        }
-        srcFile = new File(srcFile.getParentFile(), jobId + "-" + attachId + ".checkpoint.attach");
-        return checkpointHelper.loadAttachment(srcFile);
+        return checkpointHelper.loadAttachment(job, attachId);
     }
     
     public Checkpoint loadCheckpoint(String jobId, Payload.Outbound outbound) throws IOException, ClassNotFoundException {
         Job job = get(jobId);
-        File srcFile = null;
+        CheckpointFilename cf = null;
         if (job == null) {
-            CompletedJob cj = getRetryableJobsInfo().get(jobId);
-            if (cj != null) {
-                srcFile = cj.getJobsFile();
+            cf = getRetryableJobsInfo().get(jobId);
+            if (cf == null) {
+                cf = CheckpointFilename.createBasic(jobId, getJobsFile());
             }
         } else {
-            srcFile = job.getJobsFile();
+            cf = CheckpointFilename.createBasic(job);
         }
-        if (srcFile == null) {
-            srcFile = getJobsFile();
-        }
-        srcFile = new File(srcFile.getParentFile(), jobId + ".checkpoint");
-        Checkpoint result = checkpointHelper.load(srcFile, outbound);
+        return loadCheckpoint(cf, outbound);
+    }
+    
+    private Checkpoint loadCheckpoint(CheckpointFilename cf, Payload.Outbound outbound) throws IOException, ClassNotFoundException {
+        Checkpoint result = checkpointHelper.load(cf, outbound);
         if (result != null) {
             serviceLocator.inject(result.getJob());
             serviceLocator.postConstruct(result.getJob());
@@ -547,23 +521,29 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
     public void event(@RestrictTo(EventTypes.SERVER_READY_NAME) Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             if (retryableJobsInfo.size() > 0) {
-                logger.fine("Restarting retryable jobs");
-                for (CompletedJob rJob : retryableJobsInfo.values()) {
-                    reexecuteJobFromCheckpoint(rJob.getId());
-                }
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        logger.fine("Restarting retryable jobs");
+                        for (CheckpointFilename cf : retryableJobsInfo.values()) {
+                            reexecuteJobFromCheckpoint(cf);
+                        }
+                    }
+                };
+                (new Thread(runnable)).start();
             } else {
                 logger.fine("No retryable job found");
             }
         }
     }
     
-    private void reexecuteJobFromCheckpoint(String jobID) {
+    private void reexecuteJobFromCheckpoint(CheckpointFilename cf) {
         Checkpoint checkpoint = null;
         try {
             RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(true);
-            checkpoint = loadCheckpoint(jobID, outbound);
+            checkpoint = loadCheckpoint(cf, outbound);
         } catch (Exception ex) {
-            logger.log(Level.WARNING, KernelLoggerInfo.exceptionLoadCheckpoint);
+            logger.log(Level.WARNING, KernelLoggerInfo.exceptionLoadCheckpoint, ex);
         }
         if (checkpoint != null) {
             logger.log(Level.INFO, KernelLoggerInfo.checkpointAutoResumeStart, 
