@@ -154,9 +154,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
 
     public abstract Enumeration<MimeMapping> getMimeMappings();
 
-    public abstract void addMimeMapping(MimeMapping mimeMapping);
-
-    public abstract void addLocaleEncodingMappingListDescriptor(LocaleEncodingMappingListDescriptor lemDesc);
+    public abstract String addMimeMapping(MimeMapping mimeMapping);
 
     public abstract LocaleEncodingMappingListDescriptor getLocaleEncodingMappingListDescriptor();
 
@@ -477,5 +475,7 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public boolean isConflictEntityManagerFactoryReference() {
         return conflictEntityManagerFactoryReference;
     }
+
+    public abstract Set<String> getConflictedMimeMappingExtensions();
 }
     

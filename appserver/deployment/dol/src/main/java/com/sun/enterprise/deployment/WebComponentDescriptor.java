@@ -144,8 +144,9 @@ public abstract class WebComponentDescriptor extends Descriptor {
 
     public abstract void add(WebComponentDescriptor other);
 
-    public abstract void add(WebComponentDescriptor other, boolean combineUrlPatterns);
+    public abstract void add(WebComponentDescriptor other, boolean combineUrlPatterns, boolean combineConflict);
 
     public abstract boolean isConflict(WebComponentDescriptor other, boolean allowNullImplNameOverride);
 
+    public abstract Set<String> getConflictedInitParameterNames();
 }

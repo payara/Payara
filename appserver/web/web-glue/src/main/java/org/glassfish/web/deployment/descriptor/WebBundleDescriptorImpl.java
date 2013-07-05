@@ -135,6 +135,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private int servletReloadCheckSecs = 1;
 
+    private Set<String> conflictedMimeMappingExtensions = null;
+
     /**
      * Constrct an empty web app [{0}].
      */
@@ -204,10 +206,12 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
         getContextParametersSet().addAll(webBundleDescriptor.getContextParametersSet());
 
-        // do not call getMimeMappingsSet().addAll() as there is special overriding rule
-        for (MimeMapping mimeMap : webBundleDescriptor.getMimeMappingsSet()) {
-            addMimeMapping(mimeMap);
+        if (conflictedMimeMappingExtensions == null) {
+            conflictedMimeMappingExtensions = webBundleDescriptor.getConflictedMimeMappingExtensions();
+        } else {
+            conflictedMimeMappingExtensions.addAll(webBundleDescriptor.getConflictedMimeMappingExtensions());
         }
+        combineMimeMappings(webBundleDescriptor.getMimeMappingsSet());
 
         // do not call getErrorPageDescriptorsSet.addAll() as there is special overriding rule
         for (ErrorPageDescriptor errPageDesc : webBundleDescriptor.getErrorPageDescriptorsSet()) {
@@ -384,25 +388,30 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             if (!webCompDesc.isConflict(webComponentDescriptor, true)) {
                 // combine the contents of the given one to this one
                 // except the urlPatterns
-                webCompDesc.add(webComponentDescriptor, false);
+                webCompDesc.add(webComponentDescriptor, false, false);
             }
 
             String implFile = webCompDesc.getWebComponentImplementation();
-            if (webComponentDescriptor.isConflict() &&
+            if (resultDesc.isConflict() &&
                     (implFile == null || implFile.length() == 0)) {
 
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.exceptionconflictwebcompwithoutimpl",
                         "Two or more web fragments define the same Servlet with conflicting implementation class names that are not overridden by the web.xml"));
+            } 
+            if (resultDesc.getConflictedInitParameterNames().size() > 0) {
+                throw new IllegalArgumentException(localStrings.getLocalString(
+                        "web.deployment.exceptionconflictwebcompinitparam",
+                        "Two or more web fragments define the same Servlet with conflicting init param that are not overridden by the web.xml"));
             }
         } else {
             resultDesc = webComponentDescriptor;
-            if (webComponentDescriptor.isConflict()) {
+            if (resultDesc.isConflict()) {
                 throw new IllegalArgumentException(localStrings.getLocalString(
                         "web.deployment.exceptionconflictwebcomp",
                         "One or more web fragments define the same Servlet in a conflicting way, and the Servlet is not defined in web.xml"));
             } else {
-                this.getWebComponentDescriptors().add(webComponentDescriptor);
+                this.getWebComponentDescriptors().add(resultDesc);
             }
         }
 
@@ -599,32 +608,57 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     /**
      * @add the given mime mapping to my list.
+     * return the MimeType of the MimeMapping in the result MimeMapping list
      */
-    public void addMimeMapping(MimeMapping mimeMapping) {
+    public String addMimeMapping(MimeMapping mimeMapping) {
         // there should be at most one mapping per extension
-        boolean found = false;
+        MimeMapping resultMimeMapping = null;
         for (Iterator<MimeMapping> itr = getMimeMappingsSet().iterator(); itr.hasNext();) {
             MimeMapping mm = itr.next();
             if (mm.getExtension().equals(mimeMapping.getExtension())) {
-                found = true;
+                resultMimeMapping = mm;
                 break;
             }
         }
-        
-        if (!found) {
+        if (resultMimeMapping == null) {
+            resultMimeMapping = mimeMapping;
             getMimeMappingsSet().add(mimeMapping);
         }
+
+        return mimeMapping.getMimeType();
     }
 
     /**
      * add the given mime mapping to my list.
      */
-    public void addMimeMapping(MimeMappingDescriptor mimeMapping) {
-        addMimeMapping((MimeMapping) mimeMapping);
+    public String addMimeMapping(MimeMappingDescriptor mimeMapping) {
+        return addMimeMapping((MimeMapping) mimeMapping);
     }
 
-    public void addLocaleEncodingMappingListDescriptor(LocaleEncodingMappingListDescriptor lemDesc) {
-        localeEncodingMappingDesc = lemDesc;
+    protected void combineMimeMappings(Set<MimeMapping> mimeMappings) {
+        if (conflictedMimeMappingExtensions != null) {
+            for (MimeMapping mm : getMimeMappingsSet()) {
+                 conflictedMimeMappingExtensions.remove(mm.getExtension());
+            }
+
+            if (conflictedMimeMappingExtensions.size() > 0) {
+                throw new IllegalArgumentException(localStrings.getLocalString(
+                        "web.deployment.exceptionconflictMimeMapping",
+                        "There are more than one Mime mapping defined in web fragments with the same extension."));
+            }
+        }
+
+        // do not call getMimeMappingsSet().addAll() as there is special overriding rule
+        for (MimeMapping mimeMap : mimeMappings) {
+            addMimeMapping(mimeMap);
+        }
+    }
+
+    public Set<String> getConflictedMimeMappingExtensions() {
+        if (conflictedMimeMappingExtensions == null) {
+            conflictedMimeMappingExtensions = new HashSet<>();
+        }
+        return conflictedMimeMappingExtensions;
     }
 
     public LocaleEncodingMappingListDescriptor getLocaleEncodingMappingListDescriptor() {

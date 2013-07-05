@@ -44,10 +44,12 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.deployment.web.LoginConfiguration;
+import com.sun.enterprise.deployment.web.MimeMapping;
 import com.sun.enterprise.deployment.web.SecurityConstraint;
 import com.sun.enterprise.deployment.web.ServletFilter;
 import org.glassfish.deployment.common.JavaEEResourceType;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -99,7 +101,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
                 webCompDesc.setConflict(true);
             } else {
                 // combine the contents of the given one to this one
-                webCompDesc.add(webComponentDescriptor);
+                webCompDesc.add(webComponentDescriptor, true, true);
             }
         } else {
             resultDesc = webComponentDescriptor;
@@ -107,6 +109,16 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
         }
 
         return resultDesc;
+    }
+
+    @Override
+    protected void combineMimeMappings(Set<MimeMapping> mimeMappings) {
+        // do not call getMimeMappingsSet().addAll() as there is special overriding rule
+        for (MimeMapping mimeMap : mimeMappings) {
+            if (!mimeMap.getMimeType().equals(addMimeMapping(mimeMap))) {
+                getConflictedMimeMappingExtensions().add(mimeMap.getExtension());
+            }
+        }
     }
 
     @Override

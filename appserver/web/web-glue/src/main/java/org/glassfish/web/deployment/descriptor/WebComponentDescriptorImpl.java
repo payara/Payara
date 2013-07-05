@@ -50,6 +50,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -114,6 +115,8 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     private transient List<Method> httpMethods = null;
     private boolean conflict = false;
 
+    private Set<String> conflictedInitParameterNames = null;
+
     /**
      * The default constructor.
      */
@@ -129,17 +132,18 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
         setCanonicalName(other.getCanonicalName());
         setServlet(other.isServlet());
         setWebComponentImplementation(
-            other.getWebComponentImplementation());
+                other.getWebComponentImplementation());
         getInitializationParameterSet().addAll(
-            other.getInitializationParameterSet());
+                other.getInitializationParameterSet());
         getUrlPatternsSet().addAll(other.getUrlPatternsSet());
         setLoadOnStartUp(other.getLoadOnStartUp());
         getSecurityRoleReferenceSet().addAll(
-            other.getSecurityRoleReferenceSet());
+                other.getSecurityRoleReferenceSet());
         setRunAsIdentity(other.getRunAsIdentity());
         setAsyncSupported(other.isAsyncSupported());
         setMultipartConfig(other.getMultipartConfig());
         setWebBundleDescriptor(other.getWebBundleDescriptor());
+        conflictedInitParameterNames = other.getConflictedInitParameterNames();
         setConflict(other.isConflict());
     }
 
@@ -181,6 +185,14 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
      */
     public void removeInitializationParameter(InitializationParameter initializationParameter) {
         getInitializationParameterSet().remove(initializationParameter);
+    }
+
+    @Override
+    public Set<String> getConflictedInitParameterNames() {
+        if (conflictedInitParameterNames == null) {
+            conflictedInitParameterNames = new HashSet<>();
+        }
+        return conflictedInitParameterNames;
     }
 
     /**
@@ -555,7 +567,7 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
 
     public void add(WebComponentDescriptor other) {
-        add(other, true);
+        add(other, true, false);
     }
 
     // this method will combine the information from this "other" 
@@ -569,10 +581,14 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
     // is not existed in the Set already
     //
     // If combineUrlPatterns is false, then the first one take priority,
-    // otherwise take the secone one.
+    // otherwise take the second one.
+    //
+    // If combineConflict is true, it will combine the init parameter
+    // conflict information in #getConflictedInitParameterSet.
     //
     // And the conflict boolean will not be set.
-    public void add(WebComponentDescriptor other, boolean combineUrlPatterns) {
+    public void add(WebComponentDescriptor other, boolean combineUrlPatterns,
+            boolean combineConflict) {
         // do not do anything if the canonical name of the two web 
         // components are different
         if (!getCanonicalName().equals(other.getCanonicalName())) {
@@ -592,14 +608,33 @@ public class WebComponentDescriptorImpl extends WebComponentDescriptor {
 
         // for complex types, only added it if the complex type with same 
         // name is not in the set yet 
+        if (conflictedInitParameterNames == null) {
+            conflictedInitParameterNames = other.getConflictedInitParameterNames();
+        } else {
+            conflictedInitParameterNames.addAll(other.getConflictedInitParameterNames());
+        }
+        if (!combineConflict) {
+            for (Iterator<InitializationParameter> initParamIter =
+                         getInitializationParameterSet().iterator();
+                 initParamIter.hasNext();) {
+                InitializationParameter initParam =
+                        initParamIter.next();
+                conflictedInitParameterNames.remove(initParam.getName());
+            }
+        }
 
         for (Iterator<InitializationParameter> initParamIter =
                 other.getInitializationParameterSet().iterator();
              initParamIter.hasNext();) {
             InitializationParameter initParam =
                     initParamIter.next();
-            if (getInitializationParameterByName(initParam.getName()) == null) {
+            InitializationParameter origInitParam =
+                    getInitializationParameterByName(initParam.getName());
+            if (origInitParam == null) {
                 getInitializationParameterSet().add(initParam);
+            } else if (combineConflict &&
+                    !origInitParam.getValue().equals(initParam.getValue())) {
+                getConflictedInitParameterNames().add(initParam.getName());
             }
         }
         for (Iterator<SecurityRoleReference> secRoleRefIter =
