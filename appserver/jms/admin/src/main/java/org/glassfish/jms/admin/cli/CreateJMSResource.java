@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,8 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
@@ -494,6 +496,18 @@ public class CreateJMSResource implements AdminCommand {
     }
   //Modified this method to support wildcards in MQ destinations...
     private boolean isSyntaxValid(String name) {
+        if (name.startsWith("mq.")) {
+            return false;
+        }
+
+        try {
+            CharsetEncoder asciiEncoder = Charset.forName("US-ASCII").newEncoder();
+            if (!asciiEncoder.canEncode(name))
+                return false;
+        } catch (Exception e) {
+            // skip detecting non ASCII charactors if error occurs
+        }
+
         char[] namechars = name.toCharArray();
         if (Character.isJavaIdentifierStart(namechars[0]) || namechars[0] == '*' || namechars[0] == '>') {
             for (int i = 1; i<namechars.length; i++) {
