@@ -607,8 +607,8 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     /**
-     * @add the given mime mapping to my list.
-     * return the MimeType of the MimeMapping in the result MimeMapping list
+     * @add the given mime mapping to my list if the given MimeType is not added
+     * return the result MimeType of the MimeMapping in the resulting set of MimeMapping
      */
     public String addMimeMapping(MimeMapping mimeMapping) {
         // there should be at most one mapping per extension
@@ -625,7 +625,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
             getMimeMappingsSet().add(mimeMapping);
         }
 
-        return mimeMapping.getMimeType();
+        return resultMimeMapping.getMimeType();
     }
 
     /**
