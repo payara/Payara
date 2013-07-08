@@ -168,7 +168,7 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
     private ReadableArchive archive;
     private ActionReport report;
     private DeploymentTracing timing;
-    private DeployCommandSupplementalInfo suppInfo;
+    private transient DeployCommandSupplementalInfo suppInfo;
     
     public DeployCommand() {
         origin = Origin.deploy;
