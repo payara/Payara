@@ -82,7 +82,7 @@ public class TimerScheduleTest {
         Locale[] availableLocales = Locale.getAvailableLocales();
         for (Locale l : availableLocales) {
             Locale.setDefault(l);
-            testSundays(fromDate, timeoutDate);
+            testSundays(fromDate, timeoutDate, false);
         }
 
         // Test couple of locales explicitly - see GLASSFISH-18804 and GLASSFISH-19154
@@ -98,8 +98,25 @@ public class TimerScheduleTest {
 
     }
 
-    private void testSundays(Date fromDate, Date timeoutDate) {
-        testSundays(fromDate, timeoutDate, false);
+    @Test
+    public void testDays1To5() {
+        // 2013 Jul 7 - Sun
+        Date fromDate = new Date(113, 6, 7, 10, 35);
+        // 2013 Jul 8 - Mon
+        Date timeoutDate = new Date(113, 6, 8, 20, 15);
+        Locale localeDefault = Locale.getDefault();
+        Locale[] availableLocales = Locale.getAvailableLocales();
+        for (Locale l : availableLocales) {
+            Locale.setDefault(l);
+            testDays1To5(fromDate, timeoutDate, false);
+        }
+
+        // Test DE_de locale explicitly - see GLASSFISH-20673
+        Locale l1 = new Locale("de", "DE");
+        Locale.setDefault(l1);
+        testDays1To5(fromDate, timeoutDate, true);
+
+        Locale.setDefault(localeDefault);
     }
 
     private void testSundays(Date fromDate, Date timeoutDate, boolean log) {
@@ -119,5 +136,24 @@ public class TimerScheduleTest {
             assert(true);
         }
     }
+
+    private void testDays1To5(Date fromDate, Date timeoutDate, boolean log) {
+        TimerSchedule ts = new TimerSchedule().dayOfWeek("1-5").
+                hour("20").
+                minute("15");
+
+
+        Date newDate = ts.getNextTimeout(fromDate).getTime();
+        if (log)
+            System.out.println("Expected date: " + timeoutDate + " Got date: " + newDate + " in Locale: "+Locale.getDefault());
+
+        if (!newDate.equals(timeoutDate)) {
+            System.out.println("ERROR - Expected date: " + timeoutDate + " Got date: " + newDate + " in Locale: "+Locale.getDefault());
+            assert(false);
+        } else {
+            assert(true);
+        }
+    }
+
 }
     
