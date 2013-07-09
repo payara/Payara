@@ -384,7 +384,6 @@ public class CheckpointHelper {
             throw new IOException(strings.getLocalString("checkpointhelper.wrongheader", "Can not load checkpoint. Wrong header."));
         }
         length += r;
-        System.out.println("KKKKK: readHeader: length: " + length);
         byte[] headerB = new byte[length];
         int readLen = is.read(headerB);
         if (readLen < length) {
@@ -394,15 +393,12 @@ public class CheckpointHelper {
     }
     
     private ObjectInputStream getObjectInputStream(InputStream is, String header) throws IOException {
-        System.out.println("KKKK: getObjectInputStream(" + header + ")");
         if (!StringUtils.ok(header)) {
             return new ObjectInputStream(is);
         }
         AdminCommand command = serviceLocator.getService(AdminCommand.class, header);
         if (command == null) {
             throw new IOException(strings.getLocalString("checkpointhelper.cannotlocatecommand", "Can not load checkpoint. Can not locate command {0}.", header));
-        } else {
-            System.out.println("KKKK: command class: " + command.getClass().getName());
         }
         List<ClassLoader> cls = new ArrayList<ClassLoader>(10);
         cls.add(command.getClass().getClassLoader());

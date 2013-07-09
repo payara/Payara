@@ -58,6 +58,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import static org.glassfish.api.admin.AdminCommandState.State.PREPARED;
 import static org.glassfish.api.admin.AdminCommandState.State.RUNNING;
+import static org.glassfish.api.admin.AdminCommandState.State.RUNNING_RETRYABLE;
 import static org.glassfish.api.admin.AdminCommandState.State.COMPLETED;
 import static org.glassfish.api.admin.AdminCommandState.State.REVERTED;
 
@@ -173,7 +174,8 @@ public class AttachCommand implements AdminCommand, AdminCommandListener {
             }
             synchronized (attached) {
                 while(attached.getState().equals(PREPARED) ||
-                        attached.getState().equals( RUNNING)) {
+                        attached.getState().equals(RUNNING) ||
+                        attached.getState().equals(RUNNING_RETRYABLE)) {
                     try {
                         attached.wait(1000*60*5); //5000L just to be sure
                     } catch (InterruptedException ex) {}

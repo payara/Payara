@@ -115,7 +115,6 @@ public class ObjectInputStreamWithServiceLocator extends ObjectInputStream {
     }
 
     private Class<?> loadClass(final String cname) throws ClassNotFoundException {
-        System.out.println("AAAAAAAA: BBBBBBB: loadClass(" + cname + ")");
         List<ActiveDescriptor<?>> descriptors;
         // non-services are not known by HK2
         if ("com.oracle.cloudlogic.accountmanager.cli.AccountAwareJobImpl".equals(cname)) {
@@ -127,12 +126,9 @@ public class ObjectInputStreamWithServiceLocator extends ObjectInputStream {
             try {
                 return descriptors.get(0).getLoader().loadClass(cname);
             } catch (MultiException ex) {
-                System.out.println("AAAAAAAA: BBBBBBB: loadClass(" + cname + ") : Ooooops");
-                ex.printStackTrace(System.out);
                 throw ex;
             }
         } else {
-            System.out.println("AAAAAAAA: BBBBBBB: loadClass(" + cname + ") : emty descriptor");
             throw new ClassNotFoundException(cname);
         }
     }
