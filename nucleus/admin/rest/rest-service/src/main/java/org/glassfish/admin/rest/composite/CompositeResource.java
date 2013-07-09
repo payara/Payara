@@ -52,6 +52,7 @@ import javax.ws.rs.OPTIONS;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 import javax.ws.rs.core.UriInfo;
@@ -332,11 +333,16 @@ public abstract class CompositeResource extends AbstractResource implements Rest
                 cr.getCommandInvocation(command, ar, getSubject()).
                 parameters(parameters);
         String jobId = DetachedCommandHelper.invokeAsync(commandInvocation);
-        return Response
-                .status(Response.Status.ACCEPTED)
-                .header("Location", uriInfo.getBaseUriBuilder().path("jobs").path("id").path(jobId).build())
-                .header("X-Location", childUri)
-                .build();
+        URI jobUri = uriInfo.getBaseUriBuilder().path("jobs").path("id").path(jobId).build();
+        ResponseBuilder rb = Response.status(Response.Status.ACCEPTED).header("Location", jobUri);
+        if (childUri != null) {
+            rb.header("X-Location", childUri);
+        }
+        return rb.build();
+    }
+
+    protected Response accepted(String command, ParameterMap parameters) {
+        return accepted(command, parameters, null);
     }
 
     /**
