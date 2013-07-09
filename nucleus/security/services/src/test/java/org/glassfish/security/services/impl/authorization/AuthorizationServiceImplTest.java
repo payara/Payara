@@ -104,7 +104,7 @@ public class AuthorizationServiceImplTest {
         try {
             impl.isAuthorized(
                 new Subject(),
-                new URI( "admin:///accounts/account/myaccount" ),
+                new URI( "admin:///tenants/tenant/mytenant" ),
                 "update" );
             fail( "Expected fail not initialized." );
         } catch ( RuntimeException e ) {
@@ -122,7 +122,7 @@ public class AuthorizationServiceImplTest {
         try {
             impl.getAuthorizationDecision(
                 new AzSubjectImpl( new Subject() ),
-                new AzResourceImpl( new URI( "admin:///accounts/account/myaccount" ) ),
+                new AzResourceImpl( new URI( "admin:///tenants/tenant/mytenant" ) ),
                 new AzActionImpl( "update" ) );
             fail( "Expected fail not initialized." );
         } catch ( RuntimeException e ) {

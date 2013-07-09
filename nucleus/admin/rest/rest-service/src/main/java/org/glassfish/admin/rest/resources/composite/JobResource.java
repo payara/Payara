@@ -83,7 +83,7 @@ public class JobResource extends CompositeResource {
     /**
      * Retrieve information about the specific job identified by the resource URL.
      * <p>
-     * <b>Roles: PaasAdmin, AccountAdmin</b>
+     * <b>Roles: PaasAdmin, TenantAdmin</b>
      *
      * @param jobId
      * @return the {@link Job} entity which contains information about the job id specified.

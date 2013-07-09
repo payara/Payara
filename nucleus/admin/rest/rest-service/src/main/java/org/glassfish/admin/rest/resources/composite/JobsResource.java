@@ -92,7 +92,7 @@ public class JobsResource extends CompositeResource {
      * The GET method on this resource returns a list of Job entities that represent
      * each recent or current job known to this GlassFish instance.
      * <p>
-     * Roles: PaasAdmin, AccountAdmin
+     * Roles: PaasAdmin, TenantAdmin
      * <p>
      *
      * @param currentUser Optional query parameter to restrict the set of returns {@link Job} objects

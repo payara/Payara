@@ -180,9 +180,9 @@ public @interface AccessRequired {
      * A command which prepares its own access checks can also indicate if a
      * failure of the access check should or should not be fatal to the overall
      * authorization operation.  This is useful, for example, in attempting to list
-     * all accounts.  The command could prepare an {@code AccessCheck} for each
-     * account of interest, marking each as non-fatal.  Because secure admin
-     * records the success of each access check, the "list accounts" {@code execute}
+     * all tenants.  The command could prepare an {@code AccessCheck} for each
+     * tenant of interest, marking each as non-fatal.  Because secure admin
+     * records the success of each access check, the "list tenant {@code execute}
      * command can check each of its custom {@code AccessCheck}s and report
      * on only those accounts whose access checks succeeded.
      * <p>

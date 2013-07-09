@@ -75,12 +75,12 @@ public class AzResourceImplTest {
         assertSame( "non-admin OK", uri, impl.getUri() );
 
         // Empty domain (i.e. default)
-        uri = new URI( "admin:///accounts/account/zirka?locked=true%3D" );
+        uri = new URI( "admin:///tenants/tenant/zirka?locked=true%3D" );
         impl = new AzResourceImpl(uri);
 
         // Test getters
         assertEquals("URI", uri, impl.getUri());
-        assertEquals("toString", "admin:///accounts/account/zirka?locked=true%3D", impl.toString());
+        assertEquals("toString", "admin:///tenants/tenant/zirka?locked=true%3D", impl.toString());
 
         // Non-empty domain, empty path
         uri = new URI( "admin://myDomain?locked=true%3D" );
@@ -93,7 +93,7 @@ public class AzResourceImplTest {
 
     @Test
     public void testAddAttributesFromUriQuery() throws Exception {
-        URI uri = new URI( "admin:///accounts/account/zirka?locked=true" );
+        URI uri = new URI( "admin:///tenants/tenant/zirka?locked=true" );
         Attributes attributes = new AttributesImpl();
         Attribute attribute;
         Set<String> values;
@@ -117,12 +117,12 @@ public class AzResourceImplTest {
         assertEquals( "Empty attributes", 0, attributes.getAttributeCount() );
 
         // No params
-        uri = new URI( "admin:///accounts/account/zirka" );
+        uri = new URI( "admin:///tenants/tenant/zirka" );
         addAttributesFromUriQuery( uri, attributes, !REPLACE );
         assertEquals( "Empty attributes", 0, attributes.getAttributeCount() );
 
         // 1 param
-        uri = new URI( "admin:///accounts/account/zirka?name1=value1" );
+        uri = new URI( "admin:///tenants/tenant/zirka?name1=value1" );
         addAttributesFromUriQuery( uri, attributes, !REPLACE );
         assertEquals("Attributes count", 1, attributes.getAttributeCount());
         assertNotNull("attribute", attribute = attributes.getAttribute("name1"));
@@ -145,7 +145,7 @@ public class AzResourceImplTest {
         assertFalse("iterator", iter.hasNext());
 
         // New value
-        uri = new URI( "admin:///accounts/account/boris?name1=value2" );
+        uri = new URI( "admin:///tenants/tenant/boris?name1=value2" );
         addAttributesFromUriQuery( uri, attributes, !REPLACE );
         assertEquals("Attributes count", 1, attributes.getAttributeCount());
         assertNotNull("attribute", attribute = attributes.getAttribute("name1"));
@@ -163,7 +163,7 @@ public class AzResourceImplTest {
         }
 
         // Replace attribute
-        uri = new URI( "admin:///accounts/account/lucky?name1=value3" );
+        uri = new URI( "admin:///tenants/tenant/lucky?name1=value3" );
         addAttributesFromUriQuery( uri, attributes, REPLACE );
         assertEquals("Attributes count", 1, attributes.getAttributeCount());
         assertNotNull("attribute", attribute = attributes.getAttribute("name1"));
@@ -175,7 +175,7 @@ public class AzResourceImplTest {
         assertFalse("iterator", iter.hasNext());
 
         // New attribute
-        uri = new URI( "admin:///accounts/account/lucky?name2=value21&name2=value22" );
+        uri = new URI( "admin:///tenants/tenant/lucky?name2=value21&name2=value22" );
         addAttributesFromUriQuery( uri, attributes, !REPLACE );
         assertEquals("Attributes count", 2, attributes.getAttributeCount());
         assertNotNull("attribute", attributes.getAttribute("name1"));
@@ -195,7 +195,7 @@ public class AzResourceImplTest {
 
         // Encoded attribute
         attributes = new AttributesImpl();
-        uri = new URI( "admin:///accounts/account/lucky?na%3Dme2=val%26ue1&na%3Dme2=val%3Due2" );
+        uri = new URI( "admin:///tenants/tenant/lucky?na%3Dme2=val%26ue1&na%3Dme2=val%3Due2" );
         addAttributesFromUriQuery( uri, attributes, !REPLACE );
         assertEquals("Attributes count", 1, attributes.getAttributeCount());
         assertNotNull("attribute", attribute = attributes.getAttribute("na=me2"));
