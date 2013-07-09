@@ -60,8 +60,8 @@ import org.glassfish.internal.api.Globals;
 /**
  * This bean has a map to store JMSContext instances based on the injection
  * point, that makes sure in one class, the injected JMSContext beans of
- * different injection point will not share the same request scoped JMSContext
- * instance in a request.
+ * different injection point will not share the same request/trasaction scoped JMSContext
+ * instance in a request/transaction.
  */
 public abstract class AbstractJMSContextManager implements Serializable {
     private final static Logger logger = LogDomains.getLogger(AbstractJMSContextManager.class, LogDomains.JMS_LOGGER);

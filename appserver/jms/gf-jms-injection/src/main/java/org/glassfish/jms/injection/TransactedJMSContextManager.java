@@ -40,30 +40,15 @@
 
 package org.glassfish.jms.injection;
 
-import java.util.UUID;
-import javax.enterprise.inject.spi.PassivationCapable;
 import javax.transaction.TransactionScoped;
 
-/**
- * This bean has a map to store JMSContext instances based on the injection
- * point, that makes sure in one class, the injected JMSContext beans of
- * different injection point will not share the same request scoped JMSContext
- * instance in a request.
- */
 @TransactionScoped
-public class TransactedJMSContextManager extends AbstractJMSContextManager implements PassivationCapable {
-    private String id = UUID.randomUUID().toString();
-
+public class TransactedJMSContextManager extends AbstractJMSContextManager {
     public TransactedJMSContextManager() {
         super();
     }
 
     public String getType() {
         return "TransactionScoped";
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 }
