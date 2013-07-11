@@ -54,5 +54,3 @@ To Run single or multiple method within the same class: mvn -Dtest=<TEST_CLASSNA
 To learn how to write the devtests,  refer to this blog:
 http://blogs.steeplesoft.com/2010/03/writing-selenium-tests-for-the-glassfish-admin-console/
 
-
-
