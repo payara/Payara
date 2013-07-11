@@ -45,6 +45,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -104,6 +107,8 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
      * Port to listen on
      */
     @Attribute(required = true, dataType = Integer.class)
+    @Min(0)
+    @Max(65535)
     String getPort();
 
     void setPort(String value);
