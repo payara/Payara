@@ -669,6 +669,9 @@ public class Request
      */
     private boolean upgrade = false;
 
+    private boolean afterService = false;
+    private boolean resume = false;
+
     /*
      * The HttpUpgradeHandler to be used for upgrade request
      */
@@ -759,6 +762,8 @@ public class Request
         multipart = null;
         jrouteId = null;
         upgrade = false;
+        afterService = false;
+        resume = false;
 
         attributes.clear();
         notes.clear();
@@ -4433,6 +4438,19 @@ public class Request
 
             delayAsyncDispatchAndComplete = false;
             processAsyncOperations();
+        }
+        afterService = true;
+        if (resume) {
+            coyoteRequest.getResponse().resume();
+        }
+
+    }
+
+    void resumeAfterService() {
+        if (afterService) {
+            coyoteRequest.getResponse().resume();
+        } else {
+            resume = true;
         }
     }
 

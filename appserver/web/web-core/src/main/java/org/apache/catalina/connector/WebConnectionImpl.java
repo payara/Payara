@@ -136,7 +136,7 @@ public class WebConnectionImpl implements WebConnection {
                     }
                     context.fireContainerEvent(
                         ContainerEvent.PRE_DESTROY, httpUpgradeHandler);
-                    request.getCoyoteRequest().getResponse().resume();
+                    request.resumeAfterService();
                 }
                 if (exception != null) {
                     throw exception;
