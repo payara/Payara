@@ -66,7 +66,7 @@ public interface HttpRedirect extends ConfigBeanProxy, PropertyBag {
      *         was made on
      */
     @Attribute(defaultValue = "" + PORT, dataType = Integer.class)
-    @Min(0)
+    @Min(-1)
     @Max(65535)
     String getPort();
 
