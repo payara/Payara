@@ -40,8 +40,6 @@
 package org.glassfish.grizzly.config.dom;
 
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 
 import org.glassfish.grizzly.http.server.ServerFilterConfiguration;
@@ -235,8 +233,6 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
      * specified here
      */
     @Attribute(dataType = Integer.class)
-    @Min(0)
-    @Max(65535)
     String getRedirectPort();
 
     void setRedirectPort(String redirectPort);

@@ -40,9 +40,6 @@
 
 package org.glassfish.grizzly.config.dom;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -66,8 +63,6 @@ public interface HttpRedirect extends ConfigBeanProxy, PropertyBag {
      *         was made on
      */
     @Attribute(defaultValue = "" + PORT, dataType = Integer.class)
-    @Min(-1)
-    @Max(65535)
     String getPort();
 
     @SuppressWarnings({"UnusedDeclaration"})
