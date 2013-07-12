@@ -3,10 +3,10 @@ package org.glassfish.admin.rest.testing;
 public class IntValue extends ScalarValue {
     private int value;
 
-    IntValue() {
+    public IntValue() {
     }
     
-    int getValue() {
+    public int getValue() {
         return this.value;
     }
 
@@ -17,13 +17,13 @@ public class IntValue extends ScalarValue {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
+    public Object getJsonValue() throws Exception {
         assertJsonable();
-        return new Integer(getValue());
+        return getValue();
     }
 
     @Override
-    void print(IndentingStringBuffer sb) {
+    public void print(IndentingStringBuffer sb) {
         sb.println("intValue value=" + getValue() + " regexp=" + getRegexp());
     }
 }

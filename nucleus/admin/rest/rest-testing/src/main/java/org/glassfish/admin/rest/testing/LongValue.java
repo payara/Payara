@@ -17,13 +17,13 @@ public class LongValue extends ScalarValue {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
+    public Object getJsonValue() throws Exception {
         assertJsonable();
-        return new Long(getValue());
+        return getValue();
     }
 
     @Override
-    void print(IndentingStringBuffer sb) {
+    public void print(IndentingStringBuffer sb) {
         sb.println("longValue value=" + getValue() + " regexp=" + getRegexp());
     }
 }

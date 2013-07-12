@@ -179,39 +179,4 @@ public abstract class ResourceInvoker {
     private Entity getRequestBody() throws Exception {
         return Entity.entity(getBody().toString(), getMediaType());
     }
-
-    private void print(IndentingStringBuffer sb) throws Exception {
-        sb.println("ResourceInvoker");
-        sb.indent();
-        try {
-            sb.println("url " + getUrl());
-
-            sb.println("query parmas");
-            sb.indent();
-            try {
-                for (Map.Entry<String, String> e : getQueryParams().entrySet()) {
-                    sb.println(e.getKey() + "=" + e.getValue());
-                }
-            } finally {
-                sb.undent();
-            }
-
-            sb.println("body ");
-            sb.indent();
-            try {
-                String body = getBody().toString(Indenter.INDENT);
-                for (String line : body.split("\n")) {
-                    sb.println(line);
-                }
-            } finally {
-                sb.undent();
-            }
-        } finally {
-            sb.undent();
-        }
-    }
-
-    private void debug(String message) {
-        getEnvironment().debug(message);
-    }
 }

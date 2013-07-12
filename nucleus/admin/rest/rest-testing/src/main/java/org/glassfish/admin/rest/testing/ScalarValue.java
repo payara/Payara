@@ -3,12 +3,12 @@ package org.glassfish.admin.rest.testing;
 public abstract class ScalarValue extends Value {
     private String regexp = "";
 
-    String getRegexp() {
-        return this.regexp;
+    public String getRegexp() {
+        return regexp;
     }
 
     public ScalarValue regexp(String val) {
-        this.regexp = val;
+        regexp = val;
         return this;
     }
 

@@ -4,10 +4,10 @@ public class DoubleValue extends ScalarValue {
 
     private double value;
 
-    DoubleValue() {
+    public DoubleValue() {
     }
 
-    double getValue() {
+    public double getValue() {
         return this.value;
     }
 
@@ -18,13 +18,13 @@ public class DoubleValue extends ScalarValue {
     }
 
     @Override
-    Object getJsonValue() throws Exception {
+    public Object getJsonValue() throws Exception {
         assertJsonable();
-        return new Double(getValue());
+        return getValue();
     }
 
     @Override
-    void print(IndentingStringBuffer sb) {
+    public void print(IndentingStringBuffer sb) {
         sb.println("doubleValue value=" + getValue() + " regexp=" + getRegexp());
     }
 }

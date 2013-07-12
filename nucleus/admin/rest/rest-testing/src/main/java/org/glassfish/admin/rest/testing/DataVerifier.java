@@ -313,19 +313,19 @@ public class DataVerifier {
     }
 
     private String longToString(long val) {
-        return (new Long(val)).toString();
+        return Long.toString(val);
     }
 
     private String intToString(int val) {
-        return (new Integer(val)).toString();
+        return Integer.toString(val);
     }
 
     private String doubleToString(double val) {
-        return (new Double(val)).toString();
+        return Double.toHexString(val);
     }
 
     private String booleanToString(boolean val) {
-        return (new Boolean(val)).toString();
+        return Boolean.toString(val);
     }
 
     private boolean sameString(String want, String regexp, String have) throws Exception {
