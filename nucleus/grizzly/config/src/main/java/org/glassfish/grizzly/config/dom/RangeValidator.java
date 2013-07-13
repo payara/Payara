@@ -58,14 +58,15 @@ public class RangeValidator implements ConstraintValidator<Range, String> {
     }
 
     public boolean isValid(final String s, final ConstraintValidatorContext constraintValidatorContext) {
+        if (s == null) {
+            return true;
+        }
+
         try {
-            if (s == null) {
-                return true;
-            }
             int value = Integer.parseInt(s);
             return (value >= min && value <= max);
         } catch (NumberFormatException e) {
-            return s != null && s.charAt(0) == '$'
+            return s.charAt(0) == '$'
                     && s.charAt(1) == '{' && s.charAt(s.length() - 1) == '}';
         }
     }
