@@ -233,6 +233,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
      * specified here
      */
     @Attribute(dataType = Integer.class)
+    @Range(min=0, max=65535)
     String getRedirectPort();
 
     void setRedirectPort(String redirectPort);

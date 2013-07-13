@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,43 +40,33 @@
 
 package org.glassfish.grizzly.config.dom;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.types.PropertyBag;
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
 
 /**
- * <p>
- * A {@link Protocol} which redirects an HTTP(S) request to a different location
- * using HTTP 302 redirection semantics.
- * </p>
+ * ConstraintValidator for validating the Range within min to max or ${...} or null.
+ *
+ * @author Shing Wai Chan
  */
-@Configured
-public interface HttpRedirect extends ConfigBeanProxy, PropertyBag {
-    int PORT = -1;
-    boolean SECURE = false;
+public class RangeValidator implements ConstraintValidator<Range, String> {
+    private int min;
+    private int max;
 
-    /**
-     * @return the network port the request should be redirected to.  If no
-     *         value was specified, the default of <code>-1</code> will be returned
-     *         which signifies a redirection to the same port the current request
-     *         was made on
-     */
-    @Attribute(defaultValue = "" + PORT, dataType = Integer.class)
-    @Range(min=-1, max=65535)
-    String getPort();
+    public void initialize(final Range range) {
+        min = range.min();
+        max = range.max();
+    }
 
-    @SuppressWarnings({"UnusedDeclaration"})
-    void setPort(String port);
-
-    /**
-     * @return <code>true</code> will redirect the request using <code>HTTPS</code>
-     *         where as a value of <code>false</code> will use <code>HTTP</code>
-     */
-    @Attribute(defaultValue = "" + SECURE, dataType = Boolean.class)
-    String getSecure();
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    void setSecure(String value);
-    
+    public boolean isValid(final String s, final ConstraintValidatorContext constraintValidatorContext) {
+        try {
+            if (s == null) {
+                return true;
+            }
+            int value = Integer.parseInt(s);
+            return (value >= min && value <= max);
+        } catch (NumberFormatException e) {
+            return s != null && s.charAt(0) == '$'
+                    && s.charAt(1) == '{' && s.charAt(s.length() - 1) == '}';
+        }
+    }
 }
