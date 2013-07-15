@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.naming.util;
+package org.glassfish.common.util;
 
 import java.io.*;
 

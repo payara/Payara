@@ -38,7 +38,6 @@
 # holder.
 #
 
-Bundle-Activator: com.sun.enterprise.naming.util.NamingActivator
 -exportcontents: \
                         com.sun.enterprise.naming; include:="SerialInitContextFactory"; version=${project.osgi.version}, \
                         com.sun.enterprise.naming.impl; \

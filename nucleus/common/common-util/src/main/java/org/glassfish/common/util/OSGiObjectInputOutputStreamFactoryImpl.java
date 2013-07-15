@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.naming.util;
+package org.glassfish.common.util;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.osgi.framework.Bundle;
@@ -48,6 +48,8 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
+
+import com.sun.logging.LogDomains;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -63,7 +65,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
     @LogMessageInfo(message = "BundleTracker.removedBundle null bundleID for {0}")
     public static final String NULL_BUNDLE = "AS-NAMING-00007";
 
-    private static final Logger logger = LogFacade.getLogger();
+    private static final Logger logger =LogDomains.getLogger(OSGiObjectInputOutputStreamFactoryImpl.class, LogDomains.ADMIN_LOGGER);
 
     private BundleContext ctx;
     PackageAdmin pkgAdm;

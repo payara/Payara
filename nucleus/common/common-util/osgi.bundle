@@ -38,6 +38,7 @@
 # holder.
 #
 
+Bundle-Activator: org.glassfish.common.util.CommonUtilsActivator
 -exportcontents: \
                         com.sun.appserv.ha.spi; \
                         com.sun.appserv.ha.util; \
@@ -70,6 +71,7 @@
                         com.sun.logging; \
                         org.glassfish.admin.payload; \
                         org.glassfish.common.util.admin; \
+                        org.glassfish.common.util; \
                         org.glassfish.quality; \
                         org.glassfish.common.util.timer; \
                         org.glassfish.security.common; \

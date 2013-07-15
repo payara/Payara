@@ -43,9 +43,11 @@ package com.sun.enterprise.naming.util;
 import com.sun.enterprise.naming.spi.NamingObjectFactory;
 import com.sun.enterprise.naming.spi.NamingUtils;
 import com.sun.enterprise.naming.util.JndiInitializationNamingObjectFactory;
+
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 import org.jvnet.hk2.annotations.Service;
+
 import javax.inject.Singleton;
 
 import javax.naming.Context;
@@ -55,7 +57,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.logging.Level;
 
 import static com.sun.enterprise.naming.util.LogFacade.logger;
-import static com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory.getFactory;
+import static org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory.getFactory;;
 
 /**
  * This is a utils class for refactoring the following method.

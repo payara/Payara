@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,23 +38,27 @@
  * holder.
  */
 
-package com.sun.enterprise.naming.util;
+package org.glassfish.common.util;
+
+import org.osgi.framework.BundleActivator;
+import org.osgi.framework.BundleContext;
 
 /**
+ * This activator is responsible for setting {@link OSGiObjectInputOutputStreamFactoryImpl}
+ * as the factory in {@link ObjectInputOutputStreamFactoryFactory}
+ *
+ * @see ObjectInputOutputStreamFactoryFactory#setFactory
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-public class ObjectInputOutputStreamFactoryFactory
+public class CommonUtilsActivator implements BundleActivator
 {
-    // default is non-OSGi factory
-    private static ObjectInputOutputStreamFactory factory =
-            new NonOSGiObjectInputOutputStreamFactoryImpl();
-
-    /* package */ static void setFactory(ObjectInputOutputStreamFactory factory)
+    public void start(BundleContext context) throws Exception
     {
-        ObjectInputOutputStreamFactoryFactory.factory = factory;
+        ObjectInputOutputStreamFactoryFactory.setFactory(
+                new OSGiObjectInputOutputStreamFactoryImpl(context));
     }
 
-    public static ObjectInputOutputStreamFactory getFactory(){
-        return factory;
+    public void stop(BundleContext context) throws Exception
+    {
     }
 }

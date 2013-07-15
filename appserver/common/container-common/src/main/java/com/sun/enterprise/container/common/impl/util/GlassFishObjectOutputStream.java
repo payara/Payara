@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,8 +62,9 @@ import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactoryFactory;
-import com.sun.enterprise.naming.util.ObjectInputOutputStreamFactory;
+
+import org.glassfish.common.util.ObjectInputOutputStreamFactory;
+import org.glassfish.common.util.ObjectInputOutputStreamFactoryFactory;
 
 /**
  * A class that is used to save conversational state

@@ -93,21 +93,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <!-- Needed to have a bundle activator to set up a different serialization policy-->
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <!-- Needed to have a bundle activator to set up a different serialization policy-->
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.enterprise</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.annotations</groupId>
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
         </dependency>
    </dependencies>
 </project>

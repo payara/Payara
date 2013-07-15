@@ -49,7 +49,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import java.io.*;
 import java.util.Collection;
 
-import com.sun.enterprise.naming.util.ObjectInputStreamWithLoader;
+import org.glassfish.common.util.ObjectInputStreamWithLoader;
 
 /**
  * @author Mahesh Kannan

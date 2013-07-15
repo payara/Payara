@@ -38,37 +38,40 @@
  * holder.
  */
 
-package com.sun.enterprise.naming.util;
+package org.glassfish.common.util;
 
-import java.io.*;
+import org.glassfish.hk2.api.Factory;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-public class NonOSGiObjectInputOutputStreamFactoryImpl
-        implements ObjectInputOutputStreamFactory
+@Service
+public class ObjectInputOutputStreamFactoryFactory implements Factory<ObjectInputOutputStreamFactory>
 {
-    public ObjectInputStream createObjectInputStream(InputStream in)
-            throws IOException
+    // default is non-OSGi factory
+    private static ObjectInputOutputStreamFactory factory =
+            new NonOSGiObjectInputOutputStreamFactoryImpl();
+
+    /* package */ static void setFactory(ObjectInputOutputStreamFactory factory)
     {
-        ClassLoader loader = Thread.currentThread().getContextClassLoader();
-        return new ObjectInputStreamWithLoader(in, loader);
+        ObjectInputOutputStreamFactoryFactory.factory = factory;
     }
 
-    public ObjectOutputStream createObjectOutputStream(OutputStream out)
-            throws IOException
-    {
-        return new ObjectOutputStream(out);
+    /**
+     * Use @Inject ObjectInputOutputStreamFactory factory instead, if possible.
+     * @return factory
+     */
+    public static ObjectInputOutputStreamFactory getFactory(){
+        return factory;
     }
 
-    public Class<?> resolveClass(ObjectInputStream in, ObjectStreamClass desc)
-            throws IOException, ClassNotFoundException
-    {        
-        return null;
+    @Override
+    public ObjectInputOutputStreamFactory provide() {
+        return factory;
     }
 
-    public void annotateClass(ObjectOutputStream out, Class<?> cl) throws IOException
-    {
-        return;
+    @Override
+    public void dispose(ObjectInputOutputStreamFactory instance) {
     }
 }

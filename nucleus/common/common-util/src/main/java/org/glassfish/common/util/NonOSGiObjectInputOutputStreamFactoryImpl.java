@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,27 +38,37 @@
  * holder.
  */
 
-package com.sun.enterprise.naming.util;
+package org.glassfish.common.util;
 
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import java.io.*;
 
 /**
- * This activator is responsible for setting {@link OSGiObjectInputOutputStreamFactoryImpl}
- * as the factory in {@link ObjectInputOutputStreamFactoryFactory}
- *
- * @see ObjectInputOutputStreamFactoryFactory#setFactory
  * @author Sanjeeb.Sahoo@Sun.COM
  */
-public class NamingActivator implements BundleActivator
+public class NonOSGiObjectInputOutputStreamFactoryImpl
+        implements ObjectInputOutputStreamFactory
 {
-    public void start(BundleContext context) throws Exception
+    public ObjectInputStream createObjectInputStream(InputStream in)
+            throws IOException
     {
-        ObjectInputOutputStreamFactoryFactory.setFactory(
-                new OSGiObjectInputOutputStreamFactoryImpl(context));
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        return new ObjectInputStreamWithLoader(in, loader);
     }
 
-    public void stop(BundleContext context) throws Exception
+    public ObjectOutputStream createObjectOutputStream(OutputStream out)
+            throws IOException
     {
+        return new ObjectOutputStream(out);
+    }
+
+    public Class<?> resolveClass(ObjectInputStream in, ObjectStreamClass desc)
+            throws IOException, ClassNotFoundException
+    {        
+        return null;
+    }
+
+    public void annotateClass(ObjectOutputStream out, Class<?> cl) throws IOException
+    {
+        return;
     }
 }
