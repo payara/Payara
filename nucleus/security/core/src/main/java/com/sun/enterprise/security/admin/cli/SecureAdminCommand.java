@@ -40,9 +40,11 @@
 
 package com.sun.enterprise.security.admin.cli;
 
+import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.JmxConnector;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.SecureAdminHelper.SecureAdminCommandException;
 import com.sun.enterprise.security.SecurityLoggerInfo;
@@ -237,6 +239,10 @@ public abstract class SecureAdminCommand implements AdminCommand {
      */
     static class ConfigLevelContext extends AbstractContext {
 
+        private static final String CLIENT_AUTH_VALUE = "want";
+        private static final String SSL3_ENABLED_VALUE = "true";
+        private static final String CLASSNAME_VALUE = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
+        
         private final Transaction t;
         private final Config config_w;
         private final TopLevelContext topLevelContext;
@@ -245,6 +251,8 @@ public abstract class SecureAdminCommand implements AdminCommand {
         private Map<String,Protocol> namedProtocols_w = new
                 HashMap<String,Protocol>();
 
+        private JmxConnector jmxConnector_w = null;
+        private Ssl jmxConnectorSsl_w = null;
 
         ConfigLevelContext(
                 final TopLevelContext topLevelContext,
@@ -254,6 +262,63 @@ public abstract class SecureAdminCommand implements AdminCommand {
             this.config_w = config_w;
         }
 
+        /**
+         * Prepares a given Ssl configuration instance so the connection 
+         * represented by the Ssl's parent configuration object operates
+         * securely, using SSL.
+         * 
+         * @param ssl_w writeable Ssl instance to be modified
+         * @param certNickname the cert nickname to be used by the connection to identify itself
+         * @return 
+         */
+        private static Ssl initSsl(final Ssl ssl_w, final String certNickname) {
+            ssl_w.setClientAuth(CLIENT_AUTH_VALUE);
+            ssl_w.setSsl3Enabled(SSL3_ENABLED_VALUE);
+            ssl_w.setClassname(CLASSNAME_VALUE);
+            ssl_w.setCertNickname(certNickname);
+            ssl_w.setRenegotiateOnClientAuthWant(true);
+            return ssl_w;
+        }
+        
+        private static String chooseCertNickname(
+                final String configName,
+                final String dasAlias,
+                final String instanceAlias) throws TransactionFailure {
+            return (configName.equals(DAS_CONFIG_NAME) ? dasAlias : instanceAlias);
+        }
+        
+        private JmxConnector writeableJmxConnector() throws TransactionFailure {
+            if (jmxConnector_w == null) {
+                final AdminService adminService = config_w.getAdminService();
+                if (adminService == null) {
+                    return null;
+                }
+                final JmxConnector jmxC = adminService.getSystemJmxConnector();
+                if (jmxC == null) {
+                    return null;
+                }
+                jmxConnector_w = t.enroll(jmxC);
+            }
+            return jmxConnector_w;
+        }
+        
+        private Ssl writeableJmxSSL() throws TransactionFailure, PropertyVetoException {
+            if (jmxConnectorSsl_w == null) {
+                final JmxConnector jmxC_w = writeableJmxConnector();
+                if (jmxC_w == null) {
+                    return null;
+                }
+                Ssl jmxConnectorSsl = jmxC_w.getSsl();
+                if (jmxConnectorSsl == null) {
+                    jmxConnectorSsl = jmxC_w.createChild(Ssl.class);
+                    jmxC_w.setSsl(jmxConnectorSsl);
+                    jmxConnectorSsl_w = jmxConnectorSsl;
+                } else {
+                    jmxConnectorSsl_w = t.enroll(jmxConnectorSsl);
+                }
+            }
+            return jmxConnectorSsl_w;
+        }
         private Protocols writableProtocols() throws TransactionFailure {
             if (protocols_w == null) {
                 final NetworkConfig nc = config_w.getNetworkConfig();
@@ -372,15 +437,76 @@ public abstract class SecureAdminCommand implements AdminCommand {
     };
 
     /**
+     * Manages the jmx-connector settings.
+     */
+    private Step<ConfigLevelContext> jmxConnectorStep = new Step<ConfigLevelContext>() {
+
+        /**
+         * Sets the jmx-connector security-enabled to true and creates and
+         * initializes the child ssl element.
+         */
+        @Override
+        public Work<ConfigLevelContext> enableWork() {
+            return new Work<ConfigLevelContext>() {
+
+                @Override
+                public boolean run(ConfigLevelContext context) throws TransactionFailure {
+                    /*
+                     * Make sure the JMX connector is enabled for secure operation.
+                     * Then make sure the JMX Connector's SSL child is present
+                     * and correctly set up.
+                     */
+                    final JmxConnector jmxConnector_w = context.writeableJmxConnector();
+                    if (jmxConnector_w == null) {
+                        return false;
+                    }
+                    try {
+                        jmxConnector_w.setSecurityEnabled("true");
+                        final Ssl ssl_w = context.writeableJmxSSL();
+                        ConfigLevelContext.initSsl(ssl_w, ConfigLevelContext.chooseCertNickname(
+                                context.config_w.getName(),
+                                context.topLevelContext.writableSecureAdmin().dasAlias(),
+                                context.topLevelContext.writableSecureAdmin().instanceAlias()));
+                        return true;
+                    } catch (Exception ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                
+            };
+        }
+
+        @Override
+        public Work<ConfigLevelContext> disableWork() {
+            return new Work<ConfigLevelContext>() {
+
+                @Override
+                public boolean run(ConfigLevelContext context) throws TransactionFailure {
+                    /*
+                     * Remove the SSL child of the JMX configuration.  Then
+                     * turn off the security-enabled attribute of the JMX config.
+                     */
+                    final JmxConnector jmxC_w = context.writeableJmxConnector();
+                    try {
+                        jmxC_w.setSsl(null);
+                        jmxC_w.setSecurityEnabled("false");
+                        return true;
+                    } catch (PropertyVetoException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+                
+            };
+        }
+    };
+    
+    /**
      * Manages the sec-admin-listener protocol.
      */
     private Step<ConfigLevelContext> secAdminListenerProtocolStep = new Step<ConfigLevelContext>() {
 
         private static final String ASADMIN_VIRTUAL_SERVER_NAME = "__asadmin";
 
-        private static final String CLIENT_AUTH_VALUE = "want";
-        private static final String SSL3_ENABLED_VALUE = "false";
-        private static final String CLASSNAME_VALUE = "com.sun.enterprise.security.ssl.GlassfishSSLImpl";
         private static final String AUTH_LAYER_NAME = "HttpServlet";
         private static final String PROVIDER_ID_VALUE = "GFConsoleAuthModule";
 
@@ -420,21 +546,9 @@ public abstract class SecureAdminCommand implements AdminCommand {
             } else {
                 ssl_w = t.enroll(ssl);
             }
-            ssl_w.setClientAuth(CLIENT_AUTH_VALUE);
-            ssl_w.setSsl3Enabled(SSL3_ENABLED_VALUE);
-            ssl_w.setClassname(CLASSNAME_VALUE);
-            ssl_w.setCertNickname(certNickname);
-            ssl_w.setRenegotiateOnClientAuthWant(false);
-            return ssl_w;
+            return ConfigLevelContext.initSsl(ssl_w, certNickname);
         }
         
-        private String chooseCertNickname(
-                final String configName,
-                final String dasAlias,
-                final String instanceAlias) throws TransactionFailure {
-            return (configName.equals(DAS_CONFIG_NAME) ? dasAlias : instanceAlias);
-        }
-
         @Override
         public Work<ConfigLevelContext> enableWork() {
             return new Work<ConfigLevelContext>() {
@@ -468,7 +582,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
                      * we're working on or an instance's.  
                      */
                     writeableSsl(context.t, secAdminListenerProtocol_w,
-                            chooseCertNickname(
+                            ConfigLevelContext.chooseCertNickname(
                                 context.config_w.getName(),
                                 context.topLevelContext.writableSecureAdmin().dasAlias(),
                                 context.topLevelContext.writableSecureAdmin().instanceAlias()));
@@ -748,7 +862,8 @@ public abstract class SecureAdminCommand implements AdminCommand {
     final Step<ConfigLevelContext>[] perConfigSteps =
             new Step[] {
         secAdminListenerProtocolStep,
-        secAdminPortUnifAndRedirectStep
+        secAdminPortUnifAndRedirectStep,
+        jmxConnectorStep
     };
 
     /**
