@@ -188,7 +188,11 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
                 jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),subjectUsernames.get(0),report.getMessage(),getJobsFile(),finalState.name(),completionDate));
                 if (getState().equals(State.RUNNING_RETRYABLE) || getState().equals(State.REVERTING)) {
                     JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
-                    jobManager.deleteCheckpoint(this);
+                    File jobFile = getJobsFile();
+                    if (jobFile == null) {
+                        jobFile = jobManager.getJobsFile();
+                    }
+                    jobManager.deleteCheckpoint(jobFile.getParentFile(), getId());
                 }
                 setState(finalState);
             }

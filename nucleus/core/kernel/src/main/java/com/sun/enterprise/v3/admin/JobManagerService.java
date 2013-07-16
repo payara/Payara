@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.v3.admin.CheckpointHelper.CheckpointFilename;
 import com.sun.enterprise.v3.server.ExecutorServiceFactory;
 import java.io.File;
@@ -58,7 +59,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.xml.bind.JAXBContext;
@@ -77,7 +77,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.kernel.KernelLoggerInfo;
 import org.jvnet.hk2.annotations.Service;
 import javax.xml.bind.Marshaller;
-import org.glassfish.admin.payload.PayloadImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.AdminCommandState.State;
 
@@ -127,9 +126,6 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
     protected JAXBContext jaxbContext;
 
     protected File jobsFile;
-
-    @Inject
-    private JobLocatorService jobLocatorService;
 
     @Inject
     private ServiceLocator serviceLocator;
@@ -304,16 +300,12 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         logger.fine(adminStrings.getLocalString("removed.expired.job","Removed expired job ",  job));
     }
     
-    public void deleteCheckpoint(final Job job) {
-        File jobFile = job.getJobsFile();
-        if (jobFile == null) {
-            jobFile = getJobsFile();
-        }
+    public void deleteCheckpoint(final File parentDir, final String jobId) {
         //list all related files
-        File[] toDelete = jobFile.getParentFile().listFiles(new FilenameFilter() {
+        File[] toDelete = parentDir.listFiles(new FilenameFilter() {
                                    @Override
                                    public boolean accept(File dir, String name) {
-                                       return name.startsWith(job.getId() + ".") || name.startsWith(job.getId() + "-");
+                                       return name.startsWith(jobId + ".") || name.startsWith(jobId + "-");
                                    }
                                });
         for (File td : toDelete) {
@@ -412,10 +404,15 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         for  (File jobfile : persistedJobFiles)   {
             if (jobfile != null) {
                 reapCompletedJobs(jobfile);
-                // FIXME: if enabled
+                boolean dropInterruptedCommands = Boolean.valueOf(System.getProperty(SystemPropertyConstants.DROP_INTERRUPTED_COMMANDS)); 
                 Collection<CheckpointFilename> listed = checkpointHelper.listCheckpoints(jobfile.getParentFile());
                 for (CheckpointFilename cf : listed) {
-                    this.retryableJobsInfo.put(cf.getJobId(), cf);
+                    if (dropInterruptedCommands) {
+                        logger.info("Dropping checkpoint: " + cf.getFile());
+                        deleteCheckpoint(cf.getParentDir(), cf.getJobId());
+                    } else {
+                        this.retryableJobsInfo.put(cf.getJobId(), cf);
+                    }
                 }
             }
         }

@@ -45,8 +45,9 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 
+import javax.inject.Inject;
+
 import org.jvnet.hk2.annotations.*;
-import org.jvnet.hk2.component.*;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.PerLookup;
@@ -87,6 +88,12 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
     @Param(name = "dry-run", shortName = "n", optional = true,
             defaultValue = "false")
     private boolean dry_run;
+    @Param(name = "drop-interrupted-commands", optional = true, defaultValue = "false")
+    private boolean drop_interrupted_commands;
+
+    @Inject
+    ServerEnvironment senv;
+    
     private static final LocalStringsImpl strings =
             new LocalStringsImpl(StartDomainCommand.class);
     // the name of the master password option
@@ -212,6 +219,7 @@ public class StartDomainCommand extends LocalDomainCommand implements StartServe
         info.setDebug(debug);
         info.setUpgrade(upgrade);
         info.setWatchdog(watchdog);
+        info.setDropInterruptedCommands(drop_interrupted_commands);
 
         info.setRespawnInfo(programOpts.getClassName(),
                 programOpts.getClassPath(),

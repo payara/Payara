@@ -100,7 +100,6 @@ public class GFLauncherInfo {
         watchdog = b;
     }
 
-
     /**
      * Starts the server in debug mode
      * @param b 
@@ -128,6 +127,11 @@ public class GFLauncherInfo {
     public void setInstanceRootDir(File f) {
         instanceRootDir = f;
     }
+
+    public void setDropInterruptedCommands(boolean dropInterruptedCommands) {
+        this.dropInterruptedCommands = dropInterruptedCommands;
+    }
+
     public final boolean isDomain() {
         return type == RuntimeType.DAS;
     }
@@ -222,6 +226,9 @@ public class GFLauncherInfo {
         return domainParentDir;
     }
 
+    public boolean isDropInterruptedCommands() {
+        return dropInterruptedCommands;
+    }
 
     /**
      *  TEMPORARY.  The guts of HK2 and V3 bootstrapping wants String[]
@@ -560,6 +567,7 @@ public class GFLauncherInfo {
     private File configFile; // domain.xml
     private String domainName;
     private String instanceName;
+    private boolean dropInterruptedCommands = false;
     private boolean valid = false;
     private Map<String, String> argsMap;
     private ArrayList<String> argsRaw = new ArrayList<String>();

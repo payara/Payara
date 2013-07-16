@@ -234,6 +234,7 @@ public class SystemPropertyConstants
     public static final String DEFAULT_SERVER_SOCKET_ADDRESS="0.0.0.0";
     public static final String CLUSTER_AWARE_FEATURE_FACTORY_CLASS 
         = "com.sun.enterprise.ee.server.pluggable.EEPluggableFeatureImpl";
+    public static final String DROP_INTERRUPTED_COMMANDS = "org.glassfish.job-manager.drop-interrupted-commands";
     
     /** Name of the default config that determines the configuration for the instances */
     public static final String TEMPLATE_CONFIG_NAME = "default-config";
