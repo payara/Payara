@@ -74,6 +74,7 @@ import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.ConfigView;
+import org.jvnet.hk2.config.Configured;
 import org.jvnet.hk2.config.Dom;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.DuckTyped;
@@ -121,8 +122,9 @@ public final class ConfigModularityUtils {
     @Inject
     private StartupContext context;
 
-    private boolean ignorePersisting=false;
-    private boolean isCommandInvocation=false;
+    private boolean ignorePersisting = false;
+    private boolean isCommandInvocation = false;
+
     public <U extends ConfigBeanProxy> URL getConfigurationFileUrl(Class<U> configBeanClass, String baseFileName, String runtimeType) {
         //TODO can be optimized a little by checking the default file...
         String fileName = runtimeType + "-" + baseFileName;
@@ -505,7 +507,7 @@ public final class ConfigModularityUtils {
     }
 
     public synchronized <T extends ConfigBeanProxy> void applyCustomTokens(final ConfigBeanDefaultValue configBeanDefaultValue,
-                                                              T finalConfigBean, ConfigBeanProxy parent)
+                                                                           T finalConfigBean, ConfigBeanProxy parent)
             throws TransactionFailure, PropertyVetoException {
         //go up in the parents tree till meet someone ImplementingSystemProperty
         //then that is the freaking parent, get it and set the SystemProperty :D
@@ -953,5 +955,21 @@ public final class ConfigModularityUtils {
 
     public void setCommandInvocation(boolean commandInvocation) {
         isCommandInvocation = commandInvocation;
+    }
+
+    public List<Class> getInstalledExtensions(Class extensionType) {
+        List<Class> extensions = new ArrayList();
+        List<Class> cbeans = getAnnotatedConfigBeans(Configured.class);
+
+        for (Class c : cbeans) {
+            try {
+                if (c.asSubclass(extensionType) != null && c != extensionType) {
+                    extensions.add(c);
+                }
+            } catch (ClassCastException e) {
+                continue;
+            }
+        }
+        return extensions;
     }
 }
