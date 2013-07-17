@@ -59,6 +59,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.glassfish.admin.payload.PayloadImpl;
+import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.Payload;
 import org.glassfish.api.admin.Payload.Inbound;
 import org.glassfish.api.admin.Payload.Outbound;
@@ -66,15 +67,20 @@ import org.glassfish.api.admin.Payload.Part;
 
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FilenameFilter;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import org.glassfish.api.admin.AdminCommand;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.Job;
+import org.glassfish.api.admin.JobCreator;
 import org.glassfish.api.admin.JobManager;
-import org.glassfish.common.util.ObjectInputOutputStreamFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.security.services.api.authentication.AuthenticationService;
 import org.jvnet.hk2.annotations.Service;
@@ -218,17 +224,18 @@ public class CheckpointHelper {
 
     @Inject
     ServiceLocator serviceLocator;
-
-    @Inject
-    ObjectInputOutputStreamFactory factory;
     
+    @Inject
+    CommandRunner runner;
+
     public void save(JobManager.Checkpoint checkpoint) throws IOException {
         CheckpointFilename cf = CheckpointFilename.createBasic(checkpoint.getJob());
         ObjectOutputStream oos = null;
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(cf.getFile());
-            oos = factory.createObjectOutputStream(fos);
+            writeHeader(fos, checkpoint.getJob());
+            oos = new ObjectOutputStream(fos);
             oos.writeObject(checkpoint);
             oos.close();
             Outbound outboundPayload = checkpoint.getContext().getOutboundPayload();
@@ -266,7 +273,7 @@ public class CheckpointHelper {
         CheckpointFilename cf = CheckpointFilename.createAttachment(job, attachmentId);
         try {
             fos = new FileOutputStream(cf.getFile());
-            oos = factory.createObjectOutputStream(fos);
+            writeHeader(fos, job);
             oos = new ObjectOutputStream(fos);
             oos.writeObject(data);
         } finally {
@@ -283,7 +290,7 @@ public class CheckpointHelper {
         JobManager.Checkpoint checkpoint;
         try {
             fis = new FileInputStream(cf.getFile());
-            ois = factory.createObjectInputStream(fis);
+            ois = getObjectInputStream(fis, readHeader(fis));
             checkpoint = (JobManager.Checkpoint) ois.readObject();
         } finally {
             try {ois.close();} catch (Exception ex) {
@@ -317,7 +324,7 @@ public class CheckpointHelper {
         FileInputStream fis = null;
         try {
             fis = new FileInputStream(cf.getFile());
-            ois = factory.createObjectInputStream(fis);
+            ois = getObjectInputStream(fis, readHeader(fis));
             return (Serializable) ois.readObject();
         } finally {
             try {ois.close();} catch (Exception ex) {
@@ -329,7 +336,7 @@ public class CheckpointHelper {
     
     public Collection<CheckpointFilename> listCheckpoints(File dir) {
         if (dir == null || !dir.exists()) {
-            return Collections.emptyList();
+            return Collections.EMPTY_LIST;
         }
         final String extension = CheckpointFilename.EXTENSIONS.get(CheckpointFilename.ExtensionType.BASIC);
         File[] checkpointFiles = dir.listFiles(new FilenameFilter() {
@@ -348,10 +355,10 @@ public class CheckpointHelper {
             }
             return result;
         } else {
-            return Collections.emptyList();
+            return Collections.EMPTY_LIST;
         }
     }
-/*
+    
     private void writeHeader(OutputStream os, Job job) throws IOException {
         writeHeader(os, StringUtils.nvl(job.getScope()) + job.getName());
     }
@@ -400,6 +407,7 @@ public class CheckpointHelper {
         cls.addAll(getJobCreators());
         return new ObjectInputStreamForClassloader(is, cls);
     }
+    
     private List<ClassLoader> getJobCreators() {
         List<JobCreator> jcs = serviceLocator.getAllServices(JobCreator.class);
         if (jcs == null) {
@@ -411,7 +419,6 @@ public class CheckpointHelper {
         }
         return result;
     }
-*/    
 
     private void saveOutbound(Payload.Outbound outbound, File outboundFile) throws IOException {
         FileOutputStream os = new FileOutputStream(outboundFile);
