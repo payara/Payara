@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,9 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.List;
+import java.util.Properties;
+import java.util.Map;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -54,6 +57,7 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.connectors.config.ConnectorResource;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -82,6 +86,9 @@ public class DeleteJMSResource implements AdminCommand {
     CommandRunner commandRunner;
     @Inject
     Domain domain;
+    @Inject
+    ServiceLocator habitat;
+
     private static final String JNDINAME_APPENDER = "-Connection-Pool";
     /* As per new requirement all resources should have unique name so appending 'JNDINAME_APPENDER' to jndiName
      for creating  jndiNameForConnectionPool.
@@ -132,6 +139,40 @@ public class DeleteJMSResource implements AdminCommand {
                 return;
             }
         } else {
+            ActionReport listReport = habitat.getService(ActionReport.class);
+            ParameterMap listParams = new ParameterMap();
+            //listParams.set("resType", "javax.jms.ConnectionFactory");
+            listParams.set("target", target);
+            commandRunner.getCommandInvocation("list-jms-resources", listReport, context.getSubject()).parameters(listParams).execute();
+            if (ActionReport.ExitCode.FAILURE.equals(listReport.getActionExitCode())) {
+                report.setMessage(localStrings.getLocalString("list.jms.resources.fail",
+                        "Unable to list JMS Resources"));
+                report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+            Properties extraProps = listReport.getExtraProperties();
+            if (extraProps != null && extraProps.size() > 0) {
+                boolean resourceExist = false;
+                for (int i=0; i<extraProps.size(); i++) {
+                    List<Map<String, String>> nameList = (List) extraProps.get("jmsResources");
+                    for (Map<String,String> m : nameList) {
+                        String jndi = (String) m.get("name");
+                        if (jndiName.equals(jndi)) {
+                            resourceExist = true;
+                            break;
+                        }
+                    }
+                    if (resourceExist)
+                        break;
+                }
+                if (!resourceExist) {
+                    report.setMessage(localStrings.getLocalString("jms.resources.not.found",
+                        "JMS Resource {0} not found", jndiName));
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+            }
+
             // Delete the connector resource and connector connection pool
             String defPoolName = jndiNameForConnectionPool;
             String poolName = cresource.getPoolName();
