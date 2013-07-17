@@ -40,30 +40,37 @@
 
 package org.glassfish.admin.rest.testing;
 
-public class BooleanValue extends ScalarValue {
-    private boolean value;
 
-    BooleanValue() {
-    }
+public class ResponseBody {
 
-    public boolean getValue() {
-        return this.value;
-    }
+    private boolean ignoreExtra = false;
+    private boolean isIgnoreExtra() { return this.ignoreExtra; }
+    public ResponseBody ignoreExtra(boolean val) { this.ignoreExtra = val; return this; }
+    public ResponseBody ignoreExtra() { return ignoreExtra(true); }
 
-    public BooleanValue value(boolean val) {
-        this.value = val;
-        regexp(null);
-        return this;
-    }
+    ArrayValue items;
+    private ArrayValue getItems() { return this.items; }
+    public ResponseBody items(ArrayValue val) { this.items = val; return this; }
 
-    @Override
-    Object getJsonValue() throws Exception {
-        assertJsonable();
-        return (getValue()) ? Boolean.TRUE : Boolean.FALSE;
-    }
+    ObjectValue item;
+    private ObjectValue getItem() { return this.item; }
+    public ResponseBody item(ObjectValue val) { this.item = val; return this; }
 
-    @Override
-    void print(IndentingStringBuffer sb) {
-        sb.println("booleanValue value=" + getValue() + " regexp=" + getRegexp());
+    ArrayValue resources;
+    private ArrayValue getResources() { return this.resources; }
+    public ResponseBody resources(ArrayValue val) { this.resources = val; return this; }
+
+    ArrayValue messages;
+    private ArrayValue getMessages() { return this.messages; }
+    public ResponseBody messages(ArrayValue val) { this.messages = val; return this; }
+
+    public ObjectValue toObjectVal() {
+        ObjectValue val = Common.objectVal();
+        if (getItem      () != null) { val.put("item",      getItem      ()); }
+        if (getItems     () != null) { val.put("items",     getItems     ()); }
+        if (getResources () != null) { val.put("resources", getResources ()); }
+        if (getMessages  () != null) { val.put("messages",  getMessages  ()); }
+        return val.ignoreExtra(isIgnoreExtra());
     }
 }
+

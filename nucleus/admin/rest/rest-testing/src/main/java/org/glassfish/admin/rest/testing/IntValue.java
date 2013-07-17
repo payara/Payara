@@ -43,7 +43,7 @@ package org.glassfish.admin.rest.testing;
 public class IntValue extends ScalarValue {
     private int value;
 
-    public IntValue() {
+    IntValue() {
     }
     
     public int getValue() {

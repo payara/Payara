@@ -41,6 +41,7 @@
 package org.glassfish.admin.rest.testing;
 
 import java.util.HashMap;
+import java.util.Set;
 import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
@@ -53,7 +54,7 @@ public class ObjectValue extends Value {
     ObjectValue() {
     }
 
-    boolean isIgnoreExtra() {
+    public boolean isIgnoreExtra() {
         return this.ignoreExtra;
     }
 
@@ -65,10 +66,15 @@ public class ObjectValue extends Value {
     public ObjectValue ignoreExtra() {
         return ignoreExtra(true);
     }
+
     private Map<String, Value> properties = new HashMap<String, Value>();
 
     Map<String, Value> getProperties() {
         return this.properties;
+    }
+
+    public Set<String> getPropertyNames() {
+        return getProperties().keySet();
     }
 
     public ObjectValue put(String propertyName, Value propertyValue) {

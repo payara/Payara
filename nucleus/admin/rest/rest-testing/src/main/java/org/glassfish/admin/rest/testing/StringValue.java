@@ -46,7 +46,7 @@ public class StringValue extends ScalarValue {
     StringValue() {
     }
 
-    String getValue() {
+    public String getValue() {
         return this.value;
     }
 

@@ -143,4 +143,24 @@ public class StringUtil {
     public static boolean notEmpty(String string) {
         return (string != null && !string.isEmpty());
     }
+
+    /**
+     * Converts a null/empty/non-empty string to null or non-empty
+     *
+     * @param string
+     * @return null if string is null or empty, otherwise returns string
+     */
+    public static String nonEmpty(String string) {
+        return (notEmpty(string)) ? string : null;
+    }
+
+    /**
+     * Converts a null/empty/non-empty string to empty or non-empty
+     *
+     * @param string
+     * @return an empty string if string is null or empty, otherwise returns string
+     */
+    public static String nonNull(String string) {
+        return (notEmpty(string)) ? string : "";
+    }
 }

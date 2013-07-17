@@ -74,6 +74,15 @@ public abstract class ResourceInvoker {
     protected abstract String getResourceRoot();
 
     protected abstract String getMediaType();
+
+    protected String getRequestBodyMediaType() {
+        return getMediaType();
+    }
+
+    protected String getResponseBodyMediaType() {
+        return getMediaType();
+    }
+
     private String url = null;
 
     protected String getUrl() {
@@ -209,7 +218,7 @@ public abstract class ResourceInvoker {
         for (Map.Entry<String, String> e : getQueryParams().entrySet()) {
             target = target.queryParam(e.getKey(), e.getValue());
         }
-        return target.request(getMediaType()).header("X-Include-Resource-Links", "true").header("X-Requested-By", "MyClient");
+        return target.request(getResponseBodyMediaType()).header("X-Include-Resource-Links", "true").header("X-Requested-By", "MyClient");
     }
 
     private Response wrapResponse(String method, javax.ws.rs.core.Response response) throws Exception {
@@ -217,6 +226,6 @@ public abstract class ResourceInvoker {
     }
 
     private Entity getRequestBody() throws Exception {
-        return Entity.entity(getBody().toString(), getMediaType());
+        return Entity.entity(getBody().toString(), getRequestBodyMediaType());
     }
 }

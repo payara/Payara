@@ -241,6 +241,10 @@ public class Common {
         return sb.toString();
     }
 
+    public static ResponseBody responseBody() {
+        return new ResponseBody();
+    }
+
     public static ResponseVerifier verifier(Environment environment, Response response) {
         return new ResponseVerifier(environment, response);
     }

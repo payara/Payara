@@ -46,7 +46,7 @@ public class LongValue extends ScalarValue {
     LongValue() {
     }
 
-    long getValue() {
+    public long getValue() {
         return this.value;
     }
 

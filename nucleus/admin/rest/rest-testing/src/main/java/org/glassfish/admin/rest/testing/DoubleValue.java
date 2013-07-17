@@ -44,7 +44,7 @@ public class DoubleValue extends ScalarValue {
 
     private double value;
 
-    public DoubleValue() {
+    DoubleValue() {
     }
 
     public double getValue() {

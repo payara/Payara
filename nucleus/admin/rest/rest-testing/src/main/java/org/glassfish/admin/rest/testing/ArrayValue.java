@@ -55,7 +55,7 @@ public class ArrayValue extends Value {
     ArrayValue() {
     }
     
-    boolean isIgnoreExtra() {
+    public boolean isIgnoreExtra() {
         return this.ignoreExtra;
     }
 
@@ -68,7 +68,7 @@ public class ArrayValue extends Value {
         return ignoreExtra(true);
     }
 
-    boolean isOrdered() {
+    public boolean isOrdered() {
         return this.ordered;
     }
 
@@ -80,7 +80,7 @@ public class ArrayValue extends Value {
     public ArrayValue ordered() {
         return ordered(true);
     }
-    
+
     List<Value> getValues() {
         return this.values;
     }
@@ -124,6 +124,10 @@ public class ArrayValue extends Value {
         }
         // TBD - should we complain if the index is out of range?
         return this;
+    }
+
+    public int size() {
+        return getValues().size();
     }
 
     public Value get(int index) {
