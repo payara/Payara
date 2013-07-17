@@ -41,7 +41,6 @@ package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.admin.event.AdminCommandEventBrokerImpl;
 import com.sun.enterprise.admin.remote.AdminCommandStateImpl;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommandEventBroker;
@@ -55,6 +54,8 @@ import org.glassfish.security.services.common.SubjectUtil;
 
 import javax.security.auth.Subject;
 import java.io.File;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.Date;
 import java.util.List;
 import org.glassfish.api.admin.ParameterMap;
@@ -67,6 +68,8 @@ import org.glassfish.api.admin.ParameterMap;
  */
 
 public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements Job {
+    
+    private static final long serialVersionUID = 1L;
     
 //    private final static LocalStringManagerImpl adminStrings = new LocalStringManagerImpl(AdminCommandInstanceImpl.class);
     
@@ -235,6 +238,12 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
     @Override
     public ParameterMap getParameters() {
         return parameters;
+    }
+    
+    private void readObject(ObjectInputStream in) throws IOException,ClassNotFoundException {
+        in.defaultReadObject();
+        this.payload = null; //Lazy loaded
+        this.broker = null; //Lazy loaded
     }
 
 }
