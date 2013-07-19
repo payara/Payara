@@ -1643,8 +1643,8 @@ public class CommandRunnerImpl implements CommandRunner {
             
         }
 
-        protected final String scope;
-        protected final String name;
+        protected String scope;
+        protected String name;
         protected ActionReport report;
         protected ParameterMap params;
         protected CommandParameters paramObject;
@@ -1752,6 +1752,8 @@ public class CommandRunnerImpl implements CommandRunner {
             this.report = context.getActionReport();
             this.inbound = context.getInboundPayload();
             this.outbound = context.getOutboundPayload();
+            this.scope = job.getScope();
+            this.name = job.getName();
             if (eventBroker == null) {
                 eventBroker = job.getEventBroker() == null ? new AdminCommandEventBrokerImpl() : job.getEventBroker();
             }
@@ -1759,12 +1761,21 @@ public class CommandRunnerImpl implements CommandRunner {
             ((AdminCommandInstanceImpl) job).setState(revert ? AdminCommandState.State.REVERTING : AdminCommandState.State.RUNNING_RETRYABLE);
             JobManager jobManager = habitat.getService(JobManagerService.class);
             jobManager.registerJob(job);
-            CommandRunnerImpl.this.doCommand(this, checkpoint.getCommand(), subject, job);
+            //command
+            AdminCommand command = checkpoint.getCommand();
+            if (command == null) {
+                command = getCommand(job.getScope(), job.getName(), report(), logger);
+                if (command == null) {
+                    return;
+                }
+            }
+            //execute
+            CommandRunnerImpl.this.doCommand(this, command, subject, job);
             job.complete(report(), outboundPayload());
             if (progressStatusChild != null) {
                 progressStatusChild.complete();
             }
-            CommandSupport.done(habitat, checkpoint.getCommand(), job);
+            CommandSupport.done(habitat, command, job);
         }
         
         @Override

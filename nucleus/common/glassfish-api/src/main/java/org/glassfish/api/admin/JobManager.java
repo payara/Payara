@@ -160,5 +160,13 @@ public interface JobManager {
     /** Stores current command state.
      */
     public void checkpoint(AdminCommand command, AdminCommandContext context) throws IOException;
+    
+    /** Stores current command state.
+     */
+    public void checkpoint(AdminCommandContext context, Serializable data) throws IOException;
+    
+    /** Load checkpoint related data.
+     */
+    public Serializable loadCheckpointData(String jobId) throws IOException, ClassNotFoundException;
 
 }

@@ -95,7 +95,8 @@ import org.glassfish.api.admin.AdminCommandState.State;
 @Service(name="job-manager")
 @Singleton
 public class JobManagerService implements JobManager, PostConstruct, EventListener {
-
+    
+    private static final String CHECKPOINT_MAINDATA = "MAINCMD";
 
     @Inject
     private Domain domain;
@@ -441,6 +442,13 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         return retryableJobsInfo;
     }
     
+    @Override
+    public void checkpoint(AdminCommandContext context, Serializable data) throws IOException {
+        checkpoint((AdminCommand) null, context);
+        if (data != null) {
+            checkpointAttachement(context.getJobId(), CHECKPOINT_MAINDATA, data);
+        }
+    }
     
     @Override
     public void checkpoint(AdminCommand command, AdminCommandContext context) throws IOException {
@@ -474,6 +482,11 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         return checkpointHelper.loadAttachment(job, attachId);
     }
     
+    @Override
+    public Serializable loadCheckpointData(String jobId) throws IOException, ClassNotFoundException {
+        return loadCheckpointAttachement(jobId, CHECKPOINT_MAINDATA);
+    }
+    
     public Checkpoint loadCheckpoint(String jobId, Payload.Outbound outbound) throws IOException, ClassNotFoundException {
         Job job = get(jobId);
         CheckpointFilename cf = null;
@@ -493,8 +506,10 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         if (result != null) {
             serviceLocator.inject(result.getJob());
             serviceLocator.postConstruct(result.getJob());
-            serviceLocator.inject(result.getCommand());
-            serviceLocator.postConstruct(result.getCommand());
+            if (result.getCommand() != null) {
+                serviceLocator.inject(result.getCommand());
+                serviceLocator.postConstruct(result.getCommand());
+            }
         }
         return result;
     }
