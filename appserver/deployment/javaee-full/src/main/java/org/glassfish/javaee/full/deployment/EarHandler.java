@@ -360,12 +360,12 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
             if (System.getSecurityManager() != null) {
                 addEEOrDeclaredPermissions(earLibCl, earDeclaredPC, false);   
-                if(Level.FINE.equals(_logger.getLevel()))
+                if(_logger.isLoggable(Level.FINE))
                     _logger.fine("added declaredPermissions to earlib: " + earDeclaredPC );
                 addEEOrDeclaredPermissions(earLibCl, 
                         eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ear),
                                 true);
-                if(Level.FINE.equals(_logger.getLevel()))
+                if(_logger.isLoggable(Level.FINE))
                     _logger.fine("added all ee permissions to earlib: " + 
                         eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ear) );
             }
@@ -391,13 +391,13 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
             if(System.getSecurityManager() != null) {
                 //push declared permissions to ear classloader
                 addEEOrDeclaredPermissions(cl, earDeclaredPC, false);
-                if(Level.FINE.equals(_logger.getLevel()))
+                if(_logger.isLoggable(Level.FINE))
                     _logger.fine("declaredPermissions added: " + earDeclaredPC );
                 //push ejb permissions to ear classloader
                 addEEOrDeclaredPermissions(cl, 
                         eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ejb),
                                 true);
-                if(Level.FINE.equals(_logger.getLevel()))
+                if(_logger.isLoggable(Level.FINE))
                     _logger.fine("ee permissions added: " + eeGarntsMap.get(SMGlobalPolicyUtil.CommponentType.ejb) );
             }
 
@@ -465,7 +465,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
                         if ((System.getSecurityManager() != null) && (subCl instanceof DDPermissionsLoader)) {                           
                            addEEOrDeclaredPermissions(subCl, earDeclaredPC, false);
-                           if(Level.FINE.equals(_logger.getLevel()))
+                           if(_logger.isLoggable(Level.FINE))
                                _logger.fine("added declared permissions to sub module of " + subCl );
                         }
                         
