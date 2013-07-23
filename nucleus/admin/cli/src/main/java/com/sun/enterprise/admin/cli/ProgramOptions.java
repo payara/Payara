@@ -84,7 +84,8 @@ public class ProgramOptions {
     public static final String INTERACTIVE      = "interactive";
     public static final String SECURE           = "secure";
     public static final String HELP             = "help";
-    public static final String DETACH            = "detach";
+    public static final String DETACH           = "detach";
+    public static final String NOTIFY           = "notify";
     public static final String AUTHTOKEN        = AuthTokenManager.AUTH_TOKEN_OPTION_NAME;
     public static final String AUXINPUT         = AsadminInput.CLI_INPUT_OPTION_NAME;
 
@@ -129,6 +130,7 @@ public class ProgramOptions {
         addMetaOption(opts, AUXINPUT, '\0', String.class, false, null);
         addMetaOption(opts, AUTHTOKEN, '\0', String.class, false, null);
         addMetaOption(opts, DETACH, '\0', Boolean.class, false, "false");
+        addMetaOption(opts, NOTIFY, '\0', Boolean.class, false, "false");
         programOptions = Collections.unmodifiableSet(opts);
         addMetaOption(hopts, HELP, '?', Boolean.class, false, "false");
         helpOption = Collections.unmodifiableSet(hopts);
@@ -458,9 +460,19 @@ public class ProgramOptions {
      * @return detach option
      */
     public boolean isDetachedCommand() {
-        boolean isDetach;
         if (options.containsKey(DETACH)) {
             String value = options.getOne(DETACH);
+            return (ok(value)) ? Boolean.parseBoolean(value) : true;
+        }
+        return false;
+    }
+
+    /**
+     * @return notify option
+     */
+    public boolean isNotifyCommand() {
+        if (options.containsKey(NOTIFY)) {
+            String value = options.getOne(NOTIFY);
             return (ok(value)) ? Boolean.parseBoolean(value) : true;
         }
         return false;

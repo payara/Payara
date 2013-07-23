@@ -220,6 +220,13 @@ public class CommandModelImpl extends CommandModel {
         }
     }
 
+    @Override
+    public void add(ParamModel model) {
+        if (!params.containsKey(model.getName())) {
+            params.put(model.getName(), model);
+        }
+    }
+
     private static class ParamModelImpl extends ParamModel {
 
         final private String name;

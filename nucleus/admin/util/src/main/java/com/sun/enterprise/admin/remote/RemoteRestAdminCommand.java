@@ -154,6 +154,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     private String              canonicalHostCache; //Used by getCanonicalHost() to cache resolved value
     protected int               port;
     protected boolean           secure;
+    protected boolean           notify;
     protected String            user;
     protected String            password;
     protected Logger            logger;
@@ -254,13 +255,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
     public RemoteRestAdminCommand(String name, String host, int port)
             throws CommandException {
 
-        this(name, host, port, false, "admin", null, Logger.getAnonymousLogger());
+        this(name, host, port, false, "admin", null, Logger.getAnonymousLogger(),false);
     }
 
     public RemoteRestAdminCommand(String name, String host, int port,
-            boolean secure, String user, String password, Logger logger)
+            boolean secure, String user, String password, Logger logger,boolean notify)
             throws CommandException {
-        this(name, host, port, secure, user, password, logger, null, null, false);
+        this(name, host, port, secure, user, password, logger, null, null, false,notify);
     }
 
     /**
@@ -271,12 +272,13 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
             boolean secure, String user, String password, Logger logger,
             final String scope,
             final String authToken,
-            final boolean prohibitDirectoryUploads)
+            final boolean prohibitDirectoryUploads, boolean notify)
             throws CommandException {
         this.name = name;
         this.host = host;
         this.port = port;
         this.secure = secure;
+        this.notify = notify;
         this.user = user;
         this.password = password;
         this.logger = logger;
@@ -500,6 +502,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                         true, null));
                 addedUploadOption = true;
                 cm.setAddedUploadOption(true);
+            }
+            if (notify) {
+                cm.add(new ParamModelData("notify",Boolean.class,false, "false"));
             }
             this.usage = cm.getUsage();
             return cm;
@@ -899,7 +904,7 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
         try {
             RemoteRestAdminCommand command = new RemoteRestAdminCommand("_get-payload",
                     this.host, this.port, this.secure, this.user, this.password,
-                    this.logger, this.scope, this.authToken, this.prohibitDirectoryUploads);
+                    this.logger, this.scope, this.authToken, this.prohibitDirectoryUploads,notify);
             ParameterMap params = new ParameterMap();
             params.add("DEFAULT", jobId);
             command.executeCommand(params);

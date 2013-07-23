@@ -80,7 +80,7 @@ public class ServerRemoteRestAdminCommand extends RemoteRestAdminCommand {
     public ServerRemoteRestAdminCommand(ServiceLocator habitat, String name, String host, int port,
             boolean secure, String user, String password, Logger logger)
             throws CommandException {
-        super(name, host, port, secure, "admin", "", logger);
+        super(name, host, port, secure, "admin", "", logger,false);
         completeInit(habitat);
     }
 

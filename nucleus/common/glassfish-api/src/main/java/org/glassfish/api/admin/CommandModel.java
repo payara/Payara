@@ -123,6 +123,12 @@ public abstract class CommandModel {
     public abstract ExecuteOn getClusteringAttributes();
 
     /**
+     * Add a ParamModel for this command
+     * @param model the new param model to be added
+     */
+    public abstract void add(ParamModel model);
+
+    /**
      * Returns a collection of parameter model for all the parameters supported
      * by this command.
      *

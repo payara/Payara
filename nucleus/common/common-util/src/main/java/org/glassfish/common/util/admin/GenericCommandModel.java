@@ -176,7 +176,14 @@ public class GenericCommandModel extends CommandModel {
     public ExecuteOn getClusteringAttributes() {
         return cluster;
     }
-    
+
+    @Override
+    public void add(ParamModel model) {
+        if (!params.containsKey(model.getName())) {
+            params.put(model.getName(), model);
+        }
+    }
+
     @Override
     public boolean isManagedJob() {
         return managedJob;

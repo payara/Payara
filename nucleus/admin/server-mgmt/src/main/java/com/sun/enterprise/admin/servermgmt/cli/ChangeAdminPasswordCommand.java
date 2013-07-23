@@ -180,7 +180,7 @@ public class ChangeAdminPasswordCommand extends LocalDomainCommand {
                 RemoteRestAdminCommand rac = new RemoteRestAdminCommand(name,
                     programOpts.getHost(), programOpts.getPort(),
                     programOpts.isSecure(), programOpts.getUser(),
-                    programOpts.getPassword(), logger);
+                    programOpts.getPassword(), logger,false);
                 rac.executeCommand(params);
                 return SUCCESS;
            } catch(CommandException ce) {

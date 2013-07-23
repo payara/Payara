@@ -987,7 +987,7 @@ public class CommandRunnerImpl implements CommandRunner {
             }
 
             // help and Xhelp are meta-options that are handled specially
-            if (key.equals("help") || key.equals("Xhelp")) {
+            if (key.equals("help") || key.equals("Xhelp") || key.equals("notify")) {
                 continue;
             }
             

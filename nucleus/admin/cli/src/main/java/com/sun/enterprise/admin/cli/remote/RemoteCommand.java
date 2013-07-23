@@ -59,6 +59,8 @@ import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.common.util.admin.ManPageFinder;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -589,6 +591,11 @@ public class RemoteCommand extends CLICommand {
              * Find the metadata for the command.
              */
             commandModel = rac.getCommandModel();
+
+            if (programOpts.isNotifyCommand()) {
+                commandModel.add(new ParamModelData("notify", boolean.class, true, "false"));
+
+            }
         } catch (CommandException cex) {
             logger.finer("RemoteCommand.prepare throws " + cex);
             throw cex;

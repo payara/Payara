@@ -125,10 +125,10 @@ public class RemoteCLICommand extends CLICommand {
          */
         public CLIRemoteAdminCommand(String name, String host, int port,
                 boolean secure, String user, String password, Logger logger,
-                String authToken)
+                String authToken,boolean notify)
                 throws CommandException {
             super(name, host, port, secure, user, password, logger, getCommandScope(),
-                    authToken, true /* prohibitDirectoryUploads */);
+                    authToken, true /* prohibitDirectoryUploads */, notify);
 
             //TODO: Remove when fix cache problem
             if (programOpts.getCommandName() != null && programOpts.getCommandName().contains("cadmin")) {
@@ -781,6 +781,11 @@ public class RemoteCLICommand extends CLICommand {
                 rac.registerListener(AdminCommandState.EVENT_STATE_CHANGED,
                         new DetachListener(logger, rac, programOpts.isTerse()));
             }
+
+            /*if (programOpts.isNotifyCommand()) {
+                rac.registerListener(AdminCommandState.EVENT_STATE_CHANGED,
+                        new NotifyListener(logger, rac, programOpts.isTerse()));
+            }*/
             try {
                 output = rac.executeCommand(options);
             }
@@ -949,7 +954,7 @@ public class RemoteCLICommand extends CLICommand {
             rac = new RemoteCLICommand.CLIRemoteAdminCommand(name,
                     programOpts.getHost(), programOpts.getPort(),
                     programOpts.isSecure(), programOpts.getUser(),
-                    programOpts.getPassword(), logger, programOpts.getAuthToken());
+                    programOpts.getPassword(), logger, programOpts.getAuthToken(),programOpts.isNotifyCommand());
             rac.setFileOutputDirectory(outputDir);
             rac.setInteractive(programOpts.isInteractive());
             for (String key : listeners.keySet()) {
