@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -113,7 +113,14 @@ public class DynamicConfigListener implements ConfigListener {
                     } else if (tClass == FileCache.class && t instanceof FileCache) {
                         return processProtocol(type, (Protocol) t.getParent().getParent(), null);
                     } else if (tClass == Ssl.class && t instanceof Ssl) {
-                        return processProtocol(type, (Protocol) t.getParent(), null);
+                        /*
+                         * Make sure the SSL parent is in fact a protocol.  It could
+                         * be a jmx-connector.
+                         */
+                        final ConfigBeanProxy parent = t.getParent();
+                        if (parent.getClass() == Protocol.class) {
+                            return processProtocol(type, (Protocol) parent, null);
+                        }
                     } else if (tClass == Protocol.class && t instanceof Protocol) {
                         return processProtocol(type, (Protocol) t, null);
                     } else if (tClass == ThreadPool.class && t instanceof ThreadPool) {
