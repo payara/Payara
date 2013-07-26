@@ -121,7 +121,7 @@
         <weld.version>2.0.0.SP1</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.0</websocket-api.version>
-        <tyrus.version>1.1</tyrus.version>
+        <tyrus.version>1.2</tyrus.version>
         <jsonp.version>1.0</jsonp.version>
         <concurrent-api.version>1.0</concurrent-api.version>
         <concurrent.version>1.0</concurrent.version>
