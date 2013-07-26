@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -536,40 +536,14 @@ public class DynamicInterceptor implements MBeanServer
     public final ObjectInstance createMBean( final String str, final ObjectName objectName)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException,
                 MBeanException, NotCompliantMBeanException {
-        try {
-            DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
-            ObjectInstance ret = null;
-            if(result.isTargetAnInstance())
-                return getInstanceConnection(result.getInstances().get(0)).createMBean(str, objectName);
-            for(String svr : result.getInstances())
-                if(svr.equals("server"))
-                    ret = getDelegateMBeanServer().createMBean (str, objectName);
-                else
-                    ret = getInstanceConnection(svr).createMBean(str, objectName);
-            return ret;
-        } catch (Exception ioex) {
-            throw new MBeanException(ioex);
-        }
+        return createMBean(str, objectName, (Object[]) null, (String[]) null);
     }
 
     public final ObjectInstance createMBean( final String str, final ObjectName objectName,
                                              final ObjectName objectName2)
             throws ReflectionException, InstanceAlreadyExistsException, MBeanRegistrationException, MBeanException,
             NotCompliantMBeanException, InstanceNotFoundException {
-        try {
-            DynamicInterceptor.ReplicationInfo result = getInstance(objectName);
-            ObjectInstance ret = null;
-            if(result.isTargetAnInstance())
-                return getInstanceConnection(result.getInstances().get(0)).createMBean(str, objectName, objectName2);
-            for(String svr : result.getInstances())
-                if(svr.equals("server"))
-                    ret = getDelegateMBeanServer().createMBean (str, objectName, objectName2);
-                else
-                    ret = getInstanceConnection(svr).createMBean(str, objectName, objectName2);
-            return ret;
-        } catch (Exception ioex) {
-            throw new MBeanException(ioex);
-        }
+        return createMBean(str, objectName, objectName2, (Object[]) null, (String[]) null);
     }
 
     public final ObjectInstance createMBean( final String str, final ObjectName objectName, final Object[] obj,
@@ -587,8 +561,10 @@ public class DynamicInterceptor implements MBeanServer
                 else
                     ret = getInstanceConnection(svr).createMBean(str, objectName, obj, str3);
             return ret;
-        } catch (Exception ioex) {
-            throw new MBeanException(ioex);
+        } catch (InstanceNotFoundException ex) {
+            throw new MBeanException(ex);
+        } catch (IOException ex) {
+            throw new MBeanException(ex);
         }
     }
 
@@ -608,8 +584,10 @@ public class DynamicInterceptor implements MBeanServer
                 else
                     ret = getInstanceConnection(svr).createMBean(str, objectName, objectName2, obj, str4);
             return ret;
-        } catch (Exception ioex) {
-            throw new MBeanException(ioex);
+        } catch (InstanceNotFoundException ex) {
+            throw new MBeanException(ex);
+        } catch (IOException ex) {
+            throw new MBeanException(ex);
         }
     }
 
