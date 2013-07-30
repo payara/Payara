@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,25 @@
 
 package org.glassfish.admin.mbeanserver;
 
-
-import com.sun.logging.LogDomains;
-
 import java.util.logging.Logger;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
 Can't use things in amx-api, so a few methods are place here.
  */
 public final class Util
 {
+    @LoggerInfo(subsystem = "JMX", description="JMX System Logger")
+    private static final String JMX_LOGGER_NAME = "javax.enterprise.system.jmx";
+    
+    @LogMessagesResourceBundle
+    private static final String LOG_MESSAGES_RB = "org.glassfish.admin.mbeanserver.LogMessages";
+    
+    public static final Logger JMX_LOGGER = Logger.getLogger(JMX_LOGGER_NAME, LOG_MESSAGES_RB);
+    
+    public static final String LOG_PREFIX = "NCLS-JMX-";
+    
     public static String localhost()
     {
         try
@@ -64,7 +73,7 @@ public final class Util
 
     public static Logger getLogger()
     {
-        return LogDomains.getLogger(Util.class, LogDomains.ADMIN_LOGGER);
+        return JMX_LOGGER;
     }
 
 }

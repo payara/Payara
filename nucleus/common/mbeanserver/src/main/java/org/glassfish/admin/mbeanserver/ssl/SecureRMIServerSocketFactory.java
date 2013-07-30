@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
@@ -57,6 +58,7 @@ import org.glassfish.admin.mbeanserver.Util;
 import org.glassfish.grizzly.config.SSLConfigurator;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Inner class for SSL support for JMX connection using RMI.
@@ -79,15 +81,22 @@ public class SecureRMIServerSocketFactory
     private final Object protocolsSync = new Object();
     private Map socketMap = new HashMap<Integer, Socket>();
 
+    @LogMessageInfo(level="INFO", message="Creating a SecureRMIServerSocketFactory @ {0} with ssl config = {1}")
+    private final static String creatingServerSocketFactory = Util.LOG_PREFIX + "00024";
+    
+    @LogMessageInfo(level="INFO", message="SSLServerSocket {0} and {1} created")
+    private final static String createdServerSocket = Util.LOG_PREFIX + "00025";
+    
     public SecureRMIServerSocketFactory(final ServiceLocator habitat,
             final Ssl sslConfig,
             final InetAddress addr) {
         mAddress = addr;
         this.habitat = habitat;
         ssl = sslConfig;
-        Util.getLogger().info("Creating a SecureRMIServerSocketFactory @ " +
-            addr.getHostAddress() + "with ssl config = " + ssl.toString());
-
+    
+        Util.getLogger().log(Level.INFO, 
+                creatingServerSocketFactory, 
+                new Object[] {addr.getHostAddress(), ssl.toString()});
     }
 
     @Override
@@ -153,8 +162,9 @@ public class SecureRMIServerSocketFactory
                 (SSLServerSocket) context.getServerSocketFactory().
                 createServerSocket(port, backlog, mAddress);
         configureSSLSocket(sslSocket, sslConfigHolder);
-        Util.getLogger().info("SSLServerSocket " +
-            sslSocket.getLocalSocketAddress() + "and " + sslSocket.toString() + " created");
+    
+        Util.getLogger().log(Level.INFO, createdServerSocket, 
+                new Object[] {sslSocket.getLocalSocketAddress(), sslSocket.toString()});
         //sslSocket.startHandshake();
         //debug( "MyRMIServerSocketFactory.createServerSocket(): " + mAddress + " : " + port );
         socketMap.put(port, sslSocket);

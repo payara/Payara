@@ -99,6 +99,8 @@ public final class JMXStartupService implements PostConstruct {
         System.out.println("### " + s);
     }
 
+    private static final Logger JMX_LOGGER = Util.JMX_LOGGER;
+    
     @Inject
     private MBeanServer mMBeanServer;
     @Inject
@@ -119,38 +121,31 @@ public final class JMXStartupService implements PostConstruct {
     private volatile BootAMX mBootAMX;
     private volatile JMXConnectorsStarterThread mConnectorsStarterThread;
     
-    @LoggerInfo(subsystem = "JMX", description="JMX System Logger")
-    private static final String JMX_LOGGER_NAME = "javax.enterprise.system.jmx";
-    
-    @LogMessagesResourceBundle
-    private static final String LOG_MESSAGES_RB = "org.glassfish.admin.mbeanserver.LogMessages";
-    
-    static final Logger JMX_LOGGER = Logger.getLogger(JMX_LOGGER_NAME, LOG_MESSAGES_RB);
     
     @LogMessageInfo(message = "JMXStartupService and JMXConnectors have been shut down.", level="INFO")
-    private static final String JMX_STARTUPSERVICE_SHUTDOWN="NCLS-JMX-00001";
+    private static final String JMX_STARTUPSERVICE_SHUTDOWN=Util.LOG_PREFIX + "00001";
     
     @LogMessageInfo(message="JMXStartupService: Stopped JMXConnectorServer: {0}", level="INFO")
-    private static final String JMX_STARTUPSERVICE_STOPPED_JMX_CONNECTOR="NCLS-JMX-00002";
+    private static final String JMX_STARTUPSERVICE_STOPPED_JMX_CONNECTOR=Util.LOG_PREFIX + "00002";
     
     @LogMessageInfo(message="MBean Registration Exception thrown {0}", level="SEVERE", 
             cause="JMX Connector Server MBean could not be unregistered.", 
             action="Take appropriate action based on the exception message.")
-    private static final String JMX_MBEAN_REG_EXCEPTION="NCLS-JMX-00003";
+    private static final String JMX_MBEAN_REG_EXCEPTION=Util.LOG_PREFIX + "00003";
 
     @LogMessageInfo(message="Instance Not Found Exception thrown {0}", level="SEVERE", 
             cause="JMX Connector Server MBean instance not found.", 
             action="Take appropriate action based on the exception message.")
-    private static final String JMX_INSTANCE_NOT_FOUND_EXCEPTION="NCLS-JMX-00004";
+    private static final String JMX_INSTANCE_NOT_FOUND_EXCEPTION=Util.LOG_PREFIX + "00004";
 
     @LogMessageInfo(message = "JMXStartupService has started JMXConnector on JMXService URL {0}", level="INFO")
-    private static final String JMX_STARTED_SERVICE="NCLS-JMX-00005";
+    private static final String JMX_STARTED_SERVICE=Util.LOG_PREFIX + "00005";
 
     @LogMessageInfo(message = "JMXStartupService has disabled JMXConnector {0}", level="INFO")
-    private static final String JMX_STARTED_SERVICE_DISABLED="NCLS-JMX-00006";
+    private static final String JMX_STARTED_SERVICE_DISABLED=Util.LOG_PREFIX + "00006";
 
     @LogMessageInfo(message = "Cannot start JMX connector {0} due to exception {1}", level="WARNING")
-    private static final String JMX_CANNOT_START_CONNECTOR="NCLS-JMX-00007";
+    private static final String JMX_CANNOT_START_CONNECTOR=Util.LOG_PREFIX + "00007";
 
     public JMXStartupService() {
         mMBeanServer = ManagementFactory.getPlatformMBeanServer();
@@ -279,7 +274,7 @@ public final class JMXStartupService implements PostConstruct {
 
         private JMXConnectorServer startConnector(final JmxConnector connConfig)
                 throws IOException {
-            JMX_LOGGER.fine("Starting JMXConnector: " + toString(connConfig));
+            JMX_LOGGER.log(Level.FINE, "Starting JMXConnector: {0}", toString(connConfig));
 
             final String protocol = connConfig.getProtocol();
             final String address = connConfig.getAddress();

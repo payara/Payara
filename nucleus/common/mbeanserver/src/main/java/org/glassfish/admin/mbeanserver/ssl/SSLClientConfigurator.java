@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,10 +44,13 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.cert.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.*;
+import org.glassfish.admin.mbeanserver.Util;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This class is a utility class that would configure a client socket factory using
@@ -63,12 +66,35 @@ public class SSLClientConfigurator {
     private SSLParams sslParams;
     private static volatile SSLClientConfigurator sslCC;
     private SSLContext sslContext;
-    private SSLSocketFactory sslSocketFactory;
 
-    private static final Logger _logger = Logger.getLogger(SSLClientConfigurator.class.getName());
+    private static final Logger _logger = Util.getLogger();
     private String[] enabledProtocols;
     private String[] enabledCipherSuites;
 
+    @LogMessageInfo(level="SEVERE", message="Error preparing SSL context", action="Please refer to the stack trace", cause="unknown")
+    private final static String errorPreparingSSL = Util.LOG_PREFIX + "00014";
+    
+    @LogMessageInfo(level="WARNING", message="No Key store found for {0}")
+    private final static String noKeyEntry = Util.LOG_PREFIX + "00015";
+    
+    @LogMessageInfo(level="WARNING", message="No keystores defined")
+    private final static String noKeyStores = Util.LOG_PREFIX + "00016";
+    
+    @LogMessageInfo(level="WARNING", message="Bad maxCertLength: {0}")
+    private final static String badMaxCertLength = Util.LOG_PREFIX + "00017";
+
+    @LogMessageInfo(level="SEVERE", message="JSSE keystoreload failed for type = {0} path = {1} {2}", action="Please refer to the stack trace", cause="unknown")
+    private final static String keystoreLoadFailed = Util.LOG_PREFIX + "00018";
+    
+    @LogMessageInfo(level="WARNING", message="All SSL protocol variants disabled for network-listener, using SSL implementation specific defaults")
+    private final static String allVariantsDisabled = Util.LOG_PREFIX + "00019";
+    
+    @LogMessageInfo(level="WARNING", message="All SSL cipher suites disabled for network-listener(s).  Using SSL implementation specific defaults")
+    private final static String allCipherSuitesDisabled = Util.LOG_PREFIX + "00020";
+    
+    @LogMessageInfo(level="WARNING", message="Unknown cipher error for cipher {0}")
+    private final static String unkCipher = Util.LOG_PREFIX + "00021";
+    
     // Private constructor
     private SSLClientConfigurator() {
 
@@ -102,7 +128,8 @@ public class SSLClientConfigurator {
         try {
             sslContext = SSLContext.getInstance(protocol);
         } catch (NoSuchAlgorithmException ex) {
-            _logger.log(Level.SEVERE, null, ex);
+    
+            _logger.log(Level.SEVERE, errorPreparingSSL, ex);
         }
 
         configureCiphersAndProtocols();
@@ -129,7 +156,7 @@ public class SSLClientConfigurator {
             sslContext.init(getKeyManagers(algorithm, keyAlias),
                     getTrustManagers(trustAlgorithm), new SecureRandom());
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, null, ex);
+            _logger.log(Level.SEVERE, errorPreparingSSL, ex);
         }
 
         return sslContext;
@@ -190,8 +217,9 @@ public class SSLClientConfigurator {
                 throws Exception {
 
         // hack
+    
         if(System.getProperty("javax.net.ssl.keyStore") == null) {
-            _logger.log(Level.WARNING, " No keystores defined");
+            _logger.log(Level.WARNING, noKeyStores);
             return null;
         }
         _logger.log(Level.FINE, "Algorithm ::{0}", algorithm);
@@ -203,7 +231,8 @@ public class SSLClientConfigurator {
         KeyStore ks = getStore(sslParams.getKeyStoreType(),
                     sslParams.getKeyStore().getPath(), keystorePass);
         if (keyAlias != null && !ks.isKeyEntry(keyAlias)) {
-            _logger.log(Level.WARNING, "No Key store found for {0}", keyAlias);
+    
+            _logger.log(Level.WARNING, noKeyEntry, keyAlias);
             //throw new IOException( "jsse.alias_no_key_entry for "+keyAlias);
             return null;
         }
@@ -281,7 +310,8 @@ public class SSLClientConfigurator {
                 try {
                     xparams.setMaxPathLength(Integer.parseInt(trustLength));
                 } catch(Exception ex) {
-                    _logger.log(Level.WARNING, "Bad maxCertLength: {0}", trustLength);
+    
+                    _logger.log(Level.WARNING, badMaxCertLength, trustLength);
                 }
             }
             params = xparams;
@@ -348,26 +378,21 @@ public class SSLClientConfigurator {
             }
 
             ks.load(istream, pass.toCharArray());
+    
         } catch (FileNotFoundException fnfe) {
-             _logger.log(Level.SEVERE,
-                    "jsse.keystore_load_failed for:"+
-                    "type = "+ type +
-                    "path = "+ path +
-                    fnfe.getMessage(), fnfe);
+             _logger.log(Level.SEVERE, 
+                     formatMessage(keystoreLoadFailed, type, path, fnfe.getMessage()),
+                     fnfe);
             throw fnfe;
         } catch (IOException ioe) {
              _logger.log(Level.SEVERE,
-                    "jsse.keystore_load_failed for:"+
-                    "type = "+ type +
-                    "path = "+ path +
-                    ioe.getMessage(), ioe);
+                     formatMessage(keystoreLoadFailed, type, path, ioe.getMessage()),
+                     ioe);
             throw ioe;
         } catch(Exception ex) {
-             _logger.log(Level.SEVERE,
-                    "jsse.keystore_load_failed for:"+
-                    "type = "+ type +
-                    "path = "+ path +
-                    ex.getMessage(), ex);
+             _logger.log(Level.SEVERE, 
+                     formatMessage(keystoreLoadFailed, type, path, ex.getMessage()),
+                     ex);
             throw new IOException(ex.getMessage());
         } finally {
             if (istream != null) {
@@ -380,6 +405,11 @@ public class SSLClientConfigurator {
         }
 
         return ks;
+    }
+    
+    private static String formatMessage(final String key, final Object... args) {
+        final String format = Util.JMX_LOGGER.getResourceBundle().getString(key);
+        return MessageFormat.format(format, args);
     }
 
     private void configureCiphersAndProtocols() {
@@ -398,9 +428,9 @@ public class SSLClientConfigurator {
         if (sslParams.getSsl3Enabled() || sslParams.getTlsEnabled()) {
             tmpSSLArtifactsList.add("SSLv2Hello");
         }
+        
         if (tmpSSLArtifactsList.isEmpty()) {
-            _logger.log(Level.WARNING, "All SSL protocol variants disabled for network-listener {0}," +
-                    " using SSL implementation specific defaults");
+            _logger.log(Level.WARNING, allVariantsDisabled);
         } else {
             final String[] protocols = new String[tmpSSLArtifactsList.size()];
             tmpSSLArtifactsList.toArray(protocols);
@@ -428,8 +458,7 @@ public class SSLClientConfigurator {
 
         final String[] ciphers = getJSSECiphers(tmpSSLArtifactsList);
         if (ciphers == null || ciphers.length == 0) {
-            _logger.log(Level.WARNING, "All SSL cipher suites disabled for network-listener(s) {0}." +
-                    "  Using SSL implementation specific defaults");
+            _logger.log(Level.WARNING, allCipherSuitesDisabled);
         } else {
             enabledCipherSuites = ciphers;
         }
@@ -456,7 +485,7 @@ public class SSLClientConfigurator {
                 }
                 final String jsseCipher = getJSSECipher(cipher);
                 if (jsseCipher == null) {
-                    _logger.log(Level.WARNING, "Unknown cipher error");
+                    _logger.log(Level.WARNING, unkCipher, cipher);
                 } else {
                     if (enabledCiphers == null) {
                         enabledCiphers = new HashSet<String>(configuredCiphers.size());

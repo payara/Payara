@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,8 @@ import java.util.logging.Logger;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.rmi.ssl.SslRMIClientSocketFactory;
+import org.glassfish.admin.mbeanserver.Util;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 
     /**
@@ -60,10 +62,16 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
     public final class SecureRMIClientSocketFactory
             extends SslRMIClientSocketFactory  {
 
+        @LogMessageInfo(level="INFO", message="Creating a SecureRMIClientSocketFactory @ {0}with ssl config = {1}")
+        private final static String creatingFactory = Util.LOG_PREFIX + "00022";
+    
+        @LogMessageInfo(level="INFO", message="Setting SSLParams @ {0}")
+        private final static String settingSSLParams = Util.LOG_PREFIX + "00023";
+    
         private InetAddress mAddress;
         private transient SSLParams sslParams;
         private transient Map socketMap = new HashMap<Integer, Socket>();
-        private static final Logger  _logger = Logger.getLogger(SecureRMIClientSocketFactory.class.getName());
+        private static final Logger  _logger = Util.JMX_LOGGER;
 
         public SecureRMIClientSocketFactory(final SSLParams sslParams,
                 final InetAddress addr) {
@@ -72,7 +80,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
             this.sslParams = sslParams;
             if(sslParams != null) {
                 _logger.log(Level.INFO, 
-                        "Creating a SecureRMIClientSocketFactory @ {0}with ssl config = {1}", 
+                        creatingFactory, 
                         new Object[]{addr.getHostAddress(), sslParams.toString()});
             }
         }
@@ -108,7 +116,7 @@ import javax.rmi.ssl.SslRMIClientSocketFactory;
             final int backlog = 5;
 
             SSLClientConfigurator sslCC = SSLClientConfigurator.getInstance();
-            _logger.log(Level.INFO, "Setting SSLParams @ {0}", sslParams);
+            _logger.log(Level.INFO, settingSSLParams, sslParams);
             sslCC.setSSLParams(sslParams);
             SSLContext sslContext = sslCC.configure(sslParams);
             SSLSocket sslSocket =

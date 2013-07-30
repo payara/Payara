@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,7 @@ import java.security.Security;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.MBeanServer;
 import javax.management.remote.JMXAuthenticator;
 import javax.management.remote.JMXConnectorServer;
@@ -71,6 +72,7 @@ import org.glassfish.admin.mbeanserver.ssl.SSLParams;
 import org.glassfish.admin.mbeanserver.ssl.SecureRMIServerSocketFactory;
 import org.glassfish.grizzly.config.dom.Ssl;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * This class configures and starts the JMX RMI connector server using rmi_jrmp protocol.
@@ -99,6 +101,23 @@ final class RMIConnectorStarter extends ConnectorStarter {
     private final SslRMIClientSocketFactory sslCsf;
     private String masterPassword = null;
 
+    private final static Logger JMX_LOGGER = Util.JMX_LOGGER;
+    
+    @LogMessageInfo(level = "INFO", message = "Security enabled")
+    private static final String SECURITY_ENABLED = Util.LOG_PREFIX + "00009";
+    
+    @LogMessageInfo(level = "INFO", message = "Binding RMI port to single IP address = {0}, port {1}")
+    private static final String BINDING_TO_SINGLE_ADDR = Util.LOG_PREFIX + "00026";
+    
+    @LogMessageInfo(level = "SEVERE", message = "Error stopping RMIConnector", action = "unknown", cause = "unknown")
+    private static final String ERROR_STOPPING = Util.LOG_PREFIX + "00011";
+    
+    @LogMessageInfo(level = "INFO", message = "MyRMIJRMPServerImpl: exported on address {0}")
+    private static final String EXPORTED = Util.LOG_PREFIX + "00012";
+                
+    @LogMessageInfo(message = "MyRMIJRMPServerImpl: makeClient on address = {0}")
+    private final static String MAKE_CLIENT = Util.LOG_PREFIX + "00013";
+                
     public RMIConnectorStarter(
             final MBeanServer mbeanServer,
             final String address,
@@ -125,7 +144,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
         // if to be bound to a single IP then use custom ServerSocketFactory
         if (mBindToSingleIP) {
             if (isSecurityEnabled()) {
-                Util.getLogger().info("Security enabled");
+                JMX_LOGGER.info(SECURITY_ENABLED);
                 sslServerSocketFactory = new SecureRMIServerSocketFactory(
                         habitat, sslConfig, inetAddr);
                 sslCsf = getClientSocketFactory(sslConfig);
@@ -205,7 +224,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
             //System.out.println( RMI_HOSTNAME_PROP + " before: " + System.getProperty(RMI_HOSTNAME_PROP) );
             final String saved = setupRMIHostname(addr);
             try {
-                Util.getLogger().log(Level.INFO, "Binding RMI port to single IP address = {0}, port {1}", 
+                JMX_LOGGER.log(Level.INFO, BINDING_TO_SINGLE_ADDR,
                         new Object[]{System.getProperty(RMI_HOSTNAME_PROP), port});
                 registry = _startRegistry(port);
             } finally {
@@ -314,9 +333,11 @@ final class RMIConnectorStarter extends ConnectorStarter {
             }
             UnicastRemoteObject.unexportObject(mRegistry, true);
         } catch (RemoteException ex) {
-            Util.getLogger().log(Level.SEVERE, null, ex);
+            
+            
+            Util.getLogger().log(Level.SEVERE, ERROR_STOPPING, ex);
         } catch (NotBoundException ex) {
-            Util.getLogger().log(Level.SEVERE, null, ex);
+            Util.getLogger().log(Level.SEVERE, ERROR_STOPPING, ex);
         }
     }
 
@@ -468,7 +489,7 @@ final class RMIConnectorStarter extends ConnectorStarter {
             final String saved = setupRMIHostname(mBindToAddr);
             try {
                 super.export();
-                Util.getLogger().log(Level.INFO, "MyRMIJRMPServerImpl: exported on address {0}", 
+                JMX_LOGGER.log(Level.INFO, EXPORTED,
                         mBindToAddr);
             } finally {
                 restoreRMIHostname(saved, mBindToAddr);
@@ -481,8 +502,9 @@ final class RMIConnectorStarter extends ConnectorStarter {
         @Override
         protected synchronized RMIConnection makeClient(final String connectionId, final Subject subject) throws IOException {
             final String saved = setupRMIHostname(mBindToAddr);
+            
             try {
-                Util.getLogger().log(Level.INFO, "MyRMIJRMPServerImpl: makeClient on address = {0}", 
+                Util.getLogger().log(Level.INFO, MAKE_CLIENT, 
                         System.getProperty(RMI_HOSTNAME_PROP));
                 return super.makeClient(connectionId, subject);
             } finally {

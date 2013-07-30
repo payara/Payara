@@ -76,7 +76,7 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  */
 public class AdminAuthorizedMBeanServer {
     
-    private final static Logger mLogger = JMXStartupService.JMX_LOGGER;
+    private final static Logger mLogger = Util.JMX_LOGGER;
     
     @LogMessageInfo(message = "Attempted access to method {0} on object {1} rejected; user was granted {2} but the operation reports its impact as \"{3}\"", level="FINE")
     private final static String JMX_NOACCESS="NCLS-JMX-00010";

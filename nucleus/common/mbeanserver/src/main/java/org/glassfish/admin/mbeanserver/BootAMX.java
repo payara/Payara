@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.admin.mbeanserver;
 
+import java.util.logging.Logger;
 import javax.management.JMException;
 import javax.management.MBeanServer;
 import javax.management.StandardMBean;
@@ -49,6 +50,7 @@ import javax.management.remote.JMXServiceURL;
 import org.glassfish.external.amx.BootAMXMBean;
 import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
 The MBean implementation for BootAMXMBean.
@@ -57,6 +59,8 @@ Public API is the name of the booter MBean eg {@link BootAMXMBean.OBJECT_NAME}
  */
 final class BootAMX implements BootAMXMBean
 {
+    private static final Logger JMX_LOGGER = Util.JMX_LOGGER;
+    
     private final MBeanServer mMBeanServer;
     private final ObjectName mObjectName;
     private final ServiceLocator mHabitat;
@@ -173,6 +177,11 @@ final class BootAMX implements BootAMXMBean
         return JMXStartupService.getJMXServiceURLs(mMBeanServer);
     }
     
+    @LogMessageInfo(
+            message = "Error while shutting down AMX",
+            level = "WARNING")
+    static final String errorDuringShutdown = Util.LOG_PREFIX + "-00008";
+    
     public void shutdown() 
     {
         try
@@ -181,7 +190,7 @@ final class BootAMX implements BootAMXMBean
         }
         catch( final Exception e )
         {
-            Util.getLogger().log( java.util.logging.Level.WARNING, "BootAMX.shutdown", e);
+            Util.getLogger().log(java.util.logging.Level.WARNING, errorDuringShutdown, e);
         }
    }
 }
