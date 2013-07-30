@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,8 @@
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import com.sun.enterprise.transaction.api.JavaEETransactionManager;
+import javax.transaction.Status;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -47,6 +49,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.Callable;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 public class EjbThreadPoolExecutor extends ThreadPoolExecutor {
     public EjbThreadPoolExecutor(int corePoolSize, int maximumPoolSize,
@@ -77,6 +80,27 @@ public class EjbThreadPoolExecutor extends ThreadPoolExecutor {
         sb.append(RuntimeTagNames.THREAD_QUEUE_CAPACITY).append(" ").append(getQueue().remainingCapacity()).append(" ");
         sb.append(RuntimeTagNames.ALLOW_CORE_THREAD_TIMEOUT).append(" ").append(allowsCoreThreadTimeOut()).append(" ");
         return sb.toString();
+    }
+
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        super.afterExecute(r, t);
+        try {
+            JavaEETransactionManager tm = EjbContainerUtilImpl.getInstance().getTransactionManager();
+            if (tm.getTransaction() != null) {
+                int st = tm.getStatus();
+                Logger logger = EjbContainerUtilImpl.getLogger();
+                logger.warning("NON-NULL TX IN AFTER_EXECUTE. TX STATUS: " + st);
+                if (st == Status.STATUS_ROLLEDBACK || st == Status.STATUS_COMMITTED ||
+                        st == Status.STATUS_UNKNOWN) {
+                    tm.clearThreadTx();
+                } else {
+                    tm.rollback();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     
     private static class ThreadFactoryImpl implements ThreadFactory {
