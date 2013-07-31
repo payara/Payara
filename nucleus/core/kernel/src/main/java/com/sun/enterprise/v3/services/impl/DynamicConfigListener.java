@@ -118,7 +118,7 @@ public class DynamicConfigListener implements ConfigListener {
                          * be a jmx-connector.
                          */
                         final ConfigBeanProxy parent = t.getParent();
-                        if (parent.getClass() == Protocol.class) {
+                        if (parent instanceof Protocol) {
                             return processProtocol(type, (Protocol) parent, null);
                         }
                     } else if (tClass == Protocol.class && t instanceof Protocol) {
