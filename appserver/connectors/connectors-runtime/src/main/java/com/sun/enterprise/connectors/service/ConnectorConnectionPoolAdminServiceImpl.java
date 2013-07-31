@@ -104,6 +104,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @param rarName Name of the resource adapter
      * @throws ConnectorRuntimeException When creation of pool fails.
      */
+/*
     public void createConnectorConnectionPool(ConnectorConnectionPool ccp,
                                               ConnectionDefDescriptor cdd, String rarName)
             throws ConnectorRuntimeException {
@@ -142,6 +143,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                 connectorDescriptor.getConfigProperties());
         createConnectorConnectionPool(ccp, cdi);
     }
+*/
 
     /**
      * Creates connector connection pool in the connector container.
@@ -154,6 +156,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @throws ConnectorRuntimeException When creation of pool fails.
      */
 
+/*
     private void createConnectorConnectionPool(
             ConnectorConnectionPool connectorPoolObj,
             ConnectorDescriptorInfo connectorDescInfo)
@@ -162,6 +165,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
         connectorPoolObj.setConnectorDescriptorInfo(connectorDescInfo);
         createConnectorConnectionPool(connectorPoolObj);
     }
+*/
 
     /**
      * Creates connector connection pool in the connector container.
@@ -231,6 +235,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
      * @param configProperties MCF config properties
      * @throws ConnectorRuntimeException When creation of pool fails.
      */
+/*
     public void createConnectorConnectionPool(
             ConnectorConnectionPool connectorPoolObj, String security,
             Set configProperties) throws ConnectorRuntimeException {
@@ -284,6 +289,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
 
         createConnectorConnectionPool(connectorPoolObj, connectorDescInfo);
     }
+*/
 
 
     /**
@@ -1445,6 +1451,7 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
             throw new ConnectorRuntimeException(i18nMsg);
         }
 
+/*
         ConnectorDescriptor connectorDescriptor =
                 _registry.getDescriptor(rarName);
         if(connectorDescriptor == null){
@@ -1489,6 +1496,9 @@ public class ConnectorConnectionPoolAdminServiceImpl extends ConnectorService {
                 connectorDescriptor.getConfigProperties());
         ccp.setSecurityMaps(SecurityMapUtils.getConnectorSecurityMaps(securityMaps));
         createConnectorConnectionPool(ccp, cdi);
+*/
+        createConnectorConnectionPool(ccp);
+
     }
     
     /**

@@ -47,6 +47,7 @@ import com.sun.enterprise.connectors.ConnectorConnectionPool;
 import com.sun.enterprise.connectors.ConnectorDescriptorInfo;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ConnectionPoolObjectsUtils;
+import com.sun.enterprise.connectors.util.ConnectorDDTransformUtils;
 import com.sun.enterprise.connectors.util.SecurityMapUtils;
 import com.sun.enterprise.deployment.ConnectionDefDescriptor;
 import com.sun.enterprise.deployment.ConnectorConfigProperty;
@@ -466,46 +467,19 @@ public class ConnectorConnectionPoolDeployer extends AbstractConnectorResourceDe
         cdi.setConnectionFactoryInterface(cdd.getConnectionFactoryIntf());
         cdi.setConnectionClass(cdd.getConnectionImpl());
         cdi.setConnectionInterface(cdd.getConnectionIntf());
-        Set mergedProps = mergeProps(props, cdd.getConfigProperties(), rarName);
+        Properties properties = new Properties();
+        //skip the AddressList in case of JMS RA.
+        //Refer Sun Bug :6579154 - Equivalent Oracle Bug :12206278
+        if(rarName.trim().equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)){
+            properties.put("AddressList","localhost");
+        }
+        Set mergedProps = ConnectorDDTransformUtils.mergeProps(props, cdd.getConfigProperties(),properties);
         cdi.setMCFConfigProperties(mergedProps);
         cdi.setResourceAdapterConfigProperties(connectorDescriptor.getConfigProperties());
         ccp.setConnectorDescriptorInfo(cdi);
         ccp.setSecurityMaps(SecurityMapUtils.getConnectorSecurityMaps(securityMaps));
 
     }
-
-    private Set mergeProps(List<Property> props, Set defaultMCFProps,
-                           String rarName) {
-        HashSet mergedSet = new HashSet();
-
-        Object[] defaultProps = (defaultMCFProps == null) ?
-                new Object[0] :
-                defaultMCFProps.toArray();
-
-        for (int i = 0; i < defaultProps.length; i++) {
-            if (rarName.trim().equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
-                ConnectorConfigProperty ep1 = (ConnectorConfigProperty) defaultProps[i];
-                if (ep1.getName().equals("AddressList") && ep1.getValue().equals("localhost")) {
-                    continue;
-                }
-            }
-            mergedSet.add(defaultProps[i]);
-        }
-
-        for (Property property : props) {
-            if (property != null) {
-                ConnectorConfigProperty ep = new ConnectorConfigProperty(
-                        property.getName(), property.getValue(), null);
-                if (defaultMCFProps.contains(ep)) {
-                    mergedSet.remove(ep);
-                }
-                mergedSet.add(ep);
-            }
-        }
-        return mergedSet;
-    }
-
-
 
     private int parseTransactionSupportString(String txSupport) {
         return ConnectionPoolObjectsUtils.parseTransactionSupportString(txSupport);

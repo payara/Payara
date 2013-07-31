@@ -55,10 +55,7 @@ import org.xml.sax.SAXParseException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -117,57 +114,83 @@ public class ConnectorDDTransformUtils {
      * Second parameter contains values mentioned in deployment descriptors.
      *
      * @param props      Array of  properties that needs to be merged with
+     *                   properties mentioned in deployment descriptor. These values
+     *                   takes precedence over  values present in deployment descriptors.
+     * @param propertiesToSkip properties to be skipped while merging. They will be skipped
+     *                         only when both its name as well as its value match.
+     * @return Set of merged properties.
+     */
+    public static Set mergeProps(List<Property> props, Set defaultMCFProps, Properties propertiesToSkip) {
+        HashSet mergedSet = new HashSet();
+
+            if (defaultMCFProps != null) {
+                Object[] defaultProps = defaultMCFProps.toArray();
+
+                for (int i = 0; i < defaultProps.length; i++) {
+                        ConnectorConfigProperty ep1 = (ConnectorConfigProperty) defaultProps[i];
+                        if(propertiesToSkip.containsKey(ep1.getName())){
+                            //Skip the property if the values are equal
+                            String propertyValue = (String)propertiesToSkip.get(ep1.getName());
+                            if(ep1.getValue() != null && propertyValue != null){
+                                if(ep1.getValue().equals(propertyValue)){
+                                    continue;
+                                }
+                            }
+                        }
+                    mergedSet.add(defaultProps[i]);
+                }
+            }
+
+            for (Property property : props) {
+                ConnectorConfigProperty  ep = new ConnectorConfigProperty (
+                        property.getName(), property.getValue(), null);
+                if (defaultMCFProps.contains(ep)) {
+                    //get the environment property in the mergedset
+                    Iterator iter = defaultMCFProps.iterator();
+                    while (iter.hasNext()) {
+                        ConnectorConfigProperty  envProp =
+                                (ConnectorConfigProperty ) iter.next();
+                        if (envProp.equals(ep)) {
+                        //and if they are equal, set ep's type to envProp's type
+                        //This set is important because envProp has the ra.xml
+                        //specified property-Type. When the ra-bean-class does
+                        //not have any getter method for a property, the property
+                        //Type specified in ra.xml should be used.
+
+                            if (envProp.getType() != null) {
+                                ep.setType(envProp.getType());
+                            }
+                            //Make sure that the new environment property inherits
+                            //confidential flag from the DD's property.
+                            ep.setConfidential(envProp.isConfidential());
+                        }
+                    }
+
+                    if(_logger.isLoggable(Level.FINER)) {
+                        _logger.log(Level.FINER,
+                            "After merging props with defaultMCFProps: envPropName: "
+                                    + ep.getName() + " envPropValue : " + ep.getValue());
+                    }
+                    mergedSet.remove(ep);
+                }
+                mergedSet.add(ep);
+            }
+            return mergedSet;
+    }
+    /**
+     * merges the properties mentioned in first parameter with the Set of
+     * properties mentioned in second parameter.
+     * Values of first parameter takes precedence over second.
+     * First parameter represents properties present in domain.xml
+     * Second parameter contains values mentioned in deployment descriptors.
+     *
+     * @param props      Array of  properties that needs to be merged with
      *                   properties mentioned in deployement descriptor. These values
      *                   takes precedence over  values present in deployment descriptors.
-     * @param Properties present in deployment descriptor.
      * @return Set of merged properties.
      */
     public static Set mergeProps(List<Property> props, Set defaultMCFProps) {
-        HashSet mergedSet = new HashSet();
-
-        if (defaultMCFProps != null) {
-            Object[] defaultProps = defaultMCFProps.toArray();
-
-            for (int i = 0; i < defaultProps.length; i++) {
-                mergedSet.add(defaultProps[i]);
-            }
-        }
-
-        for (Property property : props) {
-            ConnectorConfigProperty  ep = new ConnectorConfigProperty (
-                    property.getName(), property.getValue(), null);
-            if (defaultMCFProps.contains(ep)) {
-                //get the environment property in the mergedset
-                Iterator iter = defaultMCFProps.iterator();
-                while (iter.hasNext()) {
-                    ConnectorConfigProperty  envProp =
-                            (ConnectorConfigProperty ) iter.next();
-                    if (envProp.equals(ep)) {
-                    //and if they are equal, set ep's type to envProp's type
-                    //This set is important because envProp has the ra.xml
-                    //specified property-Type. When the ra-bean-class does
-                    //not have any getter method for a property, the property
-                    //Type specified in ra.xml should be used.
-
-                        if (envProp.getType() != null) {
-                            ep.setType(envProp.getType());
-                        }
-                        //Make sure that the new environment property inherits
-                        //confidential flag from the DD's property.
-                        ep.setConfidential(envProp.isConfidential());
-                    }
-                }
-
-                if(_logger.isLoggable(Level.FINER)) {
-                    _logger.log(Level.FINER,
-                        "After merging props with defaultMCFProps: envPropName: "
-                                + ep.getName() + " envPropValue : " + ep.getValue());
-                }
-                mergedSet.remove(ep);
-            }
-            mergedSet.add(ep);
-        }
-        return mergedSet;
+        return mergeProps(props, defaultMCFProps, new Properties());
     }
 
     /**
