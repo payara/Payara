@@ -107,6 +107,7 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.logging.LogDomains;
+import org.glassfish.admin.mbeanserver.JMXStartupService;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.connectors.config.AdminObjectResource;
@@ -1694,7 +1695,17 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private String getConfiguredRmiRegistryHost() throws Exception {
-        return getJmxConnector().getAddress();
+        String hostName = getJmxConnector().getAddress();
+        if (hostName.equals("") || hostName.equals("0.0.0.0")) {
+            try {
+                hostName = java.net.InetAddress.getLocalHost().getCanonicalHostName();
+            } catch (java.net.UnknownHostException e) {
+                hostName = "localhost";
+            }
+        } else if (hostName.contains(":") && !hostName.startsWith("[")) {
+            return "["+hostName+"]";
+        }
+        return hostName;
     }
 
     private String getConfiguredRmiRegistryPort() throws Exception {
@@ -1715,29 +1726,49 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private boolean isASRmiRegistryPortAvailable(JmsRaUtil jmsraUtil) {
-        logFine("isASRmiRegistryPortAvailable - JMSService Type:" + jmsraUtil.getJMSServiceType());
-     //If JMSServiceType is REMOTE, then we need not ask the MQ RA to use the
-     //AS RMI Registry. So the check below is not necessary.
-     if (jmsraUtil.getJMSServiceType().equals(REMOTE)
-        || jmsraUtil.getJMSServiceType().equals(LOCAL)) {
-         return false;
-     }
+         logFine("isASRmiRegistryPortAvailable - JMSService Type:" + jmsraUtil.getJMSServiceType());
+         //If JMSServiceType is LOCAL or REMOTE, then we need not ask the MQ RA to use the
+         //AS RMI Registry. So the check below is not necessary.
+         if (jmsraUtil.getJMSServiceType().equals(REMOTE)
+            || jmsraUtil.getJMSServiceType().equals(LOCAL)) {
+             return false;
+         }
 
-        String name = null;
         try {
-           //Attempt to connect to the RMI registry
-            name = "rmi://"+getConfiguredRmiRegistryHost() + ":" + getConfiguredRmiRegistryPort();
+            JmxConnector jmxConnector = getJmxConnector();
+            if (!"true".equals(jmxConnector.getEnabled()))
+                return false;
+
+            if ("true".equals(jmxConnector.getSecurityEnabled()))
+                return false;
+
+           //Attempt to detect JMXStartupService for RMI registry
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("Detecting JMXStartupService...");
+            }
+            JMXStartupService jmxservice = Globals.get(JMXStartupService.class);
+            if (jmxservice == null)
+                return false;
+
+            jmxservice.waitUntilJMXConnectorStarted();
+
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("Found JMXStartupService");
+            }
+
+            String name = "rmi://"+getConfiguredRmiRegistryHost() + ":" + getConfiguredRmiRegistryPort() + "/jmxrmi";
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.fine("Attempting to list " + name);
             }
-            String[] ss = Naming.list(name);
+            Naming.list(name);
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.fine("List on " + name + " succeeded");
             }
+
             //return configured port only if RMI registry is available
             return true;
         } catch (Exception e) {
-            _logger.fine(e.getMessage() + " " + name);
+            _logger.fine("Failed to detect JMX RMI Registry: " + e.getMessage());
             return false;
         }
     }

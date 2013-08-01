@@ -92,7 +92,7 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  * which will initialize (boot) AMX when a connection arrives.
  */
 @Service
-@RunLevel(PostStartupRunLevel.VAL)
+@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=PostStartupRunLevel.VAL)
 public final class JMXStartupService implements PostConstruct {
 
     private static void debug(final String s) {
@@ -117,6 +117,11 @@ public final class JMXStartupService implements PostConstruct {
     
     @Inject
     private ServerEnvironment serverEnv;
+
+    public enum JMXConnectorStatus {STOPPED, STARTED};
+
+    private volatile JMXConnectorStatus jmxConnectorstatus = JMXConnectorStatus.STOPPED;
+    private Object lock = new Object();
     
     private volatile BootAMX mBootAMX;
     private volatile JMXConnectorsStarterThread mConnectorsStarterThread;
@@ -160,6 +165,16 @@ public final class JMXStartupService implements PostConstruct {
         }
     }
 
+    public void waitUntilJMXConnectorStarted() {
+        synchronized (lock) {
+            while (jmxConnectorstatus != JMXConnectorStatus.STARTED) {
+                try {
+                    lock.wait();
+                } catch (InterruptedException e) {}
+            }
+        }
+    }
+
     public void postConstruct() {
         mBootAMX = BootAMX.create(mHabitat, mMBeanServer);
 
@@ -168,7 +183,7 @@ public final class JMXStartupService implements PostConstruct {
         final boolean autoStart = false;
 
         mConnectorsStarterThread = new JMXConnectorsStarterThread(
-                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance(), mBootAMX), configuredConnectors, mBootAMX, !autoStart);
+                AdminAuthorizedMBeanServer.newInstance(mMBeanServer, serverEnv.isInstance(), mBootAMX), configuredConnectors, mBootAMX, !autoStart, this);
         mConnectorsStarterThread.start();
 
         // start AMX *first* (if auto start) so that it's ready
@@ -223,16 +238,19 @@ public final class JMXStartupService implements PostConstruct {
         private final boolean mNeedBootListeners;
         ConnectorStarter starter;
         ObjectName connObjectName;
+        JMXStartupService service;
 
         public JMXConnectorsStarterThread(
                 final MBeanServer mbs,
                 final List<JmxConnector> configuredConnectors,
                 final BootAMX amxBooter,
-                final boolean needBootListeners) {
+                final boolean needBootListeners,
+                JMXStartupService service) {
             mMBeanServer = mbs;
             mConfiguredConnectors = configuredConnectors;
             mAMXBooterNew = amxBooter;
             mNeedBootListeners = needBootListeners;
+            this.service = service;
         }
 
         void shutdown() {
@@ -249,14 +267,17 @@ public final class JMXStartupService implements PostConstruct {
             } catch (InstanceNotFoundException ex) {
                 JMX_LOGGER.log(Level.SEVERE, JMX_INSTANCE_NOT_FOUND_EXCEPTION, ex);
             }
-            for (final JMXConnectorServer connector : mConnectorServers) {
-                try {
-                    final JMXServiceURL address = connector.getAddress();
-                    connector.stop();
-                    JMX_LOGGER.log(Level.INFO, JMX_STARTUPSERVICE_STOPPED_JMX_CONNECTOR, address);
-                } catch (final Exception e) {
-                    e.printStackTrace();
+            synchronized (service.lock) {
+                for (final JMXConnectorServer connector : mConnectorServers) {
+                    try {
+                        final JMXServiceURL address = connector.getAddress();
+                        connector.stop();
+                        JMX_LOGGER.log(Level.INFO, JMX_STARTUPSERVICE_STOPPED_JMX_CONNECTOR, address);
+                    } catch (final Exception e) {
+                        e.printStackTrace();
+                    }
                 }
+                service.jmxConnectorstatus = JMXConnectorStatus.STOPPED;
             }
             mConnectorServers.clear();
         }
@@ -318,19 +339,23 @@ public final class JMXStartupService implements PostConstruct {
         private final List<JMXConnectorServer> mConnectorServers = new ArrayList<JMXConnectorServer>();
 
         public void run() {
-            for (final JmxConnector c : mConfiguredConnectors) {
-                if (!Boolean.parseBoolean(c.getEnabled())) {
-                    JMX_LOGGER.log(Level.INFO, JMX_STARTED_SERVICE_DISABLED, c.getName());
-                    continue;
-                }
+            synchronized (service.lock) {
+                for (final JmxConnector c : mConfiguredConnectors) {
+                    if (!Boolean.parseBoolean(c.getEnabled())) {
+                        JMX_LOGGER.log(Level.INFO, JMX_STARTED_SERVICE_DISABLED, c.getName());
+                        continue;
+                    }
 
-                try {
-                    final JMXConnectorServer server = startConnector(c);
-                    mConnectorServers.add(server);
-                } catch (final Throwable t) {
-                    JMX_LOGGER.log(Level.WARNING, JMX_CANNOT_START_CONNECTOR, new Object[]{toString(c), t});
-                    t.printStackTrace();
+                    try {
+                        final JMXConnectorServer server = startConnector(c);
+                        mConnectorServers.add(server);
+                    } catch (final Throwable t) {
+                        JMX_LOGGER.log(Level.WARNING, JMX_CANNOT_START_CONNECTOR, new Object[]{toString(c), t});
+                        t.printStackTrace();
+                    }
                 }
+                service.jmxConnectorstatus = JMXConnectorStatus.STARTED;
+                service.lock.notifyAll();
             }
         }
     }

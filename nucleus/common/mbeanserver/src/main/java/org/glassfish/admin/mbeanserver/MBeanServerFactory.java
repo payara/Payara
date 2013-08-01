@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -53,7 +53,7 @@ import org.glassfish.internal.api.PostStartupRunLevel;
     for modules doing @Inject MBeanServer.
  */
 @Service
-@RunLevel(PostStartupRunLevel.VAL)
+@RunLevel(mode=RunLevel.RUNLEVEL_MODE_NON_VALIDATING, value=PostStartupRunLevel.VAL)
 public final class MBeanServerFactory implements Factory<MBeanServer> {
     private static void debug( final String s ) { System.out.println(s); }
     
