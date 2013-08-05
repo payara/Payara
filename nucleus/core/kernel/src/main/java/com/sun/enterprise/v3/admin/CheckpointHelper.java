@@ -67,11 +67,16 @@ import org.glassfish.api.admin.Payload.Part;
 import com.sun.enterprise.util.io.FileUtils;
 import java.io.FilenameFilter;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.admin.Job;
 import org.glassfish.api.admin.JobManager;
 import org.glassfish.common.util.ObjectInputOutputStreamFactory;
@@ -110,6 +115,8 @@ public class CheckpointHelper {
         private String attachmentId;
         private final File parentDir;
         
+        private String cachedFileName;
+        
         private CheckpointFilename(String jobId, File parentDir, ExtensionType ext) {
             this.ext = ext;
             this.jobId = jobId;
@@ -131,6 +138,7 @@ public class CheckpointHelper {
         public CheckpointFilename(File file) throws IOException {
             this.parentDir = file.getParentFile();
             String name = file.getName();
+            this.cachedFileName = name;
             //Find extension
             int ind = name.lastIndexOf('.');
             if (ind <= 0) {
@@ -180,13 +188,29 @@ public class CheckpointHelper {
         
         @Override
         public String toString() {
-            StringBuilder result = new StringBuilder();
-            result.append(jobId);
-            if (ext == ExtensionType.ATTACHMENT) {
-                result.append("-").append(StringUtils.nvl(attachmentId));
+            if (cachedFileName == null) {
+                StringBuilder result = new StringBuilder();
+                result.append(jobId);
+                if (ext == ExtensionType.ATTACHMENT) {
+                    result.append("-");
+                    if (attachmentId == null) {
+                        result.append("null");
+                    } else if (!attachmentId.isEmpty()) {
+                        try {
+                            MessageDigest md = MessageDigest.getInstance("MD6");
+                            byte[] thedigest = md.digest(attachmentId.getBytes("UTF-8"));
+                            for (int i = 0; i < thedigest.length; i++) {
+                                result.append(Integer.toString((thedigest[i] & 0xff) + 0x100, 16).substring(1));
+                            }
+                        } catch (Exception ex) {
+                            result.append(attachmentId);
+                        }
+                    }
+                }
+                result.append(EXTENSIONS.get(ext));
+                cachedFileName = result.toString();
             }
-            result.append(EXTENSIONS.get(ext));
-            return result.toString();
+            return cachedFileName;
         }
         
         public File getFile() {
