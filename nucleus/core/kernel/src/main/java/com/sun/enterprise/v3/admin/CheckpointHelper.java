@@ -197,7 +197,7 @@ public class CheckpointHelper {
                         result.append("null");
                     } else if (!attachmentId.isEmpty()) {
                         try {
-                            MessageDigest md = MessageDigest.getInstance("MD6");
+                            MessageDigest md = MessageDigest.getInstance("MD5");
                             byte[] thedigest = md.digest(attachmentId.getBytes("UTF-8"));
                             for (int i = 0; i < thedigest.length; i++) {
                                 result.append(Integer.toString((thedigest[i] & 0xff) + 0x100, 16).substring(1));
