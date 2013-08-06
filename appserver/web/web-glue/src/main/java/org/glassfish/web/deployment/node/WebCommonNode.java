@@ -111,8 +111,8 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
                                                             TagLibNode.class);                      
         registerElementHandler(new XMLElement(WebTagNames.JSPCONFIG),         
                                                             JspConfigNode.class);                      
-        registerElementHandler(new XMLElement(WebTagNames.LOCALE_ENCODING_MAPPING_LIST), 
-                                                            LocaleEncodingMappingListNode.class, "addLocaleEncodingMappingListDescriptor");         
+        registerElementHandler(new XMLElement(WebTagNames.LOCALE_ENCODING_MAPPING),
+                                                            LocaleEncodingMappingNode.class, "addLocaleEncodingMappingDescriptor");
         registerElementHandler(new XMLElement(TagNames.MESSAGE_DESTINATION),
                                MessageDestinationNode.class,
                                "addMessageDestination");
@@ -412,16 +412,18 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         writeResourceDescriptors(jarNode, webBundleDesc.getAllResourcesDescriptors().iterator());
 
         // message-destination*
-       writeMessageDestinations
-           (jarNode, webBundleDesc.getMessageDestinations().iterator());
+        writeMessageDestinations
+            (jarNode, webBundleDesc.getMessageDestinations().iterator());
 
-       LocaleEncodingMappingListDescriptor lemDesc = webBundleDesc.getLocaleEncodingMappingListDescriptor();
-	if(lemDesc != null) {
-	    LocaleEncodingMappingListNode ln = new LocaleEncodingMappingListNode();
-	    ln.writeDescriptor(jarNode, 
-				WebTagNames.LOCALE_ENCODING_MAPPING_LIST,
-				lemDesc);
-	}           
+        // locale-encoding-mapping-list
+        LocaleEncodingMappingListDescriptor lemListDesc = webBundleDesc.getLocaleEncodingMappingListDescriptor();
+        if (lemListDesc != null) {
+            Node lemList = appendChild(jarNode, WebTagNames.LOCALE_ENCODING_MAPPING_LIST);
+            LocaleEncodingMappingNode lemNode = new LocaleEncodingMappingNode();
+            for (LocaleEncodingMappingDescriptor lemDesc : lemListDesc.getLocaleEncodingMappingSet()) {
+                lemNode.writeDescriptor(lemList, WebTagNames.LOCALE_ENCODING_MAPPING, lemDesc);
+            }
+        }
 
         if (webBundleDesc.getSessionConfig() != null) {
             SessionConfigNode scNode = new SessionConfigNode();

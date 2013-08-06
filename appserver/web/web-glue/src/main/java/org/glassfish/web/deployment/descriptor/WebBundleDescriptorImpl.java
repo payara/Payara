@@ -109,7 +109,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private String contextRoot;
     private LoginConfiguration loginConfiguration;
     private Set<EnvironmentEntry> environmentEntries;
-    private LocaleEncodingMappingListDescriptor localeEncodingMappingDesc = null;
+    private LocaleEncodingMappingListDescriptor localeEncodingMappingListDesc = null;
     private JspConfigDescriptorImpl jspConfigDescriptor = null;
 
     private Vector<ServletFilter> servletFilters = null;
@@ -662,11 +662,19 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     }
 
     public LocaleEncodingMappingListDescriptor getLocaleEncodingMappingListDescriptor() {
-        return localeEncodingMappingDesc;
+        return localeEncodingMappingListDesc;
     }
 
-    public void setLocaleEncodingMappingListDescriptor(LocaleEncodingMappingListDescriptor lemDesc) {
-        localeEncodingMappingDesc = lemDesc;
+    public void setLocaleEncodingMappingListDescriptor(LocaleEncodingMappingListDescriptor lemListDesc) {
+        localeEncodingMappingListDesc = lemListDesc;
+    }
+
+    public void addLocaleEncodingMappingDescriptor(LocaleEncodingMappingDescriptor lemDesc) {
+        if (localeEncodingMappingListDesc == null) {
+            localeEncodingMappingListDesc = new LocaleEncodingMappingListDescriptor();
+        }
+
+        localeEncodingMappingListDesc.addLocaleEncodingMapping(lemDesc);
     }
 
     /**
