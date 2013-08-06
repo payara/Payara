@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Resource;
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Map;
@@ -82,6 +83,8 @@ public class DeleteJMSResource implements AdminCommand {
     String target = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME;
     @Param(name = "jndi_name", primary = true)
     String jndiName;
+    @Param(optional=true, defaultValue="false")
+    Boolean cascade;
     @Inject
     CommandRunner commandRunner;
     @Inject
@@ -139,9 +142,27 @@ public class DeleteJMSResource implements AdminCommand {
                 return;
             }
         } else {
+            if (!cascade) {
+                Collection<ConnectorResource> connectorResources = domain.getResources().getResources(ConnectorResource.class);
+                String connPoolName = jndiName + JNDINAME_APPENDER;
+                int count = 0;
+                for (ConnectorResource resource : connectorResources) {
+                    if (connPoolName.equals(resource.getPoolName())) {
+                        count ++;
+                        if (count > 1)
+                            break;
+                    }
+                }
+                if (count > 1) {
+                    report.setMessage(localStrings.getLocalString("found.more.connector.resources",
+                            "Some connector resources are referencing connection pool {0}. Use 'cascade' option to delete them", connPoolName));
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    return;
+                }
+            }
+
             ActionReport listReport = habitat.getService(ActionReport.class);
             ParameterMap listParams = new ParameterMap();
-            //listParams.set("resType", "javax.jms.ConnectionFactory");
             listParams.set("target", target);
             commandRunner.getCommandInvocation("list-jms-resources", listReport, context.getSubject()).parameters(listParams).execute();
             if (ActionReport.ExitCode.FAILURE.equals(listReport.getActionExitCode())) {
@@ -193,6 +214,7 @@ public class DeleteJMSResource implements AdminCommand {
 
                 params = new ParameterMap();
                 params.set("poolname", jndiName);
+                params.set("cascade", cascade.toString());
                 params.set("DEFAULT", jndiNameForConnectionPool);
                 commandRunner.getCommandInvocation("delete-connector-connection-pool", subReport, context.getSubject()).parameters(params).execute();
 
