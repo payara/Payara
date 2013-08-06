@@ -330,7 +330,7 @@ public class CheckpointHelper {
         return checkpoint;
     }
     
-    public Serializable loadAttachment(Job job, String attachmentId) throws IOException, ClassNotFoundException {
+    public <T extends Serializable> T loadAttachment(Job job, String attachmentId) throws IOException, ClassNotFoundException {
         CheckpointFilename cf = CheckpointFilename.createAttachment(job, attachmentId);
         File file = cf.getFile();
         if (!file.exists()) {
@@ -341,7 +341,7 @@ public class CheckpointHelper {
         try {
             fis = new FileInputStream(cf.getFile());
             ois = factory.createObjectInputStream(fis);
-            return (Serializable) ois.readObject();
+            return (T) ois.readObject();
         } finally {
             try {ois.close();} catch (Exception ex) {
             }

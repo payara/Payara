@@ -474,7 +474,7 @@ public class JobManagerService implements JobManager, PostConstruct, EventListen
         checkpointHelper.saveAttachment(data, job, attachId);
     }
     
-    public Serializable loadCheckpointAttachement(String jobId, String attachId) throws IOException, ClassNotFoundException {
+    public <T extends Serializable> T loadCheckpointAttachement(String jobId, String attachId) throws IOException, ClassNotFoundException {
         Job job = get(jobId);
         if (job.getJobsFile() == null) {
             job.setJobsFile(getJobsFile());

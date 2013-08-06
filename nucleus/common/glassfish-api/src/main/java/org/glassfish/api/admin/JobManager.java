@@ -167,6 +167,6 @@ public interface JobManager {
     
     /** Load checkpoint related data.
      */
-    public Serializable loadCheckpointData(String jobId) throws IOException, ClassNotFoundException;
+    public <T extends Serializable> T loadCheckpointData(String jobId) throws IOException, ClassNotFoundException;
 
 }
