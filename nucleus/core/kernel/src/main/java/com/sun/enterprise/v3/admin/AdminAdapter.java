@@ -530,7 +530,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
             if (validatePrivacy(adminCommand)) {
             //if (adminCommand.getClass().getAnnotation(Visibility.class).privacy().equals(visibility.privacy())) {
                 // todo : needs to be changed, we should reuse adminCommand
-                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(scope, command, report, subject);
+                CommandRunner.CommandInvocation inv = commandRunner.getCommandInvocation(scope, command, report, subject,parameters.containsKey("notify"));
                 inv.parameters(parameters).inbound(inboundPayload).outbound(outboundPayload).execute();
                 try {
                     // note it has become extraordinarily difficult to change the reporter!

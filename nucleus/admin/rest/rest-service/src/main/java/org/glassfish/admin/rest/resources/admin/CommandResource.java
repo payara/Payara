@@ -359,7 +359,7 @@ public class CommandResource {
         //Execute it
         final CommandRunner.CommandInvocation commandInvocation =
                 getCommandRunner().getCommandInvocation(commandName.getScope(),
-                commandName.getName(), new PropsFileActionReporter(), getSubject());
+                commandName.getName(), new PropsFileActionReporter(), getSubject(),params.containsKey("notify"));
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }
@@ -389,7 +389,7 @@ public class CommandResource {
         ActionReporter ar = new PropsFileActionReporter(); //new RestActionReporter(); //Must use PropsFileActionReporter because some commands react diferently on it :-(
         final RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(false);
         final CommandRunner.CommandInvocation commandInvocation =
-                getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar, getSubject());
+                getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar, getSubject(),params.containsKey("notify"));
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }

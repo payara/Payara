@@ -129,7 +129,7 @@ public interface CommandRunner {
     public AdminCommand getCommand(String scope, String commandName, ActionReport report, Logger logger);
 
     /**
-     * Obtain a new command invocation object for the null scope. Command invocations can 
+     * Obtain a new command invocation object for the null scope. Command invocations can
      * be configured and used to trigger a command execution.
      *
      * @param name name of the requested command to invoke
@@ -150,6 +150,31 @@ public interface CommandRunner {
      * @return a new command invocation for that command name.
      */
     CommandInvocation getCommandInvocation(String scope, String name, ActionReport report, Subject subject);
+
+    /**
+     * Obtain a new command invocation object for the null scope. Command invocations can
+     * be configured and used to trigger a command execution.
+     *
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @param subject the Subject under which to execute the command
+     * @param isNotify should notification be enabled
+     * @return a new command invocation for that command name.
+     */
+    CommandInvocation getCommandInvocation(String name, ActionReport report, Subject subject, boolean isNotify);
+
+    /**
+     * Obtain a new command invocation object. Command invocations can be configured and used
+     * to trigger a command execution.
+     *
+     * @param scope the scope (or namespace) for the command
+     * @param name name of the requested command to invoke
+     * @param report where to place the status of the command execution
+     * @param subject the Subject under which to execute the command
+     * @param isNotify should notification be enabled
+     * @return a new command invocation for that command name.
+     */
+    CommandInvocation getCommandInvocation(String scope, String name, ActionReport report, Subject subject, boolean isNotify);
 
     /**
      * CommandInvocation defines a command excecution context like the requested

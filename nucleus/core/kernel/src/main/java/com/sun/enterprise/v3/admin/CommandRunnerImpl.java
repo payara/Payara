@@ -313,6 +313,16 @@ public class CommandRunnerImpl implements CommandRunner {
         return command;
     }
 
+    @Override
+    public CommandInvocation getCommandInvocation(String name, ActionReport report, Subject subject) {
+        return getCommandInvocation(name,report,subject,false);
+    }
+
+    @Override
+    public CommandInvocation getCommandInvocation(String scope, String name, ActionReport report, Subject subject) {
+        return getCommandInvocation(scope,name,report,subject,false);
+    }
+
     /**
      * Obtain a new command invocation object for the null scope.
      * Command invocations can be configured and used
@@ -325,8 +335,8 @@ public class CommandRunnerImpl implements CommandRunner {
      */
     @Override
     public CommandInvocation getCommandInvocation(String name,
-            ActionReport report, Subject subject) {
-        return getCommandInvocation(null, name, report, subject);
+            ActionReport report, Subject subject,boolean isNotify) {
+        return getCommandInvocation(null, name, report, subject,false);
     }
 
     /**
@@ -338,12 +348,13 @@ public class CommandRunnerImpl implements CommandRunner {
      * @param name name of the requested command to invoke
      * @param report where to place the status of the command execution
      * @param subject the Subject under which to execute the command
+     * @param isNotify  Should notification be enabled
      * @return a new command invocation for that command name
      */
     @Override
     public CommandInvocation getCommandInvocation(String scope, String name,
-            ActionReport report, Subject subject) {
-        return new ExecutionContext(scope, name, report, subject);
+            ActionReport report, Subject subject, boolean isNotify) {
+        return new ExecutionContext(scope, name, report, subject, isNotify);
     }
 
     public static boolean injectParameters(final CommandModel model, final Object injectionTarget,
@@ -1617,7 +1628,7 @@ public class CommandRunnerImpl implements CommandRunner {
     }
     
     public void executeFromCheckpoint(JobManager.Checkpoint checkpoint, boolean revert, AdminCommandEventBroker eventBroker) {
-        ExecutionContext ec = new ExecutionContext(null, null, null, null);
+        ExecutionContext ec = new ExecutionContext(null, null, null, null,false);
         ec.executeFromCheckpoint(checkpoint, revert, eventBroker);
     }
     
@@ -1653,13 +1664,15 @@ public class CommandRunnerImpl implements CommandRunner {
         protected Subject subject;
         protected ProgressStatus progressStatusChild;
         protected boolean isManagedJob;
+        protected boolean isNotify;
         private   List<NameListerPair> nameListerPairs = new ArrayList<NameListerPair>(); 
 
-        private ExecutionContext(String scope, String name, ActionReport report, Subject subject) {
+        private ExecutionContext(String scope, String name, ActionReport report, Subject subject, boolean isNotify) {
             this.scope = scope;
             this.name = name;
             this.report = report;
             this.subject = subject;
+            this.isNotify = isNotify;
         }
 
         @Override
@@ -1835,7 +1848,7 @@ public class CommandRunnerImpl implements CommandRunner {
             if (progressStatusChild != null) {
                 progressStatusChild.complete();
             }
-            CommandSupport.done(habitat, command, job);
+            CommandSupport.done(habitat, command, job, isNotify);
         }
     }
 

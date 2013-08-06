@@ -139,7 +139,7 @@ public final class CommandSupport {
      */
     public static void done(final ServiceLocator serviceLocator,
         final AdminCommand command,
-            final Job instance) {
+            final Job instance, boolean isNotify) {
 
         processAspects(serviceLocator, command, new Function() {
             @Override
@@ -150,7 +150,20 @@ public final class CommandSupport {
                 return command;
             }
         });
+        if (isNotify) {
+            CommandAspectFacade commandAspectFacade = serviceLocator.getService(CommandAspectFacade.class);
+            if (commandAspectFacade != null)
+                commandAspectFacade.done(command, instance);
+        }
     }
+
+
+    public static void done(final ServiceLocator serviceLocator,
+            final AdminCommand command,
+                final Job instance) {
+        done(serviceLocator, command, instance,false);
+    }
+
 
     /**
      * Execute wrapping aspects, see {@link org.glassfish.api.AsyncImpl} for example.

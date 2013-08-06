@@ -163,7 +163,7 @@ public class CommandExecutorImpl implements org.glassfish.embeddable.CommandRunn
         final ActionReport actionReport = createActionReport();
 
         org.glassfish.api.admin.CommandRunner.CommandInvocation inv =
-                commandRunner.getCommandInvocation(command, actionReport, embeddedSystemAdministrator.getSubject());
+                commandRunner.getCommandInvocation(command, actionReport, embeddedSystemAdministrator.getSubject(),false);
 
         inv.parameters(commandParams).execute();
 
