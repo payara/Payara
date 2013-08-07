@@ -54,7 +54,7 @@ import javax.servlet.SessionCookieConfig;
  */
 public class SessionCookieConfigImpl implements SessionCookieConfig {
 
-    private String name = Globals.SESSION_COOKIE_NAME;
+    private String name;
     private String domain;
     private String path;
     private String comment;
