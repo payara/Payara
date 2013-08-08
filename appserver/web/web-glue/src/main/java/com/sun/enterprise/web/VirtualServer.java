@@ -1858,6 +1858,10 @@ public class VirtualServer extends StandardHost
                     GenericGrizzlyListener grizzlyListener = (GenericGrizzlyListener) proxy.getUnderlyingListener();
                     List<HttpCodecFilter> codecFilters = grizzlyListener.getFilters(HttpCodecFilter.class);
                     if (codecFilters == null || codecFilters.isEmpty()) {
+                        // if it's AJP listener - it's ok if we didn't find HttpCodecFilter
+                        if (grizzlyListener.isAjpEnabled()) {
+                            continue;
+                        }
                         _logger.log(Level.SEVERE, CODE_FILTERS_NULL, new Object[] {listener.getName(), codecFilters});
                     } else {
                         for (HttpCodecFilter codecFilter : codecFilters) {
