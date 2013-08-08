@@ -357,9 +357,13 @@ public class CommandResource {
         CommandModel model = getCommandModel(commandName);
         checkCommandModelETag(model, modelETag);
         //Execute it
+        boolean notifyOption = false;
+        if (params != null)  {
+            notifyOption = params.containsKey("notify");
+        }
         final CommandRunner.CommandInvocation commandInvocation =
                 getCommandRunner().getCommandInvocation(commandName.getScope(),
-                commandName.getName(), new PropsFileActionReporter(), getSubject(),params.containsKey("notify"));
+                commandName.getName(), new PropsFileActionReporter(), getSubject(),notifyOption);
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }
@@ -386,10 +390,14 @@ public class CommandResource {
         CommandModel model = getCommandModel(commandName);
         checkCommandModelETag(model, modelETag);
         //Execute it
+        boolean notifyOption = false;
+        if (params != null)  {
+            notifyOption = params.containsKey("notify");
+        }
         ActionReporter ar = new PropsFileActionReporter(); //new RestActionReporter(); //Must use PropsFileActionReporter because some commands react diferently on it :-(
         final RestPayloadImpl.Outbound outbound = new RestPayloadImpl.Outbound(false);
         final CommandRunner.CommandInvocation commandInvocation =
-                getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar, getSubject(),params.containsKey("notify"));
+                getCommandRunner().getCommandInvocation(commandName.getScope(), commandName.getName(), ar, getSubject(),notifyOption);
         if (inbound != null) {
             commandInvocation.inbound(inbound);
         }
