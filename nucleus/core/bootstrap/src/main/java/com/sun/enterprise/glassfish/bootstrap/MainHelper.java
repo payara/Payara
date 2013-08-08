@@ -119,7 +119,9 @@ public class MainHelper {
         File asenv = getAsEnvConf(configDir);
 
         if (!asenv.exists()) {
-            logger.fine(asenv.getAbsolutePath() + " not found, ignoring");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(asenv.getAbsolutePath() + " not found, ignoring");
+            }
             return asenvProps;
         }
         LineNumberReader lnReader = null;
@@ -620,7 +622,9 @@ public class MainHelper {
                 cpb.addJar(jdkToolsJar);
             } catch (IOException ioe) {
                 // on the mac, it happens all the time
-                logger.fine("JDK tools.jar does not exist at " + jdkToolsJar);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("JDK tools.jar does not exist at " + jdkToolsJar);
+                }
             }
         }
 

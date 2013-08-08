@@ -267,6 +267,10 @@ public class LogFacade {
             level = "WARNING")
     public static final String CANT_STORE_PROVISIONING_OPTIONS = "NCLS-BOOTSTRAP-00038";
 
+    @LogMessageInfo(
+            message = "Got an unexpected exception.",
+            level = "WARNING")
+    public static final String CAUGHT_EXCEPTION = "NCLS-BOOTSTRAP-00039";
 
 }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import com.sun.enterprise.module.common_impl.AbstractFactory;
 import com.sun.enterprise.module.common_impl.ModuleId;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -63,10 +64,14 @@ public class SingleHK2Factory extends AbstractFactory {
 
     public static synchronized void initialize(ClassLoader cl) {
         if (Instance != null) {
-            logger.finer("Singleton already initialized as " + getInstance());
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Singleton already initialized as " + getInstance());
+            }
         }
         Instance = new SingleHK2Factory(cl);
-        logger.finer("Reinitialized singleton as " + getInstance());
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("Reinitialized singleton as " + getInstance());
+        }
     }
 
     public SingleHK2Factory(ClassLoader cl) {

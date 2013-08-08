@@ -152,7 +152,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
         try {
             shutdownInternal();
         } catch (GlassFishException ex) {
-            logger.info(ex.getMessage());
+            logger.log(Level.WARNING, LogFacade.CAUGHT_EXCEPTION, ex.getMessage());
         }
     }
 

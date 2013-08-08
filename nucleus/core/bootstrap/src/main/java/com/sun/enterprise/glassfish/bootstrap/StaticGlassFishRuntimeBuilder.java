@@ -139,7 +139,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
                 return new ArrayList();
             }
         } catch (Exception ex) {
-            logger.warning(ex.getMessage());
+            logger.log(Level.WARNING, LogFacade.CAUGHT_EXCEPTION, ex);
         } finally {
             if (jarfile != null) {
                 try {
@@ -162,7 +162,7 @@ public class StaticGlassFishRuntimeBuilder implements RuntimeBuilder {
                     try {
                         moduleJarURLs.add(pathname.toURI().toURL());
                     } catch (Exception ex) {
-                        logger.warning(ex.getMessage());
+                        logger.log(Level.WARNING, LogFacade.CAUGHT_EXCEPTION, ex);
                     }
                 }
                 return false;
