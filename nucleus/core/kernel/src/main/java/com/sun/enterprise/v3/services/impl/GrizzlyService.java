@@ -538,7 +538,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         try {
             proxy.initialize();
 
-            if (!"light-weight-listener".equals(listener.getProtocol())) {
+            if (!isLightWeightListener(listener)) {
                 final NetworkConfig networkConfig = listener.getParent(NetworkListeners.class).getParent(NetworkConfig.class);
                 // attach all virtual servers to this port
                 for (VirtualServer vs : networkConfig.getParent(Config.class).getHttpService().getVirtualServer()) {
@@ -799,6 +799,10 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
         return addressInfos;
     }
 
+    static boolean isLightWeightListener(final NetworkListener listener) {
+        return "proxy".equalsIgnoreCase(listener.getType()) ||
+                "light-weight-listener".equalsIgnoreCase(listener.getProtocol());
+    }
 
     // ---------------------------------------------------------- Nested Classes
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,13 +61,20 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class ServiceInitializerListener extends org.glassfish.grizzly.config.GenericGrizzlyListener {
     private final Logger logger;
     private final GrizzlyService grizzlyService;
+    private final NetworkListener networkListener;
 
     public ServiceInitializerListener(final GrizzlyService grizzlyService,
+            final NetworkListener networkListener,
             final Logger logger) {
         this.grizzlyService = grizzlyService;
+        this.networkListener = networkListener;
         this.logger = logger;
     }
 
+    public NetworkListener getNetworkListener() {
+        return networkListener;
+    }
+    
     @Override
     protected void configureTransport(final NetworkListener networkListener,
                                       final Transport transportConfig,

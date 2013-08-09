@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,6 +62,7 @@ import org.jvnet.hk2.config.types.Property;
 public class DummyNetworkListener implements NetworkListener {
     private String address = "0.0.0.0";
     private String enabled = "true";
+    private String type = "standard";
     private String name;
     private String port;
     private String protocol;
@@ -70,78 +71,106 @@ public class DummyNetworkListener implements NetworkListener {
     private String jkEnabled;
     private String jkConfigurationFile;
     private final List<Property> properties = new ArrayList<Property>();
-
+    
     public DummyNetworkListener() {
     }
 
+    @Override
+    public String getType() {
+        return type;
+    }
+
+    @Override
+    public void setType(String type) {
+        this.type = type;
+    }
+    
+    @Override
     public String getAddress() {
         return address;
     }
 
+    @Override
     public void setAddress(String value) {
         address = value;
     }
 
+    @Override
     public String getEnabled() {
         return enabled;
     }
 
+    @Override
     public void setEnabled(String enabled) {
         this.enabled = enabled;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String value) {
         name = value;
     }
 
+    @Override
     public String getPort() {
         return port;
     }
 
+    @Override
     public void setPort(String value) {
         port = value;
     }
 
+    @Override
     public String getProtocol() {
         return protocol;
     }
 
+    @Override
     public void setProtocol(String value) {
         protocol = value;
     }
 
+    @Override
     public String getThreadPool() {
         return pool;
     }
 
+    @Override
     public void setThreadPool(String value) {
         pool = value;
     }
 
+    @Override
     public String getTransport() {
         return transport;
     }
 
+    @Override
     public void setTransport(String value) {
         transport = value;
     }
 
+    @Override
     public String getJkEnabled() {
         return jkEnabled;
     }
 
+    @Override
     public void setJkEnabled(String value) {
         jkEnabled = value;
     }
 
+    @Override
     public String getJkConfigurationFile() {
         return jkConfigurationFile;
     }
 
+    @Override
     public void setJkConfigurationFile(String jkConfigurationFile) {
         this.jkConfigurationFile = jkConfigurationFile;
     }
@@ -158,6 +187,7 @@ public class DummyNetworkListener implements NetworkListener {
         return null;
     }
 
+    @Override
     public String findHttpProtocolName() {
         return null;
     }
@@ -192,10 +222,12 @@ public class DummyNetworkListener implements NetworkListener {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public List<Property> getProperty() {
         return properties;
     }
 
+    @Override
     public Property getProperty(String name) {
         if (name == null) return null;
         
@@ -208,10 +240,12 @@ public class DummyNetworkListener implements NetworkListener {
         return null;
     }
 
+    @Override
     public String getPropertyValue(String name) {
         return getPropertyValue(name, null);
     }
 
+    @Override
     public String getPropertyValue(String name, String defaultValue) {
         final Property property = getProperty(name);
         if (property != null) {

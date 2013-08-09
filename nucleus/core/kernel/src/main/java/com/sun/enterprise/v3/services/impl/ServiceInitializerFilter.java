@@ -42,7 +42,6 @@ package com.sun.enterprise.v3.services.impl;
 
 import java.io.IOException;
 import java.nio.channels.SelectableChannel;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,7 +54,6 @@ import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.nio.SelectorHandler;
 import org.glassfish.grizzly.nio.SelectorRunner;
 import org.glassfish.hk2.api.ActiveDescriptor;
-import org.glassfish.hk2.api.ServiceHandle;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
@@ -99,14 +97,23 @@ public class ServiceInitializerFilter extends BaseFilter {
     public NextAction handleAccept(final FilterChainContext ctx) throws IOException {
         final NIOConnection nioConnection = (NIOConnection) ctx.getConnection();
         final SelectableChannel channel = nioConnection.getChannel();
+        
+        // The LazyServiceInitializer's name we're looking for should be equal
+        // to either listener or protocol name
+        final String listenerName = listener.getName();
+        final String protocolName = listener.getNetworkListener().getProtocol();
+        
         if (targetInitializer == null) {
             synchronized (LOCK_OBJ) {
                 if (targetInitializer == null) {
                     LazyServiceInitializer targetInitializerLocal = null;
                     for (final ActiveDescriptor<?> initializer : initializerImplList) {
-                        String listenerName = listener.getName();
                         String serviceName = initializer.getName();
-                        if (serviceName != null && listenerName.equalsIgnoreCase(serviceName)) {
+                        
+                        
+                        if (serviceName != null &&
+                                (listenerName.equalsIgnoreCase(serviceName) ||
+                                protocolName.equalsIgnoreCase(serviceName))) {
                             targetInitializerLocal = (LazyServiceInitializer) locator.getServiceHandle(initializer).getService();
                             break;
                         }

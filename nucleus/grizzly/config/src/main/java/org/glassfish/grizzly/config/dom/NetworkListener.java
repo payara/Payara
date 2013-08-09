@@ -45,7 +45,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Pattern;
 
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
@@ -63,6 +63,9 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
     boolean JK_ENABLED = false;
     String DEFAULT_ADDRESS = "0.0.0.0";
     String DEFAULT_CONFIGURATION_FILE = "${com.sun.aas.instanceRoot}/config/glassfish-jk.properties";
+    String TYPE_PATTERN = "(standard|proxy)";
+    String DEFAULT_TYPE = "standard";
+    
 
     /**
      * IP address to listen on
@@ -102,6 +105,15 @@ public interface NetworkListener extends ConfigBeanProxy, PropertyBag {
 
     void setName(String value);
 
+    /**
+     * Network-listener name, which could be used as reference
+     */
+    @Attribute(required = true, dataType = String.class, defaultValue = DEFAULT_TYPE)
+    @Pattern(regexp = TYPE_PATTERN)
+    String getType();
+
+    void setType(String type);
+    
     /**
      * Port to listen on
      */

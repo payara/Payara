@@ -84,14 +84,21 @@ import org.jvnet.hk2.config.types.Property;
 
 public class GlassfishNetworkListener extends GenericGrizzlyListener {
     private final GrizzlyService grizzlyService;
+    private final NetworkListener networkListener;
     private final Logger logger;
 
     private volatile HttpAdapter httpAdapter;
     
-    public GlassfishNetworkListener(GrizzlyService grizzlyService,
-            Logger logger) {
+    public GlassfishNetworkListener(final GrizzlyService grizzlyService,
+            final NetworkListener networkListener,
+            final Logger logger) {
         this.grizzlyService = grizzlyService;
+        this.networkListener = networkListener;
         this.logger = logger;
+    }
+
+    public NetworkListener getNetworkListener() {
+        return networkListener;
     }
 
     @Override

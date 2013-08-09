@@ -126,19 +126,23 @@ public class GrizzlyProxy implements NetworkProxy {
 
     protected GrizzlyListener createGrizzlyListener(
             final NetworkListener networkListener) {
-        if("light-weight-listener".equals(networkListener.getProtocol())) {
-            return createServiceInitializerListener();
+        if (GrizzlyService.isLightWeightListener(networkListener)) {
+            return createServiceInitializerListener(networkListener);
         } else {
-            return createGlassfishListener();
+            return createGlassfishListener(networkListener);
         }
     }
 
-    protected GrizzlyListener createGlassfishListener() {
-        return new GlassfishNetworkListener(grizzlyService, logger);
+    protected GrizzlyListener createGlassfishListener(
+            final NetworkListener networkListener) {
+        return new GlassfishNetworkListener(grizzlyService,
+                networkListener, logger);
     }
 
-    protected GrizzlyListener createServiceInitializerListener() {
-        return new ServiceInitializerListener(grizzlyService, logger);
+    protected GrizzlyListener createServiceInitializerListener(
+            final NetworkListener networkListener) {
+        return new ServiceInitializerListener(grizzlyService,
+                networkListener, logger);
     }
 
     static ArrayList<String> toArray(String list, String token){
