@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,63 +39,60 @@
  */
 package org.glassfish.admin.rest.model;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.RestModel;
 
-public class Message {
-    public static enum Severity {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    };
+/**
+ *
+ * @author jdlee
+ */
+public class LegacySseResponseBody<T extends RestModel> extends RestModelResponseBody<T> {
 
-    private Severity severity;
-    private String field;
-    private String message;
+    private Map<String, List<String>> headers = new HashMap<String, List<String>>();
 
-    public Message(Severity severity, String message) {
-        this.severity = severity;
-        this.message = message;
+    public LegacySseResponseBody() {
+        super();
     }
 
-    public Message(Severity severity, String field, String message) {
-        this.severity = severity;
-        this.field = field;
-        this.message = message;
+    public LegacySseResponseBody(boolean includeResourceLinks) {
+        super(includeResourceLinks);
     }
 
-    public Severity getSeverity() {
-        return this.severity;
-    }
-
-    public void setSeverity(Severity val) {
-        this.severity = val;
-    }
-
-    public String getMessage() {
-        return this.message;
-    }
-
-    public void setMessage(String val) {
-        this.message = val;
-    }
-
-    public String getField() {
-        return this.field;
-    }
-
-    public void setField(String val) {
-        this.field = val;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("message", getMessage());
-        object.put("severity", getSeverity());
-        String f = getField();
-        if (f != null && f.length() > 0) {
-          object.put("field", f);
+    public LegacySseResponseBody<T> addHeader(String name, Object value) {
+        if (value != null) {
+            List<String> values = headers.get(name);
+            if (values == null) {
+                values = new ArrayList<String>();
+                headers.put(name, values);
+            }
+            values.add(value.toString());
         }
-        return object;
+
+        return this;
     }
+
+    @Override
+    public JSONObject toJson() throws JSONException {
+        JSONObject json = super.toJson();
+
+        if (!headers.isEmpty()) {
+            JSONObject o = new JSONObject();
+            for (Map.Entry<String, List<String>> entry : headers.entrySet()) {
+                final String key = entry.getKey();
+                for (String value : entry.getValue()) {
+                    o.accumulate(key, value);
+                }
+            }
+            json.accumulate("headers", o);
+        }
+
+        return json;
+    }
+
+
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,61 +41,38 @@ package org.glassfish.admin.rest.model;
 
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
+import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.utils.JsonUtil;
 
-public class Message {
-    public static enum Severity {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    };
+/**
+ * Used to return a standard REST response body that contains a single entity
+ * @author tmoreau
+ */
+public class RestModelResponseBody<T extends RestModel> extends ResponseBody {
+    private T entity;
 
-    private Severity severity;
-    private String field;
-    private String message;
-
-    public Message(Severity severity, String message) {
-        this.severity = severity;
-        this.message = message;
+    public RestModelResponseBody() {
+        super();
     }
 
-    public Message(Severity severity, String field, String message) {
-        this.severity = severity;
-        this.field = field;
-        this.message = message;
+    public RestModelResponseBody(boolean includeResourceLinks) {
+        super(includeResourceLinks);
     }
 
-    public Severity getSeverity() {
-        return this.severity;
+    public T getEntity() {
+        return entity;
     }
 
-    public void setSeverity(Severity val) {
-        this.severity = val;
+    public RestModelResponseBody<T> setEntity(T entity) {
+        this.entity = entity;
+        return this;
     }
 
-    public String getMessage() {
-        return this.message;
-    }
-
-    public void setMessage(String val) {
-        this.message = val;
-    }
-
-    public String getField() {
-        return this.field;
-    }
-
-    public void setField(String val) {
-        this.field = val;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("message", getMessage());
-        object.put("severity", getSeverity());
-        String f = getField();
-        if (f != null && f.length() > 0) {
-          object.put("field", f);
+    @Override
+    protected void populateJson(JSONObject object) throws JSONException {
+        super.populateJson(object);
+        if (getEntity() != null) {
+            object.put("item", JsonUtil.getJsonObject(getEntity()));
         }
-        return object;
     }
 }

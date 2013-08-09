@@ -42,18 +42,26 @@ package org.glassfish.admin.rest.testing;
 
 import org.codehaus.jettison.json.JSONObject;
 
+import static org.glassfish.admin.rest.testing.Common.*;
+
 public class Response {
     private String method;
     private javax.ws.rs.core.Response jaxrsResponse;
     private String bodyAsString;
 
     public Response(String method, javax.ws.rs.core.Response jaxrsResponse) {
+        this(method, jaxrsResponse, true);
+    }
+
+    public Response(String method, javax.ws.rs.core.Response jaxrsResponse, boolean readEntity) {
         this.method = method;
         this.jaxrsResponse = jaxrsResponse;
-        // get the response body now in case the caller releases the connection before asking for the response body
-        try {
-            this.bodyAsString = this.jaxrsResponse.readEntity(String.class);
-        } catch (Exception e) {
+        if (readEntity) {
+            // get the response body now in case the caller releases the connection before asking for the response body
+            try {
+                this.bodyAsString = this.jaxrsResponse.readEntity(String.class);
+            } catch (Exception e) {
+            }
         }
     }
 
@@ -75,5 +83,13 @@ public class Response {
 
     public JSONObject getJsonBody() throws Exception {
         return new JSONObject(getStringBody());
+    }
+
+    public String getLocationHeader() throws Exception {
+        return getJaxrsResponse().getHeaderString(HEADER_LOCATION);
+    }
+
+    public String getXLocationHeader() throws Exception {
+        return getJaxrsResponse().getHeaderString(HEADER_X_LOCATION);
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,65 +37,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.model;
+package org.glassfish.admin.rest.utils;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Message {
-    public static enum Severity {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    };
+/**
+ * @author tmoreau
+ */
+public class PropertyExceptions extends Exception {
 
-    private Severity severity;
-    private String field;
-    private String message;
+    private List<PropertyException> propertyExceptions = new ArrayList<PropertyException>();
 
-    public Message(Severity severity, String message) {
-        this.severity = severity;
-        this.message = message;
+    public PropertyExceptions() {
+        super();
     }
 
-    public Message(Severity severity, String field, String message) {
-        this.severity = severity;
-        this.field = field;
-        this.message = message;
+    public void add(PropertyException pe) {
+        this.propertyExceptions.add(pe);
     }
 
-    public Severity getSeverity() {
-        return this.severity;
-    }
-
-    public void setSeverity(Severity val) {
-        this.severity = val;
-    }
-
-    public String getMessage() {
-        return this.message;
-    }
-
-    public void setMessage(String val) {
-        this.message = val;
-    }
-
-    public String getField() {
-        return this.field;
-    }
-
-    public void setField(String val) {
-        this.field = val;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("message", getMessage());
-        object.put("severity", getSeverity());
-        String f = getField();
-        if (f != null && f.length() > 0) {
-          object.put("field", f);
+    public void add(PropertyExceptions pes) {
+        for (PropertyException pe : pes.getPropertyExceptions()) {
+            add(pe);
         }
-        return object;
+    }
+
+    public List<PropertyException> getPropertyExceptions() {
+        return this.propertyExceptions;
     }
 }
+

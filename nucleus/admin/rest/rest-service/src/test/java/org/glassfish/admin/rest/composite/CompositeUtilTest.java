@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.enterprise.config.serverbeans.Cluster;
 import com.sun.enterprise.config.serverbeans.customvalidators.ReferenceConstraint;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.Locale;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 
@@ -70,8 +71,9 @@ public class CompositeUtilTest {
 
     @Test
     public void readInJson() throws Exception {
+        Locale locale = null;
         JSONObject o = new JSONObject(json);
-        BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);
+        BaseModel model = CompositeUtil.instance().unmarshallClass(locale, BaseModel.class, o);
 
         Assert.assertEquals(model.getName(), "testModel");
         Assert.assertEquals(model.getRelated().size(), 2);
@@ -80,13 +82,14 @@ public class CompositeUtilTest {
 
     @Test
     public void testBeanValidationSupport() {
+        Locale locale = null;
         final CompositeUtil cu = CompositeUtil.instance();
         BaseModel model = cu.getModel(BaseModel.class);
         model.setName(null); // Redundant, but here for emphasis
         model.setSize(16); // Must be between 10 and 15, inclusive
         model.setConfigRef(null); // Not null. Validation pulled in from the ConfigBean
 
-        Set<ConstraintViolation<BaseModel>> violations = cu.validateRestModel(model);
+        Set<ConstraintViolation<BaseModel>> violations = cu.validateRestModel(locale, model);
         Assert.assertEquals(3, violations.size());
     }
 
@@ -108,8 +111,9 @@ public class CompositeUtilTest {
 
     @Test
     public void testDirtyFieldDetection() throws JSONException {
+        Locale locale = null;
         JSONObject o = new JSONObject(json);
-        BaseModel model = CompositeUtil.instance().unmarshallClass(BaseModel.class, o);
+        BaseModel model = CompositeUtil.instance().unmarshallClass(locale, BaseModel.class, o);
         RestModel rmi = (RestModel)model;
 
         Assert.assertTrue(rmi.isSet("name"));

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,14 +46,14 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
-import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.LegacyCompositeResource;
 import org.glassfish.admin.rest.model.BaseModel;
 
 /**
  *
  * @author jdlee
  */
-public class DummyResource extends CompositeResource {
+public class DummyResource extends LegacyCompositeResource {
     @GET
     public BaseModel getDummyData(@QueryParam("foo") String foo) {
         return compositeUtil.getModel(BaseModel.class);

@@ -585,12 +585,4 @@ public class Util {
     public static ParameterMap parameterMap() {
         return new ParameterMap();
     }
-
-   /**
-     * Convenience wrapper around ResponseBodyImpl constructor to make it easier to use its fluent API
-     * @return ResponseBodyImpl
-     */
-    public static ResponseBody responseBody() {
-        return new ResponseBody();
-    }
 }

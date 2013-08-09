@@ -57,7 +57,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.SchemaOutputResolver;
 import javax.xml.transform.stream.StreamResult;
 import org.glassfish.admin.rest.RestLogging;
-import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.LegacyCompositeResource;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.hk2.api.ActiveDescriptor;
 import org.glassfish.hk2.utilities.BuilderHelper;
@@ -70,7 +70,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Path("/schema.xsd")
 @Service
-public class RestModelSchemaResource extends CompositeResource {
+public class RestModelSchemaResource extends LegacyCompositeResource {
 
     @GET
     @Path("old")

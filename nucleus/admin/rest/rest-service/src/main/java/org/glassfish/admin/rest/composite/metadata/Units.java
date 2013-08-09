@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,65 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.model;
+package org.glassfish.admin.rest.composite.metadata;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
-public class Message {
-    public static enum Severity {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    };
-
-    private Severity severity;
-    private String field;
-    private String message;
-
-    public Message(Severity severity, String message) {
-        this.severity = severity;
-        this.message = message;
-    }
-
-    public Message(Severity severity, String field, String message) {
-        this.severity = severity;
-        this.field = field;
-        this.message = message;
-    }
-
-    public Severity getSeverity() {
-        return this.severity;
-    }
-
-    public void setSeverity(Severity val) {
-        this.severity = val;
-    }
-
-    public String getMessage() {
-        return this.message;
-    }
-
-    public void setMessage(String val) {
-        this.message = val;
-    }
-
-    public String getField() {
-        return this.field;
-    }
-
-    public void setField(String val) {
-        this.field = val;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("message", getMessage());
-        object.put("severity", getSeverity());
-        String f = getField();
-        if (f != null && f.length() > 0) {
-          object.put("field", f);
-        }
-        return object;
-    }
+/**
+ * Used to indicate what units a scalar property has (e.g. that a long property holds bytes)
+ *
+ * @author tmoreau
+ */
+@Qualifier
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface Units {
+  public static final String SECONDS = "seconds";
+  public static final String MINUTES = "minutes";
+  public static final String HOURS = "hours";
+  public static final String MILLISECONDS = "milliseconds";
+  public static final String BYTES = "bytes";
+  public static final String KILOBYTES = "kilobytes";
+  public static final String MEGABYTES = "megabytes";
+  public static final String DATE = "date";
+  public static final String PERCENT = "percent";
+  String units();
 }

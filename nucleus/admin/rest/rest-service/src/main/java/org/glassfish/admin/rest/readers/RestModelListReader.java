@@ -48,6 +48,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
@@ -88,6 +89,7 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
         Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders,
         InputStream entityStream) throws IOException, WebApplicationException {
         try {
+            Locale locale = CompositeUtil.instance().getLocale(httpHeaders);
             List<RestModel> list = new ArrayList<RestModel>();
             BufferedReader in = new BufferedReader(new InputStreamReader(entityStream));
             StringBuilder sb = new StringBuilder();
@@ -105,12 +107,12 @@ public class RestModelListReader implements MessageBodyReader<List<RestModel>> {
             }
             for (int i = 0; i < array.length(); i++) {
                 JSONObject o = array.getJSONObject(i);
-                RestModel model = (RestModel) CompositeUtil.instance().unmarshallClass(modelType, o);
+                RestModel model = (RestModel) CompositeUtil.instance().unmarshallClass(locale, modelType, o);
                 Set<ConstraintViolation<RestModel>> cv = CompositeUtil.instance()
-                        .validateRestModel(model);
+                        .validateRestModel(locale, model);
                 if (!cv.isEmpty()) {
                     final Response response = Response.status(Status.BAD_REQUEST)
-                            .entity(CompositeUtil.instance().getValidationFailureMessages(cv, model))
+                            .entity(CompositeUtil.instance().getValidationFailureMessages(locale, cv, model))
                             .build();
                     throw new WebApplicationException(response);
                 }

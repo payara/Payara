@@ -51,9 +51,11 @@ public abstract class ResponseBodyBuilderImpl implements ResponseBodyBuilder {
     public ResponseBody build(ActionReport report) {
         ExitCode exitCode = report.getActionExitCode();
         if (ExitCode.SUCCESS.equals(exitCode)) {
-            return success(report);
+            ResponseBody rb = success(report);
+            rb.setIncludeResourceLinks(includeResourceLinks());
+            return rb;
         }
-        final ResponseBody responseBody = new ResponseBody();
+        final ResponseBody responseBody = new ResponseBody(includeResourceLinks());
         if (ExitCode.WARNING.equals(exitCode)) {
             responseBody.addWarning(report.getMessage());
         } else {
@@ -61,6 +63,8 @@ public abstract class ResponseBodyBuilderImpl implements ResponseBodyBuilder {
         }
         return responseBody;
     }
+
+    abstract protected boolean includeResourceLinks();
 
     abstract protected ResponseBody success(final ActionReport report);
 }

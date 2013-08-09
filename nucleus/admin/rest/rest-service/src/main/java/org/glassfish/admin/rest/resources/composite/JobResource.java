@@ -47,7 +47,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.LegacyCompositeResource;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.utils.StringUtil;
 import org.glassfish.api.ActionReport;
@@ -78,7 +78,7 @@ import org.glassfish.api.admin.ParameterMap;
  * </div>
  * @author jdlee
  */
-public class JobResource extends CompositeResource {
+public class JobResource extends LegacyCompositeResource {
 
     /**
      * Retrieve information about the specific job identified by the resource URL.

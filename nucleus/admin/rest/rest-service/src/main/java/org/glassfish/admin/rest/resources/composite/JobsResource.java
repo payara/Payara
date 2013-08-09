@@ -48,7 +48,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.composite.LegacyCompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.composite.RestCollection;
 import org.glassfish.api.ActionReport;
@@ -86,7 +86,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Path("/jobs")
-public class JobsResource extends CompositeResource {
+public class JobsResource extends LegacyCompositeResource {
 
     /**
      * The GET method on this resource returns a list of Job entities that represent

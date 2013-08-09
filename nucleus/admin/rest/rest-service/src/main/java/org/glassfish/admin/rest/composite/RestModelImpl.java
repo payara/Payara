@@ -50,13 +50,28 @@ import java.util.TreeSet;
  * @author jdlee
  */
 public class RestModelImpl {
+    private boolean allFieldsSet = false;
+
     private Set<String> setFields = new TreeSet<String>();
 
     public boolean isSet(String fieldName) {
-        return setFields.contains(fieldName.toLowerCase(Locale.US));
+        return allFieldsSet || setFields.contains(fieldName.toLowerCase(Locale.US));
+    }
+
+    public void allFieldsSet() {
+        this.allFieldsSet = true;
     }
 
     public void fieldSet(String fieldName) {
         setFields.add(fieldName.toLowerCase(Locale.US));
+    }
+
+    // TBD - remove once the conversion to the new REST style guide is completed
+    private boolean trimmed = false;
+    public void trimmed() {
+        this.trimmed = true;
+    }
+    public boolean isTrimmed() {
+        return trimmed;
     }
 }

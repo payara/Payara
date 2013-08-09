@@ -72,6 +72,8 @@ import javax.validation.Validator;
 import javax.validation.ValidatorContext;
 import javax.validation.ValidatorFactory;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.codehaus.jettison.json.JSONArray;
@@ -80,10 +82,12 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.RestExtension;
 import org.glassfish.admin.rest.RestLogging;
 import org.glassfish.admin.rest.composite.metadata.AttributeReference;
+import org.glassfish.admin.rest.composite.metadata.DefaultBeanReference;
 import org.glassfish.admin.rest.composite.metadata.HelpText;
 import org.glassfish.admin.rest.utils.JsonUtil;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.admin.rest.utils.SseCommandHelper;
+import org.glassfish.admin.rest.utils.StringUtil;
 import org.glassfish.admin.rest.utils.Util;
 import org.glassfish.admin.rest.utils.xml.RestActionReporter;
 import org.glassfish.api.ActionReport.ExitCode;
@@ -253,25 +257,26 @@ public class CompositeUtil {
      * @param json       The json encoding of the object
      * @return
      */
-    public <T> T unmarshallClass(Class<T> modelClass, JSONObject json) throws JSONException {
+    public <T> T unmarshallClass(Locale locale, Class<T> modelClass, JSONObject json) throws JSONException {
         T model = getModel(modelClass);
         for (Method setter : getSetters(modelClass)) {
             String name = setter.getName();
             String attribute = name.substring(3, 4).toLowerCase(Locale.getDefault()) + name.substring(4);
             Type param0 = setter.getGenericParameterTypes()[0];
+            Class class0 = setter.getParameterTypes()[0];
             if (json.has(attribute)) {
                 java.lang.Object o = json.get(attribute);
                 if (JSONArray.class.isAssignableFrom(o.getClass())) {
-                    Object values = processJsonArray(param0, (JSONArray) o);
-                    invoke(setter, attribute, model, values);
+                    Object values = processJsonArray(locale, param0, (JSONArray) o);
+                    invoke(locale, setter, attribute, model, values);
                 } else if (JSONObject.class.isAssignableFrom(o.getClass())) {
-                    invoke(setter, attribute, model, unmarshallClass(param0.getClass(), (JSONObject) o));
+                    invoke(locale, setter, attribute, model, unmarshallClass(locale, class0, (JSONObject) o));
                 } else {
                     if ("null".equals(o.toString())) {
                         o = null;
                     }
                     if (!isUnmodifiedConfidentialProperty(modelClass, name, o)) {
-                        invoke(setter, attribute, model, o);
+                        invoke(locale, setter, attribute, model, o);
                     }
                 }
             }
@@ -291,7 +296,7 @@ public class CompositeUtil {
         return JsonUtil.isConfidentialProperty(modelClass, getterMethodName);
     }
 
-    private Object processJsonArray(Type param0, JSONArray array) throws JSONException {
+    private Object processJsonArray(Locale locale, Type param0, JSONArray array) throws JSONException {
         Type type;
         boolean isArray = false;
         if (ParameterizedType.class.isAssignableFrom(param0.getClass())) {
@@ -309,9 +314,9 @@ public class CompositeUtil {
             Object element = array.get(i);
             if (JSONObject.class.isAssignableFrom(element.getClass())) {
                 if (isArray) {
-                    Array.set(values, i, unmarshallClass((Class) type, (JSONObject) element));
+                    Array.set(values, i, unmarshallClass(locale, (Class) type, (JSONObject) element));
                 } else {
-                    ((List)values).add(unmarshallClass((Class) type, (JSONObject) element));
+                    ((List)values).add(unmarshallClass(locale, (Class) type, (JSONObject) element));
                 }
             } else {
                 if (isArray) {
@@ -324,7 +329,7 @@ public class CompositeUtil {
         return values;
     }
 
-    private void invoke(Method m, String attribute, Object o, Object... args) {
+    private void invoke(Locale locale, Method m, String attribute, Object o, Object... args) {
         try {
             m.invoke(o, args);
         } catch (IllegalArgumentException iae) {
@@ -361,7 +366,7 @@ public class CompositeUtil {
         return helpText;
     }
 
-    public <T> Set<ConstraintViolation<T>> validateRestModel(T model) {
+    public <T> Set<ConstraintViolation<T>> validateRestModel(Locale locale, T model) {
         initBeanValidator();
 
         Set<ConstraintViolation<T>> constraintViolations = beanValidator.validate(model);
@@ -372,7 +377,7 @@ public class CompositeUtil {
         return constraintViolations;
     }
 
-    public <T> String getValidationFailureMessages(Set<ConstraintViolation<T>> constraintViolations, T model) {
+    public <T> String getValidationFailureMessages(Locale locale, Set<ConstraintViolation<T>> constraintViolations, T model) {
         StringBuilder msg = new StringBuilder(adminStrings.getLocalString("rest.model.validationFailure",
                 "Properties for model {0} violate the following constraints: ",
                 model.getClass().getSimpleName()));
@@ -511,6 +516,15 @@ public class CompositeUtil {
         return ResourceUtil.runCommandWithSse(command, parameters, subject, processor);
     }
 
+    public Locale getLocale(HttpHeaders requestHeaders) {
+        return getLocale(requestHeaders.getRequestHeaders());
+    }
+
+    public Locale getLocale(MultivaluedMap<String,String> requestHeaders) {
+        String hdr = requestHeaders.getFirst("Accept-Language");
+        return (hdr != null) ? new Locale(hdr) : null;
+    }
+
     /*******************************************************************************************************************
      * Private implementation methods
      ******************************************************************************************************************/
@@ -611,6 +625,13 @@ public class CompositeUtil {
     }
 
     private void analyzeInterface(Class<?> iface, Map<String, Map<String, Object>> properties) throws SecurityException {
+        // find class level bean reference
+        String defaultBean = null;
+        if (iface.isAnnotationPresent(DefaultBeanReference.class)) {
+            DefaultBeanReference beanRef = iface.getAnnotation(DefaultBeanReference.class);
+            defaultBean = beanRef.bean();   
+        }
+
         for (Method method : iface.getMethods()) {
             String name = method.getName();
             final boolean isGetter = name.startsWith("get");
@@ -622,9 +643,21 @@ public class CompositeUtil {
                     properties.put(name, property);
                 }
 
+                String bean = null;
+                String attribute = null;
                 AttributeReference ar = method.getAnnotation(AttributeReference.class);
                 if (ar != null) {
-                    property.put("annotations", gatherReferencedAttributes((AttributeReference) ar));
+                    bean = ar.bean();
+                    attribute = ar.attribute();
+                }
+                if (!StringUtil.notEmpty(bean)) {
+                    bean = defaultBean;
+                }
+                if (!StringUtil.notEmpty(attribute)) {
+                    attribute = name;
+                }
+                if (StringUtil.notEmpty(bean) && StringUtil.notEmpty(attribute)) {
+                    property.put("annotations", gatherReferencedAttributes(bean, attribute));
                 }
                 Attribute attr = method.getAnnotation(Attribute.class);
                 if (attr != null) {
@@ -638,11 +671,11 @@ public class CompositeUtil {
         }
     }
 
-    private Map<String, Map<String, Object>> gatherReferencedAttributes(AttributeReference ar) {
+    private Map<String, Map<String, Object>> gatherReferencedAttributes(String bean, String attribute) {
         Map<String, Map<String, Object>> annos = new HashMap<String, Map<String, Object>>();
         try {
-            Class<?> configBeanClass = Class.forName(ar.configBean());
-            Method m = configBeanClass.getMethod(ar.methodName());
+            Class<?> configBeanClass = Class.forName(bean);
+            Method m = configBeanClass.getMethod("get" + attribute);
             for (Annotation a : m.getAnnotations()) {
                 Map<String, Object> anno = new HashMap<String, Object>();
                 for (Method am : a.annotationType().getDeclaredMethods()) {
@@ -941,5 +974,4 @@ public class CompositeUtil {
             Thread.currentThread().setContextClassLoader(cl);
         }
     }
-
 }

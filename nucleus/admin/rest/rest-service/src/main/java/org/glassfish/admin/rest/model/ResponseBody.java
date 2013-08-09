@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,18 +39,38 @@
  */
 package org.glassfish.admin.rest.model;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
-import org.glassfish.admin.rest.composite.RestModel;
-import org.glassfish.admin.rest.utils.JsonUtil;
 
 public class ResponseBody {
     public static final String EVENT_NAME="response/body";
     private List<Message> messages = new ArrayList<Message>();
-    private RestModel entity;
+    private boolean includeResourceLinks = true;
+    private List<ResourceLink> links = new ArrayList<ResourceLink>();
+
+    public ResponseBody() {
+    }
+
+    public ResponseBody(boolean includeResourceLinks) {
+        setIncludeResourceLinks(includeResourceLinks);
+    }
+
+    public ResponseBody(URI parentUri) {
+        addParentResourceLink(parentUri);
+    }
+
+    public ResponseBody(boolean includeResourceLinks, URI parentUri) {
+        setIncludeResourceLinks(includeResourceLinks);
+        addParentResourceLink(parentUri);
+    }
+
+    public void setIncludeResourceLinks(boolean includeResourceLinks) {
+        this.includeResourceLinks = includeResourceLinks;
+    }
 
     public List<Message> getMessages() {
         return this.messages;
@@ -60,28 +80,34 @@ public class ResponseBody {
         this.messages = val;
     }
 
-    public RestModel getEntity() {
-        return entity;
-    }
-
-    public ResponseBody setEntity(RestModel entity) {
-        this.entity = entity;
-        return this;
-    }
-
     public ResponseBody addSuccess(String message) {
-        return add(Message.Severity.SUCCESS, message);
+        return addMessage(Message.Severity.SUCCESS, message);
     }
 
     public ResponseBody addWarning(String message) {
-        return add(Message.Severity.WARNING, message);
+        return addMessage(Message.Severity.WARNING, message);
+    }
+
+    public ResponseBody addFailure(Throwable t) {
+        for (; t != null; t = t.getCause()) {
+            addFailure(t.getLocalizedMessage());
+        }
+        return this;
     }
 
     public ResponseBody addFailure(String message) {
-        return add(Message.Severity.FAILURE, message);
+        return addMessage(Message.Severity.FAILURE, message);
     }
 
-    public ResponseBody add(Message.Severity severity, String message) {
+    public ResponseBody addFailure(String field, String message) {
+        return addMessage(Message.Severity.FAILURE, field, message);
+    }
+
+    public ResponseBody addMessage(Message.Severity severity, String field, String message) {
+        return add(new Message(severity, field, message));
+    }
+
+    public ResponseBody addMessage(Message.Severity severity, String message) {
         return add(new Message(severity, message));
     }
 
@@ -90,21 +116,58 @@ public class ResponseBody {
         return this;
     }
 
+    public List<ResourceLink> getResourceLinks() {
+        return this.links;
+    }
+
+    public void setResourceLinks(List<ResourceLink> val) {
+        this.links = val;
+    }
+
+    public ResponseBody addParentResourceLink(URI uri) {
+        if (uri == null) { return this; }
+        return addResourceLink("parent", uri);
+    }
+
+    public void addActionResourceLink(String action, URI uri) {
+        addResourceLink("action", action, uri);
+    }
+
+    public ResponseBody addResourceLink(String rel, URI uri) {
+        return add(new ResourceLink(rel, uri));
+    }
+
+    public ResponseBody addResourceLink(String rel, String title, URI uri) {
+        return add(new ResourceLink(rel, title, uri));
+    }
+
+    public ResponseBody add(ResourceLink link) {
+        getResourceLinks().add(link);
+        return this;
+    }
+
     public JSONObject toJson() throws JSONException {
         JSONObject object = new JSONObject();
-        if (!messages.isEmpty()) {
+        populateJson(object);
+        return object;
+    }
+
+    protected void populateJson(JSONObject object) throws JSONException {
+        if (!getMessages().isEmpty()) {
             JSONArray array = new JSONArray();
-            for (Message message : messages) {
-                JSONObject o = new JSONObject();
-                o.put("message", message.getMessage());
-                o.put("severity", message.getSeverity().toString());
-                array.put(o);
+            for (Message message : getMessages()) {
+                array.put(message.toJson());
             }
             object.put("messages", array);
         }
-        if (entity != null) {
-            object.put("item", JsonUtil.getJsonObject(getEntity()));
+        if (includeResourceLinks) {
+            if (!getResourceLinks().isEmpty()) {
+                JSONArray array = new JSONArray();
+                for (ResourceLink link : getResourceLinks()) {
+                    array.put(link.toJson());
+                }
+                object.put("resources", array);
+            }
         }
-        return object;
     }
 }

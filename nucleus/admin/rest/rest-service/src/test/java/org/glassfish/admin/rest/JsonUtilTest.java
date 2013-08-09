@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package org.glassfish.admin.rest;
 
+import java.util.Locale;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -55,6 +56,7 @@ import org.testng.annotations.Test;
 public class JsonUtilTest {
     @Test
     public void testArrayEncoding() throws JSONException {
+        Locale locale = null;
         BaseModel model = CompositeUtil.instance().getModel(BaseModel.class);
         model.setStringArray(new String[] {"one", "two"});
         JSONObject json = (JSONObject)JsonUtil.getJsonObject(model);
@@ -66,7 +68,7 @@ public class JsonUtilTest {
         Assert.assertTrue(contains(array, "one"));
         Assert.assertTrue(contains(array, "two"));
 
-        BaseModel model2 = CompositeUtil.instance().unmarshallClass(BaseModel.class, json);
+        BaseModel model2 = CompositeUtil.instance().unmarshallClass(locale, BaseModel.class, json);
         Assert.assertNotNull(model2);
         Assert.assertNotNull(model2.getStringArray());
         Assert.assertEquals(2, model2.getStringArray().length);

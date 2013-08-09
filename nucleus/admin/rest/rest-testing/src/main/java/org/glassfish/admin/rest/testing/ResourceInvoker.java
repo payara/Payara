@@ -178,7 +178,7 @@ public abstract class ResourceInvoker {
     }
     private JSONObject body = new JSONObject();
 
-    private JSONObject getBody() {
+    protected JSONObject getBody() {
         return this.body;
     }
 
@@ -212,7 +212,7 @@ public abstract class ResourceInvoker {
     }
 
     private Builder getInvocationBuilder() throws Exception {
-        Client client = ClientBuilder.newClient();
+        Client client = customizeClient(ClientBuilder.newClient());
         client.register(new HttpBasicAuthFilter(getUserName(), getPassword()));
         WebTarget target = client.target(getUrl());
         for (Map.Entry<String, String> e : getQueryParams().entrySet()) {
@@ -221,7 +221,11 @@ public abstract class ResourceInvoker {
         return target.request(getResponseBodyMediaType()).header("X-Include-Resource-Links", "true").header("X-Requested-By", "MyClient");
     }
 
-    private Response wrapResponse(String method, javax.ws.rs.core.Response response) throws Exception {
+    protected Client customizeClient(Client client) {
+        return client;
+    }
+
+    protected Response wrapResponse(String method, javax.ws.rs.core.Response response) throws Exception {
         return new Response(method, response);
     }
 

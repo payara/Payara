@@ -49,14 +49,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//----------------------------------------------------------------------------------
 public class DataVerifier {
     private Environment env;
     private ObjectValue objectWant;
     private JSONObject objectHave;
     private IndentingStringBuffer sb = new IndentingStringBuffer();
 
-    private DataVerifier(Environment env, ObjectValue objectWant, JSONObject objectHave) {
+    public DataVerifier(Environment env, ObjectValue objectWant, JSONObject objectHave) {
         this.env = env;
         this.objectWant = objectWant;
         this.objectHave = objectHave;
@@ -79,6 +78,10 @@ public class DataVerifier {
     }
 
     public static void verify(Environment env, ObjectValue objectWant, JSONObject objectHave) throws Exception {
+        IndentingStringBuffer sb = new IndentingStringBuffer();
+        objectWant.print(sb);
+        env.debug("Body want : " + sb.toString());
+        env.debug("Body have : " + objectHave.toString(2));
         (new DataVerifier(env, objectWant, objectHave)).verify();
     }
 

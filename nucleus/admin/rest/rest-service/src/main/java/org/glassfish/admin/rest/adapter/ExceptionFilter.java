@@ -47,6 +47,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.Provider;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.model.ResponseBody;
 import org.glassfish.admin.rest.utils.Util;
 
 /**
@@ -80,8 +81,15 @@ public class ExceptionFilter implements ContainerResponseFilter {
             return;
         }
 
+        // Normally the cliend sends in an X-Skip-Resource-Links header
+        // to say that resource links should not be returned, and the resource
+        // looks for that header in the request and, if present, tells
+        // the ResponseBody constructor to ignore resource links.
+        // Since we never return links from this filter, instead of looking
+        // for the header, we can just always tell the ResponseBody to ignore links.
+        ResponseBody rb = new ResponseBody(false);
         String errorMsg = (String)entity;
-        Object wrappedEntity = Util.responseBody().addFailure(errorMsg);
-        resCtx.setEntity(wrappedEntity, resCtx.getEntityAnnotations(), Constants.MEDIA_TYPE_JSON_TYPE);
+        rb.addFailure(errorMsg);
+        resCtx.setEntity(rb, resCtx.getEntityAnnotations(), Constants.MEDIA_TYPE_JSON_TYPE);
     }
 }

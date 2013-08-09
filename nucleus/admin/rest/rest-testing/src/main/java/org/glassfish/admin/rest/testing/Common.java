@@ -68,6 +68,9 @@ public class Common {
     public static final String QUERY_INCLUDE = "__includeFields";
     public static final String QUERY_EXCLUDE = "__excludeFields";
 
+    public static final String HEADER_LOCATION = "Location";
+    public static final String HEADER_X_LOCATION = "X-Location";
+
     public static boolean haveValue(String val) {
         return (val != null && val.length() > 0);
     }
@@ -259,6 +262,10 @@ public class Common {
 
     public static ResponseVerifier verify(ResponseVerifier verifier, int... statuses) throws Exception {
         return verifier.status(statuses);
+    }
+
+    public static void verify(Environment environment, ObjectValue want, JSONObject have) throws Exception {
+        DataVerifier.verify(environment, want, have);
     }
 
     public static ObjectValue toObjectVal(JSONObject j) throws Exception {

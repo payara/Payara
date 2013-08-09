@@ -48,4 +48,10 @@ import org.jvnet.hk2.annotations.Contract;
 @Contract
 public interface RestModel<T> {
     boolean isSet(String fieldName);
+
+    void allFieldsSet();
+
+    // TBD - remove once the conversion to the new REST style guide is completed
+    void trimmed();
+    boolean isTrimmed();
 }

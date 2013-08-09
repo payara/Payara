@@ -47,6 +47,8 @@ import java.util.Map.Entry;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
 
+import static org.glassfish.admin.rest.testing.Common.*;
+
 public class ResponseVerifier {
     private Environment env;
     private Response response;
@@ -107,7 +109,17 @@ public class ResponseVerifier {
     }
 
     public ResponseVerifier locationHeader(StringValue stringWant) throws Exception {
-        return header("Location", stringWant);
+        return header(HEADER_LOCATION, stringWant);
+    }
+
+    public ResponseVerifier xLocationHeader(String uriWant) throws Exception {
+        StringValue stringWant = new StringValue();
+        stringWant.regexp(".*" + uriWant);
+        return xLocationHeader(stringWant);
+    }
+
+    public ResponseVerifier xLocationHeader(StringValue stringWant) throws Exception {
+        return header(HEADER_X_LOCATION, stringWant);
     }
 
     public ResponseVerifier header(String name, StringValue want) throws Exception {
@@ -148,10 +160,6 @@ public class ResponseVerifier {
     }
 
     private void verifyData(ObjectValue want, JSONObject have) throws Exception {
-        IndentingStringBuffer sb = new IndentingStringBuffer();
-        want.print(sb);
-        debug("Body want : " + sb.toString());
-        debug("Body have : " + have.toString(2));
         DataVerifier.verify(getEnvironment(), want, have);
     }
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,65 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package org.glassfish.admin.rest.model;
+package org.glassfish.admin.rest.composite.metadata;
 
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
-public class Message {
-    public static enum Severity {
-        SUCCESS,
-        WARNING,
-        FAILURE
-    };
-
-    private Severity severity;
-    private String field;
-    private String message;
-
-    public Message(Severity severity, String message) {
-        this.severity = severity;
-        this.message = message;
-    }
-
-    public Message(Severity severity, String field, String message) {
-        this.severity = severity;
-        this.field = field;
-        this.message = message;
-    }
-
-    public Severity getSeverity() {
-        return this.severity;
-    }
-
-    public void setSeverity(Severity val) {
-        this.severity = val;
-    }
-
-    public String getMessage() {
-        return this.message;
-    }
-
-    public void setMessage(String val) {
-        this.message = val;
-    }
-
-    public String getField() {
-        return this.field;
-    }
-
-    public void setField(String val) {
-        this.field = val;
-    }
-
-    public JSONObject toJson() throws JSONException {
-        JSONObject object = new JSONObject();
-        object.put("message", getMessage());
-        object.put("severity", getSeverity());
-        String f = getField();
-        if (f != null && f.length() > 0) {
-          object.put("field", f);
-        }
-        return object;
-    }
+/**
+ * Used to indicate that a String model property can only contain a specific list of strings.
+ *
+ * Typically a model property will use a java enum instead.  However, there are some cases
+ * where a String property is defined in a base model (e.g. a Job's status property) and the
+ * various derived models specify what values they allow for the that inherited property
+ * (e.g. a ServerJob's status property).
+ * In these cases, the model property needs to use a String instead of a java enum (since
+ * the base model doesn't know what the possible values are), and this annotation is added
+ * in the derived models to the inherited property to restrict what values it can hold.
+ *
+ * @author tmoreau
+ */
+@Qualifier
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface LegalValues {
+  String[] values();
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,6 @@ import org.codehaus.jettison.json.JSONObject;
 import org.glassfish.admin.rest.composite.RestModel;
 import org.glassfish.admin.rest.composite.metadata.Confidential;
 import org.glassfish.admin.rest.model.ResponseBody;
-import org.glassfish.admin.rest.provider.ResponseBodyWriter;
 
 /**
  *
@@ -63,6 +62,10 @@ public class JsonUtil {
     public static final String CONFIDENTIAL_PROPERTY_UNSET = null;
 
     public static Object getJsonObject(Object object) throws JSONException {
+        return getJsonObject(object, true);
+    }
+
+    public static Object getJsonObject(Object object, boolean hideConfidentialProperties) throws JSONException {
         Object result;
         if (object instanceof Collection) {
             result = processCollection((Collection)object);
@@ -71,8 +74,8 @@ public class JsonUtil {
         } else if (object == null) {
             result = JSONObject.NULL;
         } else if (RestModel.class.isAssignableFrom(object.getClass())) {
-            result = getJsonForRestModel((RestModel)object, true);
-        }else if (object instanceof ResponseBody) {
+            result = getJsonForRestModel((RestModel)object, hideConfidentialProperties);
+        } else if (object instanceof ResponseBody) {
             result = ((ResponseBody)object).toJson();
         } else {
             Class<?> clazz = object.getClass();
@@ -97,10 +100,13 @@ public class JsonUtil {
             if (m.getName().startsWith("get")) { // && !m.getName().equals("getClass")) {
                 String propName = m.getName().substring(3);
                 propName = propName.substring(0,1).toLowerCase(Locale.getDefault()) + propName.substring(1);
-                try {
-                     result.put(propName, getJsonObject(getRestModelProperty(model, m, hideConfidentialProperties)));
-                } catch (Exception e) {
-
+                if (!model.isTrimmed() || model.isSet(propName)) { // TBD - remove once the conversion to the new REST style guide is completed
+//              if (model.isSet(propName)) {
+                    // Only include properties whose value has been set in the model
+                    try {
+                        result.put(propName, getJsonObject(getRestModelProperty(model, m, hideConfidentialProperties)));
+                    } catch (Exception e) {
+                    }
                 }
             }
         }
@@ -170,4 +176,39 @@ public class JsonUtil {
         return result;
     }
 
+    public static String getString(JSONObject jsonObject, String key, String dflt) {
+        try {
+            if (jsonObject.isNull(key)) {
+                return null;
+            }
+            return jsonObject.getString(key);
+        } catch (JSONException e) {
+            return dflt;
+        }
+    }
+
+    public static int getInt(JSONObject jsonObject, String key, int dflt) {
+        try {
+            return jsonObject.getInt(key);
+        } catch (JSONException e) {
+            return dflt;
+        }
+    }
+
+    public static void put(JSONObject jsonObject, String key, Object value) {
+        try {
+            synchronized(jsonObject) {
+                jsonObject.put(key, value!=null?value:JSONObject.NULL);
+            }
+        } catch (JSONException e) {
+            // ignore. The exception is thrown only if the value is non-finite number
+            // or if the key is null.
+        }
+    }
+
+    public static void put(JSONArray jsonArray, JSONObject item) {
+        synchronized(jsonArray) {
+            jsonArray.put(item);
+        }
+    }
 }

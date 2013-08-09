@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Locale;
 import java.util.Set;
 import javax.validation.ConstraintViolation;
 import javax.ws.rs.Consumes;
@@ -94,12 +95,13 @@ public class RestModelReader<T extends RestModel> implements MessageBodyReader<T
                 line = in.readLine();
             }
 
+            final Locale locale = CompositeUtil.instance().getLocale(mm);
             JSONObject o = new JSONObject(sb.toString());
-            T model = CompositeUtil.instance().unmarshallClass(type, o);
-            Set<ConstraintViolation<T>> cv = CompositeUtil.instance().validateRestModel(model);
+            T model = CompositeUtil.instance().unmarshallClass(locale, type, o);
+            Set<ConstraintViolation<T>> cv = CompositeUtil.instance().validateRestModel(locale, model);
             if (!cv.isEmpty()) {
                 final Response response = Response.status(Status.BAD_REQUEST)
-                        .entity(CompositeUtil.instance().getValidationFailureMessages(cv, model))
+                        .entity(CompositeUtil.instance().getValidationFailureMessages(locale, cv, model))
                         .build();
                 throw new WebApplicationException(response);
             }
