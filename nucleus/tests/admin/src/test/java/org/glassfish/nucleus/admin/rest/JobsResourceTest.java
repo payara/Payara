@@ -39,6 +39,7 @@
  */
 package org.glassfish.nucleus.admin.rest;
 
+import java.util.Locale;
 import javax.ws.rs.core.Response;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -76,7 +77,8 @@ public class JobsResourceTest extends RestTestBase {
         response = get(uri);
         Assert.assertTrue(isSuccess(response));
         final JSONObject entity = response.readEntity(JSONObject.class);
-        Job job = CompositeUtil.instance().unmarshallClass(Job.class, entity);
+        Locale locale = null;
+        Job job = CompositeUtil.instance().unmarshallClass(locale, Job.class, entity);
         Assert.assertNotNull(job);
     }
 
