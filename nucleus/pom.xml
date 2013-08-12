@@ -136,8 +136,9 @@
         <build.id>${user.name}-private</build.id>
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
+        <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
-        <findbugs.version>2.4.0</findbugs.version>
+        <findbugs.version>2.5.2</findbugs.version>
         
         <glassfish-corba.version>4.0.0-b007</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
@@ -569,14 +570,22 @@
                     <threshold>${findbugs.threshold}</threshold>
                     <findbugsXmlWithMessages>true</findbugsXmlWithMessages>
                     <excludeFilterFile>
-                        exclude-common.xml,${findbugs.exclude}
+                        ${findbugs.common},${findbugs.exclude}
                     </excludeFilterFile>
+		    <jvmArgs>-Dfindbugs.glassfish.logging.validLoggerPrefixes=javax.enterprise</jvmArgs>
+		    <plugins>
+		        <plugin>
+			    <groupId>org.glassfish.findbugs</groupId>
+			    <artifactId>findbugs-logging-detectors</artifactId>
+			    <version>1.2</version>
+		        </plugin>
+		    </plugins>
                 </configuration>
                 <dependencies>
                     <dependency>
                         <groupId>org.glassfish.findbugs</groupId>
                         <artifactId>findbugs</artifactId>
-                        <version>1.0</version>
+                        <version>1.2</version>
                     </dependency>
                 </dependencies>
             </plugin>
