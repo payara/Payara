@@ -223,6 +223,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     void setNoCompressionUserAgents(String agents);
 
     @Attribute(defaultValue = "" + RCM_SUPPORT_ENABLED, dataType = Boolean.class)
+    @Deprecated
     String getRcmSupportEnabled();
 
     void setRcmSupportEnabled(String enable);

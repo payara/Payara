@@ -104,7 +104,6 @@ import org.glassfish.grizzly.portunif.PUFilter;
 import org.glassfish.grizzly.portunif.PUProtocol;
 import org.glassfish.grizzly.portunif.ProtocolFinder;
 import org.glassfish.grizzly.portunif.finders.SSLProtocolFinder;
-import org.glassfish.grizzly.rcm.ResourceAllocationFilter;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.grizzly.ssl.SSLBaseFilter;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
@@ -642,16 +641,11 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         for (ContentEncoding contentEncoding : contentEncodings) {
             httpServerFilter.addContentEncoding(contentEncoding);
         }
-        //httpServerFilter.addContentEncoding(new GZipContentEncoding());
-        final boolean isRcmSupportEnabled = Boolean.parseBoolean(http.getRcmSupportEnabled());
-        if (isRcmSupportEnabled) {
-            filterChainBuilder.add(new ResourceAllocationFilter());
-        }
 //        httpServerFilter.getMonitoringConfig().addProbes(
 //                serverConfig.getMonitoringConfig().getHttpConfig().getProbes());
         filterChainBuilder.add(httpServerFilter);
         final FileCache fileCache = configureHttpFileCache(http.getFileCache());
-        fileCache.initialize(transport.getMemoryManager(), delayedExecutor);
+        fileCache.initialize(delayedExecutor);
         final FileCacheFilter fileCacheFilter = new FileCacheFilter(fileCache);
 //        fileCache.getMonitoringConfig().addProbes(
 //                serverConfig.getMonitoringConfig().getFileCacheConfig().getProbes());

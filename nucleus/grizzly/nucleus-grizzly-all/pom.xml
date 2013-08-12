@@ -129,10 +129,6 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.grizzly</groupId>
-            <artifactId>grizzly-rcm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.grizzly</groupId>
             <artifactId>grizzly-portunif</artifactId>
         </dependency>
         <dependency>

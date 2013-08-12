@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,11 +74,11 @@ public class FileCacheMonitor implements FileCacheProbe {
         grizzlyMonitoring.getFileCacheProbeProvider().incOpenCacheEntriesEvent(monitoringId);
         switch (entry.type) {
             case HEAP: {
-                grizzlyMonitoring.getFileCacheProbeProvider().addHeapSizeEvent(monitoringId, entry.contentLength);
+                grizzlyMonitoring.getFileCacheProbeProvider().addHeapSizeEvent(monitoringId, entry.getFileSize(false));
                 break;
             }
             case MAPPED: {
-                grizzlyMonitoring.getFileCacheProbeProvider().addMappedMemorySizeEvent(monitoringId, entry.contentLength);
+                grizzlyMonitoring.getFileCacheProbeProvider().addMappedMemorySizeEvent(monitoringId, entry.getFileSize(false));
                 break;
             }
             default: {
@@ -93,11 +93,11 @@ public class FileCacheMonitor implements FileCacheProbe {
         grizzlyMonitoring.getFileCacheProbeProvider().decOpenCacheEntriesEvent(monitoringId);
         switch (entry.type) {
             case HEAP: {
-                grizzlyMonitoring.getFileCacheProbeProvider().subHeapSizeEvent(monitoringId, entry.contentLength);
+                grizzlyMonitoring.getFileCacheProbeProvider().subHeapSizeEvent(monitoringId, entry.getFileSize(false));
                 break;
             }
             case MAPPED: {
-                grizzlyMonitoring.getFileCacheProbeProvider().subMappedMemorySizeEvent(monitoringId, entry.contentLength);
+                grizzlyMonitoring.getFileCacheProbeProvider().subMappedMemorySizeEvent(monitoringId, entry.getFileSize(false));
                 break;
             }
             default: {
