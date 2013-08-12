@@ -45,7 +45,6 @@
                         com.sun.ejb.portable; \
                         com.sun.ejb.codegen; \
                         com.sun.ejb.containers; \
-                        com.sun.ejb.containers.interceptors; \
                         com.sun.ejb.containers.util; \
                         com.sun.ejb.containers.util.cache; \
                         com.sun.ejb.containers.util.pool; \
