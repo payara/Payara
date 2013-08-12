@@ -161,8 +161,12 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
 
     private void populateEJBsForThisBDA(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
         for (com.sun.enterprise.deployment.EjbDescriptor next : ejbs) {
-            EjbDescriptorImpl wbEjbDesc = new EjbDescriptorImpl(next);
-            ejbDescImpls.add(wbEjbDesc);
+            for (String className : moduleClassNames) {
+                if (className.equals(next.getEjbClassName())) {
+                    EjbDescriptorImpl wbEjbDesc = new EjbDescriptorImpl(next);
+                    ejbDescImpls.add(wbEjbDesc);
+                }
+            }
         }
     }
 

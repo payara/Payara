@@ -75,7 +75,7 @@ public class OsgiWeldTestNG {
         return (new Object[][] {exportPackages});
     }
 
-    @Test(groups = {"pulse"}, dataProvider = "exports")
+//    @Test(groups = {"pulse"}, dataProvider = "exports")
     public void testOsgiModuleIntegrity(String exports) throws Exception {
         try {
             boolean result = checkManifestAttributes();
