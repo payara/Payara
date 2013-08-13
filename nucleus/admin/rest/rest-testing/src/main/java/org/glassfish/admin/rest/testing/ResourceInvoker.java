@@ -59,7 +59,17 @@ public abstract class ResourceInvoker {
     public static final String METHOD_POST = "post";
     public static final String METHOD_PUT = "put";
     public static final String METHOD_DELETE = "delete";
-    private Environment env;
+    private final Environment env;
+    private String password = null;
+    private String uri;
+    private Map<String, String> queryParams = new HashMap<String, String>();
+    private String url = null;
+    private String baseUrl = null;
+    private String protocol = null;
+    private String host = null;
+    private String port = null;
+    private String username = null;
+    private JSONObject body = new JSONObject();
 
     protected ResourceInvoker(Environment env) {
         this.env = env;
@@ -83,8 +93,6 @@ public abstract class ResourceInvoker {
         return getMediaType();
     }
 
-    private String url = null;
-
     protected String getUrl() {
         return (this.url == null) ? getBaseUrl() + "/" + getUri() : this.url;
     }
@@ -93,7 +101,6 @@ public abstract class ResourceInvoker {
         this.url = val;
         return this;
     }
-    private String baseUrl = null;
 
     protected String getBaseUrl() {
         if (this.baseUrl != null) {
@@ -106,7 +113,6 @@ public abstract class ResourceInvoker {
         this.baseUrl = val;
         return this;
     }
-    private String protocol = null;
 
     protected String getProtocol() {
         return (this.protocol == null) ? getEnvironment().getProtocol() : this.protocol;
@@ -116,7 +122,6 @@ public abstract class ResourceInvoker {
         this.protocol = val;
         return this;
     }
-    private String host = null;
 
     protected String getHost() {
         return (this.host == null) ? getEnvironment().getHost() : this.host;
@@ -126,7 +131,6 @@ public abstract class ResourceInvoker {
         this.host = val;
         return this;
     }
-    private String port = null;
 
     protected String getPort() {
         return (this.port == null) ? getEnvironment().getPort() : this.port;
@@ -136,7 +140,6 @@ public abstract class ResourceInvoker {
         this.port = val;
         return this;
     }
-    private String username = null;
 
     protected String getUserName() {
         return (this.username == null) ? getEnvironment().getUserName() : this.username;
@@ -146,7 +149,6 @@ public abstract class ResourceInvoker {
         this.username = val;
         return this;
     }
-    private String password = null;
 
     protected String getPassword() {
         return (this.password == null) ? getEnvironment().getPassword() : this.password;
@@ -156,7 +158,6 @@ public abstract class ResourceInvoker {
         this.password = val;
         return this;
     }
-    private String uri;
 
     protected String getUri() {
         return uri;
@@ -166,7 +167,6 @@ public abstract class ResourceInvoker {
         this.uri = val;
         return this;
     }
-    private Map<String, String> queryParams = new HashMap<String, String>();
 
     protected Map<String, String> getQueryParams() {
         return this.queryParams;
@@ -176,7 +176,6 @@ public abstract class ResourceInvoker {
         this.queryParams.put(name, value);
         return this;
     }
-    private JSONObject body = new JSONObject();
 
     protected JSONObject getBody() {
         return this.body;
