@@ -535,7 +535,35 @@ public abstract class CompositeResource extends AbstractResource implements Rest
                     new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
-    protected Response create(CreateCommandInvoker invoker, boolean detached) throws Exception {
+    protected Response act(final CommandInvoker invoker, boolean detached) {
+        if (detached) {
+            return accepted(invoker.getCommand(), invoker.getParams(), null);
+        } else {
+            invoker.setResult(executeWriteCommand(invoker.getCommand(), invoker.getParams()).getExtraProperties());
+            return acted(invoker.getSuccessMessage());
+        }
+    }
+
+    protected Response actSse(final CommandInvoker invoker) {
+        final boolean includeResourceLinks = includeResourceLinks();
+        EventOutput eo = executeSseCommand(getSubject(), invoker.getCommand(), invoker.getParams(), new ResponseBodyBuilderImpl() {
+            @Override
+            protected ResponseBody success(ActionReport report) {
+                invoker.setResult(report.getExtraProperties());
+                SseResponseBody responseBody = new SseResponseBody();
+                responseBody.addSuccess(invoker.getSuccessMessage());
+                return responseBody;
+            }
+            @Override
+            protected boolean includeResourceLinks() {
+                return includeResourceLinks;
+            }
+        });
+
+        return Response.status(Status.ACCEPTED).entity(eo).build();
+    }
+
+    protected Response create(final CreateCommandInvoker invoker, boolean detached) throws Exception {
         if (detached) {
             final String newItemName = invoker.getNewItemName();
             final URI newItemUri = StringUtil.notEmpty(newItemName) ? getChildItemUri(newItemName) : null;
@@ -568,6 +596,15 @@ public abstract class CompositeResource extends AbstractResource implements Rest
     }
 
     public class CommandInvoker {
+
+        public CommandInvoker() {}
+
+        public CommandInvoker(String command, ParameterMap params, String successMessage) {
+            setCommand(command);
+            setParams(params);
+            setSuccessMessage(successMessage);
+        }
+
         private String command;
         public void setCommand(String val) { this.command = val; }
         public String getCommand() { return this.command; }
@@ -579,13 +616,21 @@ public abstract class CompositeResource extends AbstractResource implements Rest
         private String successMsg;
         public void setSuccessMessage(String val) { this.successMsg = val; }
         public String getSuccessMessage() { return this.successMsg; }
+
+        public void setResult(Properties extraProperties) {}
     }
 
     public class CreateCommandInvoker extends CommandInvoker {
+
+        public CreateCommandInvoker() { super(); }
+
+        public CreateCommandInvoker(String command, ParameterMap params, String successMessage, String newItemName) {
+            super(command, params, successMessage);
+            setNewItemName(newItemName);
+        }
+
         private String newItemName;
         public void setNewItemName(String val) { this.newItemName = val; }
         public String getNewItemName() { return this.newItemName; }
-
-        public void setResult(Properties extraProperties) {}
     }
 }
