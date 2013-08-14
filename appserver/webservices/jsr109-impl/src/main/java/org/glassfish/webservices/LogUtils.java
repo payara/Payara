@@ -560,4 +560,9 @@ public final class LogUtils {
             action = "Make sure web service is implemented in EJB module or Web Application.")
     public static final String UNSUPPORTED_MODULE_TYPE = LOGMSG_PREFIX + "-00121";
 
+    @LogMessageInfo(
+            message = "{0} does not support {1}",
+            comment = "{0} - parser class name, {1} - feature ID",
+            level = "FINE")
+    public static final String PARSER_UNSUPPORTED_FEATURE = LOGMSG_PREFIX + "-00122";
 }
