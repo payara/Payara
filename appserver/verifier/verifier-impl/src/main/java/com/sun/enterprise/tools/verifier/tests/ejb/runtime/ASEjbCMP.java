@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,92 +88,85 @@ public class ASEjbCMP extends EjbTest implements EjbCheck {
             
             IASEjbCMPEntityDescriptor cmpBean = (IASEjbCMPEntityDescriptor)descriptor;
 
-            if(cmpBean != null){
-                String mappingProps = cmpBean.getMappingProperties();
-                if(mappingProps == null){
-                    oneWarning = true;
-                    addWarningDetails(result, compName);
-                    result.warning(smh.getLocalString(getClass().getName()+".warning",
-                        "WARNING [AS-EJB cmp] : mapping-properties Element is not defined"));
-                }else{
-                    if(mappingProps.length()==0) {
-                        oneFailed = true;
-                        addErrorDetails(result, compName);
-                        result.failed(smh.getLocalString(getClass().getName()+".failed",
-                            "FAILED [AS-EJB cmp] : mapping-properties field must contain a vaild non-empty value"));
-                    }
-                    else{               //4690436
+            String mappingProps = cmpBean.getMappingProperties();
+            if(mappingProps == null){
+                oneWarning = true;
+                addWarningDetails(result, compName);
+                result.warning(smh.getLocalString(getClass().getName()+".warning",
+                    "WARNING [AS-EJB cmp] : mapping-properties Element is not defined"));
+            }else{
+                if(mappingProps.length()==0) {
+                    oneFailed = true;
+                    addErrorDetails(result, compName);
+                    result.failed(smh.getLocalString(getClass().getName()+".failed",
+                        "FAILED [AS-EJB cmp] : mapping-properties field must contain a vaild non-empty value"));
+                }
+                else{               //4690436
 //                        File f = Verifier.getArchiveFile(descriptor.getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri());
-                        JarFile jarFile = null;
-                        ZipEntry deploymentEntry=null;
+                    JarFile jarFile = null;
+                    ZipEntry deploymentEntry=null;
 //                        try {
 //                            jarFile = new JarFile(f);
-                              if(jarFile!=null)
-                                  deploymentEntry = jarFile.getEntry(mappingProps);
+                          if(jarFile!=null)
+                              deploymentEntry = jarFile.getEntry(mappingProps);
 //                        }catch(IOException e){}
 //                        finally{
 //                           try{  if(jarFile!=null) jarFile.close();} 
 //                           catch(IOException e){}
 //                        }
 
-                        if(deploymentEntry !=null){
-                        addGoodDetails(result, compName);
-                        result.passed(smh.getLocalString(getClass().getName()+".passed",
-                            "PASSED [AS-EJB cmp] : mapping-properties file is {0}",
-                            new Object[]{mappingProps}));
-                        }else{
-                            addErrorDetails(result, compName);
-                            //invalid entry
-                            result.failed(smh.getLocalString(getClass().getName()+".failed",
-                                "FAILED [AS-EJB cmp] : mapping-properties field must contain a vaild non-empty value"));
-                        }
+                    if(deploymentEntry !=null){
+                    addGoodDetails(result, compName);
+                    result.passed(smh.getLocalString(getClass().getName()+".passed",
+                        "PASSED [AS-EJB cmp] : mapping-properties file is {0}",
+                        new Object[]{mappingProps}));
+                    }else{
+                        addErrorDetails(result, compName);
+                        //invalid entry
+                        result.failed(smh.getLocalString(getClass().getName()+".failed",
+                            "FAILED [AS-EJB cmp] : mapping-properties field must contain a vaild non-empty value"));
                     }
                 }
-                
-                try{
-                    boolean oneoneCmp = cmpBean.getCMPVersion()== EjbCMPEntityDescriptor.CMP_1_1;
-                    addGoodDetails(result, compName);
-                    result.passed(smh.getLocalString(getClass().getName()+".passed1",
-                        "PASSED [AS-EJB cmp] : is-one-one-cmp is {0}",
-                        new Object[]{new Boolean(oneoneCmp)}));
-                }catch(Exception ex){
-                    oneWarning = true;
-                    addWarningDetails(result, compName);
-                    result.warning(smh.getLocalString(getClass().getName()+".warning1",
-                        "WARNING [AS-EJB cmp] : is-one-one-cmp Element is not defined"));
-                }
-                
-                try{
+            }
+            
+            try{
+                boolean oneoneCmp = cmpBean.getCMPVersion()== EjbCMPEntityDescriptor.CMP_1_1;
+                addGoodDetails(result, compName);
+                result.passed(smh.getLocalString(getClass().getName()+".passed1",
+                    "PASSED [AS-EJB cmp] : is-one-one-cmp is {0}",
+                    new Object[]{new Boolean(oneoneCmp)}));
+            }catch(Exception ex){
+                oneWarning = true;
+                addWarningDetails(result, compName);
+                result.warning(smh.getLocalString(getClass().getName()+".warning1",
+                    "WARNING [AS-EJB cmp] : is-one-one-cmp Element is not defined"));
+            }
+            
+            try{
 //EXCEPTION is thrown here as getOneOneFinders() internally uses queryPArser which is null. Exception as:
 //Apr 4, 2003 11:18:22 AM com.sun.enterprise.deployment.IASEjbCMPEntityDescriptor getOneOneFinder
-                    Map finders = cmpBean.getOneOneFinders();
-                    if(finders!=null){
-                        testFinders(finders,result);
-                    }else{
-                        oneWarning = true;
-                        addWarningDetails(result, compName);
-                        result.warning(smh.getLocalString(getClass().getName()+".warning2",
-                            "WARNING [AS-EJB cmp] : one-one-finders Element is not defined"));
-                    }
-                }catch(Exception ex){
-                    oneFailed = true;
-                    addErrorDetails(result, compName);
-                    result.failed(smh.getLocalString(getClass().getName()+".failed1",
-                        "FAILED [AS-EJB cmp] : getOneOneFinders Failed.",
-                        new Object[]{cmpBean}));
+                Map finders = cmpBean.getOneOneFinders();
+                if(finders!=null){
+                    testFinders(finders,result);
+                }else{
+                    oneWarning = true;
+                    addWarningDetails(result, compName);
+                    result.warning(smh.getLocalString(getClass().getName()+".warning2",
+                        "WARNING [AS-EJB cmp] : one-one-finders Element is not defined"));
                 }
-                
-                if(oneFailed){
-                    result.setStatus(Result.FAILED);}
-                else{ if(oneWarning)
-                    result.setStatus(Result.WARNING);}
-                
-            }else{
-                addNaDetails(result, compName);
-                result.notApplicable(smh.getLocalString(getClass().getName()+".notApplicable",
-                    "NOT APPLICABLE [AS-EJB cmp] : {0} is not a CMP Entity Bean.",
-                    new Object[] {descriptor.getName()}));
+            }catch(Exception ex){
+                oneFailed = true;
+                addErrorDetails(result, compName);
+                result.failed(smh.getLocalString(getClass().getName()+".failed1",
+                    "FAILED [AS-EJB cmp] : getOneOneFinders Failed.",
+                    new Object[]{cmpBean}));
             }
+            
+            if(oneFailed){
+                result.setStatus(Result.FAILED);}
+            else{ if(oneWarning)
+                result.setStatus(Result.WARNING);}
+            
         }else{
                 addNaDetails(result, compName);
                 result.notApplicable(smh.getLocalString(getClass().getName()+".notApplicable",
