@@ -85,7 +85,6 @@ public final class AgentAttacher {
         }
     }
 
-    //private static final Logger logger = LogDomains.getLogger(AgentAttacher.class, LogDomains.MONITORING_LOGGER);
     private final static boolean canAttach;
 
     static {

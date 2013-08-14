@@ -44,7 +44,6 @@ import org.glassfish.external.probe.provider.annotations.*;
 import org.glassfish.flashlight.xml.ProbeProviderStaxParser;
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.ObjectAnalyzer;
-import com.sun.logging.LogDomains;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.*;

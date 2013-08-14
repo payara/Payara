@@ -40,9 +40,9 @@
 package org.glassfish.flashlight.impl.client;
 
 import com.sun.enterprise.util.Utility;
-import com.sun.logging.LogDomains;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
 
 /**
  * Nice easy simple fast (and therefore more likely to use!) class for logging
@@ -56,7 +56,7 @@ final class Log {
     private static final Logger logger;
 
     static {
-        logger = LogDomains.getLogger(Log.class, LogDomains.MONITORING_LOGGER);
+        logger = FlashlightLoggerInfo.getLogger();
 
         if (Boolean.parseBoolean(Utility.getEnvOrProp("AS_DEBUG")))
             logger.setLevel(Level.ALL);

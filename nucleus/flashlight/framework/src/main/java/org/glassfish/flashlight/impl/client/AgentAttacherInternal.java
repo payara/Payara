@@ -41,7 +41,6 @@ package org.glassfish.flashlight.impl.client;
 
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.universal.process.ProcessUtils;
-import com.sun.logging.LogDomains;
 import com.sun.tools.attach.VirtualMachine;
 import java.io.File;
 import java.util.logging.*;

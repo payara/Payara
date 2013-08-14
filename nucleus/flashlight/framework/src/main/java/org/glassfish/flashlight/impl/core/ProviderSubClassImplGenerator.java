@@ -45,7 +45,7 @@ package org.glassfish.flashlight.impl.core;
  * Fixed a bunch of FindBugs problem, 2/2012, Byron Nevins
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
 import java.security.*;
 import org.objectweb.asm.*;
 
@@ -56,8 +56,7 @@ import java.util.logging.Level;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ProviderSubClassImplGenerator {
-    private static final Logger logger =
-            LogDomains.getLogger(ProviderSubClassImplGenerator.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
     public final static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(ProviderSubClassImplGenerator.class);
     private String invokerId;

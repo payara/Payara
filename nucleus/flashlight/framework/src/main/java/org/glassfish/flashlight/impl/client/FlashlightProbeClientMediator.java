@@ -47,7 +47,6 @@ package org.glassfish.flashlight.impl.client;
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.reflect.ReflectUtils;
-import com.sun.logging.LogDomains;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;

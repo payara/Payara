@@ -42,12 +42,12 @@ package org.glassfish.flashlight;
 
 import com.sun.enterprise.config.serverbeans.MonitoringService;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.glassfish.api.monitoring.DTraceContract;
 import org.glassfish.external.probe.provider.annotations.Probe;
@@ -65,8 +65,7 @@ import org.glassfish.hk2.api.ServiceLocator;
  * @author Byron Nevins
  */
 public class FlashlightUtils {
-    private static final Logger logger =
-            LogDomains.getLogger(FlashlightUtils.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
 
     private FlashlightUtils() {
         // All static.  No instances allowed.
@@ -376,25 +375,15 @@ public class FlashlightUtils {
         String message;
 
         if (!contractExists) {
-            message = localStrings.getLocalString("no_impl",
-                    "DTrace is not available.  This can be caused by two things:\n"
-                    + "1. JDK 7 is required to run DTrace\n"
-                    + "2. glassfish-dtrace.jar value-add is required for DTrace");
+          logger.log(Level.INFO, FlashlightLoggerInfo.DTRACE_NOT_AVAILABLE);
         }
         else if (!isSupported) {
-            message = localStrings.getLocalString("not_supported",
-                    "DTrace is not available.  This condition normally only occurs when your\n"
-                    + "Operating System does not support DTrace.  Currently you must have Solaris 10\n"
-                    + "or better for dtrace support");
+          logger.log(Level.INFO, FlashlightLoggerInfo.DTRACE_NOT_SUPPORTED);
         }
         else {
-            message = localStrings.getLocalString("init_ok",
-                    "DTrace is connected and ready.");
+          logger.log(Level.INFO, FlashlightLoggerInfo.DTRACE_READY);
         }
-
-        logger.info(message);
     }
-
 
     /*
     Will replace special characters with ascii codes

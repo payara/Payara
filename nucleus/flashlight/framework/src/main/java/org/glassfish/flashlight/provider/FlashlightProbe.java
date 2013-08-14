@@ -56,8 +56,8 @@ import java.util.logging.Level;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.glassfish.api.monitoring.ProbeInfo;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
 
 public class FlashlightProbe
         implements ProbeHandle, ProbeInfo{
@@ -426,8 +426,7 @@ public class FlashlightProbe
     private boolean hidden;
     private boolean firstTransform = true;
     private ConcurrentMap<Integer, ProbeClientInvoker> invokers = new ConcurrentHashMap<Integer, ProbeClientInvoker>();
-    private static final Logger logger =
-        LogDomains.getLogger(FlashlightProbe.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
     public final static LocalStringManagerImpl localStrings =
                             new LocalStringManagerImpl(FlashlightProbe.class);
     private FlashlightProbe parent = null;

@@ -159,4 +159,31 @@ public class FlashlightLoggerInfo {
             level = "WARNING")
     public static final String NO_ATTACH_GET = LOGMSG_PREFIX + "-00511";
     
+    @LogMessageInfo(
+            message = "DTrace is not available.",
+            cause="This is caused if following are missing: \n1. JDK 7 is required to run DTrace\n2. glassfish-dtrace.jar value-add is required for DTrace",
+            action="Run with JDK 7 and glassfish-dtrace.jar",
+            level = "INFO")
+    public static final String DTRACE_NOT_AVAILABLE = LOGMSG_PREFIX + "-00512";
+
+    @LogMessageInfo(
+            message = "DTrace is not supported.",
+            cause="This is caused if: \n1. Operating System does not support DTrace.  Currently you must have Solaris 10 or higher for dtrace support.",
+            action="Run with Solaris 10 or higher",
+            level = "INFO")
+    public static final String DTRACE_NOT_SUPPORTED = LOGMSG_PREFIX + "-00513";
+    
+    @LogMessageInfo(
+            message = "DTrace is connected and ready.",
+            cause="This is caused if: \n1. Operating System does not support DTrace.  Currently you must have Solaris 10 or higher for dtrace support.",
+            action="Run with Solaris 10 or higher",
+            level = "INFO")
+    public static final String DTRACE_READY = LOGMSG_PREFIX + "-00514";
+
+    @LogMessageInfo(
+            message = "Unexpected exception invoking DTrace",
+            level = "WARNING")
+    public static final String DTRACE_UNEXPECTED_EXCEPTION = LOGMSG_PREFIX + "-00515";
+
 }
+

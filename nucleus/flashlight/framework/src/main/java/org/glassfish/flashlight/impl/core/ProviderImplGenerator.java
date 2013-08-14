@@ -46,7 +46,6 @@ package org.glassfish.flashlight.impl.core;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
-import com.sun.logging.LogDomains;
 import org.glassfish.flashlight.provider.FlashlightProbe;
 import org.glassfish.flashlight.provider.ProbeRegistry;
 import org.objectweb.asm.ClassWriter;
@@ -64,10 +63,10 @@ import java.security.PrivilegedActionException;
 import java.security.ProtectionDomain;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.glassfish.flashlight.FlashlightLoggerInfo;
 
 public class ProviderImplGenerator {
-    private static final Logger logger =
-            LogDomains.getLogger(ProviderImplGenerator.class, LogDomains.MONITORING_LOGGER);
+    private static final Logger logger = FlashlightLoggerInfo.getLogger();
 
     public String defineClass(FlashlightProbeProvider provider, Class providerClazz) {
 

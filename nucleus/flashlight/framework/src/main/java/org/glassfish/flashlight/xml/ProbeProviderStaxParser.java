@@ -53,7 +53,6 @@ import javax.xml.stream.XMLStreamException;
 import static org.glassfish.flashlight.xml.XmlConstants.*;
 import org.glassfish.flashlight.FlashlightLoggerInfo;
 import static org.glassfish.flashlight.FlashlightLoggerInfo.*;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import static javax.xml.stream.XMLStreamConstants.END_DOCUMENT;
 
