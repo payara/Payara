@@ -255,6 +255,16 @@ public abstract class CompositeResource extends AbstractResource implements Rest
     }
 
     /**
+     * Execute a writing <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeWriteCommandManaged(String command, ParameterMap parameters) {
+        return getCompositeUtil().executeWriteCommandManaged(getSubject(), command, parameters);
+    }
+
+    /**
      * Execute a read-only <code>AdminCommand</code> with the specified parameters.
      * @param command
      * @param parameters
@@ -284,7 +294,7 @@ public abstract class CompositeResource extends AbstractResource implements Rest
      * @return
      */
     protected ActionReporter executeCommand(String command, ParameterMap parameters, Status status, boolean includeFailureMessage, boolean throwOnWarning) {
-        return getCompositeUtil().executeCommand(getSubject(), command, parameters, status, includeFailureMessage, throwOnWarning);
+        return getCompositeUtil().executeCommand(getSubject(), command, parameters, status, includeFailureMessage, throwOnWarning, false);
     }
 
     /**

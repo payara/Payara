@@ -228,10 +228,28 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 Subject subject) {
+        return runCommand(commandName, parameters, subject, false);
+    }
+
+    /**
+     * Executes the specified __asadmin command.
+     * @param commandName
+     * @param parameters
+     * @param subject
+     * @param managedJob
+     * @return
+     */
+    public static RestActionReporter runCommand(String commandName,
+                                                ParameterMap parameters,
+                                                Subject subject,
+                                                boolean managedJob) {
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
         final CommandInvocation commandInvocation =
                 cr.getCommandInvocation(commandName, ar, subject);
+        if (managedJob) {
+            commandInvocation.managedJob();
+        }
         commandInvocation.parameters(parameters).execute();
         addCommandLog(ar, commandName, parameters);
 

@@ -427,7 +427,7 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeDeleteCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true);
+        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true, false);
     }
 
     /**
@@ -450,7 +450,19 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeWriteCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true);
+        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true, false);
+    }
+
+    /**
+     * Execute a writing <code>AdminCommand</code> with the specified parameters as managed job.
+     *
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeWriteCommandManaged(Subject subject, String command, ParameterMap parameters) {
+        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true, true);
     }
 
     /**
@@ -473,7 +485,7 @@ public class CompositeUtil {
      * @return
      */
     public ActionReporter executeReadCommand(Subject subject, String command, ParameterMap parameters) {
-        return executeCommand(subject, command, parameters, Status.NOT_FOUND, true, true);
+        return executeCommand(subject, command, parameters, Status.NOT_FOUND, true, true, false);
     }
 
     /**
@@ -485,8 +497,8 @@ public class CompositeUtil {
      * @param throwOnWarning  (vs.ignore warning)
      * @return
      */
-    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, Status status, boolean includeFailureMessage, boolean throwOnWarning) {
-        RestActionReporter ar = ResourceUtil.runCommand(command, parameters, subject);
+    public ActionReporter executeCommand(Subject subject, String command, ParameterMap parameters, Status status, boolean includeFailureMessage, boolean throwOnWarning, boolean managed) {
+        RestActionReporter ar = ResourceUtil.runCommand(command, parameters, subject, managed);
         ExitCode code = ar.getActionExitCode();
         if (code.equals(ExitCode.FAILURE) || (code.equals(ExitCode.WARNING) && throwOnWarning)) {
             Throwable t = ar.getFailureCause();
