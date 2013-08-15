@@ -77,6 +77,7 @@ import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import org.glassfish.grizzly.config.GrizzlyConfig;
 
 import org.glassfish.grizzly.http.util.StringManager;
 
@@ -96,7 +97,7 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
     public final static String defaultAlgorithm = KeyManagerFactory.getDefaultAlgorithm();
     final static boolean defaultClientAuth = false;
     private static final String defaultKeyPass = "changeit";
-    protected static final Logger logger = Logger.getLogger(JSSESocketFactory.class.getName());
+    protected static final Logger logger = GrizzlyConfig.logger();
     protected boolean initialized;
     protected boolean clientAuthNeed = false;
     protected boolean clientAuthWant = false;
@@ -138,13 +139,15 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
 
     @Override
     public Socket acceptSocket(ServerSocket socket) throws IOException {
-        SSLSocket asock;
+        Socket asock;
         try {
-            asock = (SSLSocket) socket.accept();
+            asock = socket.accept();
+            assert asock instanceof SSLSocket;
+            
             if(clientAuthNeed) {
-                asock.setNeedClientAuth(clientAuthNeed);
+                ((SSLSocket) asock).setNeedClientAuth(clientAuthNeed);
             } else {
-                asock.setWantClientAuth(clientAuthWant);
+                ((SSLSocket) asock).setWantClientAuth(clientAuthWant);
             }
         } catch (SSLException e) {
             throw new SocketException("SSL handshake error" + e.toString());
@@ -199,22 +202,23 @@ public abstract class JSSESocketFactory extends ServerSocketFactory {
                 } // while
                 cipher = requestedCiphers.substring(fromIndex);
             }
-            if (cipher != null) {
-                cipher = cipher.trim();
-                if (cipher.length() > 0) {
-                    /*
-                     * Check to see if the requested cipher is among the
-                     * supported ciphers, i.e., may be enabled
-                     */
-                    for (int i = 0; supportedCiphers != null
-                        && i < supportedCiphers.length; i++) {
-                        if (supportedCiphers[i].equals(cipher)) {
-                            if (vec == null) {
-                                vec = new ArrayList<String>();
-                            }
-                            vec.add(cipher);
-                            break;
+            
+            assert cipher != null;
+            
+            cipher = cipher.trim();
+            if (cipher.length() > 0) {
+                /*
+                 * Check to see if the requested cipher is among the
+                 * supported ciphers, i.e., may be enabled
+                 */
+                for (int i = 0; supportedCiphers != null
+                    && i < supportedCiphers.length; i++) {
+                    if (supportedCiphers[i].equals(cipher)) {
+                        if (vec == null) {
+                            vec = new ArrayList<String>();
                         }
+                        vec.add(cipher);
+                        break;
                     }
                 }
             }

@@ -305,21 +305,22 @@ public class JSSE14SocketFactory extends JSSESocketFactory {
                 } // while
                 protocol = requestedProtocols.substring(fromIndex);
             }
-            if (protocol != null) {
-                protocol = protocol.trim();
-                if (protocol.length() > 0 && supportedProtocols != null) {
-                    /*
-                     * Check to see if the requested protocol is among the
-                     * supported protocols, i.e., may be enabled
-                     */
-                    for (String supportedProtocol : supportedProtocols) {
-                        if (supportedProtocol.equals(protocol)) {
-                            if (vec == null) {
-                                vec = new ArrayList<String>();
-                            }
-                            vec.add(protocol);
-                            break;
+            
+            assert protocol != null;
+            
+            protocol = protocol.trim();
+            if (protocol.length() > 0 && supportedProtocols != null) {
+                /*
+                 * Check to see if the requested protocol is among the
+                 * supported protocols, i.e., may be enabled
+                 */
+                for (String supportedProtocol : supportedProtocols) {
+                    if (supportedProtocol.equals(protocol)) {
+                        if (vec == null) {
+                            vec = new ArrayList<String>();
                         }
+                        vec.add(protocol);
+                        break;
                     }
                 }
             }

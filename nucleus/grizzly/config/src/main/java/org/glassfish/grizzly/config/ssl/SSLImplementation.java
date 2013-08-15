@@ -62,6 +62,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.net.ssl.SSLEngine;
+import org.glassfish.grizzly.config.GrizzlyConfig;
 
 import org.glassfish.grizzly.ssl.SSLSupport;
 
@@ -76,7 +77,7 @@ public abstract class SSLImplementation {
     /**
      * Default Logger.
      */
-    private final static Logger logger = Logger.getLogger(SSLImplementation.class.getName());
+    private final static Logger logger = GrizzlyConfig.logger();
     // The default implementations in our search path
     private static final String JSSEImplementationClass = JSSEImplementation.class.getName();
     private static final String[] implementations = {JSSEImplementationClass};

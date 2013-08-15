@@ -99,7 +99,11 @@
             <version>1.2.0</version>
             <scope>provided</scope>
         </dependency>
-
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
         <!-- test deps -->
         <dependency>
             <groupId>javax.servlet</groupId>

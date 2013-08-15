@@ -72,7 +72,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 public class SSLConfigurator extends SSLEngineConfigurator {
 
     private static final String PLAIN_PASSWORD_PROVIDER_NAME = "plain";
-    private final static Logger LOGGER = Logger.getLogger(SSLConfigurator.class.getName());
+    private final static Logger LOGGER = GrizzlyConfig.logger();
     /**
      * SSL settings
      */
@@ -485,9 +485,9 @@ public class SSLConfigurator extends SSLEngineConfigurator {
         try {
             final SecurePasswordProvider provider =
                     (SecurePasswordProvider) Utils.newInstance(storePasswordProvider);
-            if (provider != null) {
-                return provider.getPassword();
-            }
+            
+            assert provider != null;
+            return provider.getPassword();
         } catch (Exception e) {
             if (LOGGER.isLoggable(Level.WARNING)) {
                 LOGGER.log(Level.WARNING,

@@ -67,7 +67,7 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MimeType;
-import org.glassfish.internal.grizzly.V3Mapper;
+import org.glassfish.internal.grizzly.ContextMapper;
 import org.glassfish.kernel.KernelLoggerInfo;
 
 /**
@@ -83,7 +83,7 @@ public class ContainerMapper extends ADBAwareHttpHandler {
 
     private static final Logger LOGGER = KernelLoggerInfo.getLogger();
     private final static String ROOT = "";
-    private Mapper mapper;
+    private ContextMapper mapper;
     private final GrizzlyListener listener;
     private String defaultHostName = "server";
     private final GrizzlyService grizzlyService;
@@ -131,16 +131,16 @@ public class ContainerMapper extends ADBAwareHttpHandler {
     }
 
     /**
-     * Set the {@link V3Mapper} instance used for mapping the container and its associated {@link Adapter}.
+     * Set the {@link ContextMapper} instance used for mapping the container and its associated {@link Adapter}.
      *
      * @param mapper
      */
-    protected void setMapper(Mapper mapper) {
+    protected void setMapper(ContextMapper mapper) {
         this.mapper = mapper;
     }
 
     /**
-     * Configure the {@link V3Mapper}.
+     * Configure the {@link ContextMapper}.
      */
     protected void configureMapper() {
         mapperLock.writeLock().lock();
@@ -197,10 +197,10 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         
         try {
             // If we have only one Adapter deployed, invoke that Adapter directly.
-            if (!mapMultipleAdapter && mapper instanceof V3Mapper) {
+            if (!mapMultipleAdapter) {
                 // Remove the MappingData as we might delegate the request
                 // to be serviced directly by the WebContainer
-                final HttpHandler httpHandler = ((V3Mapper) mapper).getHttpHandler();
+                final HttpHandler httpHandler = mapper.getHttpHandler();
                 if (httpHandler != null) {
                     request.setNote(MAPPING_DATA, null);
 //                    httpHandler.service(request, response);
@@ -380,7 +380,7 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             return contextRootInfo.getHttpHandler();
         } else if (mappingData.context != null &&
                 "com.sun.enterprise.web.WebModule".equals(mappingData.context.getClass().getName())) {
-            return ((V3Mapper) mapper).getHttpHandler();
+            return mapper.getHttpHandler();
         }
         return null;
     }

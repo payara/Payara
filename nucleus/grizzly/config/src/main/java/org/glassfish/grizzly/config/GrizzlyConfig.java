@@ -49,13 +49,22 @@ import java.util.logging.Logger;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 public class GrizzlyConfig {
-    private static final Logger logger = Logger.getLogger(GrizzlyConfig.class.getName());
+
+    @LoggerInfo(subsystem = "NETCONFIG", description = "Network config", publish = false)
+    private static final String LOGGER_NAME = "javax.enterprise.network.config";
+    
+    private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
     private final NetworkConfig config;
     private final ServiceLocator habitat;
     private final List<GrizzlyListener> listeners = new ArrayList<GrizzlyListener>();
 
+    public static Logger logger() {
+        return LOGGER;
+    }
+    
     public GrizzlyConfig(String file) {
         habitat = Utils.getServiceLocator(file);
         config = habitat.getService(NetworkConfig.class);
@@ -80,7 +89,7 @@ public class GrizzlyConfig {
                 try {
                     grizzlyListener.start();
                 } catch (IOException e) {
-                    logger.log(Level.SEVERE, e.getMessage(), e);
+                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
         }
