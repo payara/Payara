@@ -100,7 +100,6 @@ public class JmsProviderLifecycle implements PostConstruct{
     public void postConstruct()
     {
        final JmsService jmsService = config.getExtensionByType(JmsService.class);
-       activeJmsResourceAdapter.initializeLazyListener(jmsService);
        if (eagerStartupRequired())
        {
         try {
@@ -111,7 +110,8 @@ public class JmsProviderLifecycle implements PostConstruct{
                    e.printStackTrace();
                }
        }
-        configureConfigListener();
+       activeJmsResourceAdapter.initializeLazyListener(jmsService);
+       configureConfigListener();
        //createMonitoringConfig();
 
     }

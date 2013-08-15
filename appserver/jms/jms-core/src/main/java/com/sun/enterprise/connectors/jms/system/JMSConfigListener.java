@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,6 +49,8 @@ import javax.inject.Named;
 
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
+import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
+import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 
@@ -62,6 +64,7 @@ import org.glassfish.internal.api.ServerContext;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 
 @Service
 public class JMSConfigListener implements ConfigListener{
@@ -113,22 +116,73 @@ public class JMSConfigListener implements ConfigListener{
             Object oldValue = event.getOldValue();
             Object newValue = event.getNewValue();
 
-         if(event.getSource().toString().indexOf("config.serverbeans.JmsService") != -1)   {
-             UnprocessedChangeEvent uchangeEvent = new UnprocessedChangeEvent(event, "restart required");
-             unprocessedEvents.add(uchangeEvent);
-         }
-
-         else if(event.getSource().toString().indexOf("config.serverbeans.JmsHost") != -1)   {
-             UnprocessedChangeEvent uchangeEvent = new UnprocessedChangeEvent(event, "restart required");
-             unprocessedEvents.add(uchangeEvent);
-         }
         _logger.log(Level.FINE, "In JMSConfigListener " + eventName + oldValue + newValue);
-
         if (oldValue != null && oldValue.equals(newValue)) {
-           _logger.log(Level.FINE, "Event " + eventName
+            _logger.log(Level.FINE, "Event " + eventName
                         + " did not change existing value of " + oldValue);
-           continue;
+            continue;
         }
+
+        if(event.getSource().toString().indexOf("connectors.jms.config.JmsService") != -1) {
+             boolean notifyFlag = true;
+             if (oldValue != null && newValue == null && "jms-host".equals(event.getPropertyName())) {
+                JmsHost jmsHost = (JmsHost) oldValue;
+                String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
+                ActiveJmsResourceAdapter adapter = Globals.get(ActiveJmsResourceAdapter.class);
+                if (adapter.getGrizzlyListeners().contains(name)) {
+                    GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
+                    synchronized (adapter.getGrizzlyListeners()) {
+                        _logger.log(Level.FINE, "Stopping Grizzly proxy " + name);
+                        grizzlyService.removeNetworkProxy(name);
+                        adapter.getGrizzlyListeners().remove(name);
+                    }
+                    notifyFlag = false;
+                }
+            }
+            if (notifyFlag) {
+                UnprocessedChangeEvent uchangeEvent = new UnprocessedChangeEvent(event, "restart required");
+                unprocessedEvents.add(uchangeEvent);
+            }
+        }
+        else if(event.getSource().toString().indexOf("connectors.jms.config.JmsHost") != -1) {
+            if (oldValue == null && newValue != null && "name".equals(event.getPropertyName())) {
+                JmsProviderLifecycle lifecycle = Globals.get(JmsProviderLifecycle.class);
+                JmsHost jmsHost = (JmsHost) event.getSource();
+                if (ActiveJmsResourceAdapter.EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
+                    ActiveJmsResourceAdapter adapter = Globals.get(ActiveJmsResourceAdapter.class);
+                    if (!adapter.getDoBind()) {
+                        if (Boolean.valueOf(jmsHost.getLazyInit())) {
+                            String host = null;
+                            if (jmsHost.getHost() != null && "localhost".equals(jmsHost.getHost())) {
+                                host = "0.0.0.0";
+                            } else {
+                                host = jmsHost.getHost();
+                            }
+                            try {
+                                GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
+                                NetworkListener dummy = new DummyNetworkListener();
+                                dummy.setPort(jmsHost.getPort());
+                                dummy.setAddress(host);
+                                dummy.setType("proxy");
+                                dummy.setProtocol(ActiveJmsResourceAdapter.JMS_SERVICE);
+                                dummy.setTransport("tcp");
+                                String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
+                                dummy.setName(name);
+                                synchronized (adapter.getGrizzlyListeners()) {
+                                    _logger.log(Level.FINE, "Starting Grizzly proxy " + name + " on port " + jmsHost.getPort());
+                                    grizzlyService.createNetworkProxy(dummy);
+                                    adapter.getGrizzlyListeners().add(name);
+                                }
+                                return unprocessedEvents.size() > 0 ? new UnprocessedChangeEvents(unprocessedEvents) : null;
+                            } catch (Exception e) {
+                                _logger.log(Level.WARNING, "Failed to start Grizlly proxy for MQ broker", e);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         if ("JMS_PROVIDER_PORT".equals(newValue)){
             //The value is in the next event
             PropertyChangeEvent nextevent = events[i+1] ;
@@ -187,9 +241,10 @@ public class JMSConfigListener implements ConfigListener{
 
             }
 
-         }
-            return unprocessedEvents.size() > 0 ? new UnprocessedChangeEvents(unprocessedEvents) : null;
         }
+        return unprocessedEvents.size() > 0 ? new UnprocessedChangeEvents(unprocessedEvents) : null;
+    }
+
     private String getBrokerList(){
         MQAddressList addressList = new MQAddressList();
         try{

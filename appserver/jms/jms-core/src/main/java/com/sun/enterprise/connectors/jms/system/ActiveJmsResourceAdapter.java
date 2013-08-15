@@ -253,6 +253,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     private String brkrPort;
 
+    private boolean doBind;
+
     //Properties in domain.xml for HADB JDBC connection pool (for HA)
     private static final String DUSERNAME = "User";
     private static final String DPASSWORD = "Password";
@@ -281,6 +283,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private static final String DEFAULT_MQ_INSTANCE = "imqbroker";
     public static final String MQ_DIR_NAME = "imq";
 
+    public static final String GRIZZLY_PROXY_PREFIX = "JMS_PROXY_";
+
     private static enum ClusterMode {
       ENHANCED, CONVENTIONAL_WITH_MASTER_BROKER, CONVENTIONAL_OF_PEER_BROKERS;
     }
@@ -291,6 +295,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     private File mqPassFile = null;
     private boolean grizzlyListenerInit;
+    private Set<String> grizzlyListeners = new HashSet<String>();
 
     @Inject
     private ConnectorRuntime connectorRuntime;
@@ -406,8 +411,21 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 } catch (MultiException rle) {
                     // if GrizzlyService was shut down already, skip removing the proxy.
                 }
-                if (grizzlyService != null)
-                    grizzlyService.removeNetworkProxy(JMS_SERVICE);
+                if (grizzlyService != null) {
+                    synchronized (grizzlyListeners) {
+                        if (grizzlyListeners.size() > 0) {
+                            String[] listeners = grizzlyListeners.toArray(new String[grizzlyListeners.size()]);
+                            for (String listenerName : listeners) {
+                                try {
+                                    grizzlyService.removeNetworkProxy(listenerName);
+                                    grizzlyListeners.remove(listenerName);
+                                } catch (Exception e) {
+                                    _logger.log(Level.WARNING, "Failed to shut down Grizzly NetworkListener " + listenerName, e);
+                                }
+                            }
+                        }
+                    }
+                }
                 grizzlyListenerInit = false;
             }
         } catch (Throwable th) {
@@ -415,6 +433,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             throw new RuntimeException(th);
         }
         super.destroy();
+    }
+
+    public Set<String> getGrizzlyListeners() {
+        return grizzlyListeners;
     }
 
     /**
@@ -428,7 +450,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 if (grizzlyService != null) {
                 List<JmsHost> jmsHosts = jmsService.getJmsHost();
                     for (JmsHost oneHost : jmsHosts) {
-                        if (Boolean.valueOf(oneHost.getLazyInit())) {
+                        if (Boolean.valueOf(oneHost.getLazyInit()) && !doBind) {
                             String jmsHost = null;
                             if (oneHost.getHost() != null && "localhost".equals(oneHost.getHost())) {
                                 jmsHost = "0.0.0.0";
@@ -438,10 +460,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                             NetworkListener dummy = new DummyNetworkListener();
                             dummy.setPort(oneHost.getPort());
                             dummy.setAddress(jmsHost);
-                            dummy.setProtocol("light-weight-listener");
+                            dummy.setType("proxy");
+                            dummy.setProtocol(JMS_SERVICE);
                             dummy.setTransport("tcp");
-                            dummy.setName(JMS_SERVICE);
-                            grizzlyService.createNetworkProxy(dummy);
+                            String name = GRIZZLY_PROXY_PREFIX + oneHost.getName();
+                            dummy.setName(name);
+                            synchronized (grizzlyListeners) {
+                                grizzlyService.createNetworkProxy(dummy);
+                                grizzlyListeners.add(name);
+                            }
                             grizzlyListenerInit = true;
                         }
                     }
@@ -1488,6 +1515,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setAddressList();
     }
 
+    public boolean getDoBind() {
+        return doBind;
+    }
+
     private void setMdbContainerProperties() throws ConnectorRuntimeException {
         JmsRaUtil raUtil = new JmsRaUtil(null);
 
@@ -1514,6 +1545,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         val= "true";
         if (EMBEDDED.equals(integrationMode) && lazyInit)
         val = "false";
+        doBind = Boolean.valueOf(val);
         ConnectorConfigProperty  envProp5 = new ConnectorConfigProperty  (
             MQ_PORTMAPPER_BIND, val, val, "java.lang.Boolean");
         setProperty(cd, envProp5);
