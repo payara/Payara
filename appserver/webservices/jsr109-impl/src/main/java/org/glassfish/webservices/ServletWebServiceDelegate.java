@@ -83,8 +83,6 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
     private static final Logger logger = LogUtils.getLogger();
     private WebServiceEndpoint endpoint_;
 
-    private ServletConfig servletConfig_;
-
     private ServletDelegate rpcDelegate_;
 
     private JaxRpcObjectFactory rpcFactory_;
@@ -105,7 +103,6 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
 
     public void postInit(ServletConfig servletConfig) throws ServletException {
 
-        servletConfig_ = servletConfig;
         String servletName = "unknown";
 
         try {

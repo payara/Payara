@@ -100,7 +100,7 @@ public class EjbWebServiceServlet extends HttpServlet {
         EjbRuntimeEndpointInfo ejbEndpoint =
                 wsejbEndpointRegistry.getEjbWebServiceEndpoint(requestUri, hreq.getMethod(), query);
 
-        if (requestUri.indexOf(WebServiceEndpoint.PUBLISHING_SUBCONTEXT) > 0 && ejbEndpoint == null) {
+        if (requestUri.contains(WebServiceEndpoint.PUBLISHING_SUBCONTEXT) && ejbEndpoint == null) {
             requestUri = requestUri.substring(0, requestUri.indexOf(WebServiceEndpoint.PUBLISHING_SUBCONTEXT) - 1);
             ejbEndpoint =
                 wsejbEndpointRegistry.getEjbWebServiceEndpoint(requestUri, hreq.getMethod(), query);

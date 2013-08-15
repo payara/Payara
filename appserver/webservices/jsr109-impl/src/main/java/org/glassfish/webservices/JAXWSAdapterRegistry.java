@@ -103,7 +103,7 @@ public class JAXWSAdapterRegistry {
          }
      }
      
-    class  ContextAdapter {
+    static class ContextAdapter {
 
         final Map<String, Adapter> fixedUrlPatternEndpoints;
         final List<Adapter> pathUrlPatternEndpoints;
