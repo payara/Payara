@@ -313,6 +313,10 @@ public class CULoggerInfo {
             level = "WARNING")
     public static final String badNetworkConfig = LOGMSG_PREFIX + "-00041";
 
+    @LogMessageInfo(message = "BundleTracker.removedBundle null bundleID for {0}",
+                    level="WARNING")
+    public static final String NULL_BUNDLE = LOGMSG_PREFIX + "-00042";
+
 
 /*
 

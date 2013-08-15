@@ -40,7 +40,6 @@
 
 package org.glassfish.common.util;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -49,7 +48,7 @@ import org.osgi.service.packageadmin.PackageAdmin;
 import org.osgi.util.tracker.BundleTracker;
 import org.osgi.util.tracker.BundleTrackerCustomizer;
 
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.util.CULoggerInfo;
 
 import java.io.*;
 import java.lang.reflect.Array;
@@ -62,10 +61,8 @@ import java.util.logging.Logger;
  */
 public class OSGiObjectInputOutputStreamFactoryImpl
         implements ObjectInputOutputStreamFactory {
-    @LogMessageInfo(message = "BundleTracker.removedBundle null bundleID for {0}")
-    public static final String NULL_BUNDLE = "AS-NAMING-00007";
 
-    private static final Logger logger =LogDomains.getLogger(OSGiObjectInputOutputStreamFactoryImpl.class, LogDomains.ADMIN_LOGGER);
+    private static final Logger logger = CULoggerInfo.getLogger();
 
     private BundleContext ctx;
     PackageAdmin pkgAdm;
@@ -106,7 +103,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
                     logger.log(Level.FINER, "BundleTracker.removedBundle BUNDLE " + key + "  ==> " + bundle.getSymbolicName());
                 }
                 if (bundleID == null) {
-                    logger.log(Level.WARNING, NULL_BUNDLE, key);
+                    logger.log(Level.WARNING, CULoggerInfo.NULL_BUNDLE, key);
                 }
             }
             /*
