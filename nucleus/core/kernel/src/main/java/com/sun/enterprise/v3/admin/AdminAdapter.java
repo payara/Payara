@@ -352,7 +352,7 @@ public abstract class AdminAdapter extends StaticHttpHandler implements Adapter,
         cookie.setMaxAge(MAX_AGE);
         cookie.setPath(ASADMIN_PATH);
         cookie.setVersion(1);
-        CookieSerializerUtils.serializeServerCookie(sb, true, false, false, cookie);
+        CookieSerializerUtils.serializeServerCookie(sb, true, false, cookie);
         return sb.toString();
 
     }

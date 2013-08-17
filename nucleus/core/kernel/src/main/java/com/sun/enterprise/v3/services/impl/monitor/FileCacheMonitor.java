@@ -74,11 +74,11 @@ public class FileCacheMonitor implements FileCacheProbe {
         grizzlyMonitoring.getFileCacheProbeProvider().incOpenCacheEntriesEvent(monitoringId);
         switch (entry.type) {
             case HEAP: {
-                grizzlyMonitoring.getFileCacheProbeProvider().addHeapSizeEvent(monitoringId, entry.getFileSize(false));
+                grizzlyMonitoring.getFileCacheProbeProvider().addHeapSizeEvent(monitoringId, entry.contentLength);
                 break;
             }
             case MAPPED: {
-                grizzlyMonitoring.getFileCacheProbeProvider().addMappedMemorySizeEvent(monitoringId, entry.getFileSize(false));
+                grizzlyMonitoring.getFileCacheProbeProvider().addMappedMemorySizeEvent(monitoringId, entry.contentLength);
                 break;
             }
             default: {
@@ -93,11 +93,11 @@ public class FileCacheMonitor implements FileCacheProbe {
         grizzlyMonitoring.getFileCacheProbeProvider().decOpenCacheEntriesEvent(monitoringId);
         switch (entry.type) {
             case HEAP: {
-                grizzlyMonitoring.getFileCacheProbeProvider().subHeapSizeEvent(monitoringId, entry.getFileSize(false));
+                grizzlyMonitoring.getFileCacheProbeProvider().subHeapSizeEvent(monitoringId, entry.contentLength);
                 break;
             }
             case MAPPED: {
-                grizzlyMonitoring.getFileCacheProbeProvider().subMappedMemorySizeEvent(monitoringId, entry.getFileSize(false));
+                grizzlyMonitoring.getFileCacheProbeProvider().subMappedMemorySizeEvent(monitoringId, entry.contentLength);
                 break;
             }
             default: {
