@@ -72,6 +72,10 @@ public class JsonFilter {
     }
 
     public JsonFilter(Locale locale, String include, String exclude) throws Exception {
+        this(locale, include, exclude, "name");
+    }
+
+    public JsonFilter(Locale locale, String include, String exclude, String identityAttr) throws Exception {
         if (include != null) {
             if (exclude != null) {
                 String msg =
@@ -80,12 +84,12 @@ public class JsonFilter {
                         "__excludeFields cannot be specified when __includeFields is specified.");
                 throw new WebApplicationException(Response.status(Status.BAD_REQUEST).entity(msg).build());
             } else {
-                addFilter(new NameFilter()).addFilter(new IncludeFilter(locale, include));
+                addFilter(new IdentityFilter(identityAttr)).addFilter(new IncludeFilter(locale, include));
                 this.defaultInclude = false;
             }
         } else {
             if (exclude != null) {
-                addFilter(new NameFilter()).addFilter(new ExcludeFilter(locale, exclude));
+                addFilter(new IdentityFilter(identityAttr)).addFilter(new ExcludeFilter(locale, exclude));
                 this.defaultInclude = true;
             } else {
                 this.defaultInclude = true;
@@ -104,9 +108,13 @@ public class JsonFilter {
         Result filter(String attr);
     }
 
-    public static class NameFilter implements Filter {
+    public static class IdentityFilter implements Filter {
+        private String identityAttr;
+        public IdentityFilter(String identityAttr) {
+            this.identityAttr = identityAttr;
+        }
         public Result filter(String attr) {
-            if ("name".equals(attr)) {
+            if (identityAttr.equals(attr)) {
                 return Result.Include;
             }
             return Result.Deferr;

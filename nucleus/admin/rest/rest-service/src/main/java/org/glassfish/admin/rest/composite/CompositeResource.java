@@ -506,9 +506,18 @@ public abstract class CompositeResource extends AbstractResource implements Rest
     protected JsonFilter getFilter(String include, String exclude) throws Exception {
         return new JsonFilter(getLocale(), include, exclude);
     }
+    protected JsonFilter getFilter(String include, String exclude, String identityAttr) throws Exception {
+        return new JsonFilter(getLocale(), include, exclude, identityAttr);
+    }
     protected <T extends RestModel> T filterModel(Class<T> modelIface, T unfilteredModel, String include, String exclude) throws Exception {
+        return filterModel(modelIface, unfilteredModel, getFilter(include, exclude));
+    }
+    protected <T extends RestModel> T filterModel(Class<T> modelIface, T unfilteredModel, String include, String exclude, String identityAttr) throws Exception {
+        return filterModel(modelIface, unfilteredModel, getFilter(include, exclude, identityAttr));
+    }
+    protected <T extends RestModel> T filterModel(Class<T> modelIface, T unfilteredModel, JsonFilter filter) throws Exception {
         JSONObject unfilteredJson = (JSONObject)JsonUtil.getJsonObject(unfilteredModel, false); // don't hide confidential properties
-        JSONObject filteredJson = getFilter(include, exclude).trim(unfilteredJson);
+        JSONObject filteredJson = filter.trim(unfilteredJson);
         T filteredModel = getTypedModel(modelIface, filteredJson);
         filteredModel.trimmed(); // TBD - remove once the conversion to the new REST style guide is completed
         return filteredModel;

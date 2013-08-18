@@ -40,7 +40,6 @@
 package org.glassfish.admin.rest.resources.composite;
 
 import com.sun.enterprise.v3.admin.commands.ListJobsCommand;
-import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -48,9 +47,9 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
-import org.glassfish.admin.rest.composite.LegacyCompositeResource;
+import org.glassfish.admin.rest.composite.CompositeResource;
 import org.glassfish.admin.rest.composite.CompositeUtil;
-import org.glassfish.admin.rest.composite.RestCollection;
+import org.glassfish.admin.rest.model.RestCollectionResponseBody;
 import org.glassfish.api.ActionReport;
 import org.glassfish.admin.rest.utils.StringUtil;
 import org.glassfish.api.admin.ParameterMap;
@@ -86,7 +85,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Path("/jobs")
-public class JobsResource extends LegacyCompositeResource {
+public class JobsResource extends CompositeResource {
 
     /**
      * The GET method on this resource returns a list of Job entities that represent
@@ -103,8 +102,12 @@ public class JobsResource extends LegacyCompositeResource {
      * @throws Exception
      */
     @GET
-    public RestCollection<Job> getJobs(@QueryParam("currentUser") @DefaultValue("false") final boolean currentUser) throws Exception {
-        RestCollection<Job> rc = new RestCollection<Job>();
+    public RestCollectionResponseBody<Job> getItems(
+        @QueryParam("currentUser") @DefaultValue("false") final boolean currentUser,
+            @QueryParam(INCLUDE) final String include,
+            @QueryParam(EXCLUDE) final String exclude) throws Exception {
+        RestCollectionResponseBody<Job> rb =
+            restCollectionResponseBody(Job.class, "job", null); // there is no parent resource
         ActionReport ar = executeReadCommand(getCommandName(), getParameters());
         Collection<Map<String, Object>> jobMaps = (List<Map<String, Object>>) ar.getExtraProperties().get("jobs");
         if (jobMaps != null) {
@@ -113,12 +116,14 @@ public class JobsResource extends LegacyCompositeResource {
                         && !StringUtil.compareStrings((String) jobMap.get(ListJobsCommand.USER), this.getAuthenticatedUser())) {
                     continue;
                 }
+                if (jobMap == null) {
+                    continue;
+                }
                 Job model = constructJobModel(jobMap);
-                URI uri = getChildItemUri(model.getJobId());
-                rc.put(uri.toASCIIString(), model);
+                rb.addItem(filterModel(Job.class, model, include, exclude, "jobId"), model.getJobId());
             }
         }
-        return rc;
+        return rb;
     }
 
     @Path("id/{jobId}")
@@ -135,9 +140,6 @@ public class JobsResource extends LegacyCompositeResource {
     }
 
     static Job constructJobModel(Map<String, Object> jobMap) {
-        if (jobMap == null) {
-            return null;
-        }
         Job model = CompositeUtil.instance().getModel(Job.class);
         model.setJobId((String) jobMap.get(ListJobsCommand.ID));
         model.setJobName((String) jobMap.get(ListJobsCommand.NAME));

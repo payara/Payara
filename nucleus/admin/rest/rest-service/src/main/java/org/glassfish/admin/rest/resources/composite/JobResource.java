@@ -47,8 +47,8 @@ import javax.ws.rs.GET;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import org.glassfish.admin.rest.composite.LegacyCompositeResource;
-import org.glassfish.admin.rest.composite.RestModel;
+import org.glassfish.admin.rest.composite.CompositeResource;
+import org.glassfish.admin.rest.model.RestModelResponseBody;
 import org.glassfish.admin.rest.utils.StringUtil;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ParameterMap;
@@ -78,7 +78,7 @@ import org.glassfish.api.admin.ParameterMap;
  * </div>
  * @author jdlee
  */
-public class JobResource extends LegacyCompositeResource {
+public class JobResource extends CompositeResource {
 
     /**
      * Retrieve information about the specific job identified by the resource URL.
@@ -89,14 +89,14 @@ public class JobResource extends LegacyCompositeResource {
      * @return the {@link Job} entity which contains information about the job id specified.
      */
     @GET
-    public RestModel<Job> getJob(@PathParam("jobId") String jobId) {
+    public RestModelResponseBody<Job> getItem(@PathParam("jobId") String jobId) throws Exception {
         ActionReport ar = executeReadCommand(getCommandName(), getParameters());
         Collection<Map<String, Object>> jobMaps = (List<Map<String, Object>>) ar.getExtraProperties().get("jobs");
         if (jobMaps != null) {
             for (Map<String, Object> jobMap : jobMaps) {
                 if (StringUtil.compareStrings(jobId, (String) jobMap.get(ListJobsCommand.ID))) {
                     Job model = JobsResource.constructJobModel(jobMap);
-                    return model;
+                    return restModelResponseBody(Job.class, getCollectionChildParentUri(), model);
                 }
             }
         }

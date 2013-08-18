@@ -48,8 +48,7 @@ import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.composite.CompositeUtil;
 import org.glassfish.admin.rest.resources.composite.Job;
 import static org.glassfish.tests.utils.NucleusTestUtils.nadminWithOutput;
-import org.testng.Assert;
-import static org.testng.AssertJUnit.assertNotNull;
+import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
 
 /**
@@ -61,25 +60,68 @@ public class JobsResourceTest extends RestTestBase {
     public static final String URL_JOBS = "/jobs";
 
     public void testJobsListing() {
-        Assert.assertTrue(isSuccess(get(URL_JOBS)));
+        assertTrue(isSuccess(get(URL_JOBS)));
     }
 
     public void testGetJob() throws JSONException {
+        // make sure we have at least one job
         issueDetachedCommand();
+
+        // verify getting the collection
         Response response = get(URL_JOBS);
+        assertTrue(isSuccess(response));
+
+        // verify the overall structure
         JSONObject json = response.readEntity(JSONObject.class);
-        assertNotNull(json.get("items"));
-        final JSONArray metadata = json.getJSONArray("metadata");
-        assertNotNull(metadata);
-        Assert.assertTrue(json.getJSONArray("metadata").length() > 0);
-        JSONObject jobRow = metadata.getJSONObject(0);
-        String uri = jobRow.getString("id");
+        JSONArray resources = json.getJSONArray("resources");
+        assertNotNull(resources);
+        assertTrue(resources.length() > 0);
+        JSONArray items = json.getJSONArray("items");
+        assertNotNull(items);
+        assertTrue(items.length() > 0);
+
+        // unlike most resources that also return a parent link,
+        // the jobs resource only returns child links.
+        // verify the first of them
+        JSONObject resource = resources.getJSONObject(0);
+        String uri = resource.getString("uri");
+        assertNotNull(uri);
+        assertEquals("job", resource.getString("rel"));
+        String jobId = resource.getString("title");
+        assertNotNull(jobId);
+        assertTrue(uri.endsWith(URL_JOBS + "/id/" + jobId));
+
+        // verify the job it refers to by following the link.
+        // it should only have a parent link
         response = get(uri);
-        Assert.assertTrue(isSuccess(response));
-        final JSONObject entity = response.readEntity(JSONObject.class);
+        assertTrue(isSuccess(response));
+        json = response.readEntity(JSONObject.class);
+        JSONObject item = json.getJSONObject("item");
+        verifyItem(jobId, item);
+        resources = json.getJSONArray("resources");
+        assertNotNull(resources);
+        assertTrue(resources.length() == 1);
+        resource = resources.getJSONObject(0);
+        assertEquals("parent", resource.getString("rel"));
+        assertTrue(resource.getString("uri").endsWith(URL_JOBS));
+        
+        // verify that the collection returned the item too
+        item = null;
+        for (int i = 0; item == null && i < items.length(); i++) {
+            JSONObject thisItem = items.getJSONObject(i);
+            if (jobId.equals(thisItem.getString("jobId"))) {
+                item = thisItem;
+            }
+        }
+        verifyItem(jobId, item);
+    }
+
+    private void verifyItem(String jobIdWant, JSONObject itemHave) throws JSONException {
+        assertNotNull(itemHave);
         Locale locale = null;
-        Job job = CompositeUtil.instance().unmarshallClass(locale, Job.class, entity);
-        Assert.assertNotNull(job);
+        Job job = CompositeUtil.instance().unmarshallClass(locale, Job.class, itemHave);
+        assertNotNull(job);
+        assertEquals(jobIdWant, job.getJobId());
     }
 
     private void issueDetachedCommand() {
