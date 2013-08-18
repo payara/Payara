@@ -195,6 +195,14 @@ public class Common {
         return failureMessage(field, ".*");
     }
 
+    public static ObjectValue anyWarningMessage() {
+        return warningMessage(".*");
+    }
+
+    public static ObjectValue anyWarningMessage(String field) {
+        return warningMessage(field, ".*");
+    }
+
     public static ObjectValue successMessage(String message) {
         return message("SUCCESS", message);
     }
@@ -209,6 +217,14 @@ public class Common {
 
     public static ObjectValue failureMessage(String field, String message) {
         return message("FAILURE", field, message);
+    }
+
+    public static ObjectValue warningMessage(String message) {
+        return message("WARNING", message);
+    }
+
+    public static ObjectValue warningMessage(String field, String message) {
+        return message("WARNING", field, message);
     }
 
     public static ObjectValue message(String severity, String message) {
