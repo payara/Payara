@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.util.logging.Level;
 import com.sun.enterprise.universal.io.SmartFile;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileListerRelative;
@@ -155,7 +156,8 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             zipFileLocation = new File(archive.substring(0, archive.lastIndexOf("/")));
             glassFishZipFile = new File(archive);
             if (glassFishZipFile.exists() && !create) {
-                logger.finer("Found " + archive);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Found " + archive);
                 delete = false;
                 return glassFishZipFile;
             }
@@ -181,14 +183,17 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
         List<String> resultFiles1 = Arrays.asList(files);
         ArrayList<String> resultFiles = new ArrayList<String>(resultFiles1);
 
-        logger.finer("Number of files to be zipped = " + resultFiles.size());
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Number of files to be zipped = " +
+                                                            resultFiles.size());
 
         Iterator<String> iter = resultFiles.iterator();
         while (iter.hasNext()) {
             String fileName = iter.next();
             String fPath = fileName.substring(fileName.lastIndexOf("/") + 1);
             if (fPath.equals(glassFishZipFile.getName())) {
-                logger.finer("Removing file = " + fileName);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Removing file = " + fileName);
                 iter.remove();
                 continue;
             }
@@ -200,7 +205,9 @@ abstract class InstallNodeBaseCommand extends NativeRemoteCommandsBase {
             }
         }
 
-        logger.finer("Final number of files to be zipped = " + resultFiles.size());
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Final number of files to be zipped = " +
+                                                            resultFiles.size());
 
         String[] filesToZip = new String[resultFiles.size()];
         filesToZip = resultFiles.toArray(filesToZip);

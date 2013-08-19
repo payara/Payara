@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.util.logging.Level;
 import com.sun.enterprise.universal.process.ProcessManager;
 import com.sun.enterprise.universal.process.ProcessManagerException;
 import java.io.*;
@@ -128,8 +129,10 @@ public final class SetupLocalDcom extends CLICommand {
 
             if (f == null)
                 notFound.add(dll);
-            else
-                logger.finer("Required DLL Located: " + f);
+            else {
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Required DLL Located: " + f);
+            }
         }
 
         if (!notFound.isEmpty()) {
@@ -154,7 +157,8 @@ public final class SetupLocalDcom extends CLICommand {
         if (!FileUtils.deleteFileMaybe(CPP_APP))
             throw exceptionMaker("vld.app.exists", CPP_APP);
 
-        finer("vld.app.deleted", CPP_APP);
+        if (logger.isLoggable(Level.FINER))
+            logger.finer(Strings.get("vld.app.deleted", CPP_APP));
 
         CPP_APP.deleteOnExit();
 
@@ -214,10 +218,6 @@ public final class SetupLocalDcom extends CLICommand {
             return new CommandException(Strings.get(key));
         else
             return new CommandException(Strings.get(key, args));
-    }
-
-    private void finer(String key, Object... args) {
-        logger.finer(Strings.get(key, args));
     }
 
     private void areYouSure() throws CommandException {

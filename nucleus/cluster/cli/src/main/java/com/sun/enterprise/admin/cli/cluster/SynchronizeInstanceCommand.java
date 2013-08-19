@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -112,7 +112,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
     protected boolean synchronizeInstance() throws CommandException {
 
         File dasProperties = getServerDirs().getDasPropertiesFile();
-        logger.finer("das.properties: " + dasProperties);
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("das.properties: " + dasProperties);
 
         if (!dasProperties.exists()) {
             logger.info(
@@ -173,7 +174,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
          * instance-private state) are left alone.
          */
         if (sync.equals("full") || doFullSync) {
-            logger.fine(Strings.get("Instance.fullsync", instanceName));
+            if (logger.isLoggable(Level.FINE))
+                logger.fine(Strings.get("Instance.fullsync", instanceName));
             removeSubdirectory("config");
             removeSubdirectory("applications");
             removeSubdirectory("generated");
@@ -199,7 +201,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
              * If not, we're all done.
              */
             if (domainXml.lastModified() == dtime) {
-                logger.fine(Strings.get("Sync.alreadySynced"));
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine(Strings.get("Sync.alreadySynced"));
                 if (!syncState.delete())
                     logger.warning(
                         Strings.get("Sync.cantDeleteSyncState", syncState));
@@ -229,12 +232,15 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             for (File adir : FileUtils.listFiles(archiveDir)) {
                 File[] af = FileUtils.listFiles(adir);
                 if (af.length != 1) {
-                    logger.finer("IGNORING " + adir + ", # files " + af.length);
+                    if (logger.isLoggable(Level.FINER))
+                        logger.finer("IGNORING " + adir + ", # files " +
+                                                                    af.length);
                     continue;
                 }
                 File archive = af[0];
                 File appDir = new File(appsDir, adir.getName());
-                logger.finer("UNZIP " + archive + " TO " + appDir);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("UNZIP " + archive + " TO " + appDir);
                 try {
                     expand(appDir, archive);
                 } catch (Exception ex) { }
@@ -285,7 +291,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             }
             synchronizeFiles(sr);
         } catch (ConnectException cex) {
-            logger.finer("Couldn't connect to DAS: " + cex);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Couldn't connect to DAS: " + cex);
             /*
              * Don't chain the exception, otherwise asadmin will think it
              * it was a connect failure and will list the closest matching
@@ -294,7 +301,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
             exc = new CommandException(
                         Strings.get("Sync.connectFailed", cex.getMessage()));
         } catch (CommandException ex) {
-            logger.finer("Exception during synchronization: " + ex);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Exception during synchronization: " + ex);
             exc = ex;
         }
         
@@ -373,7 +381,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 name = name.substring(0, name.length() - 1);
             SyncRequest.ModTime mt = new SyncRequest.ModTime(name, time);
             sr.files.add(mt);
-            logger.finer(f + ": mod time " + mt.time);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer(f + ": mod time " + mt.time);
         }
     }
 
@@ -395,7 +404,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
                 marshaller.marshal(sr, System.out);
 
             File syncdir = new File(instanceDir, sr.dir);
-            logger.finer("Sync directory: " + syncdir);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Sync directory: " + syncdir);
             // _synchronize-files takes a single operand of type File
             // Note: we throw the output away to avoid printing a blank line
             syncCmd.executeAndReturnOutput("_synchronize-files",
@@ -403,18 +413,23 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
 
             // the returned files are automatically saved by the command
         } catch (IOException ex) {
-            logger.finer("Got exception: " + ex);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Got exception: " + ex);
             throw new CommandException(
                 Strings.get("Sync.dirFailed", sr.dir, ex.toString()), ex);
         } catch (JAXBException jex) {
-            logger.finer("Got exception: " + jex);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Got exception: " + jex);
             throw new CommandException(
                 Strings.get("Sync.dirFailed", sr.dir, jex.toString()), jex);
         } catch (CommandException cex) {
-            logger.finer("Got exception: " + cex);
-            logger.finer("  cause: " + cex.getCause());
-            if (cex.getCause() instanceof ConnectException)
-                throw (ConnectException)cex.getCause();
+            Throwable cause = cex.getCause();
+            if (logger.isLoggable(Level.FINER)) {
+                logger.finer("Got exception: " + cex);
+                logger.finer("  cause: " + cause);
+            }
+            if (cause instanceof ConnectException)
+                throw (ConnectException)cause;
             throw new CommandException(
                 Strings.get("Sync.dirFailed", sr.dir, cex.getMessage()), cex);
         } finally {
@@ -432,7 +447,8 @@ public class SynchronizeInstanceCommand extends LocalInstanceCommand {
      */
     private void removeSubdirectory(String name) {
         File subdir = new File(instanceDir, name);
-        logger.finer("Removing: " + subdir);
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Removing: " + subdir);
         FileUtils.whack(subdir);
     }
 

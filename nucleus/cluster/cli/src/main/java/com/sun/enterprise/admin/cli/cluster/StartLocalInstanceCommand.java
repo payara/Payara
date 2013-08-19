@@ -124,7 +124,8 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
     @Override
     protected int executeCommand() throws CommandException {
 
-        logger.finer(toString());
+        if (logger.isLoggable(Level.FINER))
+            logger.finer(toString());
 
         if (sync.equals("none")) {
             logger.info(Strings.get("Instance.nosync"));
@@ -157,7 +158,8 @@ public class StartLocalInstanceCommand extends SynchronizeInstanceCommand
                 return ERROR;
 
             if(dry_run) {
-                logger.fine(Strings.get("dry_run_msg"));
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine(Strings.get("dry_run_msg"));
                 List<String> cmd = getLauncher().getCommandLine();
                 StringBuilder sb = new StringBuilder();
                 for (String s : cmd) {

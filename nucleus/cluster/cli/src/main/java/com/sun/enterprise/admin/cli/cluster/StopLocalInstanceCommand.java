@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.util.logging.Level;
 import com.sun.enterprise.admin.cli.*;
 import com.sun.enterprise.admin.cli.cluster.Strings;
 import com.sun.enterprise.admin.cli.remote.RemoteCLICommand;
@@ -112,7 +113,8 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
         HostAndPort addr = getAdminAddress(serverName);
         programOpts.setHostAndPort(addr);
 
-        logger.finer("StopInstance.stoppingMessage" + addr.getPort());
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Stopping server at " + addr.toString());
 
         if (!isRunning())
             return instanceNotRunning();
@@ -276,7 +278,7 @@ public class StopLocalInstanceCommand extends LocalInstanceCommand {
             pids = FileUtils.readSmallFile(prevPid).trim();
             String s = ProcessUtils.kill(Integer.parseInt(pids));
 
-            if (s != null)
+            if (s != null && logger.isLoggable(Level.FINER))
                 logger.finer(s);
         }
         catch (CommandException ce) {

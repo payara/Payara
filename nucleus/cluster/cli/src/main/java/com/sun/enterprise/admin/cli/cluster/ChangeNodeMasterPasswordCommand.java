@@ -98,7 +98,7 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             node = node0;
             File serverDir = new File(nodeDir,node);
 
-            if (serverDir == null || !serverDir.isDirectory()) {
+            if (!serverDir.isDirectory()) {
                 throw new CommandException(strings.get("bad.node.dir",serverDir));
             }
 

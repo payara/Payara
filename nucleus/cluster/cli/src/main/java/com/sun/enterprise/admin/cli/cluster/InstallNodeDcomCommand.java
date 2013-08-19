@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.util.logging.Level;
 import com.sun.enterprise.util.cluster.windows.io.RemoteFileCopyProgress;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFile;
 import com.sun.enterprise.util.cluster.windows.io.WindowsRemoteFileSystem;
@@ -171,7 +172,9 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
             String fullZipFileName = remoteInstallDirString + "\\" + zipFileName;
             String fullUnpackScriptPath = remoteInstallDirString + "\\" + unpackScriptName;
             unpackScript.copyFrom(makeScriptString(remoteInstallDirString, zipFileName));
-            logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName + " and " + fullUnpackScriptPath);
+            if (logger.isLoggable(Level.FINE))
+                logger.fine("WROTE FILE TO REMOTE SYSTEM: " + fullZipFileName +
+                            " and " + fullUnpackScriptPath);
             unpackOnHosts(host, remotePassword, fullUnpackScriptPath.replace('/', '\\'));
         }
     }
@@ -199,7 +202,8 @@ public class InstallNodeDcomCommand extends InstallNodeBaseCommand {
         if (out == null || out.length() < 50)
             throw new CommandException(Strings.get("dcom.error.unpacking", unpackScript, out));
 
-        logger.fine("Output from Windows Unpacker:\n" + out);
+        if (logger.isLoggable(Level.FINE))
+            logger.fine("Output from Windows Unpacker:\n" + out);
     }
 
     private String getPassword(String host) {

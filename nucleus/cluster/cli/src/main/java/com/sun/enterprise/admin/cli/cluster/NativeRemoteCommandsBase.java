@@ -240,7 +240,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
                 //only if file is present in DAS, it is targeted for removal on remote host
                 //using force deletes all files on remote host
                 if (force) {
-                    logger.fine("Force removing directory " + f1);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Force removing directory " + f1);
                     if (isRemoteDirectoryEmpty(sftpClient, f1)) {
                         sftpClient.rmdir(f1);
                     }
@@ -256,7 +257,8 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
             else {
                 String f2 = dir + "/" + directoryEntry.filename;
                 if (force) {
-                    logger.fine("Force removing file " + f2);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Force removing file " + f2);
                     sftpClient.rm(f2);
                 }
                 else {
@@ -382,7 +384,9 @@ abstract class NativeRemoteCommandsBase extends CLICommand {
     List<String> getListOfInstallFiles(String installDir) throws IOException {
         String ins = resolver.resolve("${com.sun.aas.productRoot}");
         Set files = FileUtils.getAllFilesAndDirectoriesUnder(new File(ins));
-        logger.finer("Total number of files under " + ins + " = " + files.size());
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Total number of files under " + ins + " = " +
+                                                                files.size());
         String remoteDir = installDir;
         if (!installDir.endsWith("/")) {
             remoteDir = remoteDir + "/";

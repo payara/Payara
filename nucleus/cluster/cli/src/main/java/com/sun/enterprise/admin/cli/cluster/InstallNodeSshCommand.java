@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.admin.cli.cluster;
 
+import java.util.logging.Level;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.io.FileUtils;
 import com.trilead.ssh2.SCPClient;
@@ -191,7 +192,9 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                 // Looks like we need to quote the paths to scp in case they
                 // contain spaces.
                 scpClient.put(zipFile.getAbsolutePath(), FileUtils.quoteString(sshInstallDir));
-                logger.finer("Copied " + zip + " to " + host + ":" + sshInstallDir);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Copied " + zip + " to " + host + ":" +
+                                                                sshInstallDir);
             }
             catch (IOException ex) {
                 logger.info(Strings.get("cannot.copy.zip.file", zip, host));
@@ -206,7 +209,9 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                     logger.info(Strings.get("jar.failed", host, outStream.toString()));
                     throw new CommandException("Remote command output: " + outStream.toString());
                 }
-                logger.finer("Installed " + getArchiveName() + " into " + host + ":" + sshInstallDir);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Installed " + getArchiveName() + " into " +
+                                    host + ":" + sshInstallDir);
             }
             catch (IOException ioe) {
                 logger.info(Strings.get("jar.failed", host, outStream.toString()));
@@ -216,7 +221,9 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             try {
                 logger.info("Removing " + host + ":" + sshInstallDir + "/" + getArchiveName());
                 sftpClient.rm(sshInstallDir + "/" + getArchiveName());
-                logger.finer("Removed " + host + ":" + sshInstallDir + "/" + getArchiveName());
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Removed " + host + ":" + sshInstallDir + "/" +
+                                                            getArchiveName());
             }
             catch (IOException ioe) {
                 logger.info(Strings.get("remove.glassfish.failed", host, sshInstallDir));
@@ -236,7 +243,9 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                         sftpClient.chmod((sshInstallDir + "/" + binDirFile), 0755);
                     }
                 }
-                logger.finer("Fixed file permissions of all bin files under " + host + ":" + sshInstallDir);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Fixed file permissions of all bin files " +
+                                    "under " + host + ":" + sshInstallDir);
             }
             catch (IOException ioe) {
                 logger.info(Strings.get("fix.permissions.failed", host, sshInstallDir));
@@ -248,7 +257,11 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
                             + sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib");
                 try {
                     sftpClient.chmod((sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin"), 0755);
-                    logger.finer("Fixed file permission for nadmin under " + host + ":" + sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + "/lib/nadmin");
+                    if (logger.isLoggable(Level.FINER))
+                        logger.finer("Fixed file permission for nadmin under " +
+                                    host + ":" + sshInstallDir + "/" +
+                                    SystemPropertyConstants.getComponentName() +
+                                    "/lib/nadmin");
                 }
                 catch (IOException ioe) {
                     logger.info(Strings.get("fix.permissions.failed", host, sshInstallDir));
@@ -315,11 +328,15 @@ public class InstallNodeSshCommand extends InstallNodeBaseCommand {
             String cmd = "'" + sshInstallDir + "/" + SystemPropertyConstants.getComponentName() + asadmin;
             int status = sshLauncher.runCommand(cmd, outStream);
             if (status == 0) {
-                logger.finer(host + ":'" + cmd + "'" + " returned [" + outStream.toString() + "]");
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer(host + ":'" + cmd + "'" +
+                                " returned [" + outStream.toString() + "]");
                 throw new CommandException(Strings.get("install.dir.exists", sshInstallDir));
             }
             else {
-                logger.finer(host + ":'" + cmd + "'" + " failed [" + outStream.toString() + "]");
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer(host + ":'" + cmd + "'" +
+                                " failed [" + outStream.toString() + "]");
             }
         }
         catch (IOException ex) {
