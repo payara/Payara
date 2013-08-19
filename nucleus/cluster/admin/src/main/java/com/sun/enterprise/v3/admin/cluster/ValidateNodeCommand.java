@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,6 +59,7 @@ import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.component.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.File;
 import java.util.Set;
 import java.util.HashSet;
@@ -129,7 +130,8 @@ public class ValidateNodeCommand implements AdminCommand {
         Logger logger= context.getLogger();
         report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
 
-        logger.fine(Strings.get("Validating node {0}", name));
+        if (logger.isLoggable(Level.FINE))
+            logger.fine(Strings.get("Validating node {0}", name));
         Node node = nodes.getNode(name);
         if (node == null) {
             //node doesn't exist
@@ -149,7 +151,9 @@ public class ValidateNodeCommand implements AdminCommand {
             return;
         }
 
-        logger.fine(Strings.get("Node {0} is valid. Updating if needed", name));
+        if (logger.isLoggable(Level.FINE))
+            logger.fine(Strings.get(
+                            "Node {0} is valid. Updating if needed", name));
 
         // What is there in the node is valid. Now go update anything that
         // was not there.

@@ -43,6 +43,7 @@ package com.sun.enterprise.v3.admin.cluster;
 import com.sun.enterprise.admin.remote.RemoteRestAdminCommand;
 import com.sun.enterprise.util.cluster.windows.process.WindowsException;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -308,7 +309,9 @@ public class StopInstanceCommand extends StopServer implements AdminCommand, Pos
         String firstErrorMessage = Strings.get("stop.local.instance.kill",
                 instanceName, nodeName, humanCommand);
 
-        logger.fine("stop-instance: running " + humanCommand + " on " + nodeName);
+        if (logger.isLoggable(Level.FINE))
+            logger.fine("stop-instance: running " + humanCommand +
+                        " on " + nodeName);
 
         nodeUtils.runAdminCommandOnNode(node, command, context,
                                         firstErrorMessage, humanCommand, null);

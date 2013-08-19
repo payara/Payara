@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,7 @@ package com.sun.enterprise.v3.admin.cluster;
 
 import java.io.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import javax.xml.bind.*;
 
 import com.sun.enterprise.admin.util.InstanceStateService;
@@ -122,10 +123,13 @@ public class SynchronizeFiles implements AdminCommand {
             Unmarshaller unmarshaller = jc.createUnmarshaller();
             unmarshaller.setSchema(null);       // XXX - needed?
             sr = (SyncRequest)unmarshaller.unmarshal(fileList);
-            logger.finer("SynchronizeFiles: synchronize dir " + sr.dir);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("SynchronizeFiles: synchronize dir " + sr.dir);
         } catch (Exception ex) {
-            logger.fine("SynchronizeFiles: Exception reading request");
-            logger.fine(ex.toString());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("SynchronizeFiles: Exception reading request");
+                logger.fine(ex.toString());
+            }
             report.setActionExitCode(ExitCode.FAILURE);
             report.setMessage(
                         strings.getLocalString("sync.exception.reading",
@@ -152,8 +156,10 @@ public class SynchronizeFiles implements AdminCommand {
             stateService.setState(server.getName(), InstanceState.StateType.NO_RESPONSE, true);
             stateService.removeFailedCommandsForInstance(server.getName());
         } catch (Exception ex) {
-            logger.fine("SynchronizeFiles: Exception processing request");
-            logger.fine(ex.toString());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("SynchronizeFiles: Exception processing request");
+                logger.fine(ex.toString());
+            }
             report.setActionExitCode(ExitCode.FAILURE);
             report.setMessage(
                         strings.getLocalString("sync.exception.processing",

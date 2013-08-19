@@ -56,6 +56,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.ExitCode;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -163,7 +164,8 @@ class ClusterCommandHelper {
 
 
         // Optimize the oder of server instances to avoid clumping on nodes
-        logger.fine(String.format("Original instance list %s",
+        if (logger.isLoggable(Level.FINE))
+            logger.fine(String.format("Original instance list %s",
                 serverListToString(targetServers)));
         targetServers = optimizeServerListOrder(targetServers);
 
@@ -225,8 +227,9 @@ class ClusterCommandHelper {
             threadPool.execute(cmdRunnable);
         }
 
-        logger.fine(String.format("%s commands queued, waiting for responses",
-                command));
+        if (logger.isLoggable(Level.FINE))
+            logger.fine(String.format(
+                "%s commands queued, waiting for responses", command));
 
         // Make sure we don't wait longer than the admin read timeout. Set
         // our limit to be 3 seconds less.
@@ -235,7 +238,8 @@ class ClusterCommandHelper {
             // This should never be the case
             adminTimeout = 57 * 1000;
         }
-        logger.fine(String.format("Initial cluster command timeout: %d ms",
+        if (logger.isLoggable(Level.FINE))
+            logger.fine(String.format("Initial cluster command timeout: %d ms",
                 adminTimeout));
 
         // Now go get results from the response queue.
@@ -269,7 +273,9 @@ class ClusterCommandHelper {
             String iname = cmdRunnable.getName();
             waitingForServerNames.remove(iname);
             ActionReport instanceReport = cmdRunnable.getActionReport();
-            logger.fine(String.format("Instance %d of %d (%s) has responded with %s",
+            if (logger.isLoggable(Level.FINE))
+                logger.fine(String.format(
+                    "Instance %d of %d (%s) has responded with %s",
                     n+1, nInstances, iname, instanceReport.getActionExitCode()));
             if (instanceReport.getActionExitCode() != ExitCode.SUCCESS) {
                 // Bummer, the command had an error. Log and save output

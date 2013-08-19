@@ -49,6 +49,7 @@ import com.sun.enterprise.util.ObjectAnalyzer;
 import com.sun.enterprise.util.StringUtils;
 import java.util.Map;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import org.glassfish.api.*;
 import org.glassfish.api.admin.*;
 
@@ -100,7 +101,8 @@ public class RestartInstanceCommand implements AdminCommand {
 
             prepare();
             setOldPid();
-            logger.fine("Restart-instance old-pid = " + oldPid);
+            if (logger.isLoggable(Level.FINE))
+                logger.fine("Restart-instance old-pid = " + oldPid);
             callInstance();
             waitForRestart();
 
@@ -151,7 +153,8 @@ public class RestartInstanceCommand implements AdminCommand {
         if (!isInstanceRestartable())
             setError(Strings.get("restart.notRestartable", instanceName));
 
-        logger.finer(ObjectAnalyzer.toString(this));
+        if (logger.isLoggable(Level.FINER))
+            logger.finer(ObjectAnalyzer.toString(this));
     }
 
     /**
@@ -210,7 +213,8 @@ public class RestartInstanceCommand implements AdminCommand {
 
                 // when the next statement is true -- the server has restarted.
                 if (StringUtils.ok(newpid) && !newpid.equals(oldPid)) {
-                    logger.fine("Restarted instance pid = " + newpid);
+                    if (logger.isLoggable(Level.FINE))
+                        logger.fine("Restarted instance pid = " + newpid);
                     return;
                 }
             }
