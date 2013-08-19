@@ -143,8 +143,10 @@ public class RestrictedContentAdapter extends HttpHandler {
         }
         this.content.put(relativeURIString, newContent);
 //        this.cache.put(relativeURIString, newContent.file());
-        logger.fine(logPrefix() + "adding static content "
-                + relativeURIString + " " + newContent.toString());
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(logPrefix() + "adding static content "
+                    + relativeURIString + " " + newContent.toString());a
+        }
     }
 
     public synchronized void addContentIfAbsent(
@@ -223,9 +225,11 @@ public class RestrictedContentAdapter extends HttpHandler {
             finishErrorResponse(gResp, contentStateToResponseStatus(sc));
             final String scString = (sc == null ? "null" : sc.toString());
             final String scStateString = (sc == null ? "null" : sc.state().toString());
-            logger.fine(logPrefix() + "Found static content for " + gReq.getMethod()
-                    + ": " + relativeURIString + " -> " + scString
-                    + " but could not serve it; its state is " + scStateString);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(logPrefix() + "Found static content for " + gReq.getMethod()
+                        + ": " + relativeURIString + " -> " + scString
+                        + " but could not serve it; its state is " + scStateString);
+            }
             return true;
         }
     }
