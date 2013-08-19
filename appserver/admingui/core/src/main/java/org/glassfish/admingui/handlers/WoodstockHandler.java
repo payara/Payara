@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -139,9 +139,13 @@ public class WoodstockHandler {
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
                 tmpFile.deleteOnExit();
-                logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
+		if (logger.isLoggable(Level.FINE)){
+                    logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
+		}
                 uploadedFile.write(tmpFile);
-                logger.fine(GuiUtil.getCommonMessage("log.afterWriteToTmpFile"));
+		if (logger.isLoggable(Level.FINE)){
+                    logger.fine(GuiUtil.getCommonMessage("log.afterWriteToTmpFile"));
+		}
                 uploadTmpFile = tmpFile.getCanonicalPath();
             } catch (IOException ioex) {
                 try {
@@ -155,7 +159,9 @@ public class WoodstockHandler {
                 GuiUtil.handleException(handlerCtx, ex);
             }
         }
-        logger.fine(GuiUtil.getCommonMessage("log.successfullyUploadedTmp") +uploadTmpFile);
+	if (logger.isLoggable(Level.FINE)){
+        	logger.fine(GuiUtil.getCommonMessage("log.successfullyUploadedTmp") +uploadTmpFile);
+	}
         handlerCtx.setOutputValue("uploadedTempFile", uploadTmpFile);
     }
 

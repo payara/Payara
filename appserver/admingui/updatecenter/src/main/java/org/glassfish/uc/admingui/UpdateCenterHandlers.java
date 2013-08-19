@@ -640,10 +640,8 @@ public class UpdateCenterHandlers {
         try{
             image = new Image (new File (ucDir));
             if (force || (GuiUtil.getSessionValue(CATALOG_REFRESHED) == null)){
-                if (image != null){
-		    image.refreshCatalogs();
-		    GuiUtil.setSessionValue(CATALOG_REFRESHED, "TRUE");
-		}
+		image.refreshCatalogs();
+		GuiUtil.setSessionValue(CATALOG_REFRESHED, "TRUE");
             }
         }catch(Exception ex){
             if(force && (image == null)){

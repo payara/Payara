@@ -277,7 +277,7 @@ public class DeploymentHandler {
              }
 
              List<String> targetList = DeployUtil.getApplicationTarget(appName, "application-ref");
-             if ( (targetList == null) || targetList.size() != 1){
+             if ( targetList.size() != 1){
                 payload.put("target", "domain");
              }else{
                 payload.put("target",  targetList.get(0));
@@ -358,7 +358,7 @@ public class DeploymentHandler {
                 Map vsMap = RestUtil.getChildMap( vsEndpoint );
 
                 //for each VS, look at the defaultWebModule
-                if (vsMap != null && vsMap.size()>0){
+                if (vsMap.size()>0){
                     List<String> vsList = new ArrayList(vsMap.keySet());
                     for(String oneVs : vsList){
                         String oneEndpoint = vsEndpoint+"/" + oneVs ;

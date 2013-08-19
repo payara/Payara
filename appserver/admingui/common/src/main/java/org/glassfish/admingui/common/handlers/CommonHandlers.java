@@ -803,8 +803,13 @@ public class CommonHandlers {
     @Handler( id="filterAdminObjects")
     public static List filterAdminObjects(HandlerContext context) {
         List result = new ArrayList();
+	FilterTreeEvent event = null;
         try{
-            FilterTreeEvent event = (FilterTreeEvent) context.getEventObject();
+	    if (context.getEventObject() instanceof FilterTreeEvent){
+            	event = (FilterTreeEvent) context.getEventObject();
+	    }else{
+		return result;
+	    }
             List<String> jmsResources = event.getChildObjects();
             if (jmsResources == null || jmsResources.size() <=0){
                 return result;
