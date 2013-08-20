@@ -145,7 +145,7 @@ public class RestrictedContentAdapter extends HttpHandler {
 //        this.cache.put(relativeURIString, newContent.file());
         if (logger.isLoggable(Level.FINE)) {
             logger.fine(logPrefix() + "adding static content "
-                    + relativeURIString + " " + newContent.toString());a
+                    + relativeURIString + " " + newContent.toString());
         }
     }
 
