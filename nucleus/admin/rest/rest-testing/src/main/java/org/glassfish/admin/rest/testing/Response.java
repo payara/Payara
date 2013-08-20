@@ -85,6 +85,10 @@ public class Response {
         return new JSONObject(getStringBody());
     }
 
+    public JSONObject getItem() throws Exception {
+        return getJsonBody().getJSONObject(PROP_ITEM);
+    }
+
     public String getLocationHeader() throws Exception {
         return getJaxrsResponse().getHeaderString(HEADER_LOCATION);
     }

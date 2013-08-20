@@ -187,6 +187,10 @@ public class Common {
         return successMessage(field, ".*");
     }
 
+    public static ArrayValue oneSuccessMessage() {
+        return arrayVal().add(anySuccessMessage());
+    }
+
     public static ObjectValue anyFailureMessage() {
         return failureMessage(".*");
     }
@@ -195,12 +199,20 @@ public class Common {
         return failureMessage(field, ".*");
     }
 
+    public static ArrayValue oneFailureMessage() {
+        return arrayVal().add(anyFailureMessage());
+    }
+
     public static ObjectValue anyWarningMessage() {
         return warningMessage(".*");
     }
 
     public static ObjectValue anyWarningMessage(String field) {
         return warningMessage(field, ".*");
+    }
+
+    public static ArrayValue oneWarningMessage() {
+        return arrayVal().add(anyWarningMessage());
     }
 
     public static ObjectValue successMessage(String message) {
@@ -243,15 +255,13 @@ public class Common {
     public static ObjectValue rootResource(String rel) {
         return objectVal().put("rel", rel).put("uri", anyString());
     }
-
+ 
     public static ObjectValue resource(String rel, String title, String uri) {
         return resource(rel, uri).put("title", stringVal(title));
     }
-
+ 
     public static ObjectValue resource(String rel, String uri) {
-        return objectVal()
-                .put("rel", rel)
-                .put("uri", stringRegexp(".*/" + uri));
+         return objectVal().put("rel", rel).put("uri", stringRegexp(".*/" + uri));
     }
 
     public static String print(Value value) {
@@ -282,6 +292,10 @@ public class Common {
 
     public static void verify(Environment environment, ObjectValue want, JSONObject have) throws Exception {
         DataVerifier.verify(environment, want, have);
+    }
+
+    public static ObjectValue cloneObjectVal(ObjectValue v) throws Exception {
+        return toObjectVal(v.toJSONObject());
     }
 
     public static ObjectValue toObjectVal(JSONObject j) throws Exception {
