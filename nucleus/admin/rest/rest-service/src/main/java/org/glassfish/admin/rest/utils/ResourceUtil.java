@@ -1103,12 +1103,12 @@ public class ResourceUtil {
         ar.getExtraProperties().put("methods", methodMetaData);
     }
 
-    public static synchronized RestConfig getRestConfig(ServiceLocator habitat) {
+    public static synchronized RestConfig   getRestConfig(ServiceLocator habitat) {
         if (restConfig == null) {
             if (habitat == null) {
                 return null;
             }
-            Domain domain = habitat.getService(Domain.class);
+            Domain domain = Globals.getDefaultBaseServiceLocator().getService(Domain.class);
             if (domain != null) {
                 Config config = domain.getConfigNamed("server-config");
                 if (config != null) {
@@ -1165,7 +1165,7 @@ public class ResourceUtil {
      * @throws URISyntaxException
      */
     public static boolean isAuthorized(final ServiceLocator habitat, final Subject subject, final String resource, final String action) throws URISyntaxException {
-        final AuthorizationService authorizationSvc = 
+        final AuthorizationService authorizationSvc =
             AccessController.doPrivileged(
                     new PrivilegedLookup<AuthorizationService>(habitat, AuthorizationService.class));
         return authorizationSvc.isAuthorized(subject, new URI("admin", resource, null), action);
