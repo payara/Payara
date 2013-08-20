@@ -188,7 +188,11 @@ public class AdminCommandInstanceImpl extends AdminCommandStateImpl implements J
                 if (getState().equals(State.REVERTING)) {
                     finalState = State.REVERTED;
                 }
-                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),subjectUsernames.get(0),report.getMessage(),getJobsFile(),finalState.name(),completionDate));
+                String user = null;
+                if(subjectUsernames.size() > 0){
+                    user = subjectUsernames.get(0);
+                }
+                jobPersistenceService.persist(new JobInfo(id,commandName,executionDate,report.getActionExitCode().name(),user,report.getMessage(),getJobsFile(),finalState.name(),completionDate));
                 if (getState().equals(State.RUNNING_RETRYABLE) || getState().equals(State.REVERTING)) {
                     JobManagerService jobManager = Globals.getDefaultHabitat().getService(JobManagerService.class);
                     File jobFile = getJobsFile();
