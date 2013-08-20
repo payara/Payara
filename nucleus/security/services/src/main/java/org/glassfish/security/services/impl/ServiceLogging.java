@@ -50,11 +50,11 @@ public class ServiceLogging {
 	public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.security.services.LogMessages";
 
 	@LoggerInfo(subsystem="SECSVCS", description="Security Services Logger", publish=true)
-	public static final String SEC_SVCS_LOGGER = "org.glassfish.security.services";
+	public static final String SEC_SVCS_LOGGER = "javax.enterprise.security.services";
 
 	@LoggerInfo(subsystem="SECPROV", description="Security Provider Logger", publish=true)
-	public static final String SEC_PROV_LOGGER = "org.glassfish.security.services.provider";
+	public static final String SEC_PROV_LOGGER = "javax.enterprise.security.services.provider";
 	
 	@LoggerInfo(subsystem="SECCMDS", description="Security Services Command Logger", publish=true)
-	public static final String SEC_COMMANDS_LOGGER = "org.glassfish.security.services.commands";
+	public static final String SEC_COMMANDS_LOGGER = "javax.enterprise.security.services.commands";
 }
