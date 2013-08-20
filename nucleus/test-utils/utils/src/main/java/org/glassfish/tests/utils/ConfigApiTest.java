@@ -47,9 +47,13 @@ import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
 import javax.security.auth.Subject;
+import javax.xml.stream.XMLStreamReader;
+
 import org.glassfish.hk2.api.Filter;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.junit.Ignore;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.ConfigModel;
 import org.jvnet.hk2.config.DomDocument;
 import org.jvnet.hk2.config.Transactions;
 import static org.junit.Assert.*;
@@ -167,8 +171,30 @@ public abstract class ConfigApiTest {
         return getHabitat();
     }
 
-    public abstract DomDocument getDocument(ServiceLocator habitat);    
-    
+    /**
+     *  Override it when needed, see config-api/ConfigApiTest.java for example.
+     */
+    public DomDocument getDocument(ServiceLocator habitat) {
+        TestDocument doc = habitat.getService(TestDocument.class);
+        if (doc == null) {
+            doc = new TestDocument(habitat);
+        }
+        return doc;
+    }
+
+    class TestDocument extends DomDocument<ConfigBean> {
+
+        public TestDocument(ServiceLocator habitat) {
+            super(habitat);
+        }
+        
+        @Override
+        public ConfigBean make(final ServiceLocator habitat, XMLStreamReader xmlStreamReader,
+                ConfigBean dom, ConfigModel configModel) {
+            return new ConfigBean(habitat,this, dom, configModel, xmlStreamReader);
+        }
+    }
+
     /* 
      * Decorate the habitat after parsing.  This is called on the habitat
      * just after parsing of the XML file is complete.
