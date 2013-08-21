@@ -173,7 +173,8 @@
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.4</command-security-plugin.version>
+        <command-security-plugin.version>1.0.6</command-security-plugin.version>
+        <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <mail.version>1.5.0</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
@@ -624,7 +625,7 @@
                 <artifactId>command-security-maven-plugin</artifactId>
                 <version>${command-security-plugin.version}</version>
                 <configuration>
-                    <isFailureFatal>false</isFailureFatal>
+                    <isFailureFatal>${command.security.maven.plugin.isFailureFatal}</isFailureFatal>
                 </configuration>
             </plugin>
             <plugin>
