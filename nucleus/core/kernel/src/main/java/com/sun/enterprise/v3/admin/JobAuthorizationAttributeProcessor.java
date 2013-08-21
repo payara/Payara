@@ -93,7 +93,7 @@ public class JobAuthorizationAttributeProcessor implements AuthorizationPreproce
          * in which case the job ID would be invalid and the job manager and/or
          * the completed jobs store might not know about the job.
          */
-        if (job != null) {
+        if (job != null && job.getSubjectUsernames().size() > 0) {
             userID = job.getSubjectUsernames().get(0);
         } else {
             if (jobManager.getCompletedJobs(jobManager.getJobsFile()) != null) {

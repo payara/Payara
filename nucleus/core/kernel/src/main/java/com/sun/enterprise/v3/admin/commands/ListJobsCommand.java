@@ -73,6 +73,7 @@ import org.jvnet.hk2.annotations.Service;
 public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.AccessCheckProvider {
     
     private ActionReport report;
+    private static final String DEFAULT_USER_STRING = "-";
 
     @Inject
     private JobManagerService jobManagerService;
@@ -171,7 +172,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                         message = ProgressStatusClient.composeMessageForPrint(job.getCommandProgress());
                     }
                     String exitCode = actionReport == null ? "" : actionReport.getActionExitCode().name();
-                    jobsToReport.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,userList.get(0),message,job.getJobsFile(),job.getState().name(),0));
+
+                    String user = DEFAULT_USER_STRING;
+                    if(userList.size() > 0){
+                        user = userList.get(0);
+                    }
+                    jobsToReport.add(new JobInfo(job.getId(),job.getName(),job.getCommandExecutionDate(),exitCode,user,message,job.getJobsFile(),job.getState().name(),0));
                 }
             }
 
@@ -223,7 +229,12 @@ public class ListJobsCommand implements AdminCommand,AdminCommandSecurity.Access
                    int time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(job.commandExecutionDate).length();
                    int name = job.jobName.length();
                    int state = job.state.length();
-                   int user = job.user.length();
+                   int user ;
+                    if(job.user != null){
+                        user = job.user.length();
+                    }else{
+                        user = DEFAULT_USER_STRING.length();
+                    }
                    int exitCode = job.exitCode.length();
 
                    if (name > longestName)
