@@ -113,14 +113,16 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
         WebServiceEndpoint endpointDesc)  {
 
         EndpointImpl newEndpoint = createHandler(endpointDesc);
-        ((JAXRPCEndpointImpl)newEndpoint).setParent(parent);
+        JAXRPCEndpointImpl.class.cast(newEndpoint).setParent(parent);
         return newEndpoint;
     }
 
+    @Override
     public Endpoint getEndpoint(String uri) {    
         return endpoints.get(uri);
     }
     
+    @Override
     public Iterator<Endpoint> getEndpoints() {
         return endpoints.values().iterator();
     }
@@ -144,18 +146,22 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
         endpoint.setDescriptor(null);
     }
             
+    @Override
     public void addLifecycleListener(EndpointLifecycleListener listener) {
         lifecycleListeners.add(listener);
     }
     
+    @Override
     public void removeLifecycleListener(EndpointLifecycleListener listener) {
         lifecycleListeners.remove(listener);
     }
     
+    @Override
     public void addAuthListener(AuthenticationListener listener) {
         authListeners.add(listener);
     }
     
+    @Override
     public void removeAuthListener(AuthenticationListener listener) {
         authListeners.remove(listener);
     }
@@ -164,10 +170,12 @@ public final class WebServiceEngineImpl implements WebServiceEngine {
         return authListeners;
     }
     
+    @Override
     public GlobalMessageListener getGlobalMessageListener() {
         return globalMessageListener;
     }
     
+    @Override
     public void setGlobalMessageListener(GlobalMessageListener listener) {
         globalMessageListener = listener;
     }

@@ -40,7 +40,6 @@
 
 package org.glassfish.webservices;
 
-
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
@@ -59,7 +58,6 @@ import com.sun.xml.rpc.spi.runtime.SOAPConstants;
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 import java.text.MessageFormat;
 
-
 import org.glassfish.webservices.monitoring.*;
 
 import java.util.logging.Logger;
@@ -77,7 +75,7 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
     private static final Logger logger = LogUtils.getLogger();
 
     private JaxRpcObjectFactory rpcFactory;
-    private WsUtil wsUtil = new WsUtil();
+    private final WsUtil wsUtil = new WsUtil();
     private WebServiceEngineImpl wsEngine;
 
     // @@@ This should be added to jaxrpc spi, probably within
@@ -102,6 +100,7 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
         }
     }           
 
+    @Override
     public void invoke(HttpServletRequest req, 
                        HttpServletResponse resp,
                        ServletContext ctxt,
@@ -183,7 +182,7 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
                     aInfo = endpointInfo2.getHandlerImplementor();
 
                     // Set message context in invocation
-                    ((EJBInvocation) aInfo.getInv()).setMessageContext(msgContext);
+                    EJBInvocation.class.cast(aInfo.getInv()).setMessageContext(msgContext);
 
 
                     // Set http response object so one-way operations will
@@ -198,7 +197,13 @@ public class EjbWebServiceDispatcher implements EjbMessageDispatcher {
                         // create the thread local
                         ThreadLocalInfo threadLocalInfo = new ThreadLocalInfo(messageID, req);
                         wsEngine.getThreadLocal().set(threadLocalInfo);
-                        endpoint.processRequest(msgContext);
+                        if (endpoint != null) {
+                            endpoint.processRequest(msgContext);
+                        } else {
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.log(Level.FINE, LogUtils.MISSING_MONITORING_INFO, req.getRequestURI());
+                            }
+                        }
                     }
                     
                     // Pass control back to jaxrpc runtime to invoke

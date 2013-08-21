@@ -46,6 +46,7 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -124,7 +125,7 @@ public class EjbWebServiceServlet extends HttpServlet {
                     sb.append("?");
                     sb.append(query);
                 }
-                hresp.sendRedirect(sb.toString());
+                hresp.sendRedirect(URLEncoder.encode(sb.toString(), "UTF-8"));
             } else {
                 boolean dispatch = true;
                 // check if it is a tester servlet invocation

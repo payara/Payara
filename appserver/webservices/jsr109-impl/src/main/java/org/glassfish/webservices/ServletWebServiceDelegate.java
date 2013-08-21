@@ -101,6 +101,7 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
         }
     }
 
+    @Override
     public void postInit(ServletConfig servletConfig) throws ServletException {
 
         String servletName = "unknown";
@@ -137,7 +138,7 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
                         rpcDelegate_.setSystemHandlerDelegate(securityHandlerDelegate);
 
                         // need to invoke the endpoint lifecylcle
-                        endpointImpl_ = (JAXRPCEndpointImpl) wsEngine_.createHandler(securityHandlerDelegate, endpoint_);
+                        endpointImpl_ = JAXRPCEndpointImpl.class.cast(wsEngine_.createHandler(securityHandlerDelegate, endpoint_));
                         rpcDelegate_.setSystemHandlerDelegate(endpointImpl_);
                     }
                 }
@@ -158,6 +159,7 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
         wsEngine_.removeHandler(endpoint_);
     }
 
+    @Override
     public void doGet(HttpServletRequest request,
                       HttpServletResponse response) throws ServletException {
 
@@ -180,11 +182,13 @@ public class ServletWebServiceDelegate extends ServletSecondDelegate {
 
     }
 
+    @Override
     public void warnMissingContextInformation() {
         // context info not used within j2ee integration, so override
         // this method to prevent warning message
     }
 
+    @Override
     public ImplementorCache createImplementorCache(ServletConfig sc) {
         ImplementorCache ic = rpcFactory_.createImplementorCache(sc);
         ImplementorCacheDelegate delegate =

@@ -63,21 +63,22 @@ import org.glassfish.ejb.api.EJBInvocation;
 public class EjbContainerPreHandler extends GenericHandler {
 
     private static final Logger logger = LogUtils.getLogger();
-    private WsUtil wsUtil = new WsUtil();
+    private final WsUtil wsUtil = new WsUtil();
 
     public EjbContainerPreHandler() {}
 
+    @Override
     public QName[] getHeaders() {
         return new QName[0];
     }
 
+    @Override
     public boolean handleRequest(MessageContext context) {
         EJBInvocation inv = null;
-
         try {
             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
             InvocationManager invManager = wscImpl.getInvocationManager();
-            inv = (EJBInvocation) invManager.getCurrentInvocation();
+            inv = EJBInvocation.class.cast(invManager.getCurrentInvocation());
             Method method = wsUtil.getInvMethod(
                     (com.sun.xml.rpc.spi.runtime.Tie)inv.getWebServiceTie(), context);
             inv.setWebServiceMethod(method);
@@ -85,7 +86,6 @@ public class EjbContainerPreHandler extends GenericHandler {
                 throw new Exception(format(logger.getResourceBundle().getString(LogUtils.CLIENT_UNAUTHORIZED),
                         method.toString()));
             }
-
         } catch(Exception e) {
             wsUtil.throwSOAPFaultException(e.getMessage(), context);
         }

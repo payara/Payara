@@ -105,11 +105,7 @@ public class EjbRuntimeEndpointInfo {
         endpoint = webServiceEndpoint;
         container  = ejbContainer;
         webServiceEndpointServant = servant;
-
-
     }
-
-
 
     public WebServiceEndpoint getEndpoint() {
         return endpoint;
@@ -345,7 +341,7 @@ public class EjbRuntimeEndpointInfo {
             aInfo = (AdapterInvocationInfo)prepareInvocation(true);
         } finally {
             if (aInfo != null) {
-                releaseImplementor(aInfo.getInv())       ;
+                releaseImplementor(aInfo.getInv());
             }    
         }
 
@@ -364,9 +360,7 @@ public class EjbRuntimeEndpointInfo {
      * manager preInvoke().
      */
     public void releaseImplementor(ComponentInvocation inv) {
-
         container.endInvocation(inv);
-
     }
 
     public EjbMessageDispatcher getMessageDispatcher() {
@@ -386,7 +380,5 @@ public class EjbRuntimeEndpointInfo {
         } else return AddressingFeature.Responses.ALL;
 
     }
-
-
 
 }

@@ -412,7 +412,7 @@ public class JaxRpcRICodegen extends ModuleContentLinker
             }
             //jaxrpcDD.setXMLValidationLevel(Deployer.getValidationLevel());
             jaxrpcDD.setXMLValidationLevel("none");
-            mappingDesc =  jaxrpcDD.read(is);
+            mappingDesc = JaxrpcMappingDescriptor.class.cast(jaxrpcDD.read(is));
         } finally {
             if( is != null ) {
                 is.close();

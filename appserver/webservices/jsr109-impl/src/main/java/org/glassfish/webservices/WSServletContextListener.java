@@ -294,14 +294,12 @@ public class WSServletContextListener implements ServletContextListener {
                 list = new ServletAdapterList();
                 servletContext.setAttribute("ADAPTER_LIST", list);
             }
-            adapter =
-                    list.createAdapter(endpoint.getName(), urlPattern, wsep);
+            adapter = ServletAdapter.class.cast(
+                    list.createAdapter(endpoint.getName(), urlPattern, wsep));
             container.addEndpoint(adapter);
         }
 
         registerEndpointUrlPattern(urlPattern, adapter);
-
-
     }
 
     private AddressingFeature.Responses getResponse(String s) {
@@ -310,7 +308,6 @@ public class WSServletContextListener implements ServletContextListener {
         } else {
             return AddressingFeature.Responses.ALL;
         }
-
     }
 
     private void registerEndpointUrlPattern(String urlPattern, Adapter info) {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,11 +47,8 @@ import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.api.EJBInvocation;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.invocation.ComponentInvocation;
-import javax.xml.rpc.handler.MessageContext;
 import com.sun.xml.rpc.spi.runtime.Handler;
 import com.sun.xml.rpc.spi.runtime.Tie;
-
-
 
 /**
  * Runtime dispatch information about one ejb web service
@@ -63,7 +60,6 @@ import com.sun.xml.rpc.spi.runtime.Tie;
  */
 public class Ejb2RuntimeEndpointInfo extends EjbRuntimeEndpointInfo {
 
-
     private Class tieClass;
 
     // Lazily instantiated and cached due to overhead
@@ -71,7 +67,6 @@ public class Ejb2RuntimeEndpointInfo extends EjbRuntimeEndpointInfo {
     private Tie tieInstance;
 
     private Object serverAuthConfig;
-
 
     public Ejb2RuntimeEndpointInfo(WebServiceEndpoint webServiceEndpoint,
                                   EjbEndpointFacade ejbContainer,
@@ -105,7 +100,7 @@ public class Ejb2RuntimeEndpointInfo extends EjbRuntimeEndpointInfo {
                 tieInstance.setTarget((Remote) webServiceEndpointServant);
             }
         }
-        ((EJBInvocation)inv).setWebServiceTie(tieInstance);
+        EJBInvocation.class.cast(inv).setWebServiceTie(tieInstance);
         aInfo.setHandler((Handler)tieInstance);
         return aInfo;
     }
@@ -116,10 +111,12 @@ public class Ejb2RuntimeEndpointInfo extends EjbRuntimeEndpointInfo {
      * getImplementor.  One important thing is to complete the invocation
      * manager preInvoke().
      */
+    @Override
     public void releaseImplementor(ComponentInvocation inv) {
         container.endInvocation(inv);
     }
 
+    @Override
     public EjbMessageDispatcher getMessageDispatcher() {
         // message dispatcher is stateless, no need to synchronize, worse
         // case, we'll create too many.

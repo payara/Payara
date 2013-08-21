@@ -61,20 +61,22 @@ import org.glassfish.ejb.api.EJBInvocation;
  */
 public class EjbContainerPostHandler extends GenericHandler {
 
-    private WsUtil wsUtil = new WsUtil();
+    private final WsUtil wsUtil = new WsUtil();
 
     public EjbContainerPostHandler() {}
 
+    @Override
     public QName[] getHeaders() {
         return new QName[0];
     }
 
+    @Override
     public boolean handleRequest(MessageContext context) {
         EJBInvocation inv = null;
         try {
             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
             InvocationManager invManager = wscImpl.getInvocationManager();
-            inv = (EJBInvocation) invManager.getCurrentInvocation();
+            inv = EJBInvocation.class.cast(invManager.getCurrentInvocation());
             Method webServiceMethodInPreHandler = inv.getWebServiceMethod();
             if( webServiceMethodInPreHandler != null ) {
                 // Now that application handlers have run, do another method

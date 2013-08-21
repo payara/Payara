@@ -63,21 +63,23 @@ import com.sun.xml.rpc.server.http.MessageContextProperties;
 public class ServletPreHandler extends GenericHandler {
 
     private static Logger logger = LogUtils.getLogger();
-    private WsUtil wsUtil = new WsUtil();
+    private final WsUtil wsUtil = new WsUtil();
 
     public ServletPreHandler() {}
 
+    @Override
     public QName[] getHeaders() {
         return new QName[0];
     }
 
+    @Override
     public boolean handleRequest(MessageContext context) {
         WebComponentInvocation inv = null;
 
         try {
             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
             InvocationManager invManager = wscImpl.getInvocationManager();
-            inv = (WebComponentInvocation) invManager.getCurrentInvocation();
+            inv = WebComponentInvocation.class.cast(invManager.getCurrentInvocation());
             com.sun.xml.rpc.spi.runtime.Tie tie =
                     (com.sun.xml.rpc.spi.runtime.Tie) inv.getWebServiceTie();
             if (tie == null) {

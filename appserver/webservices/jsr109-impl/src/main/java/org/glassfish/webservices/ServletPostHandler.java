@@ -68,21 +68,23 @@ import org.glassfish.api.invocation.InvocationManager;
 public class ServletPostHandler extends GenericHandler {
 
     private static final Logger logger = LogUtils.getLogger();
-    private WsUtil wsUtil = new WsUtil();
+    private final WsUtil wsUtil = new WsUtil();
 
     public ServletPostHandler() {}
 
+    @Override
     public QName[] getHeaders() {
         return new QName[0];
     }
 
+    @Override
     public boolean handleRequest(MessageContext context) {
         WebComponentInvocation inv = null;
 
         try {
             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
             InvocationManager invManager = wscImpl.getInvocationManager();
-            inv = (WebComponentInvocation) invManager.getCurrentInvocation();
+            inv = WebComponentInvocation.class.cast(invManager.getCurrentInvocation());
             Method webServiceMethodInPreHandler = inv.getWebServiceMethod();
             if( webServiceMethodInPreHandler != null ) {
                 // Now that application handlers have run, do another method
