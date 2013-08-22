@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,6 @@ import javax.management.ObjectName;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
-import com.sun.logging.LogDomains;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
@@ -98,7 +97,7 @@ import org.glassfish.config.support.TargetType;
 
 public class DeleteJMSDestination extends JMSDestination implements AdminCommand {
 
-        static Logger logger = LogDomains.getLogger(ActiveJmsResourceAdapter.class,LogDomains.ADMIN_LOGGER);
+        private final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
         final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(DeleteJMSDestination.class);
 
         @Param(name="destType", shortName="T", optional=false)
@@ -155,8 +154,10 @@ public class DeleteJMSDestination extends JMSDestination implements AdminCommand
 		String tgtName)
 		throws Exception {
 
-		logger.log(Level.FINE, "deleteJMSDestination ...");
-                MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "deleteJMSDestination ...");
+        }
+        MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
 
 		//MBeanServerConnection  mbsc = getMBeanServerConnection(tgtName);
 

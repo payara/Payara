@@ -208,83 +208,85 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
     private void merge(Set<ResourceDescriptor> jmscfdDescs, JMSConnectionFactoryDefinition defn) {
 
         for (ResourceDescriptor descriptor : jmscfdDescs) {
-            JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
-            if (desc.getName().equals(defn.name())) {
-
-                if (desc.getInterfaceName() == null) {
-                    desc.setInterfaceName(defn.interfaceName());
-                }
-
-                if (desc.getClassName() == null) {
-                    if (isValid(defn.className())) {
-                        desc.setClassName(defn.className());
+            if (descriptor instanceof JMSConnectionFactoryDefinitionDescriptor) {
+                JMSConnectionFactoryDefinitionDescriptor desc = (JMSConnectionFactoryDefinitionDescriptor)descriptor;
+                if (desc.getName().equals(defn.name())) {
+    
+                    if (desc.getInterfaceName() == null) {
+                        desc.setInterfaceName(defn.interfaceName());
                     }
-                }
-
-                if (desc.getDescription() == null) {
-                    if (isValid(defn.description())) {
-                        desc.setDescription(defn.description());
+    
+                    if (desc.getClassName() == null) {
+                        if (isValid(defn.className())) {
+                            desc.setClassName(defn.className());
+                        }
                     }
-                }
-
-                if (desc.getResourceAdapter() == null) {
-                    if (isValid(defn.resourceAdapter())) {
-                        desc.setResourceAdapter(defn.resourceAdapter());
+    
+                    if (desc.getDescription() == null) {
+                        if (isValid(defn.description())) {
+                            desc.setDescription(defn.description());
+                        }
                     }
-                }
-
-                if (desc.getUser() == null) {
-                    if (isValid(defn.user())) {
-                        desc.setUser(defn.user());
+    
+                    if (desc.getResourceAdapter() == null) {
+                        if (isValid(defn.resourceAdapter())) {
+                            desc.setResourceAdapter(defn.resourceAdapter());
+                        }
                     }
-                }
-
-                if (desc.getPassword() == null) {
-                    if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
-                        desc.setPassword(defn.password());
+    
+                    if (desc.getUser() == null) {
+                        if (isValid(defn.user())) {
+                            desc.setUser(defn.user());
+                        }
                     }
-                }
-
-                if (desc.getClientId() == null) {
-                    if (isValid(defn.clientId())) {
-                        desc.setClientId(defn.clientId());
+    
+                    if (desc.getPassword() == null) {
+                        if (defn.password() != null /*ALLOW EMPTY PASSWORDS && !defn.password().equals("")*/) {
+                            desc.setPassword(defn.password());
+                        }
                     }
-                }
-
-                if (!desc.isTransactionSet()) {
-                    desc.setTransactional(defn.transactional());
-                }
-
-                if (desc.getMaxPoolSize() < 0) {
-                    if (defn.maxPoolSize() >= 0) {
-                        desc.setMaxPoolSize(defn.maxPoolSize());
+    
+                    if (desc.getClientId() == null) {
+                        if (isValid(defn.clientId())) {
+                            desc.setClientId(defn.clientId());
+                        }
                     }
-                }
-
-                if (desc.getMinPoolSize() < 0) {
-                    if (defn.minPoolSize() >= 0) {
-                        desc.setMinPoolSize(defn.minPoolSize());
+    
+                    if (!desc.isTransactionSet()) {
+                        desc.setTransactional(defn.transactional());
                     }
-                }
-
-                Properties properties = desc.getProperties();
-                String[] defnProperties = defn.properties();
-
-                if (defnProperties.length > 0) {
-                    for (String property : defnProperties) {
-                        int index = property.indexOf("=");
-                        // found "=" and not at start or end of string
-                        if (index > 0 && index < property.length() - 1) {
-                            String name = property.substring(0, index).trim();
-                            String value = property.substring(index + 1).trim();
-                            //add to properties only when not already present
-                            if (properties.get(name) == null) {
-                                properties.put(name, value);
+    
+                    if (desc.getMaxPoolSize() < 0) {
+                        if (defn.maxPoolSize() >= 0) {
+                            desc.setMaxPoolSize(defn.maxPoolSize());
+                        }
+                    }
+    
+                    if (desc.getMinPoolSize() < 0) {
+                        if (defn.minPoolSize() >= 0) {
+                            desc.setMinPoolSize(defn.minPoolSize());
+                        }
+                    }
+    
+                    Properties properties = desc.getProperties();
+                    String[] defnProperties = defn.properties();
+    
+                    if (defnProperties.length > 0) {
+                        for (String property : defnProperties) {
+                            int index = property.indexOf("=");
+                            // found "=" and not at start or end of string
+                            if (index > 0 && index < property.length() - 1) {
+                                String name = property.substring(0, index).trim();
+                                String value = property.substring(index + 1).trim();
+                                //add to properties only when not already present
+                                if (properties.get(name) == null) {
+                                    properties.put(name, value);
+                                }
                             }
                         }
                     }
+                    break;
                 }
-                break;
             }
         }
 

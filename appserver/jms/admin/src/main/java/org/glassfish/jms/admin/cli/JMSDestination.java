@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,7 +42,6 @@ package org.glassfish.jms.admin.cli;
 
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.connectors.jms.system.ActiveJmsResourceAdapter;
 import com.sun.enterprise.connectors.jms.system.MQAddressList;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
@@ -72,8 +71,7 @@ import org.glassfish.config.support.CommandTarget;
 
 public abstract class JMSDestination {
 
-    
-    static Logger logger = LogDomains.getLogger(JMSDestination.class,LogDomains.ADMIN_LOGGER);
+    protected static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
 
     // JMS destination types
@@ -127,7 +125,7 @@ public abstract class JMSDestination {
                     try {
                             MQJMXConnectorInfo [] cInfo =
                                     getMQJMXConnectorInfos(target, config, serverContext, domain, connectorRuntime);
-                            if ((cInfo == null) || (cInfo.length < 1)) {
+                            if (cInfo.length < 1) {
                                     throw new Exception(
                             localStrings.getLocalString("admin.mbeans.rmb.error_obtaining_jms", "Error obtaining JMS Info"));
                             }
@@ -152,13 +150,17 @@ public abstract class JMSDestination {
                        (new java.security.PrivilegedExceptionAction() {
                         public java.lang.Object run() throws Exception {
                             if(ctarget == CommandTarget.CLUSTER || ctarget == CommandTarget.CLUSTERED_INSTANCE) {
-                                logger.log(Level.FINE, "Getting JMX connector for"  +
-                                                           " cluster target " + target);
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.log(Level.FINE, "Getting JMX connector for"  +
+                                                               " cluster target " + target);
+                                }
                                 return _getMQJMXConnectorInfoForCluster(target,
                                                              jmsService, mqRAClassName, serverContext);
                             } else {
-                                logger.log(Level.FINE, "Getting JMX connector for" +
-                                                      " standalone target " + target);
+                                if (logger.isLoggable(Level.FINE)) {
+                                    logger.log(Level.FINE, "Getting JMX connector for" +
+                                                          " standalone target " + target);
+                                }
                                 return _getMQJMXConnectorInfo(target,
                                                              jmsService, mqRAClassName, serverContext, config, domain);                    }
                         }
@@ -188,8 +190,10 @@ public abstract class JMSDestination {
                        connectionURL = getDefaultAddressList(jmsService).toString();
                    } else {
                        //Standalone server instance
-                       logger.log(Level.FINE,"not in DAS");
-                       logger.log(Level.FINE," _getMQJMXConnectorInfo - NOT in DAS");
+                       if (logger.isLoggable(Level.FINE)) {
+                           logger.log(Level.FINE,"not in DAS");
+                           logger.log(Level.FINE," _getMQJMXConnectorInfo - NOT in DAS");
+                       }
                        JmsService serverJmsService= getJmsServiceOfStandaloneServerInstance(targetName, config, domain);
                        //MQAddressList mqadList = new MQAddressList(serverJmsService, targetName);
                        mqadList.setJmsService(serverJmsService);
@@ -197,7 +201,9 @@ public abstract class JMSDestination {
                        mqadList.setup(false);
                        connectionURL = mqadList.toString();
                    }
-                   logger.log(Level.FINE, " _getMQJMXConnectorInfo - connection URL " + connectionURL);
+                   if (logger.isLoggable(Level.FINE)) {
+                       logger.log(Level.FINE, " _getMQJMXConnectorInfo - connection URL " + connectionURL);
+                   }
                    String adminUserName = null;
                 String adminPassword = null;
                 JmsHost jmsHost = mqadList.getDefaultJmsHost(jmsService);
@@ -205,7 +211,9 @@ public abstract class JMSDestination {
                     adminUserName = jmsHost.getAdminUserName();
                     adminPassword = JmsRaUtil.getUnAliasedPwd(jmsHost.getAdminPassword());
                 } else {
-                    logger.log(Level.FINE, " _getMQJMXConnectorInfo, using default jms admin user and password ");
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, " _getMQJMXConnectorInfo, using default jms admin user and password ");
+                    }
                 }
                 ResourceAdapter raInstance = getConfiguredRA(mqRAClassName,
                             connectionURL, adminUserName, adminPassword);
@@ -220,8 +228,10 @@ public abstract class JMSDestination {
                            jmxConnectorEnv = (Map<String,?>)m.invoke(raInstance, new Object[]{});
                        }
                    }
-                   logger.log(Level.FINE, " _getMQJMXConnectorInfo - jmxServiceURLList " +  jmxServiceURLList);
-                   logger.log(Level.FINE, " _getMQJMXConnectorInfo - jmxConnectorEnv " + jmxConnectorEnv);
+                   if (logger.isLoggable(Level.FINE)) {
+                       logger.log(Level.FINE, " _getMQJMXConnectorInfo - jmxServiceURLList " +  jmxServiceURLList);
+                       logger.log(Level.FINE, " _getMQJMXConnectorInfo - jmxConnectorEnv " + jmxConnectorEnv);
+                   }
                    jmxServiceURL = getFirstJMXServiceURL(jmxServiceURLList);
 
                    MQJMXConnectorInfo mqInfo = new MQJMXConnectorInfo(targetName,
@@ -284,7 +294,9 @@ public abstract class JMSDestination {
                   adminUserName = jmsHost.getAdminUserName();
                   adminPassword = JmsRaUtil.getUnAliasedPwd(jmsHost.getAdminPassword());
               } else {
-                  logger.log(Level.FINE, " _getMQJMXConnectorInfo, using default jms admin user and password ");
+                  if (logger.isLoggable(Level.FINE)) {
+                      logger.log(Level.FINE, " _getMQJMXConnectorInfo, using default jms admin user and password ");
+                  }
               }
                raInstance = getConfiguredRA(mqRAClassName, connectionUrl,
                                            adminUserName, adminPassword);
@@ -395,30 +407,40 @@ public abstract class JMSDestination {
                            "set" + ActiveJmsResourceAdapter.CONNECTION_URL,
                             new Class[] { String.class});
             setConnectionURL.invoke(raInstance, new Object[] {connectionURL});
-            logger.log(Level.FINE, " getConfiguredRA - set connectionURL as " + connectionURL);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, " getConfiguredRA - set connectionURL as " + connectionURL);
+            }
             if (adminuser != null) {
                  Method setAdminUser = mqRAclassname.getMethod(
                        "set" + ActiveJmsResourceAdapter.ADMINUSERNAME,
                         new Class[] { String.class});
              setAdminUser.invoke(raInstance, new Object[] {adminuser});
-              logger.log(Level.FINE, " getConfiguredRA - set admin user as " + adminuser);
+             if (logger.isLoggable(Level.FINE)) {
+                 logger.log(Level.FINE, " getConfiguredRA - set admin user as " + adminuser);
+             }
           }
           if (adminpasswd != null) {
               Method setAdminPasswd = mqRAclassname.getMethod(
                            "set" + ActiveJmsResourceAdapter.ADMINPASSWORD,
                                  new Class[] { String.class});
               setAdminPasswd.invoke(raInstance, new Object[] {adminpasswd});
-              logger.log(Level.FINE, " getConfiguredRA - set admin passwd as *****  ");
+              if (logger.isLoggable(Level.FINE)) {
+                  logger.log(Level.FINE, " getConfiguredRA - set admin passwd as *****  ");
+              }
           }
              return raInstance;
         }
 
             private JmsService getJmsServiceOfStandaloneServerInstance(String target, Config cfg, Domain domain) throws Exception {
-                logger.log(Level.FINE, "getJMSServiceOfSI LL " + target);
-                //ConfigContext con = com.sun.enterprise.admin.server.core.AdminService.getAdminService().getAdminContext().getAdminConfigContext();
-                logger.log(Level.FINE, "cfg " + cfg);
-                JmsService jmsService     = cfg.getExtensionByType(JmsService.class);
-                logger.log(Level.FINE, "jmsservice " + jmsService);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "getJMSServiceOfSI LL " + target);
+                    //ConfigContext con = com.sun.enterprise.admin.server.core.AdminService.getAdminService().getAdminContext().getAdminConfigContext();
+                    logger.log(Level.FINE, "cfg " + cfg);
+                }
+                JmsService jmsService = cfg.getExtensionByType(JmsService.class);
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.log(Level.FINE, "jmsservice " + jmsService);
+                }
                 return jmsService;
             }
 

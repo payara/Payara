@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,12 @@
 
 package com.sun.enterprise.connectors.jms.system;
 
-import java.util.logging.Logger;
-import com.sun.logging.LogDomains;
-import com.sun.enterprise.util.i18n.StringManager;
-
-
 /**
  * Represents one of the MQ address list elements.
  *
  * @author Binod P.G
  */
 public class MQUrl {
-
-    static Logger logger = LogDomains.getLogger(MQUrl.class, LogDomains.JMS_LOGGER);
     private String host = null;
     private String port = null;
     private String scheme = "mq";

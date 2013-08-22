@@ -208,55 +208,57 @@ public class JMSDestinationDefinitionHandler extends AbstractResourceHandler {
     private void merge(Set<ResourceDescriptor> jmsddDescs, JMSDestinationDefinition defn) {
 
         for (ResourceDescriptor descriptor : jmsddDescs) {
+            if (descriptor instanceof JMSDestinationDefinitionDescriptor) {
             JMSDestinationDefinitionDescriptor desc = (JMSDestinationDefinitionDescriptor)descriptor;
-            if (desc.getName().equals(defn.name())) {
-
-                if (desc.getInterfaceName() == null) {
-                    desc.setInterfaceName(defn.interfaceName());
-                }
-
-                if (desc.getClassName() == null) {
-                    if (isValid(defn.className())) {
-                        desc.setClassName(defn.className());
+                if (desc.getName().equals(defn.name())) {
+    
+                    if (desc.getInterfaceName() == null) {
+                        desc.setInterfaceName(defn.interfaceName());
                     }
-                }
-
-                if (desc.getDescription() == null) {
-                    if (isValid(defn.description())) {
-                        desc.setDescription(defn.description());
+    
+                    if (desc.getClassName() == null) {
+                        if (isValid(defn.className())) {
+                            desc.setClassName(defn.className());
+                        }
                     }
-                }
-
-                if (desc.getResourceAdapter() == null) {
-                    if (isValid(defn.resourceAdapter())) {
-                        desc.setResourceAdapter(defn.resourceAdapter());
+    
+                    if (desc.getDescription() == null) {
+                        if (isValid(defn.description())) {
+                            desc.setDescription(defn.description());
+                        }
                     }
-                }
-
-                if (desc.getDestinationName() == null) {
-                    if (isValid(defn.destinationName())) {
-                        desc.setDestinationName(defn.destinationName());
+    
+                    if (desc.getResourceAdapter() == null) {
+                        if (isValid(defn.resourceAdapter())) {
+                            desc.setResourceAdapter(defn.resourceAdapter());
+                        }
                     }
-                }
-
-                Properties properties = desc.getProperties();
-                String[] defnProperties = defn.properties();
-
-                if (defnProperties.length > 0) {
-                    for (String property : defnProperties) {
-                        int index = property.indexOf("=");
-                        // found "=" and not at start or end of string
-                        if (index > 0 && index < property.length() - 1) {
-                            String name = property.substring(0, index).trim();
-                            String value = property.substring(index + 1).trim();
-                            //add to properties only when not already present
-                            if (properties.get(name) == null) {
-                                properties.put(name, value);
+    
+                    if (desc.getDestinationName() == null) {
+                        if (isValid(defn.destinationName())) {
+                            desc.setDestinationName(defn.destinationName());
+                        }
+                    }
+    
+                    Properties properties = desc.getProperties();
+                    String[] defnProperties = defn.properties();
+    
+                    if (defnProperties.length > 0) {
+                        for (String property : defnProperties) {
+                            int index = property.indexOf("=");
+                            // found "=" and not at start or end of string
+                            if (index > 0 && index < property.length() - 1) {
+                                String name = property.substring(0, index).trim();
+                                String value = property.substring(index + 1).trim();
+                                //add to properties only when not already present
+                                if (properties.get(name) == null) {
+                                    properties.put(name, value);
+                                }
                             }
                         }
                     }
+                    break;
                 }
-                break;
             }
         }
 

@@ -41,7 +41,6 @@
 package org.glassfish.jms.admin.cli;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 
 import javax.management.remote.JMXConnector;
@@ -67,7 +66,7 @@ public class MQJMXConnectorInfo {
     private String asInstanceName = null;
     private String brokerInstanceName = null;
     private String brokerType = null;
-    static Logger _logger = LogDomains.getLogger(MQJMXConnectorInfo.class, LogDomains.JMS_LOGGER);
+    private static final Logger _logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(MQJMXConnectorInfo.class);
     private JMXConnector connector = null;
 
@@ -79,12 +78,12 @@ public class MQJMXConnectorInfo {
         this.jmxServiceURL = jmxServiceURL;
         this.brokerType = brokerType;
         this.jmxConnectorEnv = jmxConnectorEnv;
-       // if (_logger.isLoggable(Level.FINE)) {
+        if (_logger.isLoggable(Level.FINE)) {
             _logger.log(Level.FINE, "MQJMXConnectorInfo : brokerInstanceName " +
                             brokerInstanceName + " ASInstanceName " + asInstanceName +
                             " jmxServiceURL "  + jmxServiceURL +  " BrokerType " + brokerType
                             + " jmxConnectorEnv " + jmxConnectorEnv);
-        //}
+        }
     }
 
     public String getBrokerInstanceName(){
@@ -100,7 +99,9 @@ public class MQJMXConnectorInfo {
     }
 
     public String getJMXServiceURL(){
-        _logger.log(Level.FINE,"MQJMXConnectorInfo :: JMXServiceURL is " + this.jmxServiceURL);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE,"MQJMXConnectorInfo :: JMXServiceURL is " + this.jmxServiceURL);
+        }
         return this.jmxServiceURL;
     }
 

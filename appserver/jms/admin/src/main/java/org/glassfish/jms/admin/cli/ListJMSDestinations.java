@@ -69,7 +69,6 @@ import javax.management.ObjectName;
 import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.*;
 
 /**
@@ -100,7 +99,7 @@ import org.glassfish.api.admin.*;
 })
 public class ListJMSDestinations extends JMSDestination implements AdminCommand {
 
-        static Logger logger = LogDomains.getLogger(ListJMSDestinations.class,LogDomains.ADMIN_LOGGER);
+        private static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
         final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(CreateJMSDestination.class);
 
         @Param(name="destType", optional=true)
@@ -168,8 +167,10 @@ public class ListJMSDestinations extends JMSDestination implements AdminCommand 
     public List listJMSDestinations(String tgtName, String destType)
         throws Exception {
 
-        logger.log(Level.FINE, "listJMSDestination ...");
-                MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, "listJMSDestination ...");
+        }
+        MQJMXConnectorInfo mqInfo = getMQJMXConnectorInfo(target, config, serverContext, domain, connectorRuntime);
 
         //MBeanServerConnection  mbsc = getMBeanServerConnection(tgtName);
         try {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,6 @@ import com.sun.enterprise.deployment.ConnectorConfigProperty;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.zip.ZipFile;
 import com.sun.enterprise.util.zip.ZipFileException;
-import com.sun.logging.LogDomains;
 import org.glassfish.ejb.config.MdbContainer;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.RelativePathResolver;
@@ -72,7 +71,7 @@ import org.jvnet.hk2.config.types.Property;
  */
 public class JmsRaUtil {
 
-    private final String MQ_RAR = "imqjmsra.rar";
+    private final static String MQ_RAR = "imqjmsra.rar";
 
     private final String SYSTEM_APP_DIR =
         "lib" + File.separator + "install" + File.separator + "applications";
@@ -82,7 +81,7 @@ public class JmsRaUtil {
         + File.separator + "MANIFEST.MF";
 
     // Manifest version tag.
-    private final String MANIFEST_TAG = "Implementation-Version";
+    private final static String MANIFEST_TAG = "Implementation-Version";
 
     private static final String propName_reconnect_delay_in_seconds =
         "reconnect-delay-in-seconds";
@@ -108,8 +107,8 @@ public class JmsRaUtil {
     JmsService js = null;
     MQAddressList list = null;
 
-    static final Logger _mdblogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.MDB_LOGGER);
-    static final Logger _rarlogger = LogDomains.getLogger(JmsRaUtil.class, LogDomains.RSR_LOGGER);
+    private static final Logger _mdblogger = Logger.getLogger("javax.enterprise.system.container.ejb.mdb");
+    private static final Logger _rarlogger = Logger.getLogger("javax.enterprise.resource.resourceadapter");
 
     public JmsRaUtil() throws ConnectorRuntimeException {
         this(null);

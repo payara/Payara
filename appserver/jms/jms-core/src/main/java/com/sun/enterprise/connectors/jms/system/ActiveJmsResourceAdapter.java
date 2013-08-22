@@ -106,7 +106,6 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.logging.LogDomains;
 import org.glassfish.admin.mbeanserver.JMXStartupService;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -123,6 +122,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.grizzly.LazyServiceInitializer;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.server.ServerEnvironmentImpl;
 
@@ -152,7 +152,10 @@ import org.jvnet.hk2.config.types.Property;
 @Named(ActiveJmsResourceAdapter.JMS_SERVICE)
 public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl implements LazyServiceInitializer, PostConstruct {
 
-    static Logger _logger = LogDomains.getLogger(ActiveJmsResourceAdapter.class,  LogDomains.JMS_LOGGER);
+    @LoggerInfo(subsystem="JMS", description="Main JMS Logger", publish=true)
+    public static final String JMS_MAIN_LOGGER = "javax.enterprise.resource.jms";
+
+    private static final Logger _logger = Logger.getLogger(JMS_MAIN_LOGGER);
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
     private static final String MQ_PASS_FILE_PREFIX = "asmq";
@@ -293,7 +296,6 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private Properties dsProps = null;
     private String brokerInstanceName = null;
 
-    private File mqPassFile = null;
     private boolean grizzlyListenerInit;
     private Set<String> grizzlyListeners = new HashSet<String>();
 
@@ -335,13 +337,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      */
     public ActiveJmsResourceAdapter() {
         super();
-        //if(getJmsService() == null)return;
-
-        //Now that the RA has been started, delete the temp passfile
-        if (mqPassFile != null) {
-            mqPassFile.delete();
-        }
     }
+
     public void postConstruct()
     {
             /*
@@ -364,7 +361,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
            }
            catch (Throwable t) {
                //t.printStackTrace();
+               if (_logger.isLoggable(Level.FINE)) {
                    _logger.log(Level.FINE,"Cannot upgrade jmsra"+ t.getMessage());
+                }
            }
     }
 
@@ -420,7 +419,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                     grizzlyService.removeNetworkProxy(listenerName);
                                     grizzlyListeners.remove(listenerName);
                                 } catch (Exception e) {
-                                    _logger.log(Level.WARNING, "Failed to shut down Grizzly NetworkListener " + listenerName, e);
+                                    if (_logger.isLoggable(Level.WARNING)) {
+                                        _logger.log(Level.WARNING, "Failed to shut down Grizzly NetworkListener " + listenerName, e);
+                                    }
                                 }
                             }
                         }
@@ -429,7 +430,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 grizzlyListenerInit = false;
             }
         } catch (Throwable th) {
-            _logger.log(Level.WARNING, "Error occurs when shutting down JMSRA: " + th.getMessage());
+            if (_logger.isLoggable(Level.WARNING)) {
+                _logger.log(Level.WARNING, "Error occurs when shutting down JMSRA: " + th.getMessage());
+            }
             throw new RuntimeException(th);
         }
         super.destroy();
@@ -564,7 +567,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (isServer() && !isSystemRar(moduleName_)) {
             createAllConnectorResources();
         }
-        _logger.log(Level.FINE, "Completed Active Resource adapter setup", moduleName_);
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "Completed Active Resource adapter setup", moduleName_);
+        }
     }
 
     /*
@@ -590,7 +595,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
           AvailabilityService as = server.getConfig().getAvailabilityService();
           if (as == null) {
-            logFine("Availability Service is null. Not setting AvailabilityProperties.");
+            if (_logger.isLoggable(Level.FINE))
+                logFine("Availability Service is null. Not setting AvailabilityProperties.");
             return;
           }
 
@@ -601,7 +607,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
           //jmsService.getUseMasterBroker() != null ? Boolean.valueOf(jmsService.getUseMasterBroker()) :true;
           boolean isJmsAvailabilityEnabled = this.isJMSAvailabilityOn(as);
 
-          logFine("Setting AvailabilityProperties .. ");
+          if (_logger.isLoggable(Level.FINE))
+              logFine("Setting AvailabilityProperties .. ");
           if (!useMasterBroker || isJmsAvailabilityEnabled) {
             // For conventional cluster of peer brokers and Enhanced Broker Cluster.
             ConnectorDescriptor cd = getDescriptor();
@@ -773,7 +780,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     } else if (ClusterMode.ENHANCED == clusterMode) {
       prefix = ENHANCED_CLUSTER_DB_PREFIX;
     } else {
-      logFine("Unknown cluster mode: " + clusterMode.name() + ", imq DB properties are not set.");
+      if (_logger.isLoggable(Level.FINE))
+          logFine("Unknown cluster mode: " + clusterMode.name() + ", imq DB properties are not set.");
       return;
     }
     if(dbProps == null) dbProps = new Properties();
@@ -852,21 +860,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     protected void postRAConfiguration() throws ConnectorRuntimeException {
         //Set all non-supported javabean property types in the JavaBean
         try {
-		//if(isClustered()){
-		if(dbProps == null)
-			dbProps = new Properties();
-		 dbProps.setProperty("imq.cluster.dynamicChangeMasterBrokerEnabled", "true");			
-	//}
+            if(dbProps == null)
+                dbProps = new Properties();
+            dbProps.setProperty("imq.cluster.dynamicChangeMasterBrokerEnabled", "true");
 
-            if (dbProps != null) {
-                Method mthds = this.resourceadapter_.getClass().getMethod("setBrokerProps", Properties.class);
-            	if(mthds != null){        
-	    		logFine("Setting property:" + DB_HADB_PROPS
-                                        + "=" + dbProps.toString());
-                        mthds.invoke(this.resourceadapter_,
-                                        new Object[]{dbProps});
-               		 }
-            }
+            Method mthds = this.resourceadapter_.getClass().getMethod("setBrokerProps", Properties.class);
+            if (_logger.isLoggable(Level.FINE))
+                logFine("Setting property:" + DB_HADB_PROPS + "=" + dbProps.toString());
+            mthds.invoke(this.resourceadapter_, new Object[]{dbProps});
         } catch (Exception e) {
             ConnectorRuntimeException crex = new ConnectorRuntimeException(
                             e.getMessage());
@@ -932,7 +933,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         //for EE to get port, host, adminusername, adminpassword.
         //JmsService jmsService = ServerBeansFactory.getJmsServiceBean(ctx);
         String defaultJmsHost = getJmsService().getDefaultJmsHost();
-        logFine("Default JMS Host :: " + defaultJmsHost);
+        if (_logger.isLoggable(Level.FINE))
+            logFine("Default JMS Host :: " + defaultJmsHost);
 
         JmsHost jmsHost = getJmsHost();
 
@@ -972,7 +974,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             }
            }
 
-        logFine("Broker UserName = " + username);
+            if (_logger.isLoggable(Level.FINE))
+                logFine("Broker UserName = " + username);
             createMQVarDirectoryIfNecessary();
             String brokerVarDir = getMQVarDir();
 
@@ -1147,9 +1150,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             domainName = serverenv.getDomainName();//ServerManager.instance().getDomainName();
         }
         String s = getBrokerInstanceName(domainName, asInstance, js);
-        logFine("Got broker Instancename as " + s);
+        if (_logger.isLoggable(Level.FINE))
+            logFine("Got broker Instancename as " + s);
         String converted = convertStringToValidMQIdentifier(s);
-        logFine("converted instance name " + converted);
+        if (_logger.isLoggable(Level.FINE))
+            logFine("converted instance name " + converted);
         return converted;
     }
 
@@ -1219,7 +1224,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
          // It is necessary for windows.
          java.io.File instanceDir = new java.io.File(mqInstanceDir);
          if (!(instanceDir.exists() && instanceDir.isDirectory())) {
-             instanceDir.mkdirs();
+             if (!instanceDir.mkdirs()) {
+                 if (_logger.isLoggable(Level.FINE)) {
+                     _logger.log(Level.FINE, "Failed to create dir: " + instanceDir);
+                 }
+             }
          }
     }
 
@@ -1233,15 +1242,17 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
     private String getBrokerLibDir() {
         String brokerLibDir = java.lang.System.getProperty(SystemPropertyConstants.IMQ_LIB_PROPERTY);
-        logFine("broker lib dir from system property " + brokerLibDir);
-    return brokerLibDir;
+        if (_logger.isLoggable(Level.FINE))
+            logFine("broker lib dir from system property " + brokerLibDir);
+        return brokerLibDir;
    }
 
     private String getBrokerHomeDir() {
         // If the property was not specified, then look for the
         // imqRoot as defined by the com.sun.aas.imqRoot property
         String brokerHomeDir = java.lang.System.getProperty(SystemPropertyConstants.IMQ_BIN_PROPERTY);
-        logFine("broker home dir from system property " + brokerHomeDir);
+        if (_logger.isLoggable(Level.FINE))
+            logFine("broker home dir from system property " + brokerHomeDir);
 
         // Finally if all else fails (though this should never happen)
         // look for IMQ relative to the installation directory
@@ -1259,8 +1270,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             brokerHomeDir = brokerHomeDir + java.io.File.separator + ".." ;
         }
 
-        logFine("Broker Home Directory :: " + brokerHomeDir);
-        logFine("broker home dir finally" + brokerHomeDir);
+        if (_logger.isLoggable(Level.FINE)) {
+            logFine("Broker Home Directory :: " + brokerHomeDir);
+            logFine("broker home dir finally" + brokerHomeDir);
+        }
         return brokerHomeDir;
 
     }
@@ -1287,17 +1300,19 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 ConnectorConfigProperty  envProp = new ConnectorConfigProperty
                     (GROUPNAME, val, "Group Name", "java.lang.String");
                 setProperty(cd, envProp);
-                logFine("CLUSTERED instance - setting groupname as" + val);
+                if (_logger.isLoggable(Level.FINE))
+                    logFine("CLUSTERED instance - setting groupname as" + val);
 
-		    boolean inClusteredContainer = false;
-		    if(jmsService.getType().equals(EMBEDDED) || jmsService.getType().equals(LOCAL))
-			    inClusteredContainer = true;
+            boolean inClusteredContainer = false;
+            if(jmsService.getType().equals(EMBEDDED) || jmsService.getType().equals(LOCAL))
+                inClusteredContainer = true;
 
             ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty
               (CLUSTERCONTAINER, Boolean.toString(inClusteredContainer), "Cluster container flag",
                 "java.lang.Boolean");
             setProperty(cd, envProp1);
-            logFine("CLUSTERED instance - setting inclusteredcontainer as" + inClusteredContainer);
+            if (_logger.isLoggable(Level.FINE))
+                logFine("CLUSTERED instance - setting inclusteredcontainer as" + inClusteredContainer);
            if (jmsService.getType().equals(REMOTE)) {
 
             /*
@@ -1314,13 +1329,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         (MASTERBROKER,masterbrkr , "Master  Broker",
                     "java.lang.String");
                     setProperty(cd, envProp2);
-                    logFine("MASTERBROKER - setting master broker val"
-                    + masterbrkr);
+                    if (_logger.isLoggable(Level.FINE))
+                        logFine("MASTERBROKER - setting master broker val" + masterbrkr);
                }
         }
             } else {
-                logFine("Instance not Clustered and hence not setting " +
-                        "groupname");
+                if (_logger.isLoggable(Level.FINE))
+                    logFine("Instance not Clustered and hence not setting " + "groupname");
             }
         } catch (Exception e) {
             ConnectorRuntimeException crex = new ConnectorRuntimeException(e.getMessage());
@@ -1351,7 +1366,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @throws ConnectorRuntimeException
      */
     private void setAppClientRABeanProperties() throws ConnectorRuntimeException {
-        logFine("In Appclient container!!!");
+        if (_logger.isLoggable(Level.FINE))
+            logFine("In Appclient container!!!");
         ConnectorDescriptor cd = super.getDescriptor();
         ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
                         BROKERTYPE, REMOTE, "Broker Type", "java.lang.String");
@@ -1576,12 +1592,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private void setConnectionURL(JmsService jmsService, MQAddressList urlList) {
         ConnectorDescriptor cd = super.getDescriptor();
         String val = urlList.toString();
-        if (val != null) {
-            _logger.log(Level.INFO, "jms.connection.url", val);
-            ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
-               CONNECTION_URL, val, val, "java.lang.String");
-            setProperty(cd, envProp1);
-        }
+        _logger.log(Level.INFO, "jms.connection.url", val);
+        ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
+           CONNECTION_URL, val, val, "java.lang.String");
+        setProperty(cd, envProp1);
     }
 
     private void setJmsServiceProperties(JmsService service) throws
@@ -1648,9 +1662,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             ConnectorConfigProperty  envProp8 = new ConnectorConfigProperty  (
                 RMIREGISTRYPORT, val, val, "java.lang.Integer");
             setProperty(cd, envProp8);
-            _logger.log(Level.FINE, "RMI registry port set as "+ val);
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "RMI registry port set as "+ val);
+            }
         } else {
-            _logger.log(Level.WARNING, "invalid.rmi.registy.port");
+            if (_logger.isLoggable(Level.WARNING)) {
+                _logger.log(Level.WARNING, "invalid.rmi.registy.port");
+            }
         }
     }
 
@@ -1696,9 +1714,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             try {
                 configuredPort = getConfiguredRmiRegistryPort();
             } catch (Exception ex) {
-                _logger.log(Level.WARNING, ex.getLocalizedMessage());
-                _logger.log(Level.FINE, "Exception while getting configured rmi " +
-                                                 "registry port", ex);
+                if (_logger.isLoggable(Level.WARNING)) {
+                    _logger.log(Level.WARNING, ex.getLocalizedMessage());
+                }
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE, "Exception while getting configured rmi " +
+                                                     "registry port", ex);
+                }
             }
             if (configuredPort != null) {
                 return configuredPort;
@@ -1758,7 +1780,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private boolean isASRmiRegistryPortAvailable(JmsRaUtil jmsraUtil) {
-         logFine("isASRmiRegistryPortAvailable - JMSService Type:" + jmsraUtil.getJMSServiceType());
+         if (_logger.isLoggable(Level.FINE))
+             logFine("isASRmiRegistryPortAvailable - JMSService Type:" + jmsraUtil.getJMSServiceType());
          //If JMSServiceType is LOCAL or REMOTE, then we need not ask the MQ RA to use the
          //AS RMI Registry. So the check below is not necessary.
          if (jmsraUtil.getJMSServiceType().equals(REMOTE)
@@ -1800,7 +1823,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             //return configured port only if RMI registry is available
             return true;
         } catch (Exception e) {
-            _logger.fine("Failed to detect JMX RMI Registry: " + e.getMessage());
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.fine("Failed to detect JMX RMI Registry: " + e.getMessage());
+            }
             return false;
         }
     }
@@ -1835,77 +1860,84 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
    public ManagedConnectionFactory [] createManagedConnectionFactories
         (com.sun.enterprise.connectors.ConnectorConnectionPool cpr,
          ClassLoader loader) {
+        if (_logger.isLoggable(Level.FINE)) {
            _logger.log(Level.FINE,"RECOVERY : Entering createMCFS in AJMSRA");
+        }
         ArrayList mcfs = new ArrayList();
-            if (getAddressListCount() < 2) {
-        mcfs.add(createManagedConnectionFactory(cpr,loader));
-        _logger.log(Level.FINE,"Brokers are not clustered,So doing normal recovery");
+        if (getAddressListCount() < 2) {
+            mcfs.add(createManagedConnectionFactory(cpr,loader));
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE,"Brokers are not clustered,So doing normal recovery");
+            }
         } else {
-        String addlist = null;
-           Set s = cpr.getConnectorDescriptorInfo().getMCFConfigProperties();
+            String addlist = null;
+            Set s = cpr.getConnectorDescriptorInfo().getMCFConfigProperties();
             Iterator tmpit = s.iterator();
             while (tmpit.hasNext()) {
                 ConnectorConfigProperty  prop = (ConnectorConfigProperty ) tmpit.next();
                 String propName = prop.getName();
                 if (propName.equalsIgnoreCase("imqAddressList") || propName.equalsIgnoreCase("Addresslist")) {
-            addlist = prop.getValue();
-        }
-        }
-        StringTokenizer tokenizer = null;
-        if ((addlist == null)
-        || (addlist.trim().equalsIgnoreCase("localhost"))) {
-            tokenizer = new StringTokenizer(addressList, ",");
-        }else {
+                    addlist = prop.getValue();
+                }
+            }
+            StringTokenizer tokenizer = null;
+            if ((addlist == null) || (addlist.trim().equalsIgnoreCase("localhost"))) {
+                tokenizer = new StringTokenizer(addressList, ",");
+            }else {
                 tokenizer = new StringTokenizer(addlist, ",");
-        }
-       _logger.log(Level.FINE, "No of addresses found " +
+            }
+            _logger.log(Level.FINE, "No of addresses found " +
             tokenizer.countTokens());
-        while (tokenizer.hasMoreTokens()) {
-        String brokerurl = tokenizer.nextToken();
-            ManagedConnectionFactory mcf = super.
-                    createManagedConnectionFactory(cpr, loader);
+            while (tokenizer.hasMoreTokens()) {
+                String brokerurl = tokenizer.nextToken();
+                ManagedConnectionFactory mcf = super.createManagedConnectionFactory(cpr, loader);
                 Iterator it = s.iterator();
                 while (it.hasNext()) {
                     ConnectorConfigProperty  prop = (ConnectorConfigProperty ) it.next();
                     String propName = prop.getName();
-         String propValue = prop.getValue();
-                 if (propName.startsWith("imq") && propValue != "") {
-                  try {
-                     Method meth = mcf.getClass().getMethod
-                           (SETTER, new  Class[] {java.lang.String.class,
-                              java.lang.String.class});
-                    if (propName.trim().equalsIgnoreCase("imqAddressList")){
-                             meth.invoke(mcf, new Object[] {prop.getName(),brokerurl});
-            } else {
-                             meth.invoke(mcf, new Object[] {prop.getName(),prop.getValueObject()});
-            }
-                   } catch (NoSuchMethodException ex) {
-                       _logger.log(Level.WARNING, "no.such.method",
-                           new Object[] {SETTER, mcf.getClass().getName()});
-                   } catch (Exception ex) {
-                       _logger.log(Level.SEVERE, "error.execute.method",
-                           new Object[] {SETTER, mcf.getClass().getName()});
-           }
-        }
-              }
-              ConnectorConfigProperty  addressProp3 = new ConnectorConfigProperty  (ADDRESSLIST, brokerurl,"Address List",
+                    String propValue = prop.getValue();
+                    if (propName.startsWith("imq") && !"".equals(propValue)) {
+                        try {
+                            Method meth = mcf.getClass().getMethod
+                                    (SETTER, new  Class[] {java.lang.String.class,
+                                     java.lang.String.class});
+                            if (propName.trim().equalsIgnoreCase("imqAddressList")){
+                                meth.invoke(mcf, new Object[] {prop.getName(),brokerurl});
+                            } else {
+                                meth.invoke(mcf, new Object[] {prop.getName(),prop.getValueObject()});
+                            }
+                        } catch (NoSuchMethodException ex) {
+                            if (_logger.isLoggable(Level.WARNING)) {
+                                _logger.log(Level.WARNING, "no.such.method",
+                                    new Object[] {SETTER, mcf.getClass().getName()});
+                            }
+                        } catch (Exception ex) {
+                            if (_logger.isLoggable(Level.SEVERE)) {
+                                _logger.log(Level.SEVERE, "error.execute.method",
+                                new Object[] {SETTER, mcf.getClass().getName()});
+                            }
+                        }
+                    }
+                }
+                ConnectorConfigProperty  addressProp3 = new ConnectorConfigProperty  (ADDRESSLIST, brokerurl,"Address List",
                             "java.lang.String");
-            //todo: need to remove log statement
-          _logger.log(Level.INFO, "addresslist", brokerurl);
+                //todo: need to remove log statement
+                if (_logger.isLoggable(Level.INFO)) {
+                    _logger.log(Level.INFO, "addresslist", brokerurl);
+                }
 
-          HashSet addressProp = new HashSet();
-        addressProp.add(addressProp3);
-          SetMethodAction setMethodAction =
-            new SetMethodAction(mcf,addressProp);
-          try {
+                HashSet addressProp = new HashSet();
+                addressProp.add(addressProp3);
+                SetMethodAction setMethodAction = new SetMethodAction(mcf,addressProp);
+                try {
                      setMethodAction.run();
-        } catch (Exception e) {
-            ;
+                } catch (Exception e) {
+                    ;
+                }
+                mcfs.add(mcf);
+            }
         }
-        mcfs.add(mcf);
-    }
-    }
-    return (ManagedConnectionFactory [])mcfs.toArray(new ManagedConnectionFactory[0]);
+        return (ManagedConnectionFactory [])mcfs.toArray(new ManagedConnectionFactory[mcfs.size()]);
     }
 
      protected ManagedConnectionFactory instantiateMCF(final String mcfClass, final ClassLoader loader)
@@ -1949,7 +1981,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
                 // If the property has started with imq, then it should go to
                 // setProperty(String,String) method.
-                if (propName.startsWith("imq") && prop.getValue() != "") {
+                if (propName.startsWith("imq") && !"".equals(prop.getValue())) {
                     try {
                         Method meth = mcf.getClass().getMethod
                         (SETTER, new  Class[] {java.lang.String.class,
@@ -1957,11 +1989,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         meth.invoke(mcf, new Object[] {prop.getName(),
                                                         prop.getValueObject()});
                     } catch (NoSuchMethodException ex) {
-                        _logger.log(Level.WARNING, "no.such.method",
-                        new Object[] {SETTER, mcf.getClass().getName()});
+                        if (_logger.isLoggable(Level.WARNING)) {
+                            _logger.log(Level.WARNING, "no.such.method",
+                            new Object[] {SETTER, mcf.getClass().getName()});
+                        }
                     } catch (Exception ex) {
-                        _logger.log(Level.SEVERE, "error.execute.method",
-                        new Object[] {SETTER, mcf.getClass().getName()});
+                        if (_logger.isLoggable(Level.SEVERE)) {
+                            _logger.log(Level.SEVERE, "error.execute.method",
+                            new Object[] {SETTER, mcf.getClass().getName()});
+                        }
                     }
             }
             }
@@ -1992,10 +2028,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             }catch (Exception Ex) {
              final String mcfClass = cpr.getConnectorDescriptorInfo().
                 getManagedConnectionFactoryClass();
-            _logger.log(Level.WARNING,"rardeployment.mcfcreation_error",
-                    new Object[]{mcfClass, Ex.getMessage()});
-            _logger.log(Level.FINE,"rardeployment.mcfcreation_error",
-                    Ex);
+                if (_logger.isLoggable(Level.WARNING)) {
+                    _logger.log(Level.WARNING,"rardeployment.mcfcreation_error",
+                            new Object[]{mcfClass, Ex.getMessage()});
+                }
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.log(Level.FINE,"rardeployment.mcfcreation_error", Ex);
+                }
            }
           }
 
@@ -2033,7 +2072,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String destinationProp = descriptor_.getActivationConfigValue("destination");
 
         if (destinationLookup == null &&  destinationProp == null && (jndiName == null || "".equals(jndiName))) {
-            _logger.log(Level.SEVERE, "MDB destination not specified.");
+            if (_logger.isLoggable(Level.SEVERE)) {
+                _logger.log(Level.SEVERE, "MDB destination not specified.");
+            }
             String msg = sm.getString("ajra.error_in_dd");
             throw new ConnectorRuntimeException(msg);
         }
@@ -2067,15 +2108,19 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 descriptor_.putRuntimeActivationConfigProperty(
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 descriptor_.getDestinationType(), null));
-                _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                        Object[]{descriptor_.getDestinationType(), jndiName, descriptor_.getName()});
+                if (_logger.isLoggable(Level.INFO)) {
+                    _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
+                            Object[]{descriptor_.getDestinationType(), jndiName, descriptor_.getName()});
+                }
             } else if (isValidDestination(destination) &&
                     ConnectorConstants.DEFAULT_JMS_ADAPTER.equals(destination.getResourceAdapter())) {
                 descriptor_.putRuntimeActivationConfigProperty(
                         new EnvironmentProperty(DESTINATION_TYPE,
                                 destination.getInterfaceName(), null));
-                _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                        Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
+                if (_logger.isLoggable(Level.INFO)) {
+                    _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
+                            Object[]{destination.getInterfaceName(), destination.getName(), descriptor_.getName()});
+                }
             } else {
                 /*
                  * If destination type is not provided by the MDB component
@@ -2094,8 +2139,10 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         descriptor_.putRuntimeActivationConfigProperty(
                                 new EnvironmentProperty(DESTINATION_TYPE,
                                         aor.getResType(), null));
-                        _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
-                                Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
+                        if (_logger.isLoggable(Level.INFO)) {
+                            _logger.log(Level.INFO, "endpoint.determine.destinationtype", new
+                                    Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
+                        }
                     }
     
                 } catch (Exception e) {
@@ -2117,7 +2164,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         // Dont process connection factory.
     }
 
-        if (mdbCF != null && mdbCF != "") {
+        if (mdbCF != null && !"".equals(mdbCF)) {
         setValuesFromConfiguration(mdbCF, descriptor_);
         }
 
@@ -2162,7 +2209,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         //Set SE/EE specific MQ-RA ActivationSpec properties
         try {
             boolean clustered = isClustered();
-            logFine("Are we in a Clustered contained ? " + clustered);
+            if (_logger.isLoggable(Level.FINE))
+                logFine("Are we in a Clustered contained ? " + clustered);
             if (clustered)
                 setClusterActivationSpecProperties(descriptor_);
         } catch (Exception e) {
@@ -2183,8 +2231,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                         EnvironmentProperty(MDBIDENTIFIER,""+
                         getMDBIdentifier(descriptor_),"MDB Identifier",
                         "java.lang.String"));
-        logFine("CLUSTERED instance - setting MDB identifier as" +
-                        getMDBIdentifier(descriptor_));
+        if (_logger.isLoggable(Level.FINE))
+            logFine("CLUSTERED instance - setting MDB identifier as" +
+                            getMDBIdentifier(descriptor_));
 
     }
 
@@ -2452,9 +2501,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     private static void logFine(String s) {
-        //if (_logger.isLoggable(Level.FINE)){
+        if (_logger.isLoggable(Level.FINE)){
             _logger.fine(s);
-        //}
+        }
     }
 
     public int getAddressListCount() {
@@ -2464,7 +2513,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             tokenizer = new StringTokenizer(addressList, ",");
         count = tokenizer.countTokens();
     }
-    logFine("Address list count is " + count);
+    if (_logger.isLoggable(Level.FINE))
+        logFine("Address list count is " + count);
     return count;
     }
 
@@ -2530,11 +2580,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 Class c = resourceadapter_.getClass();
                 Method m = c.getMethod("setMasterBroker", String.class);
                 m.invoke(resourceadapter_, newMasterBroker);
-                _logger.log(Level.INFO, "set.master.broker.success", newMasterBroker);
-
+                if (_logger.isLoggable(Level.INFO)) {
+                    _logger.log(Level.INFO, "set.master.broker.success", newMasterBroker);
+                }
             }catch (Exception ex){
-                   //throw new RuntimeException ("Error invoking PortMapperClientHandler.handleRequest. Cause - " + ex.getMessage(), ex);
-                _logger.log(Level.WARNING, "set.master.broker.fail", new Object[]{newMasterBroker, ex.getMessage()});
+                //throw new RuntimeException ("Error invoking PortMapperClientHandler.handleRequest. Cause - " + ex.getMessage(), ex);
+                if (_logger.isLoggable(Level.INFO)) {
+                    _logger.log(Level.INFO, "set.master.broker.fail", new Object[]{newMasterBroker, ex.getMessage()});
+                }
         }
     }
     protected void setClusterBrokerList(String brokerList){
@@ -2542,11 +2595,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             Class c = resourceadapter_.getClass();
             Method m = c.getMethod("setClusterBrokerList", String.class);
             m.invoke(resourceadapter_, brokerList);
-             _logger.log(Level.INFO, "set.cluster.brokerlist.success", brokerList);
-
-            }catch (Exception ex){
-                   //throw new RuntimeException ("Error invoking PortMapperClientHandler.handleRequest. Cause - " + ex.getMessage(), ex);
+            if (_logger.isLoggable(Level.INFO)) {
+                _logger.log(Level.INFO, "set.cluster.brokerlist.success", brokerList);
+            }
+        }catch (Exception ex){
+            //throw new RuntimeException ("Error invoking PortMapperClientHandler.handleRequest. Cause - " + ex.getMessage(), ex);
+            if (_logger.isLoggable(Level.WARNING)) {
                 _logger.log(Level.WARNING, "set.cluster.brokerlist.fail", new Object[]{brokerList, ex.getMessage()});
+            }
         }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -65,7 +65,6 @@ import org.jvnet.hk2.annotations.Service;
 
 import org.glassfish.hk2.api.PerLookup;
 
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.*;
 
 //import org.glassfish.api.admin.ExecuteOn;
@@ -101,8 +100,7 @@ import org.glassfish.config.support.TargetType;
 })
 public class FlushJMSDestination extends JMSDestination implements AdminCommand {
 
-
-        static Logger logger = LogDomains.getLogger(FlushJMSDestination.class,LogDomains.ADMIN_LOGGER);
+        private static final Logger logger = Logger.getLogger(LogUtils.JMS_ADMIN_LOGGER);
         final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(FlushJMSDestination.class);
          private static final String DESTINATION_CONFIG_DOMAIN_TYPE
     			= MBEAN_DOMAIN_NAME
@@ -162,7 +160,9 @@ public class FlushJMSDestination extends JMSDestination implements AdminCommand 
         private void flushJMSDestination(String destName, String destType, String tgtName)
             throws Exception {
 
-            logger.log(Level.FINE, "FlushJMSDestination ...");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, "FlushJMSDestination ...");
+            }
 
             //MBeanServerConnection  mbsc = getMBeanServerConnection(tgtName);
             // check and use JMX

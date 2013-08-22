@@ -59,10 +59,10 @@ import javax.transaction.SystemException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.jboss.weld.context.ContextNotActiveException;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 /**
  * This bean is the JMSContext wrapper which user gets by injection.
@@ -74,7 +74,10 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     // Note: since this bean is dependent-scoped, instances are liable to be passivated
     // All fields are therefore either serializable or transient
 
-    private final static Logger logger = LogDomains.getLogger(InjectableJMSContext.class, LogDomains.JMS_LOGGER);
+    @LoggerInfo(subsystem="JMS_INJECTION", description="JMS Injection Logger", publish=true)
+    public static final String JMS_INJECTION_LOGGER = "javax.enterprise.resource.jms.injection";
+
+    private static final Logger logger = Logger.getLogger(JMS_INJECTION_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(InjectableJMSContext.class);
 
     private final String ipId;  // id per injection point
@@ -112,8 +115,10 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         this.transactedManager = tm;
         metadata = new JMSContextMetadata(jmsConnectionFactoryAnnot, sessionModeAnnot, credentialAnnot);
         id = metadata.getFingerPrint();
-        logger.log(Level.FINE, localStrings.getLocalString("JMSContext.injection.initialization", 
-                   "Injecting JMSContext wrapper with id {0} and metadata [{1}].", ipId, metadata));
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, localStrings.getLocalString("JMSContext.injection.initialization", 
+                       "Injecting JMSContext wrapper with id {0} and metadata [{1}].", ipId, metadata));
+        }
     }
 
     @Override
@@ -123,8 +128,10 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         if (isInTransaction)
             manager = transactedManager;
 
-        logger.log(Level.FINE, localStrings.getLocalString("JMSContext.delegation.type", 
-                   "JMSContext wrapper with id {0} is delegating to {1} instance.", ipId, manager.getType()));
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, localStrings.getLocalString("JMSContext.delegation.type", 
+                       "JMSContext wrapper with id {0} is delegating to {1} instance.", ipId, manager.getType()));
+        }
         try {
             return manager.getContext(ipId, id, metadata, getConnectionFactory(isInTransaction));
         } catch (ContextNotActiveException e) {
@@ -174,9 +181,11 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private void cleanupManager(AbstractJMSContextManager manager) {
         try {
             manager.cleanup();
-            logger.log(Level.FINE, localStrings.getLocalString("JMSContext.injection.cleanup", 
-                       "Cleaning up {0} JMSContext wrapper with id {1} and metadata [{2}].", 
-                       manager.getType(), ipId, metadata.getLookup()));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.log(Level.FINE, localStrings.getLocalString("JMSContext.injection.cleanup", 
+                           "Cleaning up {0} JMSContext wrapper with id {1} and metadata [{2}].", 
+                           manager.getType(), ipId, metadata.getLookup()));
+            }
         } catch (ContextNotActiveException cnae) {
             // ignore the ContextNotActiveException when the application is undeployed.
         } catch (Throwable t) {

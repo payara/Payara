@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -165,17 +165,20 @@ public class MQRMIClientSocketFactory extends SslRMIClientSocketFactory {
             System.err.println ("Broker Port: " + port);
         }
 
-        SSLSocket sslSocket = (SSLSocket) sslFactory.createSocket (host, port);
+        Object socket = sslFactory.createSocket (host, port);
+        SSLSocket sslSocket = null;
+        if (socket instanceof SSLSocket) {
+            sslSocket = (SSLSocket) socket;
 
-        //tcp no delay flag
-        boolean tcpNoDelay = true;
-        String prop = System.getProperty("imqTcpNoDelay", "true");
-        if ( prop.equals("false") ) {
-            tcpNoDelay = false;
-        } else {
-            sslSocket.setTcpNoDelay(tcpNoDelay);
+            //tcp no delay flag
+            boolean tcpNoDelay = true;
+            String prop = System.getProperty("imqTcpNoDelay", "true");
+            if ( prop.equals("false") ) {
+                tcpNoDelay = false;
+            } else {
+                sslSocket.setTcpNoDelay(tcpNoDelay);
+            }
         }
-
         return sslSocket;
     }
 

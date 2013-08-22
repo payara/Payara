@@ -144,20 +144,25 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-	     <groupId>org.glassfish.main.connectors</groupId>
-	     <artifactId>connectors-internal-api</artifactId>
-	     <version>${project.version}</version>
+    	    <groupId>org.glassfish.main.connectors</groupId>
+    	    <artifactId>connectors-internal-api</artifactId>
+    	    <version>${project.version}</version>
         </dependency>
-	<dependency>
-              <groupId>org.glassfish.main.jms</groupId>
-              <artifactId>jms-core</artifactId>
-              <version>${project.version}</version>
-	 </dependency>	
+    	<dependency>
+            <groupId>org.glassfish.main.jms</groupId>
+            <artifactId>jms-core</artifactId>
+            <version>${project.version}</version>
+    	 </dependency>	
          <dependency>
-              <groupId>org.glassfish.main.connectors</groupId>
-              <artifactId>connectors-runtime</artifactId>
-              <version>${project.version}</version>
+            <groupId>org.glassfish.main.connectors</groupId>
+            <artifactId>connectors-runtime</artifactId>
+            <version>${project.version}</version>
          </dependency>
+        <dependency>
+            <groupId>org.glassfish.annotations</groupId>
+            <artifactId>logging-annotation-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
 

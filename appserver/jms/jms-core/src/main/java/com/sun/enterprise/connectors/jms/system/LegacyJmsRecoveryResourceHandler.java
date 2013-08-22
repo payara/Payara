@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,6 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -79,7 +78,7 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
     static final String JMS_QUEUE_CONNECTION_FACTORY = "javax.jms.QueueConnectionFactory";
     static final String JMS_TOPIC_CONNECTION_FACTORY = "javax.jms.TopicConnectionFactory";
 
-    private static Logger _logger = LogDomains.getLogger(LegacyJmsRecoveryResourceHandler.class, LogDomains.JMS_LOGGER);
+    private static final Logger _logger = Logger.getLogger(ActiveJmsResourceAdapter.JMS_MAIN_LOGGER);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(LegacyJmsRecoveryResourceHandler.class);
 
 
@@ -99,20 +98,16 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
                         String jndiName = jndiResource.getJndiName();
                         Object jmsXAConnectionFactory;
                         boolean isQueue;
-                        if (jndiResource instanceof ExternalJndiResource) {
-                            Object objext = ic.lookup(jndiName);
-                            if (!instanceOf(objext, "ConnectionFactory")) {
-                                throw new NamingException(localStrings.getLocalString("recovery.unexpected_objtype",
-                                "Unexpected object type "+objext.getClass().getName()+" for "+ jndiName,
-                                new Object[]{objext.getClass().getName(), jndiName}));
-                            }
-                            jmsXAConnectionFactory = wrapJMSConnectionFactoryObject(objext);
-                            isQueue = instanceOf(objext, "QueueConnectionFactory");
+
+                        Object objext = ic.lookup(jndiName);
+                        if (!instanceOf(objext, "ConnectionFactory")) {
+                            throw new NamingException(localStrings.getLocalString("recovery.unexpected_objtype",
+                            "Unexpected object type "+objext.getClass().getName()+" for "+ jndiName,
+                            new Object[]{objext.getClass().getName(), jndiName}));
                         }
-                        else {
-                            jmsXAConnectionFactory = ic.lookup(getXAConnectionFactoryName(jndiName));
-                            isQueue = instanceOf(jmsXAConnectionFactory, "JMSXAQueueConnectionFactory");
-                        }
+                        jmsXAConnectionFactory = wrapJMSConnectionFactoryObject(objext);
+                        isQueue = instanceOf(objext, "QueueConnectionFactory");
+
                         recoverJMSXAResource(xaresList, connList, jmsXAConnectionFactory, isQueue);
                     //} catch (NamingException ne) {
                         //If you are here then it is most probably an embedded RAR resource
@@ -247,14 +242,6 @@ public class LegacyJmsRecoveryResourceHandler implements RecoveryResourceHandler
            }
 
     }
-
-    /**
-         * Form the name of the internal XA Connection Factory
-         * for each javax.jms.ConnectionFactory
-         */
-      private String getXAConnectionFactoryName(String connectionFactoryName) {
-            return "JMSXA" + connectionFactoryName + "__jmsxa";
-        }
 
     /**
      * wrap a JMS standard XAQueue/TopicConnectionFactory or Queue/TopicConnectionFactory

@@ -51,7 +51,6 @@ import javax.annotation.PreDestroy;
 import javax.jms.ConnectionFactory;
 import javax.jms.JMSContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -64,7 +63,7 @@ import org.glassfish.internal.api.Globals;
  * instance in a request/transaction.
  */
 public abstract class AbstractJMSContextManager implements Serializable {
-    private final static Logger logger = LogDomains.getLogger(AbstractJMSContextManager.class, LogDomains.JMS_LOGGER);
+    private static final Logger logger = Logger.getLogger(InjectableJMSContext.JMS_INJECTION_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(AbstractJMSContextManager.class);
 
     protected final Map<String, JMSContextEntry> contexts;
@@ -83,9 +82,11 @@ public abstract class AbstractJMSContextManager implements Serializable {
             String password = metadata.getPassword();
             context = connectionFactory.createContext(userName, password, sessionMode);
         }
-        logger.log(Level.FINE, localStrings.getLocalString("JMSContext.impl.create", 
-                               "Created new JMSContext instance associated with id {0}: {1}.", 
-                               ipId, context.toString()));
+        if (logger.isLoggable(Level.FINE)) {
+            logger.log(Level.FINE, localStrings.getLocalString("JMSContext.impl.create", 
+                                   "Created new JMSContext instance associated with id {0}: {1}.", 
+                                   ipId, context.toString()));
+        }
         return context;
     }
 
@@ -127,9 +128,11 @@ public abstract class AbstractJMSContextManager implements Serializable {
                 if (inv != null && currentInv != inv) invMgr.preInvoke(inv);
                 try {
                     context.close();
-                    logger.log(Level.FINE, localStrings.getLocalString("JMSContext.impl.close", 
-                                           "Closed JMSContext instance associated with id {0}: {1}.", 
-                                           ipId, context.toString()));
+                    if (logger.isLoggable(Level.FINE)) {
+                        logger.log(Level.FINE, localStrings.getLocalString("JMSContext.impl.close", 
+                                               "Closed JMSContext instance associated with id {0}: {1}.", 
+                                               ipId, context.toString()));
+                    }
                 } catch (Exception e) {
                     logger.log(Level.SEVERE, localStrings.getLocalString("JMSContext.impl.close.failure", 
                                              "Failed to close JMSContext instance associated with id {0}: {1}.", 

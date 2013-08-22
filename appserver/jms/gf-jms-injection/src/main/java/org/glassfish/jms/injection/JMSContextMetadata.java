@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,14 +50,13 @@ import javax.jms.JMSPasswordCredential;
 import javax.jms.JMSSessionMode;
 import org.glassfish.internal.api.RelativePathResolver;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 /**
  * Serializable object which holds the information about the JMSContext
  * that was specified at the injection point.
  */
 public class JMSContextMetadata implements Serializable {
-    private final static Logger logger = LogDomains.getLogger(JMSContextMetadata.class, LogDomains.JMS_LOGGER);
+    private static final Logger logger = Logger.getLogger(InjectableJMSContext.JMS_INJECTION_LOGGER);
     private final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(JMSContextMetadata.class);
     public final static String DEFAULT_CONNECTION_FACTORY = "java:comp/DefaultJMSConnectionFactory";
 
@@ -170,8 +169,10 @@ public class JMSContextMetadata implements Serializable {
                 if (unalisedPwd != null && !"".equals(unalisedPwd))
                     return unalisedPwd;
             } catch (Exception e) {
-                logger.log(Level.WARNING, localStrings.getLocalString("decrypt.password.fail", 
-                           "Failed to unalias password for the reason: {0}."), e.toString());
+                if (logger.isLoggable(Level.WARNING)) {
+                    logger.log(Level.WARNING, localStrings.getLocalString("decrypt.password.fail", 
+                               "Failed to unalias password for the reason: {0}."), e.toString());
+                }
             }
         }
         return password;

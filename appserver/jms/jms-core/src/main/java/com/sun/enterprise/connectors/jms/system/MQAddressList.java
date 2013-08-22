@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,7 +51,6 @@ import java.beans.PropertyVetoException;
 import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.jms.util.JmsRaUtil;
 import com.sun.enterprise.admin.util.AdminConstants;
@@ -72,7 +71,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  */
 public class MQAddressList {
 
-    static Logger logger = LogDomains.getLogger(MQAddressList.class,  LogDomains.JMS_LOGGER);
+    private static final Logger logger = Logger.getLogger(ActiveJmsResourceAdapter.JMS_MAIN_LOGGER);
     private String myName =
                System.getProperty(SystemPropertyConstants.SERVER_NAME);
 
@@ -106,7 +105,8 @@ public class MQAddressList {
      * @param service <code>JmsService</code> instance.
      */
     public MQAddressList(JmsService service, String targetName) {
-        logFine(" init" + service + "target " + targetName);
+        if (logger.isLoggable(Level.FINE))
+            logFine(" init" + service + "target " + targetName);
         this.jmsService = service;
         this.targetName = targetName;
     }
@@ -133,13 +133,16 @@ public class MQAddressList {
         try {
             if (isClustered) {
                 //setup for LOCAL/EMBEDDED clusters.
-                logFine("setting up for cluster " +  this.targetName);
+                if (logger.isLoggable(Level.FINE))
+                    logFine("setting up for cluster " +  this.targetName);
                 setupClusterViewFromRepository();
                 setupForCluster();
             } else {
-                logFine("setting up for SI/DAS " + this.targetName);
+                if (logger.isLoggable(Level.FINE))
+                    logFine("setting up for SI/DAS " + this.targetName);
                 if (isAConfig(targetName) || isDAS(targetName)) {
-                    logFine("performing default setup for DAS/remote clusters/PE instance" + targetName);
+                    if (logger.isLoggable(Level.FINE))
+                        logFine("performing default setup for DAS/remote clusters/PE instance" + targetName);
                     defaultSetup();
                 } else {
                     logFine("configuring for Standalone EE server instance");
@@ -164,8 +167,10 @@ public class MQAddressList {
             nodeHost = getNodeHostName(server);
             logFine("na host" + nodeHost);
         } catch (Exception e) {
-            logger.log(Level.FINE,"Exception while attempting to get nodeagentHost", e.getMessage());
-            logger.log(Level.FINER, e.getMessage(), e);
+            if (logger.isLoggable(Level.FINE))
+                logger.log(Level.FINE,"Exception while attempting to get nodeagentHost", e.getMessage());
+            if (logger.isLoggable(Level.FINER))
+                logger.log(Level.FINER, e.getMessage(), e);
         }
     }
 
@@ -258,8 +263,8 @@ public class MQAddressList {
                                  (clustername);
         MQUrl url = createUrl(mb, js);
         masterbrk = url.toString();
-        logger.log(Level.FINE, "Master broker obtained is "
-               + masterbrk);
+        if (logger.isLoggable(Level.FINE))
+            logger.log(Level.FINE, "Master broker obtained is " + masterbrk);
         }
         catch (Exception e) {
         logger.log(Level.SEVERE, "Cannot obtain master broker");
@@ -316,11 +321,11 @@ public class MQAddressList {
             Server[] buddies = getServersInCluster(cluster);
             // return the first valid host
 			// there may be hosts attached to an NA that is down
-            if (buddies != null && buddies.length > 0){
+            if (buddies.length > 0){
                 masterBrokerInstance = buddies[0];
             }
         }
-        final JmsHost copy	  = getResolvedJmsHost(masterBrokerInstance);
+        final JmsHost copy = getResolvedJmsHost(masterBrokerInstance);
 	    if (copy != null)
             return copy;
         else
@@ -512,7 +517,8 @@ public class MQAddressList {
         }
 
         String s = builder.toString();
-        logFine("toString returns :: " + s);
+        if (logger.isLoggable(Level.FINE))
+            logFine("toString returns :: " + s);
         return s;
     }
 
@@ -597,10 +603,12 @@ public class MQAddressList {
      //Used to get resolved local JmsHost for a standalone server instance
     private JmsHost getResolvedJmsHostForStandaloneServerInstance(
                                          String serverName) throws Exception {
-        logFine(" getresolved " + serverName);
+        if (logger.isLoggable(Level.FINE))
+            logFine(" getresolved " + serverName);
        //ConfigContext con =  getAdminConfigContext();
        Server serverInstance = getServerByName(serverName);
-       logFine("serverinstace " + serverInstance);
+       if (logger.isLoggable(Level.FINE))
+           logFine("serverinstace " + serverInstance);
        JmsHost jmsHost = getResolvedJmsHost(serverInstance);
        return jmsHost;
     }
@@ -623,7 +631,8 @@ public class MQAddressList {
         if (as == null) {
             return null;
         }
-        logFine("getResolvedJmsHost " + as);
+        if (logger.isLoggable(Level.FINE))
+            logFine("getResolvedJmsHost " + as);
 //        final JmsService jmsService     = Globals.get(JmsService.class);
   //      JmsHost jmsHost                 = null;
     //    if (JMSServiceType.LOCAL.toString().equals(jmsService.getType())	|| JMSServiceType.EMBEDDED.toString().equals(jmsService.getType())) {
@@ -634,17 +643,12 @@ public class MQAddressList {
         JmsHost jmsHost   = getResolvedLocalJmsHostInServer(as);
         JmsHost copy      = createJmsHostCopy(jmsHost, as);
 
-
         String hostName = getNodeHostName(as);
         String port = JmsRaUtil.getJMSPropertyValue(as) ;//"JMS_PROVIDER_PORT", "7676");
-        if (copy != null) {
-             copy.setHost(hostName);
-             copy.setPort(port);
-        }
+        copy.setHost(hostName);
+        copy.setPort(port);
 
         return copy;
-
-       // return null; //getResolvedJmsHost(as);
     }
 
     private JmsHost createJmsHostCopy(final JmsHost jmsHost, final Server server)

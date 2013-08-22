@@ -51,7 +51,6 @@ import com.sun.enterprise.connectors.jms.config.JmsHost;
 import com.sun.enterprise.connectors.jms.config.JmsService;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.i18n.StringManager;
 
 import org.jvnet.hk2.annotations.Service;
@@ -82,8 +81,7 @@ public class JMSConfigListener implements ConfigListener{
     //private Cluster cluster;
     private ActiveJmsResourceAdapter aresourceAdapter;
 
-    private static final Logger _logger = LogDomains.getLogger(
-            JMSConfigListener.class, LogDomains.JMS_LOGGER);
+    private static final Logger _logger = Logger.getLogger(ActiveJmsResourceAdapter.JMS_MAIN_LOGGER);
 
     // String Manager for Localization
     private static StringManager sm
@@ -99,7 +97,9 @@ public class JMSConfigListener implements ConfigListener{
         //Events that we can't process now because they require server restart.
         jmsService = serverConfig.getExtensionByType(JmsService.class);
         List<UnprocessedChangeEvent> unprocessedEvents = new ArrayList<UnprocessedChangeEvent>();
-        _logger.log(Level.FINE, "In JMSConfigListener - received config event");
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.log(Level.FINE, "In JMSConfigListener - received config event");
+        }
         Domain domain = Globals.get(Domain.class);
         String jmsProviderPort = null;
         ServerContext serverContext = Globals.get(ServerContext.class);
@@ -118,8 +118,10 @@ public class JMSConfigListener implements ConfigListener{
 
         _logger.log(Level.FINE, "In JMSConfigListener " + eventName + oldValue + newValue);
         if (oldValue != null && oldValue.equals(newValue)) {
-            _logger.log(Level.FINE, "Event " + eventName
-                        + " did not change existing value of " + oldValue);
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "Event " + eventName
+                            + " did not change existing value of " + oldValue);
+            }
             continue;
         }
 
@@ -132,7 +134,9 @@ public class JMSConfigListener implements ConfigListener{
                 if (adapter.getGrizzlyListeners().contains(name)) {
                     GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
                     synchronized (adapter.getGrizzlyListeners()) {
-                        _logger.log(Level.FINE, "Stopping Grizzly proxy " + name);
+                        if (_logger.isLoggable(Level.FINE)) {
+                            _logger.log(Level.FINE, "Stopping Grizzly proxy " + name);
+                        }
                         grizzlyService.removeNetworkProxy(name);
                         adapter.getGrizzlyListeners().remove(name);
                     }
@@ -169,7 +173,9 @@ public class JMSConfigListener implements ConfigListener{
                                 String name = ActiveJmsResourceAdapter.GRIZZLY_PROXY_PREFIX + jmsHost.getName();
                                 dummy.setName(name);
                                 synchronized (adapter.getGrizzlyListeners()) {
-                                    _logger.log(Level.FINE, "Starting Grizzly proxy " + name + " on port " + jmsHost.getPort());
+                                    if (_logger.isLoggable(Level.FINE)) {
+                                        _logger.log(Level.FINE, "Starting Grizzly proxy " + name + " on port " + jmsHost.getPort());
+                                    }
                                     grizzlyService.createNetworkProxy(dummy);
                                     adapter.getGrizzlyListeners().add(name);
                                 }
@@ -193,9 +199,11 @@ public class JMSConfigListener implements ConfigListener{
                      String oldMB = oldValue != null ? oldValue.toString() : null;
                      String newMB = newValue != null ? newValue.toString(): null;
 
-            _logger.log(Level.FINE, "Got JmsService Master Broker change event "
-                + event.getSource() + " "
-                + eventName + " " + oldMB + " " + newMB);
+             if (_logger.isLoggable(Level.FINE)) {
+                 _logger.log(Level.FINE, "Got JmsService Master Broker change event "
+                     + event.getSource() + " "
+                     + eventName + " " + oldMB + " " + newMB);
+             }
 
              if (newMB != null) {
                  Server newMBServer = domain.getServerNamed(newMB);
@@ -214,9 +222,11 @@ public class JMSConfigListener implements ConfigListener{
                     String oldServerRef = oldValue != null ? oldValue.toString() : null;
                     String newServerRef = newValue != null ? newValue.toString(): null;
                     if(oldServerRef  != null && newServerRef == null && !thisServer.isDas()) {//instance has been deleted
-                        _logger.log(Level.FINE, "Got Cluster change event for server_ref"
-                            + event.getSource() + " "
-                        + eventName + " " + oldServerRef + " " + null);
+                        if (_logger.isLoggable(Level.FINE)) {
+                            _logger.log(Level.FINE, "Got Cluster change event for server_ref"
+                                + event.getSource() + " "
+                            + eventName + " " + oldServerRef + " " + null);
+                        }
                         String url = getBrokerList();
                         aresourceAdapter.setClusterBrokerList(url);
                         break;
