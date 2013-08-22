@@ -211,15 +211,13 @@ public class WebModuleContextConfig extends ContextConfig {
                     resources[i].getName(), resources[i].getDescription(),
                     resources[i].getType());
             resourceReference.setJndiName(resources[i].getName());
-            if (rrs!=null) {
-                for (ResourceReferenceDescriptor rr : rrs) {
-                    if (resources[i].getName().equals(rr.getName())) {
-                        resourceReference.setJndiName(rr.getJndiName());
-                        rp = rr.getResourcePrincipal();
-                        if (rp!=null) {
-                            resourceReference.setResourcePrincipal(
-                                    new ResourcePrincipal(rp.getName(), rp.getPassword()));
-                        }
+            for (ResourceReferenceDescriptor rr : rrs) {
+                if (resources[i].getName().equals(rr.getName())) {
+                    resourceReference.setJndiName(rr.getJndiName());
+                    rp = rr.getResourcePrincipal();
+                    if (rp!=null) {
+                        resourceReference.setResourcePrincipal(
+                                new ResourcePrincipal(rp.getName(), rp.getPassword()));
                     }
                 }
             }
