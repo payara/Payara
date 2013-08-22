@@ -39,6 +39,8 @@
  */
 package org.glassfish.api.logging;
 
+import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -66,6 +68,26 @@ public final class LogHelper {
         rec.setParameters(params);
         rec.setThrown(thrown);
         logger.log(rec);
+    }
+    
+    /**
+     * Gets the formatted message given the message key and parameters.
+     * The ResourceBundle associated with the logger is searched for the specified key.
+     * @param logger
+     * @param msgKey
+     * @param params
+     * @return
+     */
+    public static String getFormattedMessage(Logger logger, String msgKey, Object... params) {
+        ResourceBundle rb = logger.getResourceBundle();
+        if (rb != null) {
+            try {
+                return MessageFormat.format(rb.getString(msgKey),params);
+            } catch (java.util.MissingResourceException e) {
+                return msgKey;
+            }
+        }
+        return msgKey;
     }
     
 }
