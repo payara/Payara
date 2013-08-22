@@ -284,41 +284,40 @@ public class WarHandler extends AbstractArchiveHandler {
             // components. Ignore ':' as a separator if it is preceded by
             // '\'
             String[] pathElements = extraClassPath.split(";|((?<!\\\\):)");
-            if (pathElements != null) {
-                for (String path : pathElements) {
-                    path = path.replace("\\:", ":");
-                    if (logger.isLoggable(Level.FINE)) {
-                        logger.fine("WarHandler[" + base +
-                                    "]: Adding " + path +
-                                    " to the classpath");
+            for (String path : pathElements) {
+                path = path.replace("\\:", ":");
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("WarHandler[" + base +
+                                "]: Adding " + path +
+                                " to the classpath");
+                }
+
+                try {
+                    URL url = new URL(path);
+                    cloader.addRepository(path);
+                } catch (MalformedURLException mue1) {
+                    // Not a URL, interpret as file
+                    File file = new File(path);
+                    // START GlassFish 904
+                    if (!file.isAbsolute()) {
+                        // Resolve relative extra class path to the
+                        // context's docroot
+                        file = new File(base.getPath(), path);
                     }
+                    // END GlassFish 904
 
                     try {
-                        URL url = new URL(path);
-                        cloader.addRepository(path);
-                    } catch (MalformedURLException mue1) {
-                        // Not a URL, interpret as file
-                        File file = new File(path);
-                        // START GlassFish 904
-                        if (!file.isAbsolute()) {
-                            // Resolve relative extra class path to the
-                            // context's docroot
-                            file = new File(base.getPath(), path);
-                        }
-                        // END GlassFish 904
-
-                        try {
-                            URL url = file.toURI().toURL();
-                            cloader.addRepository(url.toString());
-                        } catch (MalformedURLException mue2) {
-                            String msg = rb.getString(CLASSPATH_ERROR);
-                            Object[] params = { path };
-                            msg = MessageFormat.format(msg, params);
-                            logger.log(Level.SEVERE, msg, mue2);
-                        }
+                        URL url = file.toURI().toURL();
+                        cloader.addRepository(url.toString());
+                    } catch (MalformedURLException mue2) {
+                        String msg = rb.getString(CLASSPATH_ERROR);
+                        Object[] params = { path };
+                        msg = MessageFormat.format(msg, params);
+                        logger.log(Level.SEVERE, msg, mue2);
                     }
                 }
             }
+
         }
     }
 
