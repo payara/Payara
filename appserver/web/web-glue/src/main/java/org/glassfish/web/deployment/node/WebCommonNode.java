@@ -48,12 +48,13 @@ import com.sun.enterprise.deployment.web.LoginConfiguration;
 import com.sun.enterprise.deployment.web.SessionConfig;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
-import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.web.deployment.descriptor.*;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This node is responsible for handling the web-common xml tree
@@ -133,26 +134,34 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
      * @param newDescriptor the new descriptor
      */    
     public void addDescriptor(Object  newDescriptor) {
+        Logger logger = DOLUtils.getDefaultLogger();
         if (newDescriptor instanceof EjbReference) {            
             descriptor.addEjbReferenceDescriptor(
                         (EjbReference) newDescriptor);
         } else  if (newDescriptor instanceof EnvironmentProperty) {
-            DOLUtils.getDefaultLogger().fine("Adding env entry" + newDescriptor);            
-           descriptor.addEnvironmentProperty((EnvironmentProperty) newDescriptor);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Adding env entry" + newDescriptor);
+            }
+            descriptor.addEnvironmentProperty((EnvironmentProperty) newDescriptor);
         } else if (newDescriptor instanceof WebComponentDescriptor) {
-            DOLUtils.getDefaultLogger().fine("Adding web component" + newDescriptor);            
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Adding web component" + newDescriptor);
+            }
             descriptor.addWebComponentDescriptor((WebComponentDescriptor) newDescriptor);
         } else if (newDescriptor instanceof TagLibConfigurationDescriptor) {
             // for backward compatibility with 2.2 and 2.3 specs, we need to be able 
             // to read tag lib under web-app. Starting with 2.4, the tag moved under jsp-config
-            DOLUtils.getDefaultLogger().fine("Adding taglib component " + newDescriptor);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Adding taglib component " + newDescriptor);
+            }
             if (descriptor.getJspConfigDescriptor()==null) {
                 descriptor.setJspConfigDescriptor(new JspConfigDescriptorImpl());
             }
             descriptor.getJspConfigDescriptor().addTagLib((TagLibConfigurationDescriptor) newDescriptor);
         } else if (newDescriptor instanceof JspConfigDescriptorImpl) {
-            DOLUtils.getDefaultLogger().fine("Adding JSP Config Descriptor" 
-                + newDescriptor);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Adding JSP Config Descriptor" + newDescriptor);
+            }
             if (descriptor.getJspConfigDescriptor()!=null) {
                 throw new RuntimeException(
                     "Has more than one jsp-config element!");
@@ -160,8 +169,9 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
             descriptor.setJspConfigDescriptor(
                 (JspConfigDescriptorImpl)newDescriptor);
         } else if (newDescriptor instanceof LoginConfiguration) {
-            DOLUtils.getDefaultLogger().fine("Adding Login Config Descriptor"
-                 + newDescriptor);
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Adding Login Config Descriptor" + newDescriptor);
+            }
             if (descriptor.getLoginConfiguration()!=null) {
                 throw new RuntimeException(
                     "Has more than one login-config element!");
@@ -277,7 +287,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         
         // listener*
         Vector appListeners = webBundleDesc.getAppListenerDescriptors();
-        if (appListeners!=null && !appListeners.isEmpty()) {
+        if (!appListeners.isEmpty()) {
             ListenerNode listenerNode = new ListenerNode();
             for (Enumeration e = appListeners.elements();e.hasMoreElements();) {
                 listenerNode.writeDescriptor(jarNode, WebTagNames.LISTENER,
@@ -286,7 +296,7 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
         }
         
         Set servlets = webBundleDesc.getWebComponentDescriptors();
-        if (servlets!=null && !servlets.isEmpty()) {
+        if (!servlets.isEmpty()) {
             // servlet*
             ServletNode servletNode = new ServletNode();
             for (Iterator  e= servlets.iterator();e.hasNext();) {
