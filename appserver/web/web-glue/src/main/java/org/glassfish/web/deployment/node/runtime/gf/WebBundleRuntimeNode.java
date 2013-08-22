@@ -365,16 +365,15 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
 	    }
 	}
 	
-	// servlet
-	Set servlets = bundleDescriptor.getServletDescriptors();
-	if (servlets!=null) {
-	    org.glassfish.web.deployment.node.runtime.gf.ServletNode node =
+        // servlet
+        Set servlets = bundleDescriptor.getServletDescriptors();
+        org.glassfish.web.deployment.node.runtime.gf.ServletNode servletNode =
                 new org.glassfish.web.deployment.node.runtime.gf.ServletNode();
-	    for (Iterator itr=servlets.iterator();itr.hasNext();) {
+        for (Iterator itr=servlets.iterator();itr.hasNext();) {
                 WebComponentDescriptor servlet = (WebComponentDescriptor) itr.next();
-		node.writeDescriptor(web, RuntimeTagNames.SERVLET, servlet);
-	    }
-	}
+            servletNode.writeDescriptor(web, RuntimeTagNames.SERVLET, servlet);
+        }
+
         // idempotent-url-pattern
         IdempotentUrlPattern[] patterns = sunWebApp.getIdempotentUrlPatterns();
         if (patterns != null && patterns.length > 0) {
@@ -392,7 +391,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         
 	// ejb-ref*
 	Set<EjbReference> ejbRefs = bundleDescriptor.getEjbReferenceDescriptors();
-	if (ejbRefs!=null && ejbRefs.size()>0) {
+	if (ejbRefs.size()>0) {
 	    EjbRefNode node = new EjbRefNode();
 	    for (EjbReference ejbRef : ejbRefs) {
 		node.writeDescriptor(web, RuntimeTagNames.EJB_REF, ejbRef);
@@ -401,7 +400,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
 	
 	// resource-ref*
 	Set<ResourceReferenceDescriptor> resourceRefs = bundleDescriptor.getResourceReferenceDescriptors();
-	if (resourceRefs!=null && resourceRefs.size()>0) {
+	if (resourceRefs.size()>0) {
 	    ResourceRefNode node = new ResourceRefNode();
 	    for (ResourceReferenceDescriptor resourceRef : resourceRefs) {
 		node.writeDescriptor(web, RuntimeTagNames.RESOURCE_REF, resourceRef);
@@ -410,7 +409,7 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         
 	// resource-env-ref*
 	Set<ResourceEnvReferenceDescriptor> resourceEnvRefs = bundleDescriptor.getResourceEnvReferenceDescriptors();
-	if (resourceEnvRefs!=null && resourceEnvRefs.size()>0) {
+	if (resourceEnvRefs.size()>0) {
 	    ResourceEnvRefNode node = new ResourceEnvRefNode();
 	    for (ResourceEnvReferenceDescriptor resourceEnvRef : resourceEnvRefs) {
 		node.writeDescriptor(web, RuntimeTagNames.RESOURCE_ENV_REF, resourceEnvRef);
@@ -475,11 +474,9 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
             }
         }          
 
-	// property*
-	if (sunWebApp.getWebProperty()!=null) {
+	    // property*
 	    WebPropertyNode props = new WebPropertyNode();
 	    props.writeDescriptor(web, RuntimeTagNames.PROPERTY, sunWebApp.getWebProperty());
-	}
         
         // valve*
         if (sunWebApp.getValve()!=null) {
