@@ -128,7 +128,7 @@ public class ServletSecurityHandler extends AbstractWebHandler {
 
         Set<String> urlPatterns = getUrlPatternsWithoutSecurityConstraint(webCompDesc);
 
-        if (urlPatterns != null && urlPatterns.size() > 0) {
+        if (urlPatterns.size() > 0) {
             WebBundleDescriptor webBundleDesc = webCompDesc.getWebBundleDescriptor();
             ServletSecurity servletSecurityAn = (ServletSecurity)ainfo.getAnnotation();
             HttpMethodConstraint[] httpMethodConstraints = servletSecurityAn.httpMethodConstraints();
