@@ -1597,7 +1597,7 @@ public class StandardWrapper
                 if (allowedMethods != null
                         && allowedMethods.length() > 0) {
                     String[] s = allowedMethods.split(",");
-                    if (s != null && s.length > 0) {
+                    if (s.length > 0) {
                         req.setMethod(s[0].trim());
                     }
                 }
