@@ -178,6 +178,15 @@ public class LoggingAnnotationsTest {
         System.out.println("Test passed successfully.");
     }
 
+    @Test
+    public void testGetFormattedMessage() throws IOException {
+        String formattedMsg = LogHelper.getFormattedMessage(
+                LOGGER, ERROR_READING_TEST_CONF_FILE_ID, TEST_CONF_FILE);
+        assertEquals(CANNOT_READ_TEST_CONFIGURATION_FILE_MSG + TEST_CONF_FILE,
+                formattedMsg);
+        System.out.println("Test passed successfully.");
+    }
+
     private String validateLogContents(String file, String[] messages) throws IOException {
         StringBuffer buf = new StringBuffer();
         BufferedReader reader=null;
