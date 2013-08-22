@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import org.w3c.dom.Node;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This node handles ejb-reference-description in weblogic DD.
@@ -89,16 +90,19 @@ public class EjbReferenceDescriptionNode extends RuntimeDescriptorNode<EjbRefere
     public void setElementValue(XMLElement element, String value) {
         if (RuntimeTagNames.EJB_REFERENCE_NAME.equals(element.getQName())) {
             Object parentDesc = getParentNode().getDescriptor();
+            Logger logger = DOLUtils.getDefaultLogger();
             if (parentDesc instanceof EjbReferenceContainer) {
                 try {
                     descriptor = ((EjbReferenceContainer)parentDesc).getEjbReference(value);
-                    DOLUtils.getDefaultLogger().finer("Applying ref runtime to " + descriptor);
+                    if (logger.isLoggable(Level.FINER)) {
+                        logger.finer("Applying ref runtime to " + descriptor);
+                    }
                 } catch (IllegalArgumentException iae) {
-                    DOLUtils.getDefaultLogger().warning(iae.getMessage());
+                    logger.warning(iae.getMessage());
                 }
             }
             if (descriptor == null) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
+                logger.log(Level.SEVERE, "enterprise.deployment.backend.addDescriptorFailure",
                         new Object[]{"ejb-ref" , value });
             }
         } else {
