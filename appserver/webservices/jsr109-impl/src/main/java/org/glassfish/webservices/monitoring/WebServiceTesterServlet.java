@@ -82,15 +82,15 @@ import org.glassfish.webservices.LogUtils;
  *
  * @author Jerome Dochez
  */
-public class WebServiceTesterServlet extends HttpServlet implements MessageListener {
+public class WebServiceTesterServlet extends HttpServlet {
 
-    private WebServiceEndpoint svcEP;
+    private final WebServiceEndpoint svcEP;
     private static final Logger logger = LogUtils.getLogger();
 
-    private static Hashtable<String, Class> gsiClasses = new Hashtable<String, Class>();
-    private static Hashtable<String, Object> ports = new Hashtable<String, Object>();
+    private static final Hashtable<String, Class> gsiClasses = new Hashtable<String, Class>();
+    private static final Hashtable<String, Object> ports = new Hashtable<String, Object>();
     // resources...
-    private static LocalStringManagerImpl localStrings =
+    private static final LocalStringManagerImpl localStrings =
 	    new LocalStringManagerImpl(WebServiceTesterServlet.class);        
         
     public static void invoke(HttpServletRequest request, 
@@ -127,11 +127,15 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
     }    
     
     
-    /** Creates a new instance of WebServiceTesterServlet */
+    /**
+     * Creates a new instance of WebServiceTesterServlet
+     * @param ep endpoint to monitor
+     */
     public WebServiceTesterServlet(WebServiceEndpoint ep) {
         svcEP = ep;
     }
     
+    @Override
     public void doGet(HttpServletRequest req, HttpServletResponse res) 
         throws ServletException, IOException 
     {
@@ -232,6 +236,7 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
         out.close();
     }
     
+    @Override
     public void doPost(HttpServletRequest req, HttpServletResponse res) 
         throws ServletException, IOException 
     {
@@ -281,7 +286,8 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
                            new Object[] {toInvoke.getName()}));
                 
                 // register ourselves to receive the SOAP messages...
-                myEndpoint.addListener(this);
+                MessageListenerImpl listener = new MessageListenerImpl();
+                myEndpoint.addListener(listener);
 
                 Class[] parameterTypes = toInvoke.getParameterTypes();
                 Object[] parameterValues= new Object[parameterTypes.length];
@@ -310,22 +316,22 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
                            +toInvoke.getReturnType().getName() + " : \"<b>" 
                         + encodeHTML(toInvoke.invoke(port, parameterValues).toString())+"</b>\"");
                 out.print("<HR>");
-                if (request!=null) {
+                if (listener.getRequest() != null) {
                     // let's print the SOAP request
                     out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.soapReq",
                            "<h4>SOAP Request</h4>"));
-                    dumpMessage(request, out);                    
+                    dumpMessage(listener.getRequest(), out);
                 }
                 if (toInvoke.getAnnotation(javax.jws.Oneway.class) == null &&
-                        response!=null) {
+                        listener.getRespose() != null) {
                     // let's print the SOAP request
                     out.print(localStrings.getLocalString(
 		    	   "enterprise.webservice.monitoring.soapResp",
                            "<h4>SOAP Response</h4>"));
-                    dumpMessage(response, out);                    
+                    dumpMessage(listener.getRespose(), out);
                 }
-                myEndpoint.removeListener(this);
+                myEndpoint.removeListener(listener);
             } 
         
         } catch(Throwable e) {
@@ -375,14 +381,6 @@ public class WebServiceTesterServlet extends HttpServlet implements MessageListe
 
     }    
     
-    private transient volatile MessageTrace request = null;
-    private transient volatile MessageTrace response = null;
-    
-    public void invocationProcessed(MessageTrace request, MessageTrace response) {
-        this.request = request;
-        this.response = response;
-    }
-        
     private Object convertWebParam(Class targetParamType, String webValue) {
         
         Object convertedValue = null;
