@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -39,6 +39,7 @@
  */
 package org.glassfish.grizzly.extras.addons;
 
+import com.sun.logging.LogDomains;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -65,7 +66,8 @@ import org.jvnet.hk2.annotations.Service;
 @ContractsProvided({AjpAddOnProvider.class, AddOn.class})
 public class AjpAddOnProvider extends AjpAddOn implements ConfigAwareElement<Http> {
 
-    protected static final Logger _logger = Logger.getLogger("javax.enterprise.web");
+    protected static final Logger _logger = LogDomains.getLogger(
+            AjpAddOnProvider.class, LogDomains.WEB_LOGGER);
 
     @Override
     public void configure(final ServiceLocator habitat,
