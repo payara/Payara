@@ -54,50 +54,26 @@ import java.util.logging.Logger;
 
 
 /** 
- * This class represent the configuration information of the JavaMail
- * Session object within J2EE.
+ * This class represents the configuration information of the JavaMail
+ * Session object within Java EE.
  */
 public class MailConfiguration implements Serializable {
-    /* IASRI 4629057
-    private String username = "";
-    private String mailFrom = "";
-    private String mailHost = "";
-    private static String MAIL_FROM = "mail.from";
-    private static String MAIL_USER = "mail.user";
-    private static String MAIL_HOST = "mail.host";
-    */
+    private static final String PROP_NAME_PREFIX_LEGACY = "mail-";
+    private static final char PROP_NAME_DELIM_LEGACY = '-';
+ 
+    private static final String MAIL_STORE_PROTOCOL = "mail.store.protocol";
+    private static final String MAIL_TRANSPORT_PROTOCOL =
+                                                    "mail.transport.protocol";
+    private static final String MAIL_HOST = "mail.host";
+    private static final String MAIL_USER = "mail.user";
+    private static final String MAIL_FROM = "mail.from";
+    private static final String MAIL_DEBUG = "mail.debug";
 
-    // START OF IASRI 4629057
-    private static String PROTOCOL_TYPE_IMAP = "imap";
-    private static String PROTOCOL_TYPE_POP3 = "pop3";
-    private static String PROTOCOL_TYPE_SMTP = "smtp";
-
-    private static String PROP_NAME_PREFIX_LEGACY = "mail-";
-    private static char PROP_NAME_DELIM_LEGACY = '-';
-    
-    private static String DEF_VAL_STORE_PROTOCOL = PROTOCOL_TYPE_IMAP;
-    private static String DEF_VAL_STORE_PROTOCOL_CLASS =
-        "com.sun.mail.imap.IMAPStore";
-    private static String DEF_VAL_TRANSPORT_PROTOCOL = PROTOCOL_TYPE_SMTP;
-    private static String DEF_VAL_TRANSPORT_PROTOCOL_CLASS =
-        "com.sun.mail.smtp.SMTPTransport";
-    private static String DEF_VAL_HOST = "localhost";
-    private static String DEF_VAL_USER = "user.name";
-    private static String DEF_VAL_FROM = "username@host";
-    private static boolean DEF_VAL_DEBUG = false;
-
-    private static String MAIL_STORE_PROTOCOL = "mail.store.protocol";
-    private static String MAIL_TRANSPORT_PROTOCOL = "mail.transport.protocol";
-    private static String MAIL_HOST = "mail.host";
-    private static String MAIL_USER = "mail.user";
-    private static String MAIL_FROM = "mail.from";
-    private static String MAIL_DEBUG = "mail.debug";
-
-    private static String MAIL_PREFIX = "mail.";
-    private static String MAIL_SUFFIX_CLASS = ".class";
-    private static String MAIL_SUFFIX_HOST = ".host";
-    private static String MAIL_SUFFIX_USER = ".user";
-    private static char MAIL_DELIM = '.';
+    private static final String MAIL_PREFIX = "mail.";
+    private static final String MAIL_SUFFIX_CLASS = ".class";
+    private static final String MAIL_SUFFIX_HOST = ".host";
+    private static final String MAIL_SUFFIX_USER = ".user";
+    private static final char MAIL_DELIM = '.';
 
     /**
      * Mail resource attributes
@@ -105,40 +81,19 @@ public class MailConfiguration implements Serializable {
     private String description = "";
     private String jndiName = "";
     private boolean enabled = false;
-    private String storeProtocol = DEF_VAL_STORE_PROTOCOL;
-    private String storeProtocolClass = DEF_VAL_STORE_PROTOCOL_CLASS;
-    private String transportProtocol = DEF_VAL_TRANSPORT_PROTOCOL;
-    private String transportProtocolClass = DEF_VAL_TRANSPORT_PROTOCOL_CLASS;
-    private String mailHost = DEF_VAL_HOST;
-    private String username = DEF_VAL_USER;
-    private String mailFrom = DEF_VAL_FROM;
-    private boolean debug = DEF_VAL_DEBUG;
+    private String storeProtocol = null;
+    private String storeProtocolClass = null;
+    private String transportProtocol = null;
+    private String transportProtocolClass = null;
+    private String mailHost = null;
+    private String username = null;
+    private String mailFrom = null;
+    private boolean debug = false;
 
     private Properties mailProperties = new Properties();
-    // END OF IASRI 4629057
-
-    // Create logger object per Java SDK 1.4 to log messages
-    // introduced Santanu De, Sun Microsystems, March 2002
 
     static Logger _logger = DOLUtils.getDefaultLogger();
-    
-    /** 
-     * This constructs the mail configuration based on the username and
-     * the from address. This constructor is deprecated.
-     * @param the username
-     * @param the from address
-     * @deprecated 
-     */
-    public MailConfiguration(String username, String mailFrom) {
-	this.username = username;
-	this.mailFrom = mailFrom;
-	this.mailHost = "";
-
-        mailProperties.put(MAIL_FROM, this.getMailFrom());
-        mailProperties.put(MAIL_USER, this.getUsername());
-        mailProperties.put(MAIL_HOST, this.getMailHost());
-    }
-    
+ 
     /** 
      * Construct a specification of mail configuration with the given username,
      * Mail From Address and mail hostname. 
@@ -149,42 +104,41 @@ public class MailConfiguration implements Serializable {
     public MailConfiguration(String username, 
 			     String mailFrom, 
 			     String mailHost) {
+        // called from MailConfigurationNode, which is never used
 	this.username = username;
 	this.mailFrom = mailFrom;
 	this.mailHost = mailHost;
 
-        mailProperties.put(MAIL_FROM, this.getMailFrom());
-        mailProperties.put(MAIL_USER, this.getUsername());
-        mailProperties.put(MAIL_HOST, this.getMailHost());
+        put(MAIL_FROM, mailFrom);
+        put(MAIL_USER, username);
+        put(MAIL_HOST, mailHost);
     }
 
-    // START OF IASRI 4629057
-    // START OF IASRI 4650786
     /** 
      * Construct a specification of mail configuration.
      */
     public MailConfiguration(MailResourceIntf mailRes) {
+        // called from MailResourceDeployer
         try {
             loadMailResources(mailRes);
-        }
-        catch (Exception ce) {
+        } catch (Exception ce) {
             _logger.log(Level.INFO,"enterprise.deployment_mail_cfgexcp",ce);
-
         }
     }
 
     /** 
      * Load all configuration information from the mail resource node in
-     * server.xml for the JavaMail Session object within J2EE.
+     * domain.xml for the JavaMail Session object within Java EE.
      */
-    private void loadMailResources(MailResourceIntf mailResource) throws Exception {
+    private void loadMailResources(MailResourceIntf mailResource)
+                                throws Exception {
 
         if (mailResource == null) {
             _logger.log(Level.FINE,
-                        "MailConfiguration: no MailResource object. mailResource=null");
+                "MailConfiguration: no MailResource object. mailResource=null");
             return;
         }
-        
+ 
         jndiName = mailResource.getName();
         description = mailResource.getDescription();
         enabled = mailResource.isEnabled();
@@ -197,57 +151,63 @@ public class MailConfiguration implements Serializable {
         username = mailResource.getUsername();
         mailFrom = mailResource.getMailFrom();
         debug = mailResource.isDebug();
+        if (_logger.isLoggable(Level.FINE)) {
+            _logger.fine("storeProtocol " + storeProtocol);
+            _logger.fine("storeProtocolClass " + storeProtocolClass);
+            _logger.fine("transportProtocol " + transportProtocol);
+            _logger.fine("transportProtocolClass " + transportProtocolClass);
+            _logger.fine("mailHost " + mailHost);
+            _logger.fine("username " + username);
+            _logger.fine("mailFrom " + mailFrom);
+            _logger.fine("debug " + debug);
+        }
+
+        // JavaMail doesn't default this one properly
+        if (transportProtocol == null)
+            transportProtocol = "smtp";
 
         // Save to Property list
-        String storeProtocolClassName = MAIL_PREFIX + storeProtocol +
-            MAIL_SUFFIX_CLASS;
-        String transportProtocolClassName = MAIL_PREFIX + transportProtocol +
-            MAIL_SUFFIX_CLASS;
-
-        mailProperties.put(MAIL_STORE_PROTOCOL, storeProtocol);
-        mailProperties.put(MAIL_TRANSPORT_PROTOCOL, transportProtocol);
-        mailProperties.put(storeProtocolClassName, storeProtocolClass);
-        mailProperties.put(transportProtocolClassName, transportProtocolClass);
-        mailProperties.put(MAIL_FROM, mailFrom);
-        mailProperties.put(MAIL_DEBUG, (debug ? "true" : "false"));
+        put(MAIL_HOST, mailHost);
+        put(MAIL_USER, username);
+        put(MAIL_STORE_PROTOCOL, storeProtocol);
+        put(MAIL_TRANSPORT_PROTOCOL, transportProtocol);
+        if (storeProtocol != null)
+            put(MAIL_PREFIX + storeProtocol + MAIL_SUFFIX_CLASS,
+                                                        storeProtocolClass);
+        if (transportProtocol != null)
+            put(MAIL_PREFIX + transportProtocol + MAIL_SUFFIX_CLASS,
+                                                        transportProtocolClass);
+        put(MAIL_FROM, mailFrom);
+        put(MAIL_DEBUG, (debug ? "true" : "false"));
 
         // Get the properties and save to Property list
         Set properties = mailResource.getProperties();
-        ResourceProperty property = null;
-        String name = null;
-        String value = null;
-
-        String protRelatedHostName = MAIL_PREFIX + storeProtocol +
-                        MAIL_SUFFIX_HOST;
-        String protRelatedUserName = MAIL_PREFIX + storeProtocol +
-                        MAIL_SUFFIX_USER;
 
         for (Iterator it = properties.iterator(); it.hasNext();) {
-            property = (ResourceProperty)it.next();
-            name = property.getName();
-            value = (String)property.getValue();
+            ResourceProperty property = (ResourceProperty)it.next();
+            String name = property.getName();
+            String value = (String)property.getValue();
 
-            if(name.startsWith(PROP_NAME_PREFIX_LEGACY)) {
+            if (name.startsWith(PROP_NAME_PREFIX_LEGACY))
                 name = name.replace(PROP_NAME_DELIM_LEGACY, MAIL_DELIM);
-            }
 
-            if(name.startsWith(MAIL_PREFIX)) {
-                if(name.equals(protRelatedHostName)) {
-                    mailHost = value;
-                } else if(name.equals(protRelatedUserName)) {
-                    username = value;
-                }
-                mailProperties.put(name, value);
-            }
+            put(name, value);
+            if (_logger.isLoggable(Level.FINE))
+                _logger.fine("mail property: " + name + " = " + value);
         }
-
-        // Save mail.host and mail.user to Property list
-        mailProperties.put(MAIL_HOST, mailHost);
-        mailProperties.put(MAIL_USER, username);
     }
-    // END OF IASRI 4650786
-    // END OF IASRI 4629057
-    
+
+    /**
+     * Set a mail property, if the value isn't null or empty.
+     */
+    private void put(String name, String value) {
+        if (value != null && value.length() > 0)
+            mailProperties.put(name, value);
+    }
+ 
+    // XXX - none of the following mail-specific accessor methods
+    // seem to be used
+
     /** 
      * Get the username for the mail session the server will provide.
      * @return the username.
@@ -272,7 +232,6 @@ public class MailConfiguration implements Serializable {
 	return this.mailHost;
     }
 
-    // START OF IASRI 4629057
     /** 
      * Get the default Message Access Protocol for the mail session the  server
      * will provide.
@@ -340,42 +299,33 @@ public class MailConfiguration implements Serializable {
     public boolean getEnabled() {
         return this.enabled;
     }
-    // END OF IASRI 4629057
+
+    // This is the only method that's actually used, to create the Session.
 
     /** 
      * Get the mail session properties as per JavaMail.
      * @return the mail session properties.
      */
     public Properties getMailProperties() {
-        /* IASRI 4629057
-        Properties mailProperties = new Properties();
-        mailProperties.put(MAIL_FROM, this.getMailFrom());
-        mailProperties.put(MAIL_USER, this.getUsername());
-        mailProperties.put(MAIL_HOST, this.getMailHost());
-        */
-
         return mailProperties;
     }
-    
+ 
     /** 
      * A formatted representation of my state.
      */
     public void print(StringBuffer toStringBuffer) {
-	/* IASRI 4629057
-	return "MailConfiguration: [" + username + "," + mailFrom + "," + 
-		mailHost + "]";
-	*/
-
-        // START OF IASRI 4629057
         toStringBuffer.append("MailConfiguration: [");
         toStringBuffer.append("description=").append(description);
         toStringBuffer.append( ", jndiName=").append(jndiName);
         toStringBuffer.append( ", enabled=").append(enabled);
 
         toStringBuffer.append( ", storeProtocol=").append(storeProtocol);
-        toStringBuffer.append( ", transportProtocol=").append(transportProtocol);
-        toStringBuffer.append( ", storeProtocolClass=").append(storeProtocolClass);
-        toStringBuffer.append( ", transportProtocolClass=").append(transportProtocolClass);
+        toStringBuffer.append( ", transportProtocol=").
+                                                append(transportProtocol);
+        toStringBuffer.append( ", storeProtocolClass=").
+                                                append(storeProtocolClass);
+        toStringBuffer.append( ", transportProtocolClass=").
+                                                append(transportProtocolClass);
         toStringBuffer.append( ", mailHost=").append(mailHost);
         toStringBuffer.append( ", username=").append(username);
         toStringBuffer.append( ", mailFrom=").append(mailFrom);
@@ -390,17 +340,11 @@ public class MailConfiguration implements Serializable {
         while (e.hasMoreElements()) {
             name = (String)e.nextElement();
             value = mailProperties.getProperty(name);
-            if (isFirst) {
-                toStringBuffer.append(name).append("=").append(value);
-                isFirst = false;
-            }
-            else {
-                toStringBuffer.append( ", ").append(name).append("=").append(value);
-            }
+            if (!isFirst)
+                toStringBuffer.append( ", ");
+            toStringBuffer.append(name).append("=").append(value);
+            isFirst = false;
         }
         toStringBuffer.append( "]]");
-
-        // END OF IASRI 4629057
     }
 }
-

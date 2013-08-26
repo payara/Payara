@@ -66,6 +66,7 @@ import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.naming.NamingException;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -73,11 +74,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Created by IntelliJ IDEA.
- * User: naman
- * Date: 24/4/12
- * Time: 10:39 AM
- * To change this template use File | Settings | File Templates.
+ * Handle deployment of resources defined by @MailSessionDefinition
+ * and represented by a MailSessionDescriptor.
  */
 
 @Service
@@ -105,6 +103,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
     @Override
     public void deployResource(Object resource) throws Exception {
+        assert resource instanceof MailSessionDescriptor;
         final MailSessionDescriptor desc = (MailSessionDescriptor) resource;
         String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(), desc.getResourceType());
         MailResource mailResource = new MyMailResource(desc,resourceName);
@@ -115,6 +114,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
     @Override
     public void undeployResource(Object resource) throws Exception {
+        assert resource instanceof MailSessionDescriptor;
         final MailSessionDescriptor desc = (MailSessionDescriptor) resource;
         String resourceName = ConnectorsUtil.deriveResourceName(desc.getResourceId(), desc.getName(),desc.getResourceType());
         MailResource mailResource = new MyMailResource(desc, resourceName);
@@ -169,7 +169,6 @@ public class MailSessionDeployer implements ResourceDeployer {
 
     @Override
     public void validatePreservedResource(Application oldApp, Application newApp, Resource resource, Resources allResources) throws ResourceConflictException {
-        //To change body of implemented methods use File | Settings | File Templates.
     }
 
     private ResourceDeployer getDeployer(Object resource) {
@@ -195,6 +194,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
             for (Descriptor msd : env.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                assert msd instanceof MailSessionDescriptor;
                 registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
             }
         }
@@ -205,6 +205,7 @@ public class MailSessionDeployer implements ResourceDeployer {
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
                 for (Descriptor msd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    assert msd instanceof MailSessionDescriptor;
                     registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
                 }
             }
@@ -212,6 +213,7 @@ public class MailSessionDeployer implements ResourceDeployer {
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
                 for (Descriptor msd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    assert msd instanceof MailSessionDescriptor;
                     registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
                 }
             }
@@ -222,6 +224,7 @@ public class MailSessionDeployer implements ResourceDeployer {
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor) descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
                 for (Descriptor msd : mbd.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    assert msd instanceof MailSessionDescriptor;
                     registerMSDReferredByApplication(appName, (MailSessionDescriptor)msd);
                 }
             }
@@ -271,6 +274,7 @@ public class MailSessionDeployer implements ResourceDeployer {
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
             for (Descriptor msd : env.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                assert msd instanceof MailSessionDescriptor;
                 unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
             }
         }
@@ -281,6 +285,7 @@ public class MailSessionDeployer implements ResourceDeployer {
             Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
                 for (Descriptor msd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    assert msd instanceof MailSessionDescriptor;
                     unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
                 }
             }
@@ -288,6 +293,7 @@ public class MailSessionDeployer implements ResourceDeployer {
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
                 for (Descriptor msd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    assert msd instanceof MailSessionDescriptor;
                     unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
                 }
             }
@@ -298,6 +304,7 @@ public class MailSessionDeployer implements ResourceDeployer {
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor) descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
                 for (Descriptor msd : mbd.getResourceDescriptors(JavaEEResourceType.MSD)) {
+                    assert msd instanceof MailSessionDescriptor;
                     unRegisterMSDReferredByApplication((MailSessionDescriptor)msd);
                 }
             }
@@ -336,6 +343,52 @@ public class MailSessionDeployer implements ResourceDeployer {
         }
     }
 
+    class MailSessionProperty extends FakeConfigBean implements Property {
+
+        private String name;
+        private String value;
+        private String description;
+
+        MailSessionProperty(String name, String value) {
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String value) throws PropertyVetoException {
+            this.name = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) throws PropertyVetoException {
+            this.value = value;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String value) throws PropertyVetoException {
+            this.description = value;
+        }
+
+        public void injectedInto(Object o) {
+            //do nothing
+        }
+    }
+
+    /**
+     * A "fake" config bean with the same information as a <mail-resource>
+     * config bean.  The information for this fake config bean comes from
+     * a MailSessionDescriptor, which represents a @MailSessionDefinition
+     * annotation.
+     */
     class MyMailResource extends FakeConfigBean implements MailResource {
 
         private MailSessionDescriptor desc;
@@ -358,7 +411,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getStoreProtocolClass() {
-            return (desc.getProperty("mail.smtp.class")==null?"com.sun.mail.smtp.SMTPTransport":desc.getProperty("mail.smtp.class"));
+            return desc.getProperty("mail." + getStoreProtocol() + ".class");
         }
 
         @Override
@@ -378,7 +431,7 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public String getTransportProtocolClass() {
-            return (desc.getProperty("mail.imap.class")==null?"com.sun.mail.imap.IMAPStore":desc.getProperty("mail.imap.class"));
+            return desc.getProperty("mail." + getTransportProtocol() + ".class");
         }
 
         @Override
@@ -458,22 +511,27 @@ public class MailSessionDeployer implements ResourceDeployer {
 
         @Override
         public List<Property> getProperty() {
-            return null;
+            // make a copy in the required format
+            List<Property> props = new ArrayList<Property>();
+            for (String key : desc.getProperties().stringPropertyNames())
+                props.add(new MailSessionProperty(key, desc.getProperty(key)));
+            return props;
         }
 
         @Override
         public Property getProperty(String name) {
-            return null;
+            return new MailSessionProperty(name, desc.getProperty(name));
         }
 
         @Override
         public String getPropertyValue(String name) {
-            return null;
+            return desc.getProperty(name);
         }
 
         @Override
         public String getPropertyValue(String name, String defaultValue) {
-            return null;
+            String v = desc.getProperty(name);
+            return v != null ? v : defaultValue;
         }
 
         @Override

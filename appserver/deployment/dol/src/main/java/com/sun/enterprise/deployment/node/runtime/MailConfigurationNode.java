@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,10 +47,9 @@ import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 
 /**
  * This node handles the runtime deployment descriptor tag 
- * default-resource-principal
- *
- * @author  Jerome Dochez
- * @version 
+ * mail-configuration.  Or at least it would, if there were
+ * such a tag.  As far as I can tell, there isn't, and this
+ * class is never used.
  */
 public class MailConfigurationNode extends DeploymentDescriptorNode {
 

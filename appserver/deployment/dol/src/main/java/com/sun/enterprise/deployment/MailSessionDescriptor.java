@@ -46,11 +46,7 @@ import java.util.Properties;
 import static org.glassfish.deployment.common.JavaEEResourceType.*;
 
 /**
- * Created by IntelliJ IDEA.
- * User: naman mehta
- * Date: 2/4/12
- * Time: 3:38 PM
- * To change this template use File | Settings | File Templates.
+ * Represents the data from a @MailSessionDefinition annotation.
  */
 public class MailSessionDescriptor extends ResourceDescriptor {
 
@@ -175,7 +171,7 @@ public class MailSessionDescriptor extends ResourceDescriptor {
     }
 
     public static String getJavaName(String thisName) {
-        if (!thisName.contains(JAVA_URL)) {
+        if (!thisName.startsWith(JAVA_URL)) {
             thisName = JAVA_COMP_URL + thisName;
         }
         return thisName;
@@ -186,13 +182,15 @@ public class MailSessionDescriptor extends ResourceDescriptor {
                 !(
                     DOLUtils.equals(getUser(), other.getUser()) &&
                     DOLUtils.equals(getPassword(), other.getPassword()) &&
-                    properties.equals(other.properties) &&
-                    getFrom() == other.getFrom() &&
-                    getHost() == other.getHost() &&
-                    getPassword() == other.getPassword() &&
-                    getStoreProtocol() == other.getStoreProtocol() &&
-                    getTransportProtocol() == other.getTransportProtocol() &&
-                    getDescription() == other.getDescription()
+                    DOLUtils.equals(getFrom(), other.getFrom()) &&
+                    DOLUtils.equals(getHost(), other.getHost()) &&
+                    DOLUtils.equals(getPassword(), other.getPassword()) &&
+                    DOLUtils.equals(getStoreProtocol(),
+                                                other.getStoreProtocol()) &&
+                    DOLUtils.equals(getTransportProtocol(),
+                                                other.getTransportProtocol()) &&
+                    DOLUtils.equals(getDescription(), other.getDescription()) &&
+                    properties.equals(other.properties)
                 );
         }
 }
