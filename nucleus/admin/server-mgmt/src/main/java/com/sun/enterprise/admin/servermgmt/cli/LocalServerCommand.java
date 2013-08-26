@@ -221,7 +221,8 @@ public abstract class LocalServerCommand extends CLICommand {
             return true;
         }
         catch (Exception e) {
-            logger.finer(e.getMessage());
+            if (logger.isLoggable(Level.FINER))
+                logger.finer(e.getMessage());
             return false;
         }
         finally {

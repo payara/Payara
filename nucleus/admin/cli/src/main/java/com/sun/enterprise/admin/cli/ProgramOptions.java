@@ -44,6 +44,7 @@ import com.sun.enterprise.universal.io.SmartFile;
 import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.CommandModel.ParamModel;
@@ -335,7 +336,8 @@ public class ProgramOptions {
      * @param user the user to set
      */
     public void setUser(String user) {
-        logger.finer("Setting user to: " + user);
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Setting user to: " + user);
         options.set(USER, user);
     }
 
@@ -357,7 +359,8 @@ public class ProgramOptions {
      * @param password the password to set
      */
     public void setPassword(String password, PasswordLocation location) {
-        logger.finer("Setting password to: " +
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Setting password to: " +
                                     (ok(password) ? "<non-null>" : "<null>"));
         this.password = password;
         this.location = location;

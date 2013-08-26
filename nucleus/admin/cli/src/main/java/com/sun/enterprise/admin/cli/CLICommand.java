@@ -217,7 +217,8 @@ public abstract class CLICommand implements PostConstruct {
             return cmd;
         }
         // nope, must be a remote command
-        logger.finer("Assuming it's a remote command: " + name);
+        if (logger.isLoggable(Level.FINER))
+            logger.finer("Assuming it's a remote command: " + name);
         return getRemoteCommand(name, po, serviceLocator.getService(Environment.class));
     }
     
@@ -813,8 +814,10 @@ public abstract class CLICommand implements PostConstruct {
                     operands.size() > 0 && operands.get(0).equals("--"))
                 operands.remove(0);
         }
-        logger.finer("params: " + options);
-        logger.finer("operands: " + operands);
+        if (logger.isLoggable(Level.FINER)) {
+            logger.finer("params: " + options);
+            logger.finer("operands: " + operands);
+        }
     }
 
     /**
@@ -1292,21 +1295,21 @@ public abstract class CLICommand implements PostConstruct {
      * @param e the exception object to print
      */
     protected void printExceptionStackTrace(java.lang.Throwable e) {
-        if (!logger.isLoggable(Level.FINER))
-            return;
-	/*
-	java.lang.StackTraceElement[] ste = e.getStackTrace();
-	for (int ii = 0; ii < ste.length; ii++)
-	    printDebugMessage(ste[ii].toString());
-	*/
-    	final ByteArrayOutputStream output = new ByteArrayOutputStream(512);
-    	e.printStackTrace(new java.io.PrintStream(output));
-        try {
-            output.close();
-        } catch (IOException ex) {
-            // ignore
+        if (logger.isLoggable(Level.FINER)) {
+            /*
+            java.lang.StackTraceElement[] ste = e.getStackTrace();
+            for (int ii = 0; ii < ste.length; ii++)
+                printDebugMessage(ste[ii].toString());
+            */
+            final ByteArrayOutputStream output = new ByteArrayOutputStream(512);
+            e.printStackTrace(new java.io.PrintStream(output));
+            try {
+                output.close();
+            } catch (IOException ex) {
+                // ignore
+            }
+            logger.finer(output.toString());
         }
-        logger.finer(output.toString());
     }
 
     protected static boolean ok(String s) {

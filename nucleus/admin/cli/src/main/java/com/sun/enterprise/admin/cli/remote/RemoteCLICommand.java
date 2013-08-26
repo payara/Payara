@@ -333,7 +333,8 @@ public class RemoteCLICommand extends CLICommand {
                 ((ClientCookieStore) cookieManager.getCookieStore()).load();
             }
             catch (IOException e) {
-                logger.log(Level.FINER, "Unable to load cookies: {0}", e.toString());
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Unable to load cookies: " + e.toString());
                 return;
             }
 
@@ -442,7 +443,8 @@ public class RemoteCLICommand extends CLICommand {
                 }
                 catch (IOException e) {
                     // Thrown by cookieManger.put()
-                    logger.finer("Unable to save cookies: " + e.toString());
+                    if (logger.isLoggable(Level.FINER))
+                        logger.finer("Unable to save cookies: " + e.toString());
                     return;
                 }
 
@@ -450,7 +452,8 @@ public class RemoteCLICommand extends CLICommand {
                     ((ClientCookieStore) cookieManager.getCookieStore()).store();
                 }
                 catch (IOException e) {
-                    logger.finer("Unable to store cookies: " + e.toString());
+                    if (logger.isLoggable(Level.FINER))
+                        logger.finer("Unable to store cookies: " + e.toString());
                 }
                 return;
             }
@@ -465,7 +468,8 @@ public class RemoteCLICommand extends CLICommand {
                     ((ClientCookieStore) cookieManager.getCookieStore()).load();
                 }
                 catch (IOException e) {
-                    logger.finer("Unable to load cookies: " + e.toString());
+                    if (logger.isLoggable(Level.FINER))
+                        logger.finer("Unable to load cookies: " + e.toString());
                     return;
                 }
             }
@@ -508,13 +512,16 @@ public class RemoteCLICommand extends CLICommand {
                     }
                     catch (IOException e) {
                         // Thrown by cookieManger.put()
-                        logger.finer("Unable to save cookies: " + e.toString());
+                        if (logger.isLoggable(Level.FINER))
+                            logger.finer("Unable to save cookies: " +
+                                                                e.toString());
                         return;
                     }
                     ((ClientCookieStore) cookieManager.getCookieStore()).store();
                 }
                 catch (IOException e) {
-                    logger.finer("Unable to store cookies: " + e.toString());
+                    if (logger.isLoggable(Level.FINER))
+                        logger.finer("Unable to store cookies: " + e.toString());
                 }
             }
             else {
@@ -587,7 +594,7 @@ public class RemoteCLICommand extends CLICommand {
         if (eTag != null && eTag.equals(newETag)) {
             return; //Nothing change in command model
         }
-        //logger.log(Level.WARNING, "Command signature of {0} command was changed. Re executing with new metadata.", name);
+        //logger.log(Level.WARNING, "Command signature of {0} command was changed. Reexecuting with new metadata.", name);
         //clean state of this instance
         this.reExecutedOptions = this.options;
         this.reExecutedOperands = this.operands;
@@ -665,11 +672,13 @@ public class RemoteCLICommand extends CLICommand {
             commandModel = rac.getCommandModel();
         }
         catch (CommandException cex) {
-            logger.finer("RemoteCommand.prepare throws " + cex);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("RemoteCommand.prepare throws " + cex);
             throw cex;
         }
         catch (Exception e) {
-            logger.finer("RemoteCommand.prepare throws " + e);
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("RemoteCommand.prepare throws " + e);
             throw new CommandException(e.getMessage());
         }
     }
@@ -991,13 +1000,13 @@ public class RemoteCLICommand extends CLICommand {
          */
         if (programOpts.getUser() == null) {
             // not on command line and in .asadminpass
-            logger.finer("Getting user name from ~/.asadminpass: "
-                    + li.getUser());
+            if (logger.isLoggable(Level.FINER))
+                logger.finer("Getting user name from ~/.asadminpass: " +
+                                                                li.getUser());
             programOpts.setUser(li.getUser());
             if (programOpts.getPassword() == null) {
                 // not in passwordfile and in .asadminpass
-                logger.finer(
-                        "Getting password from ~/.asadminpass");
+                logger.finer("Getting password from ~/.asadminpass");
                 programOpts.setPassword(li.getPassword(),
                         ProgramOptions.PasswordLocation.LOGIN_FILE);
             }
@@ -1005,8 +1014,7 @@ public class RemoteCLICommand extends CLICommand {
         else if (programOpts.getUser().equals(li.getUser())) {
             if (programOpts.getPassword() == null) {
                 // not in passwordfile and in .asadminpass
-                logger.finer(
-                        "Getting password from ~/.asadminpass");
+                logger.finer("Getting password from ~/.asadminpass");
                 programOpts.setPassword(li.getPassword(),
                         ProgramOptions.PasswordLocation.LOGIN_FILE);
             }

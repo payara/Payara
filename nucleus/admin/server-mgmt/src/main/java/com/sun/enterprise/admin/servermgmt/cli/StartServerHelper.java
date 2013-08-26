@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,7 +114,8 @@ public class StartServerHelper {
         pinged:
         while (!timedOut(startWait)) {
             if (pidFile != null) {
-                logger.finer("Check for pid file: " + pidFile);
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("Check for pid file: " + pidFile);
                 if (pidFile.exists()) {
                     alive = true;
                     break pinged;
@@ -282,7 +283,7 @@ public class StartServerHelper {
     private void deletePidFile() {
         String msg = serverDirs.deletePidFile();
 
-        if (msg != null)
+        if (msg != null && logger.isLoggable(Level.FINER))
             logger.finer(msg);
     }
 

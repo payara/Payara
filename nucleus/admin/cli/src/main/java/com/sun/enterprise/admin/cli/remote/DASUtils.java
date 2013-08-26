@@ -53,7 +53,7 @@ public class DASUtils {
     private static final Logger logger =
                         Logger.getLogger("javax.enterprise.admin.cli.remote");
 
-    public enum Error {
+public enum Error {
         NONE, AUTHENTICATION, CONNECTION, IO, UNKNOWN
     };
 
@@ -85,9 +85,10 @@ public class DASUtils {
                 return false; // this definitely means server is not up
             }
             else if(ea.getFirstInstanceOf(IOException.class) != null) {
-                logger.finer("It appears that server has started, but for"
-                        + " some reason the exception is thrown: "
-                        + ex.getMessage());
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("It appears that server has started, but for" +
+                        " some reason this exception was thrown: " +
+                        ex.getMessage());
                 return true;
             }
             else {
@@ -118,9 +119,10 @@ public class DASUtils {
                 return Error.CONNECTION;
             }
             else if(ea.getFirstInstanceOf(IOException.class) != null) {
-                logger.finer("It appears that server has started, but for"
-                        + " some reason the exception is thrown: "
-                        + ex.getMessage());
+                if (logger.isLoggable(Level.FINER))
+                    logger.finer("It appears that server has started, but for" +
+                        " some reason this exception was thrown: " +
+                        ex.getMessage());
                 return Error.IO;
             }
             else {

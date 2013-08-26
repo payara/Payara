@@ -157,7 +157,8 @@ public class AdminMain {
         if (ext.exists() && ext.isDirectory()) {
             result.add(ext);
         } else {
-            logger.finer(strings.get("ExtDirMissing", ext));
+            if (logger.isLoggable(Level.FINER))
+                logger.finer(strings.get("ExtDirMissing", ext));
         }
         result.add(new File(new File(inst, "modules"), "admin-cli.jar"));
         return result;
@@ -249,18 +250,19 @@ public class AdminMain {
         if (debug) {
             System.setProperty(CLIConstants.WALL_CLOCK_START_PROP,
                     "" + System.currentTimeMillis());
-            logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}",
-                    new Object[]{System.getProperty("java.class.path"),
-                        Arrays.toString(args)});
+            if (logger.isLoggable(Level.FINER))
+                logger.log(Level.FINER, "CLASSPATH= {0}\nCommands: {1}",
+                        new Object[]{System.getProperty("java.class.path"),
+                            Arrays.toString(args)});
         }
         /*
-         * Set the thread's context class laoder so that everyone can load from
+         * Set the thread's context class loader so that everyone can load from
          * our extension directory.
          */
         Set<File> extensions = getExtensions();
         ClassLoader ecl = getExtensionClassLoader(extensions);
         Thread.currentThread().setContextClassLoader(ecl);
-        
+
         /*
          * It helps a little with CLI performance
          */
@@ -275,7 +277,7 @@ public class AdminMain {
         thread.start();
 
         cliContainer = new CLIContainer(ecl, extensions, logger);
-        
+
         classPath =
                 SmartFile.sanitizePaths(System.getProperty("java.class.path"));
         className = AdminMain.class.getName();
@@ -300,12 +302,16 @@ public class AdminMain {
         switch (exitCode) {
             case SUCCESS:
                 if (!po.isTerse()) {
-                    logger.fine(strings.get((po.isDetachedCommand() ? "CommandSuccessfulStarted" : "CommandSuccessful"), command));
+                    logger.fine(strings.get((po.isDetachedCommand() ?
+                                                "CommandSuccessfulStarted" :
+                                                "CommandSuccessful"),
+                                            command));
                 }
                 break;
 
             case WARNING:
-                logger.fine(
+                if (logger.isLoggable(Level.FINE))
+                    logger.fine(
                         strings.get("CommandSuccessfulWithWarnings", command));
                 exitCode = SUCCESS;
                 break;
