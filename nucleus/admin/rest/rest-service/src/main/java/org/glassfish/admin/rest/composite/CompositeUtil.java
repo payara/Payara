@@ -431,6 +431,19 @@ public class CompositeUtil {
     }
 
     /**
+     * Execute a delete <code>AdminCommand</code> with the specified parameters.
+     *
+     * @param subject
+     * @param command
+     * @param parameters
+     * @return
+     */
+    public ActionReporter executeDeleteCommandManaged(Subject subject, String command, ParameterMap parameters) {
+        return executeCommand(subject, command, parameters, Status.BAD_REQUEST, true, true, true);
+    }
+
+
+    /**
      * Execute a writing <code>AdminCommand</code> with no parameters.
      *
      * @param subject

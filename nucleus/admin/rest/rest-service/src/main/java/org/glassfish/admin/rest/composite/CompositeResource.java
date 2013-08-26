@@ -236,6 +236,16 @@ public abstract class CompositeResource extends AbstractResource implements Rest
     }
 
     /**
+     * Execute a delete <code>AdminCommand</code> with the specified parameters.
+     * @param command
+     * @param parameters
+     * @return
+     */
+    protected ActionReporter executeDeleteCommandManaged(String command, ParameterMap parameters) {
+        return getCompositeUtil().executeDeleteCommandManaged(getSubject(), command, parameters);
+    }
+
+    /**
      * Execute a writing <code>AdminCommand</code> with no parameters.
      * @param command
      * @return
