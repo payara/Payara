@@ -59,7 +59,6 @@ import javax.security.auth.Subject;
 import javax.xml.soap.SOAPMessage;
 import javax.servlet.http.HttpServletRequest;
 
-import com.sun.logging.*;
 import java.util.logging.*;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
@@ -75,10 +74,7 @@ import org.glassfish.internal.api.Globals;
 
 public class WebServiceSecurity {
 
-    private static Logger _logger=null;
-    static {
-        _logger = LogDomains.getLogger(WebServiceSecurity.class, LogDomains.SECURITY_LOGGER);
-    }
+    private static Logger _logger = LogUtils.getLogger();
 
     private static AppServerAuditManager auditManager = null;
             
@@ -280,8 +276,7 @@ public class WebServiceSecurity {
         try{
             cAC.validateResponse( param, responderSubject, sharedState);
         } catch(AuthException ae){
-            _logger.log(Level.SEVERE,
-			"Container-auth: wss: Error validating response ", ae);
+            _logger.log(Level.SEVERE, LogUtils.ERROR_RESPONSE_VALIDATION, ae);
 	    rvalue = false;
             throw ae;
         } finally {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,8 +49,6 @@ import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescri
 
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 
-import java.util.logging.Logger;
-import com.sun.logging.LogDomains;
 import javax.xml.soap.SOAPMessage;
 
 /**
@@ -60,8 +58,6 @@ import javax.xml.soap.SOAPMessage;
  * getMechanisms method at end).
  */
 public class ClientAuthConfig extends BaseAuthConfig {
-
-    private static Logger logger = LogDomains.getLogger(ClientAuthConfig.class, LogDomains.SECURITY_LOGGER);
 
     private ClientAuthConfig(ClientAuthContext defaultContext) {
 	super(defaultContext);

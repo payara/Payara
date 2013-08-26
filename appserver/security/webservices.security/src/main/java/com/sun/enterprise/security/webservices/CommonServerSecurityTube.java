@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,7 +59,6 @@ import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import com.sun.xml.ws.api.message.Packet;
 import com.sun.xml.ws.api.pipe.NextAction;
@@ -72,8 +71,8 @@ import com.sun.xml.ws.api.pipe.helper.AbstractFilterTubeImpl;
  */
 public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
 
-    protected static final Logger _logger = LogDomains.getLogger(CommonServerSecurityTube.class,
-        LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogUtils.getLogger();
+
     protected static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CommonServerSecurityTube.class);
     private final boolean isHttpBinding;
@@ -139,7 +138,7 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
                     status = sAC.validateRequest(info, clientSubject, serverSubject);
                 }
             } catch (Exception e) {
-                _logger.log(Level.SEVERE, "ws.error_validate_request", e);
+                _logger.log(Level.SEVERE, LogUtils.ERROR_REQUEST_VALIDATION, e);
                 WebServiceException wse = new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantValidateRequest",
                         "Cannot validate request for {0}",
                         new Object[]{helper.getModelName()}), e);
@@ -175,7 +174,7 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
                             // proceed to invoke the endpoint
                             return doInvoke(super.next, validatedRequest);
                         } catch (Exception e) {
-                            _logger.log(Level.SEVERE, "ws.error_next_pipe", e);
+                            _logger.log(Level.SEVERE, LogUtils.NEXT_PIPE, e);
                             response = helper.getFaultResponse(validatedRequest, info.getResponsePacket(), e);
                             return doReturnWith(response);
                         }
@@ -192,7 +191,7 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
                             return action;
                         } catch (PrivilegedActionException pae) {
                             Throwable cause = pae.getCause();
-                            _logger.log(Level.SEVERE, "ws.error_next_pipe", cause);                           
+                            _logger.log(Level.SEVERE, LogUtils.NEXT_PIPE, cause);
                             response = helper.getFaultResponse(validatedRequest, info.getResponsePacket(), cause);
                             return doReturnWith(response);
                         }
@@ -258,10 +257,10 @@ public class CommonServerSecurityTube extends AbstractFilterTubeImpl {
 	} catch (Exception e) {
 	    if (e instanceof AuthException) {
 		if (_logger.isLoggable(Level.INFO)) {
-		    _logger.log(Level.INFO, "ws.error_secure_response", e);
+		    _logger.log(Level.INFO, LogUtils.ERROR_RESPONSE_SECURING, e);
 		}
 	    } else {
-		_logger.log(Level.SEVERE, "ws.error_secure_response", e);
+		_logger.log(Level.SEVERE, LogUtils.ERROR_RESPONSE_SECURING, e);
 	    }
     
 	    return helper.makeFaultResponse(info.getResponsePacket(),e);

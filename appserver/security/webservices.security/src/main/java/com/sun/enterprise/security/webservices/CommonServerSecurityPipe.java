@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,6 @@ import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import com.sun.xml.ws.api.pipe.Pipe;
 import com.sun.xml.ws.api.pipe.PipeCloner;
@@ -70,8 +69,8 @@ import com.sun.xml.ws.api.message.Packet;
  */
 public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 
-    protected static final Logger _logger = LogDomains.getLogger(CommonServerSecurityPipe.class,
-        LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogUtils.getLogger();
+
     protected static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(CommonServerSecurityPipe.class);
 
@@ -171,7 +170,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 		status = sAC.validateRequest(info,clientSubject,serverSubject);
 	    }
 	} catch(Exception e) {
-	    _logger.log(Level.SEVERE,"ws.error_validate_request", e);
+	    _logger.log(Level.SEVERE,LogUtils.ERROR_REQUEST_VALIDATION, e);
 	    WebServiceException wse = new WebServiceException
 		(localStrings.getLocalString
 		 ("enterprise.webservice.cantValidateRequest",
@@ -209,7 +208,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
                         // proceed to invoke the endpoint
                         response = next.process(validatedRequest);
                     } catch (Exception e) {
-                        _logger.log(Level.SEVERE, "ws.error_next_pipe", e);
+                        _logger.log(Level.SEVERE, LogUtils.NEXT_PIPE, e);
                         response = helper.getFaultResponse(validatedRequest, info.getResponsePacket(), e);
                     }
 		} else {
@@ -224,7 +223,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 			    }, null);
 		    } catch (PrivilegedActionException pae) {
 		        Throwable cause = pae.getCause();
-			_logger.log(Level.SEVERE,"ws.error_next_pipe", cause);
+			_logger.log(Level.SEVERE, LogUtils.NEXT_PIPE, cause);
 			response = helper.getFaultResponse
 			    (validatedRequest,info.getResponsePacket(),cause);
 		    }
@@ -240,7 +239,7 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 		      new Object[] { helper.getModelName() }));
 		response = helper.getFaultResponse
 		    (validatedRequest,info.getResponsePacket(),wse);
-		_logger.log(Level.SEVERE,"",wse);
+		_logger.log(Level.SEVERE, LogUtils.EXCEPTION_THROWN, wse);
 
 	    }
 
@@ -274,10 +273,10 @@ public class CommonServerSecurityPipe extends AbstractFilterPipeImpl {
 	} catch (Exception e) {
 	    if (e instanceof AuthException) {
 		if (_logger.isLoggable(Level.INFO)) {
-		    _logger.log(Level.INFO, "ws.error_secure_response", e);
+		    _logger.log(Level.INFO, LogUtils.ERROR_RESPONSE_SECURING, e);
 		}
 	    } else {
-		_logger.log(Level.SEVERE, "ws.error_secure_response", e);
+		_logger.log(Level.SEVERE, LogUtils.ERROR_RESPONSE_SECURING, e);
 	    }
     
 	    return helper.makeFaultResponse(info.getResponsePacket(),e);

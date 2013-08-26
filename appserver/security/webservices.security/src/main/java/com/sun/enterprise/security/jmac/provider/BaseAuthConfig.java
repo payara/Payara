@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,12 +62,12 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityDescriptor;
 import com.sun.enterprise.deployment.runtime.common.ProtectionDescriptor;
+import com.sun.enterprise.security.webservices.LogUtils;
 
 import com.sun.xml.rpc.spi.runtime.StreamingHandler;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import com.sun.logging.LogDomains;
 
 /**
  * This class is the container's base interface to the AuthConfig subsystem
@@ -78,7 +78,7 @@ import com.sun.logging.LogDomains;
  */
 public class BaseAuthConfig {
 
-    private static final Logger logger = LogDomains.getLogger(BaseAuthConfig.class,LogDomains.SECURITY_LOGGER);
+    private static final Logger logger = LogUtils.getLogger();
 
     private Object defaultContext_;
 

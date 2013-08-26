@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,6 @@ import java.util.logging.*;
 //security apis
 import com.sun.enterprise.security.jauth.*;
 import com.sun.enterprise.security.jmac.provider.ClientAuthConfig;
-import com.sun.logging.*;
 
 /**
  * Client Side Handler to be invoked from the appclient
@@ -71,10 +70,7 @@ import com.sun.logging.*;
  */
 public class MessageLayerClientHandler implements Handler {
 
-    private static Logger _logger=null;
-    static {
-        _logger = LogDomains.getLogger(MessageLayerClientHandler.class, LogDomains.SECURITY_LOGGER);
-    }
+    private static Logger _logger= LogUtils.getLogger();
 
     // key to ClientAuthConfig in HandlerInfo
     public static final String CLIENT_AUTH_CONFIG = 
@@ -138,7 +134,7 @@ public class MessageLayerClientHandler implements Handler {
 	    WebServiceSecurity.secureRequest(smc,cAC,isAppclientContainer);
         } catch(Exception e){
             if (_logger.isLoggable(Level.WARNING)){
-                _logger.log(Level.WARNING, "ws.error_secure_request", e);
+                _logger.log(Level.WARNING, LogUtils.ERROR_REQUEST_SECURING, e);
             }
             throw new JAXRPCException(e);
         }
@@ -167,7 +163,7 @@ public class MessageLayerClientHandler implements Handler {
 	    retValue = WebServiceSecurity.validateResponse(smc,cAC);
         }catch(Exception e){
             if (_logger.isLoggable(Level.WARNING)){
-                _logger.log(Level.WARNING, "ws.error_validate_response", e);
+                _logger.log(Level.WARNING, LogUtils.ERROR_RESPONSE_VALIDATION, e);
             }
             throw new JAXRPCException(e);
         }
@@ -200,7 +196,7 @@ public class MessageLayerClientHandler implements Handler {
         boolean retValue =
         (mc instanceof SOAPMessageContext)? true: false;
         if(!retValue && _logger.isLoggable(Level.WARNING)){
-            _logger.log(Level.WARNING, "ws.error_not_soap");
+            _logger.log(Level.WARNING, LogUtils.NOT_SOAP);
         }
         return retValue;
     }

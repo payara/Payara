@@ -45,7 +45,6 @@ import com.sun.enterprise.deployment.WebServiceEndpoint;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
 import com.sun.enterprise.security.jauth.AuthException;
 import com.sun.enterprise.security.web.integration.WebPrincipal;
-import com.sun.logging.LogDomains;
 import com.sun.web.security.RealmAdapter;
 import com.sun.xml.rpc.spi.runtime.SOAPMessageContext;
 import com.sun.xml.rpc.spi.runtime.SystemHandlerDelegate;
@@ -99,8 +98,7 @@ public class SecurityServiceImpl implements SecurityService {
     @Inject
     private AppServerAuditManager auditManager;
 
-    protected static final Logger _logger = LogDomains.getLogger(SecurityServiceImpl.class,
-        LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogUtils.getLogger();
     
     private static final String AUTHORIZATION_HEADER = "authorization";
 
@@ -118,8 +116,7 @@ public class SecurityServiceImpl implements SecurityService {
 		 null);
              return serverAuthConfig;
 	} catch (Exception ae) {
-            _logger.log(Level.SEVERE, 
-		       "EJB Webservice security configuration Failure", ae);
+            _logger.log(Level.SEVERE, LogUtils.EJB_SEC_CONFIG_FAILURE, ae);
 	}
         return null;
     }
@@ -164,7 +161,7 @@ public class SecurityServiceImpl implements SecurityService {
                 if (usernamePassword != null) {
                     webPrincipal = new WebPrincipal((String)usernamePassword.get(0), (char[])usernamePassword.get(1), SecurityContext.init());
                 } else {
-                    _logger.log(Level.WARNING, "BASIC AUTH username/password " + "http header parsing error for " + endpointName);
+                    _logger.log(Level.WARNING, LogUtils.BASIC_AUTH_ERROR, endpointName);
                 }
             } else {
                 //org.apache.coyote.request.X509Certificate
@@ -176,7 +173,7 @@ public class SecurityServiceImpl implements SecurityService {
                 if (certs != null) {
                     webPrincipal = new WebPrincipal(certs, SecurityContext.init());
                 } else {
-                    _logger.log(Level.WARNING, "CLIENT CERT authentication error for " + endpointName);
+                    _logger.log(Level.WARNING, LogUtils.CLIENT_CERT_ERROR, endpointName);
                 }
 
             }
@@ -190,7 +187,9 @@ public class SecurityServiceImpl implements SecurityService {
             authenticated = ra.authenticate(webPrincipal);
             if (authenticated == false) {
                 sendAuthenticationEvents(false, hreq.getRequestURI(), webPrincipal);
-                _logger.fine("authentication failed for " + endpointName);
+                if (_logger.isLoggable(Level.FINE)) {
+                    _logger.fine("authentication failed for " + endpointName);
+                }
             } else {
                 sendAuthenticationEvents(true, hreq.getRequestURI(), webPrincipal);
             }
@@ -274,8 +273,7 @@ public class SecurityServiceImpl implements SecurityService {
                     return new ServletSystemHandlerDelegate(config, endpoint);
                 }
             } catch (Exception e) {
-                _logger.log(Level.SEVERE,
-                        "Servlet Webservice security configuration Failure", e);
+                _logger.log(Level.SEVERE, LogUtils.SERVLET_SEC_CONFIG_FAILURE, e);
             }
         }
         return null;
@@ -290,7 +288,7 @@ public class SecurityServiceImpl implements SecurityService {
                 try {
                     return WebServiceSecurity.validateRequest(context, sAC);
                 } catch (AuthException ex) {
-                    _logger.log(Level.SEVERE, ex.getMessage(), ex);
+                    _logger.log(Level.SEVERE, LogUtils.EXCEPTION_THROWN, ex);
                     if (req.get() != null) {
                         req.get().clear();
                         req.set(null);
@@ -312,7 +310,7 @@ public class SecurityServiceImpl implements SecurityService {
                     try {
                         WebServiceSecurity.secureResponse(msgContext, sAC);
                     } catch (AuthException ex) {
-                        _logger.log(Level.SEVERE, null, ex);
+                        _logger.log(Level.SEVERE, LogUtils.EXCEPTION_THROWN, ex);
                         throw new RuntimeException(ex);
                     }
                 }
@@ -340,7 +338,7 @@ public class SecurityServiceImpl implements SecurityService {
             }
 
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, null, ex);
+            _logger.log(Level.SEVERE, LogUtils.EXCEPTION_THROWN, ex);
             throw new RuntimeException(ex);
         }
         return rvalue;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,6 @@
 
 package com.sun.enterprise.security.webservices;
 
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.deployment.ServiceRefPortInfo;
 import com.sun.enterprise.deployment.ServiceReferenceDescriptor;
 import com.sun.enterprise.deployment.runtime.common.MessageSecurityBindingDescriptor;
@@ -80,8 +79,8 @@ import javax.inject.Singleton;
 @Singleton
 public class WebServicesDelegateImpl implements WebServicesDelegate {
 
-    protected static final Logger _logger = 
-            LogDomains.getLogger(WebServicesDelegateImpl.class,LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogUtils.getLogger();
+
     private static final String DEFAULT_WEBSERVICES_PROVIDER=
             "com.sun.xml.wss.provider.wsit.WSITAuthConfigProvider";
     

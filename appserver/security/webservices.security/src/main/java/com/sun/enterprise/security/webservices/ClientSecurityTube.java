@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,7 +57,6 @@ import com.sun.enterprise.security.jmac.provider.PacketMessageInfo;
 import com.sun.enterprise.security.jmac.provider.PacketMapMessageInfo;
 import com.sun.enterprise.security.jmac.provider.config.PipeHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.logging.LogDomains;
 
 import com.sun.xml.ws.api.model.wsdl.WSDLPort;
 import com.sun.xml.ws.api.message.Packet;
@@ -78,8 +77,8 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
 
     protected PipeHelper helper;
    
-    protected static final Logger _logger = LogDomains.getLogger(ClientSecurityTube.class,
-        LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogUtils.getLogger();
+
     protected static final LocalStringManagerImpl localStrings = 
         new LocalStringManagerImpl(ClientSecurityTube.class);
 
@@ -162,7 +161,7 @@ public class ClientSecurityTube extends AbstractFilterTubeImpl
                 return doInvoke(super.next, info.getRequestPacket());
             }
         } catch (Exception e) {
-            _logger.log(Level.SEVERE, "ws.error_secure_request", e);
+            _logger.log(Level.SEVERE, LogUtils.ERROR_REQUEST_SECURING, e);
             throw new WebServiceException(localStrings.getLocalString("enterprise.webservice.cantSecureRequst",
                     "Cannot secure request for {0}",
                     new Object[]{helper.getModelName()}), e);

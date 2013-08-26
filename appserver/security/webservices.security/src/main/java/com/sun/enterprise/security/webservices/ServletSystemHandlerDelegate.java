@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,7 +61,6 @@ import com.sun.xml.rpc.spi.runtime.Tie;
 
 import com.sun.enterprise.security.SecurityContext;
 
-import com.sun.logging.*;
 
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 
@@ -81,7 +80,7 @@ import com.sun.enterprise.security.jmac.provider.ServerAuthConfig;
 
 public class ServletSystemHandlerDelegate implements SystemHandlerDelegate {
 
-    protected static final Logger _logger = LogDomains.getLogger(ServletSystemHandlerDelegate.class, LogDomains.SECURITY_LOGGER);
+    protected static final Logger _logger = LogUtils.getLogger();
 
     private static final String IMPLEMENTOR = 
 	"com.sun.xml.rpc.server.http.Implementor";
@@ -165,7 +164,7 @@ public class ServletSystemHandlerDelegate implements SystemHandlerDelegate {
 		}
             } 
 	} catch (AuthException ae) {
-	    _logger.log(Level.SEVERE, "ws.error_validate_request", ae);
+	    _logger.log(Level.SEVERE, LogUtils.ERROR_REQUEST_VALIDATION, ae);
 	    throw new RuntimeException(ae);
 	} finally {
 	    WebServiceSecurity.auditInvocation(messageContext, endpoint_, status); 
@@ -199,7 +198,7 @@ public class ServletSystemHandlerDelegate implements SystemHandlerDelegate {
 		} catch (PrivilegedActionException pae) {
 		    Throwable cause = pae.getCause();
 		    if (cause instanceof AuthException){
-			_logger.log(Level.SEVERE, "ws.error_secure_response", cause);
+			_logger.log(Level.SEVERE, LogUtils.ERROR_RESPONSE_SECURING, cause);
 		    }
 		    RuntimeException re = null;
 		    if (cause instanceof RuntimeException) {
@@ -246,7 +245,7 @@ public class ServletSystemHandlerDelegate implements SystemHandlerDelegate {
 	try {
 	    WebServiceSecurity.secureResponse(messageContext,sAC);
 	} catch (AuthException ae) {
-            _logger.log(Level.SEVERE, "ws.error_secure_response", ae);
+            _logger.log(Level.SEVERE, LogUtils.ERROR_RESPONSE_SECURING, ae);
 	    throw new RuntimeException(ae);
 	}
     }
