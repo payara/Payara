@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,12 +69,19 @@ public class WebConnector extends PECoyoteConnector {
     @Override
     public void initialize() throws LifecycleException {
 
-        if (mapper == null){
-            mapper = new V3Mapper();
+        V3Mapper v3Mapper = null;
+        if (mapper == null) {
+            v3Mapper = new V3Mapper();
+            mapper = v3Mapper;
         }
         
         super.initialize();
-        ((V3Mapper) mapper).setHttpHandler(getHandler());
+
+        if (v3Mapper != null) {
+            v3Mapper.setHttpHandler(getHandler());
+        } else if (mapper instanceof V3Mapper) {
+            ((V3Mapper) mapper).setHttpHandler(getHandler());
+        }
     }
     
 }

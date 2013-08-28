@@ -158,10 +158,13 @@ public class SecureRMIServerSocketFactory
         }
 
         final SSLContext context = sslConfigHolder.getSslContext();
-        SSLServerSocket sslSocket =
-                (SSLServerSocket) context.getServerSocketFactory().
+        ServerSocket sslSocket =
+                context.getServerSocketFactory().
                 createServerSocket(port, backlog, mAddress);
-        configureSSLSocket(sslSocket, sslConfigHolder);
+        if (!(sslSocket instanceof SSLServerSocket)) {
+            throw new IllegalStateException("ServerSocketFactory returned non-secure server socket.");
+        }
+        configureSSLSocket((SSLServerSocket) sslSocket, sslConfigHolder);
     
         Util.getLogger().log(Level.INFO, createdServerSocket, 
                 new Object[] {sslSocket.getLocalSocketAddress(), sslSocket.toString()});
