@@ -61,6 +61,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.CsrfProtectionFilter;
 import org.glassfish.jersey.server.filter.UriConnegFilter;
+import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider;
 
 /**
  * Responsible for providing ReST resources for {@code asadmin} and {@code cadmin} communication.
@@ -140,12 +141,14 @@ public class RestCommandResourceProvider extends AbstractRestResourceProvider {
         for (Binder b : additionalBinders) {
             rc.register(b);
         }
+        rc.register(UriConnegFilter.class);
+        rc.register(GrizzlyHttpContainerProvider.class);
+
         rc.property(MessageProperties.LEGACY_WORKERS_ORDERING, true);
         //Disable as much as possible
         rc.property(ServerProperties.JSON_PROCESSING_FEATURE_DISABLE, true);
-        rc.property(ServerProperties.WADL_FEATURE_DISABLE, true);
-        rc.property(ServerProperties.BV_FEATURE_DISABLE, true);
         rc.property(ServerProperties.RESOURCE_VALIDATION_DISABLE, true);
+        rc.property(ServerProperties.METAINF_SERVICES_LOOKUP_DISABLE, true);
         return rc;
     }
     
