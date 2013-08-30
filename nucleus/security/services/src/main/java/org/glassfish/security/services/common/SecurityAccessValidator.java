@@ -63,7 +63,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 
 public class SecurityAccessValidator implements Validator {
 
-    private static final Logger LOG = SecurityAccessValidationService.LOG;
+    private static final Logger LOG = SecurityAccessValidationService._theLog;
     private static LocalStringManagerImpl localStrings =
         new LocalStringManagerImpl(SecurityAccessValidator.class);
 

@@ -94,6 +94,8 @@ public class PermissionsDescriptor extends RootDeploymentDescriptor {
 
     @Override
     public ClassLoader getClassLoader() {
+        if (parent == null)
+            return null;
         return parent.getClassLoader();
     }
 

@@ -59,7 +59,7 @@ public class SecurityAccessValidationService implements ValidationService {
 
     private SecurityAccessFilter flt = new SecurityAccessFilter();
 
-    static final Logger LOG = Logger.getLogger("org.glassfish.security.services"); 
+    static final Logger _theLog = Logger.getLogger("org.glassfish.security.services"); 
         
     
     @Override

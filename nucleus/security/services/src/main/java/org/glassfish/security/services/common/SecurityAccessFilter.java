@@ -52,7 +52,7 @@ import org.glassfish.hk2.api.Filter;
 public class SecurityAccessFilter implements Filter {
 
     private static final String SYS_PROP_JAVA_SEC_POLICY = "java.security.policy";
-    private static final Logger LOG = SecurityAccessValidationService.LOG;
+    private static final Logger LOG = SecurityAccessValidationService._theLog;
 
     private static boolean javaPolicySet =
         AccessController.doPrivileged(new PrivilegedAction<Boolean>() {

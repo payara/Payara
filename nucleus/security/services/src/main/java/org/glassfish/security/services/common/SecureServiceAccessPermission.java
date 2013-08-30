@@ -66,7 +66,7 @@ public class SecureServiceAccessPermission extends BasicPermission {
     public static final String READ_ACTION = "read";
     public static final String WRITE_ACTION = "write";
 
-    private static final Logger logger =
+    private static final Logger _log =
             Logger.getLogger("org.glassfish.security.services");
     private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(SecureServiceAccessPermission.class);
@@ -293,8 +293,8 @@ public class SecureServiceAccessPermission extends BasicPermission {
         
         boolean result = ((this.mask & that.mask) == that.mask) && nameImplies(that);
         
-        if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, "Implies for permission " + p + " return " + result);
+        if (_log.isLoggable(Level.FINE)) {
+                _log.log(Level.FINE, "Implies for permission " + p + " return " + result);
         }
         
         return result;
@@ -357,15 +357,14 @@ public class SecureServiceAccessPermission extends BasicPermission {
     }
 
     public PermissionCollection newPermissionCollection() {
-        return new SecurityAccessPermissionCollection(this.getClass(), logger, localStrings);
+        return new SecurityAccessPermissionCollection(this.getClass(), _log, localStrings);
     }
 
 }
 
 
 
-final class SecurityAccessPermissionCollection extends PermissionCollection implements
-                java.io.Serializable {
+final class SecurityAccessPermissionCollection extends PermissionCollection  {
 
         private static final long serialVersionUID = 2568719859057815986L;
 

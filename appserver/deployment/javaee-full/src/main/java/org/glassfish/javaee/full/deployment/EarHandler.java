@@ -527,7 +527,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
         final DDPermissionsLoader ddpl = (DDPermissionsLoader)cloader;
         try {
             AccessController.doPrivileged(
-                  new PrivilegedExceptionAction() {
+                  new PrivilegedExceptionAction<Object>() {
                     public Object run() throws SecurityException {
                         if (isEEPermission)
                             ddpl.addEEPermissions(pc);
@@ -538,7 +538,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                     }
                 });
             } catch (PrivilegedActionException e) {
-                throw (SecurityException ) e.getException();
+                throw new SecurityException(e.getException());
             }        
     }
     

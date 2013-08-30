@@ -788,8 +788,7 @@ public class WebappClassLoader
     public void addPermission(Permission permission) {
         if ((securityManager != null) && (permission != null)) {
 
-            if (securityManager != null)
-                securityManager.checkSecurityAccess(
+            securityManager.checkSecurityAccess(
                         DDPermissionsLoader.SET_EE_POLICY);
 
             permissionList.add(permission);
@@ -1804,13 +1803,12 @@ public class WebappClassLoader
             pc = new Permissions();            
 
             PermissionCollection spc = super.getPermissions(codeSource);
-            if (spc != null) {
-                Enumeration<Permission> perms = spc.elements();
-                while (perms.hasMoreElements()) {
-                    Permission p = perms.nextElement();
-                    pc.add(p);
-                }                 
-            }
+
+            Enumeration<Permission> permsa = spc.elements();
+            while (permsa.hasMoreElements()) {
+                Permission p = permsa.nextElement();
+                pc.add(p);
+            }                 
                 
             Iterator<Permission> perms = permissionList.iterator();
             while (perms.hasNext()) {

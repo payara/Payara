@@ -721,8 +721,6 @@ public class ASURLClassLoader
     @Override
     protected PermissionCollection getPermissions(CodeSource codeSource) {
         
-        String codeUrl = codeSource.getLocation().toString();
-        
         PermissionCollection cachedPc = 
             permissionsHolder.getCachedPerms(codeSource);
         if (cachedPc != null)

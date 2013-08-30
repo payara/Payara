@@ -140,7 +140,7 @@ public class RarHandler extends AbstractArchiveHandler {
                         new PermsArchiveDelegate.SetPermissionsAction(
                                 SMGlobalPolicyUtil.CommponentType.rar, dc, cl));
             } catch (PrivilegedActionException e) {
-                throw (SecurityException)e.getException();
+                throw new SecurityException(e.getException());
             }
 
             return carCL;

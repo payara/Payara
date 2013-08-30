@@ -172,7 +172,7 @@ public class EjbJarHandler extends AbstractArchiveHandler {
                         new PermsArchiveDelegate.SetPermissionsAction(
                                 SMGlobalPolicyUtil.CommponentType.ejb, dc, cl));
             } catch (PrivilegedActionException e) {
-                throw (SecurityException)e.getException();
+                throw new SecurityException(e.getException());
             }
 
             
