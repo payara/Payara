@@ -99,14 +99,10 @@ public class NetUtils {
 
             // are any of our addresses the same as any address of "localhost"?
             // XXX - redundant with the above check?
-            InetAddress localHostAddrs[] =
-                    InetAddress.getAllByName("localhost");
-            if (localHostAddrs != null) {
-                for (InetAddress lia : localHostAddrs) {
-                    for (InetAddress ia : hostAddrs) {
-                        if (lia.equals(ia))
-                            return true;
-                    }
+            for (InetAddress lia : InetAddress.getAllByName("localhost")) {
+                for (InetAddress ia : hostAddrs) {
+                    if (lia.equals(ia))
+                        return true;
                 }
             }
         }
@@ -217,10 +213,10 @@ public class NetUtils {
             boolean adds1Empty = false; // readability.  You'll see why below!
             boolean adds2Empty = false;
 
-            if (adds1 == null || adds1.length <= 0)
+            if (adds1.length <= 0)
                 adds1Empty = true;
 
-            if (adds2 == null || adds2.length <= 0)
+            if (adds2.length <= 0)
                 adds2Empty = true;
 
             // I told you!

@@ -192,9 +192,7 @@ public class MiniXmlParser {
         try {
             Map<String, String> map = loggingConfig.getLoggingProperties();
             String logFileContains = "${com.sun.aas.instanceName}";
-            if (map != null) {
-                logFilename = map.get(LoggingPropertyNames.file);
-            }
+            logFilename = map.get(LoggingPropertyNames.file);
             if (logFilename != null && logFilename.contains(logFileContains)) {
                 logFilename = replaceOld(logFilename,logFileContains,this.serverName);
             }
@@ -807,6 +805,10 @@ public class MiniXmlParser {
         }
     }
 
+    /**
+     * Get http listener names for virtual server.
+     * Returns null or empty array if not found.
+     */
     private String[] getListenerNamesForVS(String vsid, List<Map<String, String>> vsAttributes) {
         String listeners = null;
         String[] listenerArray = null;
@@ -824,12 +826,9 @@ public class MiniXmlParser {
         // make sure the "http-listeners" is kosher
         if (GFLauncherUtils.ok(listeners)) {
             listenerArray = listeners.split(",");
-            if (listenerArray != null && listenerArray.length <= 0) {
+            if (listenerArray.length == 0) {
                 listenerArray = null;
             }
-        }
-        if (listenerArray == null) {
-            listenerArray = new String[0];
         }
         return listenerArray;
     }
