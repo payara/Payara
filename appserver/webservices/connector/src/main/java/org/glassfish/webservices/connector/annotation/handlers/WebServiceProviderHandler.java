@@ -240,7 +240,7 @@ public class WebServiceProviderHandler extends AbstractHandler {
         // make that assertion here - and the targetnamespace in wsdl-service, if
         // present overrides everything else
         if(endpoint.getWsdlService() != null) {
-            if( (targetNameSpace != null) && (targetNameSpace.length() != 0 ) &&
+            if((targetNameSpace.length() > 0) &&
                 (!endpoint.getWsdlService().getNamespaceURI().equals(targetNameSpace)) ) {
                 throw new AnnotationProcessorException(
                         "Target Namespace inwsdl-service element does not match @WebService.targetNamespace", 
