@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.config.modularity;
 
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
@@ -58,9 +60,11 @@ import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.Named;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.config.support.Singleton;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -87,6 +91,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.XMLStreamWriter;
+
 import java.beans.PropertyVetoException;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
@@ -115,7 +120,8 @@ import java.util.logging.Logger;
 @Service
 @Singleton
 public final class ConfigModularityUtils {
-    private static final Logger LOG = Logger.getLogger(ConfigModularityUtils.class.getName());
+    
+    private static final Logger LOG = getLogger();
 
     @Inject
     private ServiceLocator serviceLocator;
@@ -152,7 +158,7 @@ public final class ConfigModularityUtils {
                 try {
                     defaults = (List<ConfigBeanDefaultValue>) m.invoke(null, runtimeType);
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "cannot get default configuration for: " + configBeanClass.getName(), e);
+                    LogHelper.log(LOG, Level.INFO, cannotGetDefaultConfig, e,configBeanClass.getName());
                 }
             }
         } else {
@@ -163,9 +169,9 @@ public final class ConfigModularityUtils {
             try {
                 defaults = parser.parseServiceConfiguration(getConfigurationFileUrl(configBeanClass, c.baseConfigurationFileName(), runtimeType).openStream());
             } catch (XMLStreamException e) {
-                LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
+                LOG.log(Level.SEVERE, cannotParseDefaultDefaultConfig, e);
             } catch (IOException e) {
-                LOG.log(Level.SEVERE, "Cannot parse default module configuration", e);
+                LOG.log(Level.SEVERE, cannotParseDefaultDefaultConfig, e);
             }
         }
         return defaults;
@@ -218,7 +224,8 @@ public final class ConfigModularityUtils {
                 Method m = owner.getMethod("getModules");
                 return m;
             } catch (NoSuchMethodException e) {
-                LOG.log(Level.INFO, "Failed to find the suitable method in returnException: " + owner.getName() + " : " + typeToSet.getName(), e);
+                LogHelper.log(LOG, Level.INFO, noMethodInReturnException, e, 
+                        owner.getName(), typeToSet.getName());
             }
         }
         return null;
@@ -303,7 +310,7 @@ public final class ConfigModularityUtils {
                     parent = getOwner(parent, parentElement, childElement);
                     parentElement = childElement;
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "cannot get parent config bean for: " + childElement, e);
+                    LogHelper.log(LOG, Level.INFO, cannotGetParentConfigBean, e, childElement);
                 }
             }
             return parent;
@@ -343,7 +350,7 @@ public final class ConfigModularityUtils {
                     parent = getOwner(parent, parentElement, childElement);
                     parentElement = childElement;
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "cannot get parent config bean for: " + configName, e);
+                    LogHelper.log(LOG, Level.INFO, cannotGetParentConfigBean, e, configName);
                 }
             }
             return parent;
@@ -372,7 +379,7 @@ public final class ConfigModularityUtils {
                     componentName = resolveExpression(componentName);
                     return getNamedConfigBeanFromCollection(col, componentName, childClass);
                 } catch (Exception e) {
-                    LOG.log(Level.INFO, "The provided path is not valid: " + childElement + " resolved to component name: " + componentName, e);
+                    LogHelper.log(LOG, Level.INFO, invalidPath, e, childElement,componentName);
                 }
             }
             return null;
@@ -387,7 +394,9 @@ public final class ConfigModularityUtils {
                 try {
                     m = parent.getClass().getMethod("getExtensionByType", java.lang.Class.class);
                 } catch (NoSuchMethodException e) {
-                    LOG.log(Level.FINE, "Cannot find getExtensionByType", e);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Cannot find getExtensionByType", e);
+                    }
                 }
                 if (m != null) {
                     return (ConfigBeanProxy) m.invoke(parent, clz);
@@ -441,9 +450,9 @@ public final class ConfigModularityUtils {
             }
 
         } catch (InvocationTargetException e) {
-            LOG.log(Level.INFO, "Cannot set config bean dues to: ", e);
+            LOG.log(Level.INFO, cannotSetConfigBean, e);
         } catch (IllegalAccessException e) {
-            LOG.log(Level.INFO, "Cannot set config bean dues to:", e);
+            LOG.log(Level.INFO, cannotSetConfigBean, e);
         }
 
         Method m = getMatchingSetterMethod(owningClassForLocation, configBeanClass);
@@ -454,7 +463,7 @@ public final class ConfigModularityUtils {
                 }
                 m.invoke(parent, finalConfigBean);
             } catch (Exception e) {
-                LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
+                LogHelper.log(LOG, Level.INFO, cannotSetConfigBeanFor, e, finalConfigBean.getClass().getName());
             }
             return finalConfigBean;
         }
@@ -473,7 +482,7 @@ public final class ConfigModularityUtils {
                             }
                         }
                     } catch (Exception ex) {
-                        LOG.log(Level.INFO, "could not remove a config bean named " + finalConfigBean.getClass().getName() + "  as it does not exist", ex);
+                        LogHelper.log(LOG, Level.INFO, cannotRemoveConfigBean, ex, finalConfigBean.getClass().getName());
                     }
                 }
                 if (configBeanClass.getAnnotation(HasCustomizationTokens.class) != null) {
@@ -488,7 +497,7 @@ public final class ConfigModularityUtils {
                 col.add(finalConfigBean);
                 return finalConfigBean;
             } catch (Exception e) {
-                LOG.log(Level.INFO, "cannot set ConfigBean for: " + finalConfigBean.getClass().getName(), e);
+                LogHelper.log(LOG, Level.INFO, cannotSetConfigBeanFor, e, finalConfigBean.getClass().getName());
             }
         }
         return null;
@@ -719,7 +728,9 @@ public final class ConfigModularityUtils {
             indentingXMLStreamWriter.flush();
             s = bos.toString();
         } catch (XMLStreamException e) {
-            LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+            }
             return null;
         } finally {
             try {
@@ -730,9 +741,13 @@ public final class ConfigModularityUtils {
                 if (indentingXMLStreamWriter != null)
                     indentingXMLStreamWriter.close();
             } catch (IOException e) {
-                LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+                }
             } catch (XMLStreamException e) {
-                LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Cannot serialize the configbean: " + configBean.toString(), e);
+                }
             }
 
         }
@@ -899,7 +914,9 @@ public final class ConfigModularityUtils {
         String typeString = args.getProperty("-type");
         if (typeString != null)
             serverType = RuntimeType.valueOf(typeString);
-        LOG.fine("server type is: " + serverType.name());
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("server type is: " + serverType.name());
+        }
         if (serverType.isEmbedded()) return "embedded";
         if (serverType.isSingleInstance() || serverType.isDas()) return "admin";
         if (serverType.isInstance()) return "instance";
@@ -924,11 +941,15 @@ public final class ConfigModularityUtils {
                 try {
                     clz = injector.getClass().getClassLoader().loadClass(clzName);
                     if (clz == null) {
-                        LOG.log(Level.FINE, "Cannot find the class mapping to:  " + clzName);
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(Level.FINE, "Cannot find the class mapping to:  " + clzName);
+                        }
                         continue;
                     }
                 } catch (Throwable e) {
-                    LOG.log(Level.FINE, "Cannot load the class", e);
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "Cannot load the class", e);
+                    }
                     continue;
                 }
             }

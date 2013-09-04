@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.config.modularity.command;
 
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
@@ -50,6 +52,7 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -61,6 +64,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -71,6 +75,7 @@ import org.jvnet.hk2.config.Dom;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -92,7 +97,9 @@ import java.util.logging.Logger;
 @PerLookup
 @I18n("create.module.config")
 public final class CreateModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
-    private final Logger LOG = Logger.getLogger(CreateModuleConfigCommand.class.getName());
+    
+    private final Logger LOG = getLogger();
+    
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(CreateModuleConfigCommand.class);
 
@@ -146,7 +153,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.failure",
                         "Failed to execute the command due to: {0}. For more details check the log file.", e.getLocalizedMessage());
-                LOG.log(Level.INFO, msg, e);
+                LOG.log(Level.INFO, CREATE_MODULE_CONFIG_FAILURE, e);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setFailureCause(e);
@@ -163,7 +170,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("create.module.config.show.all.failed",
                         "Failed to show all default configurations not merged with domain configuration under target {0} due to: {1}.", target, e.getLocalizedMessage());
-                LOG.log(Level.INFO, msg, e);
+                LogHelper.log(LOG, Level.INFO, CREATE_MODULE_CONFIG_SHOW_ALL_FAILED, e, target);
                 report.setMessage(msg);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setFailureCause(e);
@@ -181,7 +188,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 } catch (Exception e) {
                     String msg = localStrings.getLocalString("create.module.config.creating.all.failed",
                             "Failed to create all default configuration elements that are not present in the domain.xml under target {0} due to: {1}.", target, e.getLocalizedMessage());
-                    LOG.log(Level.INFO, msg, e);
+                    LogHelper.log(LOG, Level.INFO, CREATE_MODULE_CONFIG_CREATING_ALL_FAILED, e, target);
                     report.setMessage(msg);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setFailureCause(e);
@@ -216,7 +223,7 @@ public final class CreateModuleConfigCommand extends AbstractConfigModularityCom
                 } catch (Exception e) {
                     String msg = localStrings.getLocalString("create.module.config.creating.for.service.name.failed",
                             "Failed to create module configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
-                    LOG.log(Level.INFO, msg, e);
+                    LogHelper.log(LOG, Level.INFO, CREATE_MODULE_CONFIG_CREATING_FOR_SERVICE_NAME_FAILED, e, serviceName, target);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(msg);
                     report.setFailureCause(e);

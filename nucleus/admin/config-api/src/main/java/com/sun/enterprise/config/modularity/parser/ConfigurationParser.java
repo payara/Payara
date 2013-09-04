@@ -43,8 +43,10 @@ package com.sun.enterprise.config.modularity.parser;
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.serverbeans.ConfigLoader;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import org.glassfish.config.support.GlassFishConfigBean;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
@@ -59,6 +61,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import javax.xml.stream.XMLStreamReader;
+
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.logging.Level;
@@ -72,7 +75,9 @@ import java.util.logging.Logger;
  */
 @Service
 public class ConfigurationParser<C extends ConfigLoader> {
-    private static final Logger LOG = Logger.getLogger(ConfigurationParser.class.getName());
+    
+    private static final Logger LOG = ConfigApiLoggerInfo.getLogger();
+    
     //TODO Until the TranslatedView issue is fixed this remain true.
     private static boolean replaceSystemProperties = false;
 
@@ -109,12 +114,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                                     configBeanDefaultValue.getXmlConfiguration(), configBeanDefaultValue)
                             , doc, parent);
                 } catch (Exception e) {
-                    LocalStringManager localStrings =
-                            new LocalStringManagerImpl(ConfigurationParser.class);
-                    final String msg = localStrings.getLocalString(
-                            "can.not.add.configuration.to.extension.point",
-                            "Cannot add new configuration extension to the extension point.");
-                    LOG.log(Level.SEVERE, msg, e);
+                    LOG.log(Level.SEVERE, ConfigApiLoggerInfo.CFG_EXT_ADD_FAILED, e);
                 }
             else {
                 //Check that parent is not null!
@@ -134,12 +134,7 @@ public class ConfigurationParser<C extends ConfigLoader> {
                         }
                     }, parent);
                 } catch (TransactionFailure e) {
-                    LocalStringManager localStrings =
-                            new LocalStringManagerImpl(ConfigurationParser.class);
-                    final String msg = localStrings.getLocalString(
-                            "can.not.add.configuration.to.extension.point",
-                            "Cannot add new configuration extension to the extension point.");
-                    LOG.log(Level.SEVERE, msg, e);
+                    LOG.log(Level.SEVERE, ConfigApiLoggerInfo.CFG_EXT_ADD_FAILED, e);
                 } finally {
                     configModularityUtils.setIgnorePersisting(oldValue);
                 }

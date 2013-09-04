@@ -47,6 +47,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.hk2.api.PostConstruct;
@@ -55,9 +56,9 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author Masoud Kalali
@@ -83,8 +84,6 @@ public class ConfigBeanInstaller implements PostConstruct {
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Config config;
-
-    private static final Logger LOG = Logger.getLogger(ConfigBeanInstaller.class.getName());
 
     @Override
     public void postConstruct() {

@@ -42,6 +42,7 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandModelProvider;
@@ -79,7 +80,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+
 import org.glassfish.api.admin.AdminCommandSecurity;
+import org.glassfish.api.logging.LogHelper;
 
 
 /**
@@ -156,7 +159,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     parentTypeName, e.getMessage());
-            logger.log(Level.SEVERE, msg, e);
+            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, e, parentTypeName);
             throw new RuntimeException(msg, e);
         }
 
@@ -184,7 +187,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     parentTypeName, methodName);
-            logger.log(Level.SEVERE,msg);
+            logger.log(Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, parentTypeName);
             throw new RuntimeException(msg);
         }
         
@@ -197,7 +200,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                     "GenericCrudCommand.configbean_not_found",
                     "The Config Bean {0} cannot be loaded by the generic command implementation : {1}",
                     targetTypeName, e.getMessage());
-            logger.log(Level.SEVERE, msg, e);
+            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.CFG_BEAN_CL_FAILED, e, targetTypeName);
             throw new RuntimeException(msg, e);
         }
     }
@@ -242,7 +245,8 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     "GenericCrudCommand.invalid_type",
                                     "Invalid annotated type {0} passed to InjectionResolver:getValue()",
                                     annotated.getClass().toString());
-                            logger.log(Level.SEVERE, msg);
+                            logger.log(Level.SEVERE, ConfigApiLoggerInfo.INVALID_ANNO_TYPE, 
+                                    annotated.getClass().toString());
                             throw new MultiException(new IllegalArgumentException(msg));
                         }
                     } catch (IllegalAccessException e) {
@@ -250,14 +254,14 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.invocation_failure",
                                 "Failure {0} while getting List<?> values from component",
                                 e.getMessage());
-                        logger.log(Level.SEVERE,msg);
+                        logger.log(Level.SEVERE,ConfigApiLoggerInfo.INVOKE_FAILURE);
                         throw new MultiException(new IllegalStateException(msg, e));
                     } catch (InvocationTargetException e) {
                         String msg = localStrings.getLocalString(GenericCrudCommand.class,
                                 "GenericCrudCommand.invocation_failure",
                                 "Failure {0} while getting List<?> values from component",
                                 e.getMessage());
-                        logger.log(Level.SEVERE, msg);
+                        logger.log(Level.SEVERE, ConfigApiLoggerInfo.INVOKE_FAILURE);
                         throw new MultiException(new IllegalStateException(msg, e));
                     }
                     Object value = delegate.getValue(component, annotated, genericType, type);
@@ -287,7 +291,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                     "GenericCrudCommand.nongeneric_type",
                                     "The List type returned by {0} must be a generic type",
                                     annotated.toString());
-                            logger.log(Level.SEVERE, msg);
+                            logger.log(Level.SEVERE, ConfigApiLoggerInfo.LIST_NOT_GENERIC_TYPE, annotated.toString());
                             throw new MultiException(new IllegalArgumentException(msg));
                     }
                     if (!ConfigBeanProxy.class.isAssignableFrom(itemType)) {
@@ -295,7 +299,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.wrong_type",
                                 "The generic type {0} is not supported, only List<? extends ConfigBeanProxy> is",
                                 annotated.toString());
-                        logger.log(Level.SEVERE, msg);
+                        logger.log(Level.SEVERE, ConfigApiLoggerInfo.GENERIC_TYPE_NOT_SUPPORTED, annotated.toString());
                         throw new MultiException(new IllegalArgumentException(msg));
                         
                     }
@@ -313,7 +317,7 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.introspection_failure",
                                 "Failure {0} while instrospecting {1} to find all getters and setters",
                                 e.getMessage(), itemType.getName());
-                        logger.log(Level.SEVERE, msg);
+                        LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.INTROSPECTION_FAILED, e, itemType.getName());
                         throw new MultiException(new IllegalStateException(msg, e));
                     }
                     for (final Map.Entry<Object, Object> entry : props.entrySet()) {
@@ -363,7 +367,8 @@ public abstract class GenericCrudCommand implements CommandModelProvider, PostCo
                                 "GenericCrudCommand.transactionException",
                                 "Transaction exception {0} while injecting {1}",
                                 transactionFailure.getMessage(), itemType);
-                            logger.log(Level.SEVERE, msg);
+                            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.TX_FAILED,
+                                    transactionFailure, itemType);
                             throw new MultiException(new IllegalStateException(msg, transactionFailure));
                         }
 

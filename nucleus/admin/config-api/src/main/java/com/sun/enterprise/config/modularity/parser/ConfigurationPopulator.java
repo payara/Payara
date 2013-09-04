@@ -40,8 +40,10 @@
 
 package com.sun.enterprise.config.modularity.parser;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigParser;
 import org.jvnet.hk2.config.Dom;
@@ -50,6 +52,7 @@ import org.jvnet.hk2.config.DomDocument;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.logging.Level;
@@ -64,7 +67,7 @@ import java.util.logging.Logger;
  */
 public class ConfigurationPopulator {
 
-    private final static Logger LOG = Logger.getLogger(ConfigurationPopulator.class.getName());
+    private final static Logger LOG = ConfigApiLoggerInfo.getLogger();
     private final DomDocument doc;
     private final ConfigBeanProxy parent;
     private final String xmlContent;
@@ -81,12 +84,7 @@ public class ConfigurationPopulator {
             XMLStreamReader reader = XMLInputFactory.newFactory().createXMLStreamReader(is, "utf-8");
             parser.parse(reader, doc, Dom.unwrap((ConfigBeanProxy) parent));
         } catch (XMLStreamException e) {
-            LocalStringManager localStrings =
-                    new LocalStringManagerImpl(ConfigurationPopulator.class);
-            final String msg = localStrings.getLocalString(
-                    "can.not.get.default.configuration.for",
-                    "Can not read default configuration");
-            LOG.log(Level.SEVERE, msg, e);
+            LOG.log(Level.SEVERE, ConfigApiLoggerInfo.DEFAULT_CFG_READ_FAILED, e);
         }
     }
 }

@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.config.modularity.command;
 
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
 import com.sun.enterprise.config.modularity.customization.ConfigCustomizationToken;
@@ -49,6 +51,7 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.config.serverbeans.SystemPropertyBag;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -73,6 +76,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -95,7 +99,7 @@ import java.util.logging.Logger;
 @PerLookup
 @I18n("delete.module.config")
 public final class DeleteModuleConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
-    private final Logger LOG = Logger.getLogger(DeleteModuleConfigCommand.class.getName());
+    private final Logger LOG = getLogger();
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(DeleteModuleConfigCommand.class);
     private static final String DEFAULT_FORMAT = "";
@@ -195,7 +199,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
                                     "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements ");
                             report.setMessage(message);
                             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                            LOG.log(Level.INFO, message, e);
+                            LOG.log(Level.INFO, DELETE_MODULE_CONFIG_FAILED_DELETING_DEPENDENT, e);
                         }
 
                         if (configBean != null) {
@@ -219,7 +223,7 @@ public final class DeleteModuleConfigCommand extends AbstractConfigModularityCom
                         "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements ");
                 report.setMessage(message);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                LOG.log(Level.INFO, message, e);
+                LOG.log(Level.INFO, DELETE_MODULE_CONFIG_FAILED_DELETING_DEPENDENT, e);
 
             }
         } else {

@@ -43,7 +43,9 @@ import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.RankedConfigBeanProxy;
 import com.sun.enterprise.config.modularity.annotation.HasNoDefaultConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -57,6 +59,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+
 import java.beans.PropertyVetoException;
 import java.util.List;
 import java.util.logging.Logger;
@@ -69,7 +72,7 @@ import java.util.logging.Logger;
  */
 @Service
 public class ModuleConfigurationLoader<C extends ConfigBeanProxy, U extends ConfigBeanProxy> {
-    private final static Logger LOG = Logger.getLogger(ModuleConfigurationLoader.class.getName());
+    
     @Inject
     private ServiceLocator serviceLocator;
 

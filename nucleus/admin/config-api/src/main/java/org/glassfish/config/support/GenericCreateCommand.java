@@ -40,16 +40,18 @@
 
 package org.glassfish.config.support;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.ExceptionUtil;
+
 import java.util.logging.Level;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
-
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
@@ -57,7 +59,9 @@ import java.util.List;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
+
 import javax.security.auth.Subject;
+
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandSecurity;
@@ -105,7 +109,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                     "GenericCreateCommand.command_model_exception",
                     "Exception while creating the command model for the generic command {0} : {1}",
                     commandName, e.getMessage());
-            logger.severe(msg);
+            logger.log(Level.SEVERE, ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, commandName);
             throw new RuntimeException(msg, e);
 
         }

@@ -40,13 +40,16 @@
 
 package org.glassfish.config.support;
 
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AccessRequired;
@@ -55,6 +58,7 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.CommandModel;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.config.*;
@@ -110,7 +114,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                     "GenericCreateCommand.command_model_exception",
                     "Exception while creating the command model for the generic command {0} : {1}",
                     commandName, e.getMessage());
-            logger.severe(msg);
+            LogHelper.log(logger, Level.SEVERE,ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, e, commandName);
             throw new RuntimeException(msg, e);
 
         }      
@@ -133,7 +137,7 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                     "GenericListCommand.accesschecks",
                     "Exception while creating access checks for generic command {0}: {1}",
                     commandName, ex.getMessage());
-                logger.severe(msg);
+                LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.ACCESS_CHK_CREATE_FAILED, ex, commandName);
                 throw new RuntimeException(msg, ex);
             } 
         }
@@ -278,11 +282,11 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                     try {
                         mci.duckGetter = targetModel.getDuckMethod(m);
                     } catch (ClassNotFoundException ex) { // @todo Java SE 7 multicatch
-                        Logger.getLogger(GenericListCommand.class.getName()).log(Level.SEVERE, 
-                                "Cannot identify getter method for ListingColumn", ex);
+                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, 
+                                ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
                     } catch (NoSuchMethodException ex) {
-                        Logger.getLogger(GenericListCommand.class.getName()).log(Level.SEVERE, 
-                                "Cannot identify getter method for ListingColumn", ex);
+                        ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, 
+                                ConfigApiLoggerInfo.CANNOT_IDENTIFY_LIST_COL_GETTER, ex);
                     }
                     cols.add(mci);
                 }
@@ -381,11 +385,14 @@ public class GenericListCommand  extends GenericCrudCommand implements AdminComm
                 try {
                     return (String)duckGetter.invoke(null, bean);
                 } catch (IllegalAccessException ex) {
-                    Logger.getLogger(GenericListCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
+                            ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
                 } catch (IllegalArgumentException ex) {
-                    Logger.getLogger(GenericListCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
+                            ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
                 } catch (InvocationTargetException ex) {
-                    Logger.getLogger(GenericListCommand.class.getName()).log(Level.SEVERE, null, ex);
+                    LogHelper.log(ConfigApiLoggerInfo.getLogger(), Level.SEVERE, 
+                            ConfigApiLoggerInfo.ERR_INVOKE_GETTER, ex, duckGetter.getName());
                 }
             }
             return "";

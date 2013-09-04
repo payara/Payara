@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 /* Module private */
 public class ConfigApiLoggerInfo {
-    public static final String LOGMSG_PREFIX = "CONFIG-API";
+    public static final String LOGMSG_PREFIX = "NCLS-CFGAPI";
 
     @LogMessagesResourceBundle
     public static final String SHARED_LOGMESSAGE_RESOURCE = "com.sun.enterprise.config.util.LogMessages";
@@ -891,5 +891,181 @@ public class ConfigApiLoggerInfo {
             publish = true,
             level = "SEVERE")
     public final static String failUpgradeDomain = LOGMSG_PREFIX + "-00102";
+
+    @LogMessageInfo(
+            message = "Cannot get default configuration for: {0}",
+            publish = true,
+            level = "INFO")
+    public final static String cannotGetDefaultConfig = LOGMSG_PREFIX + "-00103";
+
+    @LogMessageInfo(
+            message = "Cannot parse default module configuration",
+            cause = "Parsing for the default module configuration failed. ",
+            action = "Take appropriate action based on the exception stack trace in the log message.",
+            publish = true,
+            level = "SEVERE")
+    public final static String cannotParseDefaultDefaultConfig = LOGMSG_PREFIX + "-00104";
+
+    @LogMessageInfo(
+            message = "Failed to find the suitable method in returnException: {0} : {1}.",
+            publish = true,
+            level = "INFO")
+    public final static String noMethodInReturnException = LOGMSG_PREFIX + "-00105";
+
+    @LogMessageInfo(
+            message = "Cannot get parent config bean for: {0}",
+            publish = true,
+            level = "INFO")
+    public final static String cannotGetParentConfigBean = LOGMSG_PREFIX + "-00106";
+
+    @LogMessageInfo(
+            message = "The provided path is not valid: {0} resolved to component name: {1}",
+            publish = true,
+            level = "INFO")
+    public final static String invalidPath = LOGMSG_PREFIX + "-00107";
+
+    @LogMessageInfo(
+            message = "Cannot set config bean due to exception thrown.",
+            publish = true,
+            level = "INFO")
+    public final static String cannotSetConfigBean = LOGMSG_PREFIX + "-00108";
+
+    @LogMessageInfo(
+            message = "Cannot set config bean for {0}",
+            publish = true,
+            level = "INFO")
+    public final static String cannotSetConfigBeanFor = LOGMSG_PREFIX + "-00109";
+
+    @LogMessageInfo(
+            message = "Cannot remove config bean named {0} as it does not exist.",
+            publish = true,
+            level = "INFO")
+    public final static String cannotRemoveConfigBean = LOGMSG_PREFIX + "-00110";
+
+    @LogMessageInfo(
+            message = "Cannot get extension type {0} for {1}.",
+            publish = true,
+            level = "INFO")
+    public final static String cannotGetExtnType = LOGMSG_PREFIX + "-00111";
     
+    @LogMessageInfo(message = "Failed to execute the command create-module-config", 
+            publish = true, level = "INFO")
+    public final static String CREATE_MODULE_CONFIG_FAILURE = "NCLS-CFGAPI-00112";
+
+    @LogMessageInfo(message = "Failed to show all default configurations not merged with domain configuration under target {0}.", 
+            publish = true, level = "INFO")
+    public final static String CREATE_MODULE_CONFIG_SHOW_ALL_FAILED = "NCLS-CFGAPI-00113";
+    
+    @LogMessageInfo(message = "Failed to create all default configuration elements that are not present in the domain.xml under target {0}.", 
+            publish = true, level = "INFO")
+    public final static String CREATE_MODULE_CONFIG_CREATING_ALL_FAILED = "NCLS-CFGAPI-00114";
+
+    @LogMessageInfo(message = "Failed to create module configuration for {0} under the target {1}", 
+            publish = true, level = "INFO")
+    public final static String CREATE_MODULE_CONFIG_CREATING_FOR_SERVICE_NAME_FAILED = "NCLS-CFGAPI-00119";
+    
+    @LogMessageInfo(message = "Failed to remove all configuration elements related to your service form domain.xml. You can use create-module-config --dryRun with your module name to see all relevant configurations and try removing the config elements.", 
+            publish = true, level = "INFO")
+    public final static String DELETE_MODULE_CONFIG_FAILED_DELETING_DEPENDENT = "NCLS-CFGAPI-00120";
+    
+    @LogMessageInfo(message = "Failed to get active configuration for {0} under the target {1}", 
+            publish = true, level = "INFO")
+    public final static String GET_ACTIVE_CONFIG_FOR_SERVICE_FAILED = "NCLS-CFGAPI-00121";
+
+    @LogMessageInfo(message = "Failed to create a ClassLoader for modules directory.", 
+            publish = true, level = "SEVERE", 
+            cause="The modules directory ClassLoader could not be created due to an I/O error.",
+            action="Take appropriate action based on the error stack trace reported.")
+    public final static String MODULES_CL_FAILED = "NCLS-CFGAPI-00122";
+
+    @LogMessageInfo(message = "Cannot add new configuration extension to the extension point.", 
+            publish = true, level = "SEVERE", 
+            cause="An I/O error occurred during configuration extension addition.",
+            action="Take appropriate action based on the error stack trace reported.")
+    public final static String CFG_EXT_ADD_FAILED = "NCLS-CFGAPI-00123";
+
+    @LogMessageInfo(message = "Can not read default configuration.", 
+            publish = true, level = "SEVERE",
+            cause="An I/O error occurred.",
+            action="Take appropriate action based on the error stack trace reported.")
+    public final static String DEFAULT_CFG_READ_FAILED = "NCLS-CFGAPI-00124";
+
+    @LogMessageInfo(message = "Exception while creating the command model for the generic command {0}.", 
+            publish = true, level = "SEVERE",
+            cause="An error occurred.",
+            action="Take appropriate action based on the error details in the log.")
+    public final static String GENERIC_CREATE_CMD_FAILED = "NCLS-CFGAPI-00125";
+
+    @LogMessageInfo(message = "The Config Bean {0} cannot be loaded by the generic command implementation.", 
+            publish = true, level = "SEVERE",
+            cause="The config bean class could not be loaded.",
+            action="Take appropriate action based on the error stack trace reported.")
+    public final static String CFG_BEAN_CL_FAILED = "NCLS-CFGAPI-00126";
+
+    @LogMessageInfo(message = "Invalid annotated type {0} passed to InjectionResolver:getValue()",
+            publish = true, level = "SEVERE",
+            cause="Invalid annotated type.",
+            action="Take appropriate action based on the error message details in the log.")
+    public final static String INVALID_ANNO_TYPE = "NCLS-CFGAPI-00127";
+
+    @LogMessageInfo(message = "Failure while getting List<?> values from component",
+            publish = true, level = "SEVERE",
+            cause="Generic CRUD command invocation failure",
+            action="Take appropriate action based on the error message details in the log.")
+    public final static String INVOKE_FAILURE = "NCLS-CFGAPI-00128";
+
+    @LogMessageInfo(message = "The List type returned by {0} must be a generic type.",
+            publish = true, level = "SEVERE",
+            cause="Generic CRUD command invocation failure",
+            action="Take appropriate action based on the error message details in the log.")
+    public final static String LIST_NOT_GENERIC_TYPE = "NCLS-CFGAPI-00129";
+
+    @LogMessageInfo(message = "The generic type {0} is not supported, only List<? extends ConfigBeanProxy> is supported.",
+            publish = true, level = "SEVERE",
+            cause="Generic CRUD command invocation failure",
+            action="Provide a supported generic type.")
+    public final static String GENERIC_TYPE_NOT_SUPPORTED = "NCLS-CFGAPI-00130";
+
+    @LogMessageInfo(message = "Failure while instrospecting {0} to find all getters and setters.",
+            publish = true, level = "SEVERE",
+            cause="Generic CRUD command invocation failure",
+            action="Provide a supported generic type.")
+    public final static String INTROSPECTION_FAILED = "NCLS-CFGAPI-00131";
+
+    @LogMessageInfo(message = "Transaction exception while injecting {1}.",
+            publish = true, level = "SEVERE",
+            cause="Generic CRUD command invocation failure",
+            action="Take appropriate action based on the error message details in the log.")
+    public final static String TX_FAILED = "NCLS-CFGAPI-00132";
+
+    @LogMessageInfo(message = "The CrudResolver {0} could not find the configuration object of type {1} where instances of {2} should be removed.",
+            publish = true, level = "SEVERE",
+            cause="Generic delete command invocation failure",
+            action="Take appropriate action based on the error message details in the log.")
+    public final static String TARGET_OBJ_NOT_FOUND = "NCLS-CFGAPI-00133";
+
+    @LogMessageInfo(message = "Exception while creating access checks for generic command {0}.", 
+            publish = true, level = "SEVERE",
+            cause="An error occurred.",
+            action="Take appropriate action based on the error details in the log.")
+    public final static String ACCESS_CHK_CREATE_FAILED = "NCLS-CFGAPI-00134";
+
+    @LogMessageInfo(message = "Cannot identify getter method for ListingColumn", 
+            publish = true, level = "SEVERE",
+            cause="An error occurred.",
+            action="Take appropriate action based on the error details in the log.")
+    public final static String CANNOT_IDENTIFY_LIST_COL_GETTER = "NCLS-CFGAPI-00135";
+
+    @LogMessageInfo(message = "An error occurred while invoking getter {0} on ConfigBeanProxy.", 
+            publish = true, level = "SEVERE",
+            cause="An error occurred.",
+            action="Take appropriate action based on the error details in the log.")
+    public final static String ERR_INVOKE_GETTER = "NCLS-CFGAPI-00136";
+
+    @LogMessageInfo(message = "Failure while upgrading http-service properties.", 
+            publish = true, level = "SEVERE",
+            cause="An error occurred.",
+            action="Take appropriate action based on the error details in the log.")
+    public final static String ERR_UPGRADE_HTTP_SVC_PROPS = "NCLS-CFGAPI-00137";
+
 }

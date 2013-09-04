@@ -42,24 +42,28 @@ package org.glassfish.config.support;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.config.serverbeans.CopyConfig;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.AnnotationUtil;
+
 import java.util.logging.Level;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.*;
-import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
-
 import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
+
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
+
 import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
+import org.glassfish.api.logging.LogHelper;
 
 /**
  * Implementation of the generic delete command
@@ -113,9 +117,9 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
                     "GenericCreateCommand.command_model_exception",
                     "Exception while creating the command model for the generic command {0} : {1}",
                     commandName, e.getMessage());
-            logger.severe(msg);
+            LogHelper.log(logger, Level.SEVERE, ConfigApiLoggerInfo.GENERIC_CREATE_CMD_FAILED, e, 
+                    new Object[] {commandName});
             throw new RuntimeException(msg, e);
-
         }
         
     }
@@ -153,10 +157,8 @@ public class GenericDeleteCommand extends GenericCrudCommand implements AdminCom
             String msg = localStrings.getLocalString(GenericDeleteCommand.class,
                     "TypeAndNameResolver.target_object_not_found",
                     "Cannot find a {0} with a name {1}", targetType.getSimpleName(), name);
-            logger.severe(localStrings.getLocalString(GenericCrudCommand.class,
-                    "GenericDeleteCommand.target_object_not_found",
-                    "The CrudResolver {0} could not find the configuration object of type {1} where instances of {2} should be removed",
-                    resolver.getClass().toString(), parentType, targetType));
+            logger.log(Level.SEVERE, ConfigApiLoggerInfo.TARGET_OBJ_NOT_FOUND, 
+                    new Object[] {resolver.getClass().toString(), parentType, targetType});
             result.failure(logger, msg);
             return;
         }

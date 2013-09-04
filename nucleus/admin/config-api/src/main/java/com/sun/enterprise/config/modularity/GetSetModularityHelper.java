@@ -49,7 +49,6 @@ import javax.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.Locale;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 
 /**
  * The main driver to make the getset commands compatible with the config modularity.
@@ -59,8 +58,6 @@ import java.util.logging.Logger;
 @Service
 @Singleton
 public class GetSetModularityHelper {
-
-    private static final Logger LOG = Logger.getLogger(GetSetModularityHelper.class.getName());
 
     @Inject
     private ConfigModularityUtils configModularityUtils;

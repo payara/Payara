@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.config.modularity.command;
 
+import static com.sun.enterprise.config.util.ConfigApiLoggerInfo.*;
+
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.annotation.CustomConfiguration;
 import com.sun.enterprise.config.modularity.customization.ConfigBeanDefaultValue;
@@ -49,6 +51,7 @@ import com.sun.enterprise.config.serverbeans.DomainExtension;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -60,6 +63,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -70,6 +74,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,7 +97,8 @@ import java.util.logging.Logger;
 @I18n("get.active.config")
 public final class GetActiveConfigCommand extends AbstractConfigModularityCommand implements AdminCommand, AdminCommandSecurity.Preauthorization, AdminCommandSecurity.AccessCheckProvider {
 
-    private final Logger LOG = Logger.getLogger(GetActiveConfigCommand.class.getName());
+    private final Logger LOG = getLogger();
+    
     final private static LocalStringManagerImpl localStrings =
             new LocalStringManagerImpl(GetActiveConfigCommand.class);
 
@@ -149,7 +155,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
             } catch (Exception e) {
                 String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
                         "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
-                LOG.log(Level.INFO, msg, e);
+                LogHelper.log(LOG, Level.INFO, GET_ACTIVE_CONFIG_FOR_SERVICE_FAILED, e, serviceName, target);
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 report.setMessage(msg);
                 report.setFailureCause(e);
@@ -170,7 +176,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
                 } catch (Exception e) {
                     String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
                             "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
-                    LOG.log(Level.INFO, msg, e);
+                    LogHelper.log(LOG, Level.INFO, GET_ACTIVE_CONFIG_FOR_SERVICE_FAILED, e, serviceName, target);
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     report.setMessage(msg);
                     report.setFailureCause(e);
@@ -192,7 +198,7 @@ public final class GetActiveConfigCommand extends AbstractConfigModularityComman
         } catch (Exception e) {
             String msg = localStrings.getLocalString("get.active.config.getting.active.config.for.service.failed",
                     "Failed to get active configuration for {0} under the target {1} due to: {2}.", serviceName, target, e.getMessage());
-            LOG.log(Level.INFO, msg, e);
+            LogHelper.log(LOG, Level.INFO, GET_ACTIVE_CONFIG_FOR_SERVICE_FAILED, e, serviceName, target);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setMessage(msg);
             report.setFailureCause(e);

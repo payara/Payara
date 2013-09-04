@@ -42,11 +42,13 @@ package com.sun.enterprise.config.modularity.customization;
 
 import com.sun.enterprise.config.modularity.ConfigModularityUtils;
 import com.sun.enterprise.config.modularity.annotation.HasCustomizationTokens;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.util.LocalStringManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+
 import org.glassfish.hk2.api.ServiceLocator;
 
 import java.io.File;
@@ -69,7 +71,9 @@ import java.util.logging.Logger;
  */
 
 public class CustomizationTokensProvider {
-    private static final Logger LOG = Logger.getLogger(CustomizationTokensProvider.class.getName());
+    
+    private static final Logger LOG = ConfigApiLoggerInfo.getLogger();
+    
     private static final LocalStringManager strings =
             new LocalStringManagerImpl(CustomizationTokensProvider.class);
     private ServiceLocator locator;
@@ -158,7 +162,7 @@ public class CustomizationTokensProvider {
                                 return pl;
                             } catch (IOException ex) {
                                 // any failure here is fatal
-                                LOG.log(Level.SEVERE, strings.getLocalString("modules.class.loader.failed", "Failed to create a ClassLoader for modules directory."), ex);
+                                LOG.log(Level.SEVERE, ConfigApiLoggerInfo.MODULES_CL_FAILED, ex);
                             }
                             return ecl;
                         }

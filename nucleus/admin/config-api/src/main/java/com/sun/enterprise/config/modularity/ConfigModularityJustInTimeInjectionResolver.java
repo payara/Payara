@@ -67,7 +67,6 @@ import java.util.logging.Logger;
 @Service
 public class ConfigModularityJustInTimeInjectionResolver implements JustInTimeInjectionResolver {
 
-    private final static Logger LOG = Logger.getLogger(ConfigModularityJustInTimeInjectionResolver.class.getName());
     @Inject
     private DynamicConfigurationService dcs;
     @Inject

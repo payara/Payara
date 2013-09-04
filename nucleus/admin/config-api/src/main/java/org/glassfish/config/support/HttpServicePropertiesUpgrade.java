@@ -44,6 +44,8 @@ import com.sun.enterprise.config.serverbeans.AccessLog;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Configs;
 import com.sun.enterprise.config.serverbeans.HttpService;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
+
 import org.glassfish.api.admin.AdminCommandContext;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -52,6 +54,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
+
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -83,8 +86,8 @@ public class HttpServicePropertiesUpgrade extends BaseLegacyConfigurationUpgrade
                     }
                 }
             } catch (TransactionFailure tf) {
-                Logger.getAnonymousLogger().log(Level.SEVERE, "Failure while upgrading http-service properties."
-                    + "  Please check logs for errors", tf);
+                ConfigApiLoggerInfo.getLogger().log(Level.SEVERE, 
+                        ConfigApiLoggerInfo.ERR_UPGRADE_HTTP_SVC_PROPS, tf);
                 throw new RuntimeException(tf);
             }
         }

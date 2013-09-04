@@ -41,6 +41,9 @@
 package com.sun.enterprise.config.modularity;
 
 import com.sun.enterprise.config.modularity.parser.ModuleConfigurationLoader;
+import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
+
+import org.glassfish.api.logging.LogHelper;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigBean;
@@ -49,6 +52,7 @@ import org.jvnet.hk2.config.ConfigExtensionHandler;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,7 +66,8 @@ import java.util.logging.Logger;
 @Service(name = "basic-config-extension-handler")
 public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
 
-    private static final Logger LOG = Logger.getLogger(ExtensionPatternInvocationImpl.class.getName());
+    private static final Logger LOG = ConfigApiLoggerInfo.getLogger();
+    
     @Inject
     ServiceLocator serviceLocator;
 
@@ -91,9 +96,9 @@ public class ExtensionPatternInvocationImpl implements ConfigExtensionHandler {
             ConfigBeanProxy returnValue = moduleConfigurationLoader.createConfigBeanForType((Class) params[0], pr);
             return returnValue;
         } catch (TransactionFailure transactionFailure) {
-            LOG.log(Level.INFO, "Cannot get extension type {0} for {1} due to {2}", new Object[]{
-                    owner.getClass().getName(), ownerType.getName(),
-                    transactionFailure.getMessage()});
+            LogHelper.log(LOG, Level.INFO, "Cannot get extension type {0} for {1}.", 
+                    transactionFailure, new Object[]{
+                    owner.getClass().getName(), ownerType.getName()});
             return null;
         } 
     }
