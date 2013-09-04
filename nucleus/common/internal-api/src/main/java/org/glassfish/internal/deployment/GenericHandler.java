@@ -209,4 +209,14 @@ public abstract class GenericHandler implements ArchiveHandler {
         uris.add(archive.getURI());
         return uris;
     }
+
+    /**
+     * Returns whether this archive requires annotation scanning.
+     *
+     * @param archive file
+     * @return whether this archive requires annotation scanning
+     */
+    public boolean requiresAnnotationScanning(ReadableArchive archive) {
+        return true;
+    }
 }

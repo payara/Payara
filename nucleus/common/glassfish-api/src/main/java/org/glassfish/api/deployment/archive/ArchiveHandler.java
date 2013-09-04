@@ -143,4 +143,13 @@ public interface ArchiveHandler {
      * @return classpath URIs for this archive
      */
     public List<URI> getClassPathURIs(ReadableArchive archive);
+
+    /**
+     * Returns whether this archive requires annotation scanning.
+     *
+     * @param archive file
+     * @return whether this archive requires annotation scanning
+     */
+    public boolean requiresAnnotationScanning(ReadableArchive archive);
+
 }

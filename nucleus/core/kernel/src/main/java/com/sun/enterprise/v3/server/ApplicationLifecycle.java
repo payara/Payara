@@ -338,7 +338,10 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
                 tracing.addMark(DeploymentTracing.Mark.ARCHIVE_HANDLER_OBTAINED);
             }
 
-            getDeployableTypes(context);
+            if (handler.requiresAnnotationScanning(context.getSource())) {
+                getDeployableTypes(context);
+            }
+
             if (tracing!=null) {
                 tracing.addMark(DeploymentTracing.Mark.PARSING_DONE);
             }
