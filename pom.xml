@@ -48,7 +48,7 @@
     <version>4.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     
-    <name>GlassFish Build Aggregator</name>
+    <name>GlassFish Project</name>
     
     <scm>
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main</connection>
