@@ -110,7 +110,7 @@ class FileEntryFactory {
                 FileLister fileLocator = new FileLister();
                 retrievedFiles = fileLocator.getFiles(fileEntry.getName());
             }
-            if (retrievedFiles == null || retrievedFiles.isEmpty()) {
+            if (retrievedFiles.isEmpty()) {
             	if (_logger.isLoggable(Level.FINER)) {
             		_logger.log(Level.FINER, _strings.get("noMatchedFile", pathEntry));
             	}

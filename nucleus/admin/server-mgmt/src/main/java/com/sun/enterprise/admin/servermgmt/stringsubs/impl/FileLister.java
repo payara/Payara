@@ -52,7 +52,7 @@ import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 
 /**
- * Class to retrieve the all the matching files for a given input path.
+ * Class to retrieve all the matching files for a given input path.
  * It also handles the processing of wild-card in the given path.
  */
 final class FileLister {
@@ -68,12 +68,13 @@ final class FileLister {
      * @return List<File> all files whose paths match the pattern 
      */
     public List<File> getFiles(String pathPattern) {
-        List<File> retrievedFiles = new LinkedList<File>();
         int asteriskIndex = pathPattern.indexOf(ASTERISK);
         // if input does not contain a wild-card character, return child files directly
         if (asteriskIndex < 0) {
             return getAllChildFiles(new File(pathPattern));
         }
+
+        List<File> retrievedFiles = new LinkedList<File>();
 
         // try twice to handle '/' in windows
         // if the first try of parsing pathWithPattern fails, then replace all '/' 
@@ -168,7 +169,7 @@ final class FileLister {
      * Gets the list of child files. If the given file is a directory then all the
      * files under directory and sub-directories will be retrieved recursively.
      * @param rootfile
-     * @return
+     * @return List<File>
      */
     public List<File> getAllChildFiles(File rootfile) {
         List<File> retFiles = new LinkedList<File>();
