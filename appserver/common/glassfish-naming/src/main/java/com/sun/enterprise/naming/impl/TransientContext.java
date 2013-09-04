@@ -383,10 +383,12 @@ public class TransientContext implements Context, Serializable {
         if (name.equals("")) {
             throw new InvalidNameException("Cannot unbind empty name");
         }
-        if (bindings.get(name) == null) {
+        // After checking javadoc of Context.unbind(),I think we need not throw
+        // NameNotFoundException here.
+        /*if (bindings.get(name) == null) {
             throw new NameNotFoundException(
                     "Cannot find name to unbind");
-        }
+        }*/
         bindings.remove(name);
     }
 
