@@ -579,7 +579,7 @@
 		        <plugin>
 			    <groupId>org.glassfish.findbugs</groupId>
 			    <artifactId>findbugs-logging-detectors</artifactId>
-			    <version>1.5</version>
+			    <version>1.6</version>
 		        </plugin>
 		    </plugins>
                 </configuration>
@@ -587,7 +587,7 @@
                     <dependency>
                         <groupId>org.glassfish.findbugs</groupId>
                         <artifactId>findbugs</artifactId>
-                        <version>1.5</version>
+                        <version>1.6</version>
                     </dependency>
                 </dependencies>
             </plugin>
