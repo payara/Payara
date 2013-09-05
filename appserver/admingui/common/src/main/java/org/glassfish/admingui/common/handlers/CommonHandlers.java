@@ -782,7 +782,7 @@ public class CommonHandlers {
       */
     @Handler( id="filterProtocols")
     public static List filterProtocols(HandlerContext context) {
-        FilterTreeEvent event = (FilterTreeEvent) context.getEventObject();
+        FilterTreeEvent event = FilterTreeEvent.class.cast(context.getEventObject());
         List protocols = event.getChildObjects();
         ArrayList result = new ArrayList();
 
