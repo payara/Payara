@@ -40,8 +40,7 @@
 
 package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -64,12 +63,11 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.MANDATORY)
 public class TransactionalInterceptorMandatory extends TransactionalInterceptorBase {
 
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
+    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In MANDATORY TransactionalInterceptor");
+        _logger.log(java.util.logging.Level.INFO, CDI_JTA_MANDATORY);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(false);
         try {

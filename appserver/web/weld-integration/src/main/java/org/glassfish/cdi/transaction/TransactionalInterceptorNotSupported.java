@@ -40,8 +40,7 @@
 
 package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -66,19 +65,17 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.NOT_SUPPORTED)
 public class TransactionalInterceptorNotSupported extends TransactionalInterceptorBase {
 
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorMandatory.class, LogDomains.JTA_LOGGER);
+    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In NOT_SUPPORTED TransactionalInterceptor");
+        _logger.log(java.util.logging.Level.INFO, CDI_JTA_NOTSUPPORTED);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(true);
         try {
             Transaction transaction = null;
             if (getTransactionManager().getTransaction() != null) {
-                _logger.info("Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
-                        "called inside a transaction context.  Suspending transaction...");
+                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBNOTSUPPORTED);
                 try {
                     transaction = getTransactionManager().suspend();
                 } catch (Exception exception) {
@@ -86,7 +83,8 @@ public class TransactionalInterceptorNotSupported extends TransactionalIntercept
                             "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                     "called inside a transaction context.  Suspending transaction failed due to " +
                                     exception;
-                    _logger.info(messageString);
+                    _logger.log(java.util.logging.Level.INFO, 
+                        CDI_JTA_MBNOTSUPPORTEDTX, exception);
                     throw new TransactionalException(messageString, exception);
                 }
             }

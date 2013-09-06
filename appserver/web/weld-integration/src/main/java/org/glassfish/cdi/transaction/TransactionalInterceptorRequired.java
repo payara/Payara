@@ -40,8 +40,7 @@
 
 package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -65,19 +64,17 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRED)
 public class TransactionalInterceptorRequired extends TransactionalInterceptorBase {
 
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorRequired.class, LogDomains.JTA_LOGGER);
+    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In REQUIRED TransactionalInterceptor");
+        _logger.log(java.util.logging.Level.INFO, CDI_JTA_REQUIRED);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(false);
         try {
             boolean isTransactionStarted = false;
             if (getTransactionManager().getTransaction() == null) {
-                _logger.info("Managed bean with Transactional annotation and TxType of REQUIRED " +
-                        "called outside a transaction context.  Beginning a transaction...");
+                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQUIRED);
                 try {
                     getTransactionManager().begin();
                 } catch (Exception exception) {
@@ -85,7 +82,8 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
                             "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                     "encountered exception during begin " +
                                     exception;
-                    _logger.info(messageString);
+                    _logger.log(java.util.logging.Level.INFO,
+                        CDI_JTA_MBREQUIREDBT, exception);
                     throw new TransactionalException(messageString, exception);
                 }
                 isTransactionStarted = true;
@@ -102,7 +100,8 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                         "encountered exception during commit " +
                                         exception;
-                        _logger.info(messageString);
+                        _logger.log(java.util.logging.Level.INFO,
+                            CDI_JTA_MBREQUIREDCT, exception);
                         throw new TransactionalException(messageString, exception);
                     }
             }

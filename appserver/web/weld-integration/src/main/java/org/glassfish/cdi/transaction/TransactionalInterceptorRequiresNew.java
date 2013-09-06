@@ -40,8 +40,7 @@
 
 package org.glassfish.cdi.transaction;
 
-
-import com.sun.logging.LogDomains;
+import org.glassfish.logging.annotation.LoggerInfo;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -68,19 +67,17 @@ import java.util.logging.Logger;
 @javax.transaction.Transactional(javax.transaction.Transactional.TxType.REQUIRES_NEW)
 public class TransactionalInterceptorRequiresNew extends TransactionalInterceptorBase {
 
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorRequiresNew.class, LogDomains.JTA_LOGGER);
+    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME, SHARED_LOGMESSAGE_RESOURCE);
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.info("In REQUIRES_NEW TransactionalInterceptor");
+        _logger.log(java.util.logging.Level.INFO, CDI_JTA_REQNEW);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(false);
         try {
             Transaction suspendedTransaction = null;
             if (getTransactionManager().getTransaction() != null) {
-                _logger.info("Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
-                        "called inside a transaction context.  Suspending before beginning a transaction...");
+                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEW);
                 suspendedTransaction = getTransactionManager().suspend();
                 //todo catch, wrap in new transactional exception and throw
             }
@@ -91,7 +88,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                         "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                 "encountered exception during begin " +
                                 exception;
-                _logger.info(messageString);
+                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEWBT, exception);
                 throw new TransactionalException(messageString, exception);
             }
             Object proceed = null;
@@ -105,7 +102,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                             "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                     "encountered exception during commit " +
                                     exception;
-                    _logger.info(messageString);
+                    _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEWCT, exception);
                     throw new TransactionalException(messageString, exception);
                 }
                 if (suspendedTransaction != null) {
@@ -116,7 +113,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                         "encountered exception during resume " +
                                         exception;
-                        _logger.info(messageString);
+                        _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEWRT, exception);
                         throw new TransactionalException(messageString, exception);
                     }
                 }

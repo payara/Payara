@@ -42,11 +42,14 @@ package org.glassfish.cdi.transaction;
 
 
 import com.sun.enterprise.transaction.spi.TransactionOperationsManager;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LoggerInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -66,6 +69,101 @@ import java.util.logging.Logger;
  * @author Paul Parkinson
  */
 public class TransactionalInterceptorBase implements Serializable {
+
+    @LogMessagesResourceBundle
+    public static final String SHARED_LOGMESSAGE_RESOURCE = "org.glassfish.cdi.LogMessages";
+
+    @LoggerInfo(subsystem = "AS-CDI-JTA", description = "CDI-JTA", publish = true)
+    public static final String CDI_JTA_LOGGER_SUBSYSTEM_NAME = "javax.enterprise.resource.jta";
+    private static final Logger _logger = Logger.getLogger(CDI_JTA_LOGGER_SUBSYSTEM_NAME,
+        SHARED_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo( message = "Encountered NamingException while attempting to acquire " +
+                               "transaction manager for Transactional annotation interceptors {0}",
+                     action = "Fix the issue for the Naming exception",
+                     cause = "Transaction annotation processing for the Naming",
+                     level = "SEVERE")
+    public static final String CDI_JTA_NAME_EXCEPTION = "AS-CDI-JTA-0001";
+
+    @LogMessageInfo( message = "About to setRollbackOnly from @Transactional interceptor on " +
+                               "transaction: {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_SETROLLBACK = "AS-CDI-JTA-0002";
+
+    @LogMessageInfo( message = "No ComponentInvocation present for @Transactional annotation " +
+                                "processing. Restriction on use of UserTransaction will not be enforced.",
+                     level = "WARNING")
+    public static final String CDI_JTA_NOCOMPONENT = "AS-CDI-JTA-0003";
+
+    @LogMessageInfo( message = "In MANDATORY TransactionalInterceptor",
+                     level = "INFO")
+    public static final String CDI_JTA_MANDATORY = "AS-CDI-JTA-0004";
+
+    @LogMessageInfo( message = "In NEVER TransactionalInterceptor",
+                     level = "INFO")
+    public static final String CDI_JTA_NEVER = "AS-CDI-JTA-0005";
+
+    @LogMessageInfo( message = "In NOT_SUPPORTED TransactionalInterceptor",
+                     level = "INFO")
+    public static final String CDI_JTA_NOTSUPPORTED = "AS-CDI-JTA-0006";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+                               "called inside a transaction context. Suspending transaction...",
+                     level = "INFO")
+    public static final String CDI_JTA_MBNOTSUPPORTED = "AS-CDI-JTA-0007";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
+                               "called inside a transaction context.  Suspending transaction failed due to {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_MBNOTSUPPORTEDTX = "AS-CDI-JTA-0008";
+
+    @LogMessageInfo( message = "In REQUIRED TransactionalInterceptor",
+                     level = "INFO")
+    public static final String CDI_JTA_REQUIRED = "AS-CDI-JTA-0009";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                        "called outside a transaction context.  Beginning a transaction...",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQUIRED = "AS-CDI-JTA-0010";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                               "encountered exception during begin {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQUIREDBT = "AS-CDI-JTA-0011";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                               "encountered exception during commit {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQUIREDCT = "AS-CDI-JTA-0012";
+
+    @LogMessageInfo( message = "In REQUIRES_NEW TransactionalInterceptor",
+                     level = "INFO")
+    public static final String CDI_JTA_REQNEW = "AS-CDI-JTA-00013";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                        "called inside a transaction context.  Suspending before beginning a transaction...",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQNEW = "AS-CDI-JTA-00014";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                               "encountered exception during begin {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQNEWBT = "AS-CDI-JTA-00015";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
+                               "encountered exception during commit {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQNEWCT = "AS-CDI-JTA-00016";
+
+    @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
+                     "encountered exception during resume {0}",
+                     level = "INFO")
+    public static final String CDI_JTA_MBREQNEWRT = "AS-CDI-JTA-00017";
+
+    @LogMessageInfo( message = "In SUPPORTS TransactionalInterceptor",
+                     level = "INFO")
+    public static final String CDI_JTA_SUPPORTS = "AS-CDI-JTA-0018";
+
     private static TransactionManager testTransactionManager;
     volatile private static TransactionManager transactionManager;
     transient private TransactionOperationsManager preexistingTransactionOperationsManager;
@@ -75,9 +173,6 @@ public class TransactionalInterceptorBase implements Serializable {
     private static final TransactionOperationsManager
             transactionalTransactionOperationsManagerTransactionMethodsNotAllowed =
             new TransactionalTransactionOperationsManagerTransactionMethodsNotAllowed();
-
-    private static Logger _logger = LogDomains.getLogger(
-            TransactionalInterceptorBase.class, LogDomains.JTA_LOGGER);
 
     /**
      * Must not return null
@@ -94,9 +189,7 @@ public class TransactionalInterceptorBase implements Serializable {
                                 new InitialContext().lookup("java:appserver/TransactionManager");
                 }
             } catch (NamingException e) {
-                _logger.severe(
-                        "Encountered NamingException while attempting to acquire transaction manager for " +
-                                "Transactional annotation interceptors " + e);
+              _logger.log(java.util.logging.Level.SEVERE, CDI_JTA_NAME_EXCEPTION, e);
                 throw new RuntimeException("Unable to obtain TransactionManager for Transactional Interceptor", e);
             }
         }
@@ -211,7 +304,7 @@ public class TransactionalInterceptorBase implements Serializable {
     private void markRollbackIfActiveTransaction() throws SystemException {
         Transaction transaction = getTransactionManager().getTransaction();
         if (transaction != null) {
-            _logger.info("About to setRollbackOnly from @Transactional interceptor on transaction:" + transaction);
+          _logger.log(java.util.logging.Level.INFO, CDI_JTA_SETROLLBACK, transaction);
             getTransactionManager().setRollbackOnly();
         }
     }
@@ -220,9 +313,7 @@ public class TransactionalInterceptorBase implements Serializable {
         if (testTransactionManager != null) return; //test
         ComponentInvocation currentInvocation = getCurrentInvocation();
         if (currentInvocation == null) {
-            _logger.warning(
-                    "No ComponentInvocation present for @Transactional annotation processing.  " +
-                            "Restriction on use of UserTransaction will not be enforced.");
+          _logger.log(java.util.logging.Level.WARNING, CDI_JTA_NOCOMPONENT);
             return;
         }
         preexistingTransactionOperationsManager =
