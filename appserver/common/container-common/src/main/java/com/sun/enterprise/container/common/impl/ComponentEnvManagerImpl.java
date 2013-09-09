@@ -824,7 +824,8 @@ public class ComponentEnvManagerImpl
                 WebBundleDescriptor webEnv = (WebBundleDescriptor) d;
                 id = webEnv.getApplication().getName() + ID_SEPARATOR +
                     webEnv.getContextRoot();
-                _logger.finer("ComponentEnvManagerImpl: " +
+                if (_logger.isLoggable(Level.FINER))
+                    _logger.finer("ComponentEnvManagerImpl: " +
                                 "converting EJB to web bundle id " + id);
             } else {
                 id = ejbEnv.getApplication().getName() + ID_SEPARATOR +
