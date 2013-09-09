@@ -45,11 +45,9 @@
     //println("***** #{pageSession}\n\n\n\n\n\n");
     mapPut(map="#{requestScope.jmsAttrs}" key="clustertype" value="$pageSession{clusterType}");
     mapPut(map="#{requestScope.jmsAttrs}" key="property" value="$pageSession{properties}");
-    mapPut(map="#{requestScope.jmsAttrs}" key="availabilityEnabled" value="#{true}");
     if ('$pageSession{clusterType}=conventional') {
         mapPut(map="#{requestScope.jmsAttrs}" key="configStoreType" value="$pageSession{configStoreType}");
         mapPut(map="#{requestScope.jmsAttrs}" key="messageStoreType" value="$pageSession{messageStoreType}");
-        mapPut(map="#{requestScope.jmsAttrs}" key="availabilityEnabled" value="#{false}");
     }
 
     // Save JMS integration type
