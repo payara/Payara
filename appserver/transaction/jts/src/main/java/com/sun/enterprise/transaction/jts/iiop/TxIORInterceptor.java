@@ -94,14 +94,12 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
             OTSPolicy otsPolicy = null;
             try {
                 otsPolicy = (OTSPolicy)iorInfo.get_effective_policy(
-                        habitat.<GlassFishORBHelper>getService(GlassFishORBHelper.class).getOTSPolicyType());
+			 habitat.getService(GlassFishORBHelper.class).getOTSPolicyType());
             } catch ( INV_POLICY ex ) {
                 _logger.log(Level.FINE, 
                         "TxIORInterceptor.establish_components: OTSPolicy not present");
             }
-            if ( otsPolicy != null ) {
-                addOTSComponents(iorInfo);
-            }
+	    addOTSComponents(iorInfo, otsPolicy);
 
         } catch (Exception e) {
             _logger.log(Level.WARNING,"Exception in establish_components", e);
@@ -110,9 +108,13 @@ public class TxIORInterceptor extends LocalObject implements IORInterceptor {
         }
     }
 
-    private void addOTSComponents(IORInfo iorInfo) {       
+    private void addOTSComponents(IORInfo iorInfo, OTSPolicy otsPolicy) {       
         short invPolicyValue = SHARED.value;
         short otsPolicyValue = ADAPTS.value;            
+
+        if (otsPolicy != null) {
+	    otsPolicyValue = otsPolicy.value();
+	}
         
         Any otsAny = ORB.init().create_any();
         Any invAny = ORB.init().create_any();
