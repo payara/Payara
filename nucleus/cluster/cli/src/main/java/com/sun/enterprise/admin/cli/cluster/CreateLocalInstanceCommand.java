@@ -232,8 +232,11 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
 
     private void validateInstanceDirUnique() throws CommandException {
         RemoteCLICommand rc = new RemoteCLICommand("list-instances", this.programOpts, this.env);
-        String[] registeredInstanceNamesOnThisNode =
-                rc.executeAndReturnOutput("list-instances", "--nostatus", _node).split("\r?\n");
+        String returnOutput =
+                rc.executeAndReturnOutput("list-instances", "--nostatus", _node);
+        if (returnOutput == null)
+            return;
+        String[] registeredInstanceNamesOnThisNode = returnOutput.split("\r?\n");
         for (String registeredInstanceName : registeredInstanceNamesOnThisNode) {
             File instanceListDir = new File(nodeDirChild, registeredInstanceName);
             if (instanceName.equalsIgnoreCase(registeredInstanceName) && instanceDir.equals(instanceListDir)) {
