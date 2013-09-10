@@ -48,7 +48,9 @@ import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.io.InstanceDirs;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -161,6 +163,15 @@ public class CreateInstanceCommand implements AdminCommand {
         nodeDir = theNode.getNodeDirAbsolute();
         installDir = theNode.getInstallDir();
 
+        if (theNode.isLocal()){
+            validateInstanceDirUnique(report, context);
+            if (report.getActionExitCode() != ActionReport.ExitCode.SUCCESS
+                    && report.getActionExitCode() != ActionReport.ExitCode.WARNING) {
+                // If we couldn't update domain.xml then stop!
+                return;
+            }
+        }
+        
         // First, update domain.xml by calling _register-instance
         CommandInvocation ci = cr.getCommandInvocation("_register-instance", report, context.getSubject());
         ParameterMap map = new ParameterMap();
@@ -218,6 +229,35 @@ public class CreateInstanceCommand implements AdminCommand {
         createInstanceFilesystem(context);
     }
 
+    private void validateInstanceDirUnique(ActionReport report, AdminCommandContext context) {
+        CommandInvocation listInstances = cr.getCommandInvocation("list-instances", report, context.getSubject());
+        ParameterMap map = new ParameterMap();
+        map.add("whichTarget", theNode.getName());
+        listInstances.parameters(map);
+        listInstances.execute();
+        Properties pro = listInstances.report().getExtraProperties();
+        if (pro != null){
+            List<HashMap> instanceList = (List<HashMap>) pro.get("instanceList");
+            if (instanceList == null)
+                return;
+            for (HashMap instanceMap : instanceList) {
+                final File nodeDirFile = (nodeDir != null
+                        ? new File(nodeDir)
+                        : defaultLocalNodeDirFile());
+                File instanceDir = new File(new File(nodeDirFile.toString(), theNode.getName()), instance);
+                String instanceName = (String)instanceMap.get("name");
+                File instanceListDir = new File(new File(nodeDirFile.toString(), theNode.getName()), instance);
+                if (instance.equalsIgnoreCase(instanceName) && instanceDir.equals(instanceListDir)) {
+                    String msg = Strings.get("Instance.duplicateInstanceDir", instance, instanceName);
+                    logger.warning(msg);
+                    report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                    report.setMessage(msg);
+                    return;
+                }
+            }
+        }
+    }
+    
     /**
      * Returns the directory for the selected instance that is on the local
      * system.

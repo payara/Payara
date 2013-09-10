@@ -199,6 +199,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             }
 
         } else {
+            validateInstanceDirUnique();
             try {
                 registerToDAS();
                 _rendezvousOccurred = true;
@@ -227,6 +228,22 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         return exitCode;
     }
 
+    private void validateInstanceDirUnique() throws CommandException {
+        RemoteCLICommand rc = new RemoteCLICommand("list-instances", this.programOpts, this.env);
+        String[] registeredInstanceNamesOnThisNode =
+                rc.executeAndReturnOutput("list-instances", "--nostatus", _node).split("\r?\n");
+        if (registeredInstanceNamesOnThisNode == null)
+            return;
+        for (String registeredInstanceName : registeredInstanceNamesOnThisNode) {
+            File instanceListDir = new File(nodeDirChild, registeredInstanceName);
+            if (instanceName.equalsIgnoreCase(registeredInstanceName) && instanceDir.equals(instanceListDir)) {
+                throw new CommandException(
+                        Strings.get("Instance.duplicateInstanceDir",
+                                instanceName, registeredInstanceName));
+            }
+        }
+    }
+    
     private int bootstrapSecureAdminFiles() throws CommandException {
         RemoteCLICommand rc = new RemoteCLICommand("_bootstrap-secure-admin", this.programOpts, this.env);
         rc.setFileOutputDirectory(instanceDir);

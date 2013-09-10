@@ -111,9 +111,18 @@ public abstract class CopyConfig implements AdminCommand {
         String srcConfig = "";
         srcConfig = config.getName();
 
+        File configConfigDir = new File(env.getConfigDirPath(),
+                configName);
+        for (Config c : configs.getConfig()) {
+            File existingConfigConfigDir = new File(env.getConfigDirPath(), c.getName());
+            if (!c.getName().equals(configName) && configConfigDir.equals(existingConfigConfigDir)) {
+                throw new TransactionFailure(localStrings.getLocalString(
+                        "config.duplicate.dir",
+                        "Config {0} is trying to use the same directory as config {1}",
+                        configName, c.getName()));
+            }
+        }
         try {
-            File configConfigDir = new File(env.getConfigDirPath(),
-                    configName);
             if (!(new File(configConfigDir, "docroot").mkdirs() &&
                   new File(configConfigDir, "lib/ext").mkdirs())) {
                 throw new IOException(localStrings.getLocalString("config.mkdirs",
