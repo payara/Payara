@@ -199,7 +199,9 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             }
 
         } else {
-            validateInstanceDirUnique();
+            if (instanceName != null && instanceDir != null ){
+                validateInstanceDirUnique();
+            }
             try {
                 registerToDAS();
                 _rendezvousOccurred = true;
@@ -232,8 +234,6 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         RemoteCLICommand rc = new RemoteCLICommand("list-instances", this.programOpts, this.env);
         String[] registeredInstanceNamesOnThisNode =
                 rc.executeAndReturnOutput("list-instances", "--nostatus", _node).split("\r?\n");
-        if (registeredInstanceNamesOnThisNode == null)
-            return;
         for (String registeredInstanceName : registeredInstanceNamesOnThisNode) {
             File instanceListDir = new File(nodeDirChild, registeredInstanceName);
             if (instanceName.equalsIgnoreCase(registeredInstanceName) && instanceDir.equals(instanceListDir)) {
