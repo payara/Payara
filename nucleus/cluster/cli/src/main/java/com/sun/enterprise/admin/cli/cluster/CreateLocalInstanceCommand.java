@@ -199,9 +199,7 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             }
 
         } else {
-            if (instanceName != null && instanceDir != null ){
-                validateInstanceDirUnique();
-            }
+            validateInstanceDirUnique();
             try {
                 registerToDAS();
                 _rendezvousOccurred = true;
@@ -239,10 +237,12 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
         String[] registeredInstanceNamesOnThisNode = returnOutput.split("\r?\n");
         for (String registeredInstanceName : registeredInstanceNamesOnThisNode) {
             File instanceListDir = new File(nodeDirChild, registeredInstanceName);
-            if (instanceName.equalsIgnoreCase(registeredInstanceName) && instanceDir.equals(instanceListDir)) {
-                throw new CommandException(
-                        Strings.get("Instance.duplicateInstanceDir",
-                                instanceName, registeredInstanceName));
+            if (instanceName != null && registeredInstanceName.equalsIgnoreCase(instanceName)) {
+                if (instanceDir != null && instanceListDir.equals(instanceDir)){
+                    throw new CommandException(
+                            Strings.get("Instance.duplicateInstanceDir",
+                                    instanceName, registeredInstanceName));
+                }
             }
         }
     }
