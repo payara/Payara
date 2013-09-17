@@ -83,86 +83,86 @@ public class TransactionalInterceptorBase implements Serializable {
                      action = "Fix the issue for the Naming exception",
                      cause = "Transaction annotation processing for the Naming",
                      level = "SEVERE")
-    public static final String CDI_JTA_NAME_EXCEPTION = "AS-CDI-JTA-0001";
+    public static final String CDI_JTA_NAME_EXCEPTION = "AS-JTA-0001";
 
     @LogMessageInfo( message = "About to setRollbackOnly from @Transactional interceptor on " +
                                "transaction: {0}",
                      level = "INFO")
-    public static final String CDI_JTA_SETROLLBACK = "AS-CDI-JTA-0002";
+    public static final String CDI_JTA_SETROLLBACK = "AS-JTA-0002";
 
     @LogMessageInfo( message = "No ComponentInvocation present for @Transactional annotation " +
                                 "processing. Restriction on use of UserTransaction will not be enforced.",
                      level = "WARNING")
-    public static final String CDI_JTA_NOCOMPONENT = "AS-CDI-JTA-0003";
+    public static final String CDI_JTA_NOCOMPONENT = "AS-JTA-0003";
 
     @LogMessageInfo( message = "In MANDATORY TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_MANDATORY = "AS-CDI-JTA-0004";
+    public static final String CDI_JTA_MANDATORY = "AS-JTA-0004";
 
     @LogMessageInfo( message = "In NEVER TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_NEVER = "AS-CDI-JTA-0005";
+    public static final String CDI_JTA_NEVER = "AS-JTA-0005";
 
     @LogMessageInfo( message = "In NOT_SUPPORTED TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_NOTSUPPORTED = "AS-CDI-JTA-0006";
+    public static final String CDI_JTA_NOTSUPPORTED = "AS-JTA-0006";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                "called inside a transaction context. Suspending transaction...",
                      level = "INFO")
-    public static final String CDI_JTA_MBNOTSUPPORTED = "AS-CDI-JTA-0007";
+    public static final String CDI_JTA_MBNOTSUPPORTED = "AS-JTA-0007";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                "called inside a transaction context.  Suspending transaction failed due to {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBNOTSUPPORTEDTX = "AS-CDI-JTA-0008";
+    public static final String CDI_JTA_MBNOTSUPPORTEDTX = "AS-JTA-0008";
 
     @LogMessageInfo( message = "In REQUIRED TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_REQUIRED = "AS-CDI-JTA-0009";
+    public static final String CDI_JTA_REQUIRED = "AS-JTA-0009";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                         "called outside a transaction context.  Beginning a transaction...",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQUIRED = "AS-CDI-JTA-0010";
+    public static final String CDI_JTA_MBREQUIRED = "AS-JTA-0010";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during begin {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQUIREDBT = "AS-CDI-JTA-0011";
+    public static final String CDI_JTA_MBREQUIREDBT = "AS-JTA-0011";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during commit {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQUIREDCT = "AS-CDI-JTA-0012";
+    public static final String CDI_JTA_MBREQUIREDCT = "AS-JTA-0012";
 
     @LogMessageInfo( message = "In REQUIRES_NEW TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_REQNEW = "AS-CDI-JTA-00013";
+    public static final String CDI_JTA_REQNEW = "AS-JTA-00013";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                         "called inside a transaction context.  Suspending before beginning a transaction...",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQNEW = "AS-CDI-JTA-00014";
+    public static final String CDI_JTA_MBREQNEW = "AS-JTA-00014";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                "encountered exception during begin {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQNEWBT = "AS-CDI-JTA-00015";
+    public static final String CDI_JTA_MBREQNEWBT = "AS-JTA-00015";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                "encountered exception during commit {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQNEWCT = "AS-CDI-JTA-00016";
+    public static final String CDI_JTA_MBREQNEWCT = "AS-JTA-00016";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                      "encountered exception during resume {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQNEWRT = "AS-CDI-JTA-00017";
+    public static final String CDI_JTA_MBREQNEWRT = "AS-JTA-00017";
 
     @LogMessageInfo( message = "In SUPPORTS TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_SUPPORTS = "AS-CDI-JTA-0018";
+    public static final String CDI_JTA_SUPPORTS = "AS-JTA-0018";
 
     private static TransactionManager testTransactionManager;
     volatile private static TransactionManager transactionManager;
