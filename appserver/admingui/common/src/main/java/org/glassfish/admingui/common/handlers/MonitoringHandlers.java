@@ -732,7 +732,7 @@ public class MonitoringHandlers {
     private static String formatStringForDisplay(String strToFormat) {
         String[] strs = strToFormat.split(",");
         StringBuilder formattedStr = new StringBuilder();
-        if (strs != null && strs.length > 10) {
+        if (strs.length > 10) {
             for (int i = 0; i < strs.length; i++) {
                 String str = strs[i];
                 if (! (formattedStr.length() == 0)) {

@@ -492,7 +492,7 @@ public class RestUtil {
                     //If this is called from the jsf as handler, we want to stop processing and show error
                     //instead of dumping the exception on screen.
                     if (throwException) {
-                        if ("".equals(message) || message == null) {
+                        if ("".equals(message)) {
                             GuiUtil.handleException(handlerCtx, ex);
                         } else {
                             GuiUtil.handleError(handlerCtx, message);
@@ -500,7 +500,7 @@ public class RestUtil {
                     }
                 } else {
                     //if this is called by other java handler, we tell the called handle the exception.
-                    if ("".equals(message) || message == null) {
+                    if ("".equals(message)) {
                         throw new RuntimeException(ex);
                     } else {
                         throw new RuntimeException(message, ex);
@@ -754,9 +754,7 @@ public class RestUtil {
     public static List<String> getChildList(String endpoint) throws Exception {
         List<String> childElements = new ArrayList<String>();
         Map<String, String> childResources = getChildMap(endpoint);
-        if (childResources != null) {
-            childElements.addAll(childResources.values());
-        }
+        childElements.addAll(childResources.values());
         Collections.sort(childElements);
         return childElements;
     }
