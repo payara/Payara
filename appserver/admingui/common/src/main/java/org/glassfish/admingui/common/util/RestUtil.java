@@ -563,6 +563,9 @@ public class RestUtil {
             } else {
                 //formData.putSingle(key, (value != null) ? value.toString() : value);
                 try {
+                    if (key.equals("availabilityEnabled")) {
+                        System.out.println("================== availabilityEnabled  skipped ");
+                    }
                     formData.putSingle(key, value);
                 } catch (ClassCastException ex) {
                     Logger logger = GuiUtil.getLogger();

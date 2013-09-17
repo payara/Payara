@@ -806,7 +806,7 @@ public class CommonHandlers {
 	FilterTreeEvent event = null;
         try{
 	    if (context.getEventObject() instanceof FilterTreeEvent){
-            	event = (FilterTreeEvent) context.getEventObject();
+                event = FilterTreeEvent.class.cast(context.getEventObject());
 	    }else{
 		return result;
 	    }

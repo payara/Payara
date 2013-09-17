@@ -187,12 +187,10 @@ public class ConnectorsHandlers {
             className = (String) currentMap.get("className");
             attrMap.putAll(currentMap);
         } else {
-            if (attrMap != null) {
-                name = (String) attrMap.get("name");
-                resAdapter = (String) attrMap.get("resAdapter");
-                resType = (String) attrMap.get("resType");
-                className = (String) attrMap.get("className");
-            }
+            name = (String) attrMap.get("name");
+            resAdapter = (String) attrMap.get("resAdapter");
+            resType = (String) attrMap.get("resType");
+            className = (String) attrMap.get("className");
         }
         if (resAdapter != null) {
             resAdapter = resAdapter.trim();
