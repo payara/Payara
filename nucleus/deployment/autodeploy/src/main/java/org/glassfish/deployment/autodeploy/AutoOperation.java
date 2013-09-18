@@ -169,7 +169,7 @@ public abstract class AutoOperation {
                              getMessageString(ds, file));
             } else {
                 if(report.getMessage() != null){
-                    deplLogger.log(Level.WARNING, report.getMessage());
+                    deplLogger.log(Level.WARNING, WARNING_MSG, report.getMessage());
                 }
               deplLogger.log(Level.WARNING,
                              WARNING_MSG,
