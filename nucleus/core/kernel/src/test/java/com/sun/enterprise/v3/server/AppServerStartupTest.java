@@ -46,6 +46,7 @@ import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import com.sun.enterprise.module.single.StaticModulesRegistry;
 import com.sun.enterprise.util.Result;
+
 import org.glassfish.api.FutureProvider;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -59,6 +60,7 @@ import org.glassfish.hk2.api.PreDestroy;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.runlevel.RunLevelContext;
 import org.glassfish.hk2.runlevel.RunLevelController;
 import org.glassfish.hk2.runlevel.internal.AsyncRunLevelContext;
 import org.glassfish.hk2.runlevel.internal.RunLevelControllerImpl;
@@ -79,6 +81,7 @@ import org.jvnet.hk2.annotations.Service;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -151,8 +154,11 @@ public class AppServerStartupTest {
 
         config.bind(BuilderHelper.link(RunLevelControllerImpl.class).to(RunLevelController.class).build());
 
+        config.addUnbindFilter(BuilderHelper.createContractFilter(RunLevelContext.class.getName()));
+        config.bind(BuilderHelper.link(RunLevelContext.class).to(Context.class).in(Singleton.class).build());
+        
         config.addUnbindFilter(BuilderHelper.createContractFilter(AsyncRunLevelContext.class.getName()));
-        config.bind(BuilderHelper.link(AsyncRunLevelContext.class).to(Context.class).in(Singleton.class).build());
+        config.bind(BuilderHelper.link(AsyncRunLevelContext.class).in(Singleton.class).build());
 
         config.bind(BuilderHelper.link(AppServerStartup.class).build());
 
