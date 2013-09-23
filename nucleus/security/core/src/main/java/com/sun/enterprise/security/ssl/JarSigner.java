@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -132,6 +132,21 @@ public class JarSigner {
     public void signJar(File input, File output, String alias)
             throws IOException, KeyStoreException, NoSuchAlgorithmException,
             InvalidKeyException, UnrecoverableKeyException, SignatureException {
+        
+        signJar(input, output, alias, null);
+    }
+    
+    /**
+     * Signs a JAR, adding caller-specified attributes to the manifest's main attrs.
+     * 
+     * @param input input JAR file
+     * @param output output JAR file
+     * @param alias signing alias in the keystore
+     * @param additionalAttrs additional attributes to add to the manifest's main attrs (null if none)
+     */
+    public void signJar(File input, File output, String alias, final Attributes additionalAttrs) 
+            throws IOException, KeyStoreException, NoSuchAlgorithmException,
+            InvalidKeyException, UnrecoverableKeyException, SignatureException {
 
         JarFile jf = new JarFile(input);
         ZipOutputStream zout = null;
@@ -148,7 +163,12 @@ public class JarSigner {
                 jes = jf.entries();// manifestHeader is header of META-INF/MANIFEST.MF, initialized to default
                 Manifest manifest = retrieveManifest(jf);
                 StringBuilder manifestHeader = new StringBuilder();
-                appendAttributes(manifestHeader, manifest, null);
+                Attributes mfAttrs = manifest.getMainAttributes();
+                if (additionalAttrs != null) {
+                    mfAttrs.putAll(additionalAttrs);
+                }
+                appendAttributes(manifestHeader, mfAttrs);
+                
                 // sigFileEntries is content of META-INF/ME.SF
                 StringBuilder sigFileEntries = new StringBuilder();
                 while (jes.hasMoreElements()) {
@@ -294,8 +314,12 @@ public class JarSigner {
      */
     private static StringBuilder appendAttributes(StringBuilder manifestEntry,
             Manifest manifest, String entry) {
-        Attributes attributes = (entry == null)
-                ? manifest.getMainAttributes() : manifest.getAttributes(entry);
+        return appendAttributes(manifestEntry, (entry == null)
+                ? manifest.getMainAttributes() : manifest.getAttributes(entry));
+    }
+    
+    private static StringBuilder appendAttributes(StringBuilder manifestEntry,
+            Attributes attributes) {
         StringBuilder line = new StringBuilder();
         if (attributes != null) {
             for (Map.Entry attr : attributes.entrySet()) {
