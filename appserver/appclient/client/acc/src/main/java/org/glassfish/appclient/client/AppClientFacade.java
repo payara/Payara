@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -106,7 +106,7 @@ public class AppClientFacade {
     private static final String ACC_CONFIG_CONTENT_PROPERTY_NAME = "glassfish-acc.xml.content";
     private static final String MAN_PAGE_PATH = "/org/glassfish/appclient/client/acc/appclient.1m";
     private static final String LINE_SEP = System.getProperty("line.separator");
-    
+
 
     private static final Class<?> stringsAnchor = ACCClassLoader.class;
     private static LocalStringManager localStrings = new LocalStringManagerImpl(stringsAnchor);
@@ -129,7 +129,7 @@ public class AppClientFacade {
      * Eventually, the Java runtime will invoke this method as the main method
      * of the application, whether or not the command line specified the
      * Java agent.  If the agent has already run, then it will have prepared
-     * the ACC already.  If the agent has not already run, then this method 
+     * the ACC already.  If the agent has not already run, then this method
      * prepares it.
      * <p>
      * If the user has run the generated app client JAR directly - not using
@@ -142,7 +142,7 @@ public class AppClientFacade {
      * client.  The net result is that, no matter how the app client was
      * launched, the args array contains only the arguments that are for the
      * client's consumption, without any agent or ACC arguments.
-     * 
+     *
      * @param args the command line arguments
      */
     public static void main(String[] args) {
@@ -152,13 +152,13 @@ public class AppClientFacade {
                  * The facade JAR has been run directly, not via the appclient
                  * script and not via Java Web Start.  So we have no agent
                  * arguments and no instrumentation for registering transformations.
-                 * 
+                 *
                  * Because the agent has not run, we prepare the ACC here.  (The
                  * agent would have done so itself had it run.)
                  */
                 prepareACC(null, null);
             }
-            
+
             /*
              * In any case, the ACC is now prepared.  Launch the app client in
              * the prepared ACC.
@@ -192,9 +192,9 @@ public class AppClientFacade {
                     "Current Java version {0} is too low; {1} or later required",
                     new Object[] {javaVersion.versionString, "1.6"}));
         }
-        
+
         /*
-         * Analyze the agent argument string.  
+         * Analyze the agent argument string.
          */
         AgentArguments agentArgs = AgentArguments.newInstance(agentArgsText);
 
@@ -212,7 +212,7 @@ public class AppClientFacade {
         } else if (appClientCommandArgs.isHelp()) {
             help();
         }
-        
+
         /*
          * Examine the agent arguments for settings about how to launch the
          * client.
@@ -434,7 +434,7 @@ public class AppClientFacade {
             case CLASSFILE:
                 container = createContainerForClassFile(builder, launchInfo.getClientName());
                 break;
-                
+
             default:
                 container = null;
         }
@@ -577,13 +577,13 @@ public class AppClientFacade {
             SAXSource saxSource = new SAXSource(reader, inputSource);
             JAXBContext jc = JAXBContext.newInstance(ClientContainer.class );
             final ValidationEventCollector vec = new ValidationEventCollector();
-            
+
             Unmarshaller u = jc.createUnmarshaller();
             u.setEventHandler(vec);
             result = (ClientContainer) u.unmarshal(saxSource);
             if (vec.hasEvents()) {
                 /*
-                 * The parser reported at least one warning or error.  If all 
+                 * The parser reported at least one warning or error.  If all
                  * events were warnings, display them as a message and continue.
                  * Otherwise there was at least one error or fatal, so say so
                  * and try to continue but say that such errors might be fatal
@@ -596,9 +596,9 @@ public class AppClientFacade {
                     isError |= (ve.getSeverity() != ValidationEvent.WARNING);
                 }
                 final String messageIntroduction = localStrings.getLocalString(
-                            AppClientFacade.class, 
+                            AppClientFacade.class,
                             isError ? "appclient.errParsingConfig" : "appclient.warnParsingConfig",
-                            isError ? "Error parsing app client container configuration {0}.  Attempting to continue.  In future releases such parsing errors might become fatal.  Please correct your configuration file." : 
+                            isError ? "Error parsing app client container configuration {0}.  Attempting to continue.  In future releases such parsing errors might become fatal.  Please correct your configuration file." :
                                 "Warning(s) parsing app client container configuration {0}.  Continuing.",
                             new Object[] {configFileLocationForErrorMessage});
                 /*
@@ -606,7 +606,7 @@ public class AppClientFacade {
                  * validation fails - is commented out to prevent possible
                  * regressions.  Users might have customized the acc config file
                  * in a way that does not validate but would have worked silently
-                 * before. 
+                 * before.
                  */
 //                if (isErrorOrWorse) {
 //                    throw new UserError(messageIntroduction,
@@ -652,7 +652,7 @@ public class AppClientFacade {
     {
         try {
             File f = new File(xmlFullName);
-            if((f != null) && f.exists() && f.isFile() && f.canRead()){
+            if(f.exists() && f.isFile() && f.canRead()){
                 return f;
             }else{// If given file does not exists
                 xmlMessage(xmlFullName);

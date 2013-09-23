@@ -126,7 +126,7 @@ public class Jps {
                 }
 
                 String[] sublines = line.split(" ");
-                if (sublines == null || sublines.length != 2) {
+                if (sublines.length != 2) {
                     continue;
                 }
 

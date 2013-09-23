@@ -532,7 +532,7 @@ public class FileUtils {
         if(!deleteFile(f))
             f.deleteOnExit();
     }
-    
+
     /**
      * Delete a file.  Will retry every ten milliseconds for five seconds, doing a
      * gc after each second.
@@ -542,9 +542,9 @@ public class FileUtils {
      */
     public static boolean deleteFileWithWaitLoop(File f) {
         return internalDeleteFile(f, true);
-        
+
     }
-    
+
     /**
      * Delete a file.  If on Windows and the delete fails, run the gc and retry the deletion.
      *
@@ -554,7 +554,7 @@ public class FileUtils {
     public static boolean deleteFile(File f) {
         return internalDeleteFile(f, false);
     }
-    
+
     /**
      * Delete a file.  If on Windows and the delete fails, run the gc and retry the deletion.
      *
@@ -578,9 +578,9 @@ public class FileUtils {
         }
         else {
             DeleteFileWork work = new DeleteFileWork(f);
-            
+
             doWithRetry(work);
-            
+
             if (work.workComplete()) {
                 return true;
             }
@@ -1294,14 +1294,12 @@ public class FileUtils {
             return baos.toByteArray();
         }
         catch (Exception e) {
-            if (is != null) {
                 try {
                     is.close();
                 }
                 catch (Exception ex) {
                     // ignore...
                 }
-            }
             return null;
         }
     }
@@ -1384,7 +1382,7 @@ public class FileUtils {
             return lastError;
         }
     }
-    
+
     /**
      * Retriable work for deleting a file
      */
@@ -1392,7 +1390,7 @@ public class FileUtils {
 
         private final File deleteMe;
         private boolean complete = false;
-        
+
         private DeleteFileWork(File deleteMe) {
             this.deleteMe = deleteMe;
         }
@@ -1400,7 +1398,7 @@ public class FileUtils {
         @Override
         public void run() {
             if (complete) return;
-            
+
             if (deleteMe.delete()) complete = true;
         }
 
@@ -1409,7 +1407,7 @@ public class FileUtils {
             return complete;
         }
 
-        
+
     }
 
     ///////////////////////////////////////////////////////////////////////////

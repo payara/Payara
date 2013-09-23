@@ -49,7 +49,7 @@ package com.sun.enterprise.util;
  * @author bnevins
  */
 public final class JDK {
-    
+
     private JDK(String string) {
         String[] split = string.split("[\\._\\-]+");
 
@@ -66,7 +66,7 @@ public final class JDK {
             update = new Integer(split[3]);
         }
     }
-    
+
 
     public static JDK getVersion(String string) {
         if (string.matches("([0-9]+[\\._\\-]+)*[0-9]+")) {
@@ -129,14 +129,14 @@ public final class JDK {
     public boolean olderOrEquals(JDK version) {
         return !newerThan(version);
     }
-    
+
     /**
      * No instances are allowed so it is pointless to override toString
      * @return Parsed version numbers
      */
     public static String toStringStatic() {
-        return "major: " + JDK.getMajor() + 
-        "\nminor: " + JDK.getMinor() + 
+        return "major: " + JDK.getMajor() +
+        "\nminor: " + JDK.getMinor() +
         "\nsubminor: " + JDK.getSubMinor() +
         "\nupdate: " + JDK.getUpdate() +
         "\nOK ==>" + JDK.ok();
@@ -164,14 +164,14 @@ public final class JDK {
 
             String[] ss = jv.split("\\.");
 
-            if(ss == null || ss.length < 3 || !ss[0].equals("1"))
+            if(ss.length < 3 || !ss[0].equals("1"))
                 return;
 
             major = Integer.parseInt(ss[0]);
             minor = Integer.parseInt(ss[1]);
             ss = ss[2].split("_");
 
-            if(ss == null || ss.length < 1)
+            if(ss.length < 1)
                 return;
 
             subminor = Integer.parseInt(ss[0]);

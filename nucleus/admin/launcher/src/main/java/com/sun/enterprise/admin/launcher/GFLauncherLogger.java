@@ -69,7 +69,8 @@ public class GFLauncherLogger {
     }
 
     public static void fine(String msg, Object... objs) {
-        logger.fine(strings.get(msg, objs));
+        if(logger.isLoggable(Level.FINE))
+            logger.fine(strings.get(msg, objs));
     }
 
     /////////////////////////  non-public below  //////////////////////////////

@@ -179,7 +179,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         //Don't listen for any events and dont process any probeProviders or statsProviders (dont set delegate)
         if (enableMonitoring) {
             enableMonitoring(false);
-        }   
+        }
     }
 
     private void enableMonitoring(boolean isDiscoverXMLProbeProviders) {
@@ -194,7 +194,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         }
         monitoringEnabled = true;
     }
-    
+
     private void discoverProbeProviders() {
         // Iterate thru existing modules
         if (logger.isLoggable(Level.FINE))
@@ -321,7 +321,6 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
         File manifestFile = new File(appDir, "META-INF" + File.separator + "MANIFEST.MF");
         String appDirPath = "";
         Manifest mf;
-        if (manifestFile != null) {
             try {
                 appDirPath = appDir.getCanonicalPath();
                 FileInputStream fis = new FileInputStream(manifestFile);
@@ -334,10 +333,7 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                 }
                 return;
             }
-            if (mf != null) {
-                processManifest(mf, classLoader);
-            }
-        }
+            processManifest(mf, classLoader);
 
         handleFutureStatsProviders();
     }
@@ -355,11 +351,8 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
                     StringTokenizer st = new StringTokenizer(cnames, DELIMITER);
                     while (st.hasMoreTokens()) {
                         try {
-                            String clStr = st.nextToken();
-                            if (clStr != null)
-                                clStr = clStr.trim();
                             if (mcl != null)
-                                processProbeProviderClass(mcl.loadClass(clStr));
+                                processProbeProviderClass(mcl.loadClass(st.nextToken().trim()));
                         } catch (Exception e) {
                             logger.log(Level.SEVERE, unableToLoadProbeProvider, e);
                         }
@@ -564,11 +557,11 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
             logger.fine("In handleLevelChange(), spmd = " + spmd + "  Enabled="+enabledStr);
         if(!ok(propName))
             return;
-       
+
         if (!monitoringEnabled && !"OFF".equals(enabledStr)) {
             enableMonitoring(true);
         }
-        
+
         if(spmd == null)
             return; // nothing to do!
 

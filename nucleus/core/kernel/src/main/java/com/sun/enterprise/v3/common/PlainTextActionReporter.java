@@ -215,7 +215,7 @@ public class PlainTextActionReporter extends ActionReporter {
             out.append(indent).append('[').append(key).append('=').append(val).append("\n");
         }
     }
-    private PrintWriter writer;
+    private transient PrintWriter writer;
     private static final String INDENT = "    ";
     private final StringBuilder sb = new StringBuilder();
 }

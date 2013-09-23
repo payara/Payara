@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ import java.io.UnsupportedEncodingException;
  */
 public class ManifestUtils {
     /**
-     * Embed this token to encode linefeeds in Strings that are placed 
+     * Embed this token to encode linefeeds in Strings that are placed
      * in Manifest objects
      */
     public static final String EOL_TOKEN = "%%%EOL%%%";
@@ -83,14 +83,14 @@ public class ManifestUtils {
         // now add all the "sub-attributes"
         Map<String,Attributes> unwashed = m.getEntries();
         Set<Map.Entry<String,Attributes>> entries = unwashed.entrySet();
-        
+
         for(Map.Entry<String,Attributes> entry : entries) {
             String name = entry.getKey();
             Attributes value = entry.getValue();
-            
+
             if(name == null || value == null)
                 continue;
-            
+
             all.put(name, normalize(value));
         }
         return all;
@@ -105,22 +105,20 @@ public class ManifestUtils {
     {
         Set<Map.Entry<Object,Object>> entries = att.entrySet();
         Map<String,String> pristine = new HashMap<String,String>(entries.size());
-        
+
         for(Map.Entry<Object,Object> entry : entries) {
             String key = entry.getKey().toString();
             String value = decode(entry.getValue().toString());
-            if(key == null) // impossible!
-                continue;
             pristine.put(key, value);
         }
-        
+
         return pristine;
     }
-    
+
     public final static String encode(String s) {
         // do DOS linefeed first!
         s = s.replaceAll("\r\n", EOL_TOKEN);
-        
+
         return s.replaceAll("\n", EOL_TOKEN);
     }
 
@@ -135,16 +133,16 @@ public class ManifestUtils {
 
         return map;
     }
-    
+
     public static String decode(String s) {
         // replace "null" with null
         if(s == null || s.equals("null"))
             return null;
-        
+
         // replace special tokens with eol
         return s.replaceAll(EOL_TOKEN, EOL);
     }
     private ManifestUtils() {
     }
-    
+
 }

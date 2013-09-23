@@ -220,7 +220,7 @@ public class ObjectAnalyzer {
             return fiv;
         }
 
-        for (Class theClass = cl; theClass != null && !theClass.equals(Object.class); theClass = safeGetSuperclass(theClass))
+        for (Class theClass = cl; !theClass.equals(Object.class); theClass = safeGetSuperclass(theClass))
             getFieldInfo(theClass, obj, fiv);
 
         return fiv;
@@ -313,7 +313,8 @@ public class ObjectAnalyzer {
 
             if (m.getName().equals("setAccessible") && m.getParameterTypes().length == 2)//NOI18N
             {
-                Logger.getAnonymousLogger().finer("Found setAccessible: " + m);//NOI18N
+                if(Logger.getAnonymousLogger().isLoggable(Level.FINER))
+                    Logger.getAnonymousLogger().finer("Found setAccessible: " + m);//NOI18N
                 setAccessibleMethod = m;
                 break;
             }

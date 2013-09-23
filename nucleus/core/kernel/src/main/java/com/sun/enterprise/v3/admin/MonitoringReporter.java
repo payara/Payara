@@ -764,7 +764,7 @@ public class MonitoringReporter extends V2DottedNameSupport {
         for (Map.Entry elem : elems) {
             String key = elem.getKey().toString();
 
-            if (key == null)
+            if (!ok(key))
                 continue;
 
             String name = key.replace("\\", "");
