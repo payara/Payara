@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.enterprise.security.ssl.JarSigner;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import java.io.File;
+import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -97,11 +98,12 @@ public class ASJarSigner implements PostConstruct {
      *Creates a signed jar from the specified unsigned jar.
      *@param unsignedJar the unsigned JAR file
      *@param signedJar the signed JAR to be created
+     *@param attrs additional attributes to be added to the JAR's manifest main section
      *@return the elapsed time to sign the JAR (in milliseconds)
      *@throws Exception getting the keystores from SSLUtils fails
      */
     public long signJar(final File unsignedJar, final File signedJar,
-        String alias) throws Exception {
+        String alias, Attributes attrs) throws Exception {
 
         if (alias == null) {
             alias = DEFAULT_ALIAS_VALUE;
@@ -112,7 +114,7 @@ public class ASJarSigner implements PostConstruct {
             try {
                 JarSigner jarSigner = new JarSigner(DEFAULT_DIGEST_ALGORITHM,
                         DEFAULT_KEY_ALGORITHM);
-                jarSigner.signJar(unsignedJar, signedJar, alias);
+                jarSigner.signJar(unsignedJar, signedJar, alias, attrs);
             } catch (Throwable t) {
                 /*
                  *In case of any problems, make sure there is no ill-formed signed

@@ -47,6 +47,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.HashMap;
@@ -188,9 +189,10 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
                     new Object[]{logPrefix(), relativeURIString});
             return;
         }
-        if ( ! dc.isAvailable()) {
-            finishErrorResponse(gResp, contentStateToResponseStatus(dc));
-            logger.log(Level.FINE, "{0}Found dynamic content ({1} but is is not marked as available",
+        final URI requestURI = URI.create(gReq.getRequestURI());
+        if ( ! dc.isAvailable(requestURI)) {
+            finishErrorResponse(gResp, contentStateToResponseStatus(dc, requestURI));
+            logger.log(Level.FINE, "{0} Found dynamic content ({1} but is is not marked as available",
                     new Object[]{logPrefix(), relativeURIString});
             return;
         }

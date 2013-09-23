@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,6 +41,7 @@
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
 import java.io.IOException;
+import java.net.URI;
 
 /**
  *
@@ -56,7 +57,7 @@ public interface Content {
 
     public State state();
 
-    public boolean isAvailable() throws IOException;
+    public boolean isAvailable(final URI requestURI) throws IOException;
 
     public void suspend();
 
@@ -74,7 +75,7 @@ public interface Content {
             return state;
         }
 
-        public boolean isAvailable() throws IOException {
+        public boolean isAvailable(final URI requestURI) throws IOException {
             return state == State.AVAILABLE;
         }
 

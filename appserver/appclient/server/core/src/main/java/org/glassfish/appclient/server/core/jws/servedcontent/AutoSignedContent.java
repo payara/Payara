@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,11 +40,17 @@
 
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
+import com.sun.enterprise.util.net.NetUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.jar.Attributes;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Represents otherwise fixed content that must be automatically signed
@@ -55,6 +61,26 @@ import java.util.ResourceBundle;
  */
 public class AutoSignedContent extends Content.Adapter implements StaticContent {
 
+    private static final String JWS_PERMISSIONS_NAME = "Permissions"; 
+    private static final String JWS_PERMISSIONS_VALUE = "all-permissions";
+    private static final String JWS_CODEBASE_NAME = "Codebase";
+    private static final String JWS_TRUSTED_NAME = "Trusted-Library";
+    private static final String JWS_TRUSTED_VALUE = "true";
+    
+    private static Attributes createJWSAttrs(final URI requestURI) {
+        final Attributes attrs = new Attributes(3);
+        attrs.putValue(JWS_PERMISSIONS_NAME, JWS_PERMISSIONS_VALUE);
+        try {
+            final URI trimmedURI = new URI(requestURI.getScheme(), requestURI.getHost(), null /* path */, null /* fragment */);
+            attrs.putValue(JWS_CODEBASE_NAME, trimmedURI.toASCIIString());
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
+            
+        attrs.putValue(JWS_TRUSTED_NAME, JWS_TRUSTED_VALUE);
+        return attrs;
+    }
+    
     private final File unsignedFile;
     private final File signedFile;
     private final String userProvidedAlias;
@@ -93,15 +119,15 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
      * @throws IOException
      */
     @Override
-    public boolean isAvailable() throws IOException {
+    public boolean isAvailable(final URI requestURI) throws IOException {
         if ( ! isSignedFileReady()) {
             try {
-                createSignedFile();
+                createSignedFile(requestURI);
             } catch (Exception e) {
                 throw new IOException(e);
             }
         }
-        return super.isAvailable();
+        return super.isAvailable(requestURI);
     }
 
 
@@ -110,7 +136,7 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
                 (signedFile.lastModified() >= unsignedFile.lastModified());
     }
 
-    private void createSignedFile() throws Exception {
+    private void createSignedFile(final URI requestURI) throws Exception {
         /*
          * The code that instantiated this auto-signed content decides where
          * the signed file will reside.  It might not have wanted to create
@@ -123,7 +149,8 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
                         signedFile.getParentFile().getAbsolutePath()));
             }
         }
-        jarSigner.signJar(unsignedFile, signedFile, userProvidedAlias);
+        final Attributes attrs = createJWSAttrs(requestURI);
+        jarSigner.signJar(unsignedFile, signedFile, userProvidedAlias, attrs);
     }
 
     @Override

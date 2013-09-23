@@ -48,6 +48,7 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
 
 import com.sun.logging.LogDomains;
+import java.net.URI;
 import org.glassfish.appclient.server.core.jws.servedcontent.Content;
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.grizzly.http.server.HttpHandler;
@@ -218,11 +219,12 @@ public class RestrictedContentAdapter extends HttpHandler {
          * content this adapter should serve, then just return a 404.
          */
         final StaticContent sc = content.get(relativeURIString);
-        if (sc != null && sc.isAvailable()) {
+        final URI requestURI = Util.getCodebase(gReq);
+        if (sc != null && sc.isAvailable(requestURI)) {
             processContent(relativeURIString, gReq, gResp);
             return true;
         } else {
-            finishErrorResponse(gResp, contentStateToResponseStatus(sc));
+            finishErrorResponse(gResp, contentStateToResponseStatus(sc, requestURI));
             final String scString = (sc == null ? "null" : sc.toString());
             final String scStateString = (sc == null ? "null" : sc.state().toString());
             if (logger.isLoggable(Level.FINE)) {
@@ -296,11 +298,11 @@ public class RestrictedContentAdapter extends HttpHandler {
         return result;
     }
 
-    protected int contentStateToResponseStatus(Content content) throws IOException {
+    protected int contentStateToResponseStatus(Content content, final URI requestURI) throws IOException {
         int status;
         if (content == null) {
             status = HttpServletResponse.SC_NOT_FOUND;
-        } else if (content.isAvailable()) {
+        } else if (content.isAvailable(requestURI)) {
             status = HttpServletResponse.SC_OK;
         } else {
             status = (content.state() == Content.State.SUSPENDED
