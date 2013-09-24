@@ -424,7 +424,23 @@ public interface Config extends Named, PropertyBag, SystemPropertyBag, Payload, 
     @DuckTyped
     void deleteResourceRef(String refName) throws TransactionFailure;
 
+    @DuckTyped
+    boolean isDas();
+
     class Duck {
+
+        public static boolean isDas(Config c) {
+            try {
+                String type = c.getAdminService().getType();
+
+                if (type != null && ( type.equals("das") || type.equals("das-and-server")))
+                    return true;
+            }
+            catch (Exception e) {
+                // fall through
+            }
+            return false;
+        }
 
         public static String setLoggingProperty(Config c, String property, String value) {
             ConfigBean cb = (ConfigBean) ((ConfigView) Proxy.getInvocationHandler(c)).getMasterView();
