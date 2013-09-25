@@ -789,7 +789,7 @@ public class SSHLauncher {
 
             try {
                 if(!sftp.exists(SSH_DIR)) {
-                    if(logger.isLoggable(Level.FINER)) {
+                    if(logger.isLoggable(Level.FINE)) {
                         logger.fine(SSH_DIR + " does not exist");
                     }
                     sftp.mkdirs(".ssh", 0700);
@@ -897,7 +897,9 @@ public class SSHLauncher {
             }
             status = c.authenticateWithPassword(userName, password);
             if (status) {
-                logger.finer("Successfully connected to " + userName + "@" + host + " using password authentication");
+                if (logger.isLoggable(Level.FINER)) {
+                    logger.finer("Successfully connected to " + userName + "@" + host + " using password authentication");
+                }
             }
         } catch(IOException ioe) {
             //logger.printExceptionStackTrace(ioe);
@@ -972,7 +974,9 @@ public class SSHLauncher {
             exit = pm.execute();            
         }
         catch (ProcessManagerException ex) {
-            logger.fine("Error while executing ssh-keygen: " + ex.getMessage());
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("Error while executing ssh-keygen: " + ex.getMessage());
+            }
             exit = 1;
         }
         if (exit == 0){

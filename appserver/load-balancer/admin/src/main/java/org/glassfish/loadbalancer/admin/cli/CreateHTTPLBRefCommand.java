@@ -40,6 +40,7 @@
 
 package org.glassfish.loadbalancer.admin.cli;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.List;
 
@@ -306,7 +307,9 @@ public final class CreateHTTPLBRefCommand extends LBCommandsBase
     }
 
     public void createLBRef(LbConfigs lbconfigs, String target, String configName) {
-        logger.fine("[LB-ADMIN] createLBRef called for target " + target);
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("[LB-ADMIN] createLBRef called for target " + target);
+        }
 
         // target is a cluster
         if (tgt.isCluster(target)) {
