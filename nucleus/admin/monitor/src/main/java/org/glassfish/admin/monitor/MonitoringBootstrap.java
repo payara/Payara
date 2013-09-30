@@ -64,6 +64,7 @@ import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.jvnet.hk2.annotations.Optional;
 
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
 
@@ -501,6 +502,10 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
             if(event == null)
                 continue;
 
+            if (!isCurrentInstanceMatchingTarget(event)) {
+                continue;
+            }
+            
             String propName = event.getPropertyName();
             Object oldVal = event.getOldValue();
             Object newVal = event.getNewValue();
@@ -552,6 +557,26 @@ public class MonitoringBootstrap implements PostConstruct, PreDestroy, EventList
        return null;
     }
 
+    private boolean isCurrentInstanceMatchingTarget(PropertyChangeEvent event) {
+        // DAS receive all the events, so we need to figure out 
+        // whether we should take action on DAS depending on the event.
+
+        if(serverEnv.isInstance()) {
+            return true;
+        } 
+
+        ConfigBeanProxy proxy = (ConfigBeanProxy)(event.getSource());
+        while(proxy != null && !(proxy instanceof Config)) {
+            proxy = proxy.getParent();
+        }
+        if (proxy != null) {
+            Config config = (Config)proxy;
+            return config.isDas();
+        }
+
+        return false;
+    }
+    
     private void handleLevelChange(String propName, String enabledStr) {
         if (logger.isLoggable(Level.FINE))
             logger.fine("In handleLevelChange(), spmd = " + spmd + "  Enabled="+enabledStr);
