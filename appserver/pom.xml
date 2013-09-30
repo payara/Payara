@@ -123,7 +123,7 @@
         <websocket-api.version>1.0</websocket-api.version>
         <tyrus.version>1.2.1</tyrus.version>
         <jsonp-api.version>1.0</jsonp-api.version>
-        <jsonp-ri.version>1.0.2</jsonp-ri.version>
+        <jsonp-ri.version>1.0.3</jsonp-ri.version>
         <jsonp-jaxrs.version>1.0</jsonp-jaxrs.version>
         <concurrent-api.version>1.0</concurrent-api.version>
         <concurrent.version>1.0</concurrent.version>
