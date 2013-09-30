@@ -149,6 +149,11 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
 

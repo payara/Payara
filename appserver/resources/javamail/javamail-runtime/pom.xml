@@ -109,5 +109,10 @@
             <groupId>javax.interceptor</groupId>
             <artifactId>javax.interceptor-api</artifactId>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>

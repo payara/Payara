@@ -74,6 +74,12 @@
             <artifactId>common-util</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>simple-glassfish-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
             <artifactId>core</artifactId>

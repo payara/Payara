@@ -225,6 +225,12 @@
             <artifactId>glassfish-api</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>simple-glassfish-api</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>ldapbp-repackaged</artifactId>

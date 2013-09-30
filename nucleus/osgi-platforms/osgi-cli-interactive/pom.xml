@@ -81,6 +81,12 @@
             <scope>provided</scope>
             <optional>true</optional>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>org.fusesource.hawtjni</groupId>
+            <artifactId>hawtjni-runtime</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>

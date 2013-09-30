@@ -163,6 +163,12 @@
             <artifactId>logging-annotation-processor</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>kernel</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 </project>
 

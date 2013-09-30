@@ -221,6 +221,22 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
+        <dependency> <!-- for FindBugs -->
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <scope>provided</scope>
+        </dependency> 
+        <dependency> <!-- for FindBugs -->
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <scope>provided</scope>
+        </dependency> 
+        <dependency> <!-- for FindBugs -->
+            <groupId>com.sun.pkg</groupId>
+            <artifactId>pkg-java</artifactId>
+            <version>1.0.0-alpha-1</version>
+            <scope>provided</scope>
+        </dependency> 
 
 
     </dependencies>
