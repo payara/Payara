@@ -1043,6 +1043,15 @@
                 <artifactId>com.ibm.jbatch-ri-spi</artifactId>
                 <version>${com.ibm.jbatch-ri-spi.version}</version>
             </dependency>
+            <!-- 
+                only used to satisfy findbugs, 
+                can be removed once GLASSFISH-20835 is resolved
+            -->
+            <dependency>
+                <groupId>org.netbeans.external</groupId>
+                <artifactId>ddl</artifactId>
+                <version>RELEASE65</version>
+            </dependency>
             <dependency>
                 <groupId>org.glassfish.tyrus</groupId>
                 <artifactId>tyrus-bom</artifactId>

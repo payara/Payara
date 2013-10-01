@@ -148,4 +148,33 @@
             <artifactId>schema2beans-repackaged</artifactId>
         </dependency>
     </dependencies>
+    
+    <!--
+        Findbugs needs org.netbeans.external:ddl,
+        we isolate it in a profile as it requires a separate repository definition.
+        can be removed once GLASSFISH-20835 is resolved
+    -->
+    <profiles>
+        <profile>
+            <id>findbugs</id>
+            <repositories>
+                <repository>
+                    <id>netbeans</id>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <url>http://bits.netbeans.org/maven2</url>
+                </repository>
+            </repositories>
+            <dependencies>
+                <dependency>
+                    <groupId>org.netbeans.external</groupId>
+                    <artifactId>ddl</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>
