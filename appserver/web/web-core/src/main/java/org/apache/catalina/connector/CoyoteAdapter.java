@@ -62,6 +62,7 @@ import java.nio.charset.Charset;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,8 +88,10 @@ import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
+import org.glassfish.web.valve.ServletContainerInterceptor;
 
 /**
  * Implementation of a request processor which delegates the processing to a
@@ -147,6 +150,8 @@ public class CoyoteAdapter extends HttpHandler {
 
     static final String JVM_ROUTE = System.getProperty("jvmRoute");
 
+    private Collection<ServletContainerInterceptor> interceptors = null;
+
     protected static final boolean ALLOW_BACKSLASH =
         Boolean.valueOf(System.getProperty("org.glassfish.grizzly.tcp.tomcat5.CoyoteAdapter.ALLOW_BACKSLASH", "false"));
 
@@ -192,6 +197,7 @@ public class CoyoteAdapter extends HttpHandler {
     public CoyoteAdapter(Connector connector) {
         super();
         this.connector = connector;
+        initServletInterceptors();
     }
 
 
@@ -266,6 +272,39 @@ public class CoyoteAdapter extends HttpHandler {
         }
     }
 
+    private void enteringServletContainer(Request req, Response res) {
+        if (interceptors == null)
+            return;
+        for(ServletContainerInterceptor interceptor:interceptors) {
+            try{
+                interceptor.preInvoke(req, res);
+            } catch (Throwable th) {
+                log.log(Level.SEVERE, "Internal Error", th);
+            }
+        }
+    }
+
+    private void leavingServletContainer(Request req, Response res) {
+        if (interceptors == null)
+            return;
+        for(ServletContainerInterceptor interceptor:interceptors) {
+            try{
+                interceptor.postInvoke(req, res);
+            } catch (Throwable th) {
+                log.log(Level.SEVERE, "Internal Error", th);
+            }
+        }
+    }
+
+    private void initServletInterceptors() {
+        try {
+            ServiceLocator services = org.glassfish.internal.api.Globals.getDefaultHabitat();
+            interceptors = services.getAllServices(ServletContainerInterceptor.class);
+        } catch (Throwable th) {
+            log.log(Level.SEVERE, "Failed to initialize the interceptor", th);
+        }
+    }
+    
 
     private void doService(final org.glassfish.grizzly.http.server.Request req,
                            final Request request,
@@ -335,6 +374,7 @@ public class CoyoteAdapter extends HttpHandler {
             connector.requestStartEvent(request.getRequest(),
                 request.getHost(), request.getContext());
             Container container = connector.getContainer();
+            enteringServletContainer(request, response);
             try {
                 request.lockSession();
                 if (container.getPipeline().hasNonBasicValves() ||
@@ -367,7 +407,11 @@ public class CoyoteAdapter extends HttpHandler {
                         request.getHost(), request.getContext(),
                         response.getStatus());
                 } finally {
-                    request.unlockSession();
+                    try {
+                        request.unlockSession();
+                    } finally {
+                        leavingServletContainer(request, response);
+                    }
                 }
             }
         }

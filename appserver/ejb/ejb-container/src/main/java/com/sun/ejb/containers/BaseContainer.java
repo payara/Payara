@@ -165,6 +165,7 @@ import org.glassfish.enterprise.iiop.spi.EjbContainerFacade;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.ejb.spi.EjbContainerInterceptor;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -306,6 +307,8 @@ public abstract class BaseContainer
 
     // Constructor used to instantiate local business object proxy.
     private Constructor ejbOptionalLocalBusinessObjectProxyCtor;
+
+    private Collection<EjbContainerInterceptor> interceptors = null;
 
     /*****************************************
      *     Data members for Remote views     *
@@ -789,6 +792,7 @@ public abstract class BaseContainer
 
             jcdiService = services.getService(JCDIService.class);
 
+            initEjbInterceptors();
         } catch (Exception ex) {
             _logger.log(Level.FINE,"ejb.basecontainer_exception",logParams);
             _logger.log(Level.FINE,"", ex);
@@ -4064,6 +4068,7 @@ public abstract class BaseContainer
         ejbProbeNotifier.ejbContainerEnteringEvent(getContainerId(),
                 containerInfo.appName, containerInfo.modName, 
                 containerInfo.ejbName);
+        enteringEjbContainer();
         //callFlowAgent.startTime(ContainerTypeOrApplicationType.EJB_CONTAINER);
     }
 
@@ -4071,9 +4076,43 @@ public abstract class BaseContainer
         ejbProbeNotifier.ejbContainerLeavingEvent(getContainerId(),
                 containerInfo.appName, containerInfo.modName, 
                 containerInfo.ejbName);
+        leavingEjbContainer();
         //callFlowAgent.endTime();
     }
 
+    private void enteringEjbContainer() {
+        if (interceptors == null)
+            return;
+        for(EjbContainerInterceptor interceptor:interceptors) {
+            try{
+                interceptor.preInvoke(ejbDescriptor);
+            } catch (Throwable th) {
+                _logger.log(Level.SEVERE, "Internal Error", th);
+            }
+        }
+    }
+
+    private void leavingEjbContainer() {
+        if (interceptors == null)
+            return;
+        for(EjbContainerInterceptor interceptor:interceptors) {
+            try{
+                interceptor.postInvoke(ejbDescriptor);
+            } catch (Throwable th) {
+                _logger.log(Level.SEVERE, "Internal Error", th);
+            }
+        }
+    }
+
+    private void initEjbInterceptors() {
+        try {
+            ServiceLocator services = ejbContainerUtilImpl.getServices();
+            interceptors = services.getAllServices(EjbContainerInterceptor.class);
+        } catch (Throwable th) {
+            _logger.log(Level.SEVERE, "Failed to initialize the interceptor", th);
+        }
+    }
+    
     final void onEjbMethodStart(int methodIndex) {
         InvocationInfo info = ejbIntfMethodInfo[methodIndex];
         if (info != null) {
