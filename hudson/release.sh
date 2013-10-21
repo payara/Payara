@@ -107,9 +107,9 @@ PKG_CLIENT_READ_TIMEOUT=600 ; export PKG_CLIENT_READ_TIMEOUT
 # INSTALL IPS TOOLKIT
 IPS_TOOLKIT_ZIP=pkg-toolkit-$UC2_BUILD-$IPS_REPO_TYPE.zip
 
-printf "\n%s \n\n" "===== DOWNLOADING IPS TOOLKIT ====="
+printf "\n%s \n\n" "===== DOWNLOAD IPS TOOLKIT ====="
 curl $UC_HOME_URL/$IPS_TOOLKIT_ZIP > $IPS_TOOLKIT_ZIP
-printf "\n%s \n\n" "===== UNZIPPING IPS TOOLKIT ====="
+printf "\n%s \n\n" "===== UNZIP IPS TOOLKIT ====="
 unzip $IPS_TOOLKIT_ZIP
 IPS_TOOLKIT=$WORKSPACE/pkg-toolkit-$IPS_REPO_TYPE ; export IPS_TOOLKIT
 
@@ -118,7 +118,7 @@ PYTHON_HOME=$IPS_TOOLKIT/pkg/python2.4-minimal; export PYTHON_HOME
 LD_LIBRARY_PATH=$PYTHON_HOME/lib ; export LD_LIBRARY_PATH
 PATH=$PYTHON_HOME/bin:$IPS_TOOLKIT/pkg/bin:$PATH; export PATH
 
-printf "\n%s \n\n" "===== STARTING IPS REPOSITORY ====="
+printf "\n%s \n\n" "===== START IPS REPOSITORY ====="
 # start the repository
 $IPS_TOOLKIT/pkg/bin/pkg.depotd \
     -d $IPS_REPO_DIR \
@@ -129,15 +129,18 @@ $IPS_TOOLKIT/pkg/bin/pkg.depotd \
 # BUILD PHASE #
 ###############
 
+printf "\n%s \n\n" "===== DELETE TAG ====="
 set +e
 svn delete $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "delete tag $RELEASE_VERSION"
 set -e
+
+printf "\n%s \n\n" "===== CHECKOUT ====="
 svn checkout $GF_WORKSPACE_URL_SSH/trunk/main -r $SVN_REVISION
 
 MAVEN_REPO="-Dmaven.repo.local=$WORKSPACE/repository"
 MAVEN_ARGS="$MAVEN_REPO -C -nsu -B"
 
-# update poms
+printf "\n%s \n\n" "===== UPDATE POMS ====="
 mvn $MAVEN_ARGS -f main/pom.xml release:prepare \
                           -Dtag=$RELEASE_VERSION \
                           -Drelease-phase-all=true \
@@ -152,7 +155,7 @@ if [ $? -ne 0 ]; then
    exit 1; 
 fi
 
-# do the build !
+printf "\n%s \n\n" "===== DO THE BUILD! ====="
 mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
     -Prelease-phase2,ips,embedded,javaee-api \
     -Dbuild.id=$PKG_ID
@@ -169,6 +172,7 @@ mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
 # ARCHIVES BUNDLES #
 ####################
 
+printf "\n%s \n\n" "===== ARCHIVE BUNDLES ====="
 rm -rf $WORKSPACE/bundles ; mkdir $WORKSPACE/bundles
 
 mv $WORKSPACE/svn-revisions.txt $WORKSPACE/bundles
@@ -185,5 +189,6 @@ cp $WORKSPACE/main/appserver/installer/target/stage/*.sh $WORKSPACE/bundles
 cp $WORKSPACE/main/appserver/installer/target/stage/*.exe $WORKSPACE/bundles
 
 # clean and zip the workspace
+printf "\n%s \n\n" "===== CLEAN AND ZIP THE WORKSPACE ====="
 mvn $MAVEN_ARGS -f main/pom.xml clean
 zip $WORKSPACE/bundles/workspace.zip -r main
