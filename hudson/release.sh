@@ -126,7 +126,9 @@ $IPS_TOOLKIT/pkg/bin/pkg.depotd \
 # BUILD PHASE #
 ###############
 
+set +e
 svn delete $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "delete tag $RELEASE_VERSION"
+set -e
 svn checkout $GF_WORKSPACE_URL_SSH/trunk/main -r $SVN_REVISION
 
 MAVEN_REPO="-Dmaven.repo.local=$WORKSPACE/repository"
