@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 
-source common.sh
+source `dirname $0`/common.sh
 init_release_version
 
 ######################
