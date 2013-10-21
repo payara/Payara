@@ -174,8 +174,8 @@
             <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property title '@{title}'" />
             <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property image-tou-url 'http://glassfish-repo.java.net/terms.html'"/>
             <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-property description '@{description}'" />
-	    <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-authority -P -O @{repo.url} '@{authority}'" />
-	    <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-authority -O @{native.authority.url} '@{native.authority}'" />
+	    <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-authority --no-refresh -P -O @{repo.url} '@{authority}'" />
+	    <pkg dir="@{image.dir}/${install.dir.name}" cmd="set-authority --no-refresh -O @{native.authority.url} '@{native.authority}'" />
         </sequential>
     </macrodef>
     <macrodef name="pkg">
@@ -339,8 +339,8 @@
     </target>
     
     <target name="create-authorities">
-        <pkg dir="@{image.dir}" cmd="set-authority -P -O ${repo.url} '${dev.authority}'"/>
-        <pkg dir="@{image.dir}" cmd="set-authority -O ${contrib.repository.url} '${contrib.authority}'" />
+        <pkg dir="@{image.dir}" cmd="set-authority --no-refresh -P -O ${repo.url} '${dev.authority}'"/>
+        <pkg dir="@{image.dir}" cmd="set-authority --no-refresh -O ${contrib.repository.url} '${contrib.authority}'" />
         <!-- disabling sun contrib authority setup - not used until close to fcs
         <pkg dir="@{image.dir}" cmd="set-authority -O ${repo.url} '${sun.contrib.authority}'"/>
         -->
