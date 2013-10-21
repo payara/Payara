@@ -78,12 +78,12 @@ printf "\n%s\n\n" "==== VERSION INFO ===="
 # value can be either "HEAD" or an SVN revision
 if [ ! -z $SYNCHTO ] && [ ${#SYNCHTO} -gt 0 ]
 then
-    printf "\n%s\n\n" "Synchronizing to $SYNCHTO"
+    printf "%s\n\n" "Synchronizing to $SYNCHTO"
 else
     svn co --depth=files $GF_WORKSPACE_URL_SSH/trunk/main tmp
     SVN_REVISION=`svn propget svn:keyword main | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
     rm -rf tmp
-    printf "\n%s\n\n" "Synchronizing to the last 'good' revisions ($SVN_REVISION)"
+    printf "%s\n\n" "Synchronizing to the last 'good' revisions ($SVN_REVISION)"
 fi
 
 #######################
