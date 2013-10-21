@@ -158,7 +158,7 @@ fi
 printf "\n%s \n\n" "===== DO THE BUILD! ====="
 mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
     -Prelease-phase2,ips,embedded,javaee-api \
-    -Dbuild.id=$PKG_ID
+    -Dbuild.id=$PKG_ID \
     -Dgpg.passphrase="$GPG_PASSPHRASE" \
     -Dgpg.executable=gpg2 \
     -Dmaven.test.failure.ignore=true \
