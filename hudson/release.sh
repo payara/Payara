@@ -106,7 +106,10 @@ PKG_CLIENT_READ_TIMEOUT=600 ; export PKG_CLIENT_READ_TIMEOUT
 
 # INSTALL IPS TOOLKIT
 IPS_TOOLKIT_ZIP=pkg-toolkit-$UC2_BUILD-$IPS_REPO_TYPE.zip
+
+printf "\n%s \n\n" "===== DOWNLOADING IPS TOOLKIT ====="
 curl $UC_HOME_URL/$IPS_TOOLKIT_ZIP > $IPS_TOOLKIT_ZIP
+printf "\n%s \n\n" "===== UNZIPPING IPS TOOLKIT ====="
 unzip $IPS_TOOLKIT_ZIP
 IPS_TOOLKIT=$WORKSPACE/pkg-toolkit-$IPS_REPO_TYPE ; export IPS_TOOLKIT
 
@@ -115,6 +118,7 @@ PYTHON_HOME=$IPS_TOOLKIT/pkg/python2.4-minimal; export PYTHON_HOME
 LD_LIBRARY_PATH=$PYTHON_HOME/lib ; export LD_LIBRARY_PATH
 PATH=$PYTHON_HOME/bin:$IPS_TOOLKIT/pkg/bin:$PATH; export PATH
 
+printf "\n%s \n\n" "===== STARTING IPS REPOSITORY ====="
 # start the repository
 $IPS_TOOLKIT/pkg/bin/pkg.depotd \
     -d $IPS_REPO_DIR \
