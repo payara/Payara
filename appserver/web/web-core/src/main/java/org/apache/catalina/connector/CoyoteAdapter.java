@@ -135,6 +135,22 @@ public class CoyoteAdapter extends HttpHandler {
     )
     public static final String NO_HOST_MATCHES_SERVER_NAME_INFO = "AS-WEB-CORE-00040";
 
+    @LogMessageInfo(
+            message = "Internal Error",
+            level = "SEVERE",
+            cause = "Error during invoke the servlet application",
+            action = "Trying to invoke the servlet application"
+    )
+    public static final String INTERNAL_ERROR = "AS-WEB-CORE-00493";
+    
+    @LogMessageInfo(
+            message = "Failed to initialize the interceptor",
+            level = "SEVERE",
+            cause = "Error in initializing the servlet application",
+            action = "initialize the servlet interceptor"
+    )
+    public static final String FAILED_TO_INITIALIZE_THE_INTERCEPTOR = "AS-WEB-CORE-00494";
+    
     // -------------------------------------------------------------- Constants
     private static final String POWERED_BY = "Servlet/3.1 JSP/2.3 " +
             "(" + ServerInfo.getServerInfo() + " Java/" +
@@ -279,7 +295,7 @@ public class CoyoteAdapter extends HttpHandler {
             try{
                 interceptor.preInvoke(req, res);
             } catch (Throwable th) {
-                log.log(Level.SEVERE, "Internal Error", th);
+                log.log(Level.SEVERE, INTERNAL_ERROR, th);
             }
         }
     }
@@ -291,7 +307,7 @@ public class CoyoteAdapter extends HttpHandler {
             try{
                 interceptor.postInvoke(req, res);
             } catch (Throwable th) {
-                log.log(Level.SEVERE, "Internal Error", th);
+                log.log(Level.SEVERE, INTERNAL_ERROR, th);
             }
         }
     }
@@ -301,7 +317,7 @@ public class CoyoteAdapter extends HttpHandler {
             ServiceLocator services = org.glassfish.internal.api.Globals.getDefaultHabitat();
             interceptors = services.getAllServices(ServletContainerInterceptor.class);
         } catch (Throwable th) {
-            log.log(Level.SEVERE, "Failed to initialize the interceptor", th);
+            log.log(Level.SEVERE, FAILED_TO_INITIALIZE_THE_INTERCEPTOR, th);
         }
     }
     

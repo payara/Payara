@@ -149,6 +149,7 @@ import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
@@ -165,6 +166,7 @@ import org.glassfish.enterprise.iiop.spi.EjbContainerFacade;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.ejb.spi.EjbContainerInterceptor;
 
 /**
@@ -185,6 +187,17 @@ public abstract class BaseContainer
     };
 
     protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
+    
+    //The logger defined here is used to print the message annotated by LogMessageInfo
+    private static final Logger internal_logger  = LogFacade.getLogger();
+    
+    @LogMessageInfo(
+            message = "Internal Error",
+            level = "WARNING",
+            cause = "Error during invoke the ejb application",
+            action = "Trying to invoke the ejb application"
+    )
+    private static final String INTERNAL_ERROR = "AS-EJB-00052";
     
     protected static final Class[] NO_PARAMS = new Class[] {};
     
@@ -4087,7 +4100,7 @@ public abstract class BaseContainer
             try{
                 interceptor.preInvoke(ejbDescriptor);
             } catch (Throwable th) {
-                _logger.log(Level.SEVERE, "Internal Error", th);
+                internal_logger.log(Level.SEVERE, INTERNAL_ERROR, th);
             }
         }
     }
@@ -4099,7 +4112,7 @@ public abstract class BaseContainer
             try{
                 interceptor.postInvoke(ejbDescriptor);
             } catch (Throwable th) {
-                _logger.log(Level.SEVERE, "Internal Error", th);
+                internal_logger.log(Level.SEVERE, INTERNAL_ERROR, th);
             }
         }
     }
