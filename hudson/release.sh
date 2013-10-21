@@ -46,6 +46,7 @@ uname -a
 java -version
 mvn --version
 svn --version
+printf "\n%s \n\n" "=========================="
 
 ######################
 # REQUIRED VARIABLES #
@@ -70,6 +71,9 @@ fi
 # GET SVN REVISION #
 ####################
 
+
+printf "\n%s\n\n" "==== VERSION INFO ===="
+
 # can be a build parameter
 # value can be either "HEAD" or an SVN revision
 if [ ! -z $SYNCHTO ] && [ ${#SYNCHTO} -gt 0 ]
@@ -89,10 +93,9 @@ fi
 # create version-info.txt
 echo "$GF_WORKSPACE_URL_HTTP/trunk/main $SVN_REVISION" >> $WORKSPACE/version-info.txt
 echo "Maven-Version: $RELEASE_VERSION" >> $WORKSPACE/version-info.txt
-
-printf "\n%s\n\n" "---------------------------------------------"
 cat $WORKSPACE/version-info.txt
-printf "\n%s\n\n" "---------------------------------------------"
+
+printf "\n%s\n\n" "======================"
 
 ########################
 # IPS REPOSITORY SETUP #
