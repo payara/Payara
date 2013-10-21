@@ -39,7 +39,7 @@ IPS_REPO_PORT=16500
 IPS_REPO_TYPE=sunos-sparc
 UC2_BUILD=2.3-b56
  
-UC_HOME_URL=http://${STORAGE_HOST}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build 
+UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build 
 
 init_release_version(){
     if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
