@@ -45,8 +45,7 @@ init_release_version(){
     if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
     then
     	printf "\n%s \n\n" "===== BUILD PARAMETER (RELEASE_VERSION) ===="
-        printf "\n%s\n\n" "Using provided value: $RELEASE_VERSION"
-    	printf "\n%s \n\n" "============================================"
+        printf "%s\n\n" "Using provided value: $RELEASE_VERSION"
     else
         RELEASE_VERSION="$PRODUCT_VERSION_GF-$BUILD_ID"
     fi

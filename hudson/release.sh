@@ -46,7 +46,6 @@ uname -a
 java -version
 mvn --version
 svn --version
-printf "\n%s \n\n" "=========================="
 
 ######################
 # REQUIRED VARIABLES #
@@ -96,8 +95,6 @@ fi
 echo "$GF_WORKSPACE_URL_HTTP/trunk/main $SVN_REVISION" >> $WORKSPACE/version-info.txt
 echo "Maven-Version: $RELEASE_VERSION" >> $WORKSPACE/version-info.txt
 cat $WORKSPACE/version-info.txt
-
-printf "\n%s\n\n" "======================"
 
 ########################
 # IPS REPOSITORY SETUP #
