@@ -71,38 +71,30 @@ aggregated_tests_summary(){
     XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< $HTML_REPORT`
     XPATH_RESULT=`sed -r 's/^\s*//; s/\s*$//; /^$/d' <<< $XPATH_RESULT`
 
-    I=1 ; EMPTY="true"
-    for COLUMN in $XPATH_RESULT
+    while true
     do
-	    # each line is a column value
-	    # there are 4 colums
-            case "$I" in
-            "1")
-                    JOB_NAME="$COLUMN"
-                    ;;
-            "2")
-                    JOB_NUMBER="$COLUMN"
-                    ;;
-            "3")
-                    FAILED_NUMBER="$COLUMN"
-                ;;
-            "4")
-                    TOTAL_NUMBER="$COLUMN"
+        JOB_NAME=`cut -d ' ' -f1 <<< $XPATH_RESULT`
+        JOB_NUMBER=`cut -d ' ' -f2 <<< $XPATH_RESULT`
+        FAILED_NUMBER=`cut -d ' ' -f3 <<< $XPATH_RESULT`
+        TOTAL_NUMBER=`cut -d ' ' -f4 <<< $XPATH_RESULT`
+        if [ ${#JOB_NAME} -eq 0 ] || [ ${#JOB_NUMBER} -eq 0 ] || [ ${#FAILED_NUMBER} -eq 0 ] || [ ${#TOTAL_NUMBER} -eq 0 ] 
+        then
+                break
+        else
+                XPATH_RESULT=`cut -d ' ' -f5- <<< $XPATH_RESULT`
+        fi
 
-                    if [ $TOTAL_NUMBER != "N/A" ] && [ $FAILED_NUMBER != "N/A" ]
-                    then
-                            PASSED_NUMBER=$((TOTAL_NUMBER-FAILED_NUMBER))
-                            printf "%s%s%s \n" \
-                                    "`align_column 55 "." "$JOB_NAME ($JOB_NUMBER)"`" \
-                                    "`align_column 12 ' ' "PASSED($PASSED_NUMBER)"`" \
-                                    "FAILED($FAILED_NUMBER)"
-                            EMPTY="false"
-                    fi
-                    I=0
-                ;;
-            esac
-            I=$((I+1))
+        if [ $TOTAL_NUMBER != "N/A" ] && [ $FAILED_NUMBER != "N/A" ]
+        then
+               PASSED_NUMBER=$((TOTAL_NUMBER-FAILED_NUMBER))
+               printf "%s%s%s \n" \
+                      "`align_column 55 "." "$JOB_NAME ($JOB_NUMBER)"`" \
+                      "`align_column 12 ' ' "PASSED($PASSED_NUMBER)"`" \
+                      "FAILED($FAILED_NUMBER)"
+               EMPTY="false"
+        fi
     done
+
     if [ $EMPTY = "true" ]
     then
             printf "No downstream test result found."
