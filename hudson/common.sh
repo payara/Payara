@@ -5,6 +5,7 @@
 #STORAGE_HOST=
 #JNET_USER=
 #JNET_STORAGE_HOST=
+#STORAGE_HOST_HTTP=
 #WORKSPACE=
 #NOTIFICATION_SENDTO
 #NOTIFICATION_FROM
@@ -27,7 +28,7 @@ WEEKLY_ARCHIVE_MASTER_BUNDLES=$WEEKLY_ARCHIVE_MASTER/archive/bundles
 WEEKLY_SCP=$SSH_STORAGE:$WEEKLY_ARCHIVE_STORAGE_BUNDLES
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/$PRODUCT_GF/$PRODUCT_VERSION_GF/promoted
 JNET_DIR_HTTP=http://download.java.net/$PRODUCT_GF/$PRODUCT_VERSION_GF/promoted
-WEEKLY_ARCHIVE_URL=http://javaweb.us.oracle.com/$WEEKLY_ARCHIVE_MASTER_BUNDLES
+WEEKLY_ARCHIVE_URL=http://$STORAGE_HOST_HTTP/$WEEKLY_ARCHIVE_MASTER_BUNDLES
 PROMOTED_BUNDLES=$PROMOTED_URL/artifact/bundles/
 GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
 GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
@@ -61,29 +62,31 @@ align_column(){
     done
     echo "$string"
 }
-aggregated_tests_summary(){	
+aggregated_tests_summary(){
     # Hudson rest API does not give the report
     # parsing html with xpath
-    curl $1 2> /dev/null 1> aggregatedTestReport
+    HTML_REPORT=`curl $1 2> /dev/null`
     XPATH_REQUEST="//table[@class='pane sortable']/tr[position()>1]//*[not(child::a)]/text()"
+    XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< $HTML_REPORT`
+    XPATH_RESULT=`sed -r 's/^\s*//; s/\s*$//; /^$/d' <<< $XPATH_RESULT`
 
-    # each line is a column value
-    COLUMN=1
-    EMPTY="true"
-    for RESULT_LINE in `xpath -q -e "$XPATH_REQUEST" aggregatedTestReport`
+    I=1 ; EMPTY="true"
+    for COLUMN in $XPATH_RESULT
     do
-            case "$COLUMN" in
+	    # each line is a column value
+	    # there are 4 colums
+            case "$I" in
             "1")
-                    JOB_NAME="$RESULT_LINE"
-                ;;
+                    JOB_NAME="$COLUMN"
+                    ;;
             "2")
-                    JOB_NUMBER="$RESULT_LINE"
+                    JOB_NUMBER="$COLUMN"
                     ;;
             "3")
-                    FAILED_NUMBER=`echo $RESULT_LINE | awk '{print $1}' | tr -d ' '`
+                    FAILED_NUMBER="$COLUMN"
                 ;;
             "4")
-                    TOTAL_NUMBER=`echo $RESULT_LINE | awk '{print $1}' | tr -d ' '`
+                    TOTAL_NUMBER="$COLUMN"
 
                     if [ $TOTAL_NUMBER != "N/A" ] && [ $FAILED_NUMBER != "N/A" ]
                     then
@@ -94,18 +97,15 @@ aggregated_tests_summary(){
                                     "FAILED($FAILED_NUMBER)"
                             EMPTY="false"
                     fi
-
-                    # RESET COLUM
-                    COLUMN=0
+                    I=0
                 ;;
             esac
-            COLUMN=$((COLUMN+1))
+            I=$((I+1))
     done
     if [ $EMPTY = "true" ]
     then
             printf "No downstream test result found."
     fi
-    rm aggregatedTestReport
 }
 scp_jnet(){
     file=$1
