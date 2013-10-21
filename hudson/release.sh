@@ -106,10 +106,10 @@ PKG_CLIENT_CONNECT_TIMEOUT=600 ; export PKG_CLIENT_CONNECT_TIMEOUT
 PKG_CLIENT_READ_TIMEOUT=600 ; export PKG_CLIENT_READ_TIMEOUT
 
 # INSTALL IPS TOOLKIT
-IPS_TOOLKIT_ZIP=pkg-toolkit-$UC2_BUILD-$REPO_TYPE.zip
+IPS_TOOLKIT_ZIP=pkg-toolkit-$UC2_BUILD-$IPS_REPO_TYPE.zip
 curl $UC_HOME_URL/$IPS_TOOLKIT_ZIP > $IPS_TOOLKIT_ZIP
 unzip $IPS_TOOLKIT_ZIP
-IPS_TOOLKIT=$WORKSPACE/pkg-toolkit-$REPO_TYPE ; export IPS_TOOLKIT
+IPS_TOOLKIT=$WORKSPACE/pkg-toolkit-$IPS_REPO_TYPE ; export IPS_TOOLKIT
 
 # enforce usage of bundled python
 PYTHON_HOME=$IPS_TOOLKIT/pkg/python2.4-minimal; export PYTHON_HOME
@@ -118,9 +118,9 @@ PATH=$PYTHON_HOME/bin:$IPS_TOOLKIT/pkg/bin:$PATH; export PATH
 
 # start the repository
 $IPS_TOOLKIT/pkg/bin/pkg.depotd \
-    -d $REPO_DIR \
-    -p $REPO_PORT \
-    > $REPO_DIR/repo.log 2>&1 &
+    -d $IPS_REPO_DIR \
+    -p $IPS_REPO_PORT \
+    > $IPS_REPO_DIR/repo.log 2>&1 &
 
 ###############
 # BUILD PHASE #
@@ -154,9 +154,9 @@ mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
     -Dgpg.passphrase="$GPG_PASSPHRASE" \
     -Dgpg.executable=gpg2 \
     -Dmaven.test.failure.ignore=true \
-    -Dtarget.repo.dir=$REPO_DIR \
+    -Dtarget.repo.dir=$IPS_REPO_DIR \
     -Duc.toolkit.dir=$IPS_TOOLKIT \
-    -Drepo.url=$BUILD_REPO_URL:$REPO_PORT/ \
+    -Drepo.url=$IPS_REPO_URL:$REPO_PORT/ \
     -DjavadocExecutable=$HOME/jdk1.7.0_25/bin/javadoc \
     -Dpython=$PYTHON_HOME/bin/python
 
