@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 #RE_USER=
 #HUDSON_MASTER_HOST=
