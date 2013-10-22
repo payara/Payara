@@ -18,7 +18,7 @@ done
 # MAVEN_OPTS SETUP #
 ####################
 
-MAVEN_OPTS="-Xmx3G -Xms256m -XX:MaxPermSize=512m -XX:-UseGCOverheadLimit"
+MAVEN_OPTS="-Xmx1024M -Xms256m -XX:MaxPermSize=512m -XX:-UseGCOverheadLimit"
 if [ ! -z $PROXY_HOST ] && [ ! -z $PROXY_PORT ]
 then
     MAVEN_OPTS="$MAVEN_OPTS \
