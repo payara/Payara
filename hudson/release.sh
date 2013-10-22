@@ -156,6 +156,9 @@ if [ $? -ne 0 ]; then
 fi
 
 printf "\n%s \n\n" "===== DO THE BUILD! ====="
+env
+printf "\n\n ====== ENV ====== "
+
 mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
     -Prelease-phase2,ips,embedded,javaee-api \
     -Dbuild.id=$PKG_ID \
