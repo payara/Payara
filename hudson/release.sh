@@ -18,21 +18,16 @@ done
 # MAVEN_OPTS SETUP #
 ####################
 
-MAVEN_OPTS="\
-    -Xmx3G \
-    -Xms256m \
-    -XX:MaxPermSize=512m \
-    -XX:-UseGCOverheadLimit"
-
+MAVEN_OPTS="-Xmx3G -Xms256m -XX:MaxPermSize=512m -XX:-UseGCOverheadLimit"
 if [ ! -z $PROXY_HOST ] && [ ! -z $PROXY_PORT ]
 then
     MAVEN_OPTS="$MAVEN_OPTS \
-        -Dhttp.proxyHost=$PROXY_HOST \
-        -Dhttp.proxyPort=$PROXY_PORT \
-        -Dhttp.noProxyHosts='127.0.0.1|localhost|*.oracle.com' \
-        -Dhttps.proxyHost=$PROXY_HOST \
-        -Dhttps.proxyPort=$PROXY_PORT \
-        -Dhttps.noProxyHosts='127.0.0.1|localhost|*.oracle.com'"
+-Dhttp.proxyHost=$PROXY_HOST \
+-Dhttp.proxyPort=$PROXY_PORT \
+-Dhttp.noProxyHosts='127.0.0.1|localhost|*.oracle.com' \
+-Dhttps.proxyHost=$PROXY_HOST \
+-Dhttps.proxyPort=$PROXY_PORT \
+-Dhttps.noProxyHosts='127.0.0.1|localhost|*.oracle.com'"
 fi
 export MAVEN_OPTS
 
@@ -155,9 +150,9 @@ if [ $? -ne 0 ]; then
    exit 1; 
 fi
 
-printf "\n%s \n\n" "===== DO THE BUILD! ====="
+printf "\n%s \n\n" "===== ENV ====="
 env
-printf "\n\n ====== ENV ====== "
+printf "\n%s \n\n" "===== DO THE BUILD! ====="
 
 mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
     -Prelease-phase2,ips,embedded,javaee-api \
