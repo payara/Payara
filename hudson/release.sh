@@ -150,8 +150,6 @@ if [ $? -ne 0 ]; then
    exit 1; 
 fi
 
-printf "\n%s \n\n" "===== ENV ====="
-env
 printf "\n%s \n\n" "===== DO THE BUILD! ====="
 
 mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
