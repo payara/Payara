@@ -1,5 +1,14 @@
 #!/bin/bash -e
 
+#verify that the first positional parameter is mandatory
+: ${1:?"Usage: $0 ARGUMENT(weekly/nightly)"}
+
+if [[ ! "${1}" =~ "(weekly|nightly)" ]]
+then
+    echo "Usage: $0 ARGUMENT(weekly/nightly)"
+    exit 1
+fi
+
 #RE_USER=
 #HUDSON_MASTER_HOST=
 #STORAGE_HOST=
@@ -13,18 +22,21 @@
 #HUDSON_HOME
 
 source `dirname $0`/common.sh
-init_release_version
+if [ "weekly" == "${1}" ]
+then
+    init_release_version
+fi
 
 ###################
 # ARCHIVE DISTROS #
 ###################
 
-rm -rf $WORKSPACE/weekly_bundles
-mkdir -p $WORKSPACE/weekly_bundles
-ssh $SSH_STORAGE "rm -rf `echo $WEEKLY_ARCHIVE_STORAGE`"
-ssh $SSH_STORAGE "rm -rf `echo $WEEKLY_ARCHIVE_STORAGE_BUNDLES`"
+rm -rf $WORKSPACE/${1}_bundles
+mkdir -p $WORKSPACE/${1}_bundles
+ssh $SSH_STORAGE "rm -rf `echo $ARCHIVE_STORAGE` ; mkdir `echo ${ARCHIVE_STORAGE}`"
+ssh $SSH_STORAGE "rm -rf `echo $ARCHIVE_STORAGE_BUNDLES`"
 
-cd $WORKSPACE/weekly_bundles
+cd $WORKSPACE/${1}_bundles
 
 # JAVAEE API JARS AND JAVADOCS
 # XXXJAVAEE promote_bundle $PROMOTED_BUNDLES/javaee-api.jar javaee-api-7.0-$BUILD_ID.jar
@@ -33,32 +45,39 @@ cd $WORKSPACE/weekly_bundles
 # XXXJAVAEE promote_bundle $PROMOTED_BUNDLES/javaee-web-api-javadoc.jar javaee-web-api-7.0-$BUILD_ID-javadoc.jar
 
 # COMMUNITY BUNDLES
-promote_bundle $PROMOTED_BUNDLES/web-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID.zip
-promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
-promote_bundle $PROMOTED_BUNDLES/glassfish-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID.zip
-promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
-promote_bundle $PROMOTED_BUNDLES/nucleus-new.zip nucleus-$RELEASE_VERSION.zip
-promote_bundle $PROMOTED_BUNDLES/glassfish-web.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-unix.sh
-promote_bundle $PROMOTED_BUNDLES/glassfish-web.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows.exe
-promote_bundle $PROMOTED_BUNDLES/glassfish-full.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix.sh
-promote_bundle $PROMOTED_BUNDLES/glassfish-full.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows.exe
-promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-unix-ml.sh
-promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows-ml.exe
-promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix-ml.sh
-promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows-ml.exe
-promote_bundle $PROMOTED_BUNDLES/svn-revisions.txt svn-revisions-$BUILD_ID.txt
+if [ "weekly" == "${1}" ]
+then
+    promote_bundle $PROMOTED_BUNDLES/web-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID.zip
+    promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
+    promote_bundle $PROMOTED_BUNDLES/glassfish-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID.zip
+    promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
+    promote_bundle $PROMOTED_BUNDLES/nucleus-new.zip nucleus-$RELEASE_VERSION.zip
+    promote_bundle $PROMOTED_BUNDLES/glassfish-web.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-unix.sh
+    promote_bundle $PROMOTED_BUNDLES/glassfish-web.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows.exe
+    promote_bundle $PROMOTED_BUNDLES/glassfish-full.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix.sh
+    promote_bundle $PROMOTED_BUNDLES/glassfish-full.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows.exe
+    promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-unix-ml.sh
+    promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows-ml.exe
+    promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix-ml.sh
+    promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows-ml.exe
+    promote_bundle $PROMOTED_BUNDLES/svn-revisions.txt svn-revisions-$BUILD_ID.txt
+elif [ "nightly" == "${1}" ]
+then
+    promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
+    promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
+fi
 
 ####################
 # CREATE SYMBLINKS #
 ####################
 
-PROMOTE_WEEKLY_SCRIPT=/tmp/promoteWeeklies.sh
-cat <<EOF > $PROMOTE_WEEKLY_SCRIPT
+PROMOTE_SCRIPT=/tmp/promotebuild.sh
+cat <<EOF > $PROMOTE_SCRIPT
 #!/bin/bash -ex
 
 # arg1 BUILD_ID
 # arg2 PRODUCT_VERSION_GF
-# arg3 WEEKLY_ARCHIVE_MASTER_BUNDLES
+# arg3 ARCHIVE_MASTER_BUNDLES
 # arg4 JAVAEE_VERSION
 
 cd \$3
@@ -81,18 +100,20 @@ rm -rf latest
 ln -s \$1 latest
 EOF
 
-scp $PROMOTE_WEEKLY_SCRIPT $SSH_MASTER:/tmp
-ssh $SSH_MASTER "chmod +x $PROMOTE_WEEKLY_SCRIPT"
-ssh $SSH_MASTER "$PROMOTE_WEEKLY_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF $WEEKLY_ARCHIVE_MASTER_BUNDLES $JAVAEE_VERSION"
+scp $PROMOTE_SCRIPT $SSH_MASTER:/tmp
+ssh $SSH_MASTER "chmod +x $PROMOTE_SCRIPT"
+ssh $SSH_MASTER "$PROMOTE_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF $ARCHIVE_MASTER_BUNDLES $JAVAEE_VERSION"
 
 #####################
 # TAG THE WORKSPACE #
 #####################
+if [ "weekly" == "${1}" ]
+then
+    curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
+    unzip workspace.zip
 
-curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
-unzip workspace.zip
-
-svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION
+    svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION
+fi
 
 ########################
 # SEND NOTIFICATION #
@@ -102,14 +123,14 @@ datetime=`date`
 /usr/lib/sendmail -t << MESSAGE
 From: $NOTIFICATION_FROM
 To: $NOTIFICATION_SENDTO
-Subject: [ $PRODUCT_GF-$PRODUCT_VERSION_GF ] Trunk WEEKLY Build ($BUILD_ID)
+Subject: [ $PRODUCT_GF-$PRODUCT_VERSION_GF ] Trunk ${1} Build ($BUILD_ID)
 
 Product : $PRODUCT_GF $PRODUCT_VERSION_GF
 Date    : `date`
 Version : $BUILD_ID
 
  *External*: $JNET_DIR_HTTP
- *Internal*: $WEEKLY_ARCHIVE_URL
+ *Internal*: $ARCHIVE_URL
 
  *Aggregated tests summary*:
 
@@ -117,11 +138,11 @@ Version : $BUILD_ID
 
  *Promotion summary*:
 
-`cat $WORKSPACE/weekly_bundles/weekly-promotion-summary.txt`
+`cat $WORKSPACE/${1}_bundles/${1}-promotion-summary.txt`
 
  *Svn revisions*:
 
-`cat $WORKSPACE/weekly_bundles/svn-revisions-$BUILD_ID.txt`
+`cat $WORKSPACE/${1}_bundles/svn-revisions-$BUILD_ID.txt`
 
 Thanks,
 RE
