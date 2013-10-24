@@ -86,14 +86,14 @@ aggregated_tests_summary(){
                       "`align_column 55 "." "$JOB_NAME ($JOB_NUMBER)"`" \
                       "`align_column 12 ' ' "PASSED($PASSED_NUMBER)"`" \
                       "FAILED($FAILED_NUMBER)"
-               EMPTY="false"
+               FOUND="true"
 	       	   XPATH_RESULT=`cut -d ' ' -f5- <<< $XPATH_RESULT`
 		else
                XPATH_RESULT=`cut -d ' ' -f3- <<< $XPATH_RESULT`
     	fi
     done
 
-    if [ -z $EMPTY ]
+    if [ -z $FOUND ]
     then
             printf "No downstream test result found."
     fi
