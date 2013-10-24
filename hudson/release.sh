@@ -162,7 +162,7 @@ mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
     -Dmaven.test.failure.ignore=true \
     -Dtarget.repo.dir=$IPS_REPO_DIR \
     -Duc.toolkit.dir=$IPS_TOOLKIT \
-    -Drepo.url=$IPS_REPO_URL:$REPO_PORT/ \
+    -Drepo.url=$IPS_REPO_URL:$IPS_REPO_PORT/ \
     -DjavadocExecutable=$HOME/jdk1.7.0_25/bin/javadoc \
     -Dpython=$PYTHON_HOME/bin/python
 
