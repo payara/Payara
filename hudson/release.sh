@@ -65,7 +65,6 @@ fi
 # GET SVN REVISION #
 ####################
 
-
 printf "\n%s\n\n" "==== VERSION INFO ===="
 
 # can be a build parameter
@@ -115,6 +114,7 @@ PATH=$PYTHON_HOME/bin:$IPS_TOOLKIT/pkg/bin:$PATH; export PATH
 
 printf "\n%s \n\n" "===== START IPS REPOSITORY ====="
 # start the repository
+mkdir -p $IPS_REPO_DIR
 $IPS_TOOLKIT/pkg/bin/pkg.depotd \
     -d $IPS_REPO_DIR \
     -p $IPS_REPO_PORT \
