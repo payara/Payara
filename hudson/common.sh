@@ -69,22 +69,17 @@ aggregated_tests_summary(){
     HTML_REPORT=`curl $1 2> /dev/null`
     XPATH_REQUEST="//table[@class='pane sortable']/tr[position()>1]//*[not(child::a)]/text()"
     XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< $HTML_REPORT`
-    XPATH_RESULT=`sed -r 's/^\s*//; s/\s*$//; /^$/d' <<< $XPATH_RESULT`
+    XPATH_RESULT=`sed -re 's/^\s*//; s/\s*$//; /^$/d' <<< $XPATH_RESULT`
+    XPATH_RESULT=`sed -e 's/([^()]*)//g' <<< $XPATH_RESULT`
 
-    while true
+    while [ ${#XPATH_RESULT} -gt 0 ]
     do
         JOB_NAME=`cut -d ' ' -f1 <<< $XPATH_RESULT`
         JOB_NUMBER=`cut -d ' ' -f2 <<< $XPATH_RESULT`
         FAILED_NUMBER=`cut -d ' ' -f3 <<< $XPATH_RESULT`
         TOTAL_NUMBER=`cut -d ' ' -f4 <<< $XPATH_RESULT`
-        if [ ${#JOB_NAME} -eq 0 ] || [ ${#JOB_NUMBER} -eq 0 ] || [ ${#FAILED_NUMBER} -eq 0 ] || [ ${#TOTAL_NUMBER} -eq 0 ] 
-        then
-                break
-        else
-                XPATH_RESULT=`cut -d ' ' -f5- <<< $XPATH_RESULT`
-        fi
 
-        if [ $TOTAL_NUMBER != "N/A" ] && [ $FAILED_NUMBER != "N/A" ]
+        if [ ! "$JOB_NAME" = "N/A" ] && [ ! "$JOB_NUMBER" = "N/A" ]
         then
                PASSED_NUMBER=$((TOTAL_NUMBER-FAILED_NUMBER))
                printf "%s%s%s \n" \
@@ -92,10 +87,13 @@ aggregated_tests_summary(){
                       "`align_column 12 ' ' "PASSED($PASSED_NUMBER)"`" \
                       "FAILED($FAILED_NUMBER)"
                EMPTY="false"
-        fi
+	       	   XPATH_RESULT=`cut -d ' ' -f5- <<< $XPATH_RESULT`
+		else
+               XPATH_RESULT=`cut -d ' ' -f3- <<< $XPATH_RESULT`
+    	fi
     done
 
-    if [ $EMPTY = "true" ]
+    if [ -z $EMPTY ]
     then
             printf "No downstream test result found."
     fi
@@ -112,7 +110,7 @@ scp_jnet(){
                      -e s@"$PKG_ID-"@@g \
                      -e s@"--"@"-"@g `
     ssh $SSH_MASTER "scp `echo $WEEKLY_ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR`"
-    ssh #SSH_MASTER "scp `echo $WEEKLY_ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR/latest-$simple_name`"
+    ssh $SSH_MASTER "scp `echo $WEEKLY_ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR/latest-$simple_name`"
 }
 promote_bundle(){
     curl $1 > $2
