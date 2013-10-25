@@ -68,6 +68,7 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentProperties;
 import org.glassfish.deployment.common.DeploymentUtils;
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.hk2.api.ActiveDescriptor;
@@ -80,13 +81,18 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.glassfish.internal.deployment.SnifferManager;
 import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.hk2.api.ServiceLocator;
 import org.xml.sax.SAXParseException;
 
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ApplicationClientDescriptor;
 import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.deployment.ConnectorDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.archivist.Archivist;
 import com.sun.enterprise.deployment.archivist.ArchivistFactory;
 import com.sun.enterprise.deployment.deploy.shared.Util;
@@ -138,6 +144,9 @@ public class DOLUtils {
     @LogMessageInfo(message = "Unsupported deployment descriptors element {0} value {1}.", level="WARNING")
       public static final String INVALID_DESC_MAPPING = "AS-DEPLOYMENT-00015";
 
+    @LogMessageInfo(message = "DOLUtils: converting EJB to web bundle id {0}.", level="FINER")
+    private static final String CONVERT_EJB_TO_WEB_ID = "AS-DEPLOYMENT-00017";
+    
     // The system property to control the precedence between GF DD
     // and WLS DD when they are both present. When this property is 
     // set to true, GF DD will have higher precedence over WLS DD.
@@ -147,6 +156,9 @@ public class DOLUtils {
     // WLS DD. When this property is set to true, WLS DD will be ignored.
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
+    private static final String ID_SEPARATOR = "_";
+
+    
     /** no need to creates new DOLUtils */
     private DOLUtils() {
     }
@@ -690,5 +702,150 @@ public class DOLUtils {
     ArrayList<String> ns = new ArrayList<String>();
     ns.add(DescriptorConstants.WLS_DTD_SYSTEM_ID_BEA);
     return ns;
+  }
+
+  public static Application getApplicationFromEnv(JndiNameEnvironment env) {
+    Application app = null;
+
+    if (env instanceof EjbDescriptor) {
+      // EJB component
+      EjbDescriptor ejbEnv = (EjbDescriptor) env;
+      app = ejbEnv.getApplication();
+    } else if (env instanceof EjbBundleDescriptor) {
+      EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
+      app = ejbBundle.getApplication();
+    } else if (env instanceof WebBundleDescriptor) {
+      WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
+      app = webEnv.getApplication();
+    } else if (env instanceof ApplicationClientDescriptor) {
+      ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
+      app = appEnv.getApplication();
+    } else if (env instanceof ManagedBeanDescriptor) {
+      ManagedBeanDescriptor mb = (ManagedBeanDescriptor) env;
+      app = mb.getBundle().getApplication();
+    } else if (env instanceof Application) {
+      app = ((Application) env);
+    } else {
+      throw new IllegalArgumentException("IllegalJndiNameEnvironment : env");
+    }
+
+    return app;
+  }
+
+  public static String getApplicationName(JndiNameEnvironment env) {
+    String appName = "";
+
+    Application app = getApplicationFromEnv(env);
+    if (app != null) {
+      appName = app.getAppName();
+    } else {
+      throw new IllegalArgumentException("IllegalJndiNameEnvironment : env");
+    }
+
+    return appName;
+  }
+
+  public static String getModuleName(JndiNameEnvironment env) {
+
+    String moduleName = null;
+
+    if (env instanceof EjbDescriptor) {
+      // EJB component
+      EjbDescriptor ejbEnv = (EjbDescriptor) env;
+      EjbBundleDescriptor ejbBundle = ejbEnv.getEjbBundleDescriptor();
+      moduleName = ejbBundle.getModuleDescriptor().getModuleName();
+    } else if (env instanceof EjbBundleDescriptor) {
+      EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
+      moduleName = ejbBundle.getModuleDescriptor().getModuleName();
+    } else if (env instanceof WebBundleDescriptor) {
+      WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
+      moduleName = webEnv.getModuleName();
+    } else if (env instanceof ApplicationClientDescriptor) {
+      ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
+      moduleName = appEnv.getModuleName();
+    } else if (env instanceof ManagedBeanDescriptor) {
+      ManagedBeanDescriptor mb = (ManagedBeanDescriptor) env;
+      moduleName = mb.getBundle().getModuleName();
+    } else {
+      throw new IllegalArgumentException("IllegalJndiNameEnvironment : env");
+    }
+
+    return moduleName;
+
+  }
+
+  public static boolean getTreatComponentAsModule(JndiNameEnvironment env) {
+
+    boolean treatComponentAsModule = false;
+
+    if (env instanceof WebBundleDescriptor) {
+      treatComponentAsModule = true;
+    } else {
+
+      if (env instanceof EjbDescriptor) {
+
+        EjbDescriptor ejbDesc = (EjbDescriptor) env;
+        EjbBundleDescriptor ejbBundle = ejbDesc.getEjbBundleDescriptor();
+        if (ejbBundle.getModuleDescriptor().getDescriptor() instanceof WebBundleDescriptor) {
+          treatComponentAsModule = true;
+        }
+      }
+
+    }
+
+    return treatComponentAsModule;
+  }
+
+  /**
+   * Generate a unique id name for each J2EE component.
+   */
+  public static String getComponentEnvId(JndiNameEnvironment env) {
+    String id = null;
+
+    if (env instanceof EjbDescriptor) {
+      // EJB component
+      EjbDescriptor ejbEnv = (EjbDescriptor) env;
+
+      // Make jndi name flat so it won't result in the creation of
+      // a bunch of sub-contexts.
+      String flattedJndiName = ejbEnv.getJndiName().replace('/', '.');
+
+      EjbBundleDescriptor ejbBundle = ejbEnv.getEjbBundleDescriptor();
+      Descriptor d = ejbBundle.getModuleDescriptor().getDescriptor();
+      // if this EJB is in a war file, use the same component ID
+      // as the web bundle, because they share the same JNDI namespace
+      if (d instanceof WebBundleDescriptor) {
+        // copy of code below
+        WebBundleDescriptor webEnv = (WebBundleDescriptor) d;
+        id = webEnv.getApplication().getName() + ID_SEPARATOR
+            + webEnv.getContextRoot();
+        if (deplLogger.isLoggable(Level.FINER)) {
+          deplLogger.log(Level.FINER, CONVERT_EJB_TO_WEB_ID, id);
+        }
+
+      } else {
+        id = ejbEnv.getApplication().getName() + ID_SEPARATOR
+            + ejbBundle.getModuleDescriptor().getArchiveUri() + ID_SEPARATOR
+            + ejbEnv.getName() + ID_SEPARATOR + flattedJndiName
+            + ejbEnv.getUniqueId();
+      }
+    } else if (env instanceof WebBundleDescriptor) {
+      WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
+      id = webEnv.getApplication().getName() + ID_SEPARATOR
+          + webEnv.getContextRoot();
+    } else if (env instanceof ApplicationClientDescriptor) {
+      ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
+      id = "client" + ID_SEPARATOR + appEnv.getName() + ID_SEPARATOR
+          + appEnv.getMainClassName();
+    } else if (env instanceof ManagedBeanDescriptor) {
+      id = ((ManagedBeanDescriptor) env).getGlobalJndiName();
+    } else if (env instanceof EjbBundleDescriptor) {
+      EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
+      id = "__ejbBundle__" + ID_SEPARATOR
+          + ejbBundle.getApplication().getName() + ID_SEPARATOR
+          + ejbBundle.getModuleName();
+    }
+
+    return id;
   }
 }

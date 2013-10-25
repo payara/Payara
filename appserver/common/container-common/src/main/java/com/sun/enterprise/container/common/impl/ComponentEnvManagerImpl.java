@@ -67,6 +67,7 @@ import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.util.ResourceManagerFactory;
 import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.deployment.ResourceDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 import javax.inject.Inject;
 import javax.naming.Context;
@@ -209,13 +210,13 @@ public class ComponentEnvManagerImpl
                 addJNDIBindings(next, ScopeType.APP, bindings);
             }
 
-            namingManager.bindToAppNamespace(getApplicationName(env), bindings);
+            namingManager.bindToAppNamespace(DOLUtils.getApplicationName(env), bindings);
         } else {
             
-            boolean treatComponentAsModule = getTreatComponentAsModule(env);
+            boolean treatComponentAsModule = DOLUtils.getTreatComponentAsModule(env);
 
             // Bind dependencies to the namespace for this component
-            namingManager.bindToComponentNamespace(getApplicationName(env), getModuleName(env),
+            namingManager.bindToComponentNamespace(DOLUtils.getApplicationName(env), DOLUtils.getModuleName(env),
                     compEnvId, treatComponentAsModule, bindings);
             compEnvId = getComponentEnvId(env);
 
@@ -246,7 +247,7 @@ public class ComponentEnvManagerImpl
         // an application client)  register any java:app dependencies under a well-known
         // internal portion of the global namespace based on the application name.  This
         // will allow app client access to application-wide objects within the server.
-        Application app = getApplicationFromEnv(env);
+        Application app = DOLUtils.getApplicationFromEnv(env);
         if( !(env instanceof ApplicationClientDescriptor) &&
             app.getBundleDescriptors(ApplicationClientDescriptor.class).size() > 0 ) {
             for(JNDIBinding next : bindings) {
@@ -283,10 +284,10 @@ public class ComponentEnvManagerImpl
         addEnvironmentProperties(ScopeType.COMPONENT, envProps.iterator(), bindings);
         addResourceReferences(ScopeType.COMPONENT, resRefs.iterator(), bindings);
 
-        boolean treatComponentAsModule = getTreatComponentAsModule(origEnv);
+        boolean treatComponentAsModule = DOLUtils.getTreatComponentAsModule(origEnv);
 
         // Bind dependencies to the namespace for this component
-        namingManager.bindToComponentNamespace(getApplicationName(origEnv), getModuleName(origEnv),
+        namingManager.bindToComponentNamespace(DOLUtils.getApplicationName(origEnv), DOLUtils.getModuleName(origEnv),
                 compEnvId, treatComponentAsModule, bindings);
 
         return;
@@ -296,12 +297,12 @@ public class ComponentEnvManagerImpl
 
         String resourceId = "";
         if(dependencyAppliesToScope(desc, ScopeType.COMPONENT)){
-            resourceId = getApplicationName(env) +    "/" + getModuleName(env) + "/" +
+            resourceId = DOLUtils.getApplicationName(env) +    "/" + DOLUtils.getModuleName(env) + "/" +
                     getComponentEnvId(env) ;
         } else if(dependencyAppliesToScope(desc, ScopeType.MODULE)){
-            resourceId = getApplicationName(env) +    "/" + getModuleName(env) ;
+            resourceId = DOLUtils.getApplicationName(env) +    "/" + DOLUtils.getModuleName(env) ;
         } else if(dependencyAppliesToScope(desc, ScopeType.APP)){
-            resourceId = getApplicationName(env)  ;
+            resourceId = DOLUtils.getApplicationName(env)  ;
         }
         
         return resourceId;
@@ -383,7 +384,7 @@ public class ComponentEnvManagerImpl
             namingManager.unpublishObject(next.getName());
         }
 
-        Application app = getApplicationFromEnv(env);
+        Application app = DOLUtils.getApplicationFromEnv(env);
 
         //undeploy data-sources & mail-sessions exposed by app-client descriptors.
         Set<ApplicationClientDescriptor> appClientDescs = app.getBundleDescriptors(ApplicationClientDescriptor.class);
@@ -406,7 +407,7 @@ public class ComponentEnvManagerImpl
         }
 
         if( env instanceof Application) {
-            namingManager.unbindAppObjects(getApplicationName(env));
+            namingManager.unbindAppObjects(DOLUtils.getApplicationName(env));
         } else {
             // Unbind anything in the component namespace
             String compEnvId = getComponentEnvId(env);
@@ -764,28 +765,7 @@ public class ComponentEnvManagerImpl
         return appliesToScope;
     }
 
-    private boolean getTreatComponentAsModule(JndiNameEnvironment env) {
-
-        boolean treatComponentAsModule = false;
-
-        if( env instanceof WebBundleDescriptor ) {
-            treatComponentAsModule = true;
-        } else {
-
-            if (env instanceof EjbDescriptor ) {
-
-                EjbDescriptor ejbDesc = (EjbDescriptor) env;
-                EjbBundleDescriptor ejbBundle = ejbDesc.getEjbBundleDescriptor();
-                if( ejbBundle.getModuleDescriptor().getDescriptor() instanceof WebBundleDescriptor ) {
-                    treatComponentAsModule = true;
-                }
-            }
-
-        }
-                
-        return treatComponentAsModule;
-    }
-
+   
     /**
      * Generate the name of an environment dependency in the java:
      * namespace.  This is the lookup string used by a component to access
@@ -799,63 +779,18 @@ public class ComponentEnvManagerImpl
     }
 
 
-    private static final String ID_SEPARATOR = "_";
 
     /**
      * Generate a unique id name for each J2EE component.
      */
     public String getComponentEnvId(JndiNameEnvironment env) {
-	    String id = null;
+    String id = DOLUtils.getComponentEnvId(env);
 
-        if (env instanceof EjbDescriptor) {
-            // EJB component
-	        EjbDescriptor ejbEnv = (EjbDescriptor) env;
-
-            // Make jndi name flat so it won't result in the creation of
-            // a bunch of sub-contexts.
-            String flattedJndiName = ejbEnv.getJndiName().replace('/', '.');
-
-            EjbBundleDescriptor ejbBundle = ejbEnv.getEjbBundleDescriptor();
-            Descriptor d = ejbBundle.getModuleDescriptor().getDescriptor();
-            // if this EJB is in a war file, use the same component ID
-            // as the web bundle, because they share the same JNDI namespace
-            if (d instanceof WebBundleDescriptor) {
-                // copy of code below
-                WebBundleDescriptor webEnv = (WebBundleDescriptor) d;
-                id = webEnv.getApplication().getName() + ID_SEPARATOR +
-                    webEnv.getContextRoot();
-                if (_logger.isLoggable(Level.FINER))
-                    _logger.finer("ComponentEnvManagerImpl: " +
-                                "converting EJB to web bundle id " + id);
-            } else {
-                id = ejbEnv.getApplication().getName() + ID_SEPARATOR +
-                    ejbBundle.getModuleDescriptor().getArchiveUri()
-                    + ID_SEPARATOR +
-                    ejbEnv.getName() + ID_SEPARATOR + flattedJndiName +
-                    ejbEnv.getUniqueId();
-            }
-        } else if(env instanceof WebBundleDescriptor) {
-            WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
-	    id = webEnv.getApplication().getName() + ID_SEPARATOR +
-                webEnv.getContextRoot();
-        } else if (env instanceof ApplicationClientDescriptor) {
-            ApplicationClientDescriptor appEnv =
-		(ApplicationClientDescriptor) env;
-	    id = "client" + ID_SEPARATOR + appEnv.getName() +
-                ID_SEPARATOR + appEnv.getMainClassName();
-        } else if( env instanceof ManagedBeanDescriptor ) {
-            id = ((ManagedBeanDescriptor) env).getGlobalJndiName();
-        } else if( env instanceof EjbBundleDescriptor ) {
-            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
-            id = "__ejbBundle__" + ID_SEPARATOR + ejbBundle.getApplication().getName() +
-                    ID_SEPARATOR + ejbBundle.getModuleName();                  
-        }
-
-        if(_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, getApplicationName(env)
-                + "Component Id: " + id);
-        }
-        return id;
+    if (_logger.isLoggable(Level.FINE)) {
+      _logger.log(Level.FINE, DOLUtils.getApplicationName(env)
+          + "Component Id: " + id);
+    }
+    return id;
     }
     
     @Override
@@ -863,75 +798,11 @@ public class ComponentEnvManagerImpl
         return invMgr.peekAppEnvironment();
     }
 
-    private Application getApplicationFromEnv(JndiNameEnvironment env) {
-        Application app = null;
+   
 
-        if (env instanceof EjbDescriptor) {
-            // EJB component
-	        EjbDescriptor ejbEnv = (EjbDescriptor) env;
-            app = ejbEnv.getApplication();
-        } else if ( env instanceof EjbBundleDescriptor ) {
-            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
-            app  = ejbBundle.getApplication();
-        } else if (env instanceof WebBundleDescriptor) {
-            WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
-	        app = webEnv.getApplication();
-        } else if (env instanceof ApplicationClientDescriptor) {
-            ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
-	        app=  appEnv.getApplication();
-        } else if ( env instanceof ManagedBeanDescriptor ) {
-            ManagedBeanDescriptor mb = (ManagedBeanDescriptor) env;
-            app = mb.getBundle().getApplication();
-        } else if ( env instanceof Application ) {
-            app = ((Application)env);
-        } else {
-            throw new IllegalArgumentException("IllegalJndiNameEnvironment : env");
-        }
+   
 
-        return app;
-    }
-
-    private String getApplicationName(JndiNameEnvironment env) {
-        String appName = "";
-
-        Application app = getApplicationFromEnv(env);
-        if( app != null) {
-            appName = app.getAppName();
-        } else {
-            throw new IllegalArgumentException("IllegalJndiNameEnvironment : env");
-        }
-
-        return appName;
-    }
-
-    private String getModuleName(JndiNameEnvironment env) {
-
-        String moduleName = null;
-
-        if (env instanceof EjbDescriptor) {
-            // EJB component
-            EjbDescriptor ejbEnv = (EjbDescriptor) env;
-            EjbBundleDescriptor ejbBundle = ejbEnv.getEjbBundleDescriptor();
-            moduleName = ejbBundle.getModuleDescriptor().getModuleName();
-        } else if( env instanceof EjbBundleDescriptor ) {
-            EjbBundleDescriptor ejbBundle = (EjbBundleDescriptor) env;
-            moduleName = ejbBundle.getModuleDescriptor().getModuleName();
-        } else if (env instanceof WebBundleDescriptor) {
-            WebBundleDescriptor webEnv = (WebBundleDescriptor) env;
-            moduleName = webEnv.getModuleName();
-        } else if (env instanceof ApplicationClientDescriptor) {
-            ApplicationClientDescriptor appEnv = (ApplicationClientDescriptor) env;
-            moduleName =  appEnv.getModuleName();
-        } else if ( env instanceof ManagedBeanDescriptor ) {
-            ManagedBeanDescriptor mb = (ManagedBeanDescriptor) env;
-            moduleName = mb.getBundle().getModuleName();
-        } else {
-            throw new IllegalArgumentException("IllegalJndiNameEnvironment : env");
-        }
-
-        return moduleName;
-
-    }
+  
 
     private class FactoryForEntityManagerWrapper
         implements NamingObjectProxy {
