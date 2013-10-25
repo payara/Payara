@@ -952,14 +952,6 @@ public class RestUtil {
                     .register(CsrfProtectionFilter.class);
 
         } catch (Exception ex) {
-            Throwable cause = ex;
-            int lcv = 0;
-            while (cause != null) {
-                System.out.println("JRW(10) RestUtil [" + lcv++ + "]=" + cause.getMessage());
-                cause.printStackTrace(System.out);
-                cause = cause.getCause();
-            }
-
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
             if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
