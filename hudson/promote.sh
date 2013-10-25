@@ -60,7 +60,7 @@ then
     promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows-ml.exe
     promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix-ml.sh
     promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows-ml.exe
-    promote_bundle $PROMOTED_BUNDLES/svn-revisions.txt svn-revisions-$BUILD_ID.txt
+    promote_bundle $PROMOTED_BUNDLES/version-info.txt version-info-$BUILD_ID.txt
 elif [ "nightly" == "${1}" ]
 then
     promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
@@ -142,7 +142,7 @@ Version : $BUILD_ID
 
  *Svn revisions*:
 
-`cat $WORKSPACE/${1}_bundles/svn-revisions-$BUILD_ID.txt`
+`head -1 $WORKSPACE/${1}_bundles/version-info-$BUILD_ID.txt`
 
 Thanks,
 RE

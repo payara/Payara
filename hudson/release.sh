@@ -171,7 +171,7 @@ mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
 printf "\n%s \n\n" "===== ARCHIVE BUNDLES ====="
 rm -rf $WORKSPACE/bundles ; mkdir $WORKSPACE/bundles
 
-mv $WORKSPACE/svn-revisions.txt $WORKSPACE/bundles
+mv $WORKSPACE/version-info.txt $WORKSPACE/bundles
 
 # XXXJAVAEE cp $WORKSPACE/main/appserver/javaee-api/javax.javaee-api/target/javaee-api.jar $WORKSPACE/bundles
 # XXXJAVAEE cp $WORKSPACE/main/appserver/javaee-api/javax.javaee-api/target/javaee-api-javadoc.jar $WORKSPACE/bundles
