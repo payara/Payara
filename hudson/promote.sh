@@ -107,6 +107,7 @@ ssh $SSH_MASTER "$PROMOTE_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF $ARCHIVE_MASTER_B
 #####################
 # TAG THE WORKSPACE #
 #####################
+
 if [ "weekly" == "${1}" ]
 then
     curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip

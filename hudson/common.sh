@@ -22,6 +22,12 @@ PRODUCT_VERSION_GF=${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}
 SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
 SSH_STORAGE=${RE_USER}@${STORAGE_HOST}
 
+IPS_REPO_URL=http://localhost
+IPS_REPO_DIR=${WORKSPACE}/promorepo
+IPS_REPO_PORT=16500
+IPS_REPO_TYPE=sunos-sparc
+UC2_BUILD=2.3-b56
+
 if [ "weekly" == "${1}" ]
 then
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/promoted
@@ -32,11 +38,6 @@ then
     BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
     ARCHIVE_STORAGE=/onestop/${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
-    IPS_REPO_URL=http://localhost
-    IPS_REPO_DIR=${WORKSPACE}/promorepo
-    IPS_REPO_PORT=16500
-    IPS_REPO_TYPE=sunos-sparc
-    UC2_BUILD=2.3-b56
 else
     echo "wrong argument passed, please pass either weekly or nightly as the first positional parameter to the script"
     exit 1
