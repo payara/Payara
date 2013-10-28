@@ -119,7 +119,7 @@
             </build>
         </profile>
         <profile>
-            <id>ips</id>
+            <id>ips-lw</id>
             <activation>
                 <activeByDefault>false</activeByDefault>  
             </activation>
