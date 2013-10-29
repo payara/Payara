@@ -225,7 +225,7 @@ create_svn_tag(){
     svn mkdir $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "create tag"
     set -e
     svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION $WORKSPACE/main
-    svn commit -m "commit tag $RELEASE_VERSION"	
+    svn commit $WORKSPACE/main -m "commit tag $RELEASE_VERSION"	
 }
 
 send_notification(){

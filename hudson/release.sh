@@ -174,6 +174,6 @@ cp $WORKSPACE/main/appserver/distributions/web/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/nucleus/distributions/nucleus/target/*.zip $WORKSPACE/bundles
 
 # clean and zip the workspace
-printf "\n%s \n\n" "===== CLEAN AND ZIP THE WORKSPACE ====="
-mvn $MAVEN_ARGS -f main/pom.xml clean
+printf "\n%s \n\n" "===== ZIP THE WORKSPACE ====="
+svn status main | grep ? | awk '{print $2}' | xargs rm -rf
 zip $WORKSPACE/bundles/workspace.zip -r main
