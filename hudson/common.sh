@@ -49,7 +49,7 @@ then
     if [ ${#VERSION_QUALIFIER} -gt 0 ]
     then
     	ARCHIVE_PATH=$ARCHIVE_PATH/promoted
-   	elif
+   	else
    		ARCHIVE_PATH=$ARCHIVE_PATH/release
    	fi
     ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/$VERSION_QUALIFIER/archive/bundles
