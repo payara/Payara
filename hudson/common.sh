@@ -219,13 +219,13 @@ promote_bundle(){
 create_svn_tag(){
 	printf "\n%s \n\n" "===== CREATE SVN TAG ====="
     curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
-    unzip -d $WORKSPACE/main-$RELEASE_VERSION workspace.zip
+    unzip -d $WORKSPACE/tag workspace.zip
     set +e
     svn del $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "del tag"
     svn mkdir $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "create tag"
     set -e
-    svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION $WORKSPACE/main-$RELEASE_VERSION
-    svn commit $WORKSPACE/main-$RELEASE_VERSION -m "commit tag $RELEASE_VERSION"	
+    svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION $WORKSPACE/tag/main
+    svn commit $WORKSPACE/tag/main -m "commit tag $RELEASE_VERSION"	
 }
 
 send_notification(){
