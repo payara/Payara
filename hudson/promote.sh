@@ -13,11 +13,7 @@ create_symlinks
 
 if [ "weekly" == "$1" ]
 then
-	# tag the SVN workspace
-    curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
-    unzip workspace.zip
-
-    svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION
+	create_svn_tag    
 elif [ "nightly" == "$1" ]
 then
    	printf "\n%s \n\n" "===== TODO, RECORD REVISION ====="
