@@ -1,31 +1,6 @@
 #!/bin/bash -e
 
-#verify that the first positional parameter is mandatory
-: ${1:?"Usage: $0 ARGUMENT(weekly/nightly)"}
-
-if [[ ! "${1}" =~ (weekly|nightly) ]]
-then
-    echo "Usage: $0 ARGUMENT(weekly/nightly)"
-    exit 1
-fi
-
-#RE_USER=
-#HUDSON_MASTER_HOST=
-#STORAGE_HOST=
-#JNET_USER=
-#JNET_STORAGE_HOST=
-#STORAGE_HOST_HTTP=
-#WORKSPACE=
-#NOTIFICATION_SENDTO
-#NOTIFICATION_FROM
-#GPG_PASSPHRASE
-#HUDSON_HOME
-
 source `dirname $0`/common.sh
-if [ "weekly" == "${1}" ]
-then
-    init_release_version
-fi
 
 printf "\n%s \n\n" "===== ENV ====="
 env
@@ -34,12 +9,8 @@ env
 # ARCHIVE DISTROS #
 ###################
 
-rm -rf $WORKSPACE/${1}_bundles
-mkdir -p $WORKSPACE/${1}_bundles
-ssh $SSH_STORAGE "rm -rf `echo $ARCHIVE_STORAGE` ; mkdir `echo ${ARCHIVE_STORAGE}`"
-ssh $SSH_STORAGE "rm -rf `echo $ARCHIVE_STORAGE_BUNDLES`"
-
-cd $WORKSPACE/${1}_bundles
+ssh $SSH_STORAGE "rm -rf $ARCHIVE_STORAGE_BUNDLES ; mkdir -p $ARCHIVE_STORAGE_BUNDLES"
+cd $WORKSPACE_BUNDLES
 
 # JAVAEE API JARS AND JAVADOCS
 # XXXJAVAEE promote_bundle $PROMOTED_BUNDLES/javaee-api.jar javaee-api-7.0-$BUILD_ID.jar
@@ -55,14 +26,6 @@ then
     promote_bundle $PROMOTED_BUNDLES/glassfish-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID.zip
     promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
     promote_bundle $PROMOTED_BUNDLES/nucleus-new.zip nucleus-$RELEASE_VERSION.zip
-    promote_bundle $PROMOTED_BUNDLES/glassfish-web.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-unix.sh
-    promote_bundle $PROMOTED_BUNDLES/glassfish-web.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows.exe
-    promote_bundle $PROMOTED_BUNDLES/glassfish-full.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix.sh
-    promote_bundle $PROMOTED_BUNDLES/glassfish-full.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows.exe
-    promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-unix-ml.sh
-    promote_bundle $PROMOTED_BUNDLES/glassfish-web-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-windows-ml.exe
-    promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.sh $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-unix-ml.sh
-    promote_bundle $PROMOTED_BUNDLES/glassfish-full-ml.exe $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-windows-ml.exe
     promote_bundle $PROMOTED_BUNDLES/version-info.txt version-info-$BUILD_ID.txt
 elif [ "nightly" == "${1}" ]
 then
@@ -142,11 +105,11 @@ Version : $BUILD_ID
 
  *Promotion summary*:
 
-`cat $WORKSPACE/${1}_bundles/${1}-promotion-summary.txt`
+`cat $WORKSPACE_BUNDLES/${1}-promotion-summary.txt`
 
  *Svn revisions*:
 
-`head -1 $WORKSPACE/${1}_bundles/version-info-$BUILD_ID.txt`
+`head -1 $WORKSPACE_BUNDLES/version-info-$BUILD_ID.txt`
 
 Thanks,
 RE

@@ -1,7 +1,6 @@
 #!/bin/bash -e
 
 source `dirname $0`/common.sh
-init_release_version
 
 ######################
 # PROCESSES CLEANUPS #

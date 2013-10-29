@@ -21,52 +21,55 @@ PRODUCT_VERSION_GF=${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}
 
 SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
 SSH_STORAGE=${RE_USER}@${STORAGE_HOST}
+PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
+GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
+GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
 
 IPS_REPO_URL=http://localhost
 IPS_REPO_DIR=${WORKSPACE}/promorepo
 IPS_REPO_PORT=16500
 IPS_REPO_TYPE=sunos-sparc
 UC2_BUILD=2.3-b56
+UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build
 
 if [ "weekly" == "${1}" ]
 then
-    ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/promoted
-    ARCHIVE_STORAGE=${ARCHIVE_PATH}/${BUILD_ID}
+	if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
+    then
+	    VERSION_QUALIFIER=`cut -d '-' -f2- <<< $RELEASE_VERSION`
+	    BUILD_UD=$VERSION_QUALIFIER
+    else
+        RELEASE_VERSION="$PRODUCT_VERSION_GF-$BUILD_ID"
+        VERSION_QUALIFIER=$BUILD_ID
+    fi
+   	printf "\n%s \n\n" "===== RELEASE_VERSION ====="
+    printf "%s\n\n" "VERSION : $RELEASE_VERSION - QUALIFIER: $VERSION_QUALIFIER"    
+    
+    ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
+    if [ ${#VERSION_QUALIFIER} -gt 0 ]
+    then
+    	ARCHIVE_PATH=$ARCHIVE_PATH/promoted
+   	elif
+   		ARCHIVE_PATH=$ARCHIVE_PATH/release
+   	fi
+    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/$VERSION_QUALIFIER/archive/bundles
 elif [ "nightly" == "${1}" ]
 then
+    ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
     MDATE=$(date +%m_%d_%Y)
     BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
-    ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
-    ARCHIVE_STORAGE=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
-    
-    export BUILD_ID MDATE
+    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
 else
     echo "wrong argument passed, please pass either weekly or nightly as the first positional parameter to the script"
     exit 1
 fi
 
-PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
-ARCHIVE_STORAGE_BUNDLES=/onestop/java/re/${ARCHIVE_STORAGE}
-ARCHIVE_MASTER=${ARCHIVE_STORAGE}
-ARCHIVE_MASTER_BUNDLES=${ARCHIVE_MASTER}
-
-if [ "weekly" == "${1}" ]
-then
-    ARCHIVE_MASTER_BUNDLES=$ARCHIVE_MASTER_BUNDLES/archive/bundles
-    ARCHIVE_STORAGE_BUNDLES=$ARCHIVE_STORAGE_BUNDLES/archive/bundles
-    SCP=$SSH_STORAGE:$ARCHIVE_STORAGE_BUNDLES
-elif [ "nightly" == "${2}" ]
-then
-    SCP=$SSH_STORAGE:$ARCHIVE_STORAGE
-fi
-
+WORKSPACE_BUNDLES=$WORKSPACE/${1}_bundles
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
 JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
-ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/${ARCHIVE_MASTER_BUNDLES}
-PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
-GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
-GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
-UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build
+ARCHIVE_STORAGE_BUNDLES=/onestop/$ARCHIVE_MASTER_BUNDLES
+SCP=$SSH_STORAGE:$ARCHIVE_STORAGE_BUNDLES
+ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
 
 export JAVAEE_VERSION \
 	MAJOR_VERSION \
@@ -80,27 +83,15 @@ export JAVAEE_VERSION \
 	IPS_REPO_DIR \
 	IPS_REPO_PORT \
 	IPS_REPO_TYPE \
-	UC_HOME_URL \
-    ARCHIVE_PATH \
-	ARCHIVE_URL \
-	ARCHIVE_STORAGE \
-	ARCHIVE_STORAGE_BUNDLES \
-	ARCHIVE_MASTER \
+	ARCHIVE_PATH \
 	JNET_DIR \
 	JNET_DIR_HTTP \
 	PROMOTED_BUNDLES \
 	GF_WORKSPACE_URL_SSH \
-	GF_WORKSPACE_URL_HTTP
-
-init_release_version(){
-    if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
-    then
-    	printf "\n%s \n\n" "===== BUILD PARAMETER (RELEASE_VERSION) ====="
-        printf "%s\n\n" "Using provided value: $RELEASE_VERSION"
-    else
-        RELEASE_VERSION="$PRODUCT_VERSION_GF-$BUILD_ID"
-    fi
-}
+	GF_WORKSPACE_URL_HTTP \
+	ARCHIVE_MASTER \
+	ARCHIVE_MASTER_BUNDLES \
+	ARCHIVE_URL
 
 align_column(){
     max=$1
