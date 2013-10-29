@@ -181,8 +181,6 @@ mv $WORKSPACE/version-info.txt $WORKSPACE/bundles
 cp $WORKSPACE/main/appserver/distributions/glassfish/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/appserver/distributions/web/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/nucleus/distributions/nucleus/target/*.zip $WORKSPACE/bundles
-cp $WORKSPACE/main/appserver/installer/target/stage/*.sh $WORKSPACE/bundles
-cp $WORKSPACE/main/appserver/installer/target/stage/*.exe $WORKSPACE/bundles
 
 # clean and zip the workspace
 printf "\n%s \n\n" "===== CLEAN AND ZIP THE WORKSPACE ====="
