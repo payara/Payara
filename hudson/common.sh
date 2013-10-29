@@ -183,6 +183,8 @@ EOF
 	ssh $SSH_MASTER "$PROMOTE_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF $ARCHIVE_STORAGE_BUNDLES $JAVAEE_VERSION"	
 }
 
+kill_clean(){ if [ ${#1} -ne 0 ] ; then kill -9 $1 ; fi }
+
 scp_jnet(){
     file=$1
     simple_name=`echo $1 | \

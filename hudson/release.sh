@@ -6,12 +6,8 @@ source `dirname $0`/common.sh
 # PROCESSES CLEANUPS #
 ######################
 
-kill_clean(){ if [ ${#1} -ne 0 ] ; then kill -9 $1 ; fi }
 kill_clean `jps | grep ASMain | awk '{print $1}'`
-for i in `ps -auwwx | grep "depot.py" | grep -v grep | awk '{print $2}'`
-do
-    kill_clean $i
-done
+kill_clean `ps -auwwx | grep "depot.py" | grep -v grep | awk '{print $2}'`
 
 ####################
 # MAVEN_OPTS SETUP #
@@ -50,6 +46,7 @@ then
     printf "\n%s \n\n" "==== ERROR: HUDSON_HOME ENV VARIABLE MUST BE DEFINED ! ===="
     exit 1
 else
+	# TODO, should be function of the VERSION_QUALIFIER
     BUILD_ID=`cat $HUDSON_HOME/promote-trunk.version`
     PKG_ID=`cat $HUDSON_HOME/pkgid-trunk.version`
 fi
