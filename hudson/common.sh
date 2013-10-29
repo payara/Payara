@@ -217,11 +217,10 @@ promote_bundle(){
 }
 
 send_notification(){
-datetime=`date`
-/usr/lib/sendmail -t << MESSAGE
+	/usr/lib/sendmail -t << MESSAGE
 From: $NOTIFICATION_FROM
 To: $NOTIFICATION_SENDTO
-Subject: [ $PRODUCT_GF-$PRODUCT_VERSION_GF ] Trunk ${1} Build ($BUILD_ID)
+Subject: [ $PRODUCT_GF-$PRODUCT_VERSION_GF ] Trunk $BUILD_KIND Build ($BUILD_ID)
 
 Product : $PRODUCT_GF $PRODUCT_VERSION_GF
 Date    : `date`
@@ -244,5 +243,6 @@ Version : $BUILD_ID
 
 Thanks,
 RE
-MESSAGE	
+MESSAGE
+
 }
