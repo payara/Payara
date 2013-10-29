@@ -3,7 +3,7 @@
 #verify that the first positional parameter is mandatory
 : ${1:?"Usage: $0 ARGUMENT(weekly/nightly)"}
 
-if [[ ! "${1}" =~ "(weekly|nightly)" ]]
+if [[ ! "${1}" =~ (weekly|nightly) ]]
 then
     echo "Usage: $0 ARGUMENT(weekly/nightly)"
     exit 1
