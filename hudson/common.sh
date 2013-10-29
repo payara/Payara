@@ -65,6 +65,7 @@ else
 fi
 
 WORKSPACE_BUNDLES=$WORKSPACE/${1}_bundles
+PROMOTION_SUMMARY=$WORKSPACE_BUNDLES/${1}-promotion-summary.txt
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
 JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
 ARCHIVE_STORAGE_BUNDLES=/onestop/$ARCHIVE_MASTER_BUNDLES
@@ -148,6 +149,39 @@ aggregated_tests_summary(){
     fi
 }
 
+create_symlinks(){
+	PROMOTE_SCRIPT=/tmp/promotebuild.sh
+	cat <<EOF > $PROMOTE_SCRIPT
+#!/bin/bash -ex
+# arg1 BUILD_ID
+# arg2 PRODUCT_VERSION_GF
+# arg3 ARCHIVE_MASTER_BUNDLES
+# arg4 JAVAEE_VERSION
+
+cd \$3
+rm -rf latest-*
+
+for i in \`ls\`
+do
+    simple_name=\`echo \$i | \
+        sed -e s@"-\$1"@@g \
+                -e s@"-\$4"@@g \
+                -e s@"-\$2"@@g \
+                -e s@"\$3-"@@g \
+                -e s@"--"@"-"@g\` 
+        ln -fs \$i "latest-\$simple_name"
+done
+
+cd \$3
+cd ../../../
+rm -rf latest
+ln -s \$1 latest
+EOF
+	scp $PROMOTE_SCRIPT $SSH_MASTER:/tmp
+	ssh $SSH_MASTER "chmod +x $PROMOTE_SCRIPT"
+	ssh $SSH_MASTER "$PROMOTE_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF $ARCHIVE_MASTER_BUNDLES $JAVAEE_VERSION"	
+}
+
 scp_jnet(){
     file=$1
     simple_name=`echo $1 | \
@@ -166,11 +200,11 @@ scp_jnet(){
 promote_bundle(){
 	printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" $2
     curl $1 > $2
-    scp $2 ${SCP}
+    scp $2 $SCP
     scp_jnet $2
     simple_name=`echo $i | tr -d " " | sed \
         -e s@"$PRODUCT_VERSION_GF-"@@g \
         -e s@"$BUILD_ID-"@@g \
         -e s@"--"@"-"@g`
-    echo "$simple_name -> $ARCHIVE_URL/$i" >> ${1}-promotion-summary.txt
+    echo "$simple_name -> $ARCHIVE_URL/$i" >> $PROMOTION_SUMMARY
 }

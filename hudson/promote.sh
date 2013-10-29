@@ -19,56 +19,12 @@ cd $WORKSPACE_BUNDLES
 # XXXJAVAEE promote_bundle $PROMOTED_BUNDLES/javaee-web-api-javadoc.jar javaee-web-api-7.0-$BUILD_ID-javadoc.jar
 
 # COMMUNITY BUNDLES
-if [ "weekly" == "${1}" ]
-then
-    promote_bundle $PROMOTED_BUNDLES/web-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID.zip
-    promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
-    promote_bundle $PROMOTED_BUNDLES/glassfish-ips.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID.zip
-    promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
-    promote_bundle $PROMOTED_BUNDLES/nucleus-new.zip nucleus-$RELEASE_VERSION.zip
-    promote_bundle $PROMOTED_BUNDLES/version-info.txt version-info-$BUILD_ID.txt
-elif [ "nightly" == "${1}" ]
-then
-    promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
-    promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
-fi
+promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
+promote_bundle $PROMOTED_BUNDLES/glassfish-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID-ml.zip
+promote_bundle $PROMOTED_BUNDLES/nucleus-new.zip nucleus-$PRODUCT_GF-$PRODUCT_VERSION_GF-$BUILD_ID.zip
+promote_bundle $PROMOTED_BUNDLES/version-info.txt version-info-$BUILD_ID.txt
 
-####################
-# CREATE SYMBLINKS #
-####################
-
-PROMOTE_SCRIPT=/tmp/promotebuild.sh
-cat <<EOF > $PROMOTE_SCRIPT
-#!/bin/bash -ex
-
-# arg1 BUILD_ID
-# arg2 PRODUCT_VERSION_GF
-# arg3 ARCHIVE_MASTER_BUNDLES
-# arg4 JAVAEE_VERSION
-
-cd \$3
-rm -rf latest-*
-
-for i in \`ls\`
-do
-    simple_name=\`echo \$i | \
-        sed -e s@"-\$1"@@g \
-                -e s@"-\$4"@@g \
-                -e s@"-\$2"@@g \
-                -e s@"\$3-"@@g \
-                -e s@"--"@"-"@g\` 
-        ln -fs \$i "latest-\$simple_name"
-done
-
-cd \$3
-cd ../../../
-rm -rf latest
-ln -s \$1 latest
-EOF
-
-scp $PROMOTE_SCRIPT $SSH_MASTER:/tmp
-ssh $SSH_MASTER "chmod +x $PROMOTE_SCRIPT"
-ssh $SSH_MASTER "$PROMOTE_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF $ARCHIVE_MASTER_BUNDLES $JAVAEE_VERSION"
+create_symlinks
 
 #####################
 # TAG THE WORKSPACE #
