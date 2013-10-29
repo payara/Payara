@@ -42,6 +42,7 @@ package com.sun.enterprise.deployment.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -55,6 +56,7 @@ import java.util.logging.Level;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
+import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
@@ -111,6 +113,9 @@ public class ApplicationValidator extends ComponentValidator
                     localStrings.getLocalString("enterprise.deployment.util.application.fail",
                         "Application validation fails for given application {0} for jndi-name {1}",application.getAppName(),inValidJndiName));
             }
+            
+            //valdiate env entries
+            validateEnvEntries(application);
 
             for (BundleDescriptor ebd : application.getBundleDescriptorsOfType(DOLUtils.ejbType())) {
                 ebd.visit(getSubDescriptorVisitor(ebd));
@@ -458,6 +463,56 @@ public class ApplicationValidator extends ComponentValidator
         return allUniqueResource;
     }
 
+  // TODO,check EjbReference, ResourceReference, ResourceEnvReference
+  private void validateEnvEntries(Application application) {
+    Set<EnvironmentProperty> environmentProperties = null;
+    EnvEntriesValidator envValidator = new EnvEntriesValidator();
+
+    // validate env entries on resource definition descriptor at application
+    // level
+    environmentProperties = application.getEnvironmentProperties();
+    envValidator.validateEnvEntries(application, environmentProperties);
+
+    // validate env entries at application-client level
+    if (application != null) {
+      Set<ApplicationClientDescriptor> appClientDescs = application
+          .getBundleDescriptors(ApplicationClientDescriptor.class);
+      for (ApplicationClientDescriptor acd : appClientDescs) {
+        environmentProperties = acd.getEnvironmentProperties();
+        envValidator.validateEnvEntries(acd, environmentProperties);
+      }
+
+    }
+
+    // validate env entries at ejb-bundle level
+    if (application != null) {
+      Set<EjbBundleDescriptor> ejbBundleDescs = application
+          .getBundleDescriptors(EjbBundleDescriptor.class);
+      for (EjbBundleDescriptor ebd : ejbBundleDescs) {
+        // Reads resource definition descriptor at ejb level
+        Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
+        for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext();) {
+          EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
+          environmentProperties = ejbDescriptor.getEnvironmentProperties();
+          envValidator.validateEnvEntries(ebd, environmentProperties);
+
+        }
+      }
+    }
+
+    // validate env entries at web-bundle level
+    if (application != null) {
+      Set<WebBundleDescriptor> webBundleDescs = application
+          .getBundleDescriptors(WebBundleDescriptor.class);
+      for (WebBundleDescriptor wbd : webBundleDescs) {
+        Enumeration<EnvironmentEntry> envEntries = wbd.getEnvironmentEntries();
+        envValidator.validateEnvEntries(wbd, envEntries);
+      }
+
+    }
+
+  }
+    
     /**
      * * Method to validate MSD is unique or not
      * @param mailSessionDescriptors
