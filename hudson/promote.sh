@@ -20,7 +20,7 @@ then
     svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION
 elif [ "nightly" == "$1" ]
 then
-	# TODO, record revisions
+   	printf "\n%s \n\n" "===== TODO, RECORD REVISION ====="
 fi
 
 send_notification
