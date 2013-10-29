@@ -157,8 +157,8 @@ scp_jnet(){
         -e s@"-$PRODUCT_VERSION_GF"@@g \
         -e s@"$PKG_ID-"@@g \
         -e s@"--"@"-"@g `
-    ssh $SSH_MASTER "scp $ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR"
-    ssh $SSH_MASTER "scp $ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR/latest-$simple_name"
+    ssh $SSH_MASTER "scp $ARCHIVE_STORAGE_BUNDLES/$file $JNET_DIR"
+    ssh $SSH_MASTER "scp $ARCHIVE_STORAGE_BUNDLES/$file $JNET_DIR/latest-$simple_name"
 }
 
 promote_bundle(){
