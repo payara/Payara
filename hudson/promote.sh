@@ -2,9 +2,6 @@
 
 source `dirname $0`/common.sh
 
-printf "\n%s \n\n" "===== ENV ====="
-env
-
 init_storage_area
 
 promote_bundle $PROMOTED_BUNDLES/web-ips-ml.zip $PRODUCT_GF-$PRODUCT_VERSION_GF-web-$BUILD_ID-ml.zip
