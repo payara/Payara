@@ -77,15 +77,6 @@ else
     printf "%s\n\n" "Synchronizing to the last 'good' revisions ($SVN_REVISION)"
 fi
 
-#######################
-# RECORD VERSION INFO #
-#######################
-
-# create version-info.txt
-echo "$GF_WORKSPACE_URL_HTTP/trunk/main $SVN_REVISION" >> $WORKSPACE/version-info.txt
-echo "Maven-Version: $RELEASE_VERSION" >> $WORKSPACE/version-info.txt
-cat $WORKSPACE/version-info.txt
-
 ########################
 # IPS REPOSITORY SETUP #
 ########################
@@ -116,9 +107,9 @@ $IPS_TOOLKIT/pkg/bin/pkg.depotd \
     -p $IPS_REPO_PORT \
     > $IPS_REPO_DIR/repo.log 2>&1 &
 
-###############
-# BUILD PHASE #
-###############
+###################
+# WORKSPACE SETUP #
+###################
 
 printf "\n%s \n\n" "===== DELETE TAG ====="
 set +e
@@ -127,6 +118,16 @@ set -e
 
 printf "\n%s \n\n" "===== CHECKOUT ====="
 svn checkout $GF_WORKSPACE_URL_SSH/trunk/main -r $SVN_REVISION
+
+# create version-info.txt
+EFFECTIVE_REVISION=`svn info $GF_WORKSPACE_URL_SSH/trunk/main | grep 'Revision:' | awk '{print $2}'`
+echo "$GF_WORKSPACE_URL_HTTP/trunk/main $EFFECTIVE_REVISION" >> $WORKSPACE/version-info.txt
+echo "Maven-Version: $RELEASE_VERSION" >> $WORKSPACE/version-info.txt
+cat $WORKSPACE/version-info.txt
+
+###############
+# BUILD PHASE #
+###############
 
 MAVEN_REPO="-Dmaven.repo.local=$WORKSPACE/repository"
 MAVEN_ARGS="$MAVEN_REPO -C -nsu -B"

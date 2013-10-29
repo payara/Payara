@@ -218,13 +218,24 @@ promote_bundle(){
 
 create_svn_tag(){
 	printf "\n%s \n\n" "===== CREATE SVN TAG ====="
+	
+	# download and unzip the workspace
     curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
-    unzip -d $WORKSPACE/tag workspace.zip
+    rm -rf $WORKSPACE/tag ; unzip -d $WORKSPACE/tag workspace.zip
+    
+    # delete tag (for promotion forcing)
     set +e
     svn del $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "del tag"
-    svn mkdir $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "create tag"
     set -e
-    svn switch --relocate $GF_WORKSPACE_URL_SSH/trunk/main $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION $WORKSPACE/tag/main
+    
+    # copy the exact trunk used to run the release
+    SVN_REVISION=`svn info $WORKSPACE/tag/main | grep 'Revision:' | awk '{print $2}'`
+    svn cp $GF_WORKSPACE_URL_SSH/trunk/main@$SVN_REVISION $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "create tags/$RELEASE_VERSION based on $SVN_REVISION"
+    
+    # switch the workspace
+    svn switch $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION $WORKSPACE/tag/main
+    
+    # commit the local changes
     svn commit $WORKSPACE/tag/main -m "commit tag $RELEASE_VERSION"	
 }
 
