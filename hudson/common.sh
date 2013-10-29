@@ -37,6 +37,7 @@ then
 	if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
     then
 	    VERSION_QUALIFIER=`cut -d '-' -f2- <<< $RELEASE_VERSION`
+	    BUILD_ID=$VERSION_QUALIFIER
     else
         RELEASE_VERSION="$PRODUCT_VERSION_GF-$BUILD_ID"
         VERSION_QUALIFIER=$BUILD_ID
@@ -75,6 +76,7 @@ export JAVAEE_VERSION \
 	MINOR_VERSION \
 	MICRO_VERSION \
 	VERSION_QUALIFIER \
+	BUILD_ID \
 	RELEASE_VERSION \
 	PRODUCT_GF \
 	PRODUCT_VERSION_GF \
@@ -157,8 +159,8 @@ scp_jnet(){
         -e s@"-$PRODUCT_VERSION_GF"@@g \
         -e s@"$PKG_ID-"@@g \
         -e s@"--"@"-"@g `
-    ssh $SSH_MASTER "scp $ARCHIVE_STORAGE_BUNDLES/$file $JNET_DIR"
-    ssh $SSH_MASTER "scp $ARCHIVE_STORAGE_BUNDLES/$file $JNET_DIR/latest-$simple_name"
+    ssh $SSH_MASTER "scp /java/re/$ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR"
+    ssh $SSH_MASTER "scp /java/re/$ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR/latest-$simple_name"
 }
 
 promote_bundle(){
