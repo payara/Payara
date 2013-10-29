@@ -172,11 +172,6 @@ rm -rf $WORKSPACE/bundles ; mkdir $WORKSPACE/bundles
 
 mv $WORKSPACE/version-info.txt $WORKSPACE/bundles
 
-# XXXJAVAEE cp $WORKSPACE/main/appserver/javaee-api/javax.javaee-api/target/javaee-api.jar $WORKSPACE/bundles
-# XXXJAVAEE cp $WORKSPACE/main/appserver/javaee-api/javax.javaee-api/target/javaee-api-javadoc.jar $WORKSPACE/bundles
-# XXXJAVAEE cp $WORKSPACE/main/appserver/javaee-api/javax.javaee-web-api/target/javaee-web-api.jar $WORKSPACE/bundles
-# XXXJAVAEE cp $WORKSPACE/main/appserver/javaee-api/javax.javaee-web-api/target/javaee-web-api-javadoc.jar $WORKSPACE/bundles
-
 cp $WORKSPACE/main/appserver/distributions/glassfish/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/appserver/distributions/web/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/nucleus/distributions/nucleus/target/*.zip $WORKSPACE/bundles

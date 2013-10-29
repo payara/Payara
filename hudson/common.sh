@@ -64,8 +64,9 @@ else
     exit 1
 fi
 
-WORKSPACE_BUNDLES=$WORKSPACE/${1}_bundles
-PROMOTION_SUMMARY=$WORKSPACE_BUNDLES/${1}-promotion-summary.txt
+BUILD_KIND=$1
+WORKSPACE_BUNDLES=$WORKSPACE/${BUILD_KIND}_bundles
+PROMOTION_SUMMARY=$WORKSPACE_BUNDLES/${BUILD_KIND}-promotion-summary.txt
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
 JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
 ARCHIVE_STORAGE_BUNDLES=/onestop/$ARCHIVE_MASTER_BUNDLES
@@ -197,6 +198,10 @@ scp_jnet(){
     ssh $SSH_MASTER "scp /java/re/$ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR/latest-$simple_name"
 }
 
+init_storage_area(){
+	ssh $SSH_STORAGE "rm -rf $ARCHIVE_STORAGE_BUNDLES ; mkdir -p $ARCHIVE_STORAGE_BUNDLES"	
+}
+
 promote_bundle(){
 	printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" $2
     curl $1 > $2
@@ -207,4 +212,35 @@ promote_bundle(){
         -e s@"$BUILD_ID-"@@g \
         -e s@"--"@"-"@g`
     echo "$simple_name -> $ARCHIVE_URL/$i" >> $PROMOTION_SUMMARY
+}
+
+send_notification(){
+datetime=`date`
+/usr/lib/sendmail -t << MESSAGE
+From: $NOTIFICATION_FROM
+To: $NOTIFICATION_SENDTO
+Subject: [ $PRODUCT_GF-$PRODUCT_VERSION_GF ] Trunk ${1} Build ($BUILD_ID)
+
+Product : $PRODUCT_GF $PRODUCT_VERSION_GF
+Date    : `date`
+Version : $BUILD_ID
+
+ *External*: $JNET_DIR_HTTP
+ *Internal*: $ARCHIVE_URL
+
+ *Aggregated tests summary*:
+
+`aggregated_tests_summary $PROMOTED_URL/aggregatedTestReport/`
+
+ *Promotion summary*:
+
+`cat $PROMOTION_SUMMARY`
+
+ *Svn revisions*:
+
+`head -1 $WORKSPACE_BUNDLES/version-info-$BUILD_ID.txt`
+
+Thanks,
+RE
+MESSAGE	
 }
