@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
 #RE_USER=
 #HUDSON_MASTER_HOST=
@@ -162,6 +162,7 @@ scp_jnet(){
 }
 
 promote_bundle(){
+	printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" $2
     curl $1 > $2
     scp $2 ${SCP}
     scp_jnet $2
