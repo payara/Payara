@@ -31,13 +31,13 @@ UC2_BUILD=2.3-b56
 if [ "weekly" == "${1}" ]
 then
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/promoted
-    ARCHIVE_STORAGE=/onestop/${ARCHIVE_PATH}/${BUILD_ID}
+    ARCHIVE_STORAGE=${ARCHIVE_PATH}/${BUILD_ID}
 elif [ "nightly" == "${1}" ]
 then
     MDATE=$(date +%m_%d_%Y)
     BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
-    ARCHIVE_STORAGE=/onestop/${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
+    ARCHIVE_STORAGE=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
     
     export BUILD_ID MDATE
 else
@@ -46,17 +46,18 @@ else
 fi
 
 PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
-ARCHIVE_STORAGE_BUNDLES=${ARCHIVE_STORAGE}/archive/bundles
-ARCHIVE_MASTER=/java/re/${ARCHIVE_STORAGE}
+ARCHIVE_STORAGE_BUNDLES=/onestop/java/re/${ARCHIVE_STORAGE}
+ARCHIVE_MASTER=${ARCHIVE_STORAGE}
+ARCHIVE_MASTER_BUNDLES=${ARCHIVE_MASTER}
 
 if [ "weekly" == "${1}" ]
 then
+    ARCHIVE_MASTER_BUNDLES=$ARCHIVE_MASTER_BUNDLES/archive/bundles
+    ARCHIVE_STORAGE_BUNDLES=$ARCHIVE_STORAGE_BUNDLES/archive/bundles
     SCP=$SSH_STORAGE:$ARCHIVE_STORAGE_BUNDLES
-    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_MASTER}/archive/bundles
 elif [ "nightly" == "${2}" ]
 then
     SCP=$SSH_STORAGE:$ARCHIVE_STORAGE
-    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_MASTER}
 fi
 
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
