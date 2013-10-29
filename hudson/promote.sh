@@ -27,6 +27,9 @@ then
     init_release_version
 fi
 
+printf "\n%s \n\n" "===== ENV ====="
+env
+
 ###################
 # ARCHIVE DISTROS #
 ###################
