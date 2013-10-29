@@ -153,7 +153,7 @@ aggregated_tests_summary(){
 create_symlinks(){
 	PROMOTE_SCRIPT=/tmp/promotebuild.sh
 	cat <<EOF > $PROMOTE_SCRIPT
-#!/bin/bash -ex
+#!/bin/bash -e
 # arg1 BUILD_ID
 # arg2 PRODUCT_VERSION_GF
 # arg3 ARCHIVE_STORAGE_BUNDLES
