@@ -38,6 +38,8 @@ then
     BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
     ARCHIVE_STORAGE=/onestop/${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
+    
+    export BUILD_ID MDATE
 else
     echo "wrong argument passed, please pass either weekly or nightly as the first positional parameter to the script"
     exit 1
@@ -63,7 +65,31 @@ ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/${ARCHIVE_MASTER_BUNDLES}
 PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
 GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
 GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
-UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build 
+UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build
+
+export JAVAEE_VERSION \
+	MAJOR_VERSION \
+	MINOR_VERSION \
+	MICRO_VERSION \
+	PRODUCT_GF \
+	PRODUCT_VERSION_GF \
+	SSH_MASTER \
+	SSH_STORAGE \
+	IPS_REPO_URL \
+	IPS_REPO_DIR \
+	IPS_REPO_PORT \
+	IPS_REPO_TYPE \
+	UC_HOME_URL \
+    ARCHIVE_PATH \
+	ARCHIVE_URL \
+	ARCHIVE_STORAGE \
+	ARCHIVE_STORAGE_BUNDLES \
+	ARCHIVE_MASTER \
+	JNET_DIR \
+	JNET_DIR_HTTP \
+	PROMOTED_BUNDLES \
+	GF_WORKSPACE_URL_SSH \
+	GF_WORKSPACE_URL_HTTP
 
 init_release_version(){
     if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
