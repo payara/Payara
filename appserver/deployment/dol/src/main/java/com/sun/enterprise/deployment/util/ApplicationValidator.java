@@ -510,7 +510,7 @@ public class ApplicationValidator extends ComponentValidator
         for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext();) {
           EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
           environmentProperties = ejbDescriptor.getEnvironmentProperties();
-          envValidator.validateEnvEntries(ebd, environmentProperties);
+          envValidator.validateEnvEntries(ejbDescriptor, environmentProperties);
 
         }
       }
