@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.appserv.server.util.Version;
 import java.io.CharConversionException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -95,7 +94,6 @@ public class ContainerMapper extends ADBAwareHttpHandler {
     private final ReentrantReadWriteLock mapperLock;
 
     
-    private final String version;
     private static final AfterServiceListener afterServiceListener =
             new AfterServiceListenerImpl();
     /**
@@ -108,12 +106,6 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         listener = grizzlyListener;
         grizzlyService = service;
         mapperLock = service.obtainMapperLock();
-
-        String ver = System.getProperty("product.name");
-        if (ver == null) {
-            ver = Version.getVersion();
-        }
-        this.version = ver;
     }
 
     /**
