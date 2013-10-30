@@ -116,19 +116,17 @@ public class EnvEntriesValidator {
  
 
   private Map getNamespace(String logicalJndiName, JndiNameEnvironment env) {
-    
-    String componentId = DOLUtils.getComponentEnvId(env);
     String appName = DOLUtils.getApplicationName(env);
-    String moduleName = DOLUtils.getModuleName(env);
-    
     Map namespace = null;
     if (logicalJndiName.startsWith(JAVA_COMP_PREFIX)) {
+      String componentId = DOLUtils.getComponentEnvId(env);
       namespace = (Map) componentNamespaces.get(componentId);
       if (namespace == null) {
         namespace = new HashMap<String, Map>();
         componentNamespaces.put(componentId, namespace);
       }
     } else if (logicalJndiName.startsWith(JAVA_MODULE_PREFIX)) {
+      String moduleName = DOLUtils.getModuleName(env);
       AppModuleKey appModuleKey = new AppModuleKey(appName, moduleName);
       namespace = moduleNamespaces.get(appModuleKey);
       if (namespace == null) {
