@@ -1964,12 +1964,13 @@ public class Response
         // TODO:  default these values for now.  update later.
         final boolean versionOneStrictCompliance = CookieUtils.COOKIE_VERSION_ONE_STRICT_COMPLIANCE;
         final boolean alwaysAddExpires = CookieUtils.ALWAYS_ADD_EXPIRES;
+        final boolean rfc6265Support = CookieUtils.RFC_6265_SUPPORT_ENABLED;
         if (SecurityUtil.isPackageProtectionEnabled()) {
             cookieValue = AccessController.doPrivileged(
                 new PrivilegedAction<String>() {
                     public String run(){
                         CookieSerializerUtils.serializeServerCookie(
-                            sb, versionOneStrictCompliance,
+                            sb, versionOneStrictCompliance, rfc6265Support,
                             alwaysAddExpires, cookie.getName(),
                             cookie.getValue(), cookie.getVersion(), cookie.getPath(),
                             cookie.getDomain(), cookie.getComment(),
@@ -1980,7 +1981,7 @@ public class Response
                 });
         } else {
             CookieSerializerUtils.serializeServerCookie(
-                sb, versionOneStrictCompliance,
+                sb, versionOneStrictCompliance, rfc6265Support,
                 alwaysAddExpires, cookie.getName(),
                 cookie.getValue(), cookie.getVersion(), cookie.getPath(),
                 cookie.getDomain(), cookie.getComment(),

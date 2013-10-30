@@ -43,7 +43,6 @@ package org.glassfish.grizzly.config;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.*;
-import org.glassfish.grizzly.utils.LinkedTransferQueue;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.hk2.api.ServiceLocator;

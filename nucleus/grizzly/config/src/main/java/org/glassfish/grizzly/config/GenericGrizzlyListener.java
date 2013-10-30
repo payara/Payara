@@ -645,7 +645,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //                serverConfig.getMonitoringConfig().getHttpConfig().getProbes());
         filterChainBuilder.add(httpServerFilter);
         final FileCache fileCache = configureHttpFileCache(http.getFileCache());
-        fileCache.initialize(transport.getMemoryManager(), delayedExecutor);
+        fileCache.initialize(delayedExecutor);
         final FileCacheFilter fileCacheFilter = new FileCacheFilter(fileCache);
 //        fileCache.getMonitoringConfig().addProbes(
 //                serverConfig.getMonitoringConfig().getFileCacheConfig().getProbes());

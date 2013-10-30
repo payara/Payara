@@ -67,6 +67,7 @@ import org.glassfish.grizzly.http.HttpRequestPacket;
 import org.glassfish.grizzly.http.HttpResponsePacket;
 import org.glassfish.grizzly.http.KeepAlive;
 import org.glassfish.grizzly.http.server.HttpHandler;
+import org.glassfish.grizzly.http.server.ServerFilterConfiguration;
 import org.glassfish.grizzly.http.server.filecache.FileCache;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.util.Header;
@@ -217,6 +218,15 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         }
     }
 
+    @Override
+    protected ServerFilterConfiguration getHttpServerFilterConfiguration(Http http) {
+        // Set the default Glassfish error page generator
+        final ServerFilterConfiguration config =
+                super.getHttpServerFilterConfiguration(http);
+        config.setDefaultErrorPageGenerator(new GlassfishErrorPageGenerator());
+        return config;
+    }
+   
     @Override
     protected HttpHandler getHttpHandler() {
         return httpAdapter.getMapper();

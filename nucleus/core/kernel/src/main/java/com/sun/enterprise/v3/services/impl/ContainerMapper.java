@@ -63,7 +63,6 @@ import org.glassfish.grizzly.http.Note;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
-import org.glassfish.grizzly.http.util.ByteChunk;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.DataChunk;
 import org.glassfish.grizzly.http.util.MimeType;
@@ -96,7 +95,7 @@ public class ContainerMapper extends ADBAwareHttpHandler {
     private final ReentrantReadWriteLock mapperLock;
 
     
-    private String version;
+    private final String version;
     private static final AfterServiceListener afterServiceListener =
             new AfterServiceListenerImpl();
     /**
@@ -110,10 +109,11 @@ public class ContainerMapper extends ADBAwareHttpHandler {
         grizzlyService = service;
         mapperLock = service.obtainMapperLock();
 
-        version = System.getProperty("product.name");
-        if (version == null) {
-            version = Version.getVersion();
+        String ver = System.getProperty("product.name");
+        if (ver == null) {
+            ver = Version.getVersion();
         }
+        this.version = ver;
     }
 
     /**
@@ -175,12 +175,12 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             handler.call();
         } catch (Exception ex) {
             try {
-                response.setStatus(500);
                 if (LOGGER.isLoggable(Level.WARNING)) {
                     LogHelper.log(LOGGER, Level.WARNING, KernelLoggerInfo.exceptionMapper, ex, 
                             request.getRequest().getRequestURIRef().getDecodedRequestURIBC());
                 }
-                customizedErrorPage(request, response);
+                
+                response.sendError(500);
             } catch (Exception ex2) {
                 if (LOGGER.isLoggable(Level.WARNING)) {
                     LOGGER.log(Level.WARNING, KernelLoggerInfo.exceptionMapper2, ex2);
@@ -383,35 +383,6 @@ public class ContainerMapper extends ADBAwareHttpHandler {
             return mapper.getHttpHandler();
         }
         return null;
-    }
-
-    /**
-     * Return an error page customized for GlassFish v3.
-     *
-     * @param req
-     * @param res
-     *
-     * @throws Exception
-     */
-    @Override
-    protected void customizedErrorPage(Request req, Response res) throws Exception {
-        byte[] errorBody;
-        if (res.getStatus() == 404) {
-            errorBody = HttpUtils.getErrorPage(Version.getVersion(),
-                    "The requested resource is not available.", "404");
-        } else {
-            errorBody = HttpUtils.getErrorPage(Version.getVersion(),
-                    "The server encountered an internal error that prevented it from fulfilling this request.", "500");
-        }
-        ByteChunk chunk = new ByteChunk();
-        chunk.setBytes(errorBody, 0, errorBody.length);
-        res.setContentLength(errorBody.length);
-        res.setContentType("text/html");
-        if (!version.isEmpty()) {
-            res.addHeader("Server", version);
-        }
-        res.flush();
-        res.getOutputBuffer().write(chunk.getBuffer());
     }
 
     public void register(String contextRoot, Collection<String> vs, HttpHandler httpService,

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,11 +100,11 @@ public class HttpUtils {
         }
     }
     
-    public final static byte[] getErrorPage(String serverName, String message, String errorCode) {
+    public static String getErrorPage(String serverName, String message, String errorCode) {
         StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" ");
         sb.append("\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-        sb.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>GlassFish v3 - Error report</title><style type=\"");
+        sb.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>GlassFish v4 - Error report</title><style type=\"");
         sb.append("text/css\"><!--H1 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:22px;}");
         sb.append(" H2 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:16px;}");
         sb.append(" H3 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:14px;}");
@@ -112,11 +112,11 @@ public class HttpUtils {
         sb.append(" B {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;} P");
         sb.append("{font-family:Tahoma,Arial,sans-serif;background:white;color:black;font-size:12px;}A");
         sb.append(" {color : black;}HR {color : #525D76;}--></style> </head><body><h1>HTTP Status ");
-        sb.append(errorCode + " - ");
+        sb.append(errorCode).append(" - ");
         sb.append("</h1><hr/><p><b>type</b> Status report</p><p><b>message</b></p><p><b>description</b>");
-        sb.append(message + "</p><hr/><h3>");
-        sb.append(serverName + "</h3></body></html>");
-        return sb.toString().getBytes();
+        sb.append(message).append("</p><hr/><h3>");
+        sb.append(serverName).append("</h3></body></html>");
+        return sb.toString();
     }
     
 }

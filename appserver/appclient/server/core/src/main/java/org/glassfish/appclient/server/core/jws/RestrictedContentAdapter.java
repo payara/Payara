@@ -347,7 +347,7 @@ public class RestrictedContentAdapter extends HttpHandler {
         gResp.setStatus(status);
         try {
             if (treatAsError /* && commitErrorResponse */) {
-                customizedErrorPage(gResp.getRequest(), gResp);
+                gResp.sendError(status);
             }
             gResp.finish();
         } catch (Exception e) {
