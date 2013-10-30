@@ -305,163 +305,183 @@ public class ApplicationValidator extends ComponentValidator
      */
     public boolean validateResourceDescriptor(Application application) {
 
+    /*
+     * Below final String is the prefix which I am appending with each module
+     * name to avoid duplicates. In ejblite case application name, ejb bundle
+     * name and web bundle name always returns the same name if not specified.
+     * So my validation fails so to avoid the same appending difference prefix
+     * with each module name.
+     * 
+     * For two ejb-jar.xml in two different modules as part of the ear, they
+     * must have unique module names (this is per spec requirement), so the
+     * module scoped resources just needs to be unique within their modules. So
+     * in that case all bundle name must be unique so appending extra string is
+     * not fail anything.
+     * 
+     * It is used for internal reference only.
+     */
+    final String APP_LEVEL = "AppLevel:";
+    final String EJBBUNDLE_LEVEL = "EBDLevel:";
+    final String EJB_LEVEL = "EJBLevel:";
+    final String APPCLIENTBUNDLE_LEVEL = "ACDevel:";
+    final String APPCLIENT_LEVEL = "ACLevel:";
+    final String WEBBUNDLE_LEVEL = "WBDLevel:";
 
-        /*
-        Below final String is the prefix which I am appending with each module name to avoid duplicates.
-        In ejblite case application name, ejb bundle name and web bundle name always returns the same name if not
-        specified. So my validation fails so to avoid the same appending difference prefix with each module name.
+    Set<EnvironmentProperty> environmentProperties = application
+        .getEnvironmentProperties();
 
-        For two ejb-jar.xml in two different modules as part of the ear, they must have unique module names
-        (this is per spec requirement), so the module scoped resources just needs to be unique within their modules.
-        So in that case all bundle name must be unique so appending extra string is not fail anything.
+    for (EnvironmentProperty environmentProperty : environmentProperties) {
+      String jndiName = environmentProperty.getName();
+      if (environmentProperty.hasLookupName()) {
+        jndiName = environmentProperty.getLookupName();
+      } else if (environmentProperty.getMappedName().length() > 0) {
+        jndiName = environmentProperty.getMappedName();
+      }
 
-        It is used for internal reference only.
-        */
-        final String APP_LEVEL = "AppLevel:";
-        final String EJBBUNDLE_LEVEL = "EBDLevel:";
-        final String EJB_LEVEL = "EJBLevel:";
-        final String APPCLIENTBUNDLE_LEVEL = "ACDevel:";
-        final String APPCLIENT_LEVEL = "ACLevel:";
-        final String WEBBUNDLE_LEVEL = "WBDLevel:";
-
-        Set<EnvironmentProperty> environmentProperties = application.getEnvironmentProperties();
-
-        for (EnvironmentProperty environmentProperty : environmentProperties) {
-            String jndiName = environmentProperty.getName();
-            if (environmentProperty.hasLookupName()) {
-                jndiName = environmentProperty.getLookupName();
-            } else if (environmentProperty.getMappedName().length() > 0) {
-                jndiName = environmentProperty.getMappedName();
-            }
-
-            if (jndiName.startsWith(JNDI_COMP) || jndiName.startsWith(JNDI_MODULE)) {
-                inValidJndiName = jndiName;
-                return false;
-            }
-        }
-
-
-        // Reads resource definition descriptor at application level
-        CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
-        Vector appLevel = new Vector();
-        if (commonResourceBundleDescriptor != null) {
-            Set<ResourceDescriptor> resourceDescriptors = commonResourceBundleDescriptor.getAllResourcesDescriptors();
-            if (findExistingDescriptors(resourceDescriptors, APP_LEVEL + commonResourceBundleDescriptor.getName())) {
-                return false;
-            }
-            appLevel.add(APP_LEVEL + commonResourceBundleDescriptor.getName());
-            validNameSpaceDetails.put(APP_KEYS, appLevel);
-        }
-
-        // Reads resource definition descriptor at application-client level
-        if (application != null) {
-            Set<ApplicationClientDescriptor> appClientDescs = application.getBundleDescriptors(ApplicationClientDescriptor.class);
-            Vector appClientLevel = new Vector();
-            for (ApplicationClientDescriptor acd : appClientDescs) {
-                Set<ResourceDescriptor> resourceDescriptors = acd.getAllResourcesDescriptors(ApplicationClientDescriptor.class);
-                if (findExistingDescriptors(resourceDescriptors, APPCLIENTBUNDLE_LEVEL + acd.getName())) {
-                    return false;
-                }
-                appClientLevel.add(APPCLIENTBUNDLE_LEVEL + acd.getName());
-            }
-            validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
-        }
-
-        // Reads resource definition descriptor at connector level
-        if (application != null) {
-            Set<ConnectorDescriptor> connectorDescs = application.getBundleDescriptors(ConnectorDescriptor.class);
-            Vector cdLevel = new Vector();
-            for (ConnectorDescriptor cd : connectorDescs) {
-                Set<ResourceDescriptor> resourceDescriptors = cd.getAllResourcesDescriptors(ApplicationClientDescriptor.class);
-                if (findExistingDescriptors(resourceDescriptors, APPCLIENT_LEVEL + cd.getName())) {
-                    return false;
-                }
-                cdLevel.add(APPCLIENT_LEVEL + cd.getName());
-            }
-            validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
-        }
-
-        // Reads resource definition descriptor at ejb-bundle level
-        if (application != null) {
-            Set<EjbBundleDescriptor> ejbBundleDescs = application.getBundleDescriptors(EjbBundleDescriptor.class);
-            Vector ebdLevel = new Vector();
-            Vector edLevel = new Vector();
-            for (EjbBundleDescriptor ebd : ejbBundleDescs) {
-                Set<ResourceDescriptor> resourceDescriptors = ebd.getAllResourcesDescriptors();
-                if (findExistingDescriptors(resourceDescriptors, EJBBUNDLE_LEVEL + ebd.getName())) {
-                    return false;
-                }
-                ebdLevel.add(EJBBUNDLE_LEVEL + ebd.getName());
-
-
-                // Reads resource definition descriptor at ejb level
-                Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
-                for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext(); ) {
-                    EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-                    resourceDescriptors = ejbDescriptor.getAllResourcesDescriptors();
-                    if (findExistingDescriptors(resourceDescriptors, EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName())) {
-                        return false;
-                    }
-                    edLevel.add(EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName());
-                }
-            }
-            validNameSpaceDetails.put(EJBBUNDLE_KEYS, ebdLevel);
-            validNameSpaceDetails.put(EJB_KEYS, edLevel);
-        }
-
-
-        // Reads resource definition descriptor at web-bundle level
-        if (application != null) {
-            Set<WebBundleDescriptor> webBundleDescs = application.getBundleDescriptors(WebBundleDescriptor.class);
-            Vector wbdLevel = new Vector();
-            for (WebBundleDescriptor wbd : webBundleDescs) {
-                Set<ResourceDescriptor> resourceDescriptors = wbd.getAllResourcesDescriptors();
-                if (findExistingDescriptors(resourceDescriptors, WEBBUNDLE_LEVEL + wbd.getName())) {
-                    return false;
-                }
-                wbdLevel.add(WEBBUNDLE_LEVEL + wbd.getName());
-            }
-            validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
-        }
-
-        // process connector based resource, if it resource adapter name is of the format "#raName" 
-        // then it will be deployed on an embedded resource adapter. 
-        // In this case, insert application name before the symbol "#". 
-        // Because in the ConnectorRegistry, embedded RA is indexed by "appName#raName"
-        
-        for(CommonResourceValidator rv : allResourceDescriptors.values()){
-            Descriptor desc = rv.getDescriptor();
-            if(desc instanceof AbstractConnectorResourceDescriptor){
-                AbstractConnectorResourceDescriptor acrd = (AbstractConnectorResourceDescriptor)desc;
-                if (acrd.getResourceAdapter() == null) {
-                    continue;
-                }
-                int poundIndex = acrd.getResourceAdapter().indexOf("#");
-                
-                if( poundIndex == 0 ){
-                    // the resource adapter name is of the format "#xxx", it is an embedded resource adapter
-                    acrd.setResourceAdapter(application.getName()+acrd.getResourceAdapter());
-
-                }else if( poundIndex < 0 ){
-                    // the resource adapter name do not contains # symbol, it is a standalone resource adapter
-                    
-                }else if( poundIndex > 0 ){
-                    // the resource adapter name is of the format "xx#xxx", this is an invalid name
-                    deplLogger.log(Level.SEVERE, RESOURCE_ADAPTER_NAME_INVALID,
-                            new Object[] { application.getAppName(), acrd.getName(), acrd.getResourceAdapter() });
-
-                    return false;
-                }
-            }
-        }
-        
-        // if all resources names are unique then validate each descriptor is unique or not
-        if (allUniqueResource) {
-            return compareDescriptors();
-        }
-
-        return allUniqueResource;
+      if (jndiName.startsWith(JNDI_COMP) || jndiName.startsWith(JNDI_MODULE)) {
+        inValidJndiName = jndiName;
+        return false;
+      }
     }
+
+    // Reads resource definition descriptor at application level
+    CommonResourceBundleDescriptor commonResourceBundleDescriptor = (CommonResourceBundleDescriptor) application;
+    Vector appLevel = new Vector();
+    if (commonResourceBundleDescriptor != null) {
+      Set<ResourceDescriptor> resourceDescriptors = commonResourceBundleDescriptor
+          .getAllResourcesDescriptors();
+      if (findExistingDescriptors(resourceDescriptors, APP_LEVEL
+          + commonResourceBundleDescriptor.getName())) {
+        return false;
+      }
+      appLevel.add(APP_LEVEL + commonResourceBundleDescriptor.getName());
+      validNameSpaceDetails.put(APP_KEYS, appLevel);
+    }
+
+    // Reads resource definition descriptor at application-client level
+    Set<ApplicationClientDescriptor> appClientDescs = application
+        .getBundleDescriptors(ApplicationClientDescriptor.class);
+    Vector appClientLevel = new Vector();
+    for (ApplicationClientDescriptor acd : appClientDescs) {
+      Set<ResourceDescriptor> resourceDescriptors = acd
+          .getAllResourcesDescriptors(ApplicationClientDescriptor.class);
+      if (findExistingDescriptors(resourceDescriptors, APPCLIENTBUNDLE_LEVEL
+          + acd.getName())) {
+        return false;
+      }
+      appClientLevel.add(APPCLIENTBUNDLE_LEVEL + acd.getName());
+    }
+    validNameSpaceDetails.put(APPCLIENT_KEYS, appClientLevel);
+
+    // Reads resource definition descriptor at connector level
+
+    Set<ConnectorDescriptor> connectorDescs = application
+        .getBundleDescriptors(ConnectorDescriptor.class);
+    Vector cdLevel = new Vector();
+    for (ConnectorDescriptor cd : connectorDescs) {
+      Set<ResourceDescriptor> resourceDescriptors = cd
+          .getAllResourcesDescriptors(ApplicationClientDescriptor.class);
+      if (findExistingDescriptors(resourceDescriptors,
+          APPCLIENT_LEVEL + cd.getName())) {
+        return false;
+      }
+      cdLevel.add(APPCLIENT_LEVEL + cd.getName());
+    }
+    validNameSpaceDetails.put(CONNECTOR_KEYS, cdLevel);
+
+    // Reads resource definition descriptor at ejb-bundle level
+    Set<EjbBundleDescriptor> ejbBundleDescs = application
+        .getBundleDescriptors(EjbBundleDescriptor.class);
+    Vector ebdLevel = new Vector();
+    Vector edLevel = new Vector();
+    for (EjbBundleDescriptor ebd : ejbBundleDescs) {
+      Set<ResourceDescriptor> resourceDescriptors = ebd
+          .getAllResourcesDescriptors();
+      if (findExistingDescriptors(resourceDescriptors,
+          EJBBUNDLE_LEVEL + ebd.getName())) {
+        return false;
+      }
+      ebdLevel.add(EJBBUNDLE_LEVEL + ebd.getName());
+
+      // Reads resource definition descriptor at ejb level
+      Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
+      for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext();) {
+        EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
+        resourceDescriptors = ejbDescriptor.getAllResourcesDescriptors();
+        if (findExistingDescriptors(resourceDescriptors,
+            EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName())) {
+          return false;
+        }
+        edLevel.add(EJB_LEVEL + ebd.getName() + "#" + ejbDescriptor.getName());
+      }
+    }
+    validNameSpaceDetails.put(EJBBUNDLE_KEYS, ebdLevel);
+    validNameSpaceDetails.put(EJB_KEYS, edLevel);
+
+    // Reads resource definition descriptor at web-bundle level
+
+    Set<WebBundleDescriptor> webBundleDescs = application
+        .getBundleDescriptors(WebBundleDescriptor.class);
+    Vector wbdLevel = new Vector();
+    for (WebBundleDescriptor wbd : webBundleDescs) {
+      Set<ResourceDescriptor> resourceDescriptors = wbd
+          .getAllResourcesDescriptors();
+      if (findExistingDescriptors(resourceDescriptors,
+          WEBBUNDLE_LEVEL + wbd.getName())) {
+        return false;
+      }
+      wbdLevel.add(WEBBUNDLE_LEVEL + wbd.getName());
+    }
+    validNameSpaceDetails.put(WEBBUNDLE_KEYS, wbdLevel);
+
+    // process connector based resource, if it resource adapter name is of the
+    // format "#raName"
+    // then it will be deployed on an embedded resource adapter.
+    // In this case, insert application name before the symbol "#".
+    // Because in the ConnectorRegistry, embedded RA is indexed by
+    // "appName#raName"
+
+    for (CommonResourceValidator rv : allResourceDescriptors.values()) {
+      Descriptor desc = rv.getDescriptor();
+      if (desc instanceof AbstractConnectorResourceDescriptor) {
+        AbstractConnectorResourceDescriptor acrd = (AbstractConnectorResourceDescriptor) desc;
+        if (acrd.getResourceAdapter() == null) {
+          continue;
+        }
+        int poundIndex = acrd.getResourceAdapter().indexOf("#");
+
+        if (poundIndex == 0) {
+          // the resource adapter name is of the format "#xxx", it is an
+          // embedded resource adapter
+          acrd.setResourceAdapter(application.getName()
+              + acrd.getResourceAdapter());
+
+        } else if (poundIndex < 0) {
+          // the resource adapter name do not contains # symbol, it is a
+          // standalone resource adapter
+
+        } else if (poundIndex > 0) {
+          // the resource adapter name is of the format "xx#xxx", this is an
+          // invalid name
+          deplLogger.log(
+              Level.SEVERE,
+              RESOURCE_ADAPTER_NAME_INVALID,
+              new Object[] { application.getAppName(), acrd.getName(),
+                  acrd.getResourceAdapter() });
+
+          return false;
+        }
+      }
+    }
+
+    // if all resources names are unique then validate each descriptor is unique
+    // or not
+    if (allUniqueResource) {
+      return compareDescriptors();
+    }
+
+    return allUniqueResource;
+  }
 
   // TODO,check EjbReference, ResourceReference, ResourceEnvReference
   private void validateEnvEntries(Application application) {
@@ -474,7 +494,6 @@ public class ApplicationValidator extends ComponentValidator
     envValidator.validateEnvEntries(application, environmentProperties);
 
     // validate env entries at application-client level
-    if (application != null) {
       Set<ApplicationClientDescriptor> appClientDescs = application
           .getBundleDescriptors(ApplicationClientDescriptor.class);
       for (ApplicationClientDescriptor acd : appClientDescs) {
@@ -482,10 +501,7 @@ public class ApplicationValidator extends ComponentValidator
         envValidator.validateEnvEntries(acd, environmentProperties);
       }
 
-    }
-
     // validate env entries at ejb-bundle level
-    if (application != null) {
       Set<EjbBundleDescriptor> ejbBundleDescs = application
           .getBundleDescriptors(EjbBundleDescriptor.class);
       for (EjbBundleDescriptor ebd : ejbBundleDescs) {
@@ -498,18 +514,14 @@ public class ApplicationValidator extends ComponentValidator
 
         }
       }
-    }
 
     // validate env entries at web-bundle level
-    if (application != null) {
       Set<WebBundleDescriptor> webBundleDescs = application
           .getBundleDescriptors(WebBundleDescriptor.class);
       for (WebBundleDescriptor wbd : webBundleDescs) {
         Enumeration<EnvironmentEntry> envEntries = wbd.getEnvironmentEntries();
         envValidator.validateEnvEntries(wbd, envEntries);
       }
-
-    }
 
   }
     
