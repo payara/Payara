@@ -272,11 +272,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-grizzly</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-websocket-core</artifactId>
+            <artifactId>tyrus-container-grizzly-client</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.tyrus</groupId>
