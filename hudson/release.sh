@@ -120,7 +120,9 @@ printf "\n%s \n\n" "===== CHECKOUT ====="
 svn checkout $GF_WORKSPACE_URL_SSH/trunk/main -r $SVN_REVISION
 
 # create version-info.txt
-EFFECTIVE_REVISION=`svn info $GF_WORKSPACE_URL_SSH/trunk/main | grep 'Revision:' | awk '{print $2}'`
+# TODO, put env desc
+# OS, arch, build node, build time, mvn version, jdk version
+EFFECTIVE_REVISION=`svn info $WORKSPACE/tag/main | grep 'Revision:' | awk '{print $2}'`
 echo "$GF_WORKSPACE_URL_HTTP/trunk/main $EFFECTIVE_REVISION" >> $WORKSPACE/version-info.txt
 echo "Maven-Version: $RELEASE_VERSION" >> $WORKSPACE/version-info.txt
 cat $WORKSPACE/version-info.txt
@@ -169,7 +171,6 @@ printf "\n%s \n\n" "===== ARCHIVE BUNDLES ====="
 rm -rf $WORKSPACE/bundles ; mkdir $WORKSPACE/bundles
 
 mv $WORKSPACE/version-info.txt $WORKSPACE/bundles
-
 cp $WORKSPACE/main/appserver/distributions/glassfish/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/appserver/distributions/web/target/*.zip $WORKSPACE/bundles
 cp $WORKSPACE/main/nucleus/distributions/nucleus/target/*.zip $WORKSPACE/bundles

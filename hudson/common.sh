@@ -60,7 +60,7 @@ then
     BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
     ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
 else
-    echo "wrong argument passed, please pass either weekly or nightly as the first positional parameter to the script"
+   	printf "\n%s \n\n" "Error: wrong argument passed, please pass either weekly or nightly as parameter to the script"
     exit 1
 fi
 
@@ -115,6 +115,13 @@ align_column(){
 aggregated_tests_summary(){
     # Hudson rest API does not give the report
     # parsing html with xpath
+    
+	if [ `which xpath | wc -l` -ne 1 ]
+	then
+	   	printf "\n%s \n\n" "Error: xpath is not available in the PATH"
+	   	return;
+	fi    
+    
     HTML_REPORT=`curl $1 2> /dev/null`
     XPATH_REQUEST="//table[@class='pane sortable']/tr[position()>1]//*[not(child::a)]/text()"
     XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< $HTML_REPORT`
@@ -209,11 +216,11 @@ promote_bundle(){
     curl $1 > $2
     scp $2 $SCP
     scp_jnet $2
-    simple_name=`echo $i | tr -d " " | sed \
+    simple_name=`echo $2 | tr -d " " | sed \
         -e s@"$PRODUCT_VERSION_GF-"@@g \
         -e s@"$BUILD_ID-"@@g \
         -e s@"--"@"-"@g`
-    echo "$simple_name -> $ARCHIVE_URL/$i" >> $PROMOTION_SUMMARY
+    echo "$simple_name -> $ARCHIVE_URL/$2" >> $PROMOTION_SUMMARY
 }
 
 create_svn_tag(){
@@ -249,20 +256,18 @@ Product : $PRODUCT_GF $PRODUCT_VERSION_GF
 Date    : `date`
 Version : $BUILD_ID
 
- *External*: $JNET_DIR_HTTP
- *Internal*: $ARCHIVE_URL
+External: $JNET_DIR_HTTP
+Internal: $ARCHIVE_URL
+Hudson job: $PROMOTED_URL
+SVN revision: $SVN_REVISION
 
- *Aggregated tests summary*:
+Aggregated tests summary:
 
 `aggregated_tests_summary $PROMOTED_URL/aggregatedTestReport/`
 
- *Promotion summary*:
+Promotion summary:
 
 `cat $PROMOTION_SUMMARY`
-
- *Svn revisions*:
-
-`head -1 $WORKSPACE_BUNDLES/version-info-$BUILD_ID.txt`
 
 Thanks,
 RE
