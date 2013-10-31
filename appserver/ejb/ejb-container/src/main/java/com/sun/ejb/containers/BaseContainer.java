@@ -186,10 +186,61 @@ public abstract class BaseContainer
         STATELESS, STATEFUL, SINGLETON, MESSAGE_DRIVEN, ENTITY, READ_ONLY
     };
 
-    protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
-    
-    //The logger defined here is used to print the message annotated by LogMessageInfo
-    private static final Logger internal_logger  = LogFacade.getLogger();
+    protected static final Logger _logger  = LogFacade.getLogger();
+
+    @LogMessageInfo(
+        message = "The feature {0} requires Full Java EE Profile to be supported",
+        level = "WARNING")
+    private static final String WARN_FEATURE_REQUIRES_FULL_PROFILE = "AS-EJB-00053";
+
+    @LogMessageInfo(
+        message = "Portable JNDI names for EJB {0}: {1}",
+        level = "INFO")
+    private static final String PORTABLE_JNDI_NAMES = "AS-EJB-00054";
+
+    @LogMessageInfo(
+        message = "Glassfish-specific (Non-portable) JNDI names for EJB {0}: {1}",
+        level = "INFO")
+    private static final String GLASSFISH_SPECIFIC_JNDI_NAMES = "AS-EJB-00055";
+
+    @LogMessageInfo(
+        message = "A system exception occurred during an invocation on EJB {0}, method: {1}",
+        level = "WARNING")
+    private static final String SYSTEM_EXCEPTION = "AS-EJB-00056";
+
+    @LogMessageInfo(
+        message = "Error while creating enterprise bean context for {0} during jacc callback",
+        level = "WARNING")
+    private static final String CONTEXT_FAILURE_JACC = "AS-EJB-00057";
+
+    @LogMessageInfo(
+        message = "Attempt to override reserved ejb interface method [{0}] in [{1}]. Override will be ignored.",
+        level = "WARNING")
+    private static final String ILLEGAL_EJB_INTERFACE_OVERRIDE = "AS-EJB-00058";
+
+    @LogMessageInfo(
+        message = "Bean class for ejb [{0}] does not define a method corresponding to [{1}] interface method [{2}]",
+        level = "WARNING")
+    private static final String BEAN_CLASS_METHOD_NOT_FOUND = "AS-EJB-00059";
+
+    @LogMessageInfo(
+        message = "keepstate is true and will not create new auto timers during deployment.",
+        level = "INFO")
+    private static final String KEEPSTATE_IS_TRUE = "AS-EJB-00060";
+
+    @LogMessageInfo(
+        message = "Failed to initialize the interceptor",
+        level = "SEVERE",
+        cause = "Error during initializing the interceptor",
+        action = "Try to restart the server")
+    private static final String FAILED_TO_INITIALIZE_INTERCEPTOR = "AS-EJB-00061";
+
+    @LogMessageInfo(
+        message = "[**BaseContainer**] Could not create MonitorRegistryMediator. [{0}]",
+        level = "SEVERE",
+        cause = "Fail to create MonitorRegistryMediator",
+        action = "Check the exception stack")
+    private static final String COULD_NOT_CREATE_MONITORREGISTRYMEDIATOR = "AS-EJB-00062";
     
     @LogMessageInfo(
             message = "Internal Error",
@@ -807,7 +858,7 @@ public abstract class BaseContainer
 
             initEjbInterceptors();
         } catch (Exception ex) {
-            _logger.log(Level.FINE,"ejb.basecontainer_exception",logParams);
+            _logger.log(Level.FINE, "Exception creating BaseContainer : [{0}]", logParams);
             _logger.log(Level.FINE,"", ex);
             throw ex;
         }
@@ -1128,7 +1179,7 @@ public abstract class BaseContainer
 
     private void warnIfNotFullProfile(String description) {
         if( ejbContainerUtilImpl.isEJBLite() ) {
-            _logger.log(Level.WARNING, "ejb.warn_feature_requires_full_profile", description);
+            _logger.log(Level.WARNING, WARN_FEATURE_REQUIRES_FULL_PROFILE, description);
         }
     }
 
@@ -1574,18 +1625,15 @@ public abstract class BaseContainer
         }
 
         if( !publishedPortableGlobalJndiNames.isEmpty() ) {
-            _logger.log(Level.INFO, "ejb.portable_jndi_names",
-                new Object[]{this.ejbDescriptor.getName(), publishedPortableGlobalJndiNames});
+            _logger.log(Level.INFO, PORTABLE_JNDI_NAMES, new Object[]{this.ejbDescriptor.getName(), publishedPortableGlobalJndiNames});
         }
 
         if( !publishedNonPortableGlobalJndiNames.isEmpty() ) {
-            _logger.log(Level.INFO, "ejb.glassfish_specific_jndi_names",
-                new Object[]{this.ejbDescriptor.getName(), publishedNonPortableGlobalJndiNames});
+            _logger.log(Level.INFO, GLASSFISH_SPECIFIC_JNDI_NAMES, new Object[]{this.ejbDescriptor.getName(), publishedNonPortableGlobalJndiNames});
         }
 
         if( !publishedInternalGlobalJndiNames.isEmpty() ) {
-            _logger.log(Level.FINE, "ejb.internal_jndi_names",
-                new Object[]{this.ejbDescriptor.getName(), publishedInternalGlobalJndiNames});
+            _logger.log(Level.FINE, "Internal container JNDI names for EJB {0}: {1}", new Object[]{this.ejbDescriptor.getName(), publishedInternalGlobalJndiNames});
         }
         
         // set EJBMetaData
@@ -1946,7 +1994,7 @@ public abstract class BaseContainer
             
         }
         catch ( Exception ex ) {
-            _logger.log(Level.FINE, "ejb.preinvoke_exception", logParams);
+            _logger.log(Level.FINE, "Exception while running pre-invoke : ejbName = [{0}]", logParams);
             _logger.log(Level.FINE, "", ex);
             
             EJBException ejbEx;
@@ -2026,7 +2074,7 @@ public abstract class BaseContainer
                     postInvokeTx(inv);
                 }
             } catch (Exception ex) {
-                _logger.log(Level.FINE, "ejb.postinvoketx_exception", ex);
+                _logger.log(Level.FINE, "Exception occurred in postInvokeTx  : [{0}]", ex);
                 if (ex instanceof EJBException)
                     inv.exception = (EJBException) ex;
                 else
@@ -2047,12 +2095,10 @@ public abstract class BaseContainer
             // when log level is FINE or higher.
 
             if( isSystemUncheckedException(inv.exception) ) {
-                _logger.log(Level.WARNING, "ejb.system_exception",
-                        new Object[]{ejbDescriptor.getName(), inv.beanMethod});
+                _logger.log(Level.WARNING, SYSTEM_EXCEPTION, new Object[]{ejbDescriptor.getName(), inv.beanMethod});
                 _logger.log(Level.WARNING, "", inv.exception);
             } else {
-                _logger.log(Level.FINE, "ejb.application_exception",
-                        new Object[]{ejbDescriptor.getName(), inv.beanMethod});
+                _logger.log(Level.FINE, "An application exception occurred during an invocation on EJB {0}, method: {1}", new Object[]{ejbDescriptor.getName(), inv.beanMethod});
                 _logger.log(Level.FINE, "", inv.exception);
             }
             
@@ -2664,8 +2710,7 @@ public abstract class BaseContainer
                     // be released.
 
                 } catch(EJBException e) {
-                    _logger.log(Level.WARNING, "ejb.context_failure_jacc", 
-                                logParams[0]);
+                    _logger.log(Level.WARNING, CONTEXT_FAILURE_JACC, logParams[0]);
                     _logger.log(Level.WARNING, "", e);
                 }
 
@@ -3202,8 +3247,7 @@ public abstract class BaseContainer
             // but don't treat it as a fatal error. At runtime, 
             // the EJBHome/EJBLocalHome method will be called.
             String[] params = { m.toString(),invInfo.method.toString() };
-            _logger.log(Level.WARNING, 
-                        "ejb.illegal_ejb_interface_override", params);
+            _logger.log(Level.WARNING, ILLEGAL_EJB_INTERFACE_OVERRIDE, params);
             invInfo.ejbIntfOverride = true;
             return;
         } catch(NoSuchMethodException nsme) {
@@ -3273,8 +3317,7 @@ public abstract class BaseContainer
                     Object[] params = { logParams[0], 
                                         (isLocal ? "LocalHome" : "Home"),
                                         invInfo.method.toString() };
-                    _logger.log(Level.WARNING, 
-                                "ejb.bean_class_method_not_found", params);
+                    _logger.log(Level.WARNING, BEAN_CLASS_METHOD_NOT_FOUND, params);
                     // Treat this as a warning instead of a fatal error.
                     // That matches the behavior of the generated code.
                     // Mark the target methods as null.  If this method is
@@ -3307,8 +3350,7 @@ public abstract class BaseContainer
                 // warning but don't treat it as a fatal error. At runtime, the
                 // EJBObject/EJBLocalObject method will be called.
                 String[] params = { m.toString(),invInfo.method.toString() };
-                _logger.log(Level.WARNING, 
-                            "ejb.illegal_ejb_interface_override", params);
+                _logger.log(Level.WARNING, ILLEGAL_EJB_INTERFACE_OVERRIDE, params);
                 invInfo.ejbIntfOverride = true;
                 return;
             } catch(NoSuchMethodException nsme) {
@@ -3332,8 +3374,7 @@ public abstract class BaseContainer
             Object[] params = { logParams[0] + ":" + nsme.toString(), 
                                 (isLocal ? "Local" : "Remote"),
                                 invInfo.method.toString() };
-            _logger.log(Level.WARNING, 
-                        "ejb.bean_class_method_not_found", params);
+            _logger.log(Level.WARNING, BEAN_CLASS_METHOD_NOT_FOUND, params);
             // Treat this as a warning instead of a fatal error.
             // That matches the behavior of the generated code.
             // Mark the target methods as null.  If this method is
@@ -3960,8 +4001,7 @@ public abstract class BaseContainer
                 boolean deploy0 = deploy;  //avoid modifying param
                 if (deploy0 && ejbDescriptor.getApplication().getKeepStateResolved()) {
                     deploy0 = false;
-                    _logger.log(Level.INFO,
-                    "keepstate is true and will not create new auto timers during deployment.");
+                    _logger.log(Level.INFO, KEEPSTATE_IS_TRUE);
                 }
                 scheduleIds = timerService.recoverAndCreateSchedules(
                         getContainerId(), getApplicationId(), schedules, deploy0);
@@ -4100,7 +4140,7 @@ public abstract class BaseContainer
             try{
                 interceptor.preInvoke(ejbDescriptor);
             } catch (Throwable th) {
-                internal_logger.log(Level.SEVERE, INTERNAL_ERROR, th);
+                _logger.log(Level.SEVERE, INTERNAL_ERROR, th);
             }
         }
     }
@@ -4112,7 +4152,7 @@ public abstract class BaseContainer
             try{
                 interceptor.postInvoke(ejbDescriptor);
             } catch (Throwable th) {
-                internal_logger.log(Level.SEVERE, INTERNAL_ERROR, th);
+                _logger.log(Level.SEVERE, INTERNAL_ERROR, th);
             }
         }
     }
@@ -4122,7 +4162,7 @@ public abstract class BaseContainer
             ServiceLocator services = ejbContainerUtilImpl.getServices();
             interceptors = services.getAllServices(EjbContainerInterceptor.class);
         } catch (Throwable th) {
-            _logger.log(Level.SEVERE, "Failed to initialize the interceptor", th);
+            _logger.log(Level.SEVERE, FAILED_TO_INITIALIZE_INTERCEPTOR, th);
         }
     }
     
@@ -4375,8 +4415,7 @@ public abstract class BaseContainer
                     }
                     
                 } catch ( Exception ex ) {
-                    _logger.log(Level.FINE, "ejb.undeploy_exception", 
-                        logParams);
+                    _logger.log(Level.FINE, "Exception during undeploy", logParams);
                     _logger.log(Level.FINE, "", ex);
                 }
             }
@@ -4385,8 +4424,7 @@ public abstract class BaseContainer
 		        ejbContainerUtilImpl.getComponentEnvManager().
                             unbindFromComponentNamespace(ejbDescriptor);
 	        } catch (javax.naming.NamingException namEx) {
-		        _logger.log(Level.FINE, "ejb.undeploy_exception",
-                        logParams);
+		        _logger.log(Level.FINE, "Exception during undeploy", logParams);
 		        _logger.log(Level.FINE, "", namEx);
 	        }
 
@@ -4783,8 +4821,7 @@ public abstract class BaseContainer
                         EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName));
             }
 	} catch (Exception ex) {
-	    _logger.log(Level.SEVERE, "[**BaseContainer**] Could not create MonitorRegistryMediator. " + 
-                        EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName), ex);
+	    _logger.log(Level.SEVERE, COULD_NOT_CREATE_MONITORREGISTRYMEDIATOR, new Object[]{EjbMonitoringUtils.getDetailedLoggingName(appName, modName, ejbName), ex});
 	}
 
         // Always create to avoid NPE
