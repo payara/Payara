@@ -66,11 +66,14 @@ public class EnvEntriesValidator {
   private Map<String, Map> appNamespaces;
 
   private Map<AppModuleKey, Map> moduleNamespaces;
+  
+  private Map globalNameSpace;
 
   public EnvEntriesValidator() {
     componentNamespaces = new HashMap<String, Map>();
     appNamespaces = new HashMap<String, Map>();
     moduleNamespaces = new HashMap<AppModuleKey, Map>();
+    globalNameSpace=new HashMap();
   }
 
   public void validateEnvEntries(JndiNameEnvironment env,
@@ -141,7 +144,9 @@ public class EnvEntriesValidator {
         namespace = new HashMap<String, Map>();
         appNamespaces.put(appName, namespace);
       }
-
+    } else {
+      // java:global
+      namespace = globalNameSpace;
     }
     return namespace;
   }
