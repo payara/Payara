@@ -63,13 +63,22 @@ fi
 
 printf "\n%s\n\n" "==== VERSION INFO ===="
 
+
 # can be a build parameter
 # value can be either "HEAD" or an SVN revision
 if [ ! -z $SYNCHTO ] && [ ${#SYNCHTO} -gt 0 ]
 then
-	SVN_REVISION=$SYNCHTO
+    SVN_REVISION=$SYNCHTO
     printf "%s\n\n" "Synchronizing to $SYNCHTO"
-    
+elif [ "nightly" == "${1}" ]
+then
+    SVN_REVISION=$(wget -q -O - "http://gf-hudson.us.oracle.com/hudson/view/GlassFish/view/Trunk%20Nightly/job/gf-trunk-build-nightly/Nightly/api/xml?xpath=//changeSet/item[1]/revision/text()")
+    if [[ ! "${SVN_REVISION}" = *[[:digit:]]* ]]
+    then
+	echo "failed to get the svn revision from http://gf-hudson/hudson/view/GlassFish/view/Trunk Nightly/job/gf-trunk-build-nightly"
+	exit 1
+    fi
+    printf "%s\n\n" "Synchronizing to ${SVN_REVISION}"
 else
     svn co --depth=files $GF_WORKSPACE_URL_SSH/trunk/main tmp
     SVN_REVISION=`svn propget svn:keyword main | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
@@ -111,10 +120,13 @@ $IPS_TOOLKIT/pkg/bin/pkg.depotd \
 # WORKSPACE SETUP #
 ###################
 
-printf "\n%s \n\n" "===== DELETE TAG ====="
-set +e
-svn delete $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "delete tag $RELEASE_VERSION"
-set -e
+if [ "weekly" == "${1}" ]
+then
+    printf "\n%s \n\n" "===== DELETE TAG ====="
+    set +e
+    svn delete $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "delete tag $RELEASE_VERSION"
+    set -e
+fi
 
 printf "\n%s \n\n" "===== CHECKOUT ====="
 svn checkout $GF_WORKSPACE_URL_SSH/trunk/main -r $SVN_REVISION
@@ -134,25 +146,39 @@ cat $WORKSPACE/version-info.txt
 MAVEN_REPO="-Dmaven.repo.local=$WORKSPACE/repository"
 MAVEN_ARGS="$MAVEN_REPO -C -nsu -B"
 
-printf "\n%s \n\n" "===== UPDATE POMS ====="
-mvn $MAVEN_ARGS -f main/pom.xml release:prepare \
-                          -Dtag=$RELEASE_VERSION \
-                          -Drelease-phase-all=true \
-                          -Darguments="$MAVEN_REPO" \
-                          -DreleaseVersion=$RELEASE_VERSION \
-                          -DpreparationGoals="A_NON_EXISTENT_GOAL"  \
-                          2>&1 | tee mvn_rel.output
+if [ "weekly" == "${1}" ]
+then
 
-egrep "Unknown lifecycle phase \"A_NON_EXISTENT_GOAL\"" mvn_rel.output
-if [ $? -ne 0 ]; then 
-   echo "Unable to perform release using maven release plugin.  Please see $WORKSPACE/mvn_rel.output."
-   exit 1; 
+    printf "\n%s \n\n" "===== UPDATE POMS ====="
+    mvn $MAVEN_ARGS -f main/pom.xml release:prepare \
+        -Dtag=$RELEASE_VERSION \
+        -Drelease-phase-all=true \
+        -Darguments="$MAVEN_REPO" \
+        -DreleaseVersion=$RELEASE_VERSION \
+        -DpreparationGoals="A_NON_EXISTENT_GOAL"  \
+        2>&1 | tee mvn_rel.output
+
+    egrep "Unknown lifecycle phase \"A_NON_EXISTENT_GOAL\"" mvn_rel.output
+    if [ $? -ne 0 ]; then 
+	echo "Unable to perform release using maven release plugin.  Please see $WORKSPACE/mvn_rel.output."
+	exit 1; 
+    fi
 fi
 
 printf "\n%s \n\n" "===== DO THE BUILD! ====="
+unset BUILD_TARGETS MVN_PROFILES
+if [ "weekly" == "${1}" ]
+then
+    BUILD_TARGETS="clean deploy"
+    MVN_PROFILES="release-phase2,ips,embedded,javaee-api"
+elif [ "nightly" == "${1}" ]
+then
+    BUILD_TARGETS="clean install findbugs:findbugs"
+    MVN_PROFILES="ips,javaee-api"
+fi
 
-mvn $MAVEN_ARGS -f main/pom.xml clean deploy \
-    -Prelease-phase2,ips,embedded,javaee-api \
+mvn $MAVEN_ARGS -f main/pom.xml ${BUILD_TARGETS} \
+    -P${MVN_PROFILES} \
     -Dbuild.id=$PKG_ID \
     -Dgpg.passphrase="$GPG_PASSPHRASE" \
     -Dgpg.executable=gpg2 \
