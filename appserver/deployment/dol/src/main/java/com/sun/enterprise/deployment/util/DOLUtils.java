@@ -244,6 +244,8 @@ public class DOLUtils {
             ApplicationRegistry appRegistry = habitat.getService(ApplicationRegistry.class);
             for (com.sun.enterprise.config.serverbeans.Application raApp : raApps) {
                 ApplicationInfo appInfo = appRegistry.get(raApp.getName());
+                if (appInfo == null)
+                    continue;
                 if (isRAConnectionFactory(type, appInfo.getMetaData(Application.class))) {   
                     return true;
                 }   
