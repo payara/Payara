@@ -72,10 +72,11 @@ then
     printf "%s\n\n" "Synchronizing to $SYNCHTO"
 elif [ "nightly" == "${1}" ]
 then
-    SVN_REVISION=$(wget -q -O - "http://gf-hudson.us.oracle.com/hudson/view/GlassFish/view/Trunk%20Nightly/job/gf-trunk-build-nightly/Nightly/api/xml?xpath=//changeSet/item[1]/revision/text()")
+    TRIGGER_JOB_URL="http://${HUDSON_MASTER_HOST}/hudson/view/GlassFish/view/Trunk Continuous/job/gf-trunk-build-dev"
+    SVN_REVISION=$(wget -q -O - "${TRIGGER_JOB_URL}/dev-build/api/xml?xpath=//changeSet/item[1]/revision/text()")
     if [[ ! "${SVN_REVISION}" = *[[:digit:]]* ]]
     then
-	echo "failed to get the svn revision from http://gf-hudson/hudson/view/GlassFish/view/Trunk Nightly/job/gf-trunk-build-nightly"
+	echo "failed to get the svn revision from ${TRIGGER_JOB_URL}"
 	exit 1
     fi
     printf "%s\n\n" "Synchronizing to ${SVN_REVISION}"
@@ -173,7 +174,7 @@ then
     MVN_PROFILES="release-phase2,ips,embedded,javaee-api"
 elif [ "nightly" == "${1}" ]
 then
-    BUILD_TARGETS="clean install findbugs:findbugs"
+    BUILD_TARGETS="clean install"
     MVN_PROFILES="ips,javaee-api"
 fi
 
