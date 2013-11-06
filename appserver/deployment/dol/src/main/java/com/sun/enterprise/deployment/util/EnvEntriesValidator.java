@@ -47,6 +47,8 @@ import java.util.Set;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
 
 public class EnvEntriesValidator {
@@ -75,47 +77,83 @@ public class EnvEntriesValidator {
     moduleNamespaces = new HashMap<AppModuleKey, Map>();
     globalNameSpace=new HashMap();
   }
-
-  public void validateEnvEntries(JndiNameEnvironment env,
+  
+  public void validateEnvEntries(JndiNameEnvironment env){
+    if (env instanceof WebBundleDescriptor) {
+      Enumeration<EnvironmentEntry> envEntries = ((WebBundleDescriptor) env)
+          .getEnvironmentEntries();
+      validateSimpleEnvEntries(env, envEntries);
+    } else {
+      Set<EnvironmentProperty> envProperties = env.getEnvironmentProperties();
+      validateSimpleEnvEntries(env, envProperties);
+    }
+    Set<EjbReference> ejbReferences = env.getEjbReferenceDescriptors();
+    validateEjbReferences(env, ejbReferences);
+  }
+  
+  private void validateSimpleEnvEntries(JndiNameEnvironment env,
       Set<EnvironmentProperty> envEntries) {
     for (EnvironmentProperty environmentProperty : envEntries) {
-      validateEnvEntry(env, environmentProperty);
+      validateEnvEntry(env, environmentProperty, environmentProperty.getName());
     }
   }
 
-  public void validateEnvEntries(JndiNameEnvironment env,
+  private void validateSimpleEnvEntries(JndiNameEnvironment env,
       Enumeration<EnvironmentEntry> envEntries) {
     while (envEntries.hasMoreElements()) {
-      validateEnvEntry(env, envEntries.nextElement());
+      EnvironmentEntry entry=envEntries.nextElement();
+      validateEnvEntry(env, entry, entry.getName());
     }
-
   }
 
-  private void validateEnvEntry(JndiNameEnvironment env,
-      EnvironmentEntry curEntry) {
-    String logicalJndiName = getLogicalJNDIName(curEntry.getName(), env);
+  private void validateEjbReferences(JndiNameEnvironment env,
+      Set<EjbReference> ejbRefes) {
+    for (EjbReference ejbRef : ejbRefes) {
+      validateEnvEntry(env, ejbRef, ejbRef.getName());
+    }
+  }
+  // TODO,check ResourceReference, ResourceEnvReference
+  private void validateEnvEntry(JndiNameEnvironment env, Object curEntry,
+      String name) {
+    String logicalJndiName = getLogicalJNDIName(name, env);
     Map namespace = getNamespace(logicalJndiName, env);
     Object preObject = namespace.get(logicalJndiName);
-    
-    EnvironmentProperty preEntry = null;
-    if (preObject != null) {
-      if (preObject instanceof EnvironmentProperty) {
-        preEntry = (EnvironmentProperty) preObject;
-        // conflict
-        if (areConflicting(preEntry.getType(), curEntry.getType())
-            || areConflicting(preEntry.getValue(), curEntry.getValue())) {
 
-          throwConflictException(curEntry.getName(), namespace.toString());
+    if (preObject != null) {
+      if (preObject instanceof EnvironmentProperty
+          && curEntry instanceof EnvironmentProperty) {
+        EnvironmentProperty curEnvEntry = (EnvironmentProperty) curEntry;
+        EnvironmentProperty preEntry = (EnvironmentProperty) preObject;
+        // conflict
+        if (areConflicting(preEntry.getType(), curEnvEntry.getType())
+            || areConflicting(preEntry.getValue(), curEnvEntry.getValue())) {
+          throwConflictException(name, namespace.toString());
+        }
+      } else if (preObject instanceof EjbReference
+          && curEntry instanceof EjbReference) {
+        EjbReference preRef = (EjbReference) preObject;
+        EjbReference curRef = (EjbReference) curEntry;
+        // conflict
+        if (areConflicting(preRef.getType(), curRef.getType())
+            || areConflicting(preRef.getEjbHomeInterface(),
+                curRef.getEjbHomeInterface())
+            || areConflicting(preRef.getEjbInterface(),
+                curRef.getEjbInterface())
+            || areConflicting(preRef.getJndiName(), curRef.getJndiName())
+            || areConflicting(preRef.getLinkName(), curRef.getLinkName())
+            || areConflicting(preRef.getLookupName(), curRef.getLookupName())
+
+        ) {
+          throwConflictException(name, namespace.toString());
         }
       } else {
-        throwConflictException(curEntry.getName(), namespace.toString());
+        throwConflictException(name, namespace.toString());
       }
     } else {
       namespace.put(logicalJndiName, curEntry);
     }
 
   }
-
  
 
   private Map getNamespace(String logicalJndiName, JndiNameEnvironment env) {

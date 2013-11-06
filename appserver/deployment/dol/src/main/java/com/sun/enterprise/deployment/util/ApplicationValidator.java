@@ -483,22 +483,19 @@ public class ApplicationValidator extends ComponentValidator
     return allUniqueResource;
   }
 
-  // TODO,check EjbReference, ResourceReference, ResourceEnvReference
   private void validateEnvEntries(Application application) {
-    Set<EnvironmentProperty> environmentProperties = null;
+
     EnvEntriesValidator envValidator = new EnvEntriesValidator();
 
     // validate env entries on resource definition descriptor at application
     // level
-    environmentProperties = application.getEnvironmentProperties();
-    envValidator.validateEnvEntries(application, environmentProperties);
-
+    envValidator.validateEnvEntries(application);
+    
     // validate env entries at application-client level
       Set<ApplicationClientDescriptor> appClientDescs = application
           .getBundleDescriptors(ApplicationClientDescriptor.class);
       for (ApplicationClientDescriptor acd : appClientDescs) {
-        environmentProperties = acd.getEnvironmentProperties();
-        envValidator.validateEnvEntries(acd, environmentProperties);
+        envValidator.validateEnvEntries(acd);
       }
 
     // validate env entries at ejb-bundle level
@@ -509,9 +506,7 @@ public class ApplicationValidator extends ComponentValidator
         Set<EjbDescriptor> ejbDescriptors = (Set<EjbDescriptor>) ebd.getEjbs();
         for (Iterator itr = ejbDescriptors.iterator(); itr.hasNext();) {
           EjbDescriptor ejbDescriptor = (EjbDescriptor) itr.next();
-          environmentProperties = ejbDescriptor.getEnvironmentProperties();
-          envValidator.validateEnvEntries(ejbDescriptor, environmentProperties);
-
+          envValidator.validateEnvEntries(ejbDescriptor);
         }
       }
 
@@ -519,8 +514,7 @@ public class ApplicationValidator extends ComponentValidator
       Set<WebBundleDescriptor> webBundleDescs = application
           .getBundleDescriptors(WebBundleDescriptor.class);
       for (WebBundleDescriptor wbd : webBundleDescs) {
-        Enumeration<EnvironmentEntry> envEntries = wbd.getEnvironmentEntries();
-        envValidator.validateEnvEntries(wbd, envEntries);
+        envValidator.validateEnvEntries(wbd);
       }
 
   }
