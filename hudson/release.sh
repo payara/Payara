@@ -72,8 +72,8 @@ then
     printf "%s\n\n" "Synchronizing to $SYNCHTO"
 elif [ "nightly" == "${1}" ]
 then
-    TRIGGER_JOB_URL="http://${HUDSON_MASTER_HOST}/hudson/view/GlassFish/view/Trunk Continuous/job/gf-trunk-build-dev"
-    SVN_REVISION=$(wget -q -O - "${TRIGGER_JOB_URL}/dev-build/api/xml?xpath=//changeSet/item[1]/revision/text()")
+    TRIGGER_JOB_URL="http://${HUDSON_MASTER_HOST}/hudson/view/GlassFish/view/Trunk%20Continuous/job/gf-trunk-build-dev"
+    SVN_REVISION=$(wget -q -O - "${TRIGGER_JOB_URL}/dev-build/api/xml?xpath=//changeSet/revision[1]/revision/text()")
     if [[ ! "${SVN_REVISION}" = *[[:digit:]]* ]]
     then
 	echo "failed to get the svn revision from ${TRIGGER_JOB_URL}"
