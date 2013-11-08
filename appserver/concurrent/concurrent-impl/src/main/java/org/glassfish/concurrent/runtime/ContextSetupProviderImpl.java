@@ -215,16 +215,21 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
-        ComponentInvocation newInv = new ComponentInvocation(
-                currInv.getComponentId(),
-                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
-                currInv.getContainer(),
-                currInv.getAppName(),
-                currInv.getModuleName()
-        );
+//        ComponentInvocation newInv = new ComponentInvocation(
+//                currInv.getComponentId(),
+//                ComponentInvocation.ComponentInvocationType.SERVLET_INVOCATION,
+//                currInv.getContainer(),
+//                currInv.getAppName(),
+//                currInv.getModuleName()
+//        );
+        ComponentInvocation newInv = currInv.clone();
+        newInv.setResourceTableKey(null);
         newInv.instance = currInv.getInstance();
-        if (naming) {
-            newInv.setJNDIEnvironment(currInv.getJNDIEnvironment());
+//        if (naming) {
+//            newInv.setJNDIEnvironment(currInv.getJNDIEnvironment());
+//        }
+        if (!naming) {
+            newInv.setJNDIEnvironment(null);
         }
         return newInv;
     }

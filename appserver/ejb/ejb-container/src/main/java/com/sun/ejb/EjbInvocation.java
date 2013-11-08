@@ -43,11 +43,8 @@ package com.sun.ejb;
 //XXX: import javax.xml.rpc.handler.MessageContext;
 /* HARRY : JACC Changes */
 
-import com.sun.ejb.containers.BaseContainer;
+import com.sun.ejb.containers.*;
 import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.ejb.containers.EJBLocalRemoteObject;
-import com.sun.ejb.containers.EjbFutureTask;
-import com.sun.ejb.containers.EJBContextImpl;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.ResourceHandler;
 import com.sun.enterprise.transaction.spi.TransactionOperationsManager;
@@ -65,9 +62,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.rmi.UnmarshalException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
+
 import com.sun.ejb.containers.interceptors.InterceptorManager;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 
@@ -87,6 +83,8 @@ public class EjbInvocation
   
 
     public ComponentContext context;
+
+    private TransactionOperationsManager transactionOperationsManager;
     
     EjbInvocation(String compEnvId, Container container) {
         super.componentId = compEnvId;
@@ -96,6 +94,11 @@ public class EjbInvocation
         EjbBundleDescriptor ejbBundleDesc = container.getEjbDescriptor().getEjbBundleDescriptor();
         moduleName = ejbBundleDesc.getModuleName();
         appName = ejbBundleDesc.getApplication().getAppName();
+
+        //By default we enable TransactionOperationsManager checks. But EjbInvocation.clone()
+        //  clears transactionOperationsManager so that, be default, cloned invocations
+        //  doesn't enforce Transaction Operations checks.
+        transactionOperationsManager = this;
     }
 
     /**
@@ -335,7 +338,24 @@ public class EjbInvocation
         newInv.clientTx = null;
         newInv.preInvokeTxStatus = null;
         newInv.originalContextClassLoader = null;
-        
+
+        //The cloned invocation contains a ResourceHandler that points to the same
+        //  resource list as the original invocation. If any one of these resource lists
+        //  are modified, then we may get a ConcurrentModification exception.
+        //
+        //To avoid this, we will create a new ResourceHandler for the cloned invocation. I
+        //  have simply reused SimpleEjbResourceHandlerImpl that was used in async Ejb invocation.
+        newInv.setResourceHandler(SimpleEjbResourceHandlerImpl.createResourceHandler(EjbContainerUtilImpl.getInstance().getTransactionManager()));
+
+        //The cloned invocation is most likely to be used for running a batch task.
+        //  In this case, we don't want TransactionOperationsManager restricting the Batch runtime
+        //  from performing a java:comp/UserTransaction lookup. So, we explicitly set a null
+        //  TransactionOperationsManager in this case.
+        newInv.setTransactionOperationsManager(null);
+
+        //We also don't want any JPA EMs registry entries from being shared.
+        newInv.clearRegistry();
+
         return newInv;
     }
 
@@ -413,7 +433,13 @@ public class EjbInvocation
 
     @Override
     public Object getTransactionOperationsManager() {
-        return this;
+        return transactionOperationsManager;
+    }
+
+    public void setTransactionOperationsManager(TransactionOperationsManager transactionOperationsManager) {
+        //Note: clone() clears transactionOperationsManager so that, be default, cloned invocations
+        //  doesn't enforce Transaction Operations checks.
+        this.transactionOperationsManager = transactionOperationsManager;
     }
 
     //Implementation of TransactionOperationsManager methods

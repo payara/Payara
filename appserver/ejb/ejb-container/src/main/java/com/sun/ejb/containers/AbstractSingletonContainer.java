@@ -42,10 +42,7 @@ package com.sun.ejb.containers;
 
 import java.lang.reflect.Method;
 import java.rmi.RemoteException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,9 +52,6 @@ import javax.ejb.EJBException;
 import javax.ejb.NoSuchEJBException;
 import javax.ejb.NoSuchObjectLocalException;
 import javax.ejb.RemoveException;
-import javax.transaction.Synchronization;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
 
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.Container;
@@ -73,7 +67,6 @@ import com.sun.enterprise.deployment.MethodDescriptor;
 import com.sun.enterprise.security.SecurityManager;
 import com.sun.enterprise.util.Utility;
 import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.ResourceHandler;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.startup.SingletonLifeCycleManager;
 
@@ -186,7 +179,7 @@ public abstract class AbstractSingletonContainer
         // concurrent invocations.  Instead, set the resource
         // handler on the invocation to provide a different
         // resource List for each Singleton invocation. 
-        inv.setResourceHandler(ResourceHandlerImpl.getResourceHandler(transactionManager));
+        inv.setResourceHandler(SimpleEjbResourceHandlerImpl.getResourceHandler(transactionManager));
     }
 
     protected void initializeHome()
@@ -289,10 +282,6 @@ public abstract class AbstractSingletonContainer
     public EJBLocalObjectImpl createEJBLocalBusinessObjectImpl(boolean localBeanView)
         throws CreateException
     {	
-	    ejbProbeNotifier.ejbBeanCreatedEvent(getContainerId(),
-                containerInfo.appName, containerInfo.modName,
-                containerInfo.ejbName);
-
         // No access checks needed because this is called as a result
         // of an internal creation, not a user-visible create method.
         return (localBeanView)
@@ -726,73 +715,7 @@ public abstract class AbstractSingletonContainer
         return 1;
     }
 
-    private static class ResourceHandlerImpl implements ResourceHandler, Synchronization {
-        private static Map<Transaction, ResourceHandlerImpl> _resourceHandlers = 
-                new ConcurrentHashMap<Transaction, ResourceHandlerImpl>();
-
-        private List l = null;
-        private Transaction tx = null;
-        private TransactionManager tm = null;
-
-        private ResourceHandlerImpl(TransactionManager tm) { 
-            this.tm = tm;
-            checkTransaction();
-        }
-
-        public static ResourceHandler getResourceHandler(TransactionManager tm) {
-            ResourceHandlerImpl rh = null;
-            try {
-                Transaction tx = tm.getTransaction();
-                if (tx != null) {
-                    rh = _resourceHandlers.get(tx);
-                }
-            } catch (Exception e) {
-                _logger.log(Level.WARNING, "Exception during Singleton ResourceHandler processing", e);
-            }
-
-            if (rh == null) {
-                rh = new ResourceHandlerImpl(tm);
-            }
-
-            return rh;
-        }
-
-        public List getResourceList() {
-            if (tx == null) {
-                checkTransaction();
-            }
-
-            if( l == null ) {
-                l = new ArrayList();
-            }
-            return l;
-        }
-
-        public void beforeCompletion() {
-            // do nothing
-        }
-
-        public void afterCompletion(int status) {
-            if (tx != null) {
-                _resourceHandlers.remove(tx);
-                tx = null;
-            }
-        }
-
-        private void checkTransaction() {
-            try {
-                tx = tm.getTransaction();
-                if (tx != null) {
-                    tx.registerSynchronization(this);
-                    _resourceHandlers.put(tx, this);
-                }
-            } catch (Exception e) {
-                tx = null;
-                _logger.log(Level.WARNING, "Exception during Singleton ResourceHandler processing", e);
-            }
-        }
-
-    }
-
-} 
+    //The inner class ResourceHandlerImpl has been moved into its own (top level) class called
+    // SimpleEjbResourceHandlerImpl because it is now used by EjbInvocation.clone() method also.
+}
 

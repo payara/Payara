@@ -117,6 +117,21 @@ public class EjbAsyncInvocationManager {
         //so that the inv is *NOT* shared between the
         //current thread and the executor service thread
         EjbInvocation asyncInv = inv.clone();
+
+        //EjbInvocation.clone clears the txOpsManager field so getTransactionOperationsManager()
+        // returns null *after* EjbInvocation.clone(). However, in this case, we do want the original
+        // TransactionOperationsManager so we explicitly set it after calling clone.
+        //
+        //Note: EjbInvocation implements TransactionOperationsManager so we can use asyncInv to
+        //  be the TransactionOperationsManager for the new cloned invocation
+        asyncInv.setTransactionOperationsManager(asyncInv);
+
+        //In most of the cases we don't want registry entries from being reused in the cloned
+        //  invocation, in which case, this method must be called. I am not sure if async
+        //  ejb invocation must call this (It never did and someone in ejb team must investigate
+        //  if clearRegistry() must be called from here)
+
+
         inv.clearYetToSubmitStatus();
         asyncInv.clearYetToSubmitStatus();
 

@@ -244,6 +244,16 @@ public class ComponentInvocation
         registry.put(key, payLoad);
     }
 
+    //In most of the cases we don't want registry entries from being reused in the cloned
+    //  invocation, in which case, this method must be called. I am not sure if async
+    //  ejb invocation must call this (It never did and someone in ejb team must investigate
+    //  if clearRegistry() must be called from EjbAsyncInvocationManager)
+    public void clearRegistry() {
+        if (registry != null) {
+            registry.clear();
+        }
+    }
+
     public boolean isPreInvokeDone() {
         return preInvokeDoneStatus;
     }
