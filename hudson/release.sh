@@ -101,7 +101,7 @@ IPS_TOOLKIT_ZIP=pkg-toolkit-$UC2_BUILD-$IPS_REPO_TYPE.zip
 printf "\n%s \n\n" "===== DOWNLOAD IPS TOOLKIT ====="
 curl $UC_HOME_URL/$IPS_TOOLKIT_ZIP > $IPS_TOOLKIT_ZIP
 printf "\n%s \n\n" "===== UNZIP IPS TOOLKIT ====="
-unzip $IPS_TOOLKIT_ZIP
+unzip -fo $IPS_TOOLKIT_ZIP
 IPS_TOOLKIT=$WORKSPACE/pkg-toolkit-$IPS_REPO_TYPE ; export IPS_TOOLKIT
 
 # enforce usage of bundled python
