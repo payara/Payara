@@ -77,8 +77,6 @@
 
 Import-Package: \
                         com.sun.logging.enterprise.system.container.web, \
-                        net.sf.cglib.proxy, \
-                        net.sf.cglib.core, \
                         *
 
 # This is required because WebContainer requires JavaEEUtils service which is provided by ejb-container.
