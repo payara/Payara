@@ -106,21 +106,6 @@ public class ADBAwareHttpHandler extends StaticHttpHandler {
         return super.handle(uri, request, response);
     }
 
-    @Override
-    protected String getRelativeURI(Request request) {
-        String result = request.getPathInfo();
-        if (result == null) {
-            result = request.getHttpHandlerPath();
-        } else {
-            result = request.getHttpHandlerPath() + result;
-        }
-        if ((result == null) || (result.equals(""))) {
-            result = "/";
-        }
-        return (result);
-    }
-    
-    
     /**
      * Get base path.
      */
