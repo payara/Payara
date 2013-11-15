@@ -124,8 +124,8 @@
     <repositories>
         <repository>
             <id>eclipselink.repository</id>
-            <name>Eclipse Maven repository</name>
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
+            <name>OSS Sonatype Staging Repository</name>
+            <url>https://oss.sonatype.org/content/groups/staging/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
