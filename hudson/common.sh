@@ -66,6 +66,11 @@ fi
 
 BUILD_KIND=$1
 WORKSPACE_BUNDLES=$WORKSPACE/${BUILD_KIND}_bundles
+if [ ! -d "${WORKSPACE_BUNDLES}" ]
+then
+    mkdir -p "${WORKSPACE_BUNDLES}"
+fi
+
 PROMOTION_SUMMARY=$WORKSPACE_BUNDLES/${BUILD_KIND}-promotion-summary.txt
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
 JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
