@@ -47,6 +47,8 @@ import java.util.Set;
 
 import com.sun.enterprise.deployment.EnvironmentProperty;
 import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ResourceEnvReferenceDescriptor;
+import com.sun.enterprise.deployment.ResourceReferenceDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.web.EnvironmentEntry;
@@ -68,17 +70,17 @@ public class EnvEntriesValidator {
   private Map<String, Map> appNamespaces;
 
   private Map<AppModuleKey, Map> moduleNamespaces;
-  
+
   private Map globalNameSpace;
 
   public EnvEntriesValidator() {
     componentNamespaces = new HashMap<String, Map>();
     appNamespaces = new HashMap<String, Map>();
     moduleNamespaces = new HashMap<AppModuleKey, Map>();
-    globalNameSpace=new HashMap();
+    globalNameSpace = new HashMap();
   }
-  
-  public void validateEnvEntries(JndiNameEnvironment env){
+
+  public void validateEnvEntries(JndiNameEnvironment env) {
     if (env instanceof WebBundleDescriptor) {
       Enumeration<EnvironmentEntry> envEntries = ((WebBundleDescriptor) env)
           .getEnvironmentEntries();
@@ -89,20 +91,28 @@ public class EnvEntriesValidator {
     }
     Set<EjbReference> ejbReferences = env.getEjbReferenceDescriptors();
     validateEjbReferences(env, ejbReferences);
+    Set<ResourceReferenceDescriptor> resRefs = env
+        .getResourceReferenceDescriptors();
+    validateResRefs(env, resRefs);
+    Set<ResourceEnvReferenceDescriptor> resEnvRefs = env
+        .getResourceEnvReferenceDescriptors();
+    validateResEnvRefs(env, resEnvRefs);
   }
-  
+
   private void validateSimpleEnvEntries(JndiNameEnvironment env,
       Set<EnvironmentProperty> envEntries) {
     for (EnvironmentProperty environmentProperty : envEntries) {
-      validateEnvEntry(env, environmentProperty, environmentProperty.getName());
+      SimpleEnvEntry simpleEnvEntry = new SimpleEnvEntry(environmentProperty);
+      validateEnvEntry(env, simpleEnvEntry, simpleEnvEntry.getName());
     }
   }
 
   private void validateSimpleEnvEntries(JndiNameEnvironment env,
       Enumeration<EnvironmentEntry> envEntries) {
     while (envEntries.hasMoreElements()) {
-      EnvironmentEntry entry=envEntries.nextElement();
-      validateEnvEntry(env, entry, entry.getName());
+      EnvironmentEntry envEntry = envEntries.nextElement();
+      SimpleEnvEntry simpleEnvEntry = new SimpleEnvEntry(envEntry);
+      validateEnvEntry(env, simpleEnvEntry, simpleEnvEntry.getName());
     }
   }
 
@@ -112,7 +122,21 @@ public class EnvEntriesValidator {
       validateEnvEntry(env, ejbRef, ejbRef.getName());
     }
   }
-  // TODO,check ResourceReference, ResourceEnvReference
+
+  private void validateResRefs(JndiNameEnvironment env,
+      Set<ResourceReferenceDescriptor> resRefs) {
+    for (ResourceReferenceDescriptor resRef : resRefs) {
+      validateEnvEntry(env, resRef, resRef.getName());
+    }
+  }
+
+  private void validateResEnvRefs(JndiNameEnvironment env,
+      Set<ResourceEnvReferenceDescriptor> resEnvRefs) {
+    for (ResourceEnvReferenceDescriptor resEnvRef : resEnvRefs) {
+      validateEnvEntry(env, resEnvRef, resEnvRef.getName());
+    }
+  }
+
   private void validateEnvEntry(JndiNameEnvironment env, Object curEntry,
       String name) {
     String logicalJndiName = getLogicalJNDIName(name, env);
@@ -120,30 +144,49 @@ public class EnvEntriesValidator {
     Object preObject = namespace.get(logicalJndiName);
 
     if (preObject != null) {
-      if (preObject instanceof EnvironmentProperty
-          && curEntry instanceof EnvironmentProperty) {
-        EnvironmentProperty curEnvEntry = (EnvironmentProperty) curEntry;
-        EnvironmentProperty preEntry = (EnvironmentProperty) preObject;
-        // conflict
-        if (areConflicting(preEntry.getType(), curEnvEntry.getType())
-            || areConflicting(preEntry.getValue(), curEnvEntry.getValue())) {
+      if (preObject instanceof SimpleEnvEntry
+          && curEntry instanceof SimpleEnvEntry) {
+        SimpleEnvEntry preEnvEntry = (SimpleEnvEntry) preObject;
+        SimpleEnvEntry curEnvEntry = (SimpleEnvEntry) curEntry;
+        if (areConflicting(preEnvEntry.getType(), curEnvEntry.getType())
+            || areConflicting(preEnvEntry.getValue(), curEnvEntry.getValue())) {
           throwConflictException(name, namespace.toString());
         }
       } else if (preObject instanceof EjbReference
           && curEntry instanceof EjbReference) {
         EjbReference preRef = (EjbReference) preObject;
         EjbReference curRef = (EjbReference) curEntry;
-        // conflict
         if (areConflicting(preRef.getType(), curRef.getType())
             || areConflicting(preRef.getEjbHomeInterface(),
                 curRef.getEjbHomeInterface())
             || areConflicting(preRef.getEjbInterface(),
                 curRef.getEjbInterface())
-            || areConflicting(preRef.getJndiName(), curRef.getJndiName())
             || areConflicting(preRef.getLinkName(), curRef.getLinkName())
-            || areConflicting(preRef.getLookupName(), curRef.getLookupName())
-
-        ) {
+            || (preRef.isLocal() != curRef.isLocal())
+            || areConflicting(preRef.getLookupName(), curRef.getLookupName())) {
+          throwConflictException(name, namespace.toString());
+        }
+      } else if (preObject instanceof ResourceReferenceDescriptor
+          && curEntry instanceof ResourceReferenceDescriptor) {
+        ResourceReferenceDescriptor preRef = (ResourceReferenceDescriptor) preObject;
+        ResourceReferenceDescriptor curRef = (ResourceReferenceDescriptor) curEntry;
+        if (areConflicting(preRef.getType(), curRef.getType())
+            || areConflicting(preRef.getAuthorization(),
+                curRef.getAuthorization())
+            || areConflicting(preRef.getSharingScope(),
+                curRef.getSharingScope())
+            || areConflicting(preRef.getMappedName(), curRef.getMappedName())
+            || areConflicting(preRef.getLookupName(), curRef.getLookupName())) {
+          throwConflictException(name, namespace.toString());
+        }
+      } else if (preObject instanceof ResourceEnvReferenceDescriptor
+          && curEntry instanceof ResourceEnvReferenceDescriptor) {
+        ResourceEnvReferenceDescriptor preRef = (ResourceEnvReferenceDescriptor) preObject;
+        ResourceEnvReferenceDescriptor curRef = (ResourceEnvReferenceDescriptor) curEntry;
+        if (areConflicting(preRef.getType(), curRef.getType())
+            || areConflicting(preRef.getRefType(), curRef.getRefType())
+            || areConflicting(preRef.getMappedName(), curRef.getMappedName())
+            || areConflicting(preRef.getLookupName(), curRef.getLookupName())) {
           throwConflictException(name, namespace.toString());
         }
       } else {
@@ -154,7 +197,6 @@ public class EnvEntriesValidator {
     }
 
   }
- 
 
   private Map getNamespace(String logicalJndiName, JndiNameEnvironment env) {
     String appName = DOLUtils.getApplicationName(env);
@@ -204,8 +246,9 @@ public class EnvEntriesValidator {
 
   private static class AppModuleKey {
     private String app;
+
     private String module;
-    
+
     public AppModuleKey(String appName, String moduleName) {
       app = appName;
       module = moduleName;
@@ -230,7 +273,14 @@ public class EnvEntriesValidator {
       return "appName = " + app + " , module = " + module;
     }
   }
-  
+
+  private static class SimpleEnvEntry extends EnvironmentProperty {
+    SimpleEnvEntry(EnvironmentEntry envEntry) {
+      super(envEntry.getName(), envEntry.getValue(), envEntry.getDescription(),
+          envEntry.getType());
+    }
+  }
+
   /**
    * If no java: prefix is specified, default to component scope.
    */
