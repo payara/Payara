@@ -82,13 +82,13 @@ if [ -z ${SVN_REVISION} ] \
 then
     echo "debug?!"
     svn co --depth=files ${GF_WORKSPACE_URL_SSH}/trunk/main tmp
-    if [ -z ${SVN_REVISION} ]
-    then
-        # retrieving last known good revision
-        SVN_REVISION=`svn propget svn:keyword main | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
-    else
-        # retrieving HEAD's value
-        SVN_REVISION=`svn info main | grep 'Revision:' | awk '{print $2}'`
+    #if [ -z ${SVN_REVISION} ]
+    #then
+    #    # retrieving last known good revision
+    #    SVN_REVISION=`svn propget svn:keyword main | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
+    #else
+    #    # retrieving HEAD's value
+    #    SVN_REVISION=`svn info main | grep 'Revision:' | awk '{print $2}'`
     fi
     rm -rf tmp
 fi
