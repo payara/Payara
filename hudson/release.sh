@@ -77,7 +77,7 @@ then
     fi
 fi
 
-if [ -z ${SVN_REVISION} ]
+if [ -z ${SVN_REVISION} ] \
     || [ `grep -i 'head' <<< "${SVN_REVISION}" | wc -l | awk '{print $1}'` -eq 1 ]
 then
     svn co --depth=files ${GF_WORKSPACE_URL_SSH}/trunk/main tmp
