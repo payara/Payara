@@ -89,7 +89,7 @@ then
     #else
     #    # retrieving HEAD's value
     #    SVN_REVISION=`svn info main | grep 'Revision:' | awk '{print $2}'`
-    fi
+    #fi
     rm -rf tmp
 fi
 
