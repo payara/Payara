@@ -34,25 +34,26 @@ UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/ar
 
 if [ "weekly" == "${1}" ]
 then
-	if [ ! -z $RELEASE_VERSION ] && [ ${#RELEASE_VERSION} -gt 0 ]
+    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
     then
-	    VERSION_QUALIFIER=`cut -d '-' -f2- <<< $RELEASE_VERSION`
-	    BUILD_ID=$VERSION_QUALIFIER
+        VERSION_QUALIFIER=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+        BUILD_ID=${VERSION_QUALIFIER}
     else
-        RELEASE_VERSION="$PRODUCT_VERSION_GF-$BUILD_ID"
-        VERSION_QUALIFIER=$BUILD_ID
+        RELEASE_VERSION="${PRODUCT_VERSION_GF-$BUILD_ID}"
+        VERSION_QUALIFIER=${BUILD_ID}
     fi
-   	printf "\n%s \n\n" "===== RELEASE_VERSION ====="
-    printf "%s\n\n" "VERSION : $RELEASE_VERSION - QUALIFIER: $VERSION_QUALIFIER"    
+
+    printf "\n%s \n\n" "===== RELEASE_VERSION ====="
+    printf "%s\n\n" "VERSION : ${RELEASE_VERSION} - QUALIFIER: ${VERSION_QUALIFIER}"
     
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
     if [ ${#VERSION_QUALIFIER} -gt 0 ]
     then
-    	ARCHIVE_PATH=$ARCHIVE_PATH/promoted
-   	else
-   		ARCHIVE_PATH=$ARCHIVE_PATH/release
-   	fi
-    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/$VERSION_QUALIFIER/archive/bundles
+    	ARCHIVE_PATH=${ARCHIVE_PATH}/promoted
+    else
+        ARCHIVE_PATH=${ARCHIVE_PATH}/release
+    fi
+    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${VERSION_QUALIFIER}/archive/bundles
 elif [ "nightly" == "${1}" ]
 then
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
@@ -60,22 +61,22 @@ then
     BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
     ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
 else
-   	printf "\n%s \n\n" "Error: wrong argument passed, please pass either weekly or nightly as parameter to the script"
+    printf "\n%s \n\n" "Error: wrong argument passed, please pass either weekly or nightly as parameter to the script"
     exit 1
 fi
 
 BUILD_KIND=$1
-WORKSPACE_BUNDLES=$WORKSPACE/${BUILD_KIND}_bundles
+WORKSPACE_BUNDLES=${WORKSPACE}/${BUILD_KIND}_bundles
 if [ ! -d "${WORKSPACE_BUNDLES}" ]
 then
     mkdir -p "${WORKSPACE_BUNDLES}"
 fi
 
-PROMOTION_SUMMARY=$WORKSPACE_BUNDLES/${BUILD_KIND}-promotion-summary.txt
+PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
 JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
 JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
-ARCHIVE_STORAGE_BUNDLES=/onestop/$ARCHIVE_MASTER_BUNDLES
-SCP=$SSH_STORAGE:$ARCHIVE_STORAGE_BUNDLES
+ARCHIVE_STORAGE_BUNDLES=/onestop/${ARCHIVE_MASTER_BUNDLES}
+SCP=${SSH_STORAGE}:${ARCHIVE_STORAGE_BUNDLES}
 ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
 
 export JAVAEE_VERSION \
@@ -104,40 +105,40 @@ export JAVAEE_VERSION \
 	ARCHIVE_URL
 
 align_column(){
-    max=$1
-    char=$2
-    string=$3
+    max=${1}
+    char=${2}
+    string=${3}
     stringlength=${#string}
     y=$((max-stringlength))
-    while [ $y -gt 0 ]
+    while [ ${y} -gt 0 ]
     do
-        string="$string$char"
+        string="${string}${char}"
         y=$((y-1))
     done
-    echo "$string"
+    echo "${string}"
 }
 
 aggregated_tests_summary(){
     # Hudson rest API does not give the report
     # parsing html with xpath
     
-	if [ `which xpath | wc -l` -ne 1 ]
-	then
-	   	printf "\n%s \n\n" "Error: xpath is not available in the PATH"
-	   	return;
-	fi    
+    if [ `which xpath | wc -l` -ne 1 ]
+    then
+            printf "\n%s \n\n" "Error: xpath is not available in the PATH"
+            return;
+    fi
     
     HTML_REPORT=`curl $1 2> /dev/null`
     XPATH_REQUEST="//table[@class='pane sortable']/tr[position()>1]//*[not(child::a)]/text()"
-    XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< $HTML_REPORT`
-    XPATH_RESULT=`sed -r 's/^\s*//; s/\s*$//; /^$/d' <<< $XPATH_RESULT`
+    XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< ${HTML_REPORT}`
+    XPATH_RESULT=`sed -r 's/^\s*//; s/\s*$//; /^$/d' <<< ${XPATH_RESULT}`
 
     while true
     do
-        JOB_NAME=`cut -d ' ' -f1 <<< $XPATH_RESULT`
-        JOB_NUMBER=`cut -d ' ' -f2 <<< $XPATH_RESULT`
-        FAILED_NUMBER=`cut -d ' ' -f3 <<< $XPATH_RESULT`
-        TOTAL_NUMBER=`cut -d ' ' -f4 <<< $XPATH_RESULT`
+        JOB_NAME=`cut -d ' ' -f1 <<< ${XPATH_RESULT}`
+        JOB_NUMBER=`cut -d ' ' -f2 <<< ${XPATH_RESULT}`
+        FAILED_NUMBER=`cut -d ' ' -f3 <<< ${XPATH_RESULT}`
+        TOTAL_NUMBER=`cut -d ' ' -f4 <<< ${XPATH_RESULT}`
         if [ ${#JOB_NAME} -eq 0 ] || [ ${#JOB_NUMBER} -eq 0 ] || [ ${#FAILED_NUMBER} -eq 0 ] || [ ${#TOTAL_NUMBER} -eq 0 ] 
         then
             break
@@ -145,26 +146,26 @@ aggregated_tests_summary(){
             XPATH_RESULT=`cut -d ' ' -f5- <<< $XPATH_RESULT`
         fi
 
-        if [ $TOTAL_NUMBER != "N/A" ] && [ $FAILED_NUMBER != "N/A" ]
+        if [ $TOTAL_NUMBER != "N/A" ] && [ ${FAILED_NUMBER} != "N/A" ]
         then
             PASSED_NUMBER=$((TOTAL_NUMBER-FAILED_NUMBER))
             printf "%s%s%s \n" \
-                "`align_column 55 "." "$JOB_NAME ($JOB_NUMBER)"`" \
-                "`align_column 12 ' ' "PASSED($PASSED_NUMBER)"`" \
-                "FAILED($FAILED_NUMBER)"
+                "`align_column 55 "." "${JOB_NAME} (${JOB_NUMBER})"`" \
+                "`align_column 12 ' ' "PASSED(${PASSED_NUMBER})"`" \
+                "FAILED(${FAILED_NUMBER})"
             EMPTY="false"
         fi
     done
 
-    if [ $EMPTY = "true" ]
+    if [ ${EMPTY} = "true" ]
     then
         printf "No downstream test result found."
     fi
 }
 
 create_symlinks(){
-	PROMOTE_SCRIPT=/tmp/promotebuild.sh
-	cat <<EOF > $PROMOTE_SCRIPT
+    PROMOTE_SCRIPT=/tmp/promotebuild.sh
+    cat <<EOF > $PROMOTE_SCRIPT
 #!/bin/bash -e
 # arg1 BUILD_ID
 # arg2 PRODUCT_VERSION_GF
@@ -176,99 +177,99 @@ rm -rf latest-*
 
 for i in \`ls\`
 do
-    simple_name=\`echo \$i | \
-        sed -e s@"-\$1"@@g \
-                -e s@"-\$4"@@g \
-                -e s@"-\$2"@@g \
-                -e s@"\$3-"@@g \
+    simple_name=\`echo \${i} | \
+        sed -e s@"-\${1}"@@g \
+                -e s@"-\${4}"@@g \
+                -e s@"-\${2}"@@g \
+                -e s@"\${3}-"@@g \
                 -e s@"--"@"-"@g\` 
-        ln -fs \$i "latest-\$simple_name"
+        ln -fs \$i "latest-\${simple_name}"
 done
 
-cd \$3
+cd \${3}
 cd ../../../
 rm -rf latest
-ln -s \$1 latest
+ln -s \${1} latest
 EOF
-	scp $PROMOTE_SCRIPT $SSH_MASTER:/tmp
-	ssh $SSH_MASTER "chmod +x $PROMOTE_SCRIPT"
-	ssh $SSH_MASTER "$PROMOTE_SCRIPT $BUILD_ID $PRODUCT_VERSION_GF /java/re/$ARCHIVE_MASTER_BUNDLES $JAVAEE_VERSION"	
+    scp ${PROMOTE_SCRIPT} ${SSH_MASTER}:/tmp
+    ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
+    ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION}"
 }
 
-kill_clean(){ if [ ${#1} -ne 0 ] ; then kill -9 $1 ; fi }
+kill_clean(){ if [ ${#1} -ne 0 ] ; then kill -9 ${1} ; fi }
 
 scp_jnet(){
-    file=$1
-    simple_name=`echo $1 | \
-        sed -e s@"$PRODUCT_GF-$PRODUCT_VERSION_GF-web"@web@g \
-        -e s@"$JAVAEE_VERSION-$BUILD_ID-"@@g \
-        -e s@"-$JAVAEE_VERSION-$BUILD_ID"@@g \
-        -e s@"$BUILD_ID-"@@g \
-        -e s@"-$BUILD_ID"@@g \
-        -e s@"-$PRODUCT_VERSION_GF"@@g \
-        -e s@"$PKG_ID-"@@g \
+    file=${1}
+    simple_name=`echo ${1} | \
+        sed -e s@"${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web"@web@g \
+        -e s@"${JAVAEE_VERSION}-${BUILD_ID}-"@@g \
+        -e s@"-${JAVAEE_VERSION}-${BUILD_ID}"@@g \
+        -e s@"${BUILD_ID}-"@@g \
+        -e s@"-${BUILD_ID}"@@g \
+        -e s@"-${PRODUCT_VERSION_GF}"@@g \
+        -e s@"${PKG_ID}-"@@g \
         -e s@"--"@"-"@g `
-    ssh $SSH_MASTER "scp /java/re/$ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR"
-    ssh $SSH_MASTER "scp /java/re/$ARCHIVE_MASTER_BUNDLES/$file $JNET_DIR/latest-$simple_name"
+    ssh ${SSH_MASTER} "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
+    ssh ${SSH_MASTER} "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"
 }
 
 init_storage_area(){
-	ssh $SSH_STORAGE "rm -rf $ARCHIVE_STORAGE_BUNDLES ; mkdir -p $ARCHIVE_STORAGE_BUNDLES"	
+	ssh ${SSH_STORAGE} "rm -rf ${ARCHIVE_STORAGE_BUNDLES} ; mkdir -p ${ARCHIVE_STORAGE_BUNDLES}"
 }
 
 promote_bundle(){
-	printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" $2
-    curl $1 > $2
-    scp $2 $SCP
-    scp_jnet $2
-    simple_name=`echo $2 | tr -d " " | sed \
-        -e s@"$PRODUCT_VERSION_GF-"@@g \
-        -e s@"$BUILD_ID-"@@g \
+    printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" ${2}
+    curl ${1} > ${2}
+    scp ${2} ${SCP}
+    scp_jnet ${2}
+    simple_name=`echo ${2}| tr -d " " | sed \
+        -e s@"${PRODUCT_VERSION_GF}-"@@g \
+        -e s@"${BUILD_ID}-"@@g \
         -e s@"--"@"-"@g`
-    echo "$simple_name -> $ARCHIVE_URL/$2" >> $PROMOTION_SUMMARY
+    echo "${simple_name} -> ${ARCHIVE_URL}/${2}" >> ${PROMOTION_SUMMARY}
 }
 
 create_svn_tag(){
-	printf "\n%s \n\n" "===== CREATE SVN TAG ====="
+    printf "\n%s \n\n" "===== CREATE SVN TAG ====="
 	
-	# download and unzip the workspace
+    # download and unzip the workspace
     curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
-    rm -rf $WORKSPACE/tag ; unzip -d $WORKSPACE/tag workspace.zip
+    rm -rf ${WORKSPACE}/tag ; unzip -d ${WORKSPACE}/tag workspace.zip
     
     # delete tag (for promotion forcing)
     set +e
-    svn del $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "del tag $RELEASE_VERSION"
+    svn del ${GF_WORKSPACE_URL_SSH}/tags/${RELEASE_VERSION} -m "del tag ${RELEASE_VERSION}"
     set -e
     
     # copy the exact trunk used to run the release
-    SVN_REVISION=`svn info $WORKSPACE/tag/main | grep 'Revision:' | awk '{print $2}'`
-    svn cp $GF_WORKSPACE_URL_SSH/trunk/main@$SVN_REVISION $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION -m "create tag $RELEASE_VERSION based on r$SVN_REVISION"
+    SVN_REVISION=`svn info ${WORKSPACE}/tag/main | grep 'Revision:' | awk '{print $2}'`
+    svn cp ${GF_WORKSPACE_URL_SSH}/trunk/main@${SVN_REVISION} ${GF_WORKSPACE_URL_SSH}/tags/${RELEASE_VERSION} -m "create tag ${RELEASE_VERSION} based on r${SVN_REVISION}"
     
     # switch the workspace
-    svn switch $GF_WORKSPACE_URL_SSH/tags/$RELEASE_VERSION $WORKSPACE/tag/main
+    svn switch ${GF_WORKSPACE_URL_SSH}/tags/${RELEASE_VERSION} ${WORKSPACE}/tag/main
     
     # commit the local changes
-    svn commit $WORKSPACE/tag/main -m "commit tag $RELEASE_VERSION"
+    svn commit ${WORKSPACE}/tag/main -m "commit tag ${RELEASE_VERSION}"
 }
 
 send_notification(){
-	/usr/lib/sendmail -t << MESSAGE
-From: $NOTIFICATION_FROM
-To: $NOTIFICATION_SENDTO
-Subject: [ $PRODUCT_GF-$PRODUCT_VERSION_GF ] Trunk $BUILD_KIND Build ($BUILD_ID)
+    /usr/lib/sendmail -t << MESSAGE
+From: ${NOTIFICATION_FROM}
+To: ${NOTIFICATION_SENDTO}
+Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${BUILD_ID})
 
-Product : $PRODUCT_GF $PRODUCT_VERSION_GF
+Product : ${PRODUCT_GF} ${PRODUCT_VERSION_GF}
 Date    : `date`
-Version : $BUILD_ID
+Version : ${BUILD_ID}
 
-External: $JNET_DIR_HTTP
-Internal: $ARCHIVE_URL
-Hudson job: $PROMOTED_URL
-SVN revision: $SVN_REVISION
+External: ${JNET_DIR_HTTP}
+Internal: ${ARCHIVE_URL}
+Hudson job: ${PROMOTED_URL}
+SVN revision: ${SVN_REVISION}
 
 Aggregated tests summary:
 
-`aggregated_tests_summary $PROMOTED_URL/aggregatedTestReport/`
+`aggregated_tests_summary ${PROMOTED_URL}/aggregatedTestReport/`
 
 Promotion summary:
 
