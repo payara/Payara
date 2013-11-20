@@ -80,23 +80,22 @@ fi
 if [ -z ${SVN_REVISION} ] \
     || [ `grep -i 'head' <<< "${SVN_REVISION}" | wc -l | awk '{print $1}'` -eq 1 ]
 then
-    echo "debug?!"
     svn co --depth=files ${GF_WORKSPACE_URL_SSH}/trunk/main tmp
-    #if [ -z ${SVN_REVISION} ]
-    #then
-    #    # retrieving last known good revision
-    #    SVN_REVISION=`svn propget svn:keyword main | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
-    #else
-    #    # retrieving HEAD's value
-    #    SVN_REVISION=`svn info main | grep 'Revision:' | awk '{print $2}'`
-    #fi
+    if [ -z ${SVN_REVISION} ]
+    then
+        # retrieving last known good revision
+        SVN_REVISION=`svn propget svn:keyword main | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
+    else
+        # retrieving HEAD's value
+        SVN_REVISION=`svn info main | grep 'Revision:' | awk '{print $2}'`
+    fi
     rm -rf tmp
 fi
 
 # create version-info.txt
 # TODO, put env desc
 # OS, arch, build node, mvn version, jdk version
-echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION" >> ${WORKSPACE}/version-info.txt
+echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION}" >> ${WORKSPACE}/version-info.txt
 if [ "weekly" == "${1}" ]
 then
     echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
