@@ -285,7 +285,7 @@
                                 <goal>run</goal>
                             </goals>
                             <configuration>
-                                <target>
+                                <target if="ips.compress">
                                     <apply executable="pack200" dest="${stage.dir}/glassfish/modules" parallel="false">
                                         <targetfile />
                                         <srcfile />
