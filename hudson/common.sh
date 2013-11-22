@@ -186,14 +186,13 @@ do
         ln -fs \$i "latest-\${simple_name}"
 done
 
-cd \${3}
-cd ../../../
+cd /java/re/\${5}
 rm -rf latest
 ln -s \${1} latest
 EOF
     scp ${PROMOTE_SCRIPT} ${SSH_MASTER}:/tmp
     ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
-    ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION}"
+    ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
 }
 
 kill_clean(){ if [ ${#1} -ne 0 ] ; then kill -9 ${1} ; fi }
