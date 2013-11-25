@@ -158,7 +158,6 @@ MAVEN_ARGS="${MAVEN_REPO} -C -nsu -B"
 
 if [ "weekly" == "${1}" ]
 then
-
     printf "\n%s \n\n" "===== UPDATE POMS ====="
     mvn ${MAVEN_ARGS} -f main/pom.xml release:prepare \
         -Dtag=${RELEASE_VERSION} \

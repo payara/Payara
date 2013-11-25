@@ -105,62 +105,46 @@ export JAVAEE_VERSION \
 	ARCHIVE_URL
 
 align_column(){
-    max=${1}
-    char=${2}
-    string=${3}
+    max=$1
+    char=$2
+    string=$3
     stringlength=${#string}
     y=$((max-stringlength))
-    while [ ${y} -gt 0 ]
-    do
-        string="${string}${char}"
-        y=$((y-1))
-    done
-    echo "${string}"
+    while [ $y -gt 0 ] ; do	string="$string$char" ; y=$((y-1)) ; done
+    echo "$string"
 }
 
 aggregated_tests_summary(){
     # Hudson rest API does not give the report
-    # parsing html with xpath
-    
-    if [ `which xpath | wc -l` -ne 1 ]
-    then
-            printf "\n%s \n\n" "Error: xpath is not available in the PATH"
-            return;
-    fi
-    
-    HTML_REPORT=`curl $1 2> /dev/null`
-    XPATH_REQUEST="//table[@class='pane sortable']/tr[position()>1]//*[not(child::a)]/text()"
-    XPATH_RESULT=`xpath -q -e "$XPATH_REQUEST" <<< ${HTML_REPORT}`
-    XPATH_RESULT=`sed -r 's/^\s*//; s/\s*$//; /^$/d' <<< ${XPATH_RESULT}`
+    # parsing html manually...
 
-    while true
+    TESTS_HTML="tests.html"
+    UNSORTED="unsorted.txt"
+    RESULTS="results.txt"
+    JOBS="jobs.txt"
+
+    rm -f $TESTS_HTML $UNSORTED $RESULTS $JOBS
+    wget -o /dev/null -O $TESTS_HTML $1
+
+    # DO THE MAGIC
+    job_name=`echo $1 | sed -e 's/.*\/job\/\([^\/]*\).*/\1/'`
+    for i in `cat tests.html | ggrep -2 "testReport" | grep -v footer ` ; do echo $i ; done > $UNSORTED
+    cat unsorted.txt |  grep "testReport" | grep -v $job_name | sed -e 's/.*\/job\/\([^\/]*\)\/\([0-9]*\).*/\1 \2/' > $JOBS
+    cat unsorted.txt | grep "text-align" | sed s@">"@" "@g | awk '{print $2}' | grep -v "</td" > $RESULTS
+    rm -f $TESTS_HTML $UNSORTED
+
+    cpt=1
+    while read job
     do
-        JOB_NAME=`cut -d ' ' -f1 <<< ${XPATH_RESULT}`
-        JOB_NUMBER=`cut -d ' ' -f2 <<< ${XPATH_RESULT}`
-        FAILED_NUMBER=`cut -d ' ' -f3 <<< ${XPATH_RESULT}`
-        TOTAL_NUMBER=`cut -d ' ' -f4 <<< ${XPATH_RESULT}`
-        if [ ${#JOB_NAME} -eq 0 ] || [ ${#JOB_NUMBER} -eq 0 ] || [ ${#FAILED_NUMBER} -eq 0 ] || [ ${#TOTAL_NUMBER} -eq 0 ] 
-        then
-            break
-        else
-            XPATH_RESULT=`cut -d ' ' -f5- <<< $XPATH_RESULT`
-        fi
+        failednumber=`awk "NR==$cpt" $RESULTS`
+        passednumber=`awk "NR==$((cpt+1))" $RESULTS`
+        jobname=`echo $job | awk '{print $1}'`
+        buildnumber=`echo $job | awk '{print $2}'`
 
-        if [ $TOTAL_NUMBER != "N/A" ] && [ ${FAILED_NUMBER} != "N/A" ]
-        then
-            PASSED_NUMBER=$((TOTAL_NUMBER-FAILED_NUMBER))
-            printf "%s%s%s \n" \
-                "`align_column 55 "." "${JOB_NAME} (${JOB_NUMBER})"`" \
-                "`align_column 12 ' ' "PASSED(${PASSED_NUMBER})"`" \
-                "FAILED(${FAILED_NUMBER})"
-            EMPTY="false"
-        fi
-    done
-
-    if [ ${EMPTY} = "true" ]
-    then
-        printf "No downstream test result found."
-    fi
+        echo "`align_column 55 "." "$jobname (#$buildnumber)"` `align_column 12 " " "PASSED($passednumber)"`FAILED($failednumber)"
+        cpt=$((cpt+2))
+    done < $JOBS
+    rm -f $RESULTS $JOBS
 }
 
 create_symlinks(){
