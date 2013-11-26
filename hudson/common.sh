@@ -236,6 +236,8 @@ create_svn_tag(){
 }
 
 send_notification(){
+    VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
+    SVN_REVISION=`cat ${VERSION_INFO} | awk '{print $2}'
     /usr/lib/sendmail -t << MESSAGE
 From: ${NOTIFICATION_FROM}
 To: ${NOTIFICATION_SENDTO}
@@ -261,5 +263,4 @@ Promotion summary:
 Thanks,
 RE
 MESSAGE
-
 }
