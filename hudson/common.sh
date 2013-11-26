@@ -176,7 +176,13 @@ ln -s \${1} latest
 EOF
     scp ${PROMOTE_SCRIPT} ${SSH_MASTER}:/tmp
     ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
-    ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
+    if [ "weekly" == "${1}" ]
+    then
+	ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
+    elif [ "nightly" == "${1}" ]
+    then
+	ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
+    fi
 }
 
 kill_clean(){ if [ ${#1} -ne 0 ] ; then kill -9 ${1} ; fi }
