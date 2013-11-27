@@ -29,8 +29,9 @@ IPS_REPO_URL=http://localhost
 IPS_REPO_DIR=${WORKSPACE}/promorepo
 IPS_REPO_PORT=16500
 IPS_REPO_TYPE=sunos-sparc
-UC2_BUILD=2.3-b56
-UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/2.3/promoted/B56/archive/uc2/build
+UC2_VERSION=2.3
+UC2_BUILD=56
+UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/${UC2_VERSION}/promoted/B${UC2_BUILD}/archive/uc2/build
 
 if [ "weekly" == "${1}" ]
 then
@@ -44,7 +45,9 @@ then
     fi
 
     printf "\n%s \n\n" "===== RELEASE_VERSION ====="
-    printf "%s\n\n" "VERSION : ${RELEASE_VERSION} - QUALIFIER: ${VERSION_QUALIFIER}"
+    printf "VERSION %s - QUALIFIER: %s\n\n" \
+        "${RELEASE_VERSION}" \
+        "${VERSION_QUALIFIER}"
     
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
     if [ ${#VERSION_QUALIFIER} -gt 0 ]
@@ -127,10 +130,21 @@ aggregated_tests_summary(){
     wget -o /dev/null -O $TESTS_HTML $1
 
     # DO THE MAGIC
-    job_name=`echo $1 | sed -e 's/.*\/job\/\([^\/]*\).*/\1/'`
-    for i in `cat tests.html | ggrep -2 "testReport" | grep -v footer ` ; do echo $i ; done > $UNSORTED
-    cat unsorted.txt |  grep "testReport" | grep -v $job_name | sed -e 's/.*\/job\/\([^\/]*\)\/\([0-9]*\).*/\1 \2/' > $JOBS
-    cat unsorted.txt | grep "text-align" | sed s@">"@" "@g | awk '{print $2}' | grep -v "</td" > $RESULTS
+    job_name=`sed -e 's/.*\/job\/\([^\/]*\).*/\1/' <<< $1`
+    for i in `cat tests.html \
+            | ggrep -2 "testReport" \
+            | grep -v footer` ; do echo $i ; done > $UNSORTED
+    cat $UNSORTED \
+        |  grep "testReport" \
+        | grep -v $job_name \
+        | sed -e 's/.*\/job\/\([^\/]*\)\/\([0-9]*\).*/\1 \2/' \
+        > $JOBS
+    cat $UNSORTED \
+        | grep "text-align" \
+        | sed s@">"@" "@g \
+        | awk '{print $2}' \
+        | grep -v "</td" \
+        > $RESULTS
     rm -f $TESTS_HTML $UNSORTED
 
     cpt=1
@@ -140,8 +154,9 @@ aggregated_tests_summary(){
         passednumber=`awk "NR==$((cpt+1))" $RESULTS`
         jobname=`echo $job | awk '{print $1}'`
         buildnumber=`echo $job | awk '{print $2}'`
-
-        echo "`align_column 55 "." "$jobname (#$buildnumber)"` `align_column 12 " " "PASSED($passednumber)"`FAILED($failednumber)"
+        echo "`align_column 55 "." "$jobname (#$buildnumber)"` \
+              `align_column 12 " " "PASSED($passednumber)"` \
+               FAILED($failednumber)"
         cpt=$((cpt+2))
     done < $JOBS
     rm -f $RESULTS $JOBS
@@ -163,10 +178,10 @@ for i in \`ls\`
 do
     simple_name=\`echo \${i} | \
         sed -e s@"-\${1}"@@g \
-                -e s@"-\${4}"@@g \
-                -e s@"-\${2}"@@g \
-                -e s@"\${3}-"@@g \
-                -e s@"--"@"-"@g\` 
+            -e s@"-\${4}"@@g \
+            -e s@"-\${2}"@@g \
+            -e s@"\${3}-"@@g \
+            -e s@"--"@"-"@g\` 
         ln -fs \$i "latest-\${simple_name}"
 done
 
@@ -178,10 +193,12 @@ EOF
     ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
     if [ "weekly" == "${1}" ]
     then
-	ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
+	ssh ${SSH_MASTER} \
+            "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
     elif [ "nightly" == "${1}" ]
     then
-	ssh ${SSH_MASTER} "${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
+	ssh ${SSH_MASTER} \
+            "${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
     fi
 }
 
@@ -198,12 +215,15 @@ scp_jnet(){
         -e s@"-${PRODUCT_VERSION_GF}"@@g \
         -e s@"${PKG_ID}-"@@g \
         -e s@"--"@"-"@g `
-    ssh ${SSH_MASTER} "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
-    ssh ${SSH_MASTER} "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"
+    ssh ${SSH_MASTER} \
+        "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
+    ssh ${SSH_MASTER} \
+        "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"
 }
 
 init_storage_area(){
-	ssh ${SSH_STORAGE} "rm -rf ${ARCHIVE_STORAGE_BUNDLES} ; mkdir -p ${ARCHIVE_STORAGE_BUNDLES}"
+    ssh ${SSH_STORAGE} \
+        "rm -rf ${ARCHIVE_STORAGE_BUNDLES} ; mkdir -p ${ARCHIVE_STORAGE_BUNDLES}"
 }
 
 promote_bundle(){
@@ -242,8 +262,6 @@ create_svn_tag(){
 }
 
 send_notification(){
-    VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
-    SVN_REVISION=`cat ${VERSION_INFO} | awk '{print $2}'`
     /usr/lib/sendmail -t << MESSAGE
 From: ${NOTIFICATION_FROM}
 To: ${NOTIFICATION_SENDTO}

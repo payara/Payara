@@ -11,6 +11,8 @@ then
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
 
+    VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
+
     create_svn_tag    
 elif [ "nightly" == "${1}" ]
 then
@@ -19,9 +21,10 @@ then
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
     promote_bundle ${PROMOTED_BUNDLES}/glassfish.zip glassfish-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
+    VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt"
     printf "\n%s \n\n" "===== TODO, RECORD REVISION ====="
 fi
 
+SVN_REVISION=`cat ${WORKSPACE_BUNDLES}/${VERSION_INFO} | awk '{print $2}'`
 create_symlinks
-
 send_notification
