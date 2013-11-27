@@ -190,6 +190,7 @@
                                 <tasks>
                                     <ant dir="." antfile="../distributions.xml" target="create-${project.artifactId}-distributions">
                                         <property name="install.dir.name" value="${install.dir.name}" />
+                                        <property name="ips.compress" value="${ips.compress}"/>
                                     </ant>
                                 </tasks>
                             </configuration>           

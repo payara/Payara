@@ -47,8 +47,6 @@
     <property name="glassfish.image.dir" value="${image.root}/glassfish"/>
     <property name="installer.image.dir.l10n" value="${image.root}/installer-l10n"/>
     <property name="glassfish.image.dir.l10n" value="${image.root}/glassfish-l10n"/>
-    <property name="repo.url" value="http://repine.us.oracle.com:40000"/>
-    <!-- property name="repo.url" value="http://localhost:10000"/ -->
     <property name="repo.host" value="http://pkg.glassfish.org"/>
     <property name="title" value="GlassFish 4"/>
     <property name="description" value="GlassFish Server is a modular and lightweight Java EE 7 compliant application server. Key features include an OSGi runtime, fast startup time, maven support, and rapid iterative development with Active Redeploy.  GlassFish Server also offers feature-rich administration with the web console, command line, and RESTful API."/>
@@ -63,14 +61,18 @@
     <property name="release.repository.url" value="${repository.url}/release/"/>
     <property name="release.native.repository.url" value="${repository.url}/native/release/"/>
 
-    <target name="init">
-        <condition property="windows">
-            <os family="windows" />
-        </condition>
-        <condition property="unix">
-            <os family="unix" />
-        </condition>
-    </target>
+    <condition property="_ips.compress">
+        <and>
+          <isset property="ips.compress"/>
+          <not><equals arg1="${ips.compress}" arg2="false"/></not>
+        </and>
+    </condition>
+    <condition property="windows">
+        <os family="windows" />
+    </condition>
+    <condition property="unix">
+        <os family="unix" />
+    </condition>
     
     <target name="create-minnow-distributions" depends="create-minnow-images, create-distributions"/>
     <target name="create-web-distributions" depends="create-web-images">
@@ -199,6 +201,19 @@
             <echo message=""/>
         </sequential>
     </macrodef>
+    <target name="_pack" if="_ips.compress">
+        <echo message=" [pack200] dir={${modules.dir}} - includes={${includes}} - excludes={${excludes}}"/>
+        <apply executable="pack200" dest="${modules.dir}" parallel="false">
+            <targetfile/>
+            <srcfile/>
+            <fileset dir="${modules.dir}" includes="${includes}" excludes="@{excludes}" />
+            <mapper type="glob" from="${mapperFrom}" to="${mapperTo}"/>
+        </apply>
+        <!-- remove *.pack.gz files -->
+        <delete>
+            <fileset dir="${modules.dir}" includes="${deleteIncludes}" excludes="${deleteExcludes}" />
+        </delete>
+    </target>
     <macrodef name="pack">
         <attribute name="modules.dir" />
         <attribute name="includes" default="**/*.jar"/>
@@ -208,18 +223,15 @@
         <attribute name="deleteIncludes" default="**/*.jar"/>
         <attribute name="deleteExcludes" default="@{excludes}"/>
         <sequential>
-            <echo message=""/>
-            <echo message=" [pack200] dir={@{modules.dir}} - includes={@{includes}} - excludes={@{excludes}}"/>
-            <apply executable="pack200" dest="@{modules.dir}" parallel="false">
-                <targetfile/>
-                <srcfile/>
-                <fileset dir="@{modules.dir}" includes="@{includes}" excludes="@{excludes}" />
-                <mapper type="glob" from="@{mapperFrom}" to="@{mapperTo}"/>
-            </apply>
-            <!-- remove *.pack.gz files -->
-            <delete>
-                <fileset dir="@{modules.dir}" includes="@{deleteIncludes}" excludes="@{deleteExcludes}" />
-            </delete>
+            <antcall target="_pack">
+                <param name="modules.dir" value="@{modules.dir}"/>
+                <param name="includes" value="@{includes}"/>
+                <param name="excludes" value="@{excludes}"/>
+                <param name="mapperFrom" value="@{mapperFrom}"/>
+                <param name="mapperTo" value="@{mapperTo}"/>
+                <param name="deleteIncludes" value="@{deleteIncludes}"/>
+                <param name="deleteExcludes" value="@{deleteExcludes}"/>
+            </antcall>
         </sequential>
     </macrodef>
     <macrodef name="create.distribution">
@@ -348,19 +360,19 @@
     
     <target name="create-domain" depends="init-glassfish-home, create-domain-on-windows, create-domain-on-unix"/>
     <target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>
-    <target name="init-glassfish-home" depends="init">
+    <target name="init-glassfish-home">
         <property name="glassfish.home" value="${basedir}/${glassfish.image.dir}/${install.dir.name}/glassfish" />
     </target>
-    <target name="init-glassfish-home-ml" depends="init">
+    <target name="init-glassfish-home-ml">
         <property name="glassfish.home" value="${basedir}/${glassfish.image.dir.l10n}/${install.dir.name}/glassfish" />
     </target>    
-    <target name="create-domain-on-windows" depends="init" if="windows">
+    <target name="create-domain-on-windows" if="windows">
         <antcall target="_create-domain">
             <param name="exec.dir" value="${glassfish.home}/bin"/>
             <param name="exec.executable" value="${glassfish.home}/bin/asadmin.bat"/>
         </antcall>
     </target>
-    <target name="create-domain-on-unix" depends="init" if="unix">
+    <target name="create-domain-on-unix" if="unix">
         <antcall target="_create-domain">
             <param name="exec.dir" value="${glassfish.home}/bin"/>
             <param name="exec.executable" value="${glassfish.home}/bin/asadmin"/>
