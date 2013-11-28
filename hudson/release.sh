@@ -192,7 +192,7 @@ mvn ${MAVEN_ARGS} -f main/pom.xml ${BUILD_TARGETS} \
     -Dgpg.passphrase="${GPG_PASSPHRASE}" \
     -Dgpg.executable=gpg2 \
     -Dmaven.test.failure.ignore=true \
-    -Dips.compress=true \
+    -Dips.compress=false \
     -Dtarget.repo.dir=${IPS_REPO_DIR} \
     -Duc.toolkit.dir=${IPS_TOOLKIT} \
     -Drepo.url=${IPS_REPO_URL}:${IPS_REPO_PORT}/ \
