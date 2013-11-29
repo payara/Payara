@@ -102,7 +102,7 @@ then
 fi
 
 printf "\n%s\n\n" "==== VERSION INFO ===="
-echo "Build-Id: ${BUILD_ID}" >> ${WORKSPACE}/version-info.txt
+echo "Date: `date`" >> ${WORKSPACE}/version-info.txt
 cat ${WORKSPACE}/version-info.txt
 
 ########################
