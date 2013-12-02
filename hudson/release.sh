@@ -183,6 +183,7 @@ then
     mkdir ${FINDBUGS_RESULTS} | true
 
     # run findbugs-tool
+    OLD_PWD=`pwd`
     cd ${HUDSON_HOME}/tools/findbugs-tool-latest
     ./findbugscheck ${WORKSPACE}/main
     if [ $? -ne 0 ]
@@ -191,6 +192,7 @@ then
     else
        echo "SUCESS" > ${FINDBUGS_RESULTS}/findbugscheck.log
     fi
+    cd ${OLD_PWD}
 
     # copy all results
     for i in `find ${WORKSPACE}/main -name findbugsXml.xml`
