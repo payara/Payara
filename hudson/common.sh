@@ -159,6 +159,10 @@ aggregated_tests_summary(){
                FAILED($failednumber)"
         cpt=$((cpt+2))
     done < $JOBS
+    if [ $cpt -eq 1 ]
+    then
+        echo "No downstreams found."
+    fi
     rm -f $RESULTS $JOBS
 }
 

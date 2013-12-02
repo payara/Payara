@@ -25,6 +25,6 @@ then
     printf "\n%s \n\n" "===== TODO, RECORD REVISION ====="
 fi
 
-SVN_REVISION=`cat ${WORKSPACE_BUNDLES}/${VERSION_INFO} | head -1 | awk '{print $2}'`
+SVN_REVISION=`cat ${VERSION_INFO} | head -1 | awk '{print $2}'`
 create_symlinks
 send_notification
