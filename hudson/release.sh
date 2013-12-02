@@ -173,6 +173,31 @@ then
 	echo "Unable to perform release using maven release plugin.  Please see ${WORKSPACE}/mvn_rel.output."
 	exit 1; 
     fi
+elif [ "nightly" == "${1}" ]
+then
+    printf "\n%s \n\n" "===== RUN FINDBUGS ====="
+    mvn ${MAVEN_ARGS} -f main/pom.xml install findbugs:findbugs
+
+    printf "\n%s \n\n" "===== PROCESS FINDBUGS RESULTS ====="
+    FINDBUGS_RESULTS=${WORKSPACE}/findbugs_results
+    mkdir ${FINDBUGS_RESULTS} | true
+
+    # run findbugs-tool
+    cd ${HUDSON_HOME}/tools/findbugs-tool-latest
+    ./findbugscheck ${WORKSPACE}/main
+    if [ $? -ne 0 ]
+    then
+       echo "FAILED" > ${FINDBUGS_RESULTS}/findbugscheck.log
+    else
+       echo "SUCESS" > ${FINDBUGS_RESULTS}/findbugscheck.log
+    fi
+
+    # copy all results
+    for i in `find ${WORKSPACE}/main -name findbugsXml.xml`
+    do
+       target=`sed s@"${WORKSPACE}"@@g | sed s@"/"@"_"@g <<< ${i}`
+       cp ${i} ${FINDBUGS_RESULTS}/${target}
+    done
 fi
 
 printf "\n%s \n\n" "===== DO THE BUILD! ====="
