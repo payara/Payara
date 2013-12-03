@@ -1071,10 +1071,19 @@
                     <value>true</value>
                 </property>
             </activation>
+        </profile>
+        <profile>
+            <id>installer</id>
+            <activation>
+                <property>
+                    <name>ips.build.installer</name>
+                    <value>true</value>
+                </property>
+            </activation>
             <modules>
                 <module>installer</module>
             </modules>
-       </profile>
+        </profile>
         <profile>
             <id>javaee-api</id>
             <activation>
