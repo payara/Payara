@@ -221,6 +221,7 @@ mvn ${MAVEN_ARGS} -f main/pom.xml ${BUILD_TARGETS} \
     -Dgpg.executable=gpg2 \
     -Dmaven.test.failure.ignore=true \
     -Dips.compress=false \
+    -Dips.build.installer=false \
     -Dtarget.repo.dir=${IPS_REPO_DIR} \
     -Duc.toolkit.dir=${IPS_TOOLKIT} \
     -Drepo.url=${IPS_REPO_URL}:${IPS_REPO_PORT}/ \
