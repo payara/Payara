@@ -253,7 +253,7 @@ get_clean_svn_rev(){
 }
 
 get_current_svn_rev(){
-    svn info ${1} | grep 'Revision:' | awk '{print $2}'`
+    svn info ${1} | grep 'Revision:' | awk '{print $2}'
 }
 
 init_storage_area(){
