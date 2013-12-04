@@ -84,10 +84,10 @@ then
     if [ -z ${SVN_REVISION} ]
     then
         # retrieving last known good revision
-        SVN_REVISION=`svn propget svn:keyword tmp | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'`
+        SVN_REVISION=`get_clean_svn_rev tmp`
     else
         # retrieving HEAD's value
-        SVN_REVISION=`svn info tmp | grep 'Revision:' | awk '{print $2}'`
+        SVN_REVISION=`get_current_svn_rev tmp`
     fi
     rm -rf tmp
 fi

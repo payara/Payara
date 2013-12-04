@@ -225,6 +225,37 @@ scp_jnet(){
         "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"
 }
 
+record_svn_rev(){
+    printf "\n%s \n\n" "===== RECORD CLEAN REVISION ====="
+
+    svn co --depth=empty ${GF_WORKSPACE_URL_SSH}/trunk/main tmp-co
+
+    COMMIT_MSG="setting clean revision"
+    CURRENT_KEYWORD=`svn propget svn:keyword tmp-co`
+    CURRENT_KEYWORD=`sed '/^$/d' <<< "${CURRENT_KEYWORD}"`
+    LAST_LOG=`svn propget svn:log --revprop -r HEAD tmp-co`
+
+    if [ "${LAST_LOG}" = "${COMMIT_MSG}" ]
+    then
+        echo "Nothing to do. Current clean_revision is already recorded"
+        exit 0
+    fi
+
+    get_current_svn_rev tmp-co > svn-keywords
+    svn propset -F svn-keywords svn:keyword tmp-co
+    svn commit $WORKSPACE/ade-promotion/main -m "${COMMIT_MSG}"
+
+    rm -rf tmp-co svn-keywords
+}
+
+get_clean_svn_rev(){
+    svn propget svn:keyword ${1} | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'
+}
+
+get_current_svn_rev(){
+    svn info ${1} | grep 'Revision:' | awk '{print $2}'`
+}
+
 init_storage_area(){
     ssh ${SSH_STORAGE} \
         "rm -rf ${ARCHIVE_STORAGE_BUNDLES} ; mkdir -p ${ARCHIVE_STORAGE_BUNDLES}"
