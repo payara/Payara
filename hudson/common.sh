@@ -187,6 +187,14 @@ do
             -e s@"\${3}-"@@g \
             -e s@"--"@"-"@g\` 
         ln -fs \$i "latest-\${simple_name}"
+	if [ "\${simple_name}" == "glassfish-ml.zip" ]
+        then
+            ln -fs \$i "latest-glassfish.zip"                
+        fi
+        if [ "\${simple_name}" == "web-ml.zip" ]
+        then
+            ln -fs \$i "latest-web.zip"
+        fi
 done
 
 cd /java/re/\${5}
