@@ -68,7 +68,7 @@ else
     exit 1
 fi
 
-BUILD_KIND=$1
+BUILD_KIND=${1}
 WORKSPACE_BUNDLES=${WORKSPACE}/${BUILD_KIND}_bundles
 if [ ! -d "${WORKSPACE_BUNDLES}" ]
 then
@@ -126,49 +126,49 @@ aggregated_tests_summary(){
     RESULTS="results.txt"
     JOBS="jobs.txt"
 
-    rm -f $TESTS_HTML $UNSORTED $RESULTS $JOBS
-    wget -o /dev/null -O $TESTS_HTML $1
+    rm -f ${TESTS_HTML} $UNSORTED ${RESULTS} ${JOBS}
+    wget -o /dev/null -O ${TESTS_HTML} ${1}
 
     # DO THE MAGIC
-    job_name=`sed -e 's/.*\/job\/\([^\/]*\).*/\1/' <<< $1`
+    job_name=`sed -e 's/.*\/job\/\([^\/]*\).*/\1/' <<< ${1}`
     for i in `cat tests.html \
             | ggrep -2 "testReport" \
-            | grep -v footer` ; do echo $i ; done > $UNSORTED
+            | grep -v footer` ; do echo ${i} ; done > ${UNSORTED}
     cat $UNSORTED \
         |  grep "testReport" \
-        | grep -v $job_name \
+        | grep -v ${job_name} \
         | sed -e 's/.*\/job\/\([^\/]*\)\/\([0-9]*\).*/\1 \2/' \
-        > $JOBS
-    cat $UNSORTED \
+        > ${JOBS}
+    cat ${UNSORTED} \
         | grep "text-align" \
         | sed s@">"@" "@g \
         | awk '{print $2}' \
         | grep -v "</td" \
-        > $RESULTS
-    rm -f $TESTS_HTML $UNSORTED
+        > ${RESULTS}
+    rm -f ${TESTS_HTML} ${UNSORTED}
 
     cpt=1
     while read job
     do
-        failednumber=`awk "NR==$cpt" $RESULTS`
-        passednumber=`awk "NR==$((cpt+1))" $RESULTS`
-        jobname=`echo $job | awk '{print $1}'`
-        buildnumber=`echo $job | awk '{print $2}'`
-        echo "`align_column 55 "." "$jobname (#$buildnumber)"` \
-              `align_column 12 " " "PASSED($passednumber)"` \
-               FAILED($failednumber)"
+        failednumber=`awk "NR==$cpt" ${RESULTS}`
+        passednumber=`awk "NR==$((cpt+1))" ${RESULTS}`
+        jobname=`echo ${job} | awk '{print $1}'`
+        buildnumber=`echo ${job} | awk '{print $2}'`
+        echo "`align_column 55 "." "$jobname (#${buildnumber})"` \
+              `align_column 12 " " "PASSED(${passednumber})"` \
+               FAILED(${failednumber})"
         cpt=$((cpt+2))
-    done < $JOBS
-    if [ $cpt -eq 1 ]
+    done < ${JOBS}
+    if [ ${cpt} -eq 1 ]
     then
         echo "No downstreams found."
     fi
-    rm -f $RESULTS $JOBS
+    rm -f ${RESULTS} ${JOBS}
 }
 
 create_symlinks(){
     PROMOTE_SCRIPT=/tmp/promotebuild.sh
-    cat <<EOF > $PROMOTE_SCRIPT
+    cat <<EOF > ${PROMOTE_SCRIPT}
 #!/bin/bash -e
 # arg1 BUILD_ID
 # arg2 PRODUCT_VERSION_GF
@@ -186,14 +186,14 @@ do
             -e s@"-\${2}"@@g \
             -e s@"\${3}-"@@g \
             -e s@"--"@"-"@g\` 
-        ln -fs \$i "latest-\${simple_name}"
+        ln -fs \${i} "latest-\${simple_name}"
 	if [ "\${simple_name}" == "glassfish-ml.zip" ]
         then
-            ln -fs \$i "latest-glassfish.zip"                
+            ln -fs \${i} "latest-glassfish.zip"
         fi
         if [ "\${simple_name}" == "web-ml.zip" ]
         then
-            ln -fs \$i "latest-web.zip"
+            ln -fs \${i} "latest-web.zip"
         fi
 done
 
@@ -251,7 +251,7 @@ record_svn_rev(){
 
     get_current_svn_rev tmp-co > svn-keywords
     svn propset -F svn-keywords svn:keyword tmp-co
-    svn commit $WORKSPACE/ade-promotion/main -m "${COMMIT_MSG}"
+    svn commit ${WORKSPACE}/ade-promotion/main -m "${COMMIT_MSG}"
 
     rm -rf tmp-co svn-keywords
 }
@@ -289,9 +289,7 @@ create_svn_tag(){
     rm -rf ${WORKSPACE}/tag ; unzip -d ${WORKSPACE}/tag workspace.zip
     
     # delete tag (for promotion forcing)
-    set +e
-    svn del ${GF_WORKSPACE_URL_SSH}/tags/${RELEASE_VERSION} -m "del tag ${RELEASE_VERSION}"
-    set -e
+    svn del ${GF_WORKSPACE_URL_SSH}/tags/${RELEASE_VERSION} -m "del tag ${RELEASE_VERSION}" | true
     
     # copy the exact trunk used to run the release
     SVN_REVISION=`svn info ${WORKSPACE}/tag/main | grep 'Revision:' | awk '{print $2}'`
