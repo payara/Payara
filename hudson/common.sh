@@ -127,7 +127,6 @@ init_common(){
             ARCHIVE_URL
 }
 
-
 kill_clean(){
     if [ ${#1} -ne 0 ]
     then
