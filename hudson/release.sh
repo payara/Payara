@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 source `dirname $0`/common.sh
-init ${1}
+init_common ${1}
 
 kill_glassfish
 kill_ips_repo
