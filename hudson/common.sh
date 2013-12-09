@@ -358,7 +358,7 @@ install_uc_toolkit(){
     IPS_TOOLKIT=${WORKSPACE}/pkg-toolkit-$IPS_REPO_TYPE ; export IPS_TOOLKIT
 }
 
-start_ips_repo(){
+start_ips_repository(){
     # Increase timeout to 10 min to UC servers (default is 1 min).
     PKG_CLIENT_CONNECT_TIMEOUT=600 ; export PKG_CLIENT_CONNECT_TIMEOUT
     PKG_CLIENT_READ_TIMEOUT=600 ; export PKG_CLIENT_READ_TIMEOUT
