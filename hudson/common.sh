@@ -15,6 +15,14 @@
 #HUDSON_HOME
 
 init_common(){
+    if [ -z ${HUDSON_HOME} ]
+    then
+        printf "\n%s \n\n" "==== ERROR: HUDSON_HOME ENV VARIABLE MUST BE DEFINED ! ===="
+        exit 1
+    fi
+    BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
+    PKG_ID=`cat ${HUDSON_HOME}/pkgid-trunk.version`
+
     JAVAEE_VERSION=7.0
     MAJOR_VERSION=4
     MINOR_VERSION=0
@@ -28,9 +36,6 @@ init_common(){
     GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
     GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
 
-    MAVEN_REPO="-Dmaven.repo.local=${WORKSPACE}/repository"
-    MAVEN_ARGS="${MAVEN_REPO} -C -nsu -B"
-
     IPS_REPO_URL=http://localhost
     IPS_REPO_DIR=${WORKSPACE}/promorepo
     IPS_REPO_PORT=16500
@@ -39,7 +44,8 @@ init_common(){
     UC2_BUILD=56
     UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/${UC2_VERSION}/promoted/B${UC2_BUILD}/archive/uc2/build
 
-    if [ "weekly" == "${1}" ]
+    BUILD_KIND=${1}
+    if [ "${BUILD_KIND}" == "weekly" ]
     then
         if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
         then
@@ -63,7 +69,13 @@ init_common(){
             ARCHIVE_PATH=${ARCHIVE_PATH}/release
         fi
         ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${VERSION_QUALIFIER}/archive/bundles
-    elif [ "nightly" == "${1}" ]
+
+        if [ -z ${GPG_PASSPHRASE} ]
+        then
+            printf "\n%s \n\n" "==== ERROR: GPG_PASSPHRASE ENV VARIABLE MUST BE DEFINED ! ===="
+            exit 1
+        fi
+    elif [ "${BUILD_KIND}"  == "nightly" ]
     then
         ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
         MDATE=$(date +%m_%d_%Y)
@@ -74,13 +86,14 @@ init_common(){
         exit 1
     fi
 
-    BUILD_KIND=${1}
     WORKSPACE_BUNDLES=${WORKSPACE}/${BUILD_KIND}_bundles
     if [ ! -d "${WORKSPACE_BUNDLES}" ]
     then
         mkdir -p "${WORKSPACE_BUNDLES}"
     fi
 
+    MAVEN_REPO="-Dmaven.repo.local=${WORKSPACE}/repository"
+    MAVEN_ARGS="${MAVEN_REPO} -C -nsu -B"
     MAVEN_OPTS="-Xmx1024M -Xms256m -XX:MaxPermSize=512m -XX:-UseGCOverheadLimit"
     if [ ! -z ${PROXY_HOST} ] && [ ! -z ${PROXY_PORT} ]
     then
@@ -107,6 +120,7 @@ init_common(){
             MICRO_VERSION \
             VERSION_QUALIFIER \
             BUILD_ID \
+            PKG_ID \
             RELEASE_VERSION \
             PRODUCT_GF \
             PRODUCT_VERSION_GF \
@@ -211,26 +225,6 @@ run_findbugs(){
        target=`sed s@"${WORKSPACE}"@@g | sed s@"/"@"_"@g <<< ${i}`
        cp ${i} ${FINDBUGS_RESULTS}/${target}
     done
-}
-
-get_build_and_pkg_ids(){
-    # required variable
-    if [ -z ${HUDSON_HOME} ]
-    then
-        printf "\n%s \n\n" "==== ERROR: HUDSON_HOME ENV VARIABLE MUST BE DEFINED ! ===="
-        exit 1
-    else
-        # TODO, should be function of the VERSION_QUALIFIER
-        BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
-        PKG_ID=`cat ${HUDSON_HOME}/pkgid-trunk.version`
-        export BUILD_ID PKG_ID
-    fi
-
-    if [ -z ${GPG_PASSPHRASE} ]
-    then
-        printf "\n%s \n\n" "==== ERROR: GPG_PASSPHRASE ENV VARIABLE MUST BE DEFINED ! ===="
-        exit 1
-    fi
 }
 
 get_svn_rev(){
