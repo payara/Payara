@@ -446,9 +446,7 @@ for i in \`ls\`
 do
     simple_name=\`echo \${i} | \
         sed -e s@"-\${1}"@@g \
-            -e s@"-\${4}"@@g \
             -e s@"-\${2}"@@g \
-            -e s@"\${3}-"@@g \
             -e s@"--"@"-"@g\` 
         ln -fs \${i} "latest-\${simple_name}"
 	if [ "\${simple_name}" == "glassfish-ml.zip" ]
