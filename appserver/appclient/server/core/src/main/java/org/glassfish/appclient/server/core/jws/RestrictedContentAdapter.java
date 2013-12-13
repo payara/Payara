@@ -54,6 +54,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 
 /**
  *
@@ -61,12 +62,10 @@ import org.glassfish.grizzly.http.server.Response;
  */
 public class RestrictedContentAdapter extends HttpHandler {
 
-    public final static String LAST_MODIFIED_HEADER_NAME = "Last-Modified";
-    public final static String DATE_HEADER_NAME = "Date";
+    protected final static String LAST_MODIFIED_HEADER_NAME = "Last-Modified";
+    protected final static String DATE_HEADER_NAME = "Date";
     protected final static String IF_MODIFIED_SINCE = "If-Modified-Since";
     private final static String LINE_SEP = System.getProperty("line.separator");
-    private final static String BROKEN_PIPE = "Broken pipe";
-    
     protected final Logger logger = LogDomains.getLogger(
             RestrictedContentAdapter.class, LogDomains.ACC_LOGGER);
 
@@ -256,11 +255,18 @@ public class RestrictedContentAdapter extends HttpHandler {
                     return;
                 }
 
-                
+                /*
+                 * The client's cache is obsolete.  Be sure to set the
+                 * time header values.
+                 */
+                gResp.addDateHeader(LAST_MODIFIED_HEADER_NAME, fileToSend.lastModified());
+                gResp.addDateHeader(DATE_HEADER_NAME, System.currentTimeMillis());
             }
-            sc.process(relativeURIString, gReq, gResp);
 
-            
+            /*
+             * Delegate to the Grizzly implementation.
+             */
+            StaticHttpHandler.sendFile(gResp, fileToSend);
 //            final int status = gResp.getStatus();
 //            if (status != HttpServletResponse.SC_OK) {
 //                logger.fine(logPrefix() + "Could not serve content for "
@@ -271,18 +277,6 @@ public class RestrictedContentAdapter extends HttpHandler {
 //            }
 
 //            finishResponse(gResp, status);
-        } catch (IOException ioex) {
-            /*
-             * Broken pipe errors happen fairly regularly with Java Web Start on
-             * the client side.  There's no need to clutter up the log with
-             * reports of them that we cannot really do anything about.
-             */
-            if (isBrokenPipe(ioex)) {
-                logger.log(Level.FINE, "''Broken pipe'' while responding to {0}{1}", new Object[]{logPrefix(), relativeURIString});
-            } else {
-                finishErrorResponse(gResp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                logger.log(Level.SEVERE, logPrefix() + relativeURIString, ioex);
-            }
         } catch (Exception e) {
 //            gResp.getResponse().setErrorException(e);
             finishErrorResponse(gResp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -290,11 +284,6 @@ public class RestrictedContentAdapter extends HttpHandler {
         }
     }
 
-    private boolean isBrokenPipe(final IOException ioex) {
-        final Throwable cause = ioex.getCause();
-        return (cause != null && (cause instanceof IOException) && (cause.getMessage()).contains(BROKEN_PIPE));
-    }
-    
     protected boolean returnIfClientCacheIsCurrent(final String relativeURIString,
             final Request gReq,
             final long contentTimestamp) {
@@ -355,9 +344,6 @@ public class RestrictedContentAdapter extends HttpHandler {
 
     private void finishResponse(final Response gResp, final int status,
             final boolean treatAsError) {
-        if (gResp.isCommitted() || ! gResp.getRequest().getContext().getConnection().isOpen()) {
-            return;
-        }
         gResp.setStatus(status);
         try {
             if (treatAsError /* && commitErrorResponse */) {

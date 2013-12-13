@@ -48,7 +48,6 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.Date;
 import java.util.HashMap;
@@ -64,7 +63,6 @@ import org.glassfish.grizzly.http.Method;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.enterprise.iiop.api.GlassFishORBFactory;
-import org.glassfish.grizzly.http.server.Session;
 
 /**
  * GrizzlyAdapter for serving static and dynamic content.
@@ -73,9 +71,6 @@ import org.glassfish.grizzly.http.server.Session;
  */
 public class AppClientHTTPAdapter extends RestrictedContentAdapter {
 
-    public final static String GF_JWS_SESSION_CACHED_JNLP_NAME = "org.glassfish.jws.mainJNLP";
-    public final static String GF_JWS_SESSION_IS_MAIN_PROCESSED_NAME = "org.glassfish.jws.isMainProcessed";
-        
     private final static String IF_UNMODIFIED_SINCE = "If-Unmodified-Since";
 
     private static final String ARG_QUERY_PARAM_NAME = "arg";
@@ -97,23 +92,6 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
     private final ACCConfigContent accConfigContent;
     private final LoaderConfigContent loaderConfigContent;
 
-    /**
-     * Prepares a full URI from the request.
-     * 
-     * @param gReq the request
-     * @return URI for the request
-     * @throws URISyntaxException 
-     */
-    public static URI requestURI(final Request gReq) throws URISyntaxException {
-        return new URI(gReq.getScheme(), 
-                null /* userInfo */, 
-                gReq.getLocalName(), 
-                gReq.getLocalPort(), 
-                gReq.getPathInfo(), 
-                gReq.getQueryString(), 
-                null /* fragment */);
-    }
-    
     public AppClientHTTPAdapter(
             final String contextRoot,
             final Properties tokens,
@@ -164,14 +142,8 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
      */
     @Override
     public void service(Request gReq, Response gResp) {
-        if (logger.isLoggable(Level.FINER)) {
-            dumpHeaders(gReq);
-        }
-        final String savedRequestURI = gReq.getRequestURI();
-        Session s = gReq.getSession(false);
-        logger.log(Level.FINE, "Req " + savedRequestURI + ", session was " + (s == null ? "NONE" : s.getIdInternal() + ":" + s.getSessionTimeout()));
         final String relativeURIString =
-                relativizeURIString(contextRoot(), savedRequestURI);
+                relativizeURIString(contextRoot(), gReq.getRequestURI());
         if (relativeURIString == null) {
             respondNotFound(gResp);
         } else if (dynamicContent.containsKey(relativeURIString)) {
@@ -179,12 +151,6 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
                 processDynamicContent(tokens, relativeURIString, gReq, gResp);
             } catch (IOException ex) {
                 throw new RuntimeException(ex);
-            } catch (URISyntaxException ex) {
-                throw new RuntimeException(ex);
-            } finally {
-                if (logger.isLoggable(Level.FINER)) {
-                    dumpHeaders(gResp, savedRequestURI);
-                }
             }
         } else try {
             if (!serviceContent(gReq, gResp)) {
@@ -192,35 +158,9 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
-        } finally {
-            if (logger.isLoggable(Level.FINER)) {
-                dumpHeaders(gResp, savedRequestURI);
-            }
         }
     }
 
-    private void dumpHeaders(final Response gResp, final String savedRequestURI) {
-        if (logger.isLoggable(Level.FINER)) {
-            final StringBuilder sb = new StringBuilder();
-            sb.append("JWS response for URI=").append(savedRequestURI).append(", status=").append(gResp.getStatus()).append(LINE_SEP);
-            for (String headerName : gResp.getHeaderNames()) {
-                final String header = gResp.getHeader(headerName);
-                sb.append("  ").append(headerName).append("=").append(header).append(LINE_SEP);
-            }
-            logger.log(Level.FINER, sb.toString());
-        }
-    }
-    
-    private void dumpHeaders(final Request gReq) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append("JWS request: method=").append(gReq.getMethod().toString()).append(", URI=").append(gReq.getRequestURI()).append(LINE_SEP);
-        for (String headerName : gReq.getHeaderNames()) {
-            final String header = gReq.getHeader(headerName);
-            sb.append("  ").append(headerName).append("=").append(header).append(LINE_SEP);
-        }
-        logger.log(Level.FINER, sb.toString());
-    }
-    
     public void addContentIfAbsent(final Map<String,StaticContent> staticAdditions,
             final Map<String,DynamicContent> dynamicAdditions) throws IOException {
         addContentIfAbsent(staticAdditions);
@@ -241,7 +181,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
 
     private void processDynamicContent(final Properties tokens,
             final String relativeURIString,
-            final Request gReq, final Response gResp) throws IOException, URISyntaxException {
+            final Request gReq, final Response gResp) throws IOException {
         final DynamicContent dc = dynamicContent.get(relativeURIString);
         if (dc == null) {
             respondNotFound(gResp);
@@ -249,7 +189,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
                     new Object[]{logPrefix(), relativeURIString});
             return;
         }
-        final URI requestURI = requestURI(gReq);
+        final URI requestURI = URI.create(gReq.getRequestURI());
         if ( ! dc.isAvailable(requestURI)) {
             finishErrorResponse(gResp, contentStateToResponseStatus(dc, requestURI));
             logger.log(Level.FINE, "{0} Found dynamic content ({1} but is is not marked as available",
@@ -287,12 +227,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
         gResp.setDateHeader(DATE_HEADER_NAME, System.currentTimeMillis());
         gResp.setContentType(dc.getMimeType());
         gResp.setStatus(HttpServletResponse.SC_OK);
-        String text = instance.getText();
-        
-        if (dc.isMain()) {
-            saveJNLPWithSession(gReq, text, requestURI);
-        }
-        
+
         /*
          * Only for GET should the response actually contain the content.
          * Java Web Start uses HEAD to find out when the target was last
@@ -300,53 +235,14 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
          */
         final Method methodType = gReq.getMethod();
         if (Method.GET.equals(methodType)) {
-            writeData(text, gReq.getResponse());
+            writeData(instance.getText(), gResp);
         }
         logger.log(Level.FINE, "{0}Served dyn content for {1}: {2}{3}",
                 new Object[]{logPrefix(), methodType, relativeURIString,
-                logger.isLoggable(Level.FINEST) ? "->" + instance.getText() : ""});
+                logger.isLoggable(Level.FINER) ? "->" + instance.getText() : ""});
         finishResponse(gResp, HttpServletResponse.SC_OK);
     }
 
-    private void saveJNLPWithSession(final Request gReq, final String text,
-            final URI requestURI) {
-        /*
-         * If this is a request for the main JNLP document then the GF JWS-related
-         * session attribute will not be present.  In that case, save the just-
-         * generated JNLP content as a session attribute.
-         */
-        final Session session = gReq.getSession();
-        
-        
-        final Boolean isMainJNLPProcessed = booleanAttr(session.getAttribute(GF_JWS_SESSION_IS_MAIN_PROCESSED_NAME));
-        if ( ! isMainJNLPProcessed) {
-            byte[] jnlp;
-            jnlp = text.getBytes();
-            session.setAttribute(GF_JWS_SESSION_IS_MAIN_PROCESSED_NAME, Boolean.TRUE);
-            session.setAttribute(GF_JWS_SESSION_CACHED_JNLP_NAME, jnlp);
-            logger.log(Level.FINE, "Session {1} contains no GF/JWS attr; caching {0} and setting attr to main JNLP content", 
-                    new Object[] {requestURI, session.getIdInternal()});
-        } else {
-            logger.log(Level.FINE, "Session {0} already contains cached JNLP", session.getIdInternal());
-        }
-    }
-    
-    /**
-     * Converts an Object to a Boolean.
-     * 
-     * @param attrValue Object (preferably a Boolean) to convert
-     * @return if the argument is a Boolean, its value; false otherwise
-     */
-    public static Boolean booleanAttr(final Object attrValue) {
-        if (attrValue == null) {
-            return false;
-        }
-        if ( ! (attrValue instanceof Boolean)) {
-            return false;
-        }
-        return (Boolean) attrValue;
-    }
-    
     /**
      * Initializes a Properties object with the token names and values for
      * substitution in the dynamic content template.
@@ -490,7 +386,7 @@ public class AppClientHTTPAdapter extends RestrictedContentAdapter {
             return;
         }
     }
-    
+
     private String commaIfNeeded(final int origLength) {
         return origLength > 0 ? "," : "";
     }

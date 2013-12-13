@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,9 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -78,7 +75,6 @@ import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
-import org.glassfish.appclient.server.core.jws.servedcontent.StreamedAutoSignedStaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.DeploymentUtils;
 
@@ -118,7 +114,7 @@ public class JavaWebStartInfo implements ConfigListener {
 
     @Inject
     private ServerEnvironment serverEnv;
-    
+
     private AppClientServerApplication acServerApp;
 
     private Set<Content> myContent = null;
@@ -357,32 +353,14 @@ public class JavaWebStartInfo implements ConfigListener {
         tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME, 
                 jarElementsForExtensions(exts));
         for (Extension e : exts) {
-            final URI uri = URI.create(JWSAdapterManager.publicExtensionLookupURIText(e));
             final StaticContent newSystemContent = createSignedStaticContent(
                     e.getFile(),
-                    signedFileForDomainFile(e.getFile()),
-                    uri,
-                    extensionName(e.getFile()));
+                    signedFileForDomainFile(e.getFile()));
             jwsAdapterManager.addStaticSystemContent(
-                    uri.toString(),
+                    URI.create(JWSAdapterManager.publicExtensionLookupURIText(e)).toString(),
                     newSystemContent);
         }
 
-    }
-
-    private String extensionName(final File f) throws IOException {
-        JarFile jf = null;
-        try {
-            jf = new JarFile(f);
-            final Manifest mf = jf.getManifest();
-            final Attributes mainAttrs = mf.getMainAttributes();
-            final String extName = mainAttrs.getValue(Attributes.Name.EXTENSION_NAME);
-            return (extName == null ? "" : extName);
-        } finally {
-            if (jf != null) {
-                jf.close();
-            }
-        }
     }
 
     private File signedFileForDomainFile(final File unsignedFile) {
@@ -504,10 +482,9 @@ public class JavaWebStartInfo implements ConfigListener {
                 staticContent,
                 helper.appClientServerURI(dc),
                 helper.appClientUserURI(dc),
-                CLIENT_JAR_PATH_PROPERTY_NAME,
-                acServerApp.getDescriptor().getName());
+                CLIENT_JAR_PATH_PROPERTY_NAME);
         
-        createAndAddSignedStaticContentFromMainJAR(
+        createAndAddSignedStaticContentFromGeneratedFile(
                 staticContent, 
                 helper.facadeServerURI(dc),
                 helper.facadeUserURI(dc),
@@ -518,8 +495,7 @@ public class JavaWebStartInfo implements ConfigListener {
                     staticContent,
                     helper.groupFacadeServerURI(dc),
                     helper.groupFacadeUserURI(dc),
-                    GROUP_FACADE_PATH_PROPERTY_NAME,
-                    acServerApp.getDescriptor().getName());
+                    GROUP_FACADE_PATH_PROPERTY_NAME);
         }
 
         /*
@@ -583,25 +559,23 @@ public class JavaWebStartInfo implements ConfigListener {
     private void createAndAddSignedContentFromAppFile(final Map<String,StaticContent> content,
             final URI uriToFile,
             final URI uriForLookup,
-            final String tokenName,
-            final String appName) throws FileNotFoundException {
+            final String tokenName) throws FileNotFoundException {
 
         final File unsignedFile = new File(uriToFile);
         final File signedFile = signedFileForProvidedAppFile(unsignedFile);
         createAndAddSignedStaticContent(content, unsignedFile, signedFile,
-                uriForLookup, tokenName, appName);
+                uriForLookup, tokenName);
     }
 
     private void createAndAddSignedStaticContentFromGeneratedFile(final Map<String,StaticContent> content,
             final URI uriToFile,
             final URI uriForLookup,
-            final String tokenName,
-            final String appName) throws FileNotFoundException {
-    
+            final String tokenName) throws FileNotFoundException {
+
         final File unsignedFile = new File(uriToFile);
         final File signedFile = signedFileForGeneratedAppFile(unsignedFile);
         createAndAddSignedStaticContent(content, unsignedFile, signedFile,
-                uriForLookup, tokenName, appName);
+                uriForLookup, tokenName);
     }
 
     private void createAndAddSignedStaticContent(
@@ -609,39 +583,23 @@ public class JavaWebStartInfo implements ConfigListener {
             final File unsignedFile,
             final File signedFile,
             final URI uriForLookup,
-            final String tokenName,
-            final String appName
+            final String tokenName
             ) throws FileNotFoundException {
         final StaticContent signedJarContent = createSignedStaticContent(
-                unsignedFile, signedFile, uriForLookup, appName);
+                unsignedFile, signedFile);
         recordStaticContent(content, signedJarContent, uriForLookup, tokenName);
     }
 
     private StaticContent createSignedStaticContent(
             final File unsignedFile,
-            final File signedFile,
-            final URI uriForLookup,
-            final String appName) throws FileNotFoundException {
+            final File signedFile) throws FileNotFoundException {
         mkdirs(signedFile.getParentFile());
         final StaticContent signedJarContent = new AutoSignedContent(
                 unsignedFile,
                 signedFile,
                 signingAlias,
-                jarSigner,
-                uriForLookup.toASCIIString(),
-                appName);
+                jarSigner);
         return signedJarContent;
-    }
-    
-    private void createAndAddSignedStaticContentFromMainJAR(
-            final Map<String,StaticContent> content, 
-            final URI uriToFile,
-            final URI uriForLookup, 
-            final String tokenName) throws FileNotFoundException {
-        final File unsignedFile = new File(uriToFile);
-        final StaticContent signedContent = new StreamedAutoSignedStaticContent(unsignedFile, signingAlias, jarSigner,
-                uriForLookup.toASCIIString(), acServerApp.getDescriptor().getName());
-        recordStaticContent(content, signedContent, uriForLookup, tokenName);
     }
     
     private void recordStaticContent(final Map<String,StaticContent> content,
@@ -752,13 +710,13 @@ public class JavaWebStartInfo implements ConfigListener {
                     textFromURL(MAIN_DOCUMENT_TEMPLATE),
                     developerJNLPDoc);
         createAndAddDynamicContentFromTemplateText(
-                dynamicContent, tHelper.mainJNLP(), mainDocument, true /* isMain */);
+                dynamicContent, tHelper.mainJNLP(), mainDocument);
 
         /*
          * Add the main JNLP again but with an empty URI string so the user
          * can launch the app client by specifying only the context root.
          */
-        createAndAddDynamicContentFromTemplateText(dynamicContent, "", mainDocument, true /* isMain */);
+        createAndAddDynamicContentFromTemplateText(dynamicContent, "", mainDocument);
         createAndAddDynamicContent(
                 dynamicContent, tHelper.clientJNLP(), CLIENT_DOCUMENT_TEMPLATE);
 
@@ -771,7 +729,7 @@ public class JavaWebStartInfo implements ConfigListener {
             final String uriStringForTemplate) throws IOException {
         createAndAddDynamicContentFromTemplateText(
                 tHelper, content, uriStringForContent,
-                textFromURL(uriStringForTemplate), false /* isMain */);
+                textFromURL(uriStringForTemplate));
     }
 
     private void createAndAddDynamicContent(
@@ -787,36 +745,27 @@ public class JavaWebStartInfo implements ConfigListener {
             final Map<String,DynamicContent> content,
             final String uriStringForContent,
             final String templateText) throws IOException {
-        createAndAddDynamicContentFromTemplateText(content, uriStringForContent, templateText, false /* isMain */);
-    }
-    
-    private void createAndAddDynamicContentFromTemplateText(
-            final Map<String,DynamicContent> content,
-            final String uriStringForContent,
-            final String templateText,
-            final boolean isMain) throws IOException {
         createAndAddDynamicContentFromTemplateText(tHelper,
-                content, uriStringForContent, templateText, isMain);
+                content, uriStringForContent, templateText);
     }
 
     private static void createAndAddDynamicContentFromTemplateText(
             final TokenHelper tHelper,
             final Map<String,DynamicContent> content,
             final String uriStringForContent,
-            final String templateText,
-            final boolean isMain) throws IOException {
+            final String templateText) throws IOException {
         final String processedTemplate = Util.replaceTokens(
                 templateText, tHelper.tokens());
         content.put(uriStringForContent, newDynamicContent(processedTemplate,
-                JNLP_MIME_TYPE, isMain));
+                JNLP_MIME_TYPE));
         logger.log(Level.FINE, "Adding dyn content {0}{1}{2}", 
                 new Object[]{uriStringForContent, 
                     System.getProperty("line.separator"), logger.isLoggable(Level.FINER) ? processedTemplate : ""});
     }
 
     private static DynamicContent newDynamicContent(final String template,
-            final String mimeType, final boolean isMain) {
-        return new SimpleDynamicContentImpl(template, mimeType, isMain);
+            final String mimeType) {
+        return new SimpleDynamicContentImpl(template, mimeType);
     }
 
     /**
