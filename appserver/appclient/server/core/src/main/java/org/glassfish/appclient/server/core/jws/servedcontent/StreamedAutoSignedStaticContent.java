@@ -39,19 +39,18 @@
  */
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
-import com.sun.logging.LogDomains;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
+import org.glassfish.appclient.server.core.AppClientDeployerHelper;
 import org.glassfish.appclient.server.core.jws.AppClientHTTPAdapter;
 import static org.glassfish.appclient.server.core.jws.RestrictedContentAdapter.DATE_HEADER_NAME;
 import static org.glassfish.appclient.server.core.jws.RestrictedContentAdapter.LAST_MODIFIED_HEADER_NAME;
@@ -90,8 +89,7 @@ public class StreamedAutoSignedStaticContent extends AutoSignedContent {
 
     private static final String SIGNED_JNLP_PATH = "JNLP-INF/APPLICATION.JNLP";
     
-    protected final Logger logger = LogDomains.getLogger(
-            StreamedAutoSignedStaticContent.class, LogDomains.ACC_LOGGER);
+    private static final Logger logger = Logger.getLogger(AppClientDeployerHelper.ACC_MAIN_LOGGER, AppClientDeployerHelper.LOG_MESSAGE_RESOURCE);
     
     public StreamedAutoSignedStaticContent(final File unsignedFile,
             final String userProvidedAlias,
@@ -137,7 +135,6 @@ public class StreamedAutoSignedStaticContent extends AutoSignedContent {
         final Map<String,byte[]> addedContent = new HashMap<String,byte[]>();
         addedContent.put(SIGNED_JNLP_PATH, jnlpContent);
         try {
-            final URI uri = URI.create(gReq.getScheme() + "://" + gReq.getLocalName());
             jarSigner().signJar(unsignedFile(), zos, userProvidedAlias(), createJWSAttrs(AppClientHTTPAdapter.requestURI(gReq), appName()), addedContent);
             /*
              * Create an on-disk copy of the signed JAR for debugging purposes
@@ -151,12 +148,12 @@ public class StreamedAutoSignedStaticContent extends AutoSignedContent {
                 logger.log(Level.FINEST, "Created on-disk signed JAR {0}", debugSignedJARFile.getAbsolutePath());
             }
             zos.close();
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
         } catch (IOException ioex) {
             throw ioex;
         } catch (Exception ex) {
             throw new IOException(ex);
+        } finally {
+            zos.close();
         }
     }
 

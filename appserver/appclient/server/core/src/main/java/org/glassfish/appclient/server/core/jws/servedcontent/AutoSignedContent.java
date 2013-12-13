@@ -59,7 +59,7 @@ import java.util.logging.Logger;
  *
  * @author tjquinn
  */
-public class AutoSignedContent extends FixedContent implements StaticContent {
+public class AutoSignedContent extends FixedContent {
 
     private static final String JWS_PERMISSIONS_NAME = "Permissions"; 
     private static final String JWS_PERMISSIONS_VALUE = "all-permissions";

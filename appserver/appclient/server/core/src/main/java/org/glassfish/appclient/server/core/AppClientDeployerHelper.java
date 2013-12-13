@@ -85,6 +85,7 @@ import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.deployment.versioning.VersioningUtils;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.ServerContext;
+import org.jboss.logging.LogMessage;
 
 /**
  * Encapsulates the details of generating the required JAR file(s),
@@ -119,6 +120,9 @@ public abstract class AppClientDeployerHelper {
     private final ServiceLocator habitat;
 
     private static final Logger logger = LogDomains.getLogger(AppClientDeployerHelper.class, LogDomains.ACC_LOGGER);
+    
+    public static final String ACC_MAIN_LOGGER = "javax.enterprise.system.container.appclient";
+    public static final String LOG_MESSAGE_RESOURCE = "org.glassfish.appclient.server.LogMessages";
     
     /**
      * Returns the correct concrete implementation of Helper.

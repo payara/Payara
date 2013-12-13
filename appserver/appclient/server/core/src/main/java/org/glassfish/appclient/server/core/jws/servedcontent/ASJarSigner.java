@@ -92,7 +92,7 @@ public class ASJarSigner implements PostConstruct {
     private Logger logger;
 
     @Override
-    public synchronized void postConstruct() {
+    public void postConstruct() {
         logger =
             LogDomains.getLogger(ASJarSigner.class,
             LogDomains.CORE_LOGGER);
@@ -113,7 +113,6 @@ public class ASJarSigner implements PostConstruct {
                     new FileOutputStream(signedJar));
         try {
             final long result = signJar(unsignedJar, zout, alias, attrs, Collections.EMPTY_MAP);
-            zout.close();
             return result;
         } catch (Exception ex) {
             /*
@@ -125,6 +124,8 @@ public class ASJarSigner implements PostConstruct {
                        signedJar.getAbsolutePath());
             }
             throw ex;
+        } finally {
+            zout.close();
         }
     }
     

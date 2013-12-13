@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletResponse;
+import org.glassfish.appclient.server.core.AppClientDeployerHelper;
 import org.glassfish.appclient.server.core.jws.RestrictedContentAdapter;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
@@ -61,7 +62,8 @@ public class FixedContent extends Content.Adapter implements StaticContent {
 
     private final File file;
     
-    private static final Logger logger = LogDomains.getLogger(FixedContent.class, LogDomains.ACC_LOGGER);
+    private static final Logger logger = Logger.getLogger(AppClientDeployerHelper.ACC_MAIN_LOGGER,
+            AppClientDeployerHelper.LOG_MESSAGE_RESOURCE);
 
     public FixedContent(final File file) {
         this.file = file;
