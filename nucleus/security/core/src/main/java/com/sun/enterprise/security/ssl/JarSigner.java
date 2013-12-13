@@ -57,6 +57,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Signature;
 import java.security.cert.X509Certificate;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
@@ -106,19 +107,16 @@ public class JarSigner {
      * @return the hash.
      */
     private String hash(String content) {
-        return b64encoder.encodeBuffer(md.digest(content.getBytes())).trim();
+        return hash(content.getBytes());
     }
 
     /**
-     * Hash the JarEntry completely.
-     *
-     * @param jf the JarFile
-     * @param je the JarEntry
-     * @throws IOException
-     * @return resulting hash
+     * Hash the data.
+     * 
+     * @param data
+     * @return 
      */
-    private String hash(JarFile jf, JarEntry je) throws IOException {
-        byte[] data = readJarEntry(jf, je);
+    private String hash(final byte[] data) {
         return b64encoder.encodeBuffer(md.digest(data)).trim();
     }
 
@@ -147,19 +145,47 @@ public class JarSigner {
     public void signJar(File input, File output, String alias, final Attributes additionalAttrs) 
             throws IOException, KeyStoreException, NoSuchAlgorithmException,
             InvalidKeyException, UnrecoverableKeyException, SignatureException {
+        final ZipOutputStream zout = new ZipOutputStream(
+            new FileOutputStream(output));
+        try {
+            signJar(input, zout, alias, additionalAttrs, Collections.EMPTY_MAP);
+        } finally {
+            zout.close();
+        }
+    }
+    
+    /**
+     * Signs a JAR, adding caller-specified attributes to the manifest's main attrs and also
+     * inserting (and signing) additional caller-supplied content as new entries in the
+     * zip output stream.
+     * @param input input JAR file
+     * @param zout Zip output stream created
+     * @param alias signing alias in the keystore
+     * @param additionalAttrs additional attributes to add to the manifest's main attrs (null if none)
+     * @param additionalEntries entry-name/byte[] pairs of additional content to add to the signed output
+     * @throws IOException
+     * @throws KeyStoreException
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeyException
+     * @throws UnrecoverableKeyException
+     * @throws SignatureException 
+     */
+    public void signJar(File input, ZipOutputStream zout, String alias, final Attributes additionalAttrs,
+            Map<String,byte[]> additionalEntries)
+            throws IOException, KeyStoreException, NoSuchAlgorithmException,
+            InvalidKeyException, UnrecoverableKeyException, SignatureException {
 
         JarFile jf = new JarFile(input);
-        ZipOutputStream zout = null;
         try {
             Enumeration<JarEntry> jes;
             // manifestEntries is content of META-INF/MANIFEST.MF
             StringBuilder manifestEntries = new StringBuilder();
 
-            byte[] manifestContent = null;
+            byte[] manifestContent;
             byte[] sigFileContent = getExistingSignatureFile(jf);
             boolean signed = (sigFileContent != null);
 
-            if (!signed) {
+            if (!signed || ! additionalEntries.isEmpty()) {
                 jes = jf.entries();// manifestHeader is header of META-INF/MANIFEST.MF, initialized to default
                 Manifest manifest = retrieveManifest(jf);
                 StringBuilder manifestHeader = new StringBuilder();
@@ -178,24 +204,15 @@ public class JarSigner {
                             || name.equals(JarFile.MANIFEST_NAME)) {
                         continue;
                     }
-
-                    StringBuilder me = new StringBuilder();
-                    StringBuilder currentLine = new StringBuilder();
-                    // Create digest lines in MANIFEST.MF
-                    currentLine.append("Name: ").append(name);
-                    appendLine(me, currentLine);
-                    currentLine.setLength(0);
-                    me.append(digestAlgorithm).append("-Digest: ").append(hash(jf, je)).append("\r\n");
-                    appendAttributes(me, manifest, name);
-                    // Create digest lines in ME.SF
-                    currentLine.append("Name: ").append(name);
-                    appendLine(sigFileEntries, currentLine);
-                    currentLine.setLength(0);
-                    sigFileEntries.append(digestAlgorithm).append("-Digest: ").append(hash(me.toString())).append("\r\n\r\n");
-                    manifestEntries.append(me);
+                    processMetadataForEntry(manifest, manifestEntries, sigFileEntries, name, readJarEntry(jf, je));
                 }
 
-
+                if (additionalEntries != null) {
+                    for (Map.Entry<String,byte[]> entry : additionalEntries.entrySet()) {
+                        processMetadataForEntry(manifest, manifestEntries, sigFileEntries, entry.getKey(), entry.getValue());
+                    }
+                }
+                
                 // META-INF/ME.SF
                 StringBuilder sigFile = new StringBuilder("Signature-Version: 1.0\r\n").append(digestAlgorithm).append("-Digest-Manifest-Main-Attributes: ").append(hash(manifestHeader.toString())).append("\r\n").append("Created-By: ").append(System.getProperty("java.version")).append(" (").append(System.getProperty("java.vendor")).append(")\r\n");
                 // Combine header and content of MANIFEST.MF, and rehash
@@ -245,8 +262,7 @@ public class JarSigner {
             pkcs7.encodeSignedData(bout);
 
             // Write output
-            zout = new ZipOutputStream(
-                    new FileOutputStream(output));
+            
             zout.putNextEntry((signed)
                     ? getZipEntry(jf.getJarEntry(JarFile.MANIFEST_NAME))
                     : new ZipEntry(JarFile.MANIFEST_NAME));
@@ -270,15 +286,40 @@ public class JarSigner {
                     zout.write(data);
                 }
             }
+            if (additionalEntries != null) {
+                for (Map.Entry<String, byte[]> entry : additionalEntries.entrySet()) {
+                    final ZipEntry newZipEntry = new ZipEntry(entry.getKey());
+                    zout.putNextEntry(newZipEntry);
+                    zout.write(entry.getValue());
+                }
+            }
 
         } finally {
             jf.close();
-	    if (zout != null) {
-                zout.close();
-	    }
         }
     }
 
+    private void processMetadataForEntry(final Manifest manifest, 
+            final StringBuilder manifestEntries,
+            final StringBuilder sigFileEntries,
+            final String name, 
+            final byte[] content) {
+        StringBuilder me = new StringBuilder();
+        StringBuilder currentLine = new StringBuilder();
+        // Create digest lines in MANIFEST.MF
+        currentLine.append("Name: ").append(name);
+        appendLine(me, currentLine);
+        currentLine.setLength(0);
+        me.append(digestAlgorithm).append("-Digest: ").append(hash(content)).append("\r\n");
+        appendAttributes(me, manifest, name);
+        // Create digest lines in ME.SF
+        currentLine.append("Name: ").append(name);
+        appendLine(sigFileEntries, currentLine);
+        currentLine.setLength(0);
+        sigFileEntries.append(digestAlgorithm).append("-Digest: ").append(hash(me.toString())).append("\r\n\r\n");
+        manifestEntries.append(me);
+    }
+    
     /**
      * Retrieve manifest from jar, create a default template if none exists.
      *

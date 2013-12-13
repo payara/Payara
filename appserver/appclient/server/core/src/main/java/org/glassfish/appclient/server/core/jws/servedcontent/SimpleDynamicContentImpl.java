@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,12 +51,18 @@ public class SimpleDynamicContentImpl extends Content.Adapter implements Dynamic
 
     private final String template;
     private final String mimeType;
-
+    private final boolean isMain;
+    
     private Instance instance = null;
 
     public SimpleDynamicContentImpl(final String template, final String mimeType) {
+        this(template, mimeType, false);
+    }
+    
+    public SimpleDynamicContentImpl(final String template, final String mimeType, final boolean isMain) {
         this.template = template;
         this.mimeType = mimeType;
+        this.isMain = isMain;
     }
 
     public Instance getExistingInstance(Properties tokenValues) {
@@ -78,6 +84,11 @@ public class SimpleDynamicContentImpl extends Content.Adapter implements Dynamic
 
     public String getMimeType() {
         return mimeType;
+    }
+    
+    @Override
+    public boolean isMain() {
+        return isMain;
     }
 
     @Override

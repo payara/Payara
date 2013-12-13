@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -268,7 +268,8 @@ public class ApplicationSignedJARManager {
         if (content == null) {
             final File unsignedFile = new File(absURIToFile);
             final File signedFile = signedFileForLib(jarURIRelativeToApp, unsignedFile);
-            content = new AutoSignedContent(unsignedFile, signedFile, autoSigningAlias, jarSigner);
+            content = new AutoSignedContent(unsignedFile, signedFile, autoSigningAlias, jarSigner, jarURIRelativeToApp.toASCIIString(),
+                    helper.appName());
             relURIToContent.put(jarURIRelativeToApp, content);
         } else {
             if (content instanceof AutoSignedContent) {

@@ -59,19 +59,22 @@ import java.util.logging.Logger;
  *
  * @author tjquinn
  */
-public class AutoSignedContent extends Content.Adapter implements StaticContent {
+public class AutoSignedContent extends FixedContent implements StaticContent {
 
     private static final String JWS_PERMISSIONS_NAME = "Permissions"; 
     private static final String JWS_PERMISSIONS_VALUE = "all-permissions";
     private static final String JWS_CODEBASE_NAME = "Codebase";
     private static final String JWS_TRUSTED_NAME = "Trusted-Library";
     private static final String JWS_TRUSTED_VALUE = "true";
+    private static final String JWS_APP_NAME = "Application-Name";
     
-    private static Attributes createJWSAttrs(final URI requestURI) {
+    static Attributes createJWSAttrs(final URI requestURI, final String appName) {
         final Attributes attrs = new Attributes(3);
         attrs.putValue(JWS_PERMISSIONS_NAME, JWS_PERMISSIONS_VALUE);
+        attrs.putValue(JWS_APP_NAME, appName);
         try {
-            final URI trimmedURI = new URI(requestURI.getScheme(), requestURI.getHost(), null /* path */, null /* fragment */);
+            final URI trimmedURI = new URI(requestURI.getScheme(), null /* userInfo */, requestURI.getHost(), requestURI.getPort(), 
+                    null /* path */, null /* query */, null /* fragment */);
             attrs.putValue(JWS_CODEBASE_NAME, trimmedURI.toASCIIString());
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
@@ -85,11 +88,15 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
     private final File signedFile;
     private final String userProvidedAlias;
     private final ASJarSigner jarSigner;
+    private final URI relativeURI;
+    private final String appName;
 
     public AutoSignedContent(final File unsignedFile,
             final File signedFile, 
             final String userProvidedAlias,
-            final ASJarSigner jarSigner) throws FileNotFoundException {
+            final ASJarSigner jarSigner,
+            final String relativeURI,
+            final String appName) throws FileNotFoundException {
         if ( ! unsignedFile.exists() || ! unsignedFile.canRead()) {
             throw new FileNotFoundException(unsignedFile.getAbsolutePath());
         }
@@ -97,6 +104,8 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
         this.signedFile = signedFile;
         this.userProvidedAlias = userProvidedAlias;
         this.jarSigner = jarSigner;
+        this.relativeURI = URI.create(relativeURI);
+        this.appName = appName;
     }
 
     /**
@@ -110,6 +119,14 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
     @Override
     public File file() throws IOException {
         return signedFile;
+    }
+    
+    File unsignedFile() {
+        return unsignedFile;
+    }
+    
+    String appName() {
+        return appName;
     }
 
     /**
@@ -130,7 +147,15 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
         return super.isAvailable(requestURI);
     }
 
-
+    ASJarSigner jarSigner() {
+        return jarSigner;
+    }
+    
+    String userProvidedAlias() {
+        return userProvidedAlias;
+    }
+    
+        
     private boolean isSignedFileReady() {
         return signedFile.exists() &&
                 (signedFile.lastModified() >= unsignedFile.lastModified());
@@ -149,13 +174,13 @@ public class AutoSignedContent extends Content.Adapter implements StaticContent 
                         signedFile.getParentFile().getAbsolutePath()));
             }
         }
-        final Attributes attrs = createJWSAttrs(requestURI);
+        final Attributes attrs = createJWSAttrs(requestURI, appName);
         jarSigner.signJar(unsignedFile, signedFile, userProvidedAlias, attrs);
     }
 
     @Override
     public String toString() {
-        return "AutoSignedContent:" + signedFile.getAbsolutePath();
+        return "AutoSignedContent:" + (signedFile == null ? "(stream)" : signedFile.getAbsolutePath());
     }
 
     @Override

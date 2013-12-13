@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,7 +40,16 @@
 
 package org.glassfish.appclient.server.core.jws.servedcontent;
 
+import com.sun.logging.LogDomains;
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.servlet.http.HttpServletResponse;
+import org.glassfish.appclient.server.core.jws.RestrictedContentAdapter;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
+import org.glassfish.grizzly.http.server.StaticHttpHandler;
 
 /**
  * Represents static content that is fixed in location and content over
@@ -51,13 +60,40 @@ import java.io.File;
 public class FixedContent extends Content.Adapter implements StaticContent {
 
     private final File file;
+    
+    private static final Logger logger = LogDomains.getLogger(FixedContent.class, LogDomains.ACC_LOGGER);
 
     public FixedContent(final File file) {
         this.file = file;
     }
+    
+    public FixedContent() {
+        this.file = null;
+    }
 
-    public File file() {
+    @Override
+    public File file() throws IOException {
         return file;
+    }
+    
+    @Override
+    public void process(String relativeURIString, Request gReq, Response gResp) throws IOException {
+       /*
+        * The client's cache is obsolete.  Be sure to set the
+        * time header values.
+        */
+       gResp.setDateHeader(RestrictedContentAdapter.LAST_MODIFIED_HEADER_NAME, file().lastModified());
+       gResp.setDateHeader(RestrictedContentAdapter.DATE_HEADER_NAME, System.currentTimeMillis());
+        /*
+        * Delegate to the Grizzly implementation.
+        */
+       StaticHttpHandler.sendFile(gResp, file());
+       final int status = gResp.getStatus();
+        if (status != HttpServletResponse.SC_OK) {
+            logger.log(Level.FINE, "Could not serve content for {0} - status = {1}", new Object[]{relativeURIString, status});
+        } else {
+            logger.log(Level.FINE, "Served fixed content for {0}:{1}", new Object[]{gReq.getMethod(), toString()});
+        }
     }
 
     @Override
