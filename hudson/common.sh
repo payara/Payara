@@ -433,7 +433,7 @@ aggregated_tests_summary(){
 create_symlinks(){
     PROMOTE_SCRIPT=/tmp/promotebuild.sh
     cat <<EOF > ${PROMOTE_SCRIPT}
-#!/bin/bash -ex
+#!/bin/bash -e
 # arg1 BUILD_ID
 # arg2 PRODUCT_VERSION_GF
 # arg3 ARCHIVE_MASTER_BUNDLES
@@ -449,7 +449,7 @@ do
             -e s@"-\${2}"@@g \
             -e s@"--"@"-"@g\` 
     
-    echo "Simple name is ${simple_name} in `pwd`"
+
     ln -fs \${i} "latest-\${simple_name}"
 	if [ "\${simple_name}" == "glassfish-ml.zip" ]
         then
