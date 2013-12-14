@@ -468,11 +468,11 @@ EOF
     echo "trying to create symlink"
     scp ${PROMOTE_SCRIPT} ${SSH_MASTER}:/tmp
     ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
-    if [ "weekly" == "${1}" ]
+    if [ "weekly" == "${BUILD_KIND}" ]
     then
 	ssh ${SSH_MASTER} \
             "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
-    elif [ "nightly" == "${1}" ]
+    elif [ "nightly" == "${BUILD_KIND}" ]
     then
 	echo "ssh ${SSH_MASTER}  ${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
 	ssh ${SSH_MASTER} \
