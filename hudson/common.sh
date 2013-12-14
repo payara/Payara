@@ -465,6 +465,7 @@ cd /java/re/\${5}
 rm -rf latest
 ln -s \${1} latest
 EOF
+    echo "trying to create symlink"
     scp ${PROMOTE_SCRIPT} ${SSH_MASTER}:/tmp
     ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
     if [ "weekly" == "${1}" ]
@@ -473,6 +474,7 @@ EOF
             "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
     elif [ "nightly" == "${1}" ]
     then
+	echo "ssh ${SSH_MASTER}  ${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
 	ssh ${SSH_MASTER} \
             "${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
     fi
