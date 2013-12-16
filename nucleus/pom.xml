@@ -161,7 +161,7 @@
         <jax-rs-api.version>2.0</jax-rs-api.version>
         <mimepull.version>1.9.3</mimepull.version>
         <jbi.version>1.0</jbi.version>
-        <glassfish-management-api.version>3.2.0-b001</glassfish-management-api.version>
+        <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
         <btrace.version>1.0.5</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
         <v3-docs.version>4.0-b27</v3-docs.version>
