@@ -197,6 +197,11 @@ init_common(){
     -Dhttps.noProxyHosts='127.0.0.1|localhost|*.oracle.com'"
     fi
 
+    if [ -z $WORKSPACE ]
+    then
+        WORKSPACE=$PWD
+    fi
+
     export JAVAEE_VERSION \
             MAJOR_VERSION \
             MINOR_VERSION \
@@ -216,7 +221,8 @@ init_common(){
             GF_WORKSPACE_URL_HTTP \
             MAVEN_OPTS \
             MAVEN_REPO \
-            MAVEN_ARGS
+            MAVEN_ARGS \
+            WORKSPACE
 }
 
 init_version(){
@@ -359,12 +365,19 @@ get_svn_rev(){
         || [ `grep -i 'head' <<< "${SVN_REVISION}" | wc -l | awk '{print $1}'` -eq 1 ]
     then
         svn co --depth=files ${GF_WORKSPACE_URL_SSH}/trunk/main tmp
+
+        # if not defined, we are looking for last known good revisions
         if [ -z ${SVN_REVISION} ]
         then
-            # retrieving last known good revision
             SVN_REVISION=`get_clean_svn_rev tmp`
-        else
-            # retrieving HEAD's value
+        fi
+
+        # if still not defined or empty or equal to 'head' or 'HEAD'
+        # we retrieve the current HEAD's value
+        if [ -z ${SVN_REVISION} ] || \
+           [ ${#SVN_REVISION} -eq 0 ] || \
+           [ `grep -i 'head' <<< "${SVN_REVISION}" | wc -l | awk '{print $1}'` -eq 1 ]
+        then
             SVN_REVISION=`get_current_svn_rev tmp`
         fi
         rm -rf tmp
@@ -421,8 +434,8 @@ create_version_info(){
     # create version-info.txt
     # TODO, put env desc
     # OS, arch, build node, mvn version, jdk version
-    echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION}" >> ${WORKSPACE}/version-info.txt
-    if [ "${BUILD_KIND}" == "weekly" ]
+    echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION}" > ${WORKSPACE}/version-info.txt
+    if [ ! -z ${RELEASE_VERSION} ]
     then
         echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
     fi
