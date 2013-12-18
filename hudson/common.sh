@@ -15,11 +15,7 @@
 #HUDSON_HOME
 
 init_common(){
-    if [ -z ${HUDSON_HOME} ]
-    then
-        printf "\n%s \n\n" "==== ERROR: HUDSON_HOME ENV VARIABLE MUST BE DEFINED ! ===="
-        exit 1
-    fi
+    require_env_var "HUDSON_HOME"
     BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
     PKG_ID=`cat ${HUDSON_HOME}/pkgid-trunk.version`
 
@@ -42,48 +38,55 @@ init_common(){
     IPS_REPO_TYPE=sunos-sparc
     UC2_VERSION=2.3
     UC2_BUILD=56
-    UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/${UC2_VERSION}/promoted/B${UC2_BUILD}/archive/uc2/build
+    UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/${UC2_VERSION}
+    UC_HOME_URL="${UC_HOME_URL}/promoted/B${UC2_BUILD}/archive/uc2/build"
 
     BUILD_KIND=${1}
     if [ "${BUILD_KIND}" == "weekly" ]
     then
+        require_env_var "GPG_PASSPHRASE"
         if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
         then
-            VERSION_QUALIFIER=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
-            BUILD_ID=${VERSION_QUALIFIER}
+            BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+            PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
         else
             RELEASE_VERSION="${PRODUCT_VERSION_GF-$BUILD_ID}"
-            VERSION_QUALIFIER=${BUILD_ID}
         fi
 
         printf "\n%s \n\n" "===== RELEASE_VERSION ====="
         printf "VERSION %s - QUALIFIER: %s\n\n" \
             "${RELEASE_VERSION}" \
-            "${VERSION_QUALIFIER}"
+            "${VERSION_BUILD_ID}"
 
         ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
-        if [ ${#VERSION_QUALIFIER} -gt 0 ]
+        if [ ${#BUILD_ID} -gt 0 ]
         then
             ARCHIVE_PATH=${ARCHIVE_PATH}/promoted
         else
             ARCHIVE_PATH=${ARCHIVE_PATH}/release
         fi
-        ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${VERSION_QUALIFIER}/archive/bundles
+        ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}/archive/bundles
 
-        if [ -z ${GPG_PASSPHRASE} ]
-        then
-            printf "\n%s \n\n" "==== ERROR: GPG_PASSPHRASE ENV VARIABLE MUST BE DEFINED ! ===="
-            exit 1
-        fi
     elif [ "${BUILD_KIND}"  == "nightly" ]
     then
         ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
         MDATE=$(date +%m_%d_%Y)
-        BUILD_ID=`cat /net/bat-sca.us.oracle.com/repine/export2/hudson/promote-trunk.version`
+        BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
         ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
     else
         printf "\n%s \n\n" "Error: wrong argument passed, please pass either weekly or nightly as parameter to the script"
         exit 1
+    fi
+
+    if [ -z ${VERSION} ]
+    then
+        VERSION=${RELEASE_VERSION}
+    else
+        VERSION=${PRODUCT_VERSION_GF}
+        if [ ${#BUILD_ID} -gt 0 ]
+        then
+            VERSION="${VERSION}-${BUILD_ID}"
+        fi
     fi
 
     WORKSPACE_BUNDLES=${WORKSPACE}/${BUILD_KIND}_bundles
@@ -118,7 +121,7 @@ init_common(){
             MAJOR_VERSION \
             MINOR_VERSION \
             MICRO_VERSION \
-            VERSION_QUALIFIER \
+            VERSION \
             BUILD_ID \
             PKG_ID \
             RELEASE_VERSION \
@@ -139,6 +142,15 @@ init_common(){
             ARCHIVE_MASTER \
             ARCHIVE_MASTER_BUNDLES \
             ARCHIVE_URL
+}
+
+require_env_var(){
+    var=`eval echo '\$'"$1"`
+    if [ ${#var} -eq 0 ]
+    then
+        printf "\n==== ERROR: %s VARIABLE MUST BE DEFINED ! ==== \n\n" "${1}"
+        exit 1
+    fi
 }
 
 kill_clean(){
@@ -194,7 +206,8 @@ release_prepare(){
 
     egrep "Unknown lifecycle phase \"A_NON_EXISTENT_GOAL\"" mvn_rel.output
     if [ $? -ne 0 ]; then
-	echo "Unable to perform release using maven release plugin.  Please see ${WORKSPACE}/mvn_rel.output."
+	echo "Unable to perform release using maven release plugin."
+        echo "Please see ${WORKSPACE}/mvn_rel.output."
 	exit 1;
     fi
 }
@@ -449,7 +462,6 @@ do
             -e s@"-\${2}"@@g \
             -e s@"--"@"-"@g\` 
     
-
     ln -fs \${i} "latest-\${simple_name}"
 	if [ "\${simple_name}" == "glassfish-ml.zip" ]
         then
@@ -516,14 +528,15 @@ promote_bundle(){
 
 send_notification(){
     get_svn_rev_from_version_info
+    DATE=`date`
     /usr/lib/sendmail -t << MESSAGE
 From: ${NOTIFICATION_FROM}
 To: ${NOTIFICATION_SENDTO}
-Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${BUILD_ID})
+Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${BUILD_ID}-${DATE})
 
 Product : ${PRODUCT_GF} ${PRODUCT_VERSION_GF}
-Date    : `date`
-Version : ${BUILD_ID}
+Date    : ${DATE}
+Version : ${VERSION}
 
 External: ${JNET_DIR_HTTP}
 Internal: ${ARCHIVE_URL}
