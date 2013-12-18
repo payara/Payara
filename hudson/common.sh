@@ -411,7 +411,7 @@ aggregated_tests_summary(){
         AWK="awk"
     fi
 
-    for i in `$GAWK 'BEGIN{RS="<tr><td class=\"pane"} \
+    for i in `${AWK} 'BEGIN{RS="<tr><td class=\"pane"} \
          { if (NR > 2) print $2" "$3" "$8" "$11 }' tests.html \
 		| sed -e s@'"'@@g \
 				  -e s@'href=/hudson/job/'@@g \
