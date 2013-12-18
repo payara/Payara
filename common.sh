@@ -41,6 +41,7 @@ build_re_dev(){
 
 build_re_nightly(){
     build_re_init
+    init_nightly
     svn_checkout ${SVN_REVISION}
     run_findbugs
     release_build "clean install" "ips,javaee-api"
@@ -49,6 +50,7 @@ build_re_nightly(){
 
 build_re_weekly(){
     build_re_init
+    init_weekly
     delete_svn_tag ${RELEASE_VERSION}
     svn_checkout ${SVN_REVISION}
     release_prepare
@@ -59,6 +61,27 @@ build_re_weekly(){
 promote_init(){
     init_common ${1}
     init_storage_area
+
+    PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
+    JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
+    JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
+    ARCHIVE_STORAGE_BUNDLES=/onestop/${ARCHIVE_MASTER_BUNDLES}
+
+    SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
+    SSH_STORAGE=${RE_USER}@${STORAGE_HOST}
+    SCP=${SSH_STORAGE}:${ARCHIVE_STORAGE_BUNDLES}
+    ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
+
+    export ARCHIVE_PATH \
+            JNET_DIR \
+            JNET_DIR_HTTP \
+            ARCHIVE_MASTER \
+            ARCHIVE_MASTER_BUNDLES \
+            ARCHIVE_URL \
+            PROMOTION_SUMMARY \
+            SSH_MASTER \
+            SSH_STORAGE \
+            SCP
 }
 
 promote_finalize(){
@@ -97,6 +120,42 @@ promote_dev(){
     record_svn_rev ${SVN_REVISION}
 }
 
+init_weekly(){
+    BUILD_KIND="weekly"
+    require_env_var "GPG_PASSPHRASE"
+    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
+    then
+        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
+    else
+        RELEASE_VERSION="${PRODUCT_VERSION_GF-$BUILD_ID}"
+    fi
+
+    printf "\n%s \n\n" "===== RELEASE_VERSION ====="
+    printf "VERSION %s - QUALIFIER: %s\n\n" \
+        "${RELEASE_VERSION}" \
+        "${BUILD_ID}"
+
+    ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
+    if [ ${#BUILD_ID} -gt 0 ]
+    then
+        ARCHIVE_PATH=${ARCHIVE_PATH}/promoted
+    else
+        ARCHIVE_PATH=${ARCHIVE_PATH}/release
+    fi
+    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}/archive/bundles
+    export BUILD_ID BUILD_KIND ARCHIVE_PATH ARCHIVE_MASTER_BUNDLES
+}
+
+init_nightly(){
+    BUILD_KIND="nightly"
+    ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
+    ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
+    export BUILD_KIND ARCHIVE_PATH ARCHIVE_MASTER_BUNDLES
+    init_version
+    init_bundles_dir
+}
+
 init_common(){
     require_env_var "HUDSON_HOME"
     BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
@@ -109,8 +168,6 @@ init_common(){
     PRODUCT_GF="glassfish"
     PRODUCT_VERSION_GF=${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}
 
-    SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
-    SSH_STORAGE=${RE_USER}@${STORAGE_HOST}
     PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
     GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
     GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
@@ -126,59 +183,6 @@ init_common(){
     MDATE=$(date +%m_%d_%Y)
     DATE=$(date)
 
-    BUILD_KIND=${1}
-    if [ "${BUILD_KIND}" == "weekly" ]
-    then
-        require_env_var "GPG_PASSPHRASE"
-        if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
-        then
-            BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
-            PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
-        else
-            RELEASE_VERSION="${PRODUCT_VERSION_GF-$BUILD_ID}"
-        fi
-
-        printf "\n%s \n\n" "===== RELEASE_VERSION ====="
-        printf "VERSION %s - QUALIFIER: %s\n\n" \
-            "${RELEASE_VERSION}" \
-            "${BUILD_ID}"
-
-        ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
-        if [ ${#BUILD_ID} -gt 0 ]
-        then
-            ARCHIVE_PATH=${ARCHIVE_PATH}/promoted
-        else
-            ARCHIVE_PATH=${ARCHIVE_PATH}/release
-        fi
-        ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}/archive/bundles
-
-    elif [ "${BUILD_KIND}"  == "nightly" ]
-    then
-        ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
-        BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
-        ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
-    else
-        printf "\n%s \n\n" "Error: wrong argument passed, please pass either weekly or nightly as parameter to the script"
-        exit 1
-    fi
-
-    if [ -z ${VERSION} ]
-    then
-        VERSION=${RELEASE_VERSION}
-    else
-        VERSION=${PRODUCT_VERSION_GF}
-        if [ ${#BUILD_ID} -gt 0 ]
-        then
-            VERSION="${VERSION}-${BUILD_ID}"
-        fi
-    fi
-
-    WORKSPACE_BUNDLES=${WORKSPACE}/${BUILD_KIND}_bundles
-    if [ ! -d "${WORKSPACE_BUNDLES}" ]
-    then
-        mkdir -p "${WORKSPACE_BUNDLES}"
-    fi
-
     MAVEN_REPO="-Dmaven.repo.local=${WORKSPACE}/repository"
     MAVEN_ARGS="${MAVEN_REPO} -C -nsu -B"
     MAVEN_OPTS="-Xmx1024M -Xms256m -XX:MaxPermSize=512m -XX:-UseGCOverheadLimit"
@@ -192,14 +196,6 @@ init_common(){
     -Dhttps.proxyPort=${PROXY_PORT} \
     -Dhttps.noProxyHosts='127.0.0.1|localhost|*.oracle.com'"
     fi
-    export MAVEN_OPTS
-
-    PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
-    JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
-    JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
-    ARCHIVE_STORAGE_BUNDLES=/onestop/${ARCHIVE_MASTER_BUNDLES}
-    SCP=${SSH_STORAGE}:${ARCHIVE_STORAGE_BUNDLES}
-    ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
 
     export JAVAEE_VERSION \
             MAJOR_VERSION \
@@ -217,15 +213,35 @@ init_common(){
             IPS_REPO_DIR \
             IPS_REPO_PORT \
             IPS_REPO_TYPE \
-            ARCHIVE_PATH \
-            JNET_DIR \
-            JNET_DIR_HTTP \
             PROMOTED_BUNDLES \
             GF_WORKSPACE_URL_SSH \
             GF_WORKSPACE_URL_HTTP \
-            ARCHIVE_MASTER \
-            ARCHIVE_MASTER_BUNDLES \
-            ARCHIVE_URL
+            MAVEN_OPTS \
+            MAVEN_REPO \
+            MAVEN_ARGS
+}
+
+init_version(){
+    if [ -z ${VERSION} ]
+    then
+        VERSION=${RELEASE_VERSION}
+    else
+        VERSION=${PRODUCT_VERSION_GF}
+        if [ ${#BUILD_ID} -gt 0 ]
+        then
+            VERSION="${VERSION}-${BUILD_ID}"
+        fi
+    fi
+    export VERSION
+}
+
+init_bundles_dir(){
+    WORKSPACE_BUNDLES=${WORKSPACE}/${BUILD_KIND}_bundles
+    if [ ! -d "${WORKSPACE_BUNDLES}" ]
+    then
+        mkdir -p "${WORKSPACE_BUNDLES}"
+    fi
+    export WORKSPACE_BUNDLES
 }
 
 require_env_var(){
