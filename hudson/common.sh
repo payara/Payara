@@ -56,7 +56,7 @@ init_common(){
         printf "\n%s \n\n" "===== RELEASE_VERSION ====="
         printf "VERSION %s - QUALIFIER: %s\n\n" \
             "${RELEASE_VERSION}" \
-            "${VERSION_BUILD_ID}"
+            "${BUILD_ID}"
 
         ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
         if [ ${#BUILD_ID} -gt 0 ]
