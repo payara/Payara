@@ -207,8 +207,6 @@ init_common(){
             RELEASE_VERSION \
             PRODUCT_GF \
             PRODUCT_VERSION_GF \
-            SSH_MASTER \
-            SSH_STORAGE \
             IPS_REPO_URL \
             IPS_REPO_DIR \
             IPS_REPO_PORT \
