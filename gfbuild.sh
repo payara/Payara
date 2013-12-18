@@ -39,17 +39,6 @@
 # holder.
 #
 
-#This shell script invokes mvn to build GFv3.
-#First the script will verify that mvn is installed and is in the path.  
-#It will also verify JDK 1.6 is installed to compile GFv3.
-# Syntax:
-# gfbuild.sh [-r <maven-local-repo>] <maven-lifecycle-phase-operand>
-# If -r or -Dmaven.local.repo is not specified, then the default maven repository 
-# which is user's home directory (~/.m2/repository) is used.  
-# When using -r to specify the maven-local-repo, the script checks if the directory
-# exists.  The maven repo directory is created if it does not exist.  
-# The script saves the build output in the file called gfbuild.log.t
-
 #check if maven is installed and in the path
 which mvn 2>&1 > /dev/null
 _status=$?
@@ -102,6 +91,13 @@ usage(){
 Usage: $0 [OPTION]... [ [-Dkey=value]... MAVEN_PHASE... | SCENARIO ]
 
   GlassFish build wrapper script.
+  First the script will verify that mvn is installed and is in the path.
+  It will also verify JDK 1.7 is installed to compile GlassFish.
+  If -r or -Dmaven.local.repo is not specified, then the default maven repository
+  which is user's home directory (~/.m2/repository) is used.
+  When using -r to specify the maven-local-repo, the script checks if the directory
+  exists.  The maven repo directory is created if it does not exist.
+  The script saves the build output in the file called gfbuild.log.t
 
   -r LOCAL_REPO_PATH
                     path to a directory that will be used as a local maven
