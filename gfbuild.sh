@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash -e
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -49,58 +49,93 @@
 # When using -r to specify the maven-local-repo, the script checks if the directory
 # exists.  The maven repo directory is created if it does not exist.  
 # The script saves the build output in the file called gfbuild.log.t
-#
-# TO DO:
-# "gfbuild.sh package"  builds the bundle withIPS packages.
-# "gfbuild.sh installer" builds the GFv3 installer.
 
-#check if maven 2 is installed and in the path
-which mvn
+#check if maven is installed and in the path
+which mvn 2>&1 > /dev/null
 _status=$?
 if [ "$_status" -ne 0 ]; then
-    echo "Unable to find mvn in the path.  Please install Maven version 2.0.9 or above.  http://maven.apache.org/download.html"
+    echo "Unable to find mvn in the path."
+    echo "Please install Maven version 3.0.3 or above.  http://maven.apache.org/download.html"
     exit "$_status"
 fi
 
 #mvn is available in the path.  Now verify that it's the right version.
 mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
 java_ver=`mvn -version 2>&1 | awk '/^Java version:/ {print substr($3,3,1)}'`
-#verify JDK 1.6
-if [ "$java_ver" -lt 6 ]; then
-    echo "Please use JDK 1.6"
+#verify JDK 1.7
+if [ "$java_ver" -lt 7 ]; then
+    echo "Please use JDK 1.7"
     exit 1
 fi
 
 # mvn -version returns "Maven version:..." in 2.0.9 
-# and in 2.2.0 and up returns "Apache Maven..."  so need to 
+# and in >= 2.2.0 and up returns "Apache Maven..."  so need to
 # apply awk with different string values.
 mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
 if [ "$mvn_ver" = "" ]; then
-    mvn_ver=`mvn -vesrion 2>&1 | awk '/^Apache Maven / {print $3}'`
+    mvn_ver=`mvn -version 2>&1 | awk '/^Apache Maven / {print $3}'`
 fi
 
 # convert to number since shell is unable to compare float"
-# e.g. convert 2.2.1 to 221
+# e.g. convert x.y.z to xyz
 version=`echo $mvn_ver |  sed 's/\.//g'`
-#verify that maven version is 2.0.9 or 2.2.1 and greater 
-if [ "$version" -lt  "209" ]; then
-        echo "Please do not use Maven version lower than 2.0.9."
-    exit 1
-elif [ "$version" -eq "220" ]; then
-        echo "Please do not use Maven version 2.2.0."
+#verify that maven version is >= 3.0.3
+if [ "$version" -lt  "303" ]; then
+        echo "Please do not use Maven version lower than 3.0.3."
     exit 1
 fi
 
+is_scenario(){
+    case "$1" in
+        "build_re_dev" | \
+        "build_re_nightly" | \
+        "build_re_weekly" | \
+        "promote_dev" | \
+        "promote_nightly" | \
+        "promote_weekly") echo 1;;
+        *) echo 0;;
+    esac
+}
+
+usage(){
+    cat << END_USAGE
+Usage: $0 [OPTION]... [ [-Dkey=value]... MAVEN_PHASE... | SCENARIO ]
+
+  GlassFish build wrapper script.
+
+  -r LOCAL_REPO_PATH
+                    path to a directory that will be used as a local maven
+                    repository.
+  -U
+                    forces update of SNAPSHOTs
+  -h
+                    display this help and exit
+  MAVEN_PHASE
+                    can be Maven phase, e.g.
+                    clean
+                    compile
+                    package
+                    install
+  SCENARIO
+                    build_dev
+                    build_nightly
+                    build_weekly
+                    promote_dev
+                    promote_nightly
+                    promote_weekly
+END_USAGE
+    exit 0
+}
+
 mvn_env=""
 #get command options
-while getopts r:u:b:D:U opt
+while getopts r:D:U:h opt
 do
     case "$opt" in
         r) maven_repo=$OPTARG;;
-        u) repo_url=$OPTARG;;
-        b) build_idl=$OPTARG;;
 	D) mvn_env="$mvn_env -D$OPTARG";;
         U) update="-U";;
+        h | *) usage;;
     esac
 done
 shift `expr $OPTIND - 1`
@@ -120,8 +155,17 @@ if [ "$maven_repo" != "" ]; then
     fi
 fi
 
-if [ "$maven_repo" = "" ]; then
-    mvn $mvn_env $update "$@" | tee gfbuild.log
+build_args="$@"
+build_arg1=`awk '{print $1}' <<< "$build_args"`
+
+if [ ! -z $build_arg1 ] && [ $(is_scenario $build_arg1) -eq 1 ]
+then
+    source `dirname $0`/common.sh
+    eval "$build_arg1"
 else
-    mvn -Dmaven.repo.local=$maven_repo $mvn_env $update "$@" | tee gfbuild.log
+    if [ "$maven_repo" = "" ]; then
+        mvn $mvn_env $update "$build_args" | tee gfbuild.log
+    else
+        mvn -Dmaven.repo.local=$maven_repo $mvn_env $update "$build_args" | tee gfbuild.log
+    fi
 fi

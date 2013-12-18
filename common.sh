@@ -14,6 +14,89 @@
 #GPG_PASSPHRASE
 #HUDSON_HOME
 
+build_init(){
+    init_common
+    kill_glassfish
+    print_env_info
+    get_svn_rev
+    create_version_info
+}
+
+build_re_init(){
+    build_init
+    kill_ips_repo
+    install_uc_toolkit
+    start_ips_repository
+}
+
+build_re_finalize(){
+    archive_bundles
+    clean_and_zip_workspace
+}
+
+build_re_dev(){
+    build_init
+    archive_bundles
+}
+
+build_re_nightly(){
+    build_re_init
+    svn_checkout ${SVN_REVISION}
+    run_findbugs
+    release_build "clean install" "ips,javaee-api"
+    build_re_finalize
+}
+
+build_re_weekly(){
+    build_re_init
+    delete_svn_tag ${RELEASE_VERSION}
+    svn_checkout ${SVN_REVISION}
+    release_prepare
+    release_build "clean deploy" "release-phase2,ips,embedded,javaee-api"
+    build_re_finalize
+}
+
+promote_init(){
+    init_common ${1}
+    init_storage_area
+}
+
+promote_finalize(){
+    create_symlinks
+    send_notification
+}
+
+promote_nightly(){
+    promote_init
+    promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-${MDATE}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
+    promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
+    VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt"
+    SVN_REVISION=`awk '{print $2}' <<<  ${VERSION_INFO}`
+    record_svn_rev ${SVN_REVISION}
+    promote_finalize
+}
+
+promote_weekly(){
+    promote_init
+    promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
+    promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
+    VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
+    create_svn_tag
+    promote_finalize
+}
+
+promote_dev(){
+    init_common ${1}
+    mkdir -p ${WORKSPACE}/dev-bundles
+    curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE}/dev-bundles/version-info.txt
+    SVN_REVISION=`awk '{print $2}' <<<  ${WORKSPACE}/dev-bundles/version-info.txt`
+    record_svn_rev ${SVN_REVISION}
+}
+
 init_common(){
     require_env_var "HUDSON_HOME"
     BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
