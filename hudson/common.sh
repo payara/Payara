@@ -40,6 +40,8 @@ init_common(){
     UC2_BUILD=56
     UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/${UC2_VERSION}
     UC_HOME_URL="${UC_HOME_URL}/promoted/B${UC2_BUILD}/archive/uc2/build"
+    MDATE=$(date +%m_%d_%Y)
+    DATE=$(date)
 
     BUILD_KIND=${1}
     if [ "${BUILD_KIND}" == "weekly" ]
@@ -70,7 +72,6 @@ init_common(){
     elif [ "${BUILD_KIND}"  == "nightly" ]
     then
         ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
-        MDATE=$(date +%m_%d_%Y)
         BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
         ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
     else
@@ -528,11 +529,10 @@ promote_bundle(){
 
 send_notification(){
     get_svn_rev_from_version_info
-    DATE=`date`
     /usr/lib/sendmail -t << MESSAGE
 From: ${NOTIFICATION_FROM}
 To: ${NOTIFICATION_SENDTO}
-Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${BUILD_ID}-${DATE})
+Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${BUILD_ID}-${MDATE})
 
 Product : ${PRODUCT_GF} ${PRODUCT_VERSION_GF}
 Date    : ${DATE}
