@@ -1,4 +1,4 @@
-#!/bin/bash -e
+	#!/bin/bash -e
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
@@ -42,7 +42,7 @@
 #check if maven is installed and in the path
 which mvn 2>&1 > /dev/null
 _status=$?
-if [ "$_status" -ne 0 ]; then
+if [ ${_status} -ne 0 ]; then
     echo "Unable to find mvn in the path."
     echo "Please install Maven version 3.0.3 or above.  http://maven.apache.org/download.html"
     exit "$_status"
@@ -52,7 +52,7 @@ fi
 mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
 java_ver=`mvn -version 2>&1 | awk '/^Java version:/ {print substr($3,3,1)}'`
 #verify JDK 1.7
-if [ "$java_ver" -lt 7 ]; then
+if [ ${java_ver} -lt 7 ]; then
     echo "Please use JDK 1.7"
     exit 1
 fi
@@ -61,7 +61,7 @@ fi
 # and in >= 2.2.0 and up returns "Apache Maven..."  so need to
 # apply awk with different string values.
 mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
-if [ "$mvn_ver" = "" ]; then
+if [ "${mvn_ver}" = "" ]; then
     mvn_ver=`mvn -version 2>&1 | awk '/^Apache Maven / {print $3}'`
 fi
 
@@ -69,8 +69,8 @@ fi
 # e.g. convert x.y.z to xyz
 version=`echo $mvn_ver |  sed 's/\.//g'`
 #verify that maven version is >= 3.0.3
-if [ "$version" -lt  "303" ]; then
-        echo "Please do not use Maven version lower than 3.0.3."
+if [ ${version} -lt  "303" ]; then
+    echo "Please do not use Maven version lower than 3.0.3."
     exit 1
 fi
 
