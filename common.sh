@@ -87,9 +87,9 @@ promote_finalize(){
 
 promote_nightly(){
     promote_init "nightly"
-    promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-ml.zip
-    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
-    promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
+    promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-${MDATE}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
     VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     SVN_REVISION=`awk '{print $2}' <<<  ${VERSION_INFO}`
@@ -566,18 +566,18 @@ for i in \`ls\`
 do
     simple_name=\`echo \${i} | \
         sed -e s@"-\${1}"@@g \
-            -e s@"-\${2}"@@g \
-            -e s@"--"@"-"@g\` 
+        -e s@"-\${2}"@@g \
+        -e s@"--"@"-"@g\` 
     
     ln -fs \${i} "latest-\${simple_name}"
-	if [ "\${simple_name}" == "glassfish-ml.zip" ]
-        then
-            ln -fs \${i} "latest-glassfish.zip"
-        fi
-        if [ "\${simple_name}" == "web-ml.zip" ]
-        then
-            ln -fs \${i} "latest-web.zip"
-        fi
+    if [ "\${simple_name}" == "glassfish-ml.zip" ]
+    then
+        ln -fs \${i} "latest-glassfish.zip"
+    fi
+    if [ "\${simple_name}" == "web-ml.zip" ]
+    then
+        ln -fs \${i} "latest-web.zip"
+    fi
 done
 
 cd /java/re/\${5}
@@ -615,6 +615,13 @@ scp_jnet(){
         -e s@"-${PRODUCT_VERSION_GF}"@@g \
         -e s@"${PKG_ID}-"@@g \
         -e s@"--"@"-"@g `
+    if [ "nightly" == "${BUILD_KIND}" ]
+    then
+	simple_name=`echo ${simple_name} | \
+	    sed s@"-${MDATE}"@@g \
+	    sed s@"${MDATE}-"@@g `
+    fi
+
     ssh ${SSH_MASTER} \
         "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
     ssh ${SSH_MASTER} \
@@ -626,10 +633,19 @@ promote_bundle(){
     curl ${1} > ${2}
     scp ${2} ${SCP}
     scp_jnet ${2}
-    simple_name=`echo ${2}| tr -d " " | sed \
-        -e s@"${PRODUCT_VERSION_GF}-"@@g \
-        -e s@"${BUILD_ID}-"@@g \
-        -e s@"--"@"-"@g`
+    if [ "nightly" == "${BUILD_KIND}" ]
+    then
+	simple_name=`echo ${2}| tr -d " " | sed \
+            -e s@"${PRODUCT_VERSION_GF}-"@@g \
+            -e s@"${BUILD_ID}-${MDATE}-"@@g \
+            -e s@"--"@"-"@g`
+    elif [ "weekly" == "${BUILD_KIND}" ]
+    then
+	simple_name=`echo ${2}| tr -d " " | sed \
+            -e s@"${PRODUCT_VERSION_GF}-"@@g \
+            -e s@"${BUILD_ID}-"@@g \
+            -e s@"--"@"-"@g`
+    fi
     echo "${simple_name} -> ${ARCHIVE_URL}/${2}" >> ${PROMOTION_SUMMARY}
 }
 
