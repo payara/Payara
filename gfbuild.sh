@@ -52,6 +52,7 @@ fi
 mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
 java_ver=`mvn -version 2>&1 | awk '/^Java version:/ {print substr($3,3,1)}'`
 #verify JDK 1.7
+echo "maven_version=${mvn_ver} && java_ver=${java_ver}"
 if [ ${java_ver} -lt 7 ]; then
     echo "Please use JDK 1.7"
     exit 1
@@ -69,7 +70,8 @@ fi
 # e.g. convert x.y.z to xyz
 version=`echo $mvn_ver |  sed 's/\.//g'`
 #verify that maven version is >= 3.0.3
-if [ ${version} -lt  "303" ]; then
+echo "version=${version}"
+if [ ${version} -lt "303" ]; then
     echo "Please do not use Maven version lower than 3.0.3."
     exit 1
 fi

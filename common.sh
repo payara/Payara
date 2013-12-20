@@ -60,6 +60,7 @@ build_re_weekly(){
 
 promote_init(){
     init_common ${1}
+    init_nightly
     init_storage_area
 
     PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
@@ -95,7 +96,7 @@ promote_nightly(){
     promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
-    VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt"
+    VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     SVN_REVISION=`awk '{print $2}' <<<  ${VERSION_INFO}`
     record_svn_rev ${SVN_REVISION}
     promote_finalize
