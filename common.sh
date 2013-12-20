@@ -59,30 +59,25 @@ build_re_weekly(){
 }
 
 promote_init(){
-    init_common ${1}
-    init_nightly
+    init_common
+    if [ "nightly" == "${1}" ]
+    then
+	init_nightly
+    elif [ "weekly" == "${1}" ]
+    then
+	init_weekly
+    fi
     init_storage_area
 
-    PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
-    JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
-    JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
-    ARCHIVE_STORAGE_BUNDLES=/onestop/${ARCHIVE_MASTER_BUNDLES}
+    export PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
+    export JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
+    export JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
+    export ARCHIVE_STORAGE_BUNDLES=/onestop/${ARCHIVE_MASTER_BUNDLES}
+    export SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
+    export SSH_STORAGE=${RE_USER}@${STORAGE_HOST}
+    export SCP=${SSH_STORAGE}:${ARCHIVE_STORAGE_BUNDLES}
+    export ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
 
-    SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
-    SSH_STORAGE=${RE_USER}@${STORAGE_HOST}
-    SCP=${SSH_STORAGE}:${ARCHIVE_STORAGE_BUNDLES}
-    ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
-
-    export ARCHIVE_PATH \
-            JNET_DIR \
-            JNET_DIR_HTTP \
-            ARCHIVE_MASTER \
-            ARCHIVE_MASTER_BUNDLES \
-            ARCHIVE_URL \
-            PROMOTION_SUMMARY \
-            SSH_MASTER \
-            SSH_STORAGE \
-            SCP
 }
 
 promote_finalize(){
@@ -91,7 +86,7 @@ promote_finalize(){
 }
 
 promote_nightly(){
-    promote_init
+    promote_init "nightly"
     promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
@@ -103,7 +98,7 @@ promote_nightly(){
 }
 
 promote_weekly(){
-    promote_init
+    promote_init "weekly"
     promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
@@ -114,7 +109,7 @@ promote_weekly(){
 }
 
 promote_dev(){
-    init_common ${1}
+    init_common
     mkdir -p ${WORKSPACE}/dev-bundles
     curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE}/dev-bundles/version-info.txt
     SVN_REVISION=`awk '{print $2}' <<<  ${WORKSPACE}/dev-bundles/version-info.txt`
