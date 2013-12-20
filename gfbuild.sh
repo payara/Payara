@@ -1,4 +1,4 @@
-	#!/bin/bash -ex
+#!/bin/bash -e
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
@@ -76,7 +76,6 @@ if [ ${version} -lt "303" ]; then
     exit 1
 fi
 
-exit 1
 is_scenario(){
     case "$1" in
         "build_re_dev" | \
