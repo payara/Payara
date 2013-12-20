@@ -618,8 +618,8 @@ scp_jnet(){
     if [ "nightly" == "${BUILD_KIND}" ]
     then
 	simple_name=`echo ${simple_name} | \
-	    sed s@"-${MDATE}"@@g \
-	    sed s@"${MDATE}-"@@g `
+	    sed -e s@"-${MDATE}"@@g \
+	    sed -e s@"${MDATE}-"@@g `
     fi
 
     ssh ${SSH_MASTER} \
