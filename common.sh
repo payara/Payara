@@ -67,7 +67,6 @@ promote_init(){
     then
 	init_weekly
     fi
-    init_storage_area
 
     export PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
     export JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
@@ -78,6 +77,7 @@ promote_init(){
     export SCP=${SSH_STORAGE}:${ARCHIVE_STORAGE_BUNDLES}
     export ARCHIVE_URL=http://${STORAGE_HOST_HTTP}/java/re/${ARCHIVE_MASTER_BUNDLES}
 
+    init_storage_area
 }
 
 promote_finalize(){
