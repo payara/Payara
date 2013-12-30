@@ -146,6 +146,26 @@ public final class Utility {
 	    PortableRemoteObject.narrow(objRef, anInterface);
     }
 
+    
+    /**
+     * Returns a character array for the valid characters in a CharBuffer.
+     * @param cb
+     * @return 
+     */
+    public static char[] toCharArray(final CharBuffer cb) {
+        return cb.toString().toCharArray();
+    }
+    
+    /**
+     * Returns a byte array for the valid bytes in a ByteBuffer.
+     * @param bb
+     * @return 
+     */
+    public static byte[] toByteArray(final ByteBuffer bb) {
+        final byte[] result = new byte[bb.limit() - bb.position()];
+        bb.get(result);
+        return result;
+    }
 
     /** Unmarshal a byte array to an integer.
 	Assume the bytes are in BIGENDIAN order.
@@ -491,7 +511,7 @@ public final class Utility {
             e.initCause(t);
             throw e;
         }
-        char[] result = (char[])charBuffer.array().clone();
+        char[] result = toCharArray(charBuffer);
         clear(byteBuffer);
         clear(charBuffer);
 

@@ -40,6 +40,7 @@
 package org.glassfish.security.services.impl;
 
 import com.sun.enterprise.security.store.PasswordAdapter;
+import com.sun.enterprise.util.Utility;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -127,7 +128,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
         final CharBuffer charBuffer = CharBuffer.wrap(password);
         final ByteBuffer byteBuffer = utf8.encode(charBuffer);
         try {
-            pa().setPasswordForAlias(alias, byteBuffer.array());
+            pa().setPasswordForAlias(alias, Utility.toByteArray(byteBuffer));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -174,7 +175,7 @@ public class JCEKSPasswordAliasStore implements PasswordAliasStore {
         try {
             final SecretKey secretKey = pa().getPasswordSecretKeyForAlias(alias);
             final ByteBuffer byteBuffer = ByteBuffer.wrap(secretKey.getEncoded());
-            return utf8.decode(byteBuffer).array();
+            return Utility.toCharArray(utf8.decode(byteBuffer));
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
