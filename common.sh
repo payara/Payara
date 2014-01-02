@@ -613,7 +613,6 @@ scp_jnet(){
         -e s@"${BUILD_ID}-"@@g \
         -e s@"-${BUILD_ID}"@@g \
         -e s@"-${PRODUCT_VERSION_GF}"@@g \
-        -e s@"${PKG_ID}-"@@g \
         -e s@"--"@"-"@g `
     if [ "nightly" == "${BUILD_KIND}" ]
     then
