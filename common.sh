@@ -90,7 +90,7 @@ promote_nightly(){
     promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-${MDATE}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
-    promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
+    promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
     VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     SVN_REVISION=`awk '{print $2}' <<<  ${VERSION_INFO}`
     record_svn_rev ${SVN_REVISION}
@@ -589,12 +589,12 @@ EOF
     ssh ${SSH_MASTER} "chmod +x ${PROMOTE_SCRIPT}"
     if [ "weekly" == "${BUILD_KIND}" ]
     then
-	ssh ${SSH_MASTER} \
+	    ssh ${SSH_MASTER} \
             "${PROMOTE_SCRIPT} ${BUILD_ID} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
     elif [ "nightly" == "${BUILD_KIND}" ]
     then
-	echo "ssh ${SSH_MASTER}  ${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
-	ssh ${SSH_MASTER} \
+	    echo "ssh ${SSH_MASTER}  ${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
+	    ssh ${SSH_MASTER} \
             "${PROMOTE_SCRIPT} ${BUILD_ID}-${MDATE} ${PRODUCT_VERSION_GF} /java/re/${ARCHIVE_MASTER_BUNDLES} ${JAVAEE_VERSION} ${ARCHIVE_PATH}"
     fi
 }
@@ -619,7 +619,7 @@ scp_jnet(){
     then
 	simple_name=`echo ${simple_name} | \
 	    sed -e s@"-${MDATE}"@@g \
-	    sed -e s@"${MDATE}-"@@g `
+	    -e s@"${MDATE}-"@@g `
     fi
 
     ssh ${SSH_MASTER} \
@@ -629,6 +629,7 @@ scp_jnet(){
 }
 
 promote_bundle(){
+    set -x
     printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" ${2}
     curl ${1} > ${2}
     scp ${2} ${SCP}
@@ -647,6 +648,7 @@ promote_bundle(){
             -e s@"--"@"-"@g`
     fi
     echo "${simple_name} -> ${ARCHIVE_URL}/${2}" >> ${PROMOTION_SUMMARY}
+    set +x
 }
 
 send_notification(){
