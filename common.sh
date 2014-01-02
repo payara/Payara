@@ -628,7 +628,6 @@ scp_jnet(){
 }
 
 promote_bundle(){
-    set -x
     printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" ${2}
     curl ${1} > ${2}
     scp ${2} ${SCP}
@@ -647,7 +646,6 @@ promote_bundle(){
             -e s@"--"@"-"@g`
     fi
     echo "${simple_name} -> ${ARCHIVE_URL}/${2}" >> ${PROMOTION_SUMMARY}
-    set +x
 }
 
 send_notification(){
