@@ -49,10 +49,9 @@ if [ ${_status} -ne 0 ]; then
 fi
 
 #mvn is available in the path.  Now verify that it's the right version.
-mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
 java_ver=`mvn -version 2>&1 | awk '/^Java version:/ {print substr($3,3,1)}'`
 #verify JDK 1.7
-echo "maven_version=${mvn_ver} && java_ver=${java_ver}"
+echo "java_ver=${java_ver}"
 if [ ${java_ver} -lt 7 ]; then
     echo "Please use JDK 1.7"
     exit 1
@@ -63,7 +62,7 @@ fi
 # apply awk with different string values.
 mvn_ver=`mvn -version 2>&1 | awk '/^Maven version:/ {print $3}'`
 if [ "${mvn_ver}" = "" ]; then
-    mvn_ver=`mvn -version 2>&1 | awk '/^Apache Maven / {print $3}'`
+    mvn_ver=`mvn -version 2>&1 | awk '/^Apache Maven/ {print $3}'`
 fi
 
 # convert to number since shell is unable to compare float"
