@@ -51,7 +51,7 @@ fi
 #mvn is available in the path.  Now verify that it's the right version.
 java_ver=`mvn -version 2>&1 | awk '/^Java version:/ {print substr($3,3,1)}'`
 #verify JDK 1.7
-echo "java_ver=${java_ver}"
+echo "Java version: ${java_ver}"
 if [ ${java_ver} -lt 7 ]; then
     echo "Please use JDK 1.7"
     exit 1
@@ -69,7 +69,7 @@ fi
 # e.g. convert x.y.z to xyz
 version=`echo $mvn_ver |  sed 's/\.//g'`
 #verify that maven version is >= 3.0.3
-echo "version=${version}"
+echo "Maven version: ${version}"
 if [ ${version} -lt "303" ]; then
     echo "Please do not use Maven version lower than 3.0.3."
     exit 1
@@ -98,7 +98,7 @@ Usage: $0 [OPTION]... [ [-Dkey=value]... MAVEN_PHASE... | SCENARIO ]
   which is user's home directory (~/.m2/repository) is used.
   When using -r to specify the maven-local-repo, the script checks if the directory
   exists.  The maven repo directory is created if it does not exist.
-  The script saves the build output in the file called gfbuild.log.t
+  The script saves the build output in the file called gfbuild.log.
 
   -r LOCAL_REPO_PATH
                     path to a directory that will be used as a local maven
