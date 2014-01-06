@@ -85,6 +85,37 @@ promote_finalize(){
     send_notification
 }
 
+purge_old_nightlies(){
+#########################
+# PURGE OLDER NIGHTLIES #
+#########################
+
+    rm -rf /tmp/purgeNightlies.sh
+    cat <<EOF > /tmp/purgeNightlies.sh
+#!/bin/bash
+# Max builds to keep around
+    MAX_BUILDS=21
+    cd \$1
+    LISTING=\`ls -trd b*\`
+    nbuilds=0
+    for i in \$LISTING; do
+	nbuilds=\`expr \$nbuilds + 1\`
+    done
+    echo "Total number of builds is \$nbuilds"
+    
+    while [ \$nbuilds -gt \$MAX_BUILDS ]; do
+	oldest_dir=\`ls -trd b* | head -n1\`
+	echo "rm -rf \$oldest_dir"
+	rm -rf \$oldest_dir
+	nbuilds=\`expr \$nbuilds - 1\`
+	echo "Number of builds is now \$nbuilds"
+    done    
+EOF
+    ssh ${SSH_MASTER} "rm -rf /tmp/purgeNightlies.sh"
+    scp /tmp/purgeNightlies.sh ${SSH_MASTER}:/tmp
+    ssh ${SSH_MASTER} "chmod +x /tmp/purgeNightlies.sh ; bash -ex /tmp/purgeNightlies.sh /java/re/${ARCHIVE_PATH}"
+}
+
 promote_nightly(){
     promote_init "nightly"
     promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-${MDATE}-ml.zip
@@ -94,6 +125,7 @@ promote_nightly(){
     VERSION_INFO="version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     SVN_REVISION=`awk '{print $2}' <<<  ${VERSION_INFO}`
     record_svn_rev ${SVN_REVISION}
+    purge_old_nightlies
     promote_finalize
 }
 
