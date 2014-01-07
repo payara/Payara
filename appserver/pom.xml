@@ -67,7 +67,7 @@
         <javax.el-api.version>3.0.0</javax.el-api.version>
         <jstl-impl.version>1.2.2</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
-        <mojarra.version>2.2.5</mojarra.version>
+        <mojarra.version>2.2.4</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
         <woodstock.version>4.0.2.10</woodstock.version>
         <javax.ejb-api.version>3.2</javax.ejb-api.version>
