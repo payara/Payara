@@ -387,6 +387,8 @@ get_svn_rev(){
             echo "failed to get the svn revision from ${TRIGGER_JOB_URL}"
             exit 1
         fi
+        #also set the triggering job url
+        export triggering_build_url=$(wget -q -O - "${TRIGGER_JOB_URL}/dev-build/api/xml?xpath=//url/text()")
     fi
 
     if [ -z ${SVN_REVISION} ] \
@@ -466,6 +468,11 @@ create_version_info(){
     if [ ! -z ${RELEASE_VERSION} ]
     then
         echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
+    fi
+
+    if [ ! -z ${triggering_build_url} ]
+    then
+        echo "triggering_url ${triggering_build_url}"
     fi
 
     printf "\n%s\n\n" "==== VERSION INFO ===="
