@@ -40,6 +40,7 @@ build_re_dev(){
 }
 
 build_re_nightly(){
+    export BUILD_KIND="nightly"
     build_re_init
     init_nightly
     svn_checkout ${SVN_REVISION}
@@ -49,6 +50,7 @@ build_re_nightly(){
 }
 
 build_re_weekly(){
+    export BUILD_KIND="weekly"
     build_re_init
     init_weekly
     delete_svn_tag ${RELEASE_VERSION}
@@ -472,7 +474,7 @@ create_version_info(){
 
     if [ ! -z ${triggering_build_url} ]
     then
-        echo "triggering_url ${triggering_build_url}"
+        echo "triggering_url ${triggering_build_url}" >> ${WORKSPACE}/version-info.txt
     fi
 
     printf "\n%s\n\n" "==== VERSION INFO ===="
