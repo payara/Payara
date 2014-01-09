@@ -471,14 +471,16 @@ create_version_info(){
     # TODO, put env desc
     # OS, arch, build node, mvn version, jdk version
     echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION}" > ${WORKSPACE}/version-info.txt
+
+    # RELEASE_VERSION has not be provided
+    # releasing next promoted build
+    if [ "${BUILD_KIND}" = "weekly" ] && [ ${#RELEASE_VERSION} -eq 0 ]
+    then
+    	RELEASE_VERSION="${PRODUCT_VERSION_GF}-${BUILD_ID}"
+    fi
+
     if [ ! -z ${RELEASE_VERSION} ]
     then
-	# RELEASE_VERSION has not be provided
-	# releasing next promoted build
-	if [ "${BUILD_KIND}" = "weekly" ] && [ ${#RELEASE_VERSION} -eq 0 ]
-	then
-	    RELEASE_VERSION="${PRODUCT_VERSION_GF}-${BUILD_ID}"		
-	fi
 	echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
     fi
 
