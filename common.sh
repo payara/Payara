@@ -153,17 +153,21 @@ promote_dev(){
 init_weekly(){
     BUILD_KIND="weekly"
     require_env_var "GPG_PASSPHRASE"
+
+    # deduce BUILD_ID and PRODUCT_VERSION_GF
+    # from the provided value of RELEASE_VERSION
     if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
     then
         BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
         PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
     else
-        RELEASE_VERSION="${PRODUCT_VERSION_GF-$BUILD_ID}"
+        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
+        exit 1
     fi
 
     printf "\n%s \n\n" "===== RELEASE_VERSION ====="
     printf "VERSION %s - QUALIFIER: %s\n\n" \
-        "${RELEASE_VERSION}" \
+        "${PRODUCT_VERSION_GF}" \
         "${BUILD_ID}"
 
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
@@ -469,7 +473,13 @@ create_version_info(){
     echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION}" > ${WORKSPACE}/version-info.txt
     if [ ! -z ${RELEASE_VERSION} ]
     then
-        echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
+	# RELEASE_VERSION has not be provided
+	# releasing next promoted build
+	if [ "${BUILD_KIND}" = "weekly" ] && [ ${#RELEASE_VERSION} -eq 0 ]
+	then
+	    RELEASE_VERSION="${PRODUCT_VERSION_GF}-${BUILD_ID}"		
+	fi
+	echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
     fi
 
     if [ ! -z ${triggering_build_url} ]
