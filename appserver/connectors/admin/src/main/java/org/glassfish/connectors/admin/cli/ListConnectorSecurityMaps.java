@@ -63,6 +63,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.inject.Inject;
+import org.glassfish.internal.api.RelativePathResolver;
+import org.jvnet.hk2.config.ConfigBean;
+import org.jvnet.hk2.config.Dom;
 
 /**
  * List Connector Security Maps
@@ -226,10 +229,12 @@ public class ListConnectorSecurityMaps extends ConnectorSecurityMap implements A
                     "\t\t"+"User Name = "+bp.getUserName(), bp.getUserName()));
             
         if (bp.getPassword() != null && !bp.getPassword().isEmpty()) {
+            final String rawPassword = ConfigBean.unwrap(bp).rawAttribute("password");
+            final String passwordOutput = RelativePathResolver.getAlias(rawPassword) == null ? "****" : rawPassword;
             final ActionReport.MessagePart partBPP = partBP.addChild();
                 partBPP.setMessage(localStrings.getLocalString(
                         "list.connector.security.maps.password",
-                        "\t\t"+"Password = "+bp.getPassword(), bp.getPassword()));
+                        "\t\t"+"Password = "+passwordOutput, passwordOutput));
         }
         
     }
