@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ import org.glassfish.deployment.common.ClientArtifactsManager;
 import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.versioning.VersioningSyntaxException;
 import org.glassfish.appclient.server.connector.CarType;
+import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.versioning.VersioningUtils;
 
@@ -168,7 +169,8 @@ public class AppClientGroupFacadeGenerator {
         try {
             return VersioningUtils.getUntaggedName(appName) + "Client/";
         } catch (VersioningSyntaxException ex) {
-            Logger.getLogger(AppClientGroupFacadeGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE).log(Level.SEVERE, null, ex);
         }
         return appName;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Encapsulates the logic related to choosing which of the two possible
@@ -65,7 +66,20 @@ class ClientJNLPConfigData {
     private File configFileFromInstall;
     private long lastModified = -1;
 
-    private Logger logger = LogDomains.getLogger(ClientJNLPConfigData.class, LogDomains.ACC_LOGGER);
+    private static Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "Config file for client JNLP not found: {0}",
+            cause = "The config file does not exist.",
+            action = "The file is part of the installation so this might be an internal error.  Make sure you have not accidentally removed or renamed the config file.  If not, please file an error with a reproducible test case.")
+    public static final String NO_CONFIG_FILE = "AS-ACDEPL-00108";
+    
+    @LogMessageInfo(
+            message = "The config file for client JNLP {0} exists but could not be read.",
+            cause = "The config file might be protected from reading.",
+            action = "Make sure the config file protection settings permit the server to read it.")
+    public static final String CONFIG_UNREADABLE = "AS-ACDEPL-00109";
 
     /**
      * Easier for the caller if we return empty lists rather than nulls if we cannot
@@ -145,15 +159,15 @@ class ClientJNLPConfigData {
     }
 
     private void logErrorConfigExistsButCannotRead(final Level level, final File f) {
-        logger.log(level, "enterprise.deployment.appclient.jws.clientJNLPConfigFileUnreadable", f.getAbsolutePath());
+        logger.log(level, CONFIG_UNREADABLE, f.getAbsolutePath());
     }
 
     private void logErrorNonExistentConfig(final File f) {
-        logger.log(Level.SEVERE, "enterprise.deployment.appclient.jws.clientJNLPConfigFileMissing", f.getAbsolutePath());
+        logger.log(Level.SEVERE, NO_CONFIG_FILE, f.getAbsolutePath());
     }
 
     private void logUsingDifferentConfigFile(final File f) {
-        logger.log(Level.FINE, "enterprise.deployment.appclient.jws.clientJNLPConfigChangeFile", f.getAbsolutePath());
+        logger.log(Level.FINE, "Changing file for client JNLP configuration; now using {0}", f.getAbsolutePath());
     }
 
     List<XPathToDeveloperProvidedContentRefs> xPathsToDevContentRefs() {

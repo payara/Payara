@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.appclient.server.core.jws.JWSAdapterManager;
+import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 import org.glassfish.deployment.common.Artifacts;
 import org.glassfish.deployment.common.DeploymentUtils;
 /**
@@ -208,7 +209,8 @@ public class AppClientDeployer
 
     @Override
     public void postConstruct() {
-        logger = LogDomains.getLogger(AppClientDeployer.class, LogDomains.ACC_LOGGER);
+        logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
         for (Module module : modulesRegistry.getModules(GF_CLIENT_MODULE_NAME)) {
             gfClientModuleClassLoader = module.getClassLoader();
         }

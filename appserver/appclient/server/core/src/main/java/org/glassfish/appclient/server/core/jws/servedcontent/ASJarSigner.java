@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,13 +44,18 @@ import com.sun.enterprise.security.ssl.JarSigner;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.logging.LogDomains;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.util.Collections;
+import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipOutputStream;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
+import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 
 /**
  * Signs a specified JAR file.
@@ -88,10 +93,8 @@ public class ASJarSigner implements PostConstruct {
     private Logger logger;
 
     @Override
-    public synchronized void postConstruct() {
-        logger =
-            LogDomains.getLogger(ASJarSigner.class,
-            LogDomains.CORE_LOGGER);
+    public void postConstruct() {
+        logger =Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
     }
 
     /**
@@ -104,6 +107,39 @@ public class ASJarSigner implements PostConstruct {
      */
     public long signJar(final File unsignedJar, final File signedJar,
         String alias, Attributes attrs) throws Exception {
+        
+        final ZipOutputStream zout = new ZipOutputStream(
+                    new FileOutputStream(signedJar));
+        try {
+            final long result = signJar(unsignedJar, zout, alias, attrs, Collections.EMPTY_MAP);
+            return result;
+        } catch (Exception ex) {
+            /*
+             *In case of any problems, make sure there is no ill-formed signed
+             *jar file left behind.
+             */
+            if ( signedJar.exists() && ! signedJar.delete()) {
+                logger.log(Level.FINE, "Could not remove generated signed JAR {0} after JarSigner reported an error",
+                       signedJar.getAbsolutePath());
+            }
+            throw ex;
+        } finally {
+            zout.close();
+        }
+    }
+    
+    /**
+     * Creates a signed ZIP output stream from an unsigned JAR and, possibly, additional content.
+     * @param unsignedJar JAR file containing most of the content to sign and return
+     * @param signedJar already-opened ZipOutputStream to receive the signed content
+     * @param alias the alias with which to identify the cert for signing the output
+     * @param attrs additional manifest attributes to add
+     * @param additionalContent additional JAR entries to add
+     * @return
+     * @throws Exception 
+     */
+    public long signJar(final File unsignedJar, final ZipOutputStream signedJar,
+            String alias, final Attributes attrs, final Map<String,byte[]> additionalContent) throws Exception {
 
         if (alias == null) {
             alias = DEFAULT_ALIAS_VALUE;
@@ -114,23 +150,13 @@ public class ASJarSigner implements PostConstruct {
             try {
                 JarSigner jarSigner = new JarSigner(DEFAULT_DIGEST_ALGORITHM,
                         DEFAULT_KEY_ALGORITHM);
-                jarSigner.signJar(unsignedJar, signedJar, alias, attrs);
+                jarSigner.signJar(unsignedJar, signedJar, alias, attrs, additionalContent);
             } catch (Throwable t) {
                 /*
-                 *In case of any problems, make sure there is no ill-formed signed
-                 *jar file left behind.
-                 */
-                if ( signedJar.exists() && ! signedJar.delete()) {
-                    logger.log(Level.FINE, "Could not remove generated signed JAR {0} after JarSigner reported an error",
-                            signedJar.getAbsolutePath());
-                };
-
-                /*
                  *The jar signer will have written some information to System.out
-                 *and/or System.err.  Refer the user to those earlier messages.
                  */
                 throw new Exception(localStrings.getString("jws.sign.errorSigning", 
-                        signedJar.getAbsolutePath(), alias), t);
+                        unsignedJar.getAbsolutePath(), alias), t);
             } finally {
                 duration = System.currentTimeMillis() - startTime;
                 logger.log(Level.FINE, "Signing {0} took {1} ms",

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@ import java.util.logging.Logger;
 import java.net.URL;
 
 import static javax.xml.stream.XMLStreamConstants.*;
+import org.glassfish.appclient.server.core.jws.JavaWebStartInfo;
 
 /**
  * @author sanjeeb.sahoo@oracle.com
@@ -76,7 +77,8 @@ public class CarHandler extends AbstractArchiveHandler {
     @Inject @Named(CarDetector.ARCHIVE_TYPE)
     private ArchiveDetector detector;
 
-    private static final Logger _logger = Logger.getLogger(CarHandler.class.getName());
+    private static final Logger _logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
     @Override
     public String getArchiveType() {

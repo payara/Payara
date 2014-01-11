@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,7 +54,6 @@ import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
 import org.glassfish.grizzly.http.server.HttpHandler;
 import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.server.Response;
-import org.glassfish.grizzly.http.server.StaticHttpHandler;
 
 /**
  *
@@ -62,12 +61,13 @@ import org.glassfish.grizzly.http.server.StaticHttpHandler;
  */
 public class RestrictedContentAdapter extends HttpHandler {
 
-    protected final static String LAST_MODIFIED_HEADER_NAME = "Last-Modified";
-    protected final static String DATE_HEADER_NAME = "Date";
+    public final static String LAST_MODIFIED_HEADER_NAME = "Last-Modified";
+    public final static String DATE_HEADER_NAME = "Date";
     protected final static String IF_MODIFIED_SINCE = "If-Modified-Since";
     private final static String LINE_SEP = System.getProperty("line.separator");
-    protected final Logger logger = LogDomains.getLogger(
-            RestrictedContentAdapter.class, LogDomains.ACC_LOGGER);
+    private final static String BROKEN_PIPE = "Broken pipe";
+    
+    protected final static Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
     private enum State {
 
@@ -195,14 +195,18 @@ public class RestrictedContentAdapter extends HttpHandler {
          */
         if (state == State.SUSPENDED) {
             finishErrorResponse(gResp, HttpServletResponse.SC_FORBIDDEN);
-            logger.fine(logPrefix() + "is suspended; refused to serve static content requested using "
-                    + (relativeURIString == null ? "null" : relativeURIString));
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(logPrefix() + "is suspended; refused to serve static content requested using "
+                        + (relativeURIString == null ? "null" : relativeURIString));
+            }
             return true;
         }
 
         if (relativeURIString == null) {
-            logger.fine(logPrefix() + "Could not find static content requested using full request URI = "
-                    + gReq.getRequestURI() + " - relativized URI was null");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(logPrefix() + "Could not find static content requested using full request URI = "
+                        + gReq.getRequestURI() + " - relativized URI was null");
+            }
             respondNotFound(gResp);
             return true;
         }
@@ -255,18 +259,11 @@ public class RestrictedContentAdapter extends HttpHandler {
                     return;
                 }
 
-                /*
-                 * The client's cache is obsolete.  Be sure to set the
-                 * time header values.
-                 */
-                gResp.addDateHeader(LAST_MODIFIED_HEADER_NAME, fileToSend.lastModified());
-                gResp.addDateHeader(DATE_HEADER_NAME, System.currentTimeMillis());
+                
             }
+            sc.process(relativeURIString, gReq, gResp);
 
-            /*
-             * Delegate to the Grizzly implementation.
-             */
-            StaticHttpHandler.sendFile(gResp, fileToSend);
+            
 //            final int status = gResp.getStatus();
 //            if (status != HttpServletResponse.SC_OK) {
 //                logger.fine(logPrefix() + "Could not serve content for "
@@ -277,6 +274,18 @@ public class RestrictedContentAdapter extends HttpHandler {
 //            }
 
 //            finishResponse(gResp, status);
+        } catch (IOException ioex) {
+            /*
+             * Broken pipe errors happen fairly regularly with Java Web Start on
+             * the client side.  There's no need to clutter up the log with
+             * reports of them that we cannot really do anything about.
+             */
+            if (isBrokenPipe(ioex)) {
+                logger.log(Level.FINE, "''Broken pipe'' while responding to {0}{1}", new Object[]{logPrefix(), relativeURIString});
+            } else {
+                finishErrorResponse(gResp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                logger.log(Level.SEVERE, logPrefix() + relativeURIString, ioex);
+            }
         } catch (Exception e) {
 //            gResp.getResponse().setErrorException(e);
             finishErrorResponse(gResp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -284,6 +293,11 @@ public class RestrictedContentAdapter extends HttpHandler {
         }
     }
 
+    private boolean isBrokenPipe(final IOException ioex) {
+        final Throwable cause = ioex.getCause();
+        return (cause != null && (cause instanceof IOException) && (cause.getMessage()).contains(BROKEN_PIPE));
+    }
+    
     protected boolean returnIfClientCacheIsCurrent(final String relativeURIString,
             final Request gReq,
             final long contentTimestamp) {
@@ -293,7 +307,9 @@ public class RestrictedContentAdapter extends HttpHandler {
                 && (ifModifiedSinceTime >= contentTimestamp)) {
             finishSuccessResponse(gReq.getResponse(),
                     HttpServletResponse.SC_NOT_MODIFIED);
-            logger.fine(logPrefix() + relativeURIString + " is already current on the client; no downloaded needed");
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine(logPrefix() + relativeURIString + " is already current on the client; no downloaded needed");
+            }
         }
         return result;
     }
@@ -344,6 +360,9 @@ public class RestrictedContentAdapter extends HttpHandler {
 
     private void finishResponse(final Response gResp, final int status,
             final boolean treatAsError) {
+        if (gResp.isCommitted() || ! gResp.getRequest().getContext().getConnection().isOpen()) {
+            return;
+        }
         gResp.setStatus(status);
         try {
             if (treatAsError /* && commitErrorResponse */) {

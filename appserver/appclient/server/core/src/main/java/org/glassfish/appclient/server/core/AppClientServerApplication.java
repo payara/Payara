@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -103,8 +103,8 @@ public class AppClientServerApplication implements
             final AppClientDeployerHelper helper) {
         this.dc = dc;
         this.helper = helper;
-        this.logger = LogDomains.getLogger(AppClientServerApplication.class,
-                LogDomains.ACC_LOGGER);
+        this.logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
 
         acDesc = helper.appClientDesc();
 

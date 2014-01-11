@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,6 +42,8 @@ package org.glassfish.appclient.server.core.jws.servedcontent;
 
 import java.io.File;
 import java.io.IOException;
+import org.glassfish.grizzly.http.server.Request;
+import org.glassfish.grizzly.http.server.Response;
 
 /**
  * Represents all static content served for Java Web Start app client launches.
@@ -59,4 +61,13 @@ public interface StaticContent extends Content {
      * @return a File object for the content
      */
     public File file() throws IOException;
+    
+    /**
+     * Process the static content, adding the correct data to the response.
+     * @param relativeURIString URI path by which the content was addressed
+     * @param gReq the request
+     * @param gResp the response
+     * @throws Exception 
+     */
+    public void process(String relativeURIString, Request gReq, Response gResp) throws Exception;
 }

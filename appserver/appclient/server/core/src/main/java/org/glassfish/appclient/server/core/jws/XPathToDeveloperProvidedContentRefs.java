@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -67,6 +67,7 @@ import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Abstracts the XPath information for developer-provided references to
@@ -87,9 +88,25 @@ abstract class XPathToDeveloperProvidedContentRefs<T extends Content> {
 
     private final static XPath xPath = xPathFactory.newXPath();
 
-    private static final Logger logger = LogDomains.getLogger(
-            XPathToDeveloperProvidedContentRefs.class, LogDomains.ACC_LOGGER);
+    private static final Logger logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
     
+    @LogMessageInfo (
+            message = "Client JNLP document {0} refers to the static resource {1} that does not exist or is not readable.",
+            cause = "The developer-provided JNLP content refers to a file as if the file is in the application but the server could not find the file.",
+            action = "Make sure the file is packaged in the application and that the reference to the file is correct.  Then rebuild and redeploy the application.")
+    public static final String BAD_STATIC_CONTENT = "AS-ACDEPL-00111";
+
+    @LogMessageInfo (
+            message = "The ApplicationSignedJARManager for a nested app client deployer helper is unexpectedly null.",
+            cause = "During deployment of nested app clients (those inside EARs), the system should use an ApplicationSignedJARManager but it is null.",
+            action = "This is a system error.  Please report this as a bug.")
+    public static final String SIGNED_JAR_MGR_NULL = "AS-ACDEPL-00114";
+    
+    @LogMessageInfo(
+            message = "Tbe custom JNLP document {0} in a stand-alone app client incorrectly refers to a JAR {1}",
+            cause = "The app client includes a custom JNLP document which refers to a JAR.  Stand-alone app clients cannot refer to other JARs because they are self-contained deployment units.",
+            action = "Remove references to JAR from the custom JNLP document or package the app client inside an EAR that also contains the referenced JAR.")
+    public static final String USER_REFERENCED_JAR = "AS-ACDEPL-00115";
 
     private enum Type {
 
@@ -206,7 +223,7 @@ abstract class XPathToDeveloperProvidedContentRefs<T extends Content> {
              */
             if ( ! f.exists() || ! f.canRead()) {
                 logger.log(Level.WARNING,
-                        "enterprise.deployment.appclient.jws.clientJNLPBadStaticContent",
+                        BAD_STATIC_CONTENT,
                         new Object[] {referringDocument, pathToContent});
             } else {
                 final ApplicationSignedJARManager signedJARManager = helper.signedJARManager();
@@ -215,9 +232,9 @@ abstract class XPathToDeveloperProvidedContentRefs<T extends Content> {
                      * The signed JAR manager should not be null when we deploy
                      * an app client nested inside an EAR.  This is a system error.
                      */
-                    logger.log(Level.SEVERE, "enterprise.deployment.appclient.jws.signedJARMgrNull");
+                    logger.log(Level.SEVERE, SIGNED_JAR_MGR_NULL);
                 } else if (helper instanceof StandaloneAppClientDeployerHelper) {
-                    logger.log(Level.WARNING, "enterprise.deployment.appclient.jws.userReferencedJARFromStandAloneAppClient",
+                    logger.log(Level.WARNING, USER_REFERENCED_JAR,
                             new Object[] {referringDocument, pathToContent});
                 } else {
                     try {

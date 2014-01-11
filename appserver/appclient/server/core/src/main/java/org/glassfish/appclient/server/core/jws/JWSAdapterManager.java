@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,6 +82,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Handles all management of the HTTP adapters created to support Java Web
@@ -96,6 +97,8 @@ public class JWSAdapterManager implements PostConstruct {
     private final static String SIGNING_ALIAS_PROPERTY_NAME = "jar-signing-alias";
     
     private final static String DEFAULT_SIGNING_ALIAS = "s1as";
+    
+    private final static String MANIFEST_APP_NAME_FOR_SYSTEM_FILES = "GlassFish";
 
     @Inject
     private ServerEnvironment serverEnv;
@@ -153,11 +156,17 @@ public class JWSAdapterManager implements PostConstruct {
     private File umbrellaRoot = null;
     private File systemLevelSignedJARsRoot = null;
     private File domainLevelSignedJARsRoot = null;
+    
+    @LogMessageInfo(
+            message = "Error starting the adapter to serve static system-level content",
+            cause = "An unexpected internal system error occurred",
+            action = "Please consult the exception stack trace")
+    public static final String ERROR_STARTING_SYSTEM_ADAPTER = "AS-ACDEPL-00105";
 
     @Override
     public synchronized void postConstruct() {
         installRootURI = serverContext.getInstallRoot().toURI();
-        logger = LogDomains.getLogger(AppClientDeployer.class, LogDomains.ACC_LOGGER);
+        logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
         iiopService = config.getExtensionByType(IiopService.class);
         umbrellaRoot = new File(installRootURI).getParentFile();
         umbrellaRootURI = umbrellaRoot.toURI();
@@ -215,7 +224,7 @@ public class JWSAdapterManager implements PostConstruct {
             return sysAdapter;
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "enterprise.deployment.appclient.jws.errStartSystemAdapter", e);
+            logger.log(Level.SEVERE, ERROR_STARTING_SYSTEM_ADAPTER, e);
             return null;
         }
     }
@@ -323,9 +332,11 @@ public class JWSAdapterManager implements PostConstruct {
     private AutoSignedContent systemJarSignedContent (
             final File unsignedFile,
             final String signingAlias) throws FileNotFoundException {
+        final String relativeURI = relativeSystemPath(unsignedFile.toURI());
         final File signedFile = new File(signedSystemContentAliasDir(signingAlias),
-                relativeSystemPath(unsignedFile.toURI()));
-        return new AutoSignedContent(unsignedFile, signedFile, signingAlias, jarSigner);
+                relativeURI);
+        return new AutoSignedContent(unsignedFile, signedFile, signingAlias, jarSigner, relativeURI,
+                MANIFEST_APP_NAME_FOR_SYSTEM_FILES);
     }
 
     Map<String,DynamicContent> addDynamicSystemContent(final List<String> systemJARRelativeURIs,
@@ -548,7 +559,8 @@ public class JWSAdapterManager implements PostConstruct {
         if (result == null) {
             final File unsignedFile = new File(umbrellaRoot, relativePathToSystemJar);
             final File signedFile = new File(systemLevelSignedJARsRoot, key);
-            result = new AutoSignedContent(unsignedFile, signedFile, alias, jarSigner);
+            result = new AutoSignedContent(unsignedFile, signedFile, alias, jarSigner, relativePathToSystemJar,
+                    MANIFEST_APP_NAME_FOR_SYSTEM_FILES);
             appLevelSignedSystemContent.put(key, result);
         }
         return result;

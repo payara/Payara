@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,6 +64,7 @@ import org.glassfish.internal.api.ServerContext;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PostConstruct;
 import javax.inject.Singleton;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * Manages a data structure of all extension jars known to the app server.
@@ -86,8 +87,14 @@ public class ExtensionFileManager implements PostConstruct {
     /** the property name that points to extension directories */
     private static final String EXT_DIRS_PROPERTY_NAME = "java.ext.dirs";
     
-    private Logger _logger = LogDomains.getLogger(ExtensionFileManager.class,
-            LogDomains.ACC_LOGGER);
+    private Logger _logger = Logger.getLogger(JavaWebStartInfo.APPCLIENT_SERVER_MAIN_LOGGER, 
+                JavaWebStartInfo.APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "The following extensions or libraries are referenced from the manifest of {0} but were not found where indicated: {1}; ignoring and continuing",
+            cause = "The server could not open the JAR file(s) or process the extension(s) listed in its manifest.",
+            action = "Make sure the manifest of the JAR file correctly lists the relative paths of library JARs and the extensions on which the JAR depends.")
+    public static final String EXT_ERROR = "AS-ACDEPL-00112";
 
     /*
      *Stores File and version information for all extension jars in all
@@ -279,16 +286,14 @@ public class ExtensionFileManager implements PostConstruct {
                     result.addAll(newExtensions);
                     filesToProcess.addAll(extensionsToFiles(newExtensions));
                 } finally {
-                    if (nextJarFile != null) {
-                        nextJarFile.close();
-                    }
+                    nextJarFile.close();
                 }
             } catch (Exception e) {
                 invalidLibPaths.append(nextFile.getPath()).append(" ");
             }
         }
         if (invalidLibPaths.length() > 0) {
-            _logger.log(Level.WARNING, "enterprise.deployment.appclient.jws.extension.error",
+            _logger.log(Level.WARNING, EXT_ERROR,
                     new Object[] {origAnchorDir, invalidLibPaths.toString()});
 
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
@@ -75,11 +78,15 @@ import org.glassfish.appclient.server.core.jws.servedcontent.DynamicContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.FixedContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.SimpleDynamicContentImpl;
 import org.glassfish.appclient.server.core.jws.servedcontent.StaticContent;
+import org.glassfish.appclient.server.core.jws.servedcontent.StreamedAutoSignedStaticContent;
 import org.glassfish.appclient.server.core.jws.servedcontent.TokenHelper;
 import org.glassfish.deployment.common.DeploymentUtils;
 
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.logging.annotation.LogMessagesResourceBundle;
+import org.glassfish.logging.annotation.LoggerInfo;
 import org.jvnet.hk2.config.ConfigListener;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
@@ -114,7 +121,7 @@ public class JavaWebStartInfo implements ConfigListener {
 
     @Inject
     private ServerEnvironment serverEnv;
-
+    
     private AppClientServerApplication acServerApp;
 
     private Set<Content> myContent = null;
@@ -123,8 +130,35 @@ public class JavaWebStartInfo implements ConfigListener {
 
     private TokenHelper tHelper;
 
-    private static final Logger logger = LogDomains.getLogger(AppClientServerApplication.class,
-                LogDomains.ACC_LOGGER);
+    @LogMessagesResourceBundle
+    public static final String APPCLIENT_SERVER_LOGMESSAGE_RESOURCE = "org.glassfish.appclient.server.LogMessages";
+    
+    @LoggerInfo(subsystem="SERVER", description="Appclient Server-side Logger", publish=true)
+    public static final String APPCLIENT_SERVER_MAIN_LOGGER = "javax.enterprise.system.container.appclient";
+    private static final Logger logger =
+          Logger.getLogger(APPCLIENT_SERVER_MAIN_LOGGER, APPCLIENT_SERVER_LOGMESSAGE_RESOURCE);
+
+    @LogMessageInfo(
+            message = "Java Web Start services started for the app client {0} (contextRoot: {1})",
+            level = "INFO")
+    public static final String JWS_STARTED = "AS-ACDEPL-00103";
+
+    @LogMessageInfo(
+            message = "Java Web Start services stopped for the app client {0}",
+            level = "INFO")
+    public static final String JWS_STOPPED = "AS_ACDEPL-00104";
+
+    @LogMessageInfo(
+            message = "Java Web Start services not started for the app client {0}; its developer has marked it as ineligible",
+            cause = "The developer's glassfish-application-client.xml file marks the app client as ineligible for Java Web Start support.",
+            action = "If users should be able to launch this client using Java Web Start, change the <java-web-start-support> 'enabled' attribute.")
+    public static final String JWS_INELIGIBLE = "AS_ACDEPL-00101";
+
+    @LogMessageInfo(
+            message = "Java Web Start services not started for the app client {0}; the administrator has disabled Java Web Start support for it",
+            cause = "The administrator disabled Java Web Start launches for the app client, either using '--properties java-web-start-enabled=false' during deployment or changing the properties afterwards.",
+            action = "If users should be able to launch this client using Java Web Start, either deploy the application again without --properties or adjust the configuration using the admin console or the asadmin 'set' command")
+    public static final String JWS_DISABLED = "AS_ACDEPL_00102";
 
     private VendorInfo vendorInfo;
 
@@ -337,7 +371,8 @@ public class JavaWebStartInfo implements ConfigListener {
         for (Content c : myContent) {
             c.start();
         }
-        logger.log(Level.INFO, "enterprise.deployment.appclient.jws.started",
+        
+        logger.log(Level.INFO, JWS_STARTED,
             new Object[] {acServerApp.moduleExpression(),
             JWSAdapterManager.userFriendlyContextRoot(acServerApp)});
     }
@@ -353,14 +388,32 @@ public class JavaWebStartInfo implements ConfigListener {
         tHelper.setProperty(APP_LIBRARY_EXTENSION_PROPERTY_NAME, 
                 jarElementsForExtensions(exts));
         for (Extension e : exts) {
+            final URI uri = URI.create(JWSAdapterManager.publicExtensionLookupURIText(e));
             final StaticContent newSystemContent = createSignedStaticContent(
                     e.getFile(),
-                    signedFileForDomainFile(e.getFile()));
+                    signedFileForDomainFile(e.getFile()),
+                    uri,
+                    extensionName(e.getFile()));
             jwsAdapterManager.addStaticSystemContent(
-                    URI.create(JWSAdapterManager.publicExtensionLookupURIText(e)).toString(),
+                    uri.toString(),
                     newSystemContent);
         }
 
+    }
+
+    private String extensionName(final File f) throws IOException {
+        JarFile jf = null;
+        try {
+            jf = new JarFile(f);
+            final Manifest mf = jf.getManifest();
+            final Attributes mainAttrs = mf.getMainAttributes();
+            final String extName = mainAttrs.getValue(Attributes.Name.EXTENSION_NAME);
+            return (extName == null ? "" : extName);
+        } finally {
+            if (jf != null) {
+                jf.close();
+            }
+        }
     }
 
     private File signedFileForDomainFile(final File unsignedFile) {
@@ -396,7 +449,7 @@ public class JavaWebStartInfo implements ConfigListener {
                 acServerApp.deployedAppName(),
                 (acDesc.isStandalone() ? null : acDesc.getModuleName()),
                 acServerApp);
-        logger.log(Level.INFO, "enterprise.deployment.appclient.jws.stopped",
+        logger.log(Level.INFO, JWS_STOPPED,
                 acServerApp.moduleExpression());
     }
 
@@ -436,12 +489,12 @@ public class JavaWebStartInfo implements ConfigListener {
 
     private boolean isJWSRunnable() {
         if ( ! isJWSEligible) {
-            logger.log(Level.INFO, "enterprise.deployment.appclient.jws.noStart.ineligible",
+            logger.log(Level.INFO, JWS_INELIGIBLE,
                     acServerApp.moduleExpression());
         }
 
         if ( ! isJWSEnabled()) {
-            logger.log(Level.INFO, "enterprise.deployment.appclient.jws.noStart.disabled",
+            logger.log(Level.INFO, JWS_DISABLED,
                     acServerApp.moduleExpression());
         }
         return isJWSEligible && isJWSEnabled();
@@ -482,9 +535,10 @@ public class JavaWebStartInfo implements ConfigListener {
                 staticContent,
                 helper.appClientServerURI(dc),
                 helper.appClientUserURI(dc),
-                CLIENT_JAR_PATH_PROPERTY_NAME);
+                CLIENT_JAR_PATH_PROPERTY_NAME,
+                acServerApp.getDescriptor().getName());
         
-        createAndAddSignedStaticContentFromGeneratedFile(
+        createAndAddSignedStaticContentFromMainJAR(
                 staticContent, 
                 helper.facadeServerURI(dc),
                 helper.facadeUserURI(dc),
@@ -495,7 +549,8 @@ public class JavaWebStartInfo implements ConfigListener {
                     staticContent,
                     helper.groupFacadeServerURI(dc),
                     helper.groupFacadeUserURI(dc),
-                    GROUP_FACADE_PATH_PROPERTY_NAME);
+                    GROUP_FACADE_PATH_PROPERTY_NAME,
+                    acServerApp.getDescriptor().getName());
         }
 
         /*
@@ -559,23 +614,25 @@ public class JavaWebStartInfo implements ConfigListener {
     private void createAndAddSignedContentFromAppFile(final Map<String,StaticContent> content,
             final URI uriToFile,
             final URI uriForLookup,
-            final String tokenName) throws FileNotFoundException {
+            final String tokenName,
+            final String appName) throws FileNotFoundException {
 
         final File unsignedFile = new File(uriToFile);
         final File signedFile = signedFileForProvidedAppFile(unsignedFile);
         createAndAddSignedStaticContent(content, unsignedFile, signedFile,
-                uriForLookup, tokenName);
+                uriForLookup, tokenName, appName);
     }
 
     private void createAndAddSignedStaticContentFromGeneratedFile(final Map<String,StaticContent> content,
             final URI uriToFile,
             final URI uriForLookup,
-            final String tokenName) throws FileNotFoundException {
-
+            final String tokenName,
+            final String appName) throws FileNotFoundException {
+    
         final File unsignedFile = new File(uriToFile);
         final File signedFile = signedFileForGeneratedAppFile(unsignedFile);
         createAndAddSignedStaticContent(content, unsignedFile, signedFile,
-                uriForLookup, tokenName);
+                uriForLookup, tokenName, appName);
     }
 
     private void createAndAddSignedStaticContent(
@@ -583,23 +640,39 @@ public class JavaWebStartInfo implements ConfigListener {
             final File unsignedFile,
             final File signedFile,
             final URI uriForLookup,
-            final String tokenName
+            final String tokenName,
+            final String appName
             ) throws FileNotFoundException {
         final StaticContent signedJarContent = createSignedStaticContent(
-                unsignedFile, signedFile);
+                unsignedFile, signedFile, uriForLookup, appName);
         recordStaticContent(content, signedJarContent, uriForLookup, tokenName);
     }
 
     private StaticContent createSignedStaticContent(
             final File unsignedFile,
-            final File signedFile) throws FileNotFoundException {
+            final File signedFile,
+            final URI uriForLookup,
+            final String appName) throws FileNotFoundException {
         mkdirs(signedFile.getParentFile());
         final StaticContent signedJarContent = new AutoSignedContent(
                 unsignedFile,
                 signedFile,
                 signingAlias,
-                jarSigner);
+                jarSigner,
+                uriForLookup.toASCIIString(),
+                appName);
         return signedJarContent;
+    }
+    
+    private void createAndAddSignedStaticContentFromMainJAR(
+            final Map<String,StaticContent> content, 
+            final URI uriToFile,
+            final URI uriForLookup, 
+            final String tokenName) throws FileNotFoundException {
+        final File unsignedFile = new File(uriToFile);
+        final StaticContent signedContent = new StreamedAutoSignedStaticContent(unsignedFile, signingAlias, jarSigner,
+                uriForLookup.toASCIIString(), acServerApp.getDescriptor().getName());
+        recordStaticContent(content, signedContent, uriForLookup, tokenName);
     }
     
     private void recordStaticContent(final Map<String,StaticContent> content,
@@ -710,13 +783,13 @@ public class JavaWebStartInfo implements ConfigListener {
                     textFromURL(MAIN_DOCUMENT_TEMPLATE),
                     developerJNLPDoc);
         createAndAddDynamicContentFromTemplateText(
-                dynamicContent, tHelper.mainJNLP(), mainDocument);
+                dynamicContent, tHelper.mainJNLP(), mainDocument, true /* isMain */);
 
         /*
          * Add the main JNLP again but with an empty URI string so the user
          * can launch the app client by specifying only the context root.
          */
-        createAndAddDynamicContentFromTemplateText(dynamicContent, "", mainDocument);
+        createAndAddDynamicContentFromTemplateText(dynamicContent, "", mainDocument, true /* isMain */);
         createAndAddDynamicContent(
                 dynamicContent, tHelper.clientJNLP(), CLIENT_DOCUMENT_TEMPLATE);
 
@@ -729,7 +802,7 @@ public class JavaWebStartInfo implements ConfigListener {
             final String uriStringForTemplate) throws IOException {
         createAndAddDynamicContentFromTemplateText(
                 tHelper, content, uriStringForContent,
-                textFromURL(uriStringForTemplate));
+                textFromURL(uriStringForTemplate), false /* isMain */);
     }
 
     private void createAndAddDynamicContent(
@@ -745,27 +818,36 @@ public class JavaWebStartInfo implements ConfigListener {
             final Map<String,DynamicContent> content,
             final String uriStringForContent,
             final String templateText) throws IOException {
+        createAndAddDynamicContentFromTemplateText(content, uriStringForContent, templateText, false /* isMain */);
+    }
+    
+    private void createAndAddDynamicContentFromTemplateText(
+            final Map<String,DynamicContent> content,
+            final String uriStringForContent,
+            final String templateText,
+            final boolean isMain) throws IOException {
         createAndAddDynamicContentFromTemplateText(tHelper,
-                content, uriStringForContent, templateText);
+                content, uriStringForContent, templateText, isMain);
     }
 
     private static void createAndAddDynamicContentFromTemplateText(
             final TokenHelper tHelper,
             final Map<String,DynamicContent> content,
             final String uriStringForContent,
-            final String templateText) throws IOException {
+            final String templateText,
+            final boolean isMain) throws IOException {
         final String processedTemplate = Util.replaceTokens(
                 templateText, tHelper.tokens());
         content.put(uriStringForContent, newDynamicContent(processedTemplate,
-                JNLP_MIME_TYPE));
+                JNLP_MIME_TYPE, isMain));
         logger.log(Level.FINE, "Adding dyn content {0}{1}{2}", 
                 new Object[]{uriStringForContent, 
                     System.getProperty("line.separator"), logger.isLoggable(Level.FINER) ? processedTemplate : ""});
     }
 
     private static DynamicContent newDynamicContent(final String template,
-            final String mimeType) {
-        return new SimpleDynamicContentImpl(template, mimeType);
+            final String mimeType, final boolean isMain) {
+        return new SimpleDynamicContentImpl(template, mimeType, isMain);
     }
 
     /**
