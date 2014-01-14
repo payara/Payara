@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,7 @@ glassfish_version="4.0.1,0-${build.id}"
 felix_version="4.0.2,0-0"
 corba_version="4.0.0,0-4"
 jsf_version="2.2.5,0-16"
-grizzly_version="2.3.7,0-0"
+grizzly_version="2.3.10,0-0"
 metro_version="2.3.1,0-259"
 javahelp_version="2.0.2,0-1"
 shoal_version="1.6.18,0-0"
