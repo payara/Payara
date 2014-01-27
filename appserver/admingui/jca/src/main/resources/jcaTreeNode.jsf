@@ -58,7 +58,7 @@
 	    setAttribute(key="children" value="#{requestScope.resp.data.extraProperties.childResources}");
 	</ui:event>
         <!facet image>
-            <sun:iconHyperlink id="restIcon" icon="TREE_FOLDER" url="/jca/adminObjectResources.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.connectorResources}" />
+            <sun:iconHyperlink id="restIcon" icon="TREE_FOLDER" url="/jca/connectorResources.jsf"  border="0" immediate="true" alt="$resource{i18n.tree.connectorResources}" />
         </facet>
     </dynamicTreeNode>
     <dynamicTreeNode id="connectorConnectionPools"
