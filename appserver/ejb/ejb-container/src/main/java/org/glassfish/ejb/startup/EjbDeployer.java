@@ -377,7 +377,7 @@ public class EjbDeployer
         }
 
         //Security related cleanup is to be done for the undeploy event
-        if( params.origin.isUndeploy()|| params.origin.isDeploy()) {
+        if( params.origin.isUndeploy()|| params.origin.isDeploy() || params.origin.isLoad()) {
 
             //Removing EjbSecurityManager for undeploy case
             String appName = params.name();
