@@ -291,6 +291,7 @@ init_version(){
     then
 	curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
 	RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
+	rm ${WORKSPACE_BUNDLES}/version-info.txt
     fi
 	
     # deduce BUILD_ID and PRODUCT_VERSION_GF
@@ -542,8 +543,8 @@ create_svn_tag(){
     printf "\n%s \n\n" "===== CREATE SVN TAG ====="
 
     # download and unzip the workspace
-    curl $PROMOTED_BUNDLES/workspace.zip > workspace.zip
-    rm -rf ${WORKSPACE}/tag ; unzip -d ${WORKSPACE}/tag workspace.zip
+    curl $PROMOTED_BUNDLES/workspace.zip > ${WORKSPACE_BUNDLES}/workspace.zip
+    rm -rf ${WORKSPACE}/tag ; unzip -d ${WORKSPACE}/tag ${WORKSPACE_BUNDLES}/workspace.zip
 
     # delete tag (for promotion forcing)
     svn del ${GF_WORKSPACE_URL_SSH}/tags/${RELEASE_VERSION} -m "del tag ${RELEASE_VERSION}" | true
@@ -647,6 +648,7 @@ aggregated_tests_summary(){
             `align_column 15 "." "PASSED(${passednumber})"` \
             "FAILED(${failednumber})"
     done
+    rm tests.html
 }
 
 create_symlinks(){
@@ -728,9 +730,9 @@ scp_jnet(){
 
 promote_bundle(){
     printf "\n==== PROMOTE_BUNDLE (%s) ====\n\n" ${2}
-    curl ${1} > ${2}
-    scp ${2} ${SCP}
-    scp_jnet ${2}
+    curl ${1} > ${WORKSPACE_BUNDLES}/${2}
+    scp ${WORKSPACE_BUNDLES}/${2} ${SCP}
+    scp_jnet ${WORKSPACE_BUNDLES}/${2}
     if [ "nightly" == "${BUILD_KIND}" ]
     then
 	simple_name=`echo ${2}| tr -d " " | sed \
@@ -742,7 +744,7 @@ promote_bundle(){
 	simple_name=`echo ${2}| tr -d " " | sed \
             -e s@"${PRODUCT_VERSION_GF}-"@@g \
             -e s@"${BUILD_ID}-"@@g \
-	    -e s@"-${BUILD_ID}"@@g \
+            -e s@"-${BUILD_ID}"@@g \
             -e s@"--"@"-"@g`
     fi
     echo "${simple_name} -> ${ARCHIVE_URL}/${2}" >> ${PROMOTION_SUMMARY}
