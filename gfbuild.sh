@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -92,13 +92,14 @@ usage(){
 Usage: $0 [OPTION]... [ [-Dkey=value]... MAVEN_PHASE... | SCENARIO ]
 
   GlassFish build wrapper script.
-  First the script will verify that mvn is installed and is in the path.
-  It will also verify JDK 1.7 is installed to compile GlassFish.
-  If -r or -Dmaven.local.repo is not specified, then the default maven repository
-  which is user's home directory (~/.m2/repository) is used.
-  When using -r to specify the maven-local-repo, the script checks if the directory
-  exists.  The maven repo directory is created if it does not exist.
-  The script saves the build output in the file called gfbuild.log.
+  Verifies that a suitable mvn version (>= 3.0.3) is available in the PATH.
+  Also verifies that JDK 1.7 is installed to compile GlassFish.
+  
+  -r or -Dmaven.local.repo can be specified to supply the local maven repository location,
+  otherwise the default is used, which is user's home directory (~/.m2/repository).
+  The supplied directory will be created if needed.
+  
+  The script saves the output in gfbuild.log.
 
   -r LOCAL_REPO_PATH
                     path to a directory that will be used as a local maven
@@ -114,9 +115,9 @@ Usage: $0 [OPTION]... [ [-Dkey=value]... MAVEN_PHASE... | SCENARIO ]
                     package
                     install
   SCENARIO
-                    build_dev
-                    build_nightly
-                    build_weekly
+                    build_re_dev
+                    build_re_nightly
+                    build_re_weekly
                     promote_dev
                     promote_nightly
                     promote_weekly
