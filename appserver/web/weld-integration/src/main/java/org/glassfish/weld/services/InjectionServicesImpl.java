@@ -92,13 +92,15 @@ public class InjectionServicesImpl implements InjectionServices {
             ManagedBeanDescriptor mbDesc = null;
 
             JndiNameEnvironment injectionEnv = (JndiNameEnvironment) bundleContext;
-            
+
+            AnnotatedType annotatedType = injectionContext.getAnnotatedType();
+            Class targetClass = annotatedType.getJavaClass();
+            String targetClassName = targetClass.getName();
             Object target = injectionContext.getTarget();
-            String targetClass = target.getClass().getName();
 
             if( componentEnv == null ) {
-                //throw new IllegalStateException("No valid EE environment for injection of " + targetClass);
-                System.err.println("No valid EE environment for injection of " + targetClass);
+                //throw new IllegalStateException("No valid EE environment for injection of " + targetClassName);
+                System.err.println("No valid EE environment for injection of " + targetClassName);
                 injectionContext.proceed();
                 return; 
             }
@@ -110,7 +112,7 @@ public class InjectionServicesImpl implements InjectionServices {
 
                 EjbDescriptor ejbDesc = (EjbDescriptor) componentEnv;
 
-                if( containerServices.isEjbManagedObject(ejbDesc, target.getClass())) {
+                if( containerServices.isEjbManagedObject(ejbDesc, targetClass)) {
                     injectionEnv = componentEnv;
                 } else {
 
@@ -118,7 +120,7 @@ public class InjectionServicesImpl implements InjectionServices {
 
                         // Check if it's a @ManagedBean class within an ejb-jar.  In that case,
                         // special handling is needed to locate the EE env dependencies
-                        mbDesc = bundleContext.getManagedBeanByBeanClass(targetClass);
+                        mbDesc = bundleContext.getManagedBeanByBeanClass(targetClassName);
                     }                    
                 }
             }
