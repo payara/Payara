@@ -285,25 +285,28 @@ init_common(){
 }
 
 init_version(){
-    # retrieving version-info.txt if promoting a weekly
-    # to resolve value of RELEASE_VERSION
-    if [ "${BUILD_KIND}" = "weekly" ] &&  [ -z ${RELEASE_VERSION} ]
-    then
-	curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
-	RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
-	rm ${WORKSPACE_BUNDLES}/version-info.txt
-    fi
-	
-    # deduce BUILD_ID and PRODUCT_VERSION_GF
-    # from the value of RELEASE_VERSION
-    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
-    then
-        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
-        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
-    else
-        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
-        exit 1
-    fi
+	if [ "${BUILD_KIND}" = "weekly" ]
+	then
+	    # retrieving version-info.txt if promoting a weekly
+	    # to resolve value of RELEASE_VERSION
+	    if [ "${BUILD_KIND}" = "weekly" ] &&  [ -z ${RELEASE_VERSION} ]
+	    then
+		curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
+		RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
+		rm ${WORKSPACE_BUNDLES}/version-info.txt
+	    fi
+		
+	    # deduce BUILD_ID and PRODUCT_VERSION_GF
+	    # from the value of RELEASE_VERSION
+	    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
+	    then
+	        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+	        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
+	    else
+	        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
+	        exit 1
+	    fi
+	fi
 
     printf "\n%s \n\n" "===== RELEASE_VERSION ====="
     printf "VERSION %s - QUALIFIER: %s\n\n" \
