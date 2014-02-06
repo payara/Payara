@@ -741,6 +741,7 @@ promote_bundle(){
 	simple_name=`echo ${2}| tr -d " " | sed \
             -e s@"${PRODUCT_VERSION_GF}-"@@g \
             -e s@"${BUILD_ID}-${MDATE}-"@@g \
+            -e s@"-${BUILD_ID}-${MDATE}"@@g \
             -e s@"--"@"-"@g`
     elif [ "weekly" == "${BUILD_KIND}" ]
     then
