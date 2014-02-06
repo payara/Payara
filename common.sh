@@ -251,7 +251,7 @@ init_version(){
     if [ "${BUILD_KIND}" = "weekly" ] &&  [ -z ${RELEASE_VERSION} ]
     then
 	curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
-	RELEASE_VERSION=`grep 'Maven-Version' <<<  ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
+	RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
     fi
 	
     # deduce BUILD_ID and PRODUCT_VERSION_GF
