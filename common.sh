@@ -629,12 +629,14 @@ aggregated_tests_summary(){
     fi
 
     for i in `${AWK} 'BEGIN{RS="<tr><td class=\"pane"} \
-         { if (NR > 2) print $2" "$3" "$8" "$11 }' tests.html \
-		| sed -e s@'"'@@g \
-				  -e s@'href=/hudson/job/'@@g \
+         { if (NR > 2) print $2" "$3" "$8" "$11 }' \
+         tests.html | sed \
+          -e s@'"'@@g \
+	  -e s@'href=/hudson/job/'@@g \
           -e s@'/testReport/><img alt='@'#'@g \
+          -e s@'/aggregatedTestReport/><img alt='@'#'@g \
           -e s@' style=text-align:right>'@'#'@g \
-					-e s@'/'@'#'@g`
+	  -e s@'/'@'#'@g`
     do
         jobname=`cut -d '#' -f1 <<< $i`
         buildnumber=`cut -d '#' -f2 <<< $i`
