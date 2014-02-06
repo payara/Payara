@@ -154,22 +154,6 @@ init_weekly(){
     BUILD_KIND="weekly"
     require_env_var "GPG_PASSPHRASE"
 
-    # deduce BUILD_ID and PRODUCT_VERSION_GF
-    # from the provided value of RELEASE_VERSION
-    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
-    then
-        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
-        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
-    else
-        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
-        exit 1
-    fi
-
-    printf "\n%s \n\n" "===== RELEASE_VERSION ====="
-    printf "VERSION %s - QUALIFIER: %s\n\n" \
-        "${PRODUCT_VERSION_GF}" \
-        "${BUILD_ID}"
-
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}
     if [ ${#BUILD_ID} -gt 0 ]
     then
@@ -179,6 +163,8 @@ init_weekly(){
     fi
     ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}/archive/bundles
     export BUILD_ID BUILD_KIND ARCHIVE_PATH ARCHIVE_MASTER_BUNDLES
+    init_version
+    init_bundles_dir    
 }
 
 init_nightly(){
@@ -260,6 +246,30 @@ init_common(){
 }
 
 init_version(){
+    # retrieving version-info.txt if promoting a weekly
+    # to resolve value of RELEASE_VERSION
+    if [ "${BUILD_KIND}" = "weekly" ] &&  [ ! -z ${RELEASE_VERSION} ]
+    then
+	curl ${PROMOTE_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
+	RELEASE_VERSION=`grep 'Maven-Version' <<<  ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
+    fi
+	
+    # deduce BUILD_ID and PRODUCT_VERSION_GF
+    # from the value of RELEASE_VERSION
+    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
+    then
+        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
+    else
+        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
+        exit 1
+    fi
+
+    printf "\n%s \n\n" "===== RELEASE_VERSION ====="
+    printf "VERSION %s - QUALIFIER: %s\n\n" \
+        "${PRODUCT_VERSION_GF}" \
+        "${BUILD_ID}"	
+	
     if [ -z ${VERSION} ]
     then
         VERSION=${RELEASE_VERSION}
