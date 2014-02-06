@@ -163,8 +163,8 @@ init_weekly(){
     fi
     ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}/archive/bundles
     export BUILD_ID BUILD_KIND ARCHIVE_PATH ARCHIVE_MASTER_BUNDLES
-    init_version
-    init_bundles_dir    
+    init_bundles_dir
+    init_version 
 }
 
 init_nightly(){
@@ -172,8 +172,8 @@ init_nightly(){
     ARCHIVE_PATH=${PRODUCT_GF}/${PRODUCT_VERSION_GF}/nightly
     ARCHIVE_MASTER_BUNDLES=${ARCHIVE_PATH}/${BUILD_ID}-${MDATE}
     export BUILD_KIND ARCHIVE_PATH ARCHIVE_MASTER_BUNDLES
-    init_version
     init_bundles_dir
+    init_version
 }
 
 init_common(){
