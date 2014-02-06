@@ -64,10 +64,10 @@ promote_init(){
     init_common
     if [ "nightly" == "${1}" ]
     then
-	init_nightly
+		init_nightly
     elif [ "weekly" == "${1}" ]
     then
-	init_weekly
+		init_weekly
     fi
 
     export PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
@@ -248,9 +248,9 @@ init_common(){
 init_version(){
     # retrieving version-info.txt if promoting a weekly
     # to resolve value of RELEASE_VERSION
-    if [ "${BUILD_KIND}" = "weekly" ] &&  [ ! -z ${RELEASE_VERSION} ]
+    if [ "${BUILD_KIND}" = "weekly" ] &&  [ -z ${RELEASE_VERSION} ]
     then
-	curl ${PROMOTE_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
+	curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
 	RELEASE_VERSION=`grep 'Maven-Version' <<<  ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
     fi
 	
