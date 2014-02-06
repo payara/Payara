@@ -707,7 +707,7 @@ init_storage_area(){
 
 scp_jnet(){
     file=`basename ${1}`
-    simple_name=`echo ${1} | \
+    simple_name=`echo ${file} | \
         sed -e s@"${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web"@web@g \
         -e s@"${JAVAEE_VERSION}-${BUILD_ID}-"@@g \
         -e s@"-${JAVAEE_VERSION}-${BUILD_ID}"@@g \
