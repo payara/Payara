@@ -178,6 +178,8 @@ promote_weekly(){
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
     VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     create_svn_tag
+    # TODO: increment build value in both promote-trunk.version and pkgid-trunk.version
+    # only when build parameter RELEASE_VERSION has been resolved (i.e not provided explicitly).
     promote_finalize
 }
 
