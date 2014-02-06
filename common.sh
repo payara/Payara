@@ -154,7 +154,7 @@ purge_old_nightlies(){
 EOF
     ssh ${SSH_MASTER} "rm -rf /tmp/purgeNightlies.sh"
     scp /tmp/purgeNightlies.sh ${SSH_MASTER}:/tmp
-    ssh ${SSH_MASTER} "chmod +x /tmp/purgeNightlies.sh ; bash -ex /tmp/purgeNightlies.sh /java/re/${ARCHIVE_PATH}"
+    ssh ${SSH_MASTER} "chmod +x /tmp/purgeNightlies.sh ; bash -e /tmp/purgeNightlies.sh /java/re/${ARCHIVE_PATH}"
 }
 
 promote_nightly(){
