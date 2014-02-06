@@ -742,6 +742,7 @@ promote_bundle(){
 	simple_name=`echo ${2}| tr -d " " | sed \
             -e s@"${PRODUCT_VERSION_GF}-"@@g \
             -e s@"${BUILD_ID}-"@@g \
+	    -e s@"-${BUILD_ID}"@@g \
             -e s@"--"@"-"@g`
     fi
     echo "${simple_name} -> ${ARCHIVE_URL}/${2}" >> ${PROMOTION_SUMMARY}
