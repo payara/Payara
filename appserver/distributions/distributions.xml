@@ -77,16 +77,16 @@
     <target name="create-minnow-distributions" depends="create-minnow-images, create-distributions"/>
     <target name="create-web-distributions" depends="create-web-images">
         <install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>
-        <install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <!--<install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>-->
         <install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>
-        <install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <!--<install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>-->
         <antcall target="create-distributions"/>
     </target>
     <target name="create-glassfish-distributions" depends="create-glassfish-images">
-        <install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <!--<install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>-->
         <install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
         <install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
-        <install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <!--<install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>-->
         <antcall target="create-distributions"/>
     </target>
     
@@ -144,8 +144,8 @@
 	    <install.servicetag.registry image.dir="${glassfish.image.dir}/${install.dir.name}" source.distribution.name="${source.distribution.name}" />
 
             <!-- create installer image -->
-            <copy.image source="${glassfish.image.dir}" target="${installer.image.dir}" />
-            <pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>
+<!--            <copy.image source="${glassfish.image.dir}" target="${installer.image.dir}" />
+            <pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
                         
             <!-- create glassfish.l10n image -->
             <echo message="basedir=${basedir} - l10n.source=@{l10n.source}" />
@@ -157,8 +157,8 @@
                 <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
             </ant>
             <!-- create installer l10n -->
-            <copy.image source="${glassfish.image.dir.l10n}" target="${installer.image.dir.l10n}" />
-            <pack modules.dir="${installer.image.dir.l10n}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>
+<!--            <copy.image source="${glassfish.image.dir.l10n}" target="${installer.image.dir.l10n}" />
+            <pack modules.dir="${installer.image.dir.l10n}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
         </sequential>
     </macrodef>
     <macrodef name="create.local.image">
@@ -316,16 +316,16 @@
     </macrodef>    
     
     <target name="create-distributions">
-        <create.distribution 
+<!--        <create.distribution 
             image.dir="${installer.image.dir}"
             fname="${image.name}-ips-installer.zip"
             deleteIncludes="*.jar"
-            zipBaseDir="${installer.image.dir}/${install.dir.name}" />
-        <create.distribution 
+            zipBaseDir="${installer.image.dir}/${install.dir.name}" />-->
+<!--        <create.distribution 
             image.dir="${installer.image.dir.l10n}"
             fname="${image.name}-ips-ml-installer.zip" 
             deleteIncludes="*.jar"
-            zipBaseDir="${installer.image.dir.l10n}/${install.dir.name}" />
+            zipBaseDir="${installer.image.dir.l10n}/${install.dir.name}" />-->
         <create.distribution 
             image.dir="${glassfish.image.dir}"
             fname="${image.name}-ips.zip"
