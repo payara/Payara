@@ -1988,14 +1988,7 @@ public class WebappClassLoader
         }
 
         try {
-            Class<?> clazz = Class.forName("sun.misc.ClassLoaderUtil");
-            if (clazz != null) {
-                Method m = clazz.getMethod("releaseLoader",
-                                           URLClassLoader.class);
-                if (m != null) {
-                    m.invoke(null, this);
-                }
-            }
+            close();
         } catch (Exception e) {
             // ignore
         }
