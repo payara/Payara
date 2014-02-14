@@ -102,11 +102,11 @@
         <jsftemplating.version>2.1.0</jsftemplating.version>
         <uc-pkg-client.version>1.122-56.2852</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-56.2852</uc-pkg-bootstrap.version>
-        <webservices.version>2.3.1-b259</webservices.version>
+        <webservices.version>2.3.1-b368</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.1.2</woodstox.version>
-        <jaxb-api.version>2.2.11</jaxb-api.version>
-        <jaxb.version>2.2.8-b131017.0915</jaxb.version>
+        <jaxb-api.version>2.2.12-b140109.1041</jaxb-api.version>
+        <jaxb.version>2.2.9-b140212.1635</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
         <javax.xml.registry-api.version>1.0.5</javax.xml.registry-api.version>
         <eclipselink.version>2.5.2-M1</eclipselink.version>
