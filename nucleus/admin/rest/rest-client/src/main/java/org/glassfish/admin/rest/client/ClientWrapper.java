@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,8 +57,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 
 import org.glassfish.jersey.client.JerseyClientBuilder;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.client.filter.CsrfProtectionFilter;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
@@ -89,7 +89,7 @@ public class ClientWrapper implements Client {
         realClient.register(new JettisonFeature());
         realClient.register(new CsrfProtectionFilter());
         if ((userName != null) && (password != null)) {
-            realClient.register(new HttpBasicAuthFilter(userName, password));
+            realClient.register(HttpAuthenticationFeature.basic(userName, password));
         }
         realClient.register(new ClientRequestFilter() {
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.glassfish.admin.rest.client.ClientWrapper;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
@@ -77,7 +78,7 @@ public class RestTestBase {
     protected static final String AUTH_USER_NAME = "dummyuser";
     protected static final String AUTH_PASSWORD = "dummypass";
     protected static final String CONTEXT_ROOT_MANAGEMENT = "/management";
-    private static final HttpBasicAuthFilter basicAuthFilter = new HttpBasicAuthFilter(AUTH_USER_NAME, AUTH_PASSWORD);
+    private static final HttpAuthenticationFeature basicAuthFilter = HttpAuthenticationFeature.basic(AUTH_USER_NAME, AUTH_PASSWORD);
     protected static String adminHost;
     protected static String adminPort;
     protected static String adminUser;
