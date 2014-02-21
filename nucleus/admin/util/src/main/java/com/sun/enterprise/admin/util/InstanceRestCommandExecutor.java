@@ -51,6 +51,7 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.ActionReport.MessagePart;
 import org.glassfish.api.admin.*;
 import org.glassfish.hk2.api.ServiceLocator;
+import com.sun.enterprise.util.StringUtils;
 
 /**
  *
@@ -131,6 +132,9 @@ public class InstanceRestCommandExecutor extends ServerRemoteRestAdminCommand im
         try {
             executeCommand(params);
             copyActionReportContent(super.getActionReport(), aReport);
+            if(StringUtils.ok(getCommandOutput()))
+                aReport.setMessage(strings.getLocalString("ice.successmessage", 
+                        "{0}:\n{1}\n", getServer().getName(), getCommandOutput()));
         } catch (CommandException cmdEx) {
             ActionReport.ExitCode finalResult;
             if(cmdEx.getCause() instanceof java.net.ConnectException) {
