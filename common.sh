@@ -178,8 +178,27 @@ promote_weekly(){
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
     VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     create_svn_tag
-    # TODO: increment build value in both promote-trunk.version and pkgid-trunk.version
+
+    # increment build value in both promote-trunk.version and pkgid-trunk.version
     # only when build parameter RELEASE_VERSION has been resolved (i.e not provided explicitly).
+    if [ ! -z $INCREMENT_BUILD_ID ]
+    then    
+        BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
+        PKG_ID=`cat ${HUDSON_HOME}/pkgid-trunk.version`    
+        NEXT_ID=`cut -c 2- <<< $BUILD_ID`
+        NEXT_ID=$((NEXT_ID+1))
+
+        # prepend a 0 if less than 10
+        if [ $NEXT_ID -lt 10 ]
+        then
+            NEXT_BUILD_ID="b0$NEXT_ID"
+        else
+            NEXT_BUILD_ID="b$NEXT_ID"
+        fi
+        ssh $SSH_MASTER `echo "echo $NEXT_BUILD_ID > /export2/hudson/promote-trunk.version"`
+        ssh $SSH_MASTER `echo "echo $NEXT_ID > /export2/hudson/pkgid-trunk.version"`
+    fi
+
     promote_finalize
 }
 
@@ -295,6 +314,7 @@ init_version(){
 	    then
 		curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
 		RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
+		INCREMENT_BUILD_ID=true
 		rm ${WORKSPACE_BUNDLES}/version-info.txt
 	    fi
 		
@@ -303,6 +323,7 @@ init_version(){
 	    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
 	    then
 	        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+	        PKG_ID=`sed -e s@"b0"@@g -e s@"b"@@g <<< ${BUILD_ID}`
 	        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
 	    else
 	        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
@@ -521,7 +542,7 @@ create_version_info(){
     # TODO, put env desc
     # OS, arch, build node, mvn version, jdk version
     echo "${GF_WORKSPACE_URL_HTTP}/trunk/main ${SVN_REVISION}" > ${WORKSPACE}/version-info.txt
-
+    
     # RELEASE_VERSION has not be provided
     # releasing next promoted build
     if [ "${BUILD_KIND}" = "weekly" ] && [ ${#RELEASE_VERSION} -eq 0 ]
