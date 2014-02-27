@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.security.ee.auth.realm.pam;
+package com.sun.enterprise.security.auth.realm.pam;
 
 import com.sun.appserv.security.AppservRealm;
 import com.sun.enterprise.security.auth.realm.BadRealmException;

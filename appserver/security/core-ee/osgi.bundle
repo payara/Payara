@@ -43,13 +43,13 @@
                         com.sun.enterprise.security.ee; \
                         com.sun.enterprise.security.ee.audit; \
                         com.sun.enterprise.security.ee.auth.login; \
-                        com.sun.enterprise.security.ee.auth.realm.jdbc; \
+                        com.sun.enterprise.security.auth.realm.jdbc; \
                         com.sun.enterprise.security.ee.authorize; \
                         com.sun.enterprise.security.jauth; \
                         com.sun.enterprise.security.jmac; \
                         com.sun.enterprise.security.jmac.callback; \
                         com.sun.enterprise.security.jmac.config; \
- 			com.sun.enterprise.security.ee.auth.realm.pam; \
+ 			com.sun.enterprise.security.auth.realm.pam; \
                         com.sun.enterprise.security.authorize; \
                         com.sun.enterprise.security.provider; \
                         com.sun.enterprise.security.auth.digest.impl; \

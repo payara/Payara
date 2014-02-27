@@ -44,7 +44,7 @@ import java.util.logging.Level;
 
 import com.sun.enterprise.security.auth.login.PasswordLoginModule;
 import com.sun.enterprise.security.auth.login.common.LoginException;
-import com.sun.enterprise.security.ee.auth.realm.jdbc.JDBCRealm;
+import com.sun.enterprise.security.auth.realm.jdbc.JDBCRealm;
 
 import java.util.Arrays;
 

@@ -38,7 +38,7 @@
  * holder.
  */
 
-package com.sun.enterprise.security.ee.auth.realm.jdbc;
+package com.sun.enterprise.security.auth.realm.jdbc;
 
 import java.nio.charset.CharacterCodingException;
 import java.security.MessageDigest;
