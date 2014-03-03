@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -92,7 +92,7 @@ public class SerialContext implements Context {
 
     private static final String JAVA_URL = "java:";
 
-    private static final String JAVA_GLOBAL_URL = "java:global/";
+    private static final String JAVA_GLOBAL_URL = "java:global";
 
     // Sets unmanaged SerialContext in test mode to prevent attempts to contact server. 
     static final String INITIAL_CONTEXT_TEST_MODE = "com.sun.enterprise.naming.TestMode";
