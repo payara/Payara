@@ -166,8 +166,13 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
                                boolean invokePostConstruct) 
         throws InjectionException 
     {
-
-        inject(instance.getClass(), instance, componentEnv, null,
+        Class instanceClass;
+        if ( instance == null ) {
+            instanceClass = null;
+        } else {
+            instanceClass = instance.getClass();
+        }
+        inject(instanceClass, instance, componentEnv, null,
                invokePostConstruct);
 
     }
