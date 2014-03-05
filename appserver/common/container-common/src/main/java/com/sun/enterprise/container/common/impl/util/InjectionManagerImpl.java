@@ -161,18 +161,13 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
 
     }
 
-    public void injectInstance(Object instance, 
+    public void injectInstance(Object instance,
                                JndiNameEnvironment componentEnv,
-                               boolean invokePostConstruct) 
-        throws InjectionException 
+                               boolean invokePostConstruct)
+      throws InjectionException
     {
-        Class instanceClass;
-        if ( instance == null ) {
-            instanceClass = null;
-        } else {
-            instanceClass = instance.getClass();
-        }
-        inject(instanceClass, instance, componentEnv, null,
+
+        inject(instance.getClass(), instance, componentEnv, null,
                invokePostConstruct);
 
     }
@@ -202,7 +197,30 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
         }
     }
 
-    public void injectClass(Class clazz, 
+    public void injectClass(Class clazz,
+                            String componentId,
+                            boolean invokePostConstruct ) throws InjectionException {
+
+      ComponentInvocation inv = invocationMgr.getCurrentInvocation();
+
+      if( inv != null ) {
+        JndiNameEnvironment componentEnv =
+          compEnvManager.getJndiNameEnvironment(componentId);
+
+        if( componentEnv != null ) {
+          injectClass(clazz, componentEnv, invokePostConstruct);
+        } else {
+          throw new InjectionException(localStrings.getLocalString(
+            "injection-manager.no-descriptor-registered-for-component",
+            "No descriptor registered for componentId: {0}", componentId));
+        }
+      } else {
+        throw new InjectionException(localStrings.getLocalString(
+          "injection-manager.null-invocation-context", "Null invocation context"));
+      }
+    }
+
+    public void injectClass(Class clazz,
                             JndiNameEnvironment componentEnv) 
         throws InjectionException
     {

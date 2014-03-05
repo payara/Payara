@@ -133,11 +133,17 @@ public class InjectionServicesImpl implements InjectionServices {
                     // CDI-style managed bean that doesn't have @ManagedBean annotation but
                     // is injected within the context of an ejb.  Need to explicitly
                     // set the environment of the ejb bundle.
-                    injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv)
-                        ,false);
-
+                    if ( target == null ) {
+                        injectionManager.injectClass(targetClass, compEnvManager.getComponentEnvId(injectionEnv),false);
+                    } else {
+                        injectionManager.injectInstance(target, compEnvManager.getComponentEnvId(injectionEnv),false);
+                    }
                 } else {
-                    injectionManager.injectInstance(target, injectionEnv, false);
+                    if ( target == null ) {
+                      injectionManager.injectClass(targetClass, injectionEnv, false);
+                    } else {
+                      injectionManager.injectInstance(target, injectionEnv, false);
+                    }
                 }
             }
 
