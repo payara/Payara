@@ -94,11 +94,11 @@ public class AdminCommandEventBrokerImpl<T> implements AdminCommandEventBroker<T
     
     @Override
     public void fireEvent(String name, Object event) {
-        if (name == null) {
-            throw new IllegalArgumentException("Argument name must be defined");
-        }
         if (event == null) {
             return;
+        }
+        if (name == null) {
+            throw new IllegalArgumentException("Argument name must be defined");
         }
         IdentityHashMap<AdminCommandListener, AdminCommandListener> deduplicated 
                 = new IdentityHashMap<AdminCommandListener, AdminCommandListener>();
