@@ -1034,6 +1034,11 @@
                 <artifactId>hawtjni-runtime</artifactId>
                 <version>1.5</version>
             </dependency>
+            <dependency>
+                <groupId>org.glassfish.external</groupId>
+                <artifactId>asm-all</artifactId>
+                <version>3.3</version>
+            </dependency>            
         </dependencies>
     </dependencyManagement>
     
