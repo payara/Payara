@@ -390,7 +390,7 @@ print_env_info(){
 dev_build(){
     printf "\n%s \n\n" "===== DO THE BUILD! ====="
     mvn ${MAVEN_ARGS} -f main/pom.xml clean install \
-        -Dmaven.test.failure.ignore=true \
+        -Dmaven.test.failure.ignore=true
 }
 
 release_build(){
