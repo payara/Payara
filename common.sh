@@ -75,6 +75,7 @@ build_re_finalize(){
 
 build_re_dev(){
     build_init
+    dev_build
     archive_bundles
 }
 
@@ -384,6 +385,12 @@ print_env_info(){
     java -version
     mvn --version
     svn --version
+}
+
+dev_build(){
+    printf "\n%s \n\n" "===== DO THE BUILD! ====="
+    mvn ${MAVEN_ARGS} -f main/pom.xml clean install \
+        -Dmaven.test.failure.ignore=true \
 }
 
 release_build(){
