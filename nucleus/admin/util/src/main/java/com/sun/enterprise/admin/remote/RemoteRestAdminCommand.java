@@ -796,6 +796,9 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                 if (logger.isLoggable(Level.FINEST)) {
                                     logger.log(Level.FINEST, "Event: {0}", event.getName());
                                 }
+                                if (event.getName() == null) {
+                                    throw new IllegalStateException("Event without name. Data: " + event.getData()); 
+                                }
                                 fireEvent(event.getName(), event);
                                 if (AdminCommandState.EVENT_STATE_CHANGED.equals(event.getName())) {
                                     AdminCommandState acs = event.getData(AdminCommandState.class, MEDIATYPE_JSON);
