@@ -147,8 +147,8 @@
         <servlet-api.version>3.1.0</servlet-api.version>
         <grizzly.version>2.3.11</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.2.0-b26</hk2.version>
-        <hk2.plugin.version>2.2.0-b26</hk2.plugin.version>
+        <hk2.version>2.3.0-b02</hk2.version>
+        <hk2.plugin.version>2.3.0-b02</hk2.plugin.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.0-b004</pfl.version>
         <gmbal.version>4.0.0-b001</gmbal.version>
@@ -514,17 +514,11 @@
                             <customClasspathLayout>$${artifact.artifactId}.$${artifact.extension}</customClasspathLayout>
                         </manifest>
                     </archive>
-                        <excludes>
-                           <exclude>**/.ade_path/**</exclude>
-                        </excludes>
+                    <excludes>
+                        <exclude>**/.ade_path/**</exclude>
+                    </excludes>
                 </configuration>
             </plugin>
-
-            <!-- Configure maven-bundle-plugin to generate OSGi manifest.
-                 Please note: we use the manifest goal only and not the bundle goal.
-                  The bundle goal can lead to very surprising results if the
-                  package names are not correctly specified. So,
-                  we use the jar plugin to generate the jar.-->
             <plugin>
                 <groupId>org.apache.felix</groupId>
                 <artifactId>maven-bundle-plugin</artifactId>
