@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -68,7 +68,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 
 import org.glassfish.hk2.api.ServiceLocator;
 
@@ -148,10 +148,10 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
             Domain domain = habitat.getService(Domain.class);
             NetworkListener adminListener = domain.getServerNamed("server").getConfig().getNetworkConfig().getNetworkListener("admin-listener");
             SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
-            
+
             final String host = adminListener.getAddress();
             // Save the REST URL we need to authenticate the user.
-            this.restURL =  (SecureAdmin.Util.isEnabled(secureAdmin) ? "https://" : "http://") + 
+            this.restURL =  (SecureAdmin.Util.isEnabled(secureAdmin) ? "https://" : "http://") +
                     (host.equals("0.0.0.0") ? "localhost" : host) + ":" + adminListener.getPort() + "/management/sessions";
         }
     }
@@ -240,7 +240,7 @@ public class AdminConsoleAuthModule implements ServerAuthModule {
 
         Client client2 = RestUtil.initialize(ClientBuilder.newBuilder()).build();
         WebTarget target = client2.target(restURL);
-        target.register(new HttpBasicAuthFilter(username, password));
+        target.register(HttpAuthenticationFeature.basic(username, password));
         MultivaluedMap payLoad = new MultivaluedHashMap();
         payLoad.putSingle("remoteHostName", request.getRemoteHost());
 

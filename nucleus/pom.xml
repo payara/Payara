@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2011-2014 Oracle and/or its affiliates. All rights reserved. 
+    Copyright (c) 2011-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -61,12 +61,12 @@
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</url>
     </scm>
-    
+
     <issueManagement>
         <system>IssueTracker</system>
         <url>http://java.net/jira/browse/GLASSFISH</url>
     </issueManagement>
-    
+
     <licenses>
       <license>
         <name>CDDL + GPLv2 with classpath exception</name>
@@ -74,7 +74,7 @@
         <distribution>repo</distribution>
         <comments>A business-friendly OSS license</comments>
       </license>
-    </licenses>    
+    </licenses>
 
     <mailingLists>
         <mailingList>
@@ -102,7 +102,7 @@
             <archive>http://java.net/projects/glassfish/lists/commits/archive</archive>
         </mailingList>
     </mailingLists>
-    
+
     <repositories>
         <repository>
             <id>jvnet-nexus-promoted</id>
@@ -126,7 +126,7 @@
             </releases>
             <snapshots>
                 <enabled>false</enabled>
-            </snapshots>            
+            </snapshots>
         </pluginRepository>
     </pluginRepositories>
 
@@ -140,7 +140,7 @@
         <findbugs.exclude />
         <findbugs.version>2.5.2</findbugs.version>
 	<findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
-        
+
         <glassfish-corba.version>4.0.0-b008</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
@@ -154,10 +154,9 @@
         <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.5.1</jersey.version>
+        <jersey.version>2.7</jersey.version>
         <jackson.version>1.9.11</jackson.version>
         <jettison.version>1.3.3</jettison.version>
-        <guava.version>14.0</guava.version>
         <jax-rs-api.version>2.0</jax-rs-api.version>
         <mimepull.version>1.9.4</mimepull.version>
         <jbi.version>1.0</jbi.version>
@@ -183,7 +182,7 @@
         <javadoc.skip>false</javadoc.skip>
         <deploy.skip>false</deploy.skip>
     </properties>
-    
+
     <modules>
         <module>osgi-platforms</module>
         <module>cluster</module>
@@ -201,7 +200,7 @@
         <module>resources</module>
         <module>resources-l10n</module>
     </modules>
-    
+
     <build>
         <defaultGoal>install</defaultGoal>
         <sourceDirectory>src/main/java</sourceDirectory>
@@ -214,7 +213,7 @@
                     <exclude>**/.ade_path/**</exclude>
                 </excludes>
             </resource>
-        </resources> 
+        </resources>
 
         <pluginManagement>
             <plugins>
@@ -562,7 +561,7 @@
                 in package version attribute, we use the following goal to
                 populate a project property with an OSGi version which is
                 equivalent to maven version without qualifier and then use that
-                property in osgi.bundle while exporting. -->                
+                property in osgi.bundle while exporting. -->
                 <configuration>
                     <dropVersionComponent>qualifier</dropVersionComponent>
                     <versionPropertyName>project.osgi.version</versionPropertyName>
@@ -644,7 +643,7 @@
             </plugin>
         </plugins>
     </build>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -687,7 +686,7 @@
                 <groupId>javax.xml.stream</groupId>
                 <artifactId>stax-api</artifactId>
                 <version>${stax-api.version}</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>antlr</groupId>
                 <artifactId>antlr</artifactId>
@@ -741,12 +740,12 @@
                 <artifactId>org.apache.felix.eventadmin</artifactId>
                 <version>1.2.8</version>
             </dependency>
-            
+
             <dependency>
                 <groupId>javax.annotation</groupId>
                 <artifactId>javax.annotation-api</artifactId>
                 <version>${javax.annotation-api.version}</version>
-            </dependency>            
+            </dependency>
             <dependency>
                 <groupId>org.codehaus.jackson</groupId>
                 <artifactId>jackson-mapper-asl</artifactId>
@@ -772,12 +771,7 @@
                 <artifactId>jettison</artifactId>
                 <version>${jettison.version}</version>
             </dependency>
-            <dependency>
-                <groupId>com.google.guava</groupId>
-                <artifactId>guava</artifactId>
-                <version>${guava.version}</version>
-            </dependency>
-                                      
+
             <dependency>
                 <groupId>org.jvnet.mimepull</groupId>
                 <artifactId>mimepull</artifactId>
@@ -1035,7 +1029,7 @@
             </dependency>            
         </dependencies>
     </dependencyManagement>
-    
+
     <profiles>
         <profile>
             <id>default</id>
@@ -1051,7 +1045,7 @@
                     <version>1</version>
                     <scope>system</scope>
                     <systemPath>${java.home}/../lib/tools.jar</systemPath>
-                </dependency>                    
+                </dependency>
             </dependencies>
         </profile>
         <profile>
@@ -1068,7 +1062,7 @@
                     <version>1</version>
                     <scope>system</scope>
                     <systemPath>${java.home}/../Classes/classes.jar</systemPath>
-                </dependency>                    
+                </dependency>
             </dependencies>
         </profile>
         <profile>
@@ -1095,7 +1089,7 @@
                                     <version>${project.version}</version>
                                 </dependency>
                             </dependencies>
-                        </plugin>                
+                        </plugin>
                     </plugins>
                 </pluginManagement>
             </build>
@@ -1171,7 +1165,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>
@@ -1179,5 +1173,5 @@
             <scope>test</scope>
             <optional>true</optional>
         </dependency>
-    </dependencies>    
+    </dependencies>
 </project>

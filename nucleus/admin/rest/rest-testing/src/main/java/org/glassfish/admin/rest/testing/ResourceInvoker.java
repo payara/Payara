@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,17 +40,18 @@
 
 package org.glassfish.admin.rest.testing;
 
-import org.codehaus.jettison.json.JSONObject;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.client.Entity;
-import org.glassfish.jersey.client.filter.HttpBasicAuthFilter;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
+
+import org.codehaus.jettison.json.JSONObject;
 
 public abstract class ResourceInvoker {
 
@@ -212,7 +213,7 @@ public abstract class ResourceInvoker {
 
     private Builder getInvocationBuilder() throws Exception {
         Client client = customizeClient(ClientBuilder.newClient());
-        client.register(new HttpBasicAuthFilter(getUserName(), getPassword()));
+        client.register(HttpAuthenticationFeature.basic(getUserName(), getPassword()));
         WebTarget target = client.target(getUrl());
         for (Map.Entry<String, String> e : getQueryParams().entrySet()) {
             target = target.queryParam(e.getKey(), e.getValue());
