@@ -125,6 +125,9 @@ END_USAGE
     exit 0
 }
 
+build_args="$@"
+build_arg1=`awk '{print $1}' <<< "$build_args"`
+
 mvn_env=""
 #get command options
 while getopts r:D:U:h opt
@@ -132,7 +135,7 @@ do
     case "$opt" in
         r) maven_repo=$OPTARG;;
 	D) mvn_env="$mvn_env -D$OPTARG";;
-        U) update="-U";;
+        U) update="-U"; build_args=`sed s@'-U '@@g <<< "$build_args"`;;
         h | *) usage;;
     esac
 done
@@ -152,9 +155,6 @@ if [ "$maven_repo" != "" ]; then
         fi
     fi
 fi
-
-build_args="$@"
-build_arg1=`awk '{print $1}' <<< "$build_args"`
 
 if [ ! -z $build_arg1 ] && [ $(is_scenario $build_arg1) -eq 1 ]
 then
