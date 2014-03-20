@@ -40,6 +40,7 @@
 package com.sun.enterprise.v3.admin.cluster;
 
 import com.sun.enterprise.config.serverbeans.*;
+import com.sun.enterprise.universal.glassfish.ASenvPropertyReader;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.ExceptionUtil;
@@ -48,8 +49,10 @@ import org.glassfish.api.ActionReport;
 import com.sun.enterprise.util.io.InstanceDirs;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import org.glassfish.api.I18n;
@@ -283,21 +286,17 @@ public class CreateInstanceCommand implements AdminCommand {
     }
 
     private File defaultLocalNodeDirFile() {
+        final Map<String,String> systemProps = 
+            Collections.unmodifiableMap(new ASenvPropertyReader().getProps());
         /*
-         * The "nodes" directory we want to use is a child of
-         * the install directory.
-         *
-         * The installDir field contains the installation directory which the
-         * administrator specified, if s/he specified one, when the target node
-         * was first created.  It is null if the administrator did not specify
-         * an installation directory for the node.  In that case we should
-         * use the DAS's install directory (because this method applies in the
-         * local instance case).
+         * The default "nodes" directory we want to use 
+         * has been set in asenv.conf named as 
+         * AS_DEF_NODES_PATH
          */
-        final File nodeParentDir = (installDir == null
-                ? serverContext.getInstallRoot()
-                : new File(installDir, "glassfish"));
-        return new File(nodeParentDir, "nodes");
+        String nodeDirDefault = systemProps.get(
+                SystemPropertyConstants.AGENT_ROOT_PROPERTY);
+        return new File(nodeDirDefault);
+
     }
 
     private File getDomainInstanceDir() {
