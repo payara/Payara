@@ -249,7 +249,8 @@ init_common(){
     PRODUCT_GF="glassfish"
     PRODUCT_VERSION_GF=${MAJOR_VERSION}.${MINOR_VERSION}.${MICRO_VERSION}
 
-    PROMOTED_BUNDLES=${PROMOTED_URL}/artifact/bundles/
+    PROMOTED_JOB_URL=${HUDSON_URL}/job/${PROMOTED_JOB_NAME}/${PROMOTED_NUMBER}
+    PROMOTED_BUNDLES=${PROMOTED_JOB_URL}/artifact/bundles/
     GF_WORKSPACE_URL_SSH=svn+ssh://${RE_USER}@svn.java.net/glassfish~svn
     GF_WORKSPACE_URL_HTTP=https://svn.java.net/svn/glassfish~svn
 
@@ -797,12 +798,12 @@ Version : ${VERSION}
 
 External: ${JNET_DIR_HTTP}
 Internal: ${ARCHIVE_URL}
-Hudson job: ${PROMOTED_URL}
+Hudson job: ${PROMOTED_JOB_URL}
 SVN revision: ${SVN_REVISION}
 
 Aggregated tests summary:
 
-`aggregated_tests_summary ${PROMOTED_URL}/aggregatedTestReport/`
+`aggregated_tests_summary ${PROMOTED_JOB_URL}/aggregatedTestReport/`
 
 Promotion summary:
 
