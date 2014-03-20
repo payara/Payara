@@ -440,11 +440,15 @@ public class IiopFolbGmsClient implements CallBack {
         final Map<String,ClusterInstanceInfo> result =
             new HashMap<String,ClusterInstanceInfo>() ;
 
-        for (Server server : myCluster.getInstances()) {
-            ClusterInstanceInfo cii = getClusterInstanceInfo( server, myConfig,
-                false) ;
-            if (cii != null) {
-                result.put( server.getName(), cii ) ;
+        //When myServer is DAS's situation, myCluster is null.
+        //null check is needed.
+        if (myCluster != null) {
+            for (Server server : myCluster.getInstances()) {
+                ClusterInstanceInfo cii = getClusterInstanceInfo(server,
+                        myConfig, false);
+                if (cii != null) {
+                    result.put(server.getName(), cii);
+                }
             }
         }
 
