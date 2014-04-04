@@ -535,7 +535,9 @@ public class ComponentValidator extends DefaultDOLVisitor implements ComponentVi
 
         // if we are here, we must have resolved the reference
         if(DOLUtils.getDefaultLogger().isLoggable(Level.FINE)) {
-            DOLUtils.getDefaultLogger().fine("Done Visiting " + getEjbDescriptor().getName() + " reference " + ejbRef);
+            if (getEjbDescriptor() != null){
+                DOLUtils.getDefaultLogger().fine("Done Visiting " + getEjbDescriptor().getName() + " reference " + ejbRef);
+            }
         }
 
         // check that declared types are compatible with expected values
