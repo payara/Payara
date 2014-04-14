@@ -48,6 +48,7 @@ import com.sun.enterprise.admin.remote.reader.StringProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiver;
 import com.sun.enterprise.admin.remote.sse.GfSseEventReceiverProprietaryReader;
 import com.sun.enterprise.admin.remote.sse.GfSseInboundEvent;
+import com.sun.enterprise.admin.remote.sse.SseDumper;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriter;
 import com.sun.enterprise.admin.remote.writer.ProprietaryWriterFactory;
 import com.sun.enterprise.admin.util.AdminLoggerInfo;
@@ -782,6 +783,10 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                     logger.log(Level.FINER, "URL connection is {0}", urlConnection.getClass().getName());
                 }
                 if (resultMediaType != null && resultMediaType.startsWith(MEDIATYPE_SSE)) {
+                    //Just for special debug - remove it after bug is fixed
+                    if ("start-cluster".equalsIgnoreCase(name)) {
+                        SseDumper.getInstance().activate();
+                    }
                     String instanceId = null;
                     boolean retryableCommand = false;
                     try {
@@ -797,6 +802,8 @@ public class RemoteRestAdminCommand extends AdminCommandEventBrokerImpl<GfSseInb
                                     logger.log(Level.FINEST, "Event: {0}", event.getName());
                                 }
                                 if (event.getName() == null) {
+                                    //TODO:
+                                    SseDumper.getInstance().dump();
                                     throw new IllegalStateException("Event without name. Data: " + event.getData()); 
                                 }
                                 fireEvent(event.getName(), event);
