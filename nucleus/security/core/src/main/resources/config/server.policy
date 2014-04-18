@@ -129,7 +129,7 @@ grant {
 // Following grant block is only required for Reflection. If Reflection
 // is not in use the recommendation is to remove this section.
 grant {
-    permission java.lang.RuntimePermission "accessDeclaredMembers";
+    permission java.lang.RuntimePermission "suppressAccessChecks";
 };
 
 // Permissions to invoke CORBA objects in server

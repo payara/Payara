@@ -76,7 +76,7 @@ build_re_finalize(){
 build_re_dev(){
     build_init
     dev_build
-    archive_bundles
+    build_re_finalize
 }
 
 build_re_nightly(){
