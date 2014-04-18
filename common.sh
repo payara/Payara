@@ -70,7 +70,7 @@ build_re_init(){
 
 build_re_finalize(){
     archive_bundles
-    clean_and_zip_workspace
+    zip_tests_workspace
 }
 
 build_re_dev(){
@@ -207,7 +207,7 @@ promote_dev(){
     init_common
     mkdir -p ${WORKSPACE}/dev-bundles
     curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE}/dev-bundles/version-info.txt
-    SVN_REVISION=`awk '{print $2}' <<<  ${WORKSPACE}/dev-bundles/version-info.txt`
+    SVN_REVISION=`cat ${WORKSPACE}/dev-bundles/version-info.txt | head -1 | awk '{print $2}'`
     record_svn_rev ${SVN_REVISION}
 }
 
@@ -465,14 +465,6 @@ get_svn_rev(){
         SVN_REVISION=${SYNCHTO}
     elif [ "${BUILD_KIND}" == "nightly" ]
     then
-        TRIGGER_JOB_URL="http://${HUDSON_MASTER_HOST}/hudson/job/gf-trunk-build-dev"
-        SVN_REVISION=$(wget -q -O - "${TRIGGER_JOB_URL}/dev-build/api/xml?xpath=//changeSet/revision[1]/revision/text()")
-        if [[ ! "${SVN_REVISION}" = *[[:digit:]]* ]]
-        then
-            echo "failed to get the svn revision from ${TRIGGER_JOB_URL}"
-            exit 1
-        fi
-        #also set the triggering job url
         export triggering_build_url=$(wget -q -O - "${TRIGGER_JOB_URL}/dev-build/api/xml?xpath=//url/text()")
     fi
 
@@ -507,6 +499,12 @@ get_svn_rev_from_version_info(){
 record_svn_rev(){
     printf "\n%s \n\n" "===== RECORD CLEAN REVISION ====="
 
+    if [ -z ${1} ] || [ ${#1} -eq 0 ]
+    then
+        printf "\n%s \n\n" "===== ERROR: revision supplied to record_svn_rev function is not set or empty ====="
+        exit 1
+    fi  
+
     svn co --depth=empty ${GF_WORKSPACE_URL_SSH}/trunk/main tmp-co
 
     COMMIT_MSG="setting clean revision"
@@ -523,7 +521,6 @@ record_svn_rev(){
     echo ${1} > svn-keywords
     svn propset -F svn-keywords svn:keyword tmp-co
     svn commit ${WORKSPACE}/tmp-co -m "${COMMIT_MSG}"
-
     rm -rf tmp-co svn-keywords
 }
 
@@ -560,7 +557,7 @@ create_version_info(){
 
     if [ ! -z ${RELEASE_VERSION} ]
     then
-	echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
+	   echo "Maven-Version: ${RELEASE_VERSION}" >> ${WORKSPACE}/version-info.txt
     fi
 
     if [ ! -z ${triggering_build_url} ]
@@ -633,10 +630,15 @@ archive_bundles(){
     cp ${WORKSPACE}/main/nucleus/distributions/nucleus/target/*.zip ${WORKSPACE}/bundles
 }
 
-clean_and_zip_workspace(){
-    printf "\n%s \n\n" "===== ZIP THE WORKSPACE ====="
+zip_tests_workspace(){
+    printf "\n%s \n\n" "===== ZIP THE TESTS WORKSPACE ====="
     svn status main | grep ? | awk '{print $2}' | xargs rm -rf
-    zip ${WORKSPACE}/bundles/workspace.zip -r main
+    zip -r ${WORKSPACE}/bundles/tests-workspace.zip \
+        main/nucleus/pom.xml \
+        main/nucleus/tests/ \
+        main/appserver/pom.xml \
+        main/appserver/tests/ \
+        -x *.svn/*
 }
 
 align_column(){
@@ -751,15 +753,27 @@ scp_jnet(){
         -e s@"--"@"-"@g `
     if [ "nightly" == "${BUILD_KIND}" ]
     then
-	simple_name=`echo ${simple_name} | \
-	    sed -e s@"-${MDATE}"@@g \
-	    -e s@"${MDATE}-"@@g `
+	   simple_name=`echo ${simple_name} | \
+	           sed -e s@"-${MDATE}"@@g \
+	               -e s@"${MDATE}-"@@g`
     fi
 
     ssh ${SSH_MASTER} \
         "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
     ssh ${SSH_MASTER} \
         "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"
+
+    # hack to copy ml distros as non ml distros.
+    if [ "${simple_name: -7}" = "-ml.zip" ]
+    then
+        simple_name_len=${#simple_name}
+        simple_name="${simple_name:0:simple_name_len-7}.zip"
+
+        ssh ${SSH_MASTER} \
+            "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
+        ssh ${SSH_MASTER} \
+            "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"  
+    fi
 }
 
 promote_bundle(){
@@ -769,14 +783,14 @@ promote_bundle(){
     scp_jnet ${WORKSPACE_BUNDLES}/${2}
     if [ "nightly" == "${BUILD_KIND}" ]
     then
-	simple_name=`echo ${2}| tr -d " " | sed \
+	   simple_name=`echo ${2}| tr -d " " | sed \
             -e s@"${PRODUCT_VERSION_GF}-"@@g \
             -e s@"${BUILD_ID}-${MDATE}-"@@g \
             -e s@"-${BUILD_ID}-${MDATE}"@@g \
             -e s@"--"@"-"@g`
     elif [ "weekly" == "${BUILD_KIND}" ]
     then
-	simple_name=`echo ${2}| tr -d " " | sed \
+	   simple_name=`echo ${2}| tr -d " " | sed \
             -e s@"${PRODUCT_VERSION_GF}-"@@g \
             -e s@"${BUILD_ID}-"@@g \
             -e s@"-${BUILD_ID}"@@g \
