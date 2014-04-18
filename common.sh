@@ -508,11 +508,11 @@ record_svn_rev(){
     svn co --depth=empty ${GF_WORKSPACE_URL_SSH}/trunk/main tmp-co
 
     COMMIT_MSG="setting clean revision"
-    CURRENT_KEYWORD=`svn propget svn:keyword tmp-co`
-    CURRENT_KEYWORD=`sed '/^$/d' <<< "${CURRENT_KEYWORD}"`
     LAST_LOG=`svn propget svn:log --revprop -r HEAD tmp-co`
+    CURRENT_RECORDED_REV=`svn propget svn:keyword tmp-co | head -1 | awk '{print $1}'`
 
-    if [ "${LAST_LOG}" = "${COMMIT_MSG}" ]
+    # record one clean_revision only once !
+    if [ "${LAST_LOG}" = "${COMMIT_MSG}" ] && [ ${CURRENT_RECORDED_REV} -eq ${1} ]
     then
         echo "Nothing to do. Current clean_revision is already recorded"
         exit 0
