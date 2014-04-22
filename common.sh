@@ -166,7 +166,7 @@ promote_nightly(){
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
     VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt"
     SVN_REVISION=`head -1 ${VERSION_INFO} | awk '{print $2}'`
-    record_svn_rev ${SVN_REVISION}
+    #record_svn_rev ${SVN_REVISION}
     purge_old_nightlies
     promote_finalize
 }
@@ -204,6 +204,7 @@ promote_weekly(){
 }
 
 promote_dev(){
+    BUILD_KIND="dev"
     init_common
     mkdir -p ${WORKSPACE}/dev-bundles
     curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE}/dev-bundles/version-info.txt
