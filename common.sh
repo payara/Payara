@@ -511,7 +511,7 @@ record_svn_rev(){
     LOG=`svn propget svn:log --revprop -r ${1} tmp-co`
 
     # record one clean_revision only once !
-    if [ "${LOG}" != "${COMMIT_MSG}" ] && [ "${1}" != "`get_clean_svn_rev tmp`" ]
+    if [ "${LOG}" != "${COMMIT_MSG}" ] && [ "${1}" != "`get_clean_svn_rev tmp-co`" ]
     then
         echo ${1} > svn-keywords
         svn propset -F svn-keywords svn:keyword tmp-co
@@ -524,7 +524,7 @@ record_svn_rev(){
 }
 
 get_clean_svn_rev(){
-    svn propget svn:keyword ${1} | grep 'clean_' | sed s@'clean_'@@g | awk '{print $2}'
+    svn propget svn:keyword ${1} | head -1 | awk '{print $1}'
 }
 
 get_current_svn_rev(){
