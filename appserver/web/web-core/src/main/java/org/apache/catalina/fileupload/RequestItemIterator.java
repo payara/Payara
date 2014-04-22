@@ -321,7 +321,11 @@ class RequestItemIterator {
         notifier = new MultipartStream.ProgressNotifier(
                     multipart.getProgressListener(),
                     request.getContentLength());
-        multiStream = new MultipartStream(input, boundary, notifier);
+        try {
+            multiStream = new MultipartStream(input, boundary, notifier);
+        } catch (IllegalArgumentException iae) {
+            throw new ServletException ("The boundary specified in the content-type header is too long", iae);
+        }
         multiStream.setHeaderEncoding(request.getCharacterEncoding());
 
         findNextItem();

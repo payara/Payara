@@ -40,7 +40,7 @@
 
 /**
  * This interface is used to throw an IOException when the request or parts
- * of the multipart exceeds the alloable limited.
+ * of the multipart exceeds the allowable limited.
  *
  * @author: Kin-man Chung
  */
