@@ -647,7 +647,8 @@ zip_tests_maven_repo(){
     pushd ${WORKSPACE}/repository
     zip -r ${WORKSPACE}/bundles/tests-maven-repo.zip \
         org/glassfish/main/common/common-util/* \
-        org/glassfish/main/tests/utils-ng/*
+        org/glassfish/main/common/nucleus-common/* \
+        org/glassfish/main/tests/*
     popd
 }
 
