@@ -71,6 +71,7 @@ build_re_init(){
 build_re_finalize(){
     archive_bundles
     zip_tests_workspace
+    zip_tests_maven_repo
 }
 
 build_re_dev(){
@@ -639,6 +640,14 @@ zip_tests_workspace(){
         main/appserver/pom.xml \
         main/appserver/tests/ \
         -x *.svn/*
+}
+
+zip_tests_maven_repo(){
+    printf "\n%s \n\n" "===== ZIP PART OF THE MAVEN REPO REQUIRED FOR TESTING ====="
+    zip -r ${WORKSPACE}/bundles/tests-maven-repo.zip \
+        ${WORKSPACE}/repository/org/glassfish/main/common/common-util/* \
+        ${WORKSPACE}/repository/org/glassfish/main/tests/utils-ng/* 
+
 }
 
 align_column(){
