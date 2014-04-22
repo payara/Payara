@@ -644,10 +644,10 @@ zip_tests_workspace(){
 
 zip_tests_maven_repo(){
     printf "\n%s \n\n" "===== ZIP PART OF THE MAVEN REPO REQUIRED FOR TESTING ====="
-    zip -r ${WORKSPACE}/bundles/tests-maven-repo.zip \
-        ${WORKSPACE}/repository/org/glassfish/main/common/common-util/* \
-        ${WORKSPACE}/repository/org/glassfish/main/tests/utils-ng/* 
-
+    cd ${WORKSPACE}/repository
+    zip -r bundles/tests-maven-repo.zip \
+        org/glassfish/main/common/common-util/* \
+        org/glassfish/main/tests/utils-ng/*
 }
 
 align_column(){
