@@ -511,7 +511,7 @@ record_svn_rev(){
     LOG=`svn propget svn:log --revprop -r ${1} tmp-co`
 
     # record one clean_revision only once !
-    if [ "${LOG}" -ne "${COMMIT_MSG}" ]
+    if [ "${LOG}" != "${COMMIT_MSG}" ]
     then
         echo ${1} > svn-keywords
         svn propset -F svn-keywords svn:keyword tmp-co
