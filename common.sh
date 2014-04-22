@@ -165,7 +165,7 @@ promote_nightly(){
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
     VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt"
-    SVN_REVISION=`awk '{print $2}' <<<  ${VERSION_INFO}`
+    SVN_REVISION=`head -1 ${VERSION_INFO} | awk '{print $2}'`
     record_svn_rev ${SVN_REVISION}
     purge_old_nightlies
     promote_finalize
