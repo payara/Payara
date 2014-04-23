@@ -649,6 +649,7 @@ zip_tests_maven_repo(){
         org/glassfish/main/common/common-util/* \
         org/glassfish/main/common/nucleus-common/* \
         org/glassfish/main/glassfish-nucleus-parent/* \
+        org/glassfish/main/test-utils/* \
         org/glassfish/main/tests/*
     popd
 }
