@@ -139,7 +139,7 @@
         <findbugs.common>exclude-common.xml</findbugs.common>
         <findbugs.exclude />
         <findbugs.version>2.5.2</findbugs.version>
-	<findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
+        <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
         <glassfish-corba.version>4.0.0-b008</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
