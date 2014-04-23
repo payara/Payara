@@ -657,13 +657,13 @@ zip_tests_maven_repo(){
         org/glassfish/main/admin/* \
         org/glassfish/main/core/* \
         org/glassfish/main/deployment/deployment-common/* \
-        org/glassfish/main/external/ldapbp-repackaged
-        org/glassfish/main/flashlight/flashlight-framework
-        org/glassfish/main/grizzly/grizzly-config
-        org/glassfish/main/grizzly/nucleus-grizzly-all
-        org/glassfish/main/security/security
-        org/glassfish/main/security/security-services
-        org/glassfish/main/security/ssl-impl
+        org/glassfish/main/external/ldapbp-repackaged/* \
+        org/glassfish/main/flashlight/flashlight-framework/* \
+        org/glassfish/main/grizzly/grizzly-config/* \
+        org/glassfish/main/grizzly/nucleus-grizzly-all/* \
+        org/glassfish/main/security/security/* \
+        org/glassfish/main/security/security-services/* \
+        org/glassfish/main/security/ssl-impl/*
     popd
 }
 
