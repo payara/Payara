@@ -645,15 +645,25 @@ zip_tests_workspace(){
 zip_tests_maven_repo(){
     printf "\n%s \n\n" "===== ZIP PART OF THE MAVEN REPO REQUIRED FOR TESTING ====="
     pushd ${WORKSPACE}/repository
+
+    # ideally this should be done
+    # from a maven plugin...
     zip -r ${WORKSPACE}/bundles/tests-maven-repo.zip \
-        org/glassfish/main/common/common-util/* \
-        org/glassfish/main/common/glassfish-api/* \
-        org/glassfish/main/common/scattered-archive-api/* \
-        org/glassfish/main/common/nucleus-common/* \
+        org/glassfish/main/common/* \
         org/glassfish/main/grizzly/* \
         org/glassfish/main/glassfish-nucleus-parent/* \
         org/glassfish/main/test-utils/* \
-        org/glassfish/main/tests/*
+        org/glassfish/main/tests/* \
+        org/glassfish/main/admin/* \
+        org/glassfish/main/core/* \
+        org/glassfish/main/deployment/deployment-common/* \
+        org/glassfish/main/external/ldapbp-repackaged
+        org/glassfish/main/flashlight/flashlight-framework
+        org/glassfish/main/grizzly/grizzly-config
+        org/glassfish/main/grizzly/nucleus-grizzly-all
+        org/glassfish/main/security/security
+        org/glassfish/main/security/security-services
+        org/glassfish/main/security/ssl-impl
     popd
 }
 
