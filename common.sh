@@ -647,7 +647,10 @@ zip_tests_maven_repo(){
     pushd ${WORKSPACE}/repository
     zip -r ${WORKSPACE}/bundles/tests-maven-repo.zip \
         org/glassfish/main/common/common-util/* \
+        org/glassfish/main/common/glassfish-api/* \
+        org/glassfish/main/common/scattered-archive-api/* \
         org/glassfish/main/common/nucleus-common/* \
+        org/glassfish/main/grizzly/* \
         org/glassfish/main/glassfish-nucleus-parent/* \
         org/glassfish/main/test-utils/* \
         org/glassfish/main/tests/*
