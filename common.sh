@@ -663,7 +663,8 @@ zip_tests_maven_repo(){
         org/glassfish/main/grizzly/nucleus-grizzly-all/* \
         org/glassfish/main/security/security/* \
         org/glassfish/main/security/security-services/* \
-        org/glassfish/main/security/ssl-impl/*
+        org/glassfish/main/security/ssl-impl/* \
+        org/glassfish/main/security/nucleus-security/*
     popd
 }
 
