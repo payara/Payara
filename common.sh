@@ -635,7 +635,7 @@ archive_bundles(){
 clean_and_zip_workspace(){
     printf "\n%s \n\n" "===== CLEAN AND ZIP THE WORKSPACE ====="
     svn status main | grep ? | awk '{print $2}' | xargs rm -rf
-    zip ${WORKSPACE}/bundles/workspace.zip -r ${WORKSPACE}/main
+    zip ${WORKSPACE}/bundles/workspace.zip -r main
 }
 
 zip_tests_workspace(){
