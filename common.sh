@@ -99,6 +99,7 @@ build_re_weekly(){
     release_prepare
     release_build "clean deploy" "release-phase2,ips,embedded,javaee-api"
     build_re_finalize
+    clean_and_zip_workspace
 }
 
 promote_init(){
@@ -369,7 +370,7 @@ require_env_var(){
 kill_clean(){
     if [ ${#1} -ne 0 ]
     then
-        kill -9 ${1}
+        kill -9 ${1} || true
     fi
 }
 
@@ -629,6 +630,12 @@ archive_bundles(){
     cp ${WORKSPACE}/main/appserver/distributions/glassfish/target/*.zip ${WORKSPACE}/bundles
     cp ${WORKSPACE}/main/appserver/distributions/web/target/*.zip ${WORKSPACE}/bundles
     cp ${WORKSPACE}/main/nucleus/distributions/nucleus/target/*.zip ${WORKSPACE}/bundles
+}
+
+clean_and_zip_workspace(){
+    printf "\n%s \n\n" "===== CLEAN AND ZIP THE WORKSPACE ====="
+    svn status main | grep ? | awk '{print $2}' | xargs rm -rf
+    zip ${WORKSPACE}/bundles/workspace.zip -r ${WORKSPACE}/main
 }
 
 zip_tests_workspace(){
