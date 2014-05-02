@@ -198,8 +198,8 @@ promote_weekly(){
         else
             NEXT_BUILD_ID="b$NEXT_ID"
         fi
-        ssh $SSH_MASTER `echo "echo $NEXT_BUILD_ID > /export2/hudson/promote-trunk.version"`
-        ssh $SSH_MASTER `echo "echo $NEXT_ID > /export2/hudson/pkgid-trunk.version"`
+        ssh $SSH_MASTER `echo "echo $NEXT_BUILD_ID > /scratch/java_re/hudson/hudson_install/promote-trunk.version"`
+        ssh $SSH_MASTER `echo "echo $NEXT_ID > /scratch/java_re/hudson/hudson_install/pkgid-trunk.version"`
     fi
 
     promote_finalize
