@@ -72,7 +72,8 @@ grant codeBase "file:${com.sun.aas.derbyRoot}/lib/-" {
 // Java Web Start support:
 //       permissions java.security.AllPermission;
 // on the advice of the JDK tools folks.  Should be refined later.
-grant codeBase "file:${com.sun.aas.javaRoot}/lib/tools.jar" {
+//Bug Glassfish-21012 - changing to the right location of tools.jar
+grant codeBase "file:${com.sun.aas.javaRoot}/../lib/tools.jar" {
     permission java.security.AllPermission;
 };
 
