@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -93,11 +93,23 @@ public class JMSConnectionFactoryDefinitionHandler extends AbstractResourceHandl
             JMSConnectionFactoryDefinitionDescriptor desc = createDescriptor(jmsConnectionFactoryDefnAn);
             if (isDefinitionAlreadyPresent(jmscfdDescs, desc)) {
                 merge(jmscfdDescs, jmsConnectionFactoryDefnAn);
+                for (ResourceDescriptor jmscfdDesc : jmscfdDescs) {
+                    if (jmscfdDesc instanceof JMSConnectionFactoryDefinitionDescriptor) {
+                        setDefaultTransactionSupport((JMSConnectionFactoryDefinitionDescriptor) jmscfdDesc);
+                    }
+                }
             } else {
+                setDefaultTransactionSupport(desc);
                 context.addResourceDescriptor(desc);
             }
         }
         return getDefaultProcessedResult();
+    }
+
+    private void setDefaultTransactionSupport(JMSConnectionFactoryDefinitionDescriptor desc) {
+        Properties props = desc.getProperties();
+        if (props.get("org.glassfish.connector-connection-pool.transaction-support") == null)
+            props.put("org.glassfish.connector-connection-pool.transaction-support", "XATransaction");
     }
 
     /**
