@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -119,7 +119,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
     Config config;
 
     @Inject
-    private ServiceLocator habitat;
+    private ServiceLocator serviceLocator;
 
     @Inject
     Transactions transactions;
@@ -397,7 +397,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      * @return the habitat
      */   
     public ServiceLocator getHabitat() {
-        return habitat;
+        return serviceLocator;
     }
 
     public GrizzlyMonitoring getMonitoring() {
@@ -599,7 +599,7 @@ public class GrizzlyService implements RequestDispatcher, PostConstruct, PreDest
      */
     void registerContainerAdapters() {
         for (org.glassfish.api.container.Adapter subAdapter :
-            habitat.<org.glassfish.api.container.Adapter>getAllServices(org.glassfish.api.container.Adapter.class)) {
+            serviceLocator.<org.glassfish.api.container.Adapter>getAllServices(org.glassfish.api.container.Adapter.class)) {
             //@TODO change EndportRegistrationException processing if required
             try {
                 if (!subAdapter.isRegistered()) {

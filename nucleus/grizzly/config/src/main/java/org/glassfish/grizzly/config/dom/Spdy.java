@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -50,11 +50,13 @@ import org.jvnet.hk2.config.types.PropertyBag;
 public interface Spdy extends ConfigBeanProxy, PropertyBag {
 
     final int MAX_CONCURRENT_STREAMS = 50;
-    final boolean SPDY2_ENABLED = true;
     final int INITIAL_WINDOW_SIZE_IN_BYTES = 64 * 1024;
     int MAX_FRAME_LENGTH_IN_BYTES = 1 << 24;
     final boolean ENABLED = true;
     final String MODE_PATTERN = "(npn|plain)";
+    
+    // the order defines the versions priority to be chosen during NPN handshake
+    final String VERSIONS = "spdy/3.1, spdy/3";
 
     /**
      * Enables SPDY support.
@@ -99,11 +101,10 @@ public interface Spdy extends ConfigBeanProxy, PropertyBag {
     void setMaxFrameLengthInBytes(int maxFrameLengthInBytes);
     
     /**
-     * Toggles support for SPDY/2.  By default, SPDY/2 support is enabled.
-     * @return
+     * Enables SPDY support.
      */
-    @Attribute(defaultValue = "" + SPDY2_ENABLED, dataType = Boolean.class)
-    boolean getSpdy2Enabled();
+    @Attribute(defaultValue = VERSIONS, dataType = String.class)
+    String getVersions();
 
-    void setSpdy2Enabled(boolean spdy2Enabled);
+    void setVersions(String versions);
 }

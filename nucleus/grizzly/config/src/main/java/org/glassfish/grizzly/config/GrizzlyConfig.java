@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@ public class GrizzlyConfig {
     
     private static final Logger LOGGER = Logger.getLogger(LOGGER_NAME);
     private final NetworkConfig config;
-    private final ServiceLocator habitat;
+    private final ServiceLocator serviceLocator;
     private final List<GrizzlyListener> listeners = new ArrayList<GrizzlyListener>();
 
     public static Logger logger() {
@@ -66,8 +66,8 @@ public class GrizzlyConfig {
     }
     
     public GrizzlyConfig(String file) {
-        habitat = Utils.getServiceLocator(file);
-        config = habitat.getService(NetworkConfig.class);
+        serviceLocator = Utils.getServiceLocator(file);
+        config = serviceLocator.getService(NetworkConfig.class);
     }
 
     public NetworkConfig getConfig() {
@@ -83,7 +83,7 @@ public class GrizzlyConfig {
         synchronized (listeners) {
             for (final NetworkListener listener : config.getNetworkListeners().getNetworkListener()) {
                 final GenericGrizzlyListener grizzlyListener = new GenericGrizzlyListener();
-                grizzlyListener.configure(habitat, listener);
+                grizzlyListener.configure(serviceLocator, listener);
                 listeners.add(grizzlyListener);
                 
                 try {

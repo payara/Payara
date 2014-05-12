@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -345,7 +345,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
     protected NIOTransport configureTCPTransport(final Transport transportConfig) {
         
-        final TCPNIOTransport tcpTransport = TCPNIOTransportBuilder.newInstance().build();
+        final TCPNIOTransport tcpTransport = configureDefaultThreadPoolConfigs(
+                TCPNIOTransportBuilder.newInstance().build());
         tcpTransport.setTcpNoDelay(Boolean.parseBoolean(transportConfig.getTcpNoDelay()));
         tcpTransport.setLinger(Integer.parseInt(transportConfig.getLinger()));
         tcpTransport.setWriteTimeout(Long.parseLong(transportConfig.getWriteTimeoutMillis()), TimeUnit.MILLISECONDS);
@@ -355,9 +356,18 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     protected NIOTransport configureUDPTransport() {
-        return UDPNIOTransportBuilder.newInstance().build();
+        return configureDefaultThreadPoolConfigs(
+                UDPNIOTransportBuilder.newInstance().build());
     }
 
+    protected <T extends NIOTransport> T configureDefaultThreadPoolConfigs(
+            final T transport) {
+        transport.setKernelThreadPoolConfig(ThreadPoolConfig.defaultConfig());
+        transport.setWorkerThreadPoolConfig(ThreadPoolConfig.defaultConfig());
+        
+        return transport;
+    }
+    
     protected void configureProtocol(final ServiceLocator habitat,
             final NetworkListener networkListener,
             final Protocol protocol,
@@ -690,8 +700,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
             // first try to lookup a service appropriate for the mode
             // that has been configured.
-            final String serviceName = ((isNpnMode) ? "spdy-npn" : "spdy-plane");
-            AddOn spdyAddon = locator.getService(AddOn.class, serviceName);
+            AddOn spdyAddon = locator.getService(AddOn.class, "spdy");
 
             // if no service was found, attempt to load via reflection.
             if (spdyAddon == null) {
