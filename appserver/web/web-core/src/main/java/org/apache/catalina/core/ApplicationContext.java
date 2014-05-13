@@ -1075,24 +1075,30 @@ public class ApplicationContext implements ServletContext {
             return;
         }
 
-        for (String name : context.findParameters()) {
-            parameters.put(name, context.findParameter(name));
-        }
-        List<ApplicationParameter> params =
-            context.findApplicationParameters();
-        synchronized(params) {
-            Iterator<ApplicationParameter> i = params.iterator(); 
-            while (i.hasNext()) {
-                ApplicationParameter param = i.next();
-                if (param.getOverride()) {
-                    if (parameters.get(param.getName()) == null)
+        synchronized(this) {
+            if (parametersMerged) {
+                return;
+            }
+
+            for (String name : context.findParameters()) {
+                parameters.put(name, context.findParameter(name));
+            }
+            List<ApplicationParameter> params =
+                context.findApplicationParameters();
+            synchronized(params) {
+                Iterator<ApplicationParameter> i = params.iterator(); 
+                while (i.hasNext()) {
+                    ApplicationParameter param = i.next();
+                    if (param.getOverride()) {
+                        if (parameters.get(param.getName()) == null)
+                            parameters.put(param.getName(), param.getValue());
+                    } else {
                         parameters.put(param.getName(), param.getValue());
-                } else {
-                    parameters.put(param.getName(), param.getValue());
+                    }
                 }
             }
+            parametersMerged = true;
         }
-        parametersMerged = true;
     }
 
 }
