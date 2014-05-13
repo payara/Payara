@@ -232,7 +232,7 @@ public class TransactionalInterceptorBase implements Serializable {
                 throw runtimeException;
             }
             //spec states "if both elements are specified, dontRollbackOn takes precedence."
-            if(dontRollbackOnClass.equals(runtimeException.getClass())) {
+            if(dontRollbackOnClass.equals(runtimeException.getClass()) || dontRollbackOnClass.isAssignableFrom(runtimeException.getClass())) {
                 throw runtimeException;
             }
             Class rollbackOnClass =
@@ -240,13 +240,16 @@ public class TransactionalInterceptorBase implements Serializable {
             if(rollbackOnClass!=null) {
                 //both rollback and dontrollback are isAssignableFrom exception.
                 //check if one isAssignableFrom the other, dontRollbackOn takes precedence if not
-                if(rollbackOnClass.isAssignableFrom(dontRollbackOnClass)) throw runtimeException;
+                if(rollbackOnClass.isAssignableFrom(dontRollbackOnClass)) {
+                    throw runtimeException;
+                }
                 else if(dontRollbackOnClass.isAssignableFrom(rollbackOnClass)) {
                     markRollbackIfActiveTransaction();
                     throw runtimeException;
                 }
             }
-            //should not actually reach here
+            //This means dontRollbackOnClass is "not null" and rollbackOnClass is "null"
+            //Default for un-checked exception is to mark transaction for rollback
             markRollbackIfActiveTransaction();
             throw runtimeException;
         } catch (Exception checkedException) {
@@ -255,10 +258,8 @@ public class TransactionalInterceptorBase implements Serializable {
             if (rollbackOnClass == null) { //proceed as default...
                 throw checkedException;
             }
-            if(rollbackOnClass.equals(checkedException.getClass())) {
-                markRollbackIfActiveTransaction();
-                throw checkedException;
-            }
+
+            //spec states "if both elements are specified, dontRollbackOn takes precedence."
             Class dontRollbackOnClass =
                     getClassInArrayClosestToClassOrNull(dontRollbackOn, checkedException.getClass());
             if(dontRollbackOnClass!=null) {
@@ -271,7 +272,13 @@ public class TransactionalInterceptorBase implements Serializable {
                     throw checkedException;
                 }
             }
-            markRollbackIfActiveTransaction();
+
+            if(rollbackOnClass.equals(checkedException.getClass()) || rollbackOnClass.isAssignableFrom(checkedException.getClass()) ) {
+                markRollbackIfActiveTransaction();
+                throw checkedException;
+            }
+            //This means dontRollbackOnClass is null but rollbackOnClass is "not null"
+            //Default for checked exception is to "not" mark transaction for rollback
             throw checkedException;
         }
         return object;
