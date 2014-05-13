@@ -879,7 +879,8 @@ public abstract class AuthenticatorBase
             String username, char[] password) {
         
         if (log.isLoggable(Level.FINE)) {
-            String msg = "Authenticated '" + principal.getName() + "' with type '"
+            String pname = ((principal != null) ? principal.getName() : "[null principal]");
+            String msg = "Authenticated '" + pname + "' with type '"
                          + authType + "'";
             log.log(Level.FINE, msg);
         }
