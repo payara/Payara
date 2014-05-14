@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,10 +44,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Formatter;
 import java.util.Locale;
-import java.util.Vector;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.logging.Level;
@@ -113,7 +111,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
                 return;
             }
             LogRecord logRecord = new LogRecord(level, logMessage);
-            pendingRecords.add(logRecord);            
+            pendingRecords.offer(logRecord);            
         }
     }
 
@@ -135,36 +133,26 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
     }
 
     /**
-     * Retrieves the LogRecord from our Queue and log them
+     * Retrieves the LogRecords from our Queue and log them
      */
     public void log() {
-
-        LogRecord record;
-        
-        // take is blocking so we take one record off the queue
-        try {
-            record = pendingRecords.take();
-            if (reentrant.get() != null) {
-                return;
-            }
-            try {
-                reentrant.set(this);
-                logger.log(record);
-            } finally {
-                reentrant.set(null);
-            }
-        } catch (InterruptedException e) {
+        if (reentrant.get() != null) {
             return;
         }
-
-        // now try to read more.  we end up blocking on the above take call if nothing is in the queue
-        Vector<LogRecord> v = new Vector<LogRecord>();
-        final int size = pendingRecords.size();
-        int msgs = pendingRecords.drainTo(v, size);
-        for (int j = 0; j < msgs; j++) {
-            logger.log(v.get(j));
+        try {
+            reentrant.set(this);
+            // now try to read more.  we end up blocking on the above take call if nothing is in the queue
+            final int size = pendingRecords.size();
+            if (size > 0) {
+                ArrayList<LogRecord> v = new ArrayList<LogRecord>(size);
+                int msgs = pendingRecords.drainTo(v);
+                for (int j = 0; j < msgs; j++) {
+                    logger.log(v.get(j));
+                }                
+            }
+        } finally {
+            reentrant.set(null);
         }
-
     }
     
     public void close() throws IOException {
@@ -172,15 +160,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
         pump.interrupt();
 
         // Drain and log the remaining messages
-        final int size = pendingRecords.size();
-        if (size > 0) {
-            Collection<LogRecord> records = new ArrayList<LogRecord>(size);
-            pendingRecords.drainTo(records, size);
-            for (LogRecord record : records) {
-                logger.log(record);
-            }
-        }
-        
+        log();        
         super.close();
     }
     
