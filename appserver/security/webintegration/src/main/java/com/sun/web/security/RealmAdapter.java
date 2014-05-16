@@ -1669,8 +1669,13 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                         "JMAC: http msg authentication fail", ae);
             }
             res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+        } catch (RuntimeException e) {
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE,
+                        "JMAC: Exception during validateRequest", e);
+            }
+            res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-
         if (rvalue) {
             Set<Principal> principalSet = subject.getPrincipals();
             // must be at least one new principal to establish 
@@ -1716,7 +1721,19 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                     _logger.log(Level.SEVERE, "[Web-Security] unable to register session", le);
 
                 }
+            } else {
+                //GLASSFISH-20930.Set null for the case when SAM does not
+                //indicate that it needs the session
+                if (((HttpServletRequest) messageInfo.getRequestMessage()).getUserPrincipal() != null) {
+                    request.setUserPrincipal(null);
+                    request.setAuthType(null);
+                }
 
+                if (isMandatory) {
+                    rvalue = false;
+                }
+            }
+            if (rvalue) {
                 HttpServletRequest newRequest = (HttpServletRequest) messageInfo.getRequestMessage();
                 if (newRequest != req) {
                     request.setNote(Globals.WRAPPED_REQUEST,
@@ -1728,14 +1745,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                     request.setNote(Globals.WRAPPED_RESPONSE,
                             new HttpResponseWrapper(response, newResponse));
                 }
-
-            } else if (isMandatory) {
-                rvalue = false;
             }
+
         }
         return rvalue;
     }
-    
+
     private boolean shouldRegister(Map map) {
         /*
          * Detect both the proprietary property and the standard one.
