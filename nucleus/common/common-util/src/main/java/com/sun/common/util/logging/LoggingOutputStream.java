@@ -104,15 +104,13 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             logMessage = this.toString();
             super.reset();
         }
-        if (logMessage != null) {
-            logMessage = logMessage.trim();
-            if (logMessage.length() == 0 || logMessage.equals(lineSeparator)) {
-                // avoid empty records
-                return;
-            }
-            LogRecord logRecord = new LogRecord(level, logMessage);
-            pendingRecords.offer(logRecord);            
+        logMessage = logMessage.trim();
+        if (logMessage.length() == 0 || logMessage.equals(lineSeparator)) {
+            // avoid empty records
+            return;
         }
+        LogRecord logRecord = new LogRecord(level, logMessage);
+        pendingRecords.offer(logRecord);                    
     }
 
     private void initializePump() {
