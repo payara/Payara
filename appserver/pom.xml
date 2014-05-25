@@ -116,7 +116,7 @@
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
         <mq.version>5.0.1-b06</mq.version>
-        <javadb.version>10.9.1.0</javadb.version>
+        <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.0.3.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
