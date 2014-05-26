@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,9 @@ package com.sun.enterprise.admin.remote.reader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
 import org.glassfish.api.admin.progress.ProgressStatusEventComplete;
 import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
@@ -56,14 +56,14 @@ import org.glassfish.api.admin.progress.ProgressStatusEventSet;
  * @author mmares
  */
 public class ProgressStatusEventJsonProprietaryReader implements ProprietaryReader<ProgressStatusEvent> {
-    
+
     private static final JsonFactory factory = new JsonFactory();
-    
+
     @Override
     public boolean isReadable(Class<?> type, String mimetype) {
         return type.isAssignableFrom(ProgressStatusEvent.class);
     }
-    
+
     public ProgressStatusEvent readFrom(HttpURLConnection urlConnection) throws IOException {
         return readFrom(urlConnection.getInputStream(), urlConnection.getContentType());
     }
@@ -75,7 +75,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
             JsonToken token = jp.nextToken(); //sorounding object
             jp.nextToken(); //Name progress-status-event
             JsonToken token2 = jp.nextToken();
-            if (token != JsonToken.START_OBJECT || 
+            if (token != JsonToken.START_OBJECT ||
                     token2 != JsonToken.START_OBJECT ||
                     !"progress-status-event".equals(jp.getCurrentName())) {
                 throw new IOException("Not expected type (progress-status-event) but (" + jp.getCurrentName() + ")");
@@ -85,7 +85,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
             jp.close();
         }
     }
-    
+
     public static ProgressStatusEvent readProgressStatusEvent(JsonParser jp) throws IOException {
         String id = null;
         JsonToken token = null;
@@ -116,7 +116,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
         }
         return result;
     }
-    
+
     public static void readToPSEventSet(ProgressStatusEventSet event, JsonParser jp) throws IOException {
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
@@ -128,7 +128,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
             }
         }
     }
-    
+
     public static void readToPSEventProgress(ProgressStatusEventProgress event, JsonParser jp) throws IOException {
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
@@ -142,7 +142,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
             }
         }
     }
-    
+
     public static void readToPSEventComplete(ProgressStatusEventComplete event, JsonParser jp) throws IOException {
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();
@@ -152,7 +152,7 @@ public class ProgressStatusEventJsonProprietaryReader implements ProprietaryRead
             }
         }
     }
-    
+
     public static void readToPSEventCreateChild(ProgressStatusEventCreateChild event, JsonParser jp) throws IOException {
         while (jp.nextToken() != JsonToken.END_OBJECT) {
             String fieldname = jp.getCurrentName();

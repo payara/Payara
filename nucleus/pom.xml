@@ -154,8 +154,8 @@
         <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.8</jersey.version>
-        <jackson.version>1.9.11</jackson.version>
+        <jersey.version>2.9</jersey.version>
+        <jackson.version>2.3.2</jackson.version>
         <jettison.version>1.3.3</jettison.version>
         <jax-rs-api.version>2.0</jax-rs-api.version>
         <mimepull.version>1.9.4</mimepull.version>
@@ -747,23 +747,28 @@
                 <version>${javax.annotation-api.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-mapper-asl</artifactId>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-base</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-jaxrs</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${jackson.version}</version>
+            </dependency>
+             <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-xc</artifactId>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.codehaus.jackson</groupId>
-                <artifactId>jackson-core-asl</artifactId>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
                 <version>${jackson.version}</version>
             </dependency>
             <dependency>
@@ -1026,7 +1031,7 @@
                 <groupId>org.glassfish.external</groupId>
                 <artifactId>asm-all</artifactId>
                 <version>3.3</version>
-            </dependency>            
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

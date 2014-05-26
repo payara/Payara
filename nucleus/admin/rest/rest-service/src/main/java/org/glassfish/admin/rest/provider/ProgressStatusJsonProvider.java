@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -43,16 +43,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.Collection;
 import java.util.Set;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import org.glassfish.api.admin.ProgressStatus;
 import org.glassfish.api.admin.progress.ProgressStatusBase;
 import org.glassfish.api.admin.progress.ProgressStatusBase.ChildProgressStatus;
@@ -64,18 +63,18 @@ import org.glassfish.api.admin.progress.ProgressStatusBase.ChildProgressStatus;
 @Provider
 @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class ProgressStatusJsonProvider extends BaseProvider<ProgressStatusBase> {
-    
+
     private static final JsonFactory factory = new JsonFactory();
-    
+
     public ProgressStatusJsonProvider() {
         super(ProgressStatus.class, MediaType.APPLICATION_JSON_TYPE, new MediaType("application", "x-javascript"));
     }
-    
+
     @Override
     protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
         return desiredType.isAssignableFrom(type);
     }
-    
+
     @Override
     public void writeTo(ProgressStatusBase proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
@@ -85,7 +84,7 @@ public class ProgressStatusJsonProvider extends BaseProvider<ProgressStatusBase>
         out.writeEndObject();
         out.flush();
     }
-    
+
     public void writeJson(String name, ProgressStatusBase ps, int allocatedSteps, JsonGenerator out) throws IOException {
         if (ps == null) {
             return;
@@ -118,5 +117,5 @@ public class ProgressStatusJsonProvider extends BaseProvider<ProgressStatusBase>
     public String getContent(ProgressStatusBase proxy) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 }

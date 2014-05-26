@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,9 +42,9 @@ package com.sun.enterprise.admin.remote.reader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import org.glassfish.api.admin.progress.ProgressStatusDTO;
 import org.glassfish.api.admin.progress.ProgressStatusDTO.ChildProgressStatusDTO;
 
@@ -53,14 +53,14 @@ import org.glassfish.api.admin.progress.ProgressStatusDTO.ChildProgressStatusDTO
  * @author mmares
  */
 public class ProgressStatusDTOJsonProprietaryReader implements ProprietaryReader<ProgressStatusDTO> {
-    
+
     private static final JsonFactory factory = new JsonFactory();
-    
+
     @Override
     public boolean isReadable(Class<?> type, String mimetype) {
         return type.isAssignableFrom(ProgressStatusDTO.class);
     }
-    
+
     public ProgressStatusDTO readFrom(final HttpURLConnection urlConnection) throws IOException {
         return readFrom(urlConnection.getInputStream(), urlConnection.getContentType());
     }
@@ -72,7 +72,7 @@ public class ProgressStatusDTOJsonProprietaryReader implements ProprietaryReader
             JsonToken token = jp.nextToken(); //sorounding object
             jp.nextToken(); //Name progress-status
             JsonToken token2 = jp.nextToken();
-            if (token != JsonToken.START_OBJECT || 
+            if (token != JsonToken.START_OBJECT ||
                     token2 != JsonToken.START_OBJECT ||
                     !"progress-status".equals(jp.getCurrentName())) {
                 throw new IOException("Not expected type (progress-status) but (" + jp.getCurrentName() + ")");
@@ -87,7 +87,7 @@ public class ProgressStatusDTOJsonProprietaryReader implements ProprietaryReader
         ChildProgressStatusDTO child = readChildProgressStatus(jp);
         return child.getProgressStatus();
     }
-    
+
     public static ChildProgressStatusDTO readChildProgressStatus(JsonParser jp) throws IOException {
         ProgressStatusDTO psd = new ProgressStatusDTO();
         int allocatedSteps = 0;

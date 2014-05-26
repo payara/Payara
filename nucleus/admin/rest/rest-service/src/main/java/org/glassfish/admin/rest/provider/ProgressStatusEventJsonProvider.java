@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -49,9 +49,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Provider;
-import org.codehaus.jackson.JsonEncoding;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
 import org.glassfish.api.admin.progress.ProgressStatusEvent;
 import org.glassfish.api.admin.progress.ProgressStatusEventComplete;
 import org.glassfish.api.admin.progress.ProgressStatusEventCreateChild;
@@ -65,18 +65,18 @@ import org.glassfish.api.admin.progress.ProgressStatusEventSet;
 @Provider
 @Produces({MediaType.APPLICATION_JSON, "application/x-javascript"})
 public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatusEvent> {
-    
+
     private static final JsonFactory factory = new JsonFactory();
-    
+
     public ProgressStatusEventJsonProvider() {
         super(ProgressStatusEvent.class, MediaType.APPLICATION_JSON_TYPE, new MediaType("application", "x-javascript"));
     }
-    
+
     @Override
     protected boolean isGivenTypeWritable(Class<?> type, Type genericType) {
         return desiredType.isAssignableFrom(type);
     }
-    
+
     @Override
     public void writeTo(ProgressStatusEvent proxy, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType,
             MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException, WebApplicationException {
@@ -86,7 +86,7 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         out.writeEndObject();
         out.flush();
     }
-    
+
     private void writePSEvent(ProgressStatusEvent event, JsonGenerator out) throws IOException {
         if (event == null) {
             return;
@@ -101,10 +101,10 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
             writePSEventComplete((ProgressStatusEventComplete) event, out);
         } else if (event instanceof ProgressStatusEventCreateChild) {
             writePSEventCreateChild((ProgressStatusEventCreateChild) event, out);
-        } else 
+        } else
         out.writeEndObject();
     }
-    
+
     private void writePSEventSet(ProgressStatusEventSet event, JsonGenerator out) throws IOException {
         out.writeObjectFieldStart("set");
         if (event.getTotalStepCount() != null) {
@@ -115,7 +115,7 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         }
         out.writeEndObject();
     }
-    
+
     private void writePSEventProgress(ProgressStatusEventProgress event, JsonGenerator out) throws IOException {
         out.writeObjectFieldStart("progres");
         out.writeNumberField("steps", event.getSteps());
@@ -127,7 +127,7 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         }
         out.writeEndObject();
     }
-    
+
     private void writePSEventComplete(ProgressStatusEventComplete event, JsonGenerator out) throws IOException {
         out.writeObjectFieldStart("complete");
         if (StringUtils.ok(event.getMessage())) {
@@ -135,7 +135,7 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         }
         out.writeEndObject();
     }
-    
+
     private void writePSEventCreateChild(ProgressStatusEventCreateChild event, JsonGenerator out) throws IOException {
         out.writeObjectFieldStart("create-child");
         out.writeStringField("id", event.getChildId());
@@ -146,10 +146,10 @@ public class ProgressStatusEventJsonProvider extends BaseProvider<ProgressStatus
         }
         out.writeEndObject();
     }
-    
+
     @Override
     public String getContent(ProgressStatusEvent proxy) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
-    
+
 }
