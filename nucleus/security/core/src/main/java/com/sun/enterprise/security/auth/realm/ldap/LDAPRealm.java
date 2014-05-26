@@ -41,6 +41,7 @@
 package com.sun.enterprise.security.auth.realm.ldap;
 
 import java.util.*;
+import java.io.IOException;
 import java.util.logging.Level;
 import javax.naming.CompositeName;
 import javax.naming.Context;
@@ -365,8 +366,14 @@ public final class LDAPRealm extends IASRealm
         try {
             ctx = new InitialDirContext(getLdapBindProps());
 
-            X500Name name = new X500Name(userDN);
-            String _username = name.getCommonName();
+            String _username = userDN;
+            try {
+                X500Name name = new X500Name(userDN);
+                _username = name.getCommonName();
+            } catch (IOException e) {
+                //Ignoring the exception to suppot simple group names as userDN
+                //Issue GLASSFISH-19595
+            }
             if (_username == null && userDN != null && userDN.startsWith("uid")) {
                 //handle uid=XXX here where cn is not present
                 //TODO :maybe there is a better way to handle this??
