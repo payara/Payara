@@ -880,7 +880,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             final String defaultResponseType, final KeepAlive keepAlive,
             final DelayedExecutor delayedExecutor,
             final int maxRequestHeaders, final int maxResponseHeaders) {
-        return new org.glassfish.grizzly.http.HttpServerFilter(
+        final org.glassfish.grizzly.http.HttpServerFilter httpCodecFilter =
+                new org.glassfish.grizzly.http.HttpServerFilter(
                 isChunkedEnabled,
                 headerBufferLengthBytes,
                 defaultResponseType,
@@ -888,6 +889,13 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 delayedExecutor,
                 maxRequestHeaders,
                 maxResponseHeaders);
+        
+        if (http != null) { // could be null for HTTP redirect
+            httpCodecFilter.setMaxPayloadRemainderToSkip(
+                    Integer.parseInt(http.getMaxSwallowingInputBytes()));
+        }
+        
+        return httpCodecFilter;
     }
     
     protected ServerFilterConfiguration getHttpServerFilterConfiguration(Http http) {
@@ -903,7 +911,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             maxRequestParameters = Http.MAX_REQUEST_PARAMETERS;
         }
         serverFilterConfiguration.setMaxRequestParameters(maxRequestParameters);
-        serverFilterConfiguration.setMaxFormPostSize(Integer.parseInt(http.getMaxPostSizeBytes()));
+        serverFilterConfiguration.setMaxPostSize(Integer.parseInt(http.getMaxPostSizeBytes()));
+        serverFilterConfiguration.setMaxFormPostSize(Integer.parseInt(http.getMaxFormPostSizeBytes()));
         serverFilterConfiguration.setMaxBufferedPostSize(Integer.parseInt(http.getMaxSavePostSizeBytes()));
         return serverFilterConfiguration;
     }

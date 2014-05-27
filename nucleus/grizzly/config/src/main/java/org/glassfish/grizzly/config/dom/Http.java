@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -74,8 +74,10 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     int HEADER_BUFFER_LENGTH = 8192;
     int KEEP_ALIVE_TIMEOUT = 30;
     int MAX_CONNECTIONS = 256;
-    int MAX_POST_SIZE = 2097152;
+    int MAX_POST_SIZE = -1;
+    int MAX_FORM_POST_SIZE = 2097152;
     int MAX_SAVE_POST_SIZE = 4 * 1024;
+    long MAX_SWALLOWING_INPUT_BYTES = -1;
     int REQUEST_TIMEOUT = 900;
     int SEND_BUFFER_LENGTH = 8192;
     int TIMEOUT = 30;
@@ -207,6 +209,11 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
 
     void setMaxConnections(String max);
 
+    @Attribute(defaultValue = "" + MAX_FORM_POST_SIZE, dataType = Integer.class)
+    String getMaxFormPostSizeBytes();
+
+    void setMaxFormPostSizeBytes(String max);
+
     @Attribute(defaultValue = "" + MAX_POST_SIZE, dataType = Integer.class)
     String getMaxPostSizeBytes();
 
@@ -217,6 +224,11 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
 
     void setMaxSavePostSizeBytes(String max);
 
+    @Attribute(defaultValue = "" + MAX_SWALLOWING_INPUT_BYTES, dataType = Integer.class)
+    String getMaxSwallowingInputBytes();
+
+    void setMaxSwallowingInputBytes(String max);
+    
     @Attribute(dataType = Integer.class)
     String getNoCompressionUserAgents();
 
