@@ -412,7 +412,11 @@ public class WebDirContext extends FileDirContext {
     }
 
     protected String getAbsoluteJarResourceName(String name) {
+        if (name.length() == 0) {
+            return jarResourceBase;
+        }
         boolean firstEndsWithSlash = (jarResourceBase.charAt(jarResourceBase.length() -1) == '/');
+        // name has length > 0 here
         boolean secondStartWithSlash = (name.charAt(0) == '/');
         if (firstEndsWithSlash && secondStartWithSlash) {
             return jarResourceBase.substring(0, jarResourceBase.length() - 1) + name;
