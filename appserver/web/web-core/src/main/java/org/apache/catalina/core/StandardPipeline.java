@@ -759,7 +759,8 @@ public class StandardPipeline
         // Calls the protocol handler's init method if the request is marked to be upgraded
         if (request instanceof org.apache.catalina.connector.Request) {
             org.apache.catalina.connector.Request req = (org.apache.catalina.connector.Request) request;
-            if (req.isUpgrade()) {
+            // WebConnection is only set when the request's HttpUpgradeHandler.init has been called already
+            if (req.isUpgrade() && req.getWebConnection()==null) {
                 HttpUpgradeHandler handler = req.getHttpUpgradeHandler();
                 if (handler != null) {
                     WebConnectionImpl wc =
