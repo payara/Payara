@@ -62,4 +62,10 @@ public class BootstrapConfigurationImpl implements BootstrapConfiguration {
     @Override
     public void cleanup() {
     }
+
+
+  @Override
+  public boolean isNonPortableModeEnabled() {
+    return false;
+  }
 }

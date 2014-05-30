@@ -41,13 +41,12 @@
 package org.glassfish.weld;
 
 import org.jboss.weld.Container;
-import org.jboss.weld.Weld;
+import org.jboss.weld.SimpleCDI;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
 import org.jboss.weld.manager.BeanManagerImpl;
 
 import javax.enterprise.inject.spi.CDI;
 import javax.enterprise.inject.spi.CDIProvider;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,12 +54,7 @@ import java.util.Set;
  * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
  */
 public class GlassFishWeldProvider implements CDIProvider {
-
-    private static class WeldSingleton {
-        private static final Weld WELD_INSTANCE = new GlassFishEnhancedWeld();
-    }
-
-    private static class GlassFishEnhancedWeld extends Weld {
+    private static class GlassFishEnhancedWeld extends SimpleCDI {
 
         @Override
         protected BeanManagerImpl unsatisfiedBeanManager(String callerClassName) {
@@ -96,8 +90,35 @@ public class GlassFishWeldProvider implements CDIProvider {
         }
     }
 
+    private static class TestingEnhancedWeld extends SimpleCDI {
+    }
+
+    private static boolean singletonRetrieved = false;
+
     @Override
     public CDI<Object> getCDI() {
-        return WeldSingleton.WELD_INSTANCE;
+      try {
+        // I can't create an instance of the singleton WeldSingleton.WELD_INSTANCE yet because
+        // it is created in a static initializer. If something happens to cause an exception (like it does
+        // when SimpleCDI initializes itself and causes exceptions in an osgi environment) then the
+        // singleton will always be null.  So I create an instance of a different object that also
+        // extends SimpleCDI.  If that fails it's ok because I won't attempt to create the singleton yet.
+        // This happens with Jersey because it is trying to access cdi before it is initialized
+        if ( ! singletonRetrieved ) {
+          new TestingEnhancedWeld();
+        }
+
+        // If I get this far it means that the osgi class loading was successful and I can now create
+        // an instance of the object I want.
+        singletonRetrieved = true;
+        return new GlassFishEnhancedWeld();
+      } catch ( Throwable throwable ) {
+        Throwable cause = throwable.getCause();
+        if ( cause instanceof IllegalStateException ) {
+          return null;
+        }
+        throw throwable;
+      }
     }
+
 }

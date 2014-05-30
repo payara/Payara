@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,54 +41,47 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <groupId>org.glassfish.main.web</groupId>
+        <artifactId>web</artifactId>
         <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.web</groupId>
-    <artifactId>web</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish Web container related modules</name>  
-    <modules>
-        <module>web-naming</module>
-        <module>web-core</module>
-        <module>war-util</module>
-        <module>jstl-connector</module>
-        <module>jersey-mvc-connector</module>
-        <module>jsf-connector</module>
-        <module>jspcaching-connector</module>
-        <module>gui-plugin-common</module>
-        <module>web-glue</module>
-        <module>webtier-all</module>
-        <module>admin</module>
-        <module>gf-web-connector</module>
-        <module>gf-weld-connector</module>
-        <module>weld-integration</module>
-        <module>weld-integration-fragment</module>
-        <module>weld-integration-test-fragment</module>
-        <module>web-embed</module>
-        <module>web-ha</module>
-        <module>web-sse</module>
-        <module>gui-plugin-common-l10n</module>
-        <module>admin-l10n</module>
-        <module>war-util-l10n</module>
-        <module>web-core-l10n</module>
-        <module>web-glue-l10n</module>
-        <module>web-naming-l10n</module>
-        <module>cdi-api-fragment</module>
-    </modules>
+
+    <artifactId>cdi-api-fragment</artifactId>
+    <packaging>jar</packaging>
+    <name>cdi-api Fragment</name>
+    <description>This fragment bundle extends the cdi-api bundle to import additional packages into the cdi-api bundle.</description>
+
+    <developers>
+        <developer>
+            <id>jjsnyder83</id>
+            <name>JJ Snyder</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
 
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
-                    <compilerArgument>-Xlint:unchecked</compilerArgument>
+                    <archive>
+                        <manifestEntries>
+                            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                            <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                            <Fragment-Host>javax.enterprise.cdi-api</Fragment-Host>
+                            <Import-Package>org.glassfish.weld</Import-Package>
+                            <Bundle-Description>${project.description}</Bundle-Description>
+                        </manifestEntries>
+                    </archive>
                 </configuration>
             </plugin>
         </plugins>

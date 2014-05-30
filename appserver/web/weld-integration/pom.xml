@@ -101,6 +101,15 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-javaee-full</artifactId>
             <version>${project.version}</version>

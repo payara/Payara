@@ -102,7 +102,13 @@
                                 org.jboss.weld.injection.attributes,
                                 org.jboss.weld.util.collections,
                                 org.jboss.weld.annotated.slim,
-                                org.jboss.weld.annotated.slim.backed
+                                org.jboss.weld.annotated.slim.backed,
+                                org.jboss.classfilewriter,
+                                org.jboss.classfilewriter.annotations,
+                                org.jboss.classfilewriter.attributes,
+                                org.jboss.classfilewriter.code,
+                                org.jboss.classfilewriter.constpool,
+                                org.jboss.classfilewriter.util
                             </Export-Package>
                             <Import-Package>org.glassfish.weld</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 

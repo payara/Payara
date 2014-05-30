@@ -219,25 +219,47 @@ public class EjbServicesImpl implements EjbServices {
         Class<?> ejbBeanSuperClass = ejbBeanClass;
         while (!ejbBeanSuperClass.equals(java.lang.Object.class)) {
             for(Method m : ejbBeanSuperClass.getDeclaredMethods()) {
-                List<EjbInterceptor> aroundInvokeChain =
+                if ( ! methodOverridden( ejbBeanClass, m ) ) {
+                  List<EjbInterceptor> aroundInvokeChain =
                     makeInterceptorChain(InterceptionType.AROUND_INVOKE,
-                            interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_INVOKE, m),
-                                    glassfishEjbDesc);
-                glassfishEjbDesc.addMethodLevelChain(aroundInvokeChain, m, true);
+                                         interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_INVOKE, m),
+                                         glassfishEjbDesc);
+                  glassfishEjbDesc.addMethodLevelChain(aroundInvokeChain, m, true);
 
 
-                List<EjbInterceptor> aroundTimeoutChain =
+                  List<EjbInterceptor> aroundTimeoutChain =
                     makeInterceptorChain(InterceptionType.AROUND_TIMEOUT,
-                            interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_TIMEOUT, m),
-                                    glassfishEjbDesc);
-                glassfishEjbDesc.addMethodLevelChain(aroundTimeoutChain, m, false);
-
-            } 
+                                         interceptorBindings.getMethodInterceptors(InterceptionType.AROUND_TIMEOUT, m),
+                                         glassfishEjbDesc);
+                  glassfishEjbDesc.addMethodLevelChain(aroundTimeoutChain, m, false);
+                }
+            }
             ejbBeanSuperClass = ejbBeanSuperClass.getSuperclass();
         }
 
         return;
 
+    }
+
+    // Section 4.2. Inheritance of member-level metadata of CDI spec states:
+    //   If X declares a non-static method x() annotated with an interceptor binding type Z then Y inherits
+    //   the binding if and only if neither Y nor any intermediate class that is a subclass of X and a
+    //   superclass of Y overrides the method x(). (This behavior is defined by the Common Annotations
+    //   for the Java Platform specification.)
+    //
+    // So look at a method on a class.  If the method is overridden (not if it over rides) then we skip it
+    // because it will have already been processed to see if it should be intercepted.
+    private boolean methodOverridden( Class beanClass, Method methodOfCurrentClass ) {
+      String methodName = methodOfCurrentClass.getName();
+      Class[] methodParams = methodOfCurrentClass.getParameterTypes();
+      Class declaringClass = methodOfCurrentClass.getDeclaringClass();
+
+      try {
+        Method method = beanClass.getMethod( methodName, methodParams );
+        return ! method.getDeclaringClass().equals( declaringClass );
+      } catch (NoSuchMethodException ignored) {
+      }
+      return false;
     }
 
     private List<EjbInterceptor> makeInterceptorChain(InterceptionType interceptionType,
@@ -251,44 +273,44 @@ public class EjbServicesImpl implements EjbServices {
         }
 
         for(Interceptor<?> next : lifecycleList ) {
-
             EjbInterceptor ejbInt = makeEjbInterceptor(next, ejbDesc.getEjbBundleDescriptor());
-            LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
+            Class interceptorClass = next.getBeanClass();
+            while ( interceptorClass != null && ! interceptorClass.equals( Object.class ) ) {
+                LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
 
-            lifecycleDesc.setLifecycleCallbackClass(next.getBeanClass().getName());
-            lifecycleDesc.setLifecycleCallbackMethod(getInterceptorMethod(next.getBeanClass(),
-                    getInterceptorAnnotationType(interceptionType)));
-
-            switch(interceptionType) {
-                case POST_CONSTRUCT :
-                    ejbInt.addPostConstructDescriptor(lifecycleDesc);
-                    break;
-                case PRE_DESTROY :
-                    ejbInt.addPreDestroyDescriptor(lifecycleDesc);
-                    break;
-                case PRE_PASSIVATE :
-                    ejbInt.addPrePassivateDescriptor(lifecycleDesc);
-                    break;
-                case POST_ACTIVATE :
-                    ejbInt.addPostActivateDescriptor(lifecycleDesc);
-                    break;
-                case AROUND_INVOKE :
-                    ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
-                    break;
-                case AROUND_TIMEOUT :
-                    ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
-                    break;
-                default :
-                      throw new IllegalArgumentException("Invalid lifecycle interception type " +
-                        interceptionType);
+                lifecycleDesc.setLifecycleCallbackClass( interceptorClass.getName());
+                lifecycleDesc.setLifecycleCallbackMethod( getInterceptorMethod( interceptorClass,
+                                                                                getInterceptorAnnotationType(interceptionType)));
+                switch(interceptionType) {
+                    case POST_CONSTRUCT :
+                        ejbInt.addPostConstructDescriptor(lifecycleDesc);
+                        break;
+                    case PRE_DESTROY :
+                        ejbInt.addPreDestroyDescriptor(lifecycleDesc);
+                        break;
+                    case PRE_PASSIVATE :
+                        ejbInt.addPrePassivateDescriptor(lifecycleDesc);
+                        break;
+                    case POST_ACTIVATE :
+                        ejbInt.addPostActivateDescriptor(lifecycleDesc);
+                        break;
+                    case AROUND_INVOKE :
+                        ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
+                        break;
+                    case AROUND_TIMEOUT :
+                        ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
+                        break;
+                    default :
+                        throw new IllegalArgumentException("Invalid lifecycle interception type " +
+                                                           interceptionType);
+                }
+                interceptorClass = interceptorClass.getSuperclass();
             }
 
             ejbInterceptorList.add(ejbInt);
-
         }
 
         return ejbInterceptorList;
-
     }
 
     private Class<?> getInterceptorAnnotationType(InterceptionType interceptionType) {

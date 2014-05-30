@@ -1,0 +1,3 @@
+This module is now needed because The cdi api's have been removed from weld-osgi-bundle and placed into cdi-api bundle.
+The src/main/resources/META-INF/services/javax.enterprise.inject.spi.CDIProvider file was moved from
+the weld-integration-fragment module and placed into here.

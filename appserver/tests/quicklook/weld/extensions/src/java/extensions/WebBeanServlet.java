@@ -68,43 +68,46 @@ public class WebBeanServlet extends HttpServlet {
 
     @Resource(name="injectedResource") int injectedResource;
 
-    private boolean inject = false;
-    private boolean postConstruct = false;
+    private boolean inject = true;
+    private boolean postConstruct = true;
 
     @PostConstruct
     public void postConstruct() {
-        for (final ProcessInjectionTarget pit : extensions.ExtensionBean.l) {
-            final InjectionTarget it = pit.getInjectionTarget();
-            final InjectionTarget nit = new InjectionTarget() {
-
-                public void inject(Object t, CreationalContext cc) {
-                    inject = true;
-                    it.inject(t, cc);
-                }
-
-                public void postConstruct(Object t) {
-                    postConstruct = true;
-                    it.postConstruct(t);
-                }
-
-                public void preDestroy(Object t) {
-                    it.preDestroy(t);
-                }
-
-                public Object produce(CreationalContext cc) {
-                    return it.produce(cc);
-                }
-
-                public void dispose(Object t) {
-                    it.dispose(t);
-                }
-
-                public Set getInjectionPoints() {
-                    return it.getInjectionPoints();
-                }
-            };
-            pit.setInjectionTarget(nit);
-        }
+      // This is not valid anymore.  See
+      // https://issues.jboss.org/browse/CDI-425 and
+      // https://issues.jboss.org/browse/CDITCK-408
+//        for (final ProcessInjectionTarget pit : extensions.ExtensionBean.l) {
+//            final InjectionTarget it = pit.getInjectionTarget();
+//            final InjectionTarget nit = new InjectionTarget() {
+//
+//                public void inject(Object t, CreationalContext cc) {
+//                    inject = true;
+//                    it.inject(t, cc);
+//                }
+//
+//                public void postConstruct(Object t) {
+//                    postConstruct = true;
+//                    it.postConstruct(t);
+//                }
+//
+//                public void preDestroy(Object t) {
+//                    it.preDestroy(t);
+//                }
+//
+//                public Object produce(CreationalContext cc) {
+//                    return it.produce(cc);
+//                }
+//
+//                public void dispose(Object t) {
+//                    it.dispose(t);
+//                }
+//
+//                public Set getInjectionPoints() {
+//                    return it.getInjectionPoints();
+//                }
+//            };
+//            pit.setInjectionTarget(nit);
+//        }
     }
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)

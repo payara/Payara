@@ -52,6 +52,7 @@ import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 
+import javax.decorator.Decorator;
 import javax.ejb.MessageDriven;
 import javax.ejb.Stateful;
 import javax.ejb.Stateless;
@@ -60,8 +61,10 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
+import javax.enterprise.inject.Stereotype;
 import javax.inject.Scope;
 import javax.inject.Singleton;
+import javax.interceptor.Interceptor;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
@@ -125,6 +128,11 @@ public class WeldUtils {
 
         // CDI scopes
         cdiEnablingAnnotations.addAll(cdiScopeAnnotations);
+
+        // 1.2 updates
+       cdiEnablingAnnotations.add(Decorator.class.getName());
+       cdiEnablingAnnotations.add(Interceptor.class.getName());
+       cdiEnablingAnnotations.add(Stereotype.class.getName());
 
         // EJB annotations
         cdiEnablingAnnotations.add(MessageDriven.class.getName());

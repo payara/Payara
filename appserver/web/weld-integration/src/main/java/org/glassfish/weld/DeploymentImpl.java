@@ -254,11 +254,17 @@ public class DeploymentImpl implements CDI11Deployment {
                         warRootBda.getBeanDeploymentArchives().add(ejbModuleBda);
                         warModuleBda.getBeanDeploymentArchives().add(ejbRootBda);
                         warModuleBda.getBeanDeploymentArchives().add(ejbModuleBda);
-                        modifiedArchive = true;
+
+                       for ( BeanDeploymentArchive oneBda : warModuleBda.getBeanDeploymentArchives() ) {
+                         oneBda.getBeanDeploymentArchives().add( ejbRootBda );
+                         oneBda.getBeanDeploymentArchives().add( ejbModuleBda );
+                       }
+
+                      modifiedArchive = true;
                     }
                 }
 
-                // Make /lib jars accessible to the war
+                // Make /lib jars accessible to the war and it's sub bdas
                 if (libJarRootBdas != null) {
                     for (RootBeanDeploymentArchive libJarRootBda : libJarRootBdas) {
                         BeanDeploymentArchive libJarModuleBda = libJarRootBda.getModuleBda();
@@ -266,11 +272,17 @@ public class DeploymentImpl implements CDI11Deployment {
                         warRootBda.getBeanDeploymentArchives().add(libJarModuleBda);
                         warModuleBda.getBeanDeploymentArchives().add(libJarRootBda);
                         warModuleBda.getBeanDeploymentArchives().add(libJarModuleBda);
+
+                        for ( BeanDeploymentArchive oneBda : warModuleBda.getBeanDeploymentArchives() ) {
+                          oneBda.getBeanDeploymentArchives().add( libJarRootBda );
+                          oneBda.getBeanDeploymentArchives().add( libJarModuleBda );
+                        }
+
                         modifiedArchive = true;
                     }
                 }
 
-                // Make rars accessible to wars
+                // Make rars accessible to wars and it's sub bdas
                 if (rarRootBdas != null) {
                     for (RootBeanDeploymentArchive rarRootBda : rarRootBdas) {
                         BeanDeploymentArchive rarModuleBda = rarRootBda.getModuleBda();
@@ -278,7 +290,13 @@ public class DeploymentImpl implements CDI11Deployment {
                         warRootBda.getBeanDeploymentArchives().add(rarModuleBda);
                         warModuleBda.getBeanDeploymentArchives().add(rarRootBda);
                         warModuleBda.getBeanDeploymentArchives().add(rarModuleBda);
-                        modifiedArchive = true;
+
+                      for ( BeanDeploymentArchive oneBda : warModuleBda.getBeanDeploymentArchives() ) {
+                        oneBda.getBeanDeploymentArchives().add( rarRootBda );
+                        oneBda.getBeanDeploymentArchives().add( rarModuleBda );
+                      }
+
+                      modifiedArchive = true;
                     }
                 }
 
@@ -675,7 +693,7 @@ public class DeploymentImpl implements CDI11Deployment {
     }
 
     private RootBeanDeploymentArchive findRootBda( ClassLoader classLoader, List<RootBeanDeploymentArchive> rootBdas ) {
-        if ( rootBdas == null ) {
+        if ( rootBdas == null || classLoader == null ) {
             return null;
         }
 

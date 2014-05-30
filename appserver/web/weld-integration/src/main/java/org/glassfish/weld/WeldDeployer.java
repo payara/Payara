@@ -116,6 +116,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // is not necessary.
     private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
 
+    private static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.servlet.WeldTerminalListener";
+
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 
     //This constant is used to indicate if bootstrap shutdown has been called or not.
@@ -207,7 +209,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 });
                 try {
                     bootstrap.startExtensions(deploymentImpl.getExtensions());
-                    bootstrap.startContainer(Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
+                    bootstrap.startContainer(fAppName, Environments.SERVLET, deploymentImpl/*, new ConcurrentHashMapBeanStore()*/);
                     bootstrap.startInitialization();
                     fireProcessInjectionTargetEvents(bootstrap, deploymentImpl);
                     bootstrap.deployBeans();
@@ -501,6 +503,11 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 // Add Weld Context Listener - this listener will ensure the WeldELContextListener is used
                 // for JSP's..
                 wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_CONTEXT_LISTENER));
+
+                // Weld 2.2.1.Final.  There is a tck test for this: org.jboss.cdi.tck.tests.context.session.listener.SessionContextHttpSessionListenerTest
+                // This WeldTerminationListener must come after all application-defined listeners
+                wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_TERMINATION_LISTENER));
+
                 // Adding Weld ConverstationFilter if there is filterMapping for it and it doesn't exist already.
                 // However, it will be applied only if web.xml has mapping for it.
                 // Doing this here to make sure that its done only for CDI enabled web application
@@ -571,7 +578,8 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 for ( WebBundleDescriptor oneWebBundleDescriptor : webBundleDescriptors ) {
                     // Add the Weld Listener if it does not already exist..
                     // we have to do this regardless because the war may not be cdi-enabled but an ejb is.
-                    oneWebBundleDescriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_LISTENER));
+                    oneWebBundleDescriptor.addAppListenerDescriptorToFirst(new AppListenerDescriptorImpl(WELD_LISTENER));
+                    oneWebBundleDescriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_TERMINATION_LISTENER));
                 }
             }
         }
