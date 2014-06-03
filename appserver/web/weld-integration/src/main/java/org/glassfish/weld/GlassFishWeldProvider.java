@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -90,27 +90,9 @@ public class GlassFishWeldProvider implements CDIProvider {
         }
     }
 
-    private static class TestingEnhancedWeld extends SimpleCDI {
-    }
-
-    private static boolean singletonRetrieved = false;
-
     @Override
     public CDI<Object> getCDI() {
       try {
-        // I can't create an instance of the singleton WeldSingleton.WELD_INSTANCE yet because
-        // it is created in a static initializer. If something happens to cause an exception (like it does
-        // when SimpleCDI initializes itself and causes exceptions in an osgi environment) then the
-        // singleton will always be null.  So I create an instance of a different object that also
-        // extends SimpleCDI.  If that fails it's ok because I won't attempt to create the singleton yet.
-        // This happens with Jersey because it is trying to access cdi before it is initialized
-        if ( ! singletonRetrieved ) {
-          new TestingEnhancedWeld();
-        }
-
-        // If I get this far it means that the osgi class loading was successful and I can now create
-        // an instance of the object I want.
-        singletonRetrieved = true;
         return new GlassFishEnhancedWeld();
       } catch ( Throwable throwable ) {
         Throwable cause = throwable.getCause();
