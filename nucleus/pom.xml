@@ -115,11 +115,22 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>jvnet-nexus-releases</id>
+            <name>Java.net Promoted Repositories</name>
+            <url>https://maven.java.net/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>        
     </repositories>
     <pluginRepositories>
         <pluginRepository>
             <id>jvnet-nexus-promoted</id>
-            <name>Java.net Promoted Repositories</name>
+            <name>Java.net Releases Repositories</name>
             <url>https://maven.java.net/content/repositories/promoted/</url>
             <releases>
                 <enabled>true</enabled>
@@ -128,6 +139,17 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
+        <pluginRepository>
+            <id>jvnet-nexus-releases</id>
+            <name>Java.net Releases Repositories</name>
+            <url>https://maven.java.net/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>        
     </pluginRepositories>
 
     <properties>
