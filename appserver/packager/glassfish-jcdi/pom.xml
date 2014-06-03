@@ -161,10 +161,6 @@
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-el_2.2_spec</artifactId>
-        </dependency>
     </dependencies>
 </project>
 
