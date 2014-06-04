@@ -223,10 +223,12 @@ public class PropertiesBagResource extends AbstractResource {
     }
 
     protected Map<String, Property> getExistingProperties() {
-        Map<String, Property> properties = new HashMap<String, Property>();
-        for (Dom child : parent.nodeElements(tagName)) {
-            Property property = child.createProxy();
-            properties.put(property.getName(), property);
+        Map<String, Property> properties = new HashMap<>();
+        if (parent != null) {
+            for (Dom child : parent.nodeElements(tagName)) {
+                Property property = child.createProxy();
+                properties.put(property.getName(), property);
+            }
         }
         return properties;
     }
@@ -262,6 +264,8 @@ public class PropertiesBagResource extends AbstractResource {
     public void setParentAndTagName(Dom parent, String tagName) {
         this.parent = parent;
         this.tagName = tagName;
-        entity = parent.nodeElements(tagName);
+        if (parent != null) {
+            entity = parent.nodeElements(tagName);
+        }
     }
 }

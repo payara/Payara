@@ -349,7 +349,11 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
             // the Dom tree. Once that's done, we can return that node and proceed as normal
             String location = buildPath(parent) + "/" + tagName;
             if (location.startsWith("domain/configs")) {
-                ConfigBeanProxy cbp = locatorBridge.getRemoteLocator().<ConfigModularityUtils>getService(ConfigModularityUtils.class).getOwningObject(location);
+                final ConfigModularityUtils cmu = locatorBridge.getRemoteLocator().<ConfigModularityUtils>getService(ConfigModularityUtils.class);
+                ConfigBeanProxy cbp = cmu.getOwningObject(location);
+                if (cbp == null) {
+                    cbp = cmu.getConfigBeanInstanceFor(cmu.getOwningClassForLocation(location));
+                }
                 if (cbp != null) {
                     entity = Dom.unwrap(cbp);
                     childModel = entity.model;

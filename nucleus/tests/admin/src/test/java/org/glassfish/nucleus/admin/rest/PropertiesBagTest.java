@@ -47,6 +47,7 @@ import java.util.Map;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import org.codehaus.jettison.json.JSONArray;
 import org.glassfish.admin.rest.client.utils.MarshallingUtils;
 import static org.testng.AssertJUnit.*;
 import org.testng.annotations.Test;
@@ -248,6 +249,32 @@ public class PropertiesBagTest extends RestTestBase {
         delete(URL+"/jmsra");
     }
 
+    public void test20810() {
+        Map<String, String> payload = new HashMap<>();
+        payload.put("persistenceScope","session");
+        payload.put("disableJreplica","false");
+        payload.put("persistenceType","replicated");
+        payload.put("availabilityEnabled","true");
+        payload.put("persistenceFrequency","web-method");
+        payload.put("persistenceStoreHealthCheckEnabled","false");
+        payload.put("ssoFailoverEnabled","false");
+        
+        final String wcaUri = "/domain/configs/config/default-config/availability-service/web-container-availability";
+        Response r = post(wcaUri,
+                payload);
+        assertTrue(isSuccess(r));
+        
+        assertTrue(isSuccess(get(wcaUri)));
+
+        r = getClient()
+                .target(getAddress("/domain/configs/config/default-config/availability-service/web-container-availability/property")).
+                request(getResponseType())
+                .post(Entity.json(new JSONArray()), Response.class);
+        assertTrue(isSuccess(r));
+        
+        assertTrue(isSuccess(get(wcaUri)));
+    }
+    
     protected String buildPropertyList(List<Map<String, String>> props) {
         StringBuilder sb = new StringBuilder();
         String sep = "";

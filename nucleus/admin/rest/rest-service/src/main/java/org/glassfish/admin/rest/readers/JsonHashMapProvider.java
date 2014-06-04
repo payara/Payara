@@ -53,6 +53,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 import javax.ws.rs.ext.Provider;
+import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
 /**
@@ -71,14 +72,10 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
     public HashMap<String, String> readFrom(Class<HashMap<String, String>> type, Type genericType,
             Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> headers,
             InputStream in) throws IOException {
-
-
-
-        JSONObject obj;
+        HashMap map = new HashMap();
         try {
-            obj = new JSONObject(inputStreamAsString(in));
+            JSONObject obj = new JSONObject(inputStreamAsString(in));
             Iterator  iter=obj.keys();
-                        HashMap map = new HashMap();
 
             while (iter.hasNext()){
                 String k = (String) iter.next();
@@ -87,26 +84,10 @@ public class JsonHashMapProvider implements MessageBodyReader<HashMap<String, St
             }
             return map;
 
-        } catch (Exception ex) {
-            HashMap map = new HashMap();
-            map.put("error", "Entity Parsing Error: " + ex.getMessage());
-
-            //throw new RuntimeException(exception);
+        } catch (IOException | JSONException ex) {
+//            map.put("error", "Entity Parsing Error: " + ex.getMessage());
             return map;
         }
-
-//        try {
-//
-//
-//            JsonInputObject jsonObject = new JsonInputObject(in);
-//            return ProviderUtil.getStringMap((HashMap) jsonObject.initializeMap());
-//        } catch (InputException exception) {
-//            HashMap map = new HashMap();
-//            map.put("error", "Entity Parsing Error: " + exception.getMessage());
-//
-//            //throw new RuntimeException(exception);
-//            return map;
-//        }
     }
 
     public static String inputStreamAsString(InputStream stream) throws IOException {
