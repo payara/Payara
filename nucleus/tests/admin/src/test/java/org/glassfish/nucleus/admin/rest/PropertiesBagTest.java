@@ -249,6 +249,7 @@ public class PropertiesBagTest extends RestTestBase {
         delete(URL+"/jmsra");
     }
 
+    @Test
     public void test20810() {
         Map<String, String> payload = new HashMap<>();
         payload.put("persistenceScope","session");
