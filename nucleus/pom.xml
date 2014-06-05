@@ -46,7 +46,7 @@
     <parent>
         <groupId>net.java</groupId>
         <artifactId>jvnet-parent</artifactId>
-        <version>4</version>
+        <version>5</version>
         <relativePath />
     </parent>
 
@@ -115,17 +115,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>jvnet-nexus-releases</id>
-            <name>Java.net Releases Repositories</name>
-            <url>https://maven.java.net/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>        
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -139,17 +128,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </pluginRepository>
-        <pluginRepository>
-            <id>jvnet-nexus-releases</id>
-            <name>Java.net Releases Repositories</name>
-            <url>https://maven.java.net/content/repositories/releases/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>        
     </pluginRepositories>
 
     <properties>
