@@ -249,7 +249,8 @@ public class PropertiesBagTest extends RestTestBase {
         delete(URL+"/jmsra");
     }
 
-    @Test
+    //Disable this test for now. The functionality this tests is not available in nucleus
+    //@Test
     public void test20810() {
         Map<String, String> payload = new HashMap<>();
         payload.put("persistenceScope","session");
@@ -261,8 +262,7 @@ public class PropertiesBagTest extends RestTestBase {
         payload.put("ssoFailoverEnabled","false");
         
         final String wcaUri = "/domain/configs/config/default-config/availability-service/web-container-availability";
-        Response r = post(wcaUri,
-                payload);
+        Response r = post(wcaUri, payload);
         assertTrue(isSuccess(r));
         
         assertTrue(isSuccess(get(wcaUri)));
