@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,6 +44,7 @@ import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.xml.ws.api.BindingID;
 import com.sun.xml.ws.api.WSBinding;
+import com.sun.xml.ws.api.server.InstanceResolver;
 import com.sun.xml.ws.api.server.Invoker;
 import com.sun.xml.ws.api.server.SDDocumentSource;
 import com.sun.xml.ws.api.server.WSEndpoint;
@@ -259,8 +260,18 @@ public class EjbRuntimeEndpointInfo {
                     wsu.configureJAXWSServiceHandlers(endpoint,
                         endpoint.getProtocolBinding(), binding);
 
+                    // See if it is configured with JAX-WS extension InstanceResolver annotation like
+                    // @com.sun.xml.ws.developer.servlet.HttpSessionScope or @com.sun.xml.ws.developer.Stateful
+                    // #GLASSFISH-21081
+                    InstanceResolver ir = InstanceResolver.createFromInstanceResolverAnnotation(clazz);
+                    //TODO - Implement 109 StatefulInstanceResolver ??
+                    if (ir == null) {
+                        //use our own InstanceResolver that does not call @PostConstuct method before
+                        //@Resource injections have happened.
+                        ir = new InstanceResolverImpl(clazz);
+                    }
                     // Create the jaxws2.1 invoker and use this
-                    Invoker invoker = new InstanceResolverImpl(clazz).createInvoker();
+                    Invoker invoker = ir.createInvoker();
                     WSEndpoint wsep = WSEndpoint.create(
                             clazz, // The endpoint class
                             false, // we do not want JAXWS to process @HandlerChain
