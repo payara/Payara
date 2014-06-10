@@ -320,4 +320,20 @@ public interface InjectionManager {
         throws InjectionException;
 
 
+    /**
+     * Perform injection.
+     * @param clazz The class of the instance to perform injection.  This is needed b/c of static injection.
+     * @param instance The instance on which to perform injection.
+     * @param envDescriptor The descriptor containing the injection information.
+     * @param componentId The id of the component in whose jndi environment injection actually occurs.  Null indicates
+     *                    the current jndi environment.
+     * @param invokePostConstruct if true, invoke any @PostConstruct methods
+     * @throws InjectionException
+     */
+    public void inject(final Class clazz,
+                       final Object instance,
+                       JndiNameEnvironment envDescriptor,
+                       String componentId,
+                       boolean invokePostConstruct)
+        throws InjectionException;
 }

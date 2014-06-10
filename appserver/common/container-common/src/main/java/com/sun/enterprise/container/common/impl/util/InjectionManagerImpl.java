@@ -485,7 +485,7 @@ public class InjectionManagerImpl implements InjectionManager, PostConstruct {
      *                 is class-based.  Any error encountered during any
      * portion of injection is propagated immediately.
      */
-    private void inject(final Class clazz, final Object instance, 
+    public void inject(final Class clazz, final Object instance,
                         JndiNameEnvironment envDescriptor,
                         String componentId,
                         boolean invokePostConstruct) 
