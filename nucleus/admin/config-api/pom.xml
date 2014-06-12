@@ -168,5 +168,11 @@
             <artifactId>sjsxp</artifactId>
             <scope>test</scope>
         </dependency>
+            <dependency>
+                <groupId>javax.el</groupId>
+                <artifactId>javax.el-api</artifactId>
+                <scope>test</scope>
+            </dependency>
+
     </dependencies>
 </project>
