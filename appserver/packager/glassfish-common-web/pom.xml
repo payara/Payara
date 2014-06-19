@@ -56,7 +56,7 @@
     <properties>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -82,6 +82,7 @@
             </plugin>
         </plugins>
     </build>
+
     <profiles>
         <profile>
             <id>ips</id>
@@ -107,7 +108,7 @@
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -122,7 +123,7 @@
                 </plugins>
             </build>
         </profile>
-    </profiles>    
+    </profiles>
     
     <dependencies>
         <dependency>
@@ -337,21 +338,6 @@
         <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>javax.transaction-api</artifactId>
-        </dependency>      
+        </dependency>
     </dependencies>
-    
-    <repositories>
-        <repository>
-            <id>eclipselink.repository</id>
-            <name>Eclipse Maven repository</name>
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>     
 </project>
