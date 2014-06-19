@@ -102,7 +102,7 @@
         <uc-pkg-bootstrap.version>1.122-56.2852</uc-pkg-bootstrap.version>
         <webservices.version>2.3.1-b414</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
-        <woodstox.version>4.1.2</woodstox.version>
+        <woodstox.version>4.2.0</woodstox.version>
         <jaxb-api.version>2.2.12-b140109.1041</jaxb-api.version>
         <jaxb.version>2.2.10-b140528.1649</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
