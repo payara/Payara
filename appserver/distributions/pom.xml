@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,9 +41,6 @@
 
 -->
 
-<!--
-  modules used to build glassfish packages
--->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -73,9 +70,9 @@
             <roles>
                 <role>developer</role>
             </roles>
-        </developer>        
+        </developer>
     </developers>
-    
+
     <properties>
         <stage.dir.name>stage</stage.dir.name>
         <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
@@ -83,7 +80,7 @@
         <include.group.ids>org.glassfish.main.packager,org.glassfish.main.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
         <create-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-domain.args>
-    </properties>    
+    </properties>
 
     <modules>
         <module>minnow</module>
@@ -146,11 +143,11 @@
                                         <dir>${stage.dir}</dir>
                                         <excludes>**/bin/*</excludes>
                                         <excludes>**/bin/*.bat</excludes>
-                                        <excludes>**/lib/nadmin*</excludes>                                        
+                                        <excludes>**/lib/nadmin*</excludes>
                                     </fileset>
                                 </filesets>
                             </configuration>
-                        </execution>                    
+                        </execution>
                         <execution>
                             <id>create-domain</id>
                             <phase>process-resources</phase>
@@ -158,8 +155,8 @@
                                 <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
                                 <commandlineArgs>${create-domain.args}</commandlineArgs>
                             </configuration>
-                        </execution>                    
-                    </executions>                    
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -174,7 +171,7 @@
                                 <directory>${project.build.directory}</directory>
                                 <includes>
                                     <include>${stage.dir.name}/**/domains/**</include>
-                                </includes>                            
+                                </includes>
                             </configuration>
                         </execution>
                     </executions>
@@ -193,10 +190,10 @@
                                         <property name="ips.compress" value="${ips.compress}"/>
                                     </ant>
                                 </tasks>
-                            </configuration>           
+                            </configuration>
                         </execution>
                     </executions>
-                </plugin>                
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
@@ -276,7 +273,7 @@
                     <version>${l10n.version}</version>
                     <type>zip</type>
                 </dependency>
-            </dependencies>            
+            </dependencies>
         </profile>
     </profiles>  
 </project>

@@ -155,6 +155,7 @@
         <module>admingui</module>
         <module>extras/embedded/shell</module>
         <module>packager</module>
+        <module>featuresets</module>
         <module>distributions</module>
         <module>security</module>
         <module>registration</module>

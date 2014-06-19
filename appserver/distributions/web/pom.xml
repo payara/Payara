@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@
                 <executions>
                     <execution>
                         <id>clean-domain</id>
-                    </execution>            
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -74,8 +74,8 @@
                         <id>create-domain</id>
                         <goals>
                             <goal>exec</goal>
-                        </goals>                        
-                    </execution>                    
+                        </goals>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
@@ -87,7 +87,7 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <build>
-                <plugins>               
+                <plugins>
                     <plugin>
                         <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
                         <artifactId>maven-antrun-extended-plugin</artifactId>
@@ -96,7 +96,7 @@
                                 <id>create-ips-distribution</id>
                                 <goals>
                                     <goal>run</goal>
-                                </goals>                
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -104,7 +104,7 @@
             </build>
         </profile>
     </profiles>
-    
+
     <dependencies>
         <!-- following dependencies are needed to run tests... -->
         <dependency>
@@ -113,86 +113,13 @@
             <scope>test</scope>
             <optional>true</optional>
         </dependency>
-        
         <!-- pull minnow packages -->
         <dependency>
-            <groupId>org.glassfish.main.distributions</groupId>
-            <artifactId>minnow</artifactId>
+            <groupId>org.glassfish.main.featuresets</groupId>
+            <artifactId>web</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-registration</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-jpa</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-jts</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-ejb-lite</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>    
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-jsf</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>     
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-osgi-http</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-osgi</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-jcdi</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-
-        <!-- json package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>json</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>            
-
-        <!-- admin ui package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-gui</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>    
-
-        <!-- javadb package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>javadb</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
