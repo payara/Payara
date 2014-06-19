@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -156,27 +156,12 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-	    <groupId>org.glassfish.external</groupId>
-	    <artifactId>management-api</artifactId>
-	 </dependency>
-	 <dependency>
-	    <groupId>org.glassfish.gmbal</groupId>
-	    <artifactId>gmbal</artifactId>
+            <groupId>org.glassfish.external</groupId>
+            <artifactId>management-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.gmbal</groupId>
+            <artifactId>gmbal</artifactId>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>eclipselink.repository</id>
-            <name>Eclipse Maven repository</name>
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>

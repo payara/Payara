@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -49,10 +49,10 @@
         <version>4.0.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-
     <artifactId>eclipselink-wrapper</artifactId>
     <packaging>pom</packaging>
     <name>Declaring EclipseLink dependencies</name>
+
     <developers>
         <developer>
             <id>mm110999</id>
@@ -72,6 +72,7 @@
             </roles>
         </developer>
     </developers>
+
     <dependencies>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
@@ -120,19 +121,4 @@
             <scope>compile</scope>
         </dependency>
     </dependencies>
-
-    <repositories>
-        <repository>
-            <id>eclipselink.repository</id>
-            <name>OSS Sonatype Staging Repository</name>
-            <url>https://oss.sonatype.org/content/groups/staging/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
 </project>

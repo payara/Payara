@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -54,9 +54,9 @@
     <description>This pom describes how to assemble the Jersey package</description>
 
     <properties>
-        <temp.dir>${project.build.directory}/dependency</temp.dir>       
+        <temp.dir>${project.build.directory}/dependency</temp.dir>
     </properties>
-    
+
     <build>
         <plugins>
             <plugin>
@@ -107,7 +107,7 @@
                                 <id>process-step5</id>
                                 <goals>
                                     <goal>exec</goal>
-                                </goals>                            
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
@@ -165,21 +165,4 @@
             <artifactId>jersey-mvc-jsp</artifactId>
         </dependency>
     </dependencies>
-
- <repositories>
-        <repository>
-            <id>eclipselink.repository</id>
-            <name>Eclipse Maven repository</name>
-            <url>http://download.eclipse.org/rt/eclipselink/maven.repo/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-                <updatePolicy>never</updatePolicy>
-            </snapshots>
-        </repository>
-    </repositories>
-
 </project>
-
