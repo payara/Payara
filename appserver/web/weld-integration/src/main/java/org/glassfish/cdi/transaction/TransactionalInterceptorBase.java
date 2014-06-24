@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -83,58 +83,58 @@ public class TransactionalInterceptorBase implements Serializable {
                      action = "Fix the issue for the Naming exception",
                      cause = "Transaction annotation processing for the Naming",
                      level = "SEVERE")
-    public static final String CDI_JTA_NAME_EXCEPTION = "AS-JTA-0001";
+    public static final String CDI_JTA_NAME_EXCEPTION = "AS-JTA-00001";
 
     @LogMessageInfo( message = "About to setRollbackOnly from @Transactional interceptor on " +
                                "transaction: {0}",
                      level = "INFO")
-    public static final String CDI_JTA_SETROLLBACK = "AS-JTA-0002";
+    public static final String CDI_JTA_SETROLLBACK = "AS-JTA-00002";
 
     @LogMessageInfo( message = "No ComponentInvocation present for @Transactional annotation " +
                                 "processing. Restriction on use of UserTransaction will not be enforced.",
                      level = "WARNING")
-    public static final String CDI_JTA_NOCOMPONENT = "AS-JTA-0003";
+    public static final String CDI_JTA_NOCOMPONENT = "AS-JTA-00003";
 
     @LogMessageInfo( message = "In MANDATORY TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_MANDATORY = "AS-JTA-0004";
+    public static final String CDI_JTA_MANDATORY = "AS-JTA-00004";
 
     @LogMessageInfo( message = "In NEVER TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_NEVER = "AS-JTA-0005";
+    public static final String CDI_JTA_NEVER = "AS-JTA-00005";
 
     @LogMessageInfo( message = "In NOT_SUPPORTED TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_NOTSUPPORTED = "AS-JTA-0006";
+    public static final String CDI_JTA_NOTSUPPORTED = "AS-JTA-00006";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                "called inside a transaction context. Suspending transaction...",
                      level = "INFO")
-    public static final String CDI_JTA_MBNOTSUPPORTED = "AS-JTA-0007";
+    public static final String CDI_JTA_MBNOTSUPPORTED = "AS-JTA-00007";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of NOT_SUPPORTED " +
                                "called inside a transaction context.  Suspending transaction failed due to {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBNOTSUPPORTEDTX = "AS-JTA-0008";
+    public static final String CDI_JTA_MBNOTSUPPORTEDTX = "AS-JTA-00008";
 
     @LogMessageInfo( message = "In REQUIRED TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_REQUIRED = "AS-JTA-0009";
+    public static final String CDI_JTA_REQUIRED = "AS-JTA-00009";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                         "called outside a transaction context.  Beginning a transaction...",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQUIRED = "AS-JTA-0010";
+    public static final String CDI_JTA_MBREQUIRED = "AS-JTA-00010";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during begin {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQUIREDBT = "AS-JTA-0011";
+    public static final String CDI_JTA_MBREQUIREDBT = "AS-JTA-00011";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during commit {0}",
                      level = "INFO")
-    public static final String CDI_JTA_MBREQUIREDCT = "AS-JTA-0012";
+    public static final String CDI_JTA_MBREQUIREDCT = "AS-JTA-00012";
 
     @LogMessageInfo( message = "In REQUIRES_NEW TransactionalInterceptor",
                      level = "INFO")
@@ -162,7 +162,7 @@ public class TransactionalInterceptorBase implements Serializable {
 
     @LogMessageInfo( message = "In SUPPORTS TransactionalInterceptor",
                      level = "INFO")
-    public static final String CDI_JTA_SUPPORTS = "AS-JTA-0018";
+    public static final String CDI_JTA_SUPPORTS = "AS-JTA-00018";
 
     private static TransactionManager testTransactionManager;
     volatile private static TransactionManager transactionManager;
