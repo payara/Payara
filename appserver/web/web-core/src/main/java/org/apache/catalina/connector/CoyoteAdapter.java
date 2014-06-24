@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -423,11 +423,7 @@ public class CoyoteAdapter extends HttpHandler {
                         request.getHost(), request.getContext(),
                         response.getStatus());
                 } finally {
-                    try {
-                        request.unlockSession();
-                    } finally {
-                        leavingServletContainer(request, response);
-                    }
+                    leavingServletContainer(request, response);
                 }
             }
         }
@@ -1101,8 +1097,12 @@ public class CoyoteAdapter extends HttpHandler {
                 } catch (Exception e) {
                     log.log(Level.SEVERE, REQUEST_PROCESSING_EXCEPTION, e);
                 } finally {
-                    servletRequest.recycle();
-                    servletResponse.recycle();
+                    try {
+                        servletRequest.unlockSession();
+                    } finally {
+                        servletRequest.recycle();
+                        servletResponse.recycle();
+                    }
                 }
             }
         }
