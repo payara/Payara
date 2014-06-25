@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -73,12 +73,8 @@ import java.io.RandomAccessFile;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.net.URI;
-import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NameClassPair;
 import javax.naming.NamingException;
@@ -92,9 +88,13 @@ import javax.servlet.UnavailableException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
@@ -104,15 +104,16 @@ import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.naming.resources.CacheEntry;
-import org.apache.naming.resources.FileDirContext;
 import org.apache.naming.resources.ProxyDirContext;
 import org.apache.naming.resources.Resource;
 import org.apache.naming.resources.ResourceAttributes;
 import org.glassfish.grizzly.http.server.util.AlternateDocBase;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.loader.ResourceEntry;
-import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.util.HtmlEntityEncoder;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.ext.EntityResolver2;
 
 /**
  * <p>The default resource-serving servlet for most web applications,
@@ -199,7 +200,28 @@ public class DefaultServlet
     )
     public static final String DIR_LAST_MODIFIED_INFO = "AS-WEB-CORE-00328";
 
+    @LogMessageInfo(
+            message = "Blocked access to external entity with publicId [{0}] and systemId [{0}]",
+            level = "WARNING"
+    )
+    public static final String BLOCK_EXTERNAL_ENTITY = "AS-WEB-CORE-00540";
 
+    @LogMessageInfo(
+            message = "Blocked access to external entity with name [{0}], publicId [{1}], baseURI [{2}] and systemId [{3}]",
+            level = "WARNING"
+    )
+    public static final String BLOCK_EXTERNAL_ENTITY2 = "AS-WEB-CORE-00541";
+
+    @LogMessageInfo(
+            message = "Blocked access to external subset with name [{0}] and baseURI [{1}]",
+            level = "WARNING"
+    )
+    public static final String BLOCK_EXTERNAL_SUBSET = "AS-WEB-CORE-00542";
+
+    private static final DocumentBuilderFactory factory;
+
+    private static final SecureEntityResolver secureEntityResolver =
+            new SecureEntityResolver();
 
     // ----------------------------------------------------- Instance Variables
 
@@ -250,6 +272,12 @@ public class DefaultServlet
      * Allow customized directory listing per directory.
      */
     protected String  localXsltFile = null;
+
+
+    /**
+     * Allow customized directory listing per context.
+     */
+    protected String contextXsltFile = null;
 
 
     /**
@@ -320,6 +348,10 @@ public class DefaultServlet
         urlEncoder.addSafeCharacter('.');
         urlEncoder.addSafeCharacter('*');
         urlEncoder.addSafeCharacter('/');
+
+        factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        factory.setValidating(false);
     }
 
 
@@ -388,6 +420,7 @@ public class DefaultServlet
         fileEncoding = sc.getInitParameter("fileEncoding");
 
         globalXsltFile = sc.getInitParameter("globalXsltFile");
+        contextXsltFile = sc.getInitParameter("contextXsltFile");
         localXsltFile = sc.getInitParameter("localXsltFile");
         readmeFile = sc.getInitParameter("readmeFile");
 
@@ -1328,13 +1361,13 @@ public class DefaultServlet
     private InputStream render(String contextPath, CacheEntry cacheEntry,
             ProxyDirContext proxyDirContext)
             throws IOException, ServletException {
-        InputStream xsltInputStream =
-            findXsltInputStream(cacheEntry.context);
 
-        if (xsltInputStream==null) {
+        Source xsltSource = findXsltInputStream(cacheEntry.context);
+
+        if (xsltSource == null) {
             return renderHtml(contextPath, cacheEntry, proxyDirContext);
         } else {
-            return renderXml(contextPath, cacheEntry, xsltInputStream, proxyDirContext);
+            return renderXml(contextPath, cacheEntry, xsltSource, proxyDirContext);
         }
 
     }
@@ -1348,14 +1381,14 @@ public class DefaultServlet
      */
     protected InputStream renderXml(String contextPath,
                                     CacheEntry cacheEntry,
-                                    InputStream xsltInputStream)
+                                    Source xsltSource)
             throws IOException, ServletException {
-        return renderXml(contextPath, cacheEntry, xsltInputStream, resources);
+        return renderXml(contextPath, cacheEntry, xsltSource, resources);
     }
 
     private InputStream renderXml(String contextPath,
                                     CacheEntry cacheEntry,
-                                    InputStream xsltInputStream,
+                                    Source xsltSource,
                                     ProxyDirContext proxyDirContext)
             throws IOException, ServletException {
 
@@ -1406,6 +1439,9 @@ public class DefaultServlet
                 if (trimmed.equalsIgnoreCase("WEB-INF") ||
                     trimmed.equalsIgnoreCase("META-INF") ||
                     trimmed.equalsIgnoreCase(localXsltFile))
+                    continue;
+
+                if ((cacheEntry.name + trimmed).equals(contextXsltFile))
                     continue;
 
                 CacheEntry childCacheEntry =
@@ -1462,8 +1498,7 @@ public class DefaultServlet
         try {
             TransformerFactory tFactory = TransformerFactory.newInstance();
             Source xmlSource = new StreamSource(new StringReader(sb.toString()));
-            Source xslSource = new StreamSource(xsltInputStream);
-            Transformer transformer = tFactory.newTransformer(xslSource);
+            Transformer transformer = tFactory.newTransformer(xsltSource);
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             OutputStreamWriter osWriter = new OutputStreamWriter(stream, "UTF8");
@@ -1729,9 +1764,9 @@ public class DefaultServlet
 
 
     /**
-     * Return the xsl template inputstream (if possible)
+     * Return a Source for the xsl template (if possible)
      */
-    protected InputStream findXsltInputStream(DirContext directory)
+    protected Source findXsltInputStream(DirContext directory)
         throws IOException, ServletException {
 
         if (localXsltFile!=null) {
@@ -1739,8 +1774,13 @@ public class DefaultServlet
                 Object obj = directory.lookup(localXsltFile);
                 if (obj!=null && obj instanceof Resource) {
                     InputStream is = ((Resource)obj).streamContent();
-                    if (is!=null)
-                        return is;
+                    if (is != null) {
+                        if (Globals.IS_SECURITY_ENABLED) {
+                            return secureXslt(is);
+                        } else {
+                            return new StreamSource(is);
+                        }
+                    }
                 }
              } catch(Throwable e) {
                  ; /* Should only be IOException or NamingException
@@ -1753,25 +1793,44 @@ public class DefaultServlet
              }
         }
 
+        if (contextXsltFile != null) {
+            InputStream is =
+                getServletContext().getResourceAsStream(contextXsltFile);
+            if (is != null) {
+                if (Globals.IS_SECURITY_ENABLED) {
+                    return secureXslt(is);
+                } else {
+                    return new StreamSource(is);
+                }
+            }
+
+            if (debug > 10)
+                log("contextXsltFile '" + contextXsltFile + "' not found");
+        }
+
         /*  Open and read in file in one fell swoop to reduce chance
          *  chance of leaving handle open.
          */
         if (globalXsltFile!=null) {
-            FileInputStream fis = null;
-
-            try {
-                File f = new File(globalXsltFile);
-                if (f.exists()){
-                    fis =new FileInputStream(f);
+            File f = validateGlobalXsltFile();
+            if (f != null){
+                FileInputStream fis = null;
+                try {
+                    fis = new FileInputStream(f);
                     byte b[] = new byte[(int)f.length()]; /* danger! */
-                    if ((fis.read(b) < 0) && (debug > 0))
-                        log("DefaultServlet.findXsltInputStream:  globalXsltFile '" +
-                                globalXsltFile + "' is empty.");
-                    return new ByteArrayInputStream(b);
+                    fis.read(b);
+                    return new StreamSource(new ByteArrayInputStream(b));
+                } finally {
+                    if (fis != null) {
+                        try {
+                            fis.close();
+                        } catch (IOException ioe) {
+                            if (debug > 10) {
+                                log(ioe.getMessage(), ioe);
+                            }
+                        }
+                    }
                 }
-            } finally {
-                if (fis!=null)
-                    fis.close();
             }
         }
 
@@ -1779,6 +1838,91 @@ public class DefaultServlet
 
     }
 
+    private File validateGlobalXsltFile() {
+
+        File result = null;
+        String base = System.getProperty("catalina.base");
+
+        if (base != null) {
+            File baseConf = new File(base, "conf");
+            result = validateGlobalXsltFile(baseConf);
+        }
+
+        if (result == null) {
+            String home = System.getProperty("catalina.home");
+            if (home != null && !home.equals(base)) {
+                File homeConf = new File(home, "conf");
+                result = validateGlobalXsltFile(homeConf);
+            }
+        }
+
+        return result;
+    }
+
+
+    private File validateGlobalXsltFile(File base) {
+        File candidate = new File(globalXsltFile);
+        if (!candidate.isAbsolute()) {
+            candidate = new File(base, globalXsltFile);
+        }
+
+        if (!candidate.isFile()) {
+            return null;
+        }
+
+        // First check that the resulting path is under the provided base
+        try {
+            if (!candidate.getCanonicalPath().startsWith(base.getCanonicalPath())) {
+                return null;
+            }
+        } catch (IOException ioe) {
+            return null;
+        }
+
+        // Next check that an .xsl or .xslt file has been specified
+        String nameLower = candidate.getName().toLowerCase(Locale.ENGLISH);
+        if (!nameLower.endsWith(".xslt") && !nameLower.endsWith(".xsl")) {
+            return null;
+        }
+
+        return candidate;
+    }
+
+
+    private Source secureXslt(InputStream is) {
+        // Need to filter out any external entities
+        Source result = null;
+        try {
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            builder.setEntityResolver(secureEntityResolver);
+            Document document = builder.parse(is);
+            result = new DOMSource(document);
+        } catch (ParserConfigurationException e) {
+            if (debug > 0) {
+                log(e.getMessage(), e);
+            }
+        } catch (SAXException e) {
+            if (debug > 0) {
+                log(e.getMessage(), e);
+            }
+        } catch (IOException e) {
+            if (debug > 0) {
+                log(e.getMessage(), e);
+            }
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    if (debug > 10) {
+                        log(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+        return result;
+    }
+ 
 
     // -------------------------------------------------------- protected Methods
 
@@ -2544,4 +2688,30 @@ public class DefaultServlet
         }
     }
 
+    /**
+     * This is secure in the sense that any attempt to use an external entity
+     * will trigger an exception.
+     */
+    private static class SecureEntityResolver implements EntityResolver2  {
+
+        public InputSource resolveEntity(String publicId, String systemId)
+                throws SAXException, IOException {
+            throw new SAXException(
+                    MessageFormat.format(BLOCK_EXTERNAL_ENTITY, publicId, systemId));
+        }
+
+        public InputSource getExternalSubset(String name, String baseURI)
+                throws SAXException, IOException {
+            throw new SAXException(
+                    MessageFormat.format(BLOCK_EXTERNAL_SUBSET, name, baseURI));
+        }
+
+        public InputSource resolveEntity(String name, String publicId,
+                String baseURI, String systemId) throws SAXException,
+                IOException {
+            throw new SAXException(
+                    MessageFormat.format(BLOCK_EXTERNAL_ENTITY2,
+                    name, publicId, baseURI, systemId));
+        }
+    }
 }
