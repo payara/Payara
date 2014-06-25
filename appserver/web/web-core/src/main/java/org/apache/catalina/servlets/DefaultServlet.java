@@ -218,6 +218,12 @@ public class DefaultServlet
     )
     public static final String BLOCK_EXTERNAL_SUBSET = "AS-WEB-CORE-00542";
 
+    @LogMessageInfo(
+            message = "Fail to read file [{0}]",
+            level = "WARNING"
+    )
+    public static final String READ_FILE_EXCEPTION = "AS-WEB-CORE-00543";
+
     private static final DocumentBuilderFactory factory;
 
     private static final SecureEntityResolver secureEntityResolver =
@@ -1817,8 +1823,11 @@ public class DefaultServlet
                 FileInputStream fis = null;
                 try {
                     fis = new FileInputStream(f);
-                    byte b[] = new byte[(int)f.length()]; /* danger! */
-                    fis.read(b);
+                    long len = f.length();
+                    byte b[] = new byte[(int)len]; /* danger! */
+                    if (len != fis.read(b)) {
+                        throw new IOException(MessageFormat.format(READ_FILE_EXCEPTION, f.getAbsolutePath()));
+                    }
                     return new StreamSource(new ByteArrayInputStream(b));
                 } finally {
                     if (fis != null) {
