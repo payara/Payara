@@ -86,7 +86,12 @@ public class InjectionServicesImpl implements InjectionServices {
     private boolean isInterceptor( Class beanClass ) {
       HashSet<String> annos = new HashSet<>();
       annos.add( javax.interceptor.Interceptor.class.getName() );
-      return WeldUtils.hasValidAnnotation( beanClass, annos, null );
+      boolean res = false;
+      while ( ! res && beanClass != Object.class ) {
+        res = WeldUtils.hasValidAnnotation( beanClass, annos, null );
+        beanClass  = beanClass.getSuperclass();
+      }
+      return res;
     }
 
     public <T> void aroundInject(InjectionContext<T> injectionContext) {
