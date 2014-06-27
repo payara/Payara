@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -340,7 +340,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             EntityManager delegate = _getDelegate();
             returnValue = delegate.find(entityClass, primaryKey);
-            clearPersistenceContextIfNotInTransaction(delegate);
+            clearPersistenceContextPerhaps(delegate);
         } finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
@@ -359,7 +359,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             EntityManager delegate = _getDelegate();
             returnValue = _getDelegate().find(entityClass, primaryKey, properties);
-            clearPersistenceContextIfNotInTransaction(delegate);
+            clearPersistenceContextPerhaps(delegate);
         } finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
@@ -379,7 +379,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             EntityManager delegate = _getDelegate();
             returnValue = _getDelegate().find(entityClass, primaryKey, lockMode);
-            clearPersistenceContextIfNotInTransaction(delegate);
+            clearPersistenceContextPerhaps(delegate);
         } finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
@@ -398,7 +398,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
             }
             EntityManager delegate = _getDelegate();
             returnValue = _getDelegate().find(entityClass, primaryKey, lockMode, properties);
-            clearPersistenceContextIfNotInTransaction(delegate);
+            clearPersistenceContextPerhaps(delegate);
         } finally {
             if(callFlowAgent.isEnabled()) {
                 callFlowAgent.entityManagerMethodEnd();
@@ -1201,8 +1201,8 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
         callFlowAgent = defaultServiceLocator.getService(CallFlowAgent.class);
     }
 
-    private void clearPersistenceContextIfNotInTransaction(EntityManager em) {
-        if(getCurrentTransaction() == null) {
+    private void clearPersistenceContextPerhaps(EntityManager em) {
+        if(getCurrentTransaction() == null && contextType != PersistenceContextType.EXTENDED) {
             em.clear();
         }
     }
