@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,6 +54,8 @@ import javax.validation.Validator;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.*;
 
 
 /**
@@ -85,7 +87,7 @@ public class ConnectorRegistry {
     protected final Map<String, ResourceAdapterConfig> resourceAdapterConfig;
     protected final Map<String, ConnectorApplication> rarModules;
     protected final Map<String, Validator> beanValidators;
-    protected final Map<ResourceInfo, Map<DynamicallyReconfigurableResource, Boolean>> resourceProxies;
+    protected final ConcurrentMap<ResourceInfo, AtomicLong> resourceInfoVersion;
     protected final Set<ResourceInfo> resourceInfos;
     protected final Set<PoolInfo> transparentDynamicReconfigPools;
     protected final Map<String, Object> locks;
@@ -113,7 +115,7 @@ public class ConnectorRegistry {
         resourceAdapterConfig = Collections.synchronizedMap(new HashMap<String, ResourceAdapterConfig>());
         rarModules = Collections.synchronizedMap(new HashMap<String, ConnectorApplication>());
         beanValidators = Collections.synchronizedMap(new HashMap<String, Validator>());
-        resourceProxies = new HashMap<ResourceInfo, Map<DynamicallyReconfigurableResource, Boolean>>();
+        resourceInfoVersion = new ConcurrentHashMap<ResourceInfo, AtomicLong>();
         resourceInfos = new HashSet<ResourceInfo>();
         transparentDynamicReconfigPools = new HashSet<PoolInfo>();
         locks = new HashMap<String, Object>();
@@ -141,36 +143,45 @@ public class ConnectorRegistry {
     }
 
     /**
-     * get the map of factories (proxy to actual factory) using the resource. 
+     * get the version counter of  a resource info 
      * @param resourceInfo resource-name
-     * @return Map of factories
+     * @return version counter. {@code -1L} if the resource is invalid
      */
-    public Map<DynamicallyReconfigurableResource, Boolean> getResourceFactories(ResourceInfo resourceInfo){
-        Map<DynamicallyReconfigurableResource, Boolean> map = resourceProxies.get(resourceInfo);
-        //TODO synchronization
-        if(map == null){
-            map = new HashMap<DynamicallyReconfigurableResource, Boolean>();
-            resourceProxies.put(resourceInfo, map);
-        }
-        return map;
+    public long getResourceInfoVersion(ResourceInfo resourceInfo) {
+    	AtomicLong version = resourceInfoVersion.get(resourceInfo);
+    	if (version == null) {
+    	   // resource is no longer valid
+    	   return -1L;
+    	} else {
+    		return version.get();
+    	}
+    }
+    
+    /**
+     * Update version information for a resource.
+     * @param resourceInfo resource info to be updated.
+     * @return new version couter
+     */
+    public long updateResourceInfoVersion(ResourceInfo resourceInfo) {
+    	AtomicLong version = resourceInfoVersion.get(resourceInfo);
+    	if (version == null) {
+    		AtomicLong newVersion = new AtomicLong();
+    		version = resourceInfoVersion.putIfAbsent(resourceInfo, newVersion);
+    	   	if (version == null) {
+    	      version = newVersion;
+    		}
+    	}    	
+    	return version.incrementAndGet();
     }
 
     /**
      * remove and invalidate factories (proxy to actual factory) using the resource.
      * @param resourceInfo resource-name
-     * @return boolean indicating whether the factories are invalidated or not
+     * @return boolean indicating whether the factories will get invalidated
      */
     public boolean removeResourceFactories(ResourceInfo resourceInfo){
-        boolean mapRemoved = false;
-        Map<DynamicallyReconfigurableResource, Boolean> map = resourceProxies.remove(resourceInfo);
-        if(map != null){
-            for(DynamicallyReconfigurableResource resource : map.keySet()){
-                resource.setInvalid();
-            }
-            map.clear();
-            mapRemoved = true;
-        }
-        return mapRemoved;
+    	resourceInfoVersion.remove(resourceInfo);
+    	return false; // we actually don't know if there are any resource factories instantiated.
     }
 
     /**
@@ -182,6 +193,7 @@ public class ConnectorRegistry {
             synchronized (resourceInfos){
                 resourceInfos.add(resourceInfo);
             }
+            updateResourceInfoVersion(resourceInfo);
         }
     }
 
@@ -196,6 +208,7 @@ public class ConnectorRegistry {
             synchronized (resourceInfos){
                 removed = resourceInfos.remove(resourceInfo);
             }
+            resourceInfoVersion.remove(resourceInfo);
         }
         return removed;
     }

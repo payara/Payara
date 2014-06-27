@@ -70,6 +70,7 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
     private Object actualObject;
     private ResourceInfo resourceInfo;
     private boolean invalid = false;
+    private long resourceInfoVersion = 0;
 
     protected final static Logger _logger = LogDomains.getLogger(DynamicResourceReconfigurator.class,LogDomains.RSR_LOGGER);
 
@@ -90,17 +91,22 @@ public class DynamicResourceReconfigurator implements InvocationHandler, Dynamic
                 && args.length == 0) {
             setInvalid();
         } else {
-            Map<DynamicallyReconfigurableResource, Boolean> proxies =
-                    ConnectorRegistry.getInstance().getResourceFactories(resourceInfo);
-            Boolean status = proxies.get(this);
-            if (status == null || !status) {
-                debug("status is null or false: " + this);
+        	long version = ConnectorRegistry.getInstance().getResourceInfoVersion(resourceInfo);
+        	if (version == -1L) {
+        		// since we're not keeping the list of proxies, we need to invalidate as soon we are aware of the fact
+        		setInvalid();
+        		invoke(proxy,method,args); // just to trigger the exception
+        	}
+        	            
+        	boolean status = resourceInfoVersion >= version;
+        	resourceInfoVersion = version;
+        	if (!status) {
+        		debug("status is outdated: " + this);                
                 Hashtable env = new Hashtable();
                 env.put(ConnectorConstants.DYNAMIC_RECONFIGURATION_PROXY_CALL, "TRUE");
                 //TODO ASR : resource-naming-service need to support "env" for module/app scope also
                 ResourceNamingService namingService = ConnectorRuntime.getRuntime().getResourceNamingService();
                 actualObject = namingService.lookup(resourceInfo, resourceInfo.getName(), env);
-                proxies.put(this, true);
                 debug("actualObject : " + actualObject);
             }else{
                 debug("status is true: " + this);

@@ -182,9 +182,6 @@ public class ConnectorObjectFactory implements ObjectFactory {
                                     proxyClasses[proxyClasses.length - 1] = DynamicallyReconfigurableResource.class;
 
                                     cf = getProxyObject(cf, proxyClasses, resourceInfo);
-                                    Map<DynamicallyReconfigurableResource, Boolean> resourceFactories =
-                                            ConnectorRegistry.getInstance().getResourceFactories(resourceInfo);
-                                    resourceFactories.put((DynamicallyReconfigurableResource) Proxy.getInvocationHandler(cf), true);
                                 }
                             }
                         }
