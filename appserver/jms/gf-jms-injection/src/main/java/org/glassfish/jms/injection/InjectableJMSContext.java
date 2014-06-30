@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PreDestroy;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.inject.Inject;
 import javax.jms.ConnectionFactory;
@@ -83,9 +84,12 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private final String ipId;  // id per injection point
     private final String id;    // id per scope
 
+    @Inject
+    private Instance<TransactedJMSContextManager> tm;
+
     // CDI proxy so serializable
     private final RequestedJMSContextManager requestedManager;
-    private final TransactedJMSContextManager transactedManager;
+    private TransactedJMSContextManager transactedManager;
 
     // We need to ensure this is serialiable
     private final JMSContextMetadata metadata;
@@ -103,7 +107,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private static final boolean usePMResourceInTransaction = Boolean.getBoolean("org.glassfish.jms.skip-resource-registration-in-transaction");
 
     @Inject
-    public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm, TransactedJMSContextManager tm) {
+    public InjectableJMSContext(InjectionPoint ip, RequestedJMSContextManager rm) {
         getTransactionManager();
 
         JMSConnectionFactory jmsConnectionFactoryAnnot = ip.getAnnotated().getAnnotation(JMSConnectionFactory.class);
@@ -112,7 +116,6 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
 
         ipId = UUID.randomUUID().toString();
         this.requestedManager = rm;
-        this.transactedManager = tm;
         metadata = new JMSContextMetadata(jmsConnectionFactoryAnnot, sessionModeAnnot, credentialAnnot);
         id = metadata.getFingerPrint();
         if (logger.isLoggable(Level.FINE)) {
@@ -121,12 +124,23 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         }
     }
 
+    private TransactedJMSContextManager getTransactedManager() {
+        if (transactedManager == null) {
+            synchronized (this) {
+                if (transactedManager != null)
+                    return transactedManager;
+                transactedManager = tm.get();
+            }
+        }
+        return transactedManager;
+    }
+
     @Override
     protected JMSContext delegate() {
         AbstractJMSContextManager manager = requestedManager;
         boolean isInTransaction = isInTransaction();
         if (isInTransaction)
-            manager = transactedManager;
+            manager = getTransactedManager();
 
         if (logger.isLoggable(Level.FINE)) {
             logger.log(Level.FINE, localStrings.getLocalString("JMSContext.delegation.type", 
@@ -148,9 +162,10 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         try {
             boolean isInTransaction = isInTransaction();
             if (isInTransaction) {
-                tContext = transactedManager.getContext(id);
+                TransactedJMSContextManager manager = getTransactedManager();
+                tContext = manager.getContext(id);
                 if (tContext == null)
-                    tContext = transactedManager.getContext(ipId, id, metadata, getConnectionFactory(isInTransaction));
+                    tContext = manager.getContext(ipId, id, metadata, getConnectionFactory(isInTransaction));
             } else {
                 rContext = requestedManager.getContext(id);
                 if (rContext == null)
@@ -164,7 +179,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         StringBuffer sb = new StringBuffer();
         sb.append("JMSContext Wrapper ").append(ipId).append(" with metadata [").append(metadata).append("]");
         if (tContext != null)
-            sb.append(", around ").append(transactedManager.getType()).append(" [").append(tContext).append("]");
+            sb.append(", around ").append(getTransactedManager().getType()).append(" [").append(tContext).append("]");
         else if (rContext != null)
             sb.append(", around ").append(requestedManager.getType()).append(" [").append(rContext).append("]");
         else
@@ -175,7 +190,7 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     @PreDestroy
     public void cleanup() {
         cleanupManager(requestedManager);
-        cleanupManager(transactedManager);
+        cleanupManager(getTransactedManager());
     }
 
     private void cleanupManager(AbstractJMSContextManager manager) {
