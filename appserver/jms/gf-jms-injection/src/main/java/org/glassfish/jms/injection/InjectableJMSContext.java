@@ -84,8 +84,9 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
     private final String ipId;  // id per injection point
     private final String id;    // id per scope
 
+    // Make it transient for FindBugs
     @Inject
-    private Instance<TransactedJMSContextManager> tm;
+    private transient Instance<TransactedJMSContextManager> tm;
 
     // CDI proxy so serializable
     private final RequestedJMSContextManager requestedManager;
@@ -124,14 +125,9 @@ public class InjectableJMSContext extends ForwardingJMSContext implements Serial
         }
     }
 
-    private TransactedJMSContextManager getTransactedManager() {
-        if (transactedManager == null) {
-            synchronized (this) {
-                if (transactedManager != null)
-                    return transactedManager;
-                transactedManager = tm.get();
-            }
-        }
+    private synchronized TransactedJMSContextManager getTransactedManager() {
+        if (transactedManager == null)
+            transactedManager = tm.get();
         return transactedManager;
     }
 
