@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,10 @@
 
 package org.glassfish.weld.util;
 
+import org.glassfish.weld.ACLSingletonProvider;
+import org.jboss.weld.bootstrap.api.SingletonProvider;
+import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
+
 public class Util {
 
     public static <T> T newInstance(String className) {
@@ -71,5 +75,15 @@ public class Util {
             throw new IllegalArgumentException("Cannot load class for " + name, e);
         }
    }
+
+    public static void initializeWeldSingletonProvider() {
+      boolean earSupport = false;
+      try {
+          Class.forName("org.glassfish.javaee.full.deployment.EarClassLoader");
+          earSupport = true;
+      } catch (ClassNotFoundException ignore) {
+      }
+      SingletonProvider.initialize(earSupport ? new ACLSingletonProvider() : new TCCLSingletonProvider());
+    }
 
 }

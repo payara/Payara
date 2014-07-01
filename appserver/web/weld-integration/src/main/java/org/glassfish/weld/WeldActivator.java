@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -40,6 +40,7 @@
 
 package org.glassfish.weld;
 
+import org.glassfish.weld.util.Util;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext; 
 
@@ -69,15 +70,7 @@ import org.jboss.weld.bootstrap.api.helpers.TCCLSingletonProvider;
  */
 public class WeldActivator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
-        boolean earSupport = false;
-        try {
-            Class
-                    .forName("org.glassfish.javaee.full.deployment.EarClassLoader");
-            earSupport = true;
-        } catch (ClassNotFoundException cnfe) {
-        }
-        SingletonProvider.initialize(earSupport ? new ACLSingletonProvider()
-                : new TCCLSingletonProvider());
+      Util.initializeWeldSingletonProvider();
     }
 
     public void stop(BundleContext context) throws Exception {

@@ -69,6 +69,7 @@ import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.javaee.core.deployment.ApplicationHolder;
 import org.glassfish.web.deployment.descriptor.AppListenerDescriptorImpl;
 import org.glassfish.weld.services.*;
+import org.glassfish.weld.util.Util;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.Environments;
 import org.jboss.weld.bootstrap.spi.BeanDeploymentArchive;
@@ -155,6 +156,12 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
           JspTag.class
             // TODO need to add more classes
     };
+
+    static {
+      try {
+        Util.initializeWeldSingletonProvider();
+      } catch ( Throwable ignore ) {}
+    }
 
     @Override
     public MetaData getMetaData() {
