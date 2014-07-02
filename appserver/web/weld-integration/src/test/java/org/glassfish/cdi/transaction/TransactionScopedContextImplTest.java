@@ -228,7 +228,8 @@ public class TransactionScopedContextImplTest {
             TransactionScopedBeanTest.getTransactionScopedBean( mockSupport,
                                                                 localBean,
                                                                 contextual,
-                                                                creationalContext);
+                                                                creationalContext,
+                    transactionScopedContext);
         setupMocksForActiveTransaction(transactionSynchronizationRegistry);
         setupMocksForGetContextualInstance(transactionSynchronizationRegistry,
                                            contextual,
@@ -249,7 +250,8 @@ public class TransactionScopedContextImplTest {
             TransactionScopedBeanTest.getTransactionScopedBean( mockSupport,
                                                                 localPassivationCapableBean,
                                                                 passivationCapableContextual,
-                                                                passivationCapableCreationalContext);
+                                                                passivationCapableCreationalContext,
+                    transactionScopedContext);
         setupMocksForActiveTransaction(transactionSynchronizationRegistry);
         expect( passivationCapableContextual.getId() ).andReturn(beanId);
         setupMocksForGetContextualInstance(transactionSynchronizationRegistry,

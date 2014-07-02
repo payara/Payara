@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -36,43 +36,16 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */
 
+ */
 package org.glassfish.cdi.transaction;
 
-import org.easymock.EasyMockSupport;
-import org.junit.Test;
-
-import javax.enterprise.inject.spi.*;
-
-import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.isA;
-
 /**
- * @author <a href="mailto:j.j.snyder@oracle.com">JJ Snyder</a>
+ * @author <a href="mailto:arjav.desai@oracle.com">Arjav Desai</a>
  */
-public class TransactionScopedContextExtensionTest {
-    @Test
-    public void testafterBeanDiscovery() {
-        EasyMockSupport mockSupport = new EasyMockSupport();
-        AfterBeanDiscovery event = mockSupport.createMock(AfterBeanDiscovery.class);
-        BeanManager beanManager = mockSupport.createMock(BeanManager.class);
-        AnnotatedType<TransactionScopedCDIEventHelperImpl> annotatedType = (AnnotatedType<TransactionScopedCDIEventHelperImpl>) mockSupport.createMock(AnnotatedType.class);
-        InjectionTargetFactory injectionTargetFactory = mockSupport.createMock(InjectionTargetFactory.class);
-        InjectionTarget injectionTarget = mockSupport.createMock(InjectionTarget.class);
 
-        event.addContext(isA(TransactionScopedContextImpl.class));
-        expect(beanManager.createAnnotatedType(TransactionScopedCDIEventHelperImpl.class)).andReturn(annotatedType);
-        expect(beanManager.getInjectionTargetFactory(annotatedType)).andReturn(injectionTargetFactory);
-        expect(injectionTargetFactory.createInjectionTarget(anyObject(Bean.class))).andReturn(injectionTarget);
-        event.addBean(anyObject(Bean.class));
-        mockSupport.replayAll();
+public interface TransactionScopedCDIEventHelper {
 
-        TransactionScopedContextExtension transactionScopedContextExtension = new TransactionScopedContextExtension();
-        transactionScopedContextExtension.afterBeanDiscovery( event, beanManager );
-
-        mockSupport.verifyAll();
-        mockSupport.resetAll();
-    }
+    void fireInitializedEvent(TransactionScopedCDIEventPayload payload);
+    void fireDestroyedEvent(TransactionScopedCDIEventPayload payload);
 }
