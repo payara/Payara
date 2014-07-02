@@ -74,7 +74,7 @@
         <javax.transaction-api.version>1.2</javax.transaction-api.version>
         <jaxws-api.version>2.2.8</jaxws-api.version>
         <javax.faces-api.version>2.2</javax.faces-api.version>
-        <cdi-api.version>1.1-20130918</cdi-api.version>
+        <cdi-api.version>1.2</cdi-api.version>
         <javax.inject.version>1</javax.inject.version>
         <javax.resource-api.version>1.7</javax.resource-api.version>
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
