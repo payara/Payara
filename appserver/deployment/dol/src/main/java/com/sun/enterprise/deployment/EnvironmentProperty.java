@@ -315,7 +315,7 @@ public class EnvironmentProperty extends Descriptor implements InitializationPar
     }
 
     public boolean hasAValue() {
-        return ( setValueCalled || hasLookupName() || getMappedName().length() > 0 || getName().length() > 0);
+        return ( setValueCalled || hasLookupName() || getMappedName().length() > 0);
     }
 
      /** 
