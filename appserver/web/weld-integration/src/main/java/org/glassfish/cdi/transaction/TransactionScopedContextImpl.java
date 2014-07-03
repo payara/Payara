@@ -44,8 +44,6 @@ import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.PassivationCapable;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -146,16 +144,18 @@ public class TransactionScopedContextImpl implements Context {
         transactionSynchronizationRegistry.registerInterposedSynchronization(transactionScopedBean);
         //Adding TransactionScopedBean as Set, per transactionSynchronizationRegistry, which is unique per transaction
         //Setting synchronizedSet so that even is there are multiple transaction for an app its safe
-        Set<TransactionScopedBean> transactionScopedBeanSet;
-        if (beansPerTransaction.get(transactionSynchronizationRegistry) != null){
-            transactionScopedBeanSet = Collections.synchronizedSet(beansPerTransaction.get(transactionSynchronizationRegistry));
+        Set<TransactionScopedBean> transactionScopedBeanSet = beansPerTransaction.get(transactionSynchronizationRegistry);
+        if (transactionScopedBeanSet != null){
+            transactionScopedBeanSet = Collections.synchronizedSet(transactionScopedBeanSet);
         } else {
             transactionScopedBeanSet = Collections.synchronizedSet(new HashSet());
             //Fire this event only for the first initialization of context and not for every TransactionScopedBean in a Transaction
             TransactionScopedCDIUtil.fireEvent(TransactionScopedCDIUtil.INITIALIZED_EVENT);
+            //Adding transactionScopedBeanSet in Map for the first time for this transactionSynchronizationRegistry key
+            beansPerTransaction.put(transactionSynchronizationRegistry,transactionScopedBeanSet);
         }
         transactionScopedBeanSet.add(transactionScopedBean);
-        beansPerTransaction.put(transactionSynchronizationRegistry,transactionScopedBeanSet);
+        //Not updating entry in main Map with new TransactionScopedBeans as it should happen by reference
         return transactionScopedBean.getContextualInstance();
     }
 

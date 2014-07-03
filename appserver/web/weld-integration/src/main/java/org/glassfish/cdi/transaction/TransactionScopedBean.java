@@ -88,23 +88,20 @@ public class TransactionScopedBean<T> implements Synchronization {
             TransactionSynchronizationRegistry transactionSynchronizationRegistry = getTransactionSynchronizationRegistry();
             //We can't do "getResource" on TransactionSynchronizationRegistry at this stage in completion
             if (transactionSynchronizationRegistry != null) {
-                Set<TransactionScopedBean> transactionScopedBeanSet;
                 if (transactionScopedContext != null) {
-                    if (transactionScopedContext.beansPerTransaction.get(transactionSynchronizationRegistry) != null) {
-                        //Get list of TransactionScopedBeans for this Transaction
-                        transactionScopedBeanSet = transactionScopedContext.beansPerTransaction.get(transactionSynchronizationRegistry);
+                    //Get list of TransactionScopedBeans for this Transaction
+                    Set<TransactionScopedBean> transactionScopedBeanSet = transactionScopedContext.beansPerTransaction.get(transactionSynchronizationRegistry);
+                    if (transactionScopedBeanSet != null) {
                         //Remove the current TransactionScopedBean from list as we are destroying it now
                         if (transactionScopedBeanSet.contains(this)) {
                             transactionScopedBeanSet.remove(this);
                         }
                         //If current TransactionScopedBean is last in list, fire destroyed event and remove transaction entry from main Map
-                        //Else update entry in main Map with leftover TransactionScopedBeans
                         if (transactionScopedBeanSet.size() == 0) {
                             TransactionScopedCDIUtil.fireEvent(TransactionScopedCDIUtil.DESTORYED_EVENT);
                             transactionScopedContext.beansPerTransaction.remove(transactionSynchronizationRegistry);
-                        } else {
-                            transactionScopedContext.beansPerTransaction.put(transactionSynchronizationRegistry, transactionScopedBeanSet);
                         }
+                        //Not updating entry in main Map with leftover TransactionScopedBeans as it should happen by reference
                     }
                 }
             }
