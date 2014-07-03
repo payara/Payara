@@ -528,9 +528,13 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
              envEntryItr.hasNext();) {
             EnvironmentProperty envEntry = (EnvironmentProperty)
                     envEntryItr.next();
+
             // Only env-entries that have been assigned a value are
             // eligible for injection.
-            if (envEntry.hasAValue()) {
+            // If the jndiNameEnv is an EjbBundleDescriptor then we have to account for this because
+            // there can be injection points on classes inside the ejb jar but not accounted for
+            // in the deployment descriptor.
+            if (envEntry.hasAValue() || ( jndiNameEnv instanceof EjbBundleDescriptor ) ){
                 allEnvProps.add(envEntry);
             }
         }
