@@ -570,6 +570,19 @@ create_version_info(){
     printf "\n%s\n\n" "==== VERSION INFO ===="
     echo "Date: `date`" >> ${WORKSPACE}/version-info.txt
     cat ${WORKSPACE}/version-info.txt
+
+    create_changes_info
+}
+
+create_changes_info(){
+    curl $JOB_URL/lastSuccessfulBuild/bundles/version-info.txt > ${WORKSPACE}/previous-version-info.txt
+    PREVIOUS_SVN_REV=`cat ${WORKSPACE}/previous-version-info.txt | head -1 | awk '{print $2}'`
+    touch ${WORKSPACE}/changes.txt
+    if [ "${PREVIOUS_SVN_REV}" -ne "${SVN_REVISION}" ] ; then
+        svn log -r ${PREVIOUS_SVN_REV}:${SVN_REVISION} $WORKSPACE/main > ${WORKSPACE}/changes.txt
+        printf "\n%s\n\n" "==== CHANGELOG ===="
+        cat ${WORKSPACE}/changes.txt
+    fi
 }
 
 create_svn_tag(){
@@ -627,6 +640,7 @@ archive_bundles(){
     rm -rf ${WORKSPACE}/bundles ; mkdir ${WORKSPACE}/bundles
 
     mv ${WORKSPACE}/version-info.txt $WORKSPACE/bundles
+    mv ${WORKSPACE}/changes.txt ${WORKSPACE}/bundles
     cp ${WORKSPACE}/main/appserver/distributions/glassfish/target/*.zip ${WORKSPACE}/bundles
     cp ${WORKSPACE}/main/appserver/distributions/web/target/*.zip ${WORKSPACE}/bundles
     cp ${WORKSPACE}/main/nucleus/distributions/nucleus/target/*.zip ${WORKSPACE}/bundles
