@@ -166,6 +166,7 @@ promote_nightly(){
     promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
+    promote_bundle ${PROMOTED_BUNDLES}/changes.txt changes-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
     VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt"
     SVN_REVISION=`head -1 ${VERSION_INFO} | awk '{print $2}'`
     #record_svn_rev ${SVN_REVISION}
@@ -179,6 +180,7 @@ promote_weekly(){
     promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
+    promote_bundle ${PROMOTED_BUNDLES}/changes.txt changes-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
     VERSION_INFO="${WORKSPACE_BUNDLES}/version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt"
     create_svn_tag
 
