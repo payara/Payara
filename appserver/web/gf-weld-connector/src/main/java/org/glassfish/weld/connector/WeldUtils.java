@@ -51,6 +51,9 @@ import org.glassfish.hk2.classmodel.reflect.Type;
 import org.glassfish.hk2.classmodel.reflect.Types;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import javax.decorator.Decorator;
 import javax.ejb.MessageDriven;
@@ -65,7 +68,10 @@ import javax.enterprise.inject.Stereotype;
 import javax.inject.Scope;
 import javax.inject.Singleton;
 import javax.interceptor.Interceptor;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -162,17 +168,15 @@ public class WeldUtils {
      */
     public static boolean isImplicitBeanArchive(DeploymentContext context, ReadableArchive archive)
             throws IOException {
-
         boolean result = false;
 
         // Archives with extensions are not candidates for implicit bean discovery
         if (!archive.exists(META_INF_SERVICES_EXTENSION)) {
-            result = isImplicitBeanArchive(context, archive.getURI());
+          result = isImplicitBeanArchive(context, archive.getURI());
         }
 
         return result;
     }
-
 
     /**
      * Determine whether the specified archive is an implicit bean deployment archive.
@@ -500,6 +504,125 @@ public class WeldUtils {
         }
 
         return result;
+    }
+
+
+  public static InputStream getBeansXmlInputStream(DeploymentContext context) {
+    return getBeansXmlInputStream( context.getSource() );
+  }
+
+  /**
+   * Determine if an archive is a valid bda based on what the spec says about extensions.
+   * See section 12.1 which states that if an archive contains an extension but no beans.xml then it is NOT
+   * a valid bean deployment archive.
+   *
+   * @param archive The archive to check.
+   * @return false if there is an extension and no beans.xml
+   *         true otherwise
+   */
+  public static boolean isValidBdaBasedOnExtensionAndBeansXml( ReadableArchive archive ) {
+    boolean retVal = false;
+
+    try {
+      if ( archive.exists(META_INF_SERVICES_EXTENSION)) {
+        InputStream inputStream = getBeansXmlInputStream( archive );
+        if ( inputStream != null ) {
+          retVal = true;  // is a valid bda
+          try {
+            inputStream.close();
+          } catch (IOException ignore) {
+          }
+        }
+      }
+    } catch (IOException ignore) {
+    }
+
+    return retVal;
+  }
+
+
+  public static InputStream getBeansXmlInputStream( ReadableArchive archive ) {
+    InputStream inputStream = null;
+
+    try {
+      if (archive.exists(WeldUtils.WEB_INF)) {
+        inputStream = archive.getEntry(WeldUtils.WEB_INF_BEANS_XML);
+        if (inputStream == null) {
+          inputStream = archive.getEntry(WeldUtils.WEB_INF_CLASSES_META_INF_BEANS_XML);
+        }
+      } else {
+        inputStream = archive.getEntry(WeldUtils.META_INF_BEANS_XML);
+      }
+    } catch (IOException e) {
+      return null;
+    }
+    return inputStream;
+  }
+
+  /**
+   * Get the "bean-discovery-mode" from the "beans" element if it exists in beans.xml
+   * From section 12.1 of CDI spec:
+   * A bean archive has a bean discovery mode of all, annotated or none. A bean archive which
+   * contains a beans.xml file with no version has a default bean discovery mode of all. A bean
+   * archive which contains a beans.xml file with version 1.1 (or later) must specify the bean-
+   * discovey-mode attribute. The default value for the attribute is annotated.
+   *
+   * @param beansXmlInputStream The InputStream for the beans.xml to check.
+   * @return "annotated" if there is no beans.xml
+   *         "all" if the bean-discovery-mode is missing
+   *         "annotated" if the bean-discovery-mode is empty
+   *         The value of bean-discovery-mode in all other cases.
+   */
+    public static String getBeanDiscoveryMode( InputStream beansXmlInputStream ) {
+      if ( beansXmlInputStream == null ) {
+        // there is no beans.xml.
+        return "annotated";
+      }
+
+      String beanDiscoveryMode = null;
+      LocalDefaultHandler handler = new LocalDefaultHandler();
+      try {
+        SAXParserFactory factory = SAXParserFactory.newInstance();
+        SAXParser saxParser = factory.newSAXParser();
+        saxParser.parse(beansXmlInputStream, handler);
+      } catch ( SAXStoppedIntentionallyException exc ) {
+        beanDiscoveryMode = handler.getBeanDiscoveryMode();
+      } catch (Exception ignore) {
+      }
+
+      if (beanDiscoveryMode == null ) {
+        return "all";
+      } else if (beanDiscoveryMode.equals("")) {
+        return "annotated";
+      } else {
+        return beanDiscoveryMode;
+      }
+    }
+
+    private static class LocalDefaultHandler extends DefaultHandler {
+        String beanDiscoveryMode = null;
+
+        public void startElement(String uri, String localName,String qName, Attributes attributes) throws SAXException {
+            if ( qName.equals( "beans" ) ) {
+                beanDiscoveryMode = attributes.getValue("bean-discovery-mode");
+                if ( beanDiscoveryMode != null ) {
+                  if ( beanDiscoveryMode.equals( "" ) ) {
+                    beanDiscoveryMode = "annotated";
+                  }
+                }
+                throw new SAXStoppedIntentionallyException();
+            }
+        }
+
+        public String getBeanDiscoveryMode() {
+            return beanDiscoveryMode;
+        }
+    }
+
+    private static class SAXStoppedIntentionallyException extends SAXException {
+        private SAXStoppedIntentionallyException() {
+            super();
+        }
     }
 
 

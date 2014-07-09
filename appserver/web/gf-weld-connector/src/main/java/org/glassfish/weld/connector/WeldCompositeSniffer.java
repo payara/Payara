@@ -108,7 +108,7 @@ public class WeldCompositeSniffer extends WeldSniffer {
                     entryName.indexOf(WeldUtils.SEPARATOR_CHAR, libLocation.length() + 1 ) == -1 ) {
                     try {
                         ReadableArchive jarInLib = archive.getSubArchive(entryName);
-                        entryPresent = isEntryPresent(jarInLib, WeldUtils.META_INF_BEANS_XML);
+                        entryPresent = isArchiveCDIEnabled(context, jarInLib, WeldUtils.META_INF_BEANS_XML);
                         if (!entryPresent) {
                             entryPresent = WeldUtils.isImplicitBeanArchive(context, jarInLib);
                         }
@@ -122,13 +122,4 @@ public class WeldCompositeSniffer extends WeldSniffer {
         return entryPresent;
     }
 
-    private boolean isEntryPresent(ReadableArchive archive, String entry) {
-        boolean entryPresent = false;
-        try {
-            entryPresent = archive.exists(entry);
-        } catch (IOException e) {
-            // ignore
-        }
-        return entryPresent;
-    }
 }
