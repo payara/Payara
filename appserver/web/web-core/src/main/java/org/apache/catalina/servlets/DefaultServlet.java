@@ -226,8 +226,7 @@ public class DefaultServlet
 
     private static final DocumentBuilderFactory factory;
 
-    private static final SecureEntityResolver secureEntityResolver =
-            new SecureEntityResolver();
+    private static final SecureEntityResolver secureEntityResolver;
 
     // ----------------------------------------------------- Instance Variables
 
@@ -355,9 +354,15 @@ public class DefaultServlet
         urlEncoder.addSafeCharacter('*');
         urlEncoder.addSafeCharacter('/');
 
-        factory = DocumentBuilderFactory.newInstance();
-        factory.setNamespaceAware(true);
-        factory.setValidating(false);
+        if (Globals.IS_SECURITY_ENABLED) {
+            factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(true);
+            factory.setValidating(false);
+            secureEntityResolver = new SecureEntityResolver();
+        } else {
+            factory = null;
+            secureEntityResolver = null;
+        }
     }
 
 
