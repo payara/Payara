@@ -586,37 +586,6 @@ public class WebServiceTesterServlet extends HttpServlet {
 
         File classesDir = new File(System.getProperty("java.io.tmpdir"));
 
-
-        /**
-         * JAXWS uses the System.getProperty(java.class.path) to pass on to apt during wsgen
-         * In V2 this would have
-         * tools.jar, webservices-rt and webservices-api.jar and webservices-tools.jar so there was no issue
-         * In V3 the apt cannot see JSR 250, JAXB api and JAXWS apis so I have to pass them
-         * explicitly to apt using the classpath option
-         * This will be changed after prelude once I move to asm as it is not thoroughly tested right now
-         */
-
-        WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
-        ModulesRegistry modulesRegistry = wscImpl.getModulesRegistry();
-        Collection<Module> modules1 = modulesRegistry.getModules();
-        Iterator it= modules1.iterator();
-        StringBuffer buf = new StringBuffer();
-        buf.append(classesDir.getAbsolutePath());
-        String classpath1 = null;
-        while(it.hasNext()){
-            Module m = (Module) it.next();
-            String name = m.getName();
-            if (name.equals("com.sun.xml.ws") || name.equals("com.sun.xml.bind") ){
-                ModuleDefinition modDef= m.getModuleDefinition();
-                java.net.URI[] location = modDef.getLocations();
-
-                buf.append(File.pathSeparator).append (new File(location[0]).getAbsolutePath());
-                classpath1= buf.toString()  ;
-
-            }
-        }
-
-        System.setProperty("java.class.path",classpath1);
         // create a dumy file to have a unique temporary name for a directory
         classesDir = File.createTempFile("jax-ws", "tester", classesDir);
         if (!classesDir.delete()) {

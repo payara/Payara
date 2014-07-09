@@ -90,7 +90,7 @@ public class ModuleMap {
                 put("com.sun.jsftemplating", 32);
                 put("com.sun.mail.javax.mail", 33);
                 put("com.sun.pkg.client", 34);
-                put("com.sun.xml.bind", 35);
+                put("com.sun.xml.bind.jaxb-osgi", 35);
                 put("commonj.sdo", 36);
                 put("glassfish-corba-asm", 37);
                 put("glassfish-corba-codegen", 38);
@@ -109,7 +109,7 @@ public class ModuleMap {
                 put("javax.servlet-api", 51);
                 put("javax.xml.jaxrpc-api-osgi", 52);
                 put("jaxb-api", 53);
-                put("management-api", 54);
+                put("org.glassfish.external.management-api", 54);
                 put("org.apache.felix.configadmin", 55);
                 put("org.apache.felix.eventadmin", 56);
                 put("org.apache.felix.fileinstall", 57);
