@@ -580,7 +580,7 @@ create_changes_info(){
     PREVIOUS_SVN_REV=$((PREVIOUS_SVN_REV+1))
     touch ${WORKSPACE}/changes.txt
     if [ "${PREVIOUS_SVN_REV}" != "${SVN_REVISION}" ] ; then
-        svn log -r ${PREVIOUS_SVN_REV}:${SVN_REVISION} $WORKSPACE/main > ${WORKSPACE}/changes.txt
+        svn log -r ${PREVIOUS_SVN_REV}:${SVN_REVISION} ${GF_WORKSPACE_URL_SSH}/trunk/main > ${WORKSPACE}/changes.txt
         printf "\n%s\n\n" "==== CHANGELOG ===="
         cat ${WORKSPACE}/changes.txt
     fi
