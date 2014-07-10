@@ -106,7 +106,7 @@
             l10n.source="../minnow/${glassfish.image.dir.l10n}"
             name="Web"/>-->
         <antcall target="create-domain" />
-        <antcall target="create-domain-ml" />
+        <!--<antcall target="create-domain-ml" />-->
     </target>
     <target name="create-glassfish-images">
         <copy.image 
@@ -116,7 +116,7 @@
             l10n.source="../web/${glassfish.image.dir.l10n}"
             type="glassfish"/>  -->
         <antcall target="create-domain" />
-        <antcall target="create-domain-ml" />
+        <!--<antcall target="create-domain-ml" />-->
     </target>
          
     <macrodef name="copy.image">
