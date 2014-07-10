@@ -73,7 +73,7 @@
     <condition property="unix">
         <os family="unix" />
     </condition>
-    
+
     <target name="create-minnow-distributions" depends="create-minnow-images, create-distributions"/>
     <target name="create-web-distributions" depends="create-web-images">
         <install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>
@@ -92,19 +92,13 @@
     
     <target name="create-minnow-images">
         <create.local.image image.dir="${glassfish.image.dir}"/>
-        <create.images 
-            type="minnow" 
-            l10n.source="${glassfish.image.dir}"
-            name="Minnow"/>
+        <create.images type="minnow" name="Minnow"/>
     </target>
     <target name="create-web-images">
         <copy.image 
             source="../minnow/${glassfish.image.dir}"
-            target="${glassfish.image.dir}" />       
-<!--        <create.images 
-            type="web" 
-            l10n.source="../minnow/${glassfish.image.dir.l10n}"
-            name="Web"/>-->
+            target="${glassfish.image.dir}" />
+        <create.images type="web" name="Web"/>
         <antcall target="create-domain" />
         <!--<antcall target="create-domain-ml" />-->
     </target>
@@ -112,9 +106,7 @@
         <copy.image 
             source="../web/${glassfish.image.dir}"
             target="${glassfish.image.dir}" />
-<!--        <create.images  
-            l10n.source="../web/${glassfish.image.dir.l10n}"
-            type="glassfish"/>  -->
+        <create.images  type="glassfish" name="GlassFish"/>
         <antcall target="create-domain" />
         <!--<antcall target="create-domain-ml" />-->
     </target>
@@ -134,7 +126,7 @@
     <macrodef name="create.images">
         <attribute name="type" />
         <attribute name="name" default="" />
-        <attribute name="l10n.source"/>
+        <!--<attribute name="l10n.source"/>-->
         <sequential>
             <property name="image.name" value="@{type}"/>
             <!-- create basic image -->    
