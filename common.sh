@@ -162,8 +162,8 @@ EOF
 
 promote_nightly(){
     promote_init "nightly"
-    promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-${MDATE}-ml.zip
-    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/web-ips.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-${MDATE}.zip
+    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
     promote_bundle ${PROMOTED_BUNDLES}/changes.txt changes-${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}.txt
@@ -176,8 +176,8 @@ promote_nightly(){
 
 promote_weekly(){
     promote_init "weekly"
-    promote_bundle ${PROMOTED_BUNDLES}/web-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}-ml.zip
-    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips-ml.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}-ml.zip
+    promote_bundle ${PROMOTED_BUNDLES}/web-ips.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-web-${BUILD_ID}.zip
+    promote_bundle ${PROMOTED_BUNDLES}/glassfish-ips.zip ${PRODUCT_GF}-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
     promote_bundle ${PROMOTED_BUNDLES}/nucleus-new.zip nucleus-${PRODUCT_VERSION_GF}-${BUILD_ID}.zip
     promote_bundle ${PROMOTED_BUNDLES}/version-info.txt version-info-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
     promote_bundle ${PROMOTED_BUNDLES}/changes.txt changes-${PRODUCT_VERSION_GF}-${BUILD_ID}.txt
@@ -815,18 +815,6 @@ scp_jnet(){
         "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
     ssh ${SSH_MASTER} \
         "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"
-
-    # hack to copy ml distros as non ml distros.
-    if [ "${simple_name: -7}" = "-ml.zip" ]
-    then
-        simple_name_len=${#simple_name}
-        simple_name="${simple_name:0:simple_name_len-7}.zip"
-
-        ssh ${SSH_MASTER} \
-            "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}"
-        ssh ${SSH_MASTER} \
-            "scp /java/re/${ARCHIVE_MASTER_BUNDLES}/${file} ${JNET_DIR}/latest-${simple_name}"  
-    fi
 }
 
 promote_bundle(){
