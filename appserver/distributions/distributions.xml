@@ -111,8 +111,8 @@
     <target name="create-glassfish-images">
         <copy.image 
             source="../web/${glassfish.image.dir}"
-<!--            target="${glassfish.image.dir}" />
-        <create.images  
+            target="${glassfish.image.dir}" />
+<!--        <create.images  
             l10n.source="../web/${glassfish.image.dir.l10n}"
             type="glassfish"/>  -->
         <antcall target="create-domain" />
