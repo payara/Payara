@@ -118,8 +118,8 @@
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.2.2.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
-        <websocket-api.version>1.0</websocket-api.version>
-        <tyrus.version>1.7</tyrus.version>
+        <websocket-api.version>1.1-b01</websocket-api.version>
+        <tyrus.version>1.8-b01</tyrus.version>
         <jsonp-api.version>1.0</jsonp-api.version>
         <jsonp-ri.version>1.0.4</jsonp-ri.version>
         <jsonp-jaxrs.version>1.0</jsonp-jaxrs.version>
