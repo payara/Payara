@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -74,14 +74,14 @@
                     groupId="@{groupId}"
                     artifactId="@{artifactId}"
                     type="@{type}"
-                    property="@{artifactId}"/>                
+                    property="@{artifactId}"/>
             </if>
             <if test="${noclassifier}">
                 <resolveArtifact 
                     groupId="@{groupId}"
                     artifactId="@{artifactId}"
                     type="@{type}"
-                    property="@{artifactId}"/>                
+                    property="@{artifactId}"/>
             </if>
             <delete dir="target/repo-source"/>
             <unzip src="${@{artifactId}}" dest="target/repo-source"/>
@@ -103,7 +103,7 @@
                 <package name="mq-config-gf" />
                 <package name="mq-locale"/>
                 <package name="mq-docs" />
-                <package name="mq-branding"/>                
+                <package name="mq-branding"/>
             </packages>
         </repo>
         <repo groupId="javadb" artifactId="javadb-common">
@@ -139,7 +139,7 @@
         <repo groupId="org.glassfish.l10n" artifactId="l10n-distribution">
             <packages>
                 <package name="glassfish-upgrade-l10n" />
-            </packages>     
+            </packages>
         </repo>
     </target>
 </project>

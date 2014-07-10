@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -78,14 +78,14 @@
     <target name="create-web-distributions" depends="create-web-images">
         <install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>
         <!--<install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE.txt"/>-->
-        <install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>
+        <!--<install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>-->
         <!--<install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE.txt"/>-->
         <antcall target="create-distributions"/>
     </target>
     <target name="create-glassfish-distributions" depends="create-glassfish-images">
         <!--<install.legal.fragments image.dir="${glassfish.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>-->
         <install.legal.fragments image.dir="${installer.image.dir}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
-        <install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>
+        <!--<install.legal.fragments image.dir="${glassfish.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>-->
         <!--<install.legal.fragments image.dir="${installer.image.dir.l10n}" delete.includes="3RD-PARTY-LICENSE-WEB-PROFILE.txt"/>-->
         <antcall target="create-distributions"/>
     </target>
@@ -101,20 +101,20 @@
         <copy.image 
             source="../minnow/${glassfish.image.dir}"
             target="${glassfish.image.dir}" />       
-        <create.images 
+<!--        <create.images 
             type="web" 
             l10n.source="../minnow/${glassfish.image.dir.l10n}"
-            name="Web"/>
+            name="Web"/>-->
         <antcall target="create-domain" />
         <antcall target="create-domain-ml" />
     </target>
     <target name="create-glassfish-images">
         <copy.image 
             source="../web/${glassfish.image.dir}"
-            target="${glassfish.image.dir}" />
+<!--            target="${glassfish.image.dir}" />
         <create.images  
             l10n.source="../web/${glassfish.image.dir.l10n}"
-            type="glassfish"/>  
+            type="glassfish"/>  -->
         <antcall target="create-domain" />
         <antcall target="create-domain-ml" />
     </target>
@@ -148,14 +148,14 @@
             <pack modules.dir="${installer.image.dir}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
                         
             <!-- create glassfish.l10n image -->
-            <echo message="basedir=${basedir} - l10n.source=@{l10n.source}" />
+<!--            <echo message="basedir=${basedir} - l10n.source=@{l10n.source}" />
             <copy.image source="@{l10n.source}" target="${glassfish.image.dir.l10n}/" />
             <ant antfile="../@{type}/@{type}-distributions.xml" target="install-packages">
                 <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
-            </ant>            
+            </ant>
             <ant antfile="../@{type}/@{type}-distributions.xml" target="install-l10n-packages">
                 <property name="image.dir" value="${glassfish.image.dir.l10n}/${install.dir.name}"/>
-            </ant>
+            </ant>-->
             <!-- create installer l10n -->
 <!--            <copy.image source="${glassfish.image.dir.l10n}" target="${installer.image.dir.l10n}" />
             <pack modules.dir="${installer.image.dir.l10n}/${install.dir.name}/glassfish/modules" deleteIncludes="*.jar"/>-->
@@ -297,7 +297,7 @@
             <!-- remove files if needed -->
             <delete quiet="false">
                 <fileset dir="@{image.dir}/${install.dir.name}/glassfish/legal/" includes="@{delete.includes}"/>
-            </delete>                
+            </delete>
         </sequential>
     </macrodef>
     <macrodef name="install.servicetag.registry">
@@ -314,7 +314,7 @@
                  token="%%%SOURCE%%%" value="@{source.distribution.name}"/> 
         </sequential>
     </macrodef>    
-    
+
     <target name="create-distributions">
 <!--        <create.distribution 
             image.dir="${installer.image.dir}"
@@ -331,10 +331,10 @@
             fname="${image.name}-ips.zip"
             deleteIncludes="*.pack.gz" />
         <attachArtifact file="${basedir}/target/${image.name}-ips.zip" classifier="ips"/>
-        <create.distribution 
+<!--        <create.distribution 
             image.dir="${glassfish.image.dir.l10n}"
             fname="${image.name}-ips-ml.zip"
-            deleteIncludes="*.pack.gz" />
+            deleteIncludes="*.pack.gz" />-->
     </target>    
 
     <target name="update-cfg-cache">
@@ -359,13 +359,13 @@
     </target>
     
     <target name="create-domain" depends="init-glassfish-home, create-domain-on-windows, create-domain-on-unix"/>
-    <target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>
+    <!--<target name="create-domain-ml" depends="init-glassfish-home-ml, create-domain-on-windows, create-domain-on-unix"/>-->
     <target name="init-glassfish-home">
         <property name="glassfish.home" value="${basedir}/${glassfish.image.dir}/${install.dir.name}/glassfish" />
     </target>
-    <target name="init-glassfish-home-ml">
+<!--    <target name="init-glassfish-home-ml">
         <property name="glassfish.home" value="${basedir}/${glassfish.image.dir.l10n}/${install.dir.name}/glassfish" />
-    </target>    
+    </target>-->
     <target name="create-domain-on-windows" if="windows">
         <antcall target="_create-domain">
             <param name="exec.dir" value="${glassfish.home}/bin"/>
