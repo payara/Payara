@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -183,6 +183,7 @@
         <jvm-options>-client</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
+        <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
         <jvm-options>-Djavax.management.builder.initial=com.sun.enterprise.v3.admin.AppServerMBeanServerBuilder</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
