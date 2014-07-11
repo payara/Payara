@@ -47,6 +47,7 @@ import org.glassfish.grizzly.config.dom.ThreadPool;
 import org.glassfish.grizzly.config.dom.Transport;
 import org.glassfish.grizzly.filterchain.FilterChainBuilder;
 import org.glassfish.grizzly.nio.transport.TCPNIOTransportBuilder;
+import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.threadpool.GrizzlyExecutorService;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -82,14 +83,24 @@ public class ServiceInitializerListener extends org.glassfish.grizzly.config.Gen
         
         transport = configureDefaultThreadPoolConfigs(
                 TCPNIOTransportBuilder.newInstance().build());
-        transport.setSelectorRunnersCount(Transport.ACCEPTOR_THREADS);
-        transport.getKernelThreadPoolConfig().setPoolName(networkListener.getName());
-        transport.getWorkerThreadPoolConfig().setCorePoolSize(ThreadPool.MAX_THREADPOOL_SIZE);
-        transport.getWorkerThreadPoolConfig().setMaxPoolSize(ThreadPool.MAX_THREADPOOL_SIZE);
-        transport.getWorkerThreadPoolConfig().setPoolName(networkListener.getName() + "-Worker");
+
+        final int acceptorThreads = transportConfig != null
+                ? Integer.parseInt(transportConfig.getAcceptorThreads())
+                : Transport.ACCEPTOR_THREADS;
+        
+        transport.setSelectorRunnersCount(acceptorThreads);
+        transport.getKernelThreadPoolConfig().setPoolName(networkListener.getName() + "-kernel");
+        
+        if (acceptorThreads > 0) {
+            transport.getKernelThreadPoolConfig()
+                    .setCorePoolSize(acceptorThreads)
+                    .setMaxPoolSize(acceptorThreads);
+        }
+        
         rootFilterChain = FilterChainBuilder.stateless().build();
 
         transport.setProcessor(rootFilterChain);
+        transport.setIOStrategy(SameThreadIOStrategy.getInstance());
     }
 
 
@@ -105,7 +116,8 @@ public class ServiceInitializerListener extends org.glassfish.grizzly.config.Gen
     protected void configureThreadPool(final ServiceLocator habitat,
             final NetworkListener networkListener,
             final ThreadPool threadPool) {
-        transport.setWorkerThreadPool(GrizzlyExecutorService.createInstance(
-                ThreadPoolConfig.defaultConfig()));
+        
+        // we don't need worker thread pool
+        transport.setWorkerThreadPoolConfig(null);
     }
 }

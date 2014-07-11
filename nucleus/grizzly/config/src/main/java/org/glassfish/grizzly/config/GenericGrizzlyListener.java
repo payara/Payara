@@ -133,6 +133,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected volatile int port;
     protected NIOTransport transport;
     protected FilterChain rootFilterChain;
+    private volatile ExecutorService workerExecutorService;
     private volatile ExecutorService auxExecutorService;
     private volatile DelayedExecutor delayedExecutor;
     private volatile long transactionTimeoutMillis = -1;
@@ -175,7 +176,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
     @Override
     public void start() throws IOException {
-        delayedExecutor.start();
+        startDelayedExecutor();
         ((SocketBinder) transport).bind(new InetSocketAddress(address, port));
         transport.start();
     }
@@ -186,7 +187,13 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final NIOTransport localTransport = transport;
         transport = null;
         if (localTransport != null) {
-            localTransport.stop();
+            localTransport.shutdownNow();
+        }
+        
+        if (workerExecutorService != null) {
+            final ExecutorService localExecutorService = workerExecutorService;
+            workerExecutorService = null;
+            localExecutorService.shutdownNow();
         }
         rootFilterChain = null;
     }
@@ -275,7 +282,6 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         setName(networkListener.getName());
         setAddress(InetAddress.getByName(networkListener.getAddress()));
         setPort(Integer.parseInt(networkListener.getPort()));
-        configureDelayedExecutor();
 
         final FilterChainBuilder filterChainBuilder = FilterChainBuilder.stateless();
         
@@ -321,7 +327,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                           AbstractMemoryManager.DEFAULT_MAX_BUFFER_SIZE,
                                           ByteBufferManager.DEFAULT_SMALL_BUFFER_SIZE));
         }
-        transport.setSelectorRunnersCount(Integer.parseInt(transportConfig.getAcceptorThreads()));
+        
+        final int acceptorThreads = Integer.parseInt(transportConfig.getAcceptorThreads());
+        transport.setSelectorRunnersCount(acceptorThreads);
 
         final int readSize = Integer.parseInt(transportConfig.getSocketReadBufferSize());
         if (readSize > 0) {
@@ -332,8 +340,15 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         if (writeSize > 0) {
             transport.setWriteBufferSize(writeSize);
         }
+        
+        final ThreadPoolConfig kernelThreadPoolConfig = transport.getKernelThreadPoolConfig();
 
-        transport.getKernelThreadPoolConfig().setPoolName(networkListener.getName() + "-kernel");
+        kernelThreadPoolConfig.setPoolName(networkListener.getName() + "-kernel");
+        if (acceptorThreads > 0) {
+            kernelThreadPoolConfig.setCorePoolSize(acceptorThreads)
+                .setMaxPoolSize(acceptorThreads);
+        }
+        
         transport.setIOStrategy(loadIOStrategy(transportConfig.getIoStrategy()));
         transport.setNIOChannelDistributor(
                 new RoundRobinConnectionDistributor(
@@ -553,6 +568,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                 classname, ConfigAwareElement.class.getName()});
                     }
                     
+                    workerExecutorService = customThreadPool;
                     transport.setWorkerThreadPool(customThreadPool);
                     return;
                 }
@@ -568,8 +584,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             
         try {
             // Use standard Grizzly thread pool
-            transport.setWorkerThreadPool(GrizzlyExecutorService.createInstance(
-                configureThreadPoolConfig(networkListener, threadPool)));
+            workerExecutorService = GrizzlyExecutorService.createInstance(
+                    configureThreadPoolConfig(networkListener, threadPool));
+            transport.setWorkerThreadPool(workerExecutorService);
         } catch (NumberFormatException ex) {
             LOGGER.log(Level.WARNING, "Invalid thread-pool attribute", ex);
         }
@@ -597,14 +614,18 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
         poolConfig.setKeepAliveTime(timeout < 0 ? Long.MAX_VALUE : timeout, TimeUnit.SECONDS);
         if (transactionTimeoutMillis > 0 && !Utils.isDebugVM()) {
-            poolConfig.setTransactionTimeout(delayedExecutor,
+            poolConfig.setTransactionTimeout(obtainDelayedExecutor(),
                     transactionTimeoutMillis, TimeUnit.MILLISECONDS);
         }
         
         return poolConfig;
     }
 
-    protected void configureDelayedExecutor() {
+    private DelayedExecutor obtainDelayedExecutor() {
+        if (delayedExecutor != null) {
+            return delayedExecutor;
+        }
+        
         final AtomicInteger threadCounter = new AtomicInteger();
         auxExecutorService = Executors.newCachedThreadPool(
             new ThreadFactory() {
@@ -612,7 +633,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 public Thread newThread(Runnable r) {
                     final Thread newThread = new DefaultWorkerThread(
                         transport.getAttributeBuilder(),
-                        getName() + '-' + threadCounter.getAndIncrement(),
+                        getName() + "-expirer(" + threadCounter.incrementAndGet() + ")",
                         null,
                         r);
                     newThread.setDaemon(true);
@@ -620,19 +641,28 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 }
             });
         delayedExecutor = new DelayedExecutor(auxExecutorService);
+        return delayedExecutor;
     }
 
-    protected void stopDelayedExecutor() {
-        final DelayedExecutor localDelayedExecutor = delayedExecutor;
-        delayedExecutor = null;
-        if (localDelayedExecutor != null) {
-            localDelayedExecutor.stop();
-            localDelayedExecutor.destroy();
+    protected void startDelayedExecutor() {
+        if (delayedExecutor != null) {
+            delayedExecutor.start();
         }
-        final ExecutorService localThreadPool = auxExecutorService;
-        auxExecutorService = null;
-        if (localThreadPool != null) {
-            localThreadPool.shutdownNow();
+    }
+    
+    protected void stopDelayedExecutor() {
+        if (delayedExecutor != null) {
+            final DelayedExecutor localDelayedExecutor = delayedExecutor;
+            delayedExecutor = null;
+            if (localDelayedExecutor != null) {
+                localDelayedExecutor.stop();
+                localDelayedExecutor.destroy();
+            }
+            final ExecutorService localThreadPool = auxExecutorService;
+            auxExecutorService = null;
+            if (localThreadPool != null) {
+                localThreadPool.shutdownNow();
+            }
         }
     }
 
@@ -642,7 +672,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             final Http http, final FilterChainBuilder filterChainBuilder,
             boolean secure) {
         transactionTimeoutMillis = Long.parseLong(http.getRequestTimeoutSeconds()) * 1000;
-        filterChainBuilder.add(new IdleTimeoutFilter(delayedExecutor, Integer.parseInt(http.getTimeoutSeconds()),
+        filterChainBuilder.add(new IdleTimeoutFilter(obtainDelayedExecutor(),
+                Integer.parseInt(http.getTimeoutSeconds()),
             TimeUnit.SECONDS));
         final org.glassfish.grizzly.http.HttpServerFilter httpServerFilter =
             createHttpServerCodecFilter(http);
@@ -655,13 +686,14 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 //                serverConfig.getMonitoringConfig().getHttpConfig().getProbes());
         filterChainBuilder.add(httpServerFilter);
         final FileCache fileCache = configureHttpFileCache(http.getFileCache());
-        fileCache.initialize(delayedExecutor);
+        fileCache.initialize(obtainDelayedExecutor());
         final FileCacheFilter fileCacheFilter = new FileCacheFilter(fileCache);
 //        fileCache.getMonitoringConfig().addProbes(
 //                serverConfig.getMonitoringConfig().getFileCacheConfig().getProbes());
         filterChainBuilder.add(fileCacheFilter);
-        final HttpServerFilter webServerFilter = new HttpServerFilter(getHttpServerFilterConfiguration(http),
-            delayedExecutor);
+        final HttpServerFilter webServerFilter = new HttpServerFilter(
+                getHttpServerFilterConfiguration(http),
+                obtainDelayedExecutor());
 
         final HttpHandler httpHandler = getHttpHandler();
         httpHandler.setAllowEncodedSlash(GrizzlyConfig.toBoolean(http.getEncodedSlashEnabled()));
@@ -870,7 +902,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         
         return createHttpServerCodecFilter(http, isChunkedEnabled,
                 headerBufferLengthBytes, defaultResponseType,
-                configureKeepAlive(http), delayedExecutor,
+                configureKeepAlive(http), obtainDelayedExecutor(),
                 maxRequestHeaders, maxResponseHeaders);
     }
     
