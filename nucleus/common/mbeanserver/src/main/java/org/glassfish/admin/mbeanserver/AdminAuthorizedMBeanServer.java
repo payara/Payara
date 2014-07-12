@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.management.*;
 import javax.management.remote.MBeanServerForwarder;
 import org.glassfish.internal.api.AdminAccessController;
+import org.glassfish.external.amx.AMXGlassfish;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
@@ -163,7 +164,7 @@ public class AdminAuthorizedMBeanServer {
         }
         
         private String amxDomain() {
-            return bootAMX.bootAMX().getDomain();
+            return AMXGlassfish.DEFAULT.domainRoot().getDomain();
         }
 
         private boolean isSubjectToAccessControl(final Method method, final Object[] args) {
