@@ -48,6 +48,7 @@ import javax.resource.ResourceException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Vector;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,6 +67,8 @@ public class MethodExecutor implements java.io.Serializable {
     }
 
     private boolean debug = false;
+    
+    private final static String newline = System.getProperty("line.separator");
 
     private static StringManager sm = StringManager.getManager(
             DataSourceObjectBuilder.class);
@@ -205,6 +208,11 @@ public class MethodExecutor implements java.io.Serializable {
             if (typeName.equals("boolean") || typeName.equals("java.lang.Boolean")) {
                 return Boolean.valueOf(parameter);
             }
+            
+            if (typeName.equals("java.util.Properties")) {
+                Properties p = stringToProperties(parameter);
+                if (p!= null) return p;
+            }
 
             return parameter;
         } catch (NumberFormatException nfe) {
@@ -238,5 +246,45 @@ public class MethodExecutor implements java.io.Serializable {
         }
         return returnValue;
     }
-}
 
+    private Properties stringToProperties(String parameter)
+    {
+         if (parameter == null) return null;
+         String s = parameter.trim();
+         if (!((s.startsWith("(") && s.endsWith(")")))) {
+            return null; // not a "( .... )" syntax
+         }
+         s = s.substring(1,s.length()-1);
+         s = s.replaceAll("(?<!\\\\),",newline); // , -> \n
+         s = s.replaceAll("\\\\,",",");  // escape-"," -> ,
+
+         Properties p = new Properties();
+         Properties prop = new Properties();
+         try {
+            p.load(new java.io.StringBufferInputStream(s));
+         } catch (java.io.IOException ex) {
+            if (_logger.isLoggable(Level.FINEST)) {
+               _logger.log(Level.FINEST, "Parsing string to properties: {0}", ex.getMessage());
+            }
+            return null;
+         }
+         // cleanup trailing whitespace in value
+         for (java.util.Enumeration propKeys = p.propertyNames();
+               propKeys.hasMoreElements();) {
+             String tmpKey = (String)propKeys.nextElement();
+             String tmpValue = p.getProperty(tmpKey);
+             // Trim spaces
+             tmpValue = tmpValue.trim();
+             // Quoted string.
+             if (tmpValue.length() > 1 && tmpValue.startsWith("\"")
+                     && tmpValue.endsWith("\"")) {
+                tmpValue = tmpValue.substring(1,tmpValue.length()-1);
+             }
+             prop.put(tmpKey, tmpValue);
+         }
+         if (_logger.isLoggable(Level.FINEST)) {
+               _logger.log(Level.FINEST, "Parsing string to properties: {0}size:{1}", new Object[]{prop, prop.size()});
+         }
+         return prop;
+    }
+}
