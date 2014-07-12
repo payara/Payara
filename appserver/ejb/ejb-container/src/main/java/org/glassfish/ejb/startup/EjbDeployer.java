@@ -592,6 +592,9 @@ public class EjbDeployer
                     }
                 }
             }
+            // If none of the instances is running, return a random instance in a
+            // cluster
+            return s0.getName(); 
         }
 
 
