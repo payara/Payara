@@ -196,6 +196,7 @@
   <test name="wsit_jaxws_tests">
     <classes>
       <class name="jaxwsfromwsdl.client.JaxwsFromWsdlTestNG"/>
+      <class name="fromjava.client.CheckTesterUITestNG"/>
     </classes>
   </test>
   <test name="cluster_setup">
