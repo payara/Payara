@@ -521,10 +521,11 @@ public class WeldUtils {
    *         true otherwise
    */
   public static boolean isValidBdaBasedOnExtensionAndBeansXml( ReadableArchive archive ) {
-    boolean retVal = false;
+    boolean retVal = true;
 
     try {
       if ( archive.exists(META_INF_SERVICES_EXTENSION)) {
+        retVal = false;
         InputStream inputStream = getBeansXmlInputStream( archive );
         if ( inputStream != null ) {
           retVal = true;  // is a valid bda
