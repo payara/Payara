@@ -95,12 +95,10 @@ public class AdminAuthorizedMBeanServer {
         
         private final MBeanServer mBeanServer;
         private final boolean isInstance;
-        private final BootAMX bootAMX;
         
-        private Handler(final MBeanServer mbs, final boolean isInstance, final BootAMX bootAMX) {
+        private Handler(final MBeanServer mbs, final boolean isInstance) {
             this.mBeanServer = mbs;
             this.isInstance = isInstance;
-            this.bootAMX = bootAMX;
         }
 
         @Override
@@ -255,7 +253,7 @@ public class AdminAuthorizedMBeanServer {
      */
     public static MBeanServerForwarder newInstance(final MBeanServer mbs, final boolean isInstance,
             final BootAMX bootAMX) {
-        final AdminAuthorizedMBeanServer.Handler handler = new AdminAuthorizedMBeanServer.Handler(mbs, isInstance, bootAMX);
+        final AdminAuthorizedMBeanServer.Handler handler = new AdminAuthorizedMBeanServer.Handler(mbs, isInstance);
        
         return (MBeanServerForwarder) Proxy.newProxyInstance(
                 MBeanServerForwarder.class.getClassLoader(),
