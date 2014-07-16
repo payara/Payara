@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -161,7 +161,8 @@ public class EnvEntriesValidator {
                 curRef.getEjbHomeInterface())
             || areConflicting(preRef.getEjbInterface(),
                 curRef.getEjbInterface())
-            || areConflicting(preRef.getLinkName(), curRef.getLinkName())
+            // link name is optional. compare only when they are both not null.
+            || ((preRef.getLinkName() != null && curRef.getLinkName() != null && !preRef.getLinkName().equals(curRef.getLinkName())))
             || (preRef.isLocal() != curRef.isLocal())
             || areConflicting(preRef.getLookupName(), curRef.getLookupName())) {
           throwConflictException(name, namespace.toString());
