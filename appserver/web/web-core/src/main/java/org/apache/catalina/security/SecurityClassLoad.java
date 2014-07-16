@@ -41,13 +41,14 @@
  * This file incorporates work covered by the following copyright and
  * permission notice:
  *
- * Copyright 2004 The Apache Software Foundation
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *      http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -132,15 +133,10 @@ public final class SecurityClassLoad {
     
     private final static void loadSessionPackage(ClassLoader loader)
         throws Exception {
-        String basePackage = "org.apache.catalina.";
-        loader.loadClass
-            (basePackage + "session.StandardSession");
-        loader.loadClass
-            (basePackage +
-             "session.StandardSession$1");
-        loader.loadClass
-            (basePackage +
-             "session.StandardManager$PrivilegedDoUnload");
+        String basePackage = "org.apache.catalina.session.";
+        loader.loadClass(basePackage + "StandardSession");
+        loader.loadClass(basePackage + "StandardSession$1");
+        loader.loadClass(basePackage + "StandardManager$PrivilegedDoUnload");
     }
     
     
@@ -252,5 +248,10 @@ public final class SecurityClassLoad {
         throws Exception {
         String basePackage = "org.glassfish.grizzly.";
         loader.loadClass(basePackage + "util.net.SSLSupport$CipherData");
+
+        // security
+        basePackage = "org.apache.tomcat.";
+        loader.loadClass(basePackage + "util.security.PrivilegedGetTccl");
+        loader.loadClass(basePackage + "util.security.PrivilegedSetTccl");
     }
 }
