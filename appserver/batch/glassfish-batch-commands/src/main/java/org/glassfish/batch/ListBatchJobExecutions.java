@@ -51,7 +51,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.*;
-import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import java.util.*;
@@ -110,7 +109,7 @@ public class ListBatchJobExecutions
         List<Map<String, Object>> jobExecutions = new ArrayList<>();
         extraProps.put("listBatchJobExecutions", jobExecutions);
         if (executionId != null) {
-            JobOperator jobOperator = BatchRuntime.getJobOperator();
+            JobOperator jobOperator = getJobOperatorFromBatchRuntime();
             JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
             if (instanceId != null) {
                 JobInstance ji = jobOperator.getJobInstance(Long.valueOf(executionId));
@@ -138,7 +137,7 @@ public class ListBatchJobExecutions
                 }
             }
         } else {
-            JobOperator jobOperator = BatchRuntime.getJobOperator();
+            JobOperator jobOperator = getJobOperatorFromBatchRuntime();
             Set<String> jobNames = jobOperator.getJobNames();
             if (jobNames != null) {
                 for (String jn : jobOperator.getJobNames()) {
@@ -190,7 +189,7 @@ public class ListBatchJobExecutions
 
     private static List<JobExecution> getJobExecutionForInstance(long instId)
             throws JobSecurityException, NoSuchJobException, NoSuchJobInstanceException, NoSuchJobExecutionException {
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
+        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
         JobInstance jobInstance = null;
         for (String jn : jobOperator.getJobNames()) {
             List<JobInstance> exe = jobOperator.getJobInstances(jn, 0, Integer.MAX_VALUE - 1);
@@ -209,7 +208,7 @@ public class ListBatchJobExecutions
         if (jobInstance == null)
             throw new RuntimeException("No Job Executions found for instanceid = " + instId);
 
-        List<JobExecution> lst = BatchRuntime.getJobOperator().getJobExecutions(jobInstance);
+        List<JobExecution> lst = AbstractListCommand.getJobOperatorFromBatchRuntime().getJobExecutions(jobInstance);
         if (lst != null) {
             for (JobExecution je : lst) {
                 jeList.add(jobOperator.getJobExecution(je.getExecutionId()));
@@ -227,7 +226,7 @@ public class ListBatchJobExecutions
         int jobParamIndex = -1;
         StringTokenizer st = new StringTokenizer("", "");
         String[] cfData = new String[getOutputHeaders().length];
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
+        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
         for (int index = 0; index < getOutputHeaders().length; index++) {
             Object data = null;
             switch (getOutputHeaders()[index]) {

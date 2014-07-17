@@ -53,7 +53,6 @@ import org.jvnet.hk2.annotations.Service;
 import javax.batch.operations.JobOperator;
 import javax.batch.operations.JobSecurityException;
 import javax.batch.operations.NoSuchJobExecutionException;
-import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.Metric;
 import javax.batch.runtime.StepExecution;
@@ -132,7 +131,7 @@ public class ListBatchJobSteps
 
     private List<StepExecution> findStepExecutions()
         throws JobSecurityException, NoSuchJobExecutionException {
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
+        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
         JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
         if (!glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
             throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);

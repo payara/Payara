@@ -43,11 +43,11 @@ import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.batch.spi.impl.GlassFishBatchSecurityHelper;
-import org.glassfish.internal.api.Target;
 
+import javax.batch.operations.JobOperator;
+import javax.batch.runtime.BatchRuntime;
 import javax.inject.Inject;
 import java.util.*;
 import java.util.logging.Level;
@@ -133,6 +133,17 @@ public abstract class AbstractListCommand
         for (int index = 0; index < displayHeaders.length; index++)
             displayHeaders[index] = isHeaderRequired() ? outputHeaders[index].toUpperCase(Locale.US) : "";
 
+    }
+
+    protected static JobOperator getJobOperatorFromBatchRuntime() {
+        try {
+            return BatchRuntime.getJobOperator();
+        } catch (java.util.ServiceConfigurationError error) {
+            throw new IllegalStateException("Could not get JobOperator. "
+                + " Check if the Batch DataSource is configured properly and Check if the Database is up and running", error);
+        } catch (Throwable ex) {
+            throw new IllegalStateException("Could not get JobOperator. ", ex);
+        }
     }
 
     protected boolean isHeaderRequired() {

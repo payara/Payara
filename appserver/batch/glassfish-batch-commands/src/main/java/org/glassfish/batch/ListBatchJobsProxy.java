@@ -39,11 +39,7 @@
  */
 package org.glassfish.batch;
 
-import com.ibm.jbatch.spi.TaggedJobExecution;
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.util.ColumnFormatter;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -51,18 +47,9 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.batch.operations.*;
-import javax.batch.runtime.BatchRuntime;
-import javax.batch.runtime.JobExecution;
-import javax.batch.runtime.JobInstance;
-import javax.inject.Inject;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Properties;
 
 /**
  * Command to list batch jobs info

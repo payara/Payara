@@ -51,7 +51,6 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.batch.operations.*;
-import javax.batch.runtime.BatchRuntime;
 import javax.batch.runtime.JobExecution;
 import javax.batch.runtime.JobInstance;
 import java.util.*;
@@ -101,7 +100,6 @@ public class ListBatchJobs
 
     @Param(primary = true, optional = true)
     String jobName;
-
 
     @Override
     protected void executeCommand(AdminCommandContext context, Properties extraProps)
@@ -174,7 +172,8 @@ public class ListBatchJobs
     private List<JobExecution> findJobExecutions()
         throws JobSecurityException, NoSuchJobException, NoSuchJobInstanceException {
         List<JobExecution> jobExecutions = new ArrayList<>();
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
+
+        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
         if (jobName != null) {
             List<JobInstance> exe = jobOperator.getJobInstances(jobName, 0, Integer.MAX_VALUE - 1);
             if (exe != null) {
@@ -204,7 +203,7 @@ public class ListBatchJobs
         Map<String, Object> jobInfo = new HashMap<>();
 
         String[] cfData = new String[getOutputHeaders().length];
-        JobOperator jobOperator = BatchRuntime.getJobOperator();
+        JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
         for (int index = 0; index < getOutputHeaders().length; index++) {
             Object data = null;
             switch (getOutputHeaders()[index]) {
