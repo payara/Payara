@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -440,7 +440,13 @@ public abstract class GFLauncher {
             // On MacOS we need to start long running process with
             // StartupItemContext. See IT 12942
             cmds = new ArrayList<String>();
-            cmds.add("/usr/libexec/StartupItemContext");
+            //cmds.add("/usr/libexec/StartupItemContext");
+            // In MacOS 10.10 they removed StartupItemContext
+            // so call launchctl directly doing what StartupItemContext did
+            // See GLASSFISH-21113
+            cmds.add("launchctl");
+            cmds.add("bsexec");
+            cmds.add("/");
             cmds.addAll(getCommandLine());
         }
         else {
