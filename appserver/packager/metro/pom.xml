@@ -158,10 +158,6 @@
            <artifactId>jaxb-api</artifactId>
         </dependency>
         <dependency>
-           <groupId>org.codehaus.woodstox</groupId>
-           <artifactId>woodstox-core-asl</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-osgi</artifactId>
         </dependency>
@@ -189,10 +185,6 @@
             <artifactId>metro-fragments</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>stax2-api</artifactId>
         </dependency>
         <dependency>
             <groupId>javax.xml.registry</groupId>
