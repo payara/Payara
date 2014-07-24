@@ -62,7 +62,7 @@
     <properties>
         <jms-api.version>2.0</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
-        <jsp-impl.version>2.3.3-b01</jsp-impl.version>
+        <jsp-impl.version>2.3.3-b02</jsp-impl.version>
         <jstl-impl.version>1.2.3</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.7</mojarra.version>
