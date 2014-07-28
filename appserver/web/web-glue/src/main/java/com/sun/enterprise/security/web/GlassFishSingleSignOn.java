@@ -384,12 +384,12 @@ public class GlassFishSingleSignOn
         // Has a valid user already been authenticated?
         //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, PRINCIPAL_ALREADY_AUTHENTICATED, hreq.getRequestURI());
+            logger.log(Level.FINE, REQUEST_PROCESSED, hreq.getRequestURI());
         }
         if (hreq.getUserPrincipal() != null) {
             //S1AS8 6155481 START            
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, REQUEST_PROCESSED, hreq.getUserPrincipal().getName());
+                logger.log(Level.FINE, PRINCIPAL_ALREADY_AUTHENTICATED, hreq.getUserPrincipal().getName());
             }
             // START OF IASRI 4665318
             // context.invokeNext(request, response);
