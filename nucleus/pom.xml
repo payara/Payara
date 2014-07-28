@@ -154,6 +154,7 @@
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
         <pfl.version>4.0.0-b004</pfl.version>
         <gmbal.version>4.0.0-b001</gmbal.version>
+        <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
         <jersey.version>2.10.1</jersey.version>
         <jackson.version>2.3.2</jackson.version>
@@ -173,7 +174,7 @@
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.6</command-security-plugin.version>
+        <command-security-plugin.version>1.0.7-SNAPSHOT</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <mail.version>1.5.2</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
