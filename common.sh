@@ -190,8 +190,7 @@ promote_weekly(){
     then    
         BUILD_ID=`cat ${HUDSON_HOME}/promote-trunk.version`
         PKG_ID=`cat ${HUDSON_HOME}/pkgid-trunk.version`    
-        NEXT_ID=`cut -c 2- <<< $PKG_ID`
-        NEXT_ID=$((NEXT_ID+1))
+        NEXT_ID=$((PKG_ID+1))
 
         # prepend a 0 if less than 10
         if [ $NEXT_ID -lt 10 ]
