@@ -40,6 +40,7 @@
 
 package org.glassfish.weld;
 
+import org.glassfish.web.loader.WebappClassLoader;
 import org.jboss.weld.bootstrap.api.SingletonProvider;
 import org.jboss.weld.bootstrap.api.Singleton;
 import org.glassfish.javaee.full.deployment.EarLibClassLoader;
@@ -147,6 +148,7 @@ public class ACLSingletonProvider extends SingletonProvider
         }
 
         ClassLoader cl = tccl;
+        ClassLoader appClassLoader = tccl;
 
         // most of the time, class loader of application (whether it is a
         // standalone module or an ear) has common class loader in their
@@ -159,10 +161,15 @@ public class ACLSingletonProvider extends SingletonProvider
 //                            "Application Class Loader = [ " + cl + "],\n" +
 //                            "Thread Context Class Loader = [" + tccl + "]");
             return cl;
+          } else {
+            if (cl instanceof WebappClassLoader) {
+              // we do this because it's possible for an app to change the thread's context class loader
+              appClassLoader = cl;
+            }
           }
           cl = getParent(cl);
         }
-        return tccl;
+        return appClassLoader;
       }
 
       private ClassLoader getParent(final ClassLoader cl)
