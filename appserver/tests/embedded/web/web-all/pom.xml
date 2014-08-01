@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -52,17 +52,17 @@
     <!--<parent>-->
     <!--<groupId>org.glassfish</groupId>-->
     <!--<artifactId>glassfish-parent</artifactId>-->
-    <!--<version>4.0.1-SNAPSHOT</version>-->
+    <!--<version>4.1-SNAPSHOT</version>-->
     <!--</parent>-->
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests</groupId>
     <artifactId>web-all-embedded-test</artifactId>
-    <version>4.0.1-SNAPSHOT</version>
+    <version>4.1-SNAPSHOT</version>
     <name>Test for glassfish-embedded-web</name>
 
     <properties>
-        <project.version>4.0.1-SNAPSHOT</project.version>
+        <project.version>4.1-SNAPSHOT</project.version>
     </properties>
 
     <dependencies>
@@ -144,7 +144,7 @@
                 <dependency>
                     <groupId>org.glassfish.extras</groupId>
                     <artifactId>glassfish-embedded-all</artifactId>
-                    <version>4.0.1-SNAPSHOT</version>
+                    <version>4.1-SNAPSHOT</version>
                 </dependency>                
             </dependencies>
         </profile>

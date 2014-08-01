@@ -43,7 +43,7 @@
 
 <project name="Minnow IPS distribution" default="create-minnow-distributions" basedir=".">
     <import file="../distributions.xml" />
-    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0.1 Minnow"/>
+    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.1 Minnow"/>
     
     <target name="install-packages">
         <install.package name="felix"/>

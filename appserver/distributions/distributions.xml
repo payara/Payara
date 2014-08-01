@@ -50,7 +50,7 @@
     <property name="repo.host" value="http://pkg.glassfish.org"/>
     <property name="title" value="GlassFish 4"/>
     <property name="description" value="GlassFish Server is a modular and lightweight Java EE 7 compliant application server. Key features include an OSGi runtime, fast startup time, maven support, and rapid iterative development with Active Redeploy.  GlassFish Server also offers feature-rich administration with the web console, command line, and RESTful API."/>
-    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.0.1"/>
+    <property name="source.distribution.name" value="GlassFish Open Source Edition 4.1"/>
     <property name="image.cache" value="${image.dir}/.org.opensolaris,pkg/cfg_cache"/>
     <property name="dev.authority" value="dev.glassfish.org"/>
     <property name="release.authority" value="release.glassfish.org"/>
