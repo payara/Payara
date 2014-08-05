@@ -227,6 +227,8 @@
         <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
         <!-- End of OSGi bundle configurations -->
         <jvm-options>-XX:NewRatio=2</jvm-options>
+        <!-- Woodstox property needed to pass StAX TCK -->
+        <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
