@@ -353,12 +353,12 @@
                             <artifact>
                                 <groupId>javax.ws.rs</groupId>
                                 <artifactId>javax.ws.rs-api</artifactId>
-                                <version>${jax-rs-api.version}</version>
+                                <version>${jax-rs-api.impl.version}</version>
                             </artifact>
                             <nonFinal>false</nonFinal>
                             <jarType>api</jarType>
-                            <specVersion>${jax-rs-api.version}</specVersion>
-                            <specImplVersion>${jax-rs-api.version}</specImplVersion>
+                            <specVersion>${jax-rs-api.spec.version}</specVersion>
+                            <specImplVersion>${jax-rs-api.impl.version}</specImplVersion>
                             <apiPackage>javax.ws.rs</apiPackage>
                         </spec>
                         <spec>
