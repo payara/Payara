@@ -72,17 +72,13 @@ public final class GfSseEventReceiver implements Closeable {
 
     public GfSseInboundEvent readEvent() throws IOException {
         GfSseInboundEvent inboundEvent = new GfSseInboundEvent();
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        SseDumper dumper = SseDumper.getInstance();
-        
         State currentState = State.START;
         String fieldName = null;
 
         try {
             int data = 0;
             while((data = inputStream.read()) != -1) {
-                dumper.addchar(data);
 
                 switch (currentState) {
 
