@@ -460,12 +460,12 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${jdk.version},)</version>
-                                    <message>You need JDK ${jdk.version} and above!</message>
+                                    <version>[${jdk.version},1.8.0)</version>
+                                    <message>You need JDK greater or equal than ${jdk.version} (JDK8 not supported yet)</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>[3.0.3,)</version>
-                                    <message>You need Maven 3.0.3 or above!</message>
+                                    <version>[3.0.3,3.2.2)</version>
+                                <message>You need Maven greater than 3.0.3, and lower than 3.2.2 (Maven 3.2.2 not supported yet)</message>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
