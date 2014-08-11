@@ -233,6 +233,7 @@
         <attribute name="to" default="${release.repository.url}" />
         <attribute name="image.name" default="${image.name}" />
         <attribute name="backup" default="${basedir}/cfg_cache.bak"/>
+        <attribute name="tmp" default="${basedir}/cfg_cache.grep.tmp"/>
         <attribute name="cfgcache" default="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"/>
         <attribute name="deleteIncludes" />
         <attribute name="zipBaseDir" default="@{image.dir}"/>
@@ -269,6 +270,22 @@
             <replace file="@{cfgcache}">
                 <replacefilter token="@{from}" value="@{to}"/>
             </replace>
+
+            <!-- call grep to remove uuid and variant.arch entries from cfg_cache -->
+            <copy file="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
+	       tofile="@{tmp}"
+               overwrite="true"/>
+            <exec dir="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg" executable="/bin/sh">
+                <arg line="-c &quot;grep -v '^uuid =' @{tmp} &gt; cfg_cache&quot;"/>
+            </exec>
+            <copy file="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg/cfg_cache"
+	       tofile="@{tmp}"
+               overwrite="true"/>
+           <exec dir="@{image.dir}/${install.dir.name}/.org.opensolaris,pkg" executable="/bin/sh">
+                <arg line="-c &quot;grep -v 'variant.arch' @{tmp} &gt; cfg_cache&quot;"/>
+           </exec>
+           <delete file="@{tmp}" />
+
             <zip destfile="${basedir}/target/@{fname}">
                 <zipfileset dir="@{zipBaseDir}" filemode="755" includes="**/bin/*, **/lib/nadmin*"/>
                 <zipfileset dir="@{zipBaseDir}" excludes="**/bin/*, **/lib/nadmin*"/>
