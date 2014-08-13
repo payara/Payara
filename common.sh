@@ -266,7 +266,7 @@ init_common(){
     IPS_REPO_PORT=16500
     IPS_REPO_TYPE=sunos-sparc
     UC2_VERSION=2.3
-    UC2_BUILD=56
+    UC2_BUILD=57
     UC_HOME_URL=http://${STORAGE_HOST_HTTP}/java/re/updatecenter/${UC2_VERSION}
     UC_HOME_URL="${UC_HOME_URL}/promoted/B${UC2_BUILD}/archive/uc2/build"
     MDATE=$(date +%m_%d_%Y)

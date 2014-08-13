@@ -238,23 +238,12 @@
         <attribute name="deleteIncludes" />
         <attribute name="zipBaseDir" default="@{image.dir}"/>
         <sequential>
-<!-- replacing pkg-bootstub script copy with the extraction of
-     pkg-bootstrap-fragment archive until we can integrate UC release
-     with the fix for non-preferred repository UC client bootstrap
 
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/updatetool"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/updatetool.bat"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.sh" tofile="@{image.dir}/${install.dir.name}/bin/pkg"/>
             <copy file="@{image.dir}/${install.dir.name}/pkg/lib/pkg-bootstub.bat" tofile="@{image.dir}/${install.dir.name}/bin/pkg.bat"/>    
--->
 
-            <resolveArtifact artifactId="pkg-bootstrap-fragment" groupId="org.glassfish.main.packager" property="pkg-bootstrap-fragment.zip"/>
-            <unzip src="${pkg-bootstrap-fragment.zip}" dest="@{image.dir}">
-                <patternset>
-                    <exclude name="META-INF/**"/>
-                </patternset>
-            </unzip>
-                       
             <chmod file="@{image.dir}/${install.dir.name}/bin/*" perm="ugo+rx"/>
             <chmod file="@{image.dir}/${install.dir.name}/glassfish/bin/*" perm="ugo+rx"/>
             <chmod file="@{image.dir}/${install.dir.name}/glassfish/lib/nadmin*" perm="ugo+rx"/>
