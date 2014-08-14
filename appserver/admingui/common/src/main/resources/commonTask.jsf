@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -66,6 +66,7 @@
       <sun:form id="form">
         <sun:commonTasksSection id="commonTasksSection" helpText="$resource{i18n.commonTasks.help}"  title="$resource{i18n.commonTasks.title}" columns="$int{2}" style="visibility: #{commonTaskVisibility}">
           <sun:commonTasksGroup title="$resource{i18n.commonTasks.task.glassfishNews}">
+            <!-- GLASSFISH-21123, GLASSFISH-21124
             <sun:commonTask
               text="$resource{i18n.commonTasks.task.support}"
               toolTip="$resource{i18n.commonTasks.task.support.toolTip}"
@@ -77,6 +78,7 @@
                 toolTip="$resource{i18n.tree.registration}"
                 onClick="javascript:var win=window.open('#{request.contextPath}/common/registration.jsf','_blank');if (win) {win.focus();}; return false;">
             </sun:commonTask>
+            -->
             <sun:commonTask
                 rendered="#{!sessionScope._noNetwork}"
                 text="$resource{i18n.commonTasks.task.aquarium}"
@@ -85,7 +87,7 @@
             </sun:commonTask>
             <event>
                 <!beforeCreate
-                    gf.isRegistrationEnabled(isEnabled="#{pageSession.isRegistrationEnabled}");
+                    <!-- gf.isRegistrationEnabled(isEnabled="#{pageSession.isRegistrationEnabled}");   -->
                     gf.isAIX(result="#{pageSession.isAIX}");
                     setSessionAttribute(key="gf_application_cancel_page" value="/common/commonTask.jsf");
                 />
