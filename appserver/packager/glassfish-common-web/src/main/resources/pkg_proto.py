@@ -56,6 +56,9 @@ pkg = {
                         "pkg:/glassfish-common" : {"type" : "require" },
                       },
     "dirtrees"      : [ "glassfish", "bin" ],
+    "files"         : { 
+                        "README.txt" : {},
+                      },
     "licenses"      : {
                         "../../../../CDDL+GPL.txt" : {"license" : "CDDL and GPL v2 with classpath exception"},
                       },

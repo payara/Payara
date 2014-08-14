@@ -76,5 +76,28 @@
                 </includes>
             </resource>
         </resources>
+        <plugins>
+        <plugin>
+        <artifactId>maven-resources-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>copy-readme</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${stage.dir}</outputDirectory>
+              <resources>          
+                <resource>
+                <directory>src/main/docs</directory>
+                  <filtering>false</filtering>
+                </resource>
+              </resources>              
+            </configuration>            
+          </execution>
+        </executions>
+      </plugin>
+      </plugins>
     </build>
 </project>
