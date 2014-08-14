@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -300,7 +300,7 @@
 
 	    </sun:property>
 	    <sun:property id="logLevelProp" labelAlign="left" noWrap="true" overlapLabel="false" label="$resource{i18nc.logViewer.levelLabel}" helpText="$resource{i18nc.logViewer.levelLabelHelp}">
-		<sun:dropDown id="logLevel" selected="#{logLevel}" labels={"FINEST" "FINE" "FINER" "CONFIG" "INFO" "WARNING" "SEVERE" "ALERT" "EMERGENCY"} />
+		<sun:dropDown id="logLevel" selected="#{logLevel}" labels={"FINEST" "FINER" "FINE" "CONFIG" "INFO" "WARNING" "SEVERE" "ALERT" "EMERGENCY"} />
 		<sun:checkbox label="$resource{i18nc.logViewer.noSevereMessages}" selected="#{requestScope.onlyLevel}" selectedValue="true" />
 	    </sun:property>
 	   "<br /><br />
