@@ -464,8 +464,8 @@
                                     <message>You need JDK greater or equal than ${jdk.version} (JDK8 not supported yet)</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
-                                    <version>[3.0.3,3.2.3]</version>
-                                <message>You need Maven greater than 3.0.3, and lower or equal to 3.2.3 (3.2.2 not supported)</message>
+                                    <version>[3.0.3,3.2.1],[3.2.3,)</version>
+                                <message>You need Maven greater than 3.0.3 (3.2.2 not supported)</message>
                                 </requireMavenVersion>
                             </rules>
                         </configuration>
