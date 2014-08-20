@@ -43,3 +43,12 @@
                         org.glassfish.appclient.client.acc; \
                         org.glassfish.appclient.client.acc.callbackhandler;
                         org.glassfish.appclient.common; version=${project.osgi.version}
+
+# GLASSFISH-20977
+# This bundle is an OSGi bundle for convenience.
+# However it needs org.jboss.weld.environment.se package, which isn't provided in GlassFish.
+# The result is a non start-able OSGi bundle.
+# Making this import optional.
+Import-Package: \
+                        org.jboss.weld.environment.se;resolution:=optional, \
+                        *
