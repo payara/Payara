@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.admin</groupId>

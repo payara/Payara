@@ -46,11 +46,11 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>extras</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
     <relativePath>../../pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-embedded-all</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.1</version>
     <name>Embedded GlassFish All-In-One</name>
 
     <packaging>jar</packaging>

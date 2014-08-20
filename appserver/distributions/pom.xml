@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
     </parent>
     <packaging>pom</packaging>
     <groupId>org.glassfish.main.distributions</groupId>
@@ -187,7 +187,7 @@
                                 <tasks>
                                     <ant dir="." antfile="../distributions.xml" target="create-${project.artifactId}-distributions">
                                         <property name="install.dir.name" value="${install.dir.name}" />
-                                        <property name="ips.compress" value="${ips.compress}"/>
+                                        <property name="ips.compress" value="${ips.compress}" />
                                     </ant>
                                 </tasks>
                             </configuration>

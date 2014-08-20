@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.deployment</groupId>
         <artifactId>nucleus-deployment</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
     </parent>
     <artifactId>nucleus-dtds</artifactId>
     <packaging>distribution-fragment</packaging>

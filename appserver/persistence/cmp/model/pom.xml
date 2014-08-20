@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.persistence.cmp</groupId>
         <artifactId>cmp</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>cmp-model</artifactId>
