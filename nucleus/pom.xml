@@ -166,7 +166,7 @@
         <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
         <btrace.version>1.0.5</btrace.version>
         <opendmk.version>1.0-b01-ea</opendmk.version>
-        <v3-docs.version>4.0-b27</v3-docs.version>
+        <v3-docs.version>4.1</v3-docs.version>
         <v3-docs-l10n.version>4.0-b07</v3-docs-l10n.version>
         <l10n.version>3.1-b41</l10n.version>
         <asm.version>3.1</asm.version>
