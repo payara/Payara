@@ -301,6 +301,8 @@ init_common(){
             RELEASE_VERSION \
             PRODUCT_GF \
             PRODUCT_VERSION_GF \
+            MDATE \
+            DATE \
             IPS_REPO_URL \
             IPS_REPO_DIR \
             IPS_REPO_PORT \
@@ -315,42 +317,54 @@ init_common(){
 }
 
 init_version(){
-	if [ "${BUILD_KIND}" = "weekly" ]
-	then
+    # PRODUCT_GF_VERSION - next version to be released (e.g 4.1)
+    # RELEASE_VERSION - used by the Maven release builds
+    # VERSION - main version information (used for notification)
+
+	if [ "${BUILD_KIND}" = "weekly" ] ; then
 	    # retrieving version-info.txt if promoting a weekly
 	    # to resolve value of RELEASE_VERSION
 	    if [ "${BUILD_KIND}" = "weekly" ] &&  [ -z ${RELEASE_VERSION} ]
 	    then
-		curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
-		RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
-		INCREMENT_BUILD_ID=true
-		rm ${WORKSPACE_BUNDLES}/version-info.txt
+    		curl ${PROMOTED_BUNDLES}/version-info.txt > ${WORKSPACE_BUNDLES}/version-info.txt	
+    		RELEASE_VERSION=`grep 'Maven-Version' ${WORKSPACE_BUNDLES}/version-info.txt | awk '{print $2}'`
+    		INCREMENT_BUILD_ID=true
+    		rm -f ${WORKSPACE_BUNDLES}/version-info.txt
 	    fi
 		
 	    # deduce BUILD_ID and PRODUCT_VERSION_GF
 	    # from the value of RELEASE_VERSION
 	    if [ ! -z ${RELEASE_VERSION} ] && [ ${#RELEASE_VERSION} -gt 0 ]
 	    then
-	        BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
-	        PKG_ID=`sed -e s@"b0"@@g -e s@"b"@@g <<< ${BUILD_ID}`
-	        PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
+            IS_NON_FINAL_VERSION=`grep '-'  <<< ${RELEASE_VERSION} | wc -l | awk '{print $1}'`
+            if [ ${IS_NON_FINAL_VERSION} -gt 0 ]; then
+                # PROMOTED BUILD
+                BUILD_ID=`cut -d '-' -f2- <<< ${RELEASE_VERSION}`
+                PKG_ID=`sed -e s@"b0"@@g -e s@"b"@@g <<< ${BUILD_ID}`
+                PRODUCT_VERSION_GF=`sed s@"-${BUILD_ID}"@@g <<< ${RELEASE_VERSION}`
+            else
+                # RELEASE BUILD
+                PRODUCT_VERSION_GF="${RELEASE_VERSION}"
+            fi
+            VERSION=${RELEASE_VERSION}
 	    else
 	        printf "\n==== ERROR: %s RELEASE_VERSION must be defined with a non empty value ! ==== \n\n" "${1}"
 	        exit 1
 	    fi
+    else
+        if [ "${BUILD_KIND}" = "nightly" ] ; then
+            VERSION="${PRODUCT_VERSION_GF}-${BUILD_ID}-${MDATE}"
+        else
+            VERSION="${PRODUCT_VERSION_GF}-${BUILD_ID}-${USER}"
+        fi
 	fi
-
-    printf "\n%s \n\n" "===== RELEASE_VERSION ====="
-    printf "VERSION %s - QUALIFIER: %s\n\n" \
-        "${PRODUCT_VERSION_GF}" \
-        "${BUILD_ID}"
-
-    VERSION=${PRODUCT_VERSION_GF}
-    if [ ${#BUILD_ID} -gt 0 ]
-    then
-        VERSION="${VERSION}-${BUILD_ID}"
-    fi
     export VERSION
+
+    printf "\n%s \n\n" "===== VERSION VALUES ====="
+    printf "VERSION=%s \nBUILD_ID=%s \nPKG_ID=%s\n\n" \
+        "${VERSION}" \
+        "${BUILD_ID}" \
+        "${PKG_ID}"
 }
 
 init_bundles_dir(){
@@ -847,7 +861,7 @@ send_notification(){
     /usr/lib/sendmail -t << MESSAGE
 From: ${NOTIFICATION_FROM}
 To: ${NOTIFICATION_SENDTO}
-Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${BUILD_ID}-${MDATE})
+Subject: [ ${PRODUCT_GF}-${PRODUCT_VERSION_GF} ] Trunk ${BUILD_KIND} Build (${VERSION})
 
 Product : ${PRODUCT_GF} ${PRODUCT_VERSION_GF}
 Date    : ${DATE}
