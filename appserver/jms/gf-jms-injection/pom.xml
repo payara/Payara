@@ -45,7 +45,7 @@
     <parent>
         <groupId>org.glassfish.main.jms</groupId>
         <artifactId>jms</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -53,7 +53,7 @@
     <artifactId>gf-jms-injection</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>JMS Injection Module for Runtime</name>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.1</version>
 
     <developers>
         <developer>

@@ -46,12 +46,12 @@
     <parent>
         <artifactId>nucleus-security</artifactId>
         <groupId>org.glassfish.main.security</groupId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
     </parent>
     <artifactId>ssl-impl</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <version>4.1-SNAPSHOT</version>
+    <version>4.1</version>
     <name>GlassFish SSL Implementation Module</name>
     <developers>
         <developer>

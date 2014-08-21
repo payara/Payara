@@ -46,7 +46,7 @@
      <parent>
         <artifactId>securitymodule</artifactId>
         <groupId>org.glassfish.main.security</groupId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.1</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jaspic.provider.framework</artifactId>

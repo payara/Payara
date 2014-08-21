@@ -52,14 +52,14 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.1</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</developerConnection>
-        <url>https://svn.java.net/svn/glassfish~svn/trunk/main/nucleus</url>
+        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</connection>
+        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</developerConnection>
+        <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</url>
     </scm>
 
     <issueManagement>
