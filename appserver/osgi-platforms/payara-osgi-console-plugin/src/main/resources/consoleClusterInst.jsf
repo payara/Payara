@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,24 +39,31 @@
     holder.
 
 -->
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="" >
+<!define name="content">
+    <event>
+        <!beforeCreate
+            getRequestValue(key="instanceName" value="#{pageSession.instanceName}");
+            setSessionAttribute(key="clusterInstanceTabs" value="consoleClusterInst");
+            getConsoleUrl(instanceName="#{pageSession.instanceName}", consoleUrl="#{pageSession.osgiConsoleUrl}");
+        />
+    </event>
 
+    <sun:form id="propertyForm">
+	#include "/cluster/cluster/clusterInstanceTabs.inc"
+    </sun:form>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-      <groupId>org.glassfish.main</groupId>
-      <artifactId>glassfish-parent</artifactId>
-      <version>4.0</version>
-      <relativePath>../pom.xml</relativePath>
-    </parent>
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.osgi-platforms</groupId>
-    <artifactId>osgi-console-extensions</artifactId>
-    <name>Console extensions for OSGi platforms</name>
-    <modules>
-        <module>felix-webconsole-extension</module>
-        <module>payara-osgi-console-plugin</module>
-        <module>glassfish-osgi-console-plugin-l10n</module>
-    </modules>
-</project>
+    <f:verbatim>
+       <script type="text/javascript">
+          document.body.style.cursor = 'auto';
+       </script>
+       <iframe src="#{pageSession.osgiConsoleUrl}" style="overflow:auto; width:100%; height:100%; border:0px;">
+       </iframe>
+    </f:verbatim>
 
+</define>
+</composition>
