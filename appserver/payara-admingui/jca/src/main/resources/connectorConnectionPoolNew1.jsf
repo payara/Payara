@@ -1,0 +1,180 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- jca/connectorConnectionPoolsNew1.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18njca" bundle="org.glassfish.jca.admingui.Strings");
+    setResourceBundle(key="help_jca" bundle="org.glassfish.jca.admingui.Helplinks")
+    setAttribute(key="edit" value="#{false}");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18njca.connectorConnectionPool.step1PageTitle}" >
+ <!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="edit" value="#{false}" );
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jca/connectorConnectionPoolNew1.jsf");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jca/connectorConnectionPools.jsf");
+        setPageSessionAttribute(key="childType" value="connector-connection-pool");
+
+        //REST related
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/#{pageSession.childType}", valueMap="#{pageSession.tmpMap}");
+    />
+    />
+    </event>
+            <sun:form id="propertyForm">
+#include "/common/applications/applicationHandlers.inc"
+#include "/common/shared/alertMsg_1.inc"
+
+                <!-- Page Title -->
+                <!-- Page Title -->
+                <sun:title id="title" title="$resource{i18njca.connectorConnectionPool.step1PageTitle}" 
+                    helpText="$resource{i18njca.connectorConnectionPool.step1PageTitleHelp}">
+                    <!facet pageButtonsTop>
+                    <sun:panelGroup id="topButtons">
+                        <sun:button id="nextButton" text="$resource{i18n.button.Next}" 
+                            onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}') && checkForBackslash('#{jndiNameId}', '$resource{i18n.msg.JS.resources.resName}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                            <!command
+                                //Update the connector connection pool wizard
+                                setAttribute(key="currentAdapter" value="#{wizardPoolExtra.resourceAdapterName}");
+                                setAttribute(key="currentconnDef" value="#{wizardPoolExtra.connectiondefinitionname}");
+                                if ("#{currentAdapter} & #{currentconnDef}") {
+                                    if ("!((#{currentAdapter} = #{wizardPoolExtra.previousResAdapter}) &
+                                         (#{currentconnDef} = #{wizardPoolExtra.previousDefinition}))") {
+                                        gf.createAttributeMap(keys={"rarname", "connectionDefnName"}
+                                                              values={"$attribute{currentAdapter}", "$attribute{currentconnDef}"}
+                                                              map="#{requestScope.mcfAttrs}");
+                                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-mcf-config-properties"
+                                                       attrs="#{requestScope.mcfAttrs}"
+                                                       method="GET"
+                                                       result="#{requestScope.result}");
+                                                       
+                                        gf.getConfigPropsInfo(extraProps="#{requestScope.result.data.extraProperties}", key="mcfConfigProps",  result="#{requestScope.mcfProps}" hasConfidentialProps="#{pageSession.hasConfidential}");
+                                        gf.updateConnectorConnectionPoolWizard(props="#{requestScope.mcfProps}" currentAdapter="#{currentAdapter}" currentDef="#{currentConnDef}", hasConfidential="#{pageSession.hasConfidential}");
+                                    }
+                                }
+                                gf.redirect(page="#{request.contextPath}/jca/connectorConnectionPoolNew2.jsf")
+                            />
+                        </sun:button>
+                        <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" text="$resource{i18n.button.Cancel}" > 
+                            <!command
+                                setSessionAttribute(key="wizardMap" value="#{null}")
+                                setSessionAttribute(key="wizardPoolExtra" value="#{null}")
+                                setSessionAttribute(key="wizardPoolProperties" value="#{null}")
+                                gf.redirect(page="#{request.contextPath}/jca/connectorConnectionPools.jsf")
+                            />
+                        </sun:button>
+                    </sun:panelGroup>
+                    </facet>                     
+                </sun:title>
+                    <!-- PropertySheet .... -->
+                    <sun:propertySheet id="propertySheet">
+                        <sun:propertySheetSection id="generalPropertySheet" >
+                            <!beforeCreate
+                                setPageSessionAttribute(key="snifferType" value="connector");
+                                gfr.getApplicationsBySnifferType();
+                                setAttribute(key="tmpList" value="#{pageSession.snifferTypeApplicationsList}");
+                                filterOutRarExtension(inList="#{requestScope.tmpList}" convertedList="#{requestScope.rarList}")
+
+                                //Add SystemConnectors
+                                setAttribute(key="modList" value={});
+                                if ("#{sessionScope._jms_exist}"){
+                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-system-rars-allowing-pool-creation"
+                                               method="GET", result="#{requestScope.result}");
+                                    setAttribute(key="modList" value="#{requestScope.result.data.extraProperties.rarList}");
+                                }
+                                gf.listCombine(list="#{requestScope.modList}" list2="#{requestScope.rarList}");
+                                addEmptyFirstElement(in="$attribute{modList}"  out="#{pageSession.modules}")
+                                gf.getConnectorConnectionPoolWizard(
+                                        fromStep1="$attribute{fromStep1}"
+                                        fromStep2="$attribute{fromStep2}"
+                                        poolName="$attribute{poolName}"
+                                        attrMap="#{pageSession.tmpMap}"
+                                        resAdapter="$attribute{resAdapterChoosen}"
+                                        resultAdapter=>$attribute{resultAdapter} )
+                                        //To get the connection definitions
+                                if("#{resultAdapter}") {
+                                    gf.createAttributeMap(keys={"rarName"} values={"$attribute{resultAdapter}"} map="#{requestScope.connDefAttrs}");
+                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-connection-definition-names"
+                                                   attrs="#{requestScope.connDefAttrs}"
+                                                   method="GET"
+                                                   result="#{requestScope.result}");
+                                    setAttribute(key="connectionDefinitions" value="#{requestScope.result.data.extraProperties.defnNames}");
+                                }
+                            />
+                            <sun:property id="jndiProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njca.poolName}" >
+                                <sun:textField id="name" styleClass="required" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.poolName']}" text="#{wizardPoolExtra.name}" required="#{true}" >
+                                <!afterCreate
+                                     getClientId(component="$this{component}" clientId=>$page{jndiNameId});
+                                />
+                                </sun:textField>
+                            </sun:property>   
+
+                            <sun:property id="resAdapterProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.resourceAdapter}" helpText="$resource{i18njca.adminObjectResource.resourceAdapterHelp}">
+                                <sun:dropDown id="db" selected="#{wizardPoolExtra.resourceAdapterName}" submitForm="#{true}" immediate="#{true}"
+                                    labels="$pageSession{modules}" styleClass="required" required="#{true}" >
+                                <!command
+                                    getUIComponent(clientId="#{jndiNameId}", component=>$attribute{nameComponent});
+                                    getUIComponentProperty(component="$attribute{nameComponent}", name="submittedValue", value=>$attribute{poolName});
+                                    setAttribute(key="click" value="$this{component}");
+                                    setAttribute(key="resAdapterChoosen" value="#{click.selected}")
+                                    setAttribute(key="fromStep1" value="#{true}")
+                                    gf.navigate(page="#{request.contextPath}/jca/connectorConnectionPoolNew1.jsf");
+                                />
+                                </sun:dropDown>
+                            </sun:property>
+                               
+                            <sun:property id="connectionDefProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njca.connectorConnectionPool.connectionDefinitionName}" helpText="$resource{i18njca.connectorConnectionPool.connectionDefinitionNameHelp}">
+                                <sun:dropDown id="db" required="#{true}" styleClass="required" selected="#{wizardPoolExtra.connectiondefinitionname}"  labels="$attribute{connectionDefinitions}" />
+                            </sun:property>
+                        </sun:propertySheetSection>
+                    </sun:propertySheet> 
+
+<sun:hidden id="helpKey" value="$resource{help_jca.connectorConnectionPoolNew1}" />
+            </sun:form>
+                        "<br/>
+#include "/common/shared/changeButtonsJS.inc" 
+</define>
+</composition>

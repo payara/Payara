@@ -1,0 +1,120 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- applications/descriptorDisplay.jsf -->
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.web.admingui.Strings");
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.application.DD.title}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        getRequestValue(key="appName" value="#{pageSession.appName}");
+        urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+        getRequestValue(key="moduleName" value="#{pageSession.moduleName}");
+        getRequestValue(key="ddPath" value="#{pageSession.ddPath}");
+        gf.restRequest(
+            endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/_get-deployment-configurations"
+            method="GET",
+            result="#{requestScope.result}");
+        gf.getDeploymentDescriptor(moduleName="#{pageSession.moduleName}",  descriptorName="#{pageSession.ddPath}",
+            data="#{requestScope.result.data.children}"  content="#{descriptorContent}", encoding="#{encoding}");
+<!-- FIXME: This may change the encoding for the rest of the application!! -->
+        setEncoding("UTF-8");
+    />
+    </event>
+            <sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18n.application.DD.title}" helpText="$resource{i18n.application.DD.titleHelp}">
+        <!facet pageButtonsTop>
+            <sun:panelGroup id="topButtons">
+                <sun:button id="closeButton" text="$resource{i18n.button.Back}" primary="#{true}">
+                    <!command
+                        //setSessionAttribute(key="descriptorForDisplay" value="")
+                        gf.redirect(page="#{request.contextPath}/common/applications/webDDEdit.jsf?appName=#{pageSession.encodedAppName}");
+                    />
+                </sun:button>
+            </sun:panelGroup>
+        </facet>
+    </sun:title>
+    "<br><br>
+    <sun:propertySheet id="propertySheet">
+        <sun:propertySheetSection id="propertSectionTextField">
+            <sun:property id="name"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.application.appName}">
+                <sun:staticText escape="true" id="name" text="#{pageSession.appName}"/>
+            </sun:property>
+            <sun:property id="module"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.application.moduleName}">
+                <sun:staticText  escape="true" id="module" text="#{pageSession.moduleName}"/>
+            </sun:property>
+            <sun:property id="path"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.application.modulePath}">
+                <sun:staticText  escape="true" id="path" text="#{pageSession.ddPath}"/>
+            </sun:property>
+        </sun:propertySheetSection>
+
+        <sun:propertySheetSection id="ddSection">
+            <sun:property id="ReportProp"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" readOnly="#{true)" >
+            "<pre><font size="3" />
+                <sun:staticText id="descriptorText" value="#{descriptorContent}" escape="#{true}"/>
+            "</pre>
+            </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet >
+
+    <sun:title id="propertyContentPage2" >
+                <!facet pageButtonsBottom>
+        <sun:panelGroup id="bottomButtons">
+            <sun:button id="closeButton2" text="$resource{i18n.button.Back}" primary="#{true}">
+                <!command
+                    //setSessionAttribute(key="descriptorForDisplay" value="")
+                    gf.redirect(page="#{request.contextPath}/common/applications/webDDEdit.jsf?appName=#{pageSession.encodedAppName}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+        </facet>
+    </sun:title>
+	<sun:hidden id="helpKey" value="$resource{help_common.DisplayDD}" />
+</sun:form>
+</define>
+</composition>
+
+

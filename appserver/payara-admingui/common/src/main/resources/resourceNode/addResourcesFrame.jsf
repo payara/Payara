@@ -1,0 +1,172 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- common/resourceNode/addResourcesFrame.jsf -->
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+
+<!composition template="/templates/iframe.layout"  guiTitle="$resource{i18nc.resources.addResources}" >
+<!define name="content">
+<sun:form id="form">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$attribute{formId});
+    />
+    <sun:title
+        id="addResourcesPageTitle"
+        title="$resource{i18nc.resources.addResources}"
+        helpText="$resource{i18nc.resources.addResourcesPageTitleHelp}">
+#include "/common/shared/alertMsg_1.inc"
+        "<br />
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="newButton" text="$resource{i18n.button.OK}"
+                        onClick="javascript:
+                        if(getTextElement('#{pageSession.radioChoosenId}').value=='client') {
+                            comp = getFileInputElement('#{fileuploadId}');
+                            result = (admingui.deploy.checkFileInputRequired('#{fileuploadId}', '#{reqMsg}'));
+                        } else {
+                            comp = getTextElement('#{dirPathId}');
+                            result = (checkRequired('#{dirPathId}', '#{reqMsg}'));
+                        }
+                        if (result == true) {
+                            if (getSuffix(comp.value) == '.xml') {
+                                disableAllButtons();
+                                return submitAndDisable(this, '$resource{i18n.button.Processing}', '_self');
+                            } else {
+                                showAlert('$resource{i18nc.msg.JS.resources.addResources.xmlFileMsg}');
+                                comp.select();
+                                comp.focus();
+                            }
+                        }
+                        return false;">
+                <!command
+                    if("#{pageSession.radioChoosen}=client"){
+                        gf.logger(logString="GUI deployment: uploadToTempfile", level="INFO");
+                        uploadFileToTempDir(file="#{requestScope.uploadedFile}" uploadedTempFile="#{requestScope.filePath}", origPath="#{requestScope.origPath}");
+                        gf.logger(logString="filePath=#{requestScope.filePath} origPath=#{requestScope.origPath}", level="FINE");
+                    }
+                    if("#{pageSession.radioChoosen}=local"){
+                        setAttribute(key="filePath" value="#{pageSession.dirPath}");
+                        gf.logger(logString="No upload needed. filePath=#{requestScope.filePath} ",level="FINE");
+                    }
+                    //filePath contains the location of xml file.
+                    createMap(result="#{pageSession.argsMap}");
+                    mapPut(map="#{pageSession.argsMap}" key="id" value="#{filePath}");
+                    mapPut(map="#{pageSession.argsMap}" key="target" value="#{pageSession.selectedTarget}");
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/add-resources"
+                            attrs="#{pageSession.argsMap}"
+                            method="POST"
+                            result="#{requestScope.result}");
+                    if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
+                        prepareAlertMsg(type="success" summary="$resource{i18nc.resources.addResources.successfulMsg}");
+                    }
+                    gf.redirect(page="#{request.contextPath}/common/removeFrame.jsf?#{reqest.contextPath}/common/resourceNode/resources.jsf?alertSummary=$attribute{alertSummary}&alertType=$attribute{alertType}&alertDetail=${alertDetail}&bare=true");
+                />
+            </sun:button>
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{true}" text="$resource{i18n.button.Cancel}"
+                        onClick="top.admingui.ajax.loadPage({url:'#{reqest.contextPath}/common/resourceNode/resources.jsf'}); return false;"/>
+        </sun:panelGroup>
+        </facet>
+    </sun:title>
+    <sun:propertySheet id="sheet1" requiredFields="true">
+        <sun:propertySheetSection id="section1" >
+            <sun:property id="prop1" labelAlign="left" noWrap="#{false}" overlapLabel="#{false}" label="$resource{i18n.common.location}">
+                <sun:radioButton id="uploadRdBtn" name="uploadRdBtn" label="$resource{i18nc.resources.addResources.chooseXmlUploadFile}" selected="#{uploadRdBtn}" selectedValue="client"
+                                 onClick="admingui.deploy.uploadRdBtnAction('#{dirPathId}','#{null}','#{filSelectBtnId}','#{fileuploadId}','#{pageSession.radioChoosenId}');"
+                                 >
+                    <!beforeCreate
+                        setPageSessionAttribute(key="uploadRdBtn", value="client");
+                        />
+                </sun:radioButton>
+                "<br />
+                <sun:upload id="fileupload" style="margin-left: 17pt" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.uploadedFile']}" uploadedFile="#{requestScope.uploadedFile}">
+                    <!afterCreate
+                        getClientId(component="$this{component}" clientId=>$page{fileuploadId});
+                    />
+                </sun:upload>
+
+
+                "<br /><br/><br/>
+                <sun:radioButton id="fileChooseRdBtn" name="uploadRdBtn" selected="#{uploadRdBtn}"  selectedValue="serverSide" label="$resource{i18nc.resources.addResources.chooseLocalXmlFile}"
+                                 onClick="admingui.deploy.fileChooseAction('#{dirPathId}','#{null}','#{filSelectBtnId}','#{fileuploadId}','#{pageSession.radioChoosenId}')"
+                                 />
+                "<br />
+
+                <sun:textField id="dirPath" required="#{false}" text="#{pageSession.dirPath}" submitForm="false" style="margin-left: 17pt" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.addResources.dirPath']}" >
+                    <!afterCreate
+                        getClientId(component="$this{component}" clientId=>$page{dirPathId});
+                    />
+                </sun:textField>
+
+                <sun:button id="filSelectBtn" text="$resource{i18n.button.BrowseFile}" disabled="true" primary="false"
+                            onClick="javascript: var win = window.open('#{request.contextPath}/common/resourceNode/resXmlFileChooser.jsf?dirPathId=#{dirPathId}', 'fileChooserPopup', 'height=580, width=650, top='+((screen.height - (screen.height/1.618))-(500/2))+',left='+((screen.width-650)/2)+', scrollbars, resizable');win.focus(); return false" >
+                    <!afterCreate
+                        getClientId(component="$this{component}" clientId=>$page{filSelectBtnId});
+                    />
+                </sun:button>
+
+                <sun:textField  id="action" visible="$boolean{false}" text="#{pageSession.radioChoosen}">
+                    <!afterCreate
+                        getClientId(component="$this{component}" clientId=>$page{radioChoosenId});
+                        setPageSessionAttribute(key="radioChoosen" value="client");
+                    />
+                </sun:textField>
+            </sun:property>
+            <sun:property id="targetProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.resources.addResources.target}" helpText="$resource{i18nc.resources.addResources.targetHelp}" >
+                     <sun:dropDown id="target" selected="#{pageSession.selectedTarget}" labels="$pageSession{targetList}"  values="$pageSession{targetList}" required="#{true}">
+                        <!beforeCreate
+                            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/clusters/cluster", result="#{pageSession.clusterList}");
+                            gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.targetList}" );
+                            gf.listCombine(list="#{pageSession.targetList}",  list2="#{pageSession.clusterList}");
+                            listAdd(list="#{pageSession.targetList}", value="server" index="0");
+                        />
+                     </sun:dropDown>
+                 </sun:property>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+</sun:form>
+</define>
+</composition>
+

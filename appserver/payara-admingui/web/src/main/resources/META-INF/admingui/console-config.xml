@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<console-config id="web">
+        <integration-point 
+                id="web_container"
+                type="org.glassfish.admingui:navNode" 
+                priority="900"
+                parentId="#{configNameId}" 
+                content="configuration/pluginTreeNodeWebContainer.jsf"
+        />
+    <integration-point
+            id="web_containerConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="900"
+            parentId="propSheetSection"
+            content="configuration/webContainerConfigurationLink.jsf"
+            />
+
+        <integration-point
+                id="web_httpService"
+                type="org.glassfish.admingui:navNode"
+                priority="300"
+                parentId="#{configNameId}"
+                content="configuration/pluginTreeNodeHttpService.jsf"
+        />
+        <integration-point
+            id="http_serviceConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="300"
+            parentId="propSheetSection"
+            content="configuration/httpServiceConfigLink.jsf"
+            />
+
+        <integration-point
+                id="web_virtualServer"
+                type="org.glassfish.admingui:navNode"
+                priority="850"
+                parentId="#{configNameId}"
+                content="configuration/pluginTreeNodeVS.jsf"
+        />
+        <integration-point
+            id="virtualServerConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="850"
+            parentId="propSheetSection"
+            content="configuration/virtualServerConfigurationLink.jsf"
+        />
+
+
+        <integration-point
+                id="web_grizzly"
+                type="org.glassfish.admingui:navNode"
+                priority="550"
+                parentId="#{configNameId}"
+                content="grizzly/pluginTreeNodeGrizzly.jsf"
+        />
+        <integration-point
+            id="grizzlyConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="550"
+            parentId="propSheetSection"
+            content="configuration/grizzlyConfigLink.jsf"
+        />
+
+
+        <integration-point
+                id="web_threadPool"
+                type="org.glassfish.admingui:navNode"
+                priority="750"
+                parentId="#{configNameId}"
+                content="configuration/pluginTreeNodeThreadPool.jsf"
+        />
+        <integration-point
+            id="threadPoolConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="750"
+            parentId="propSheetSection"
+            content="configuration/threadPoolConfigLink.jsf"
+        />
+
+
+        <!-- Add links under the Configuration Page  -->
+        <integration-point
+                id="webavailabilitytabs"
+                type="org.glassfish.admingui:availabilityTabs"
+                priority="20"
+                parentId="availabilityTabs"
+                content="configuration/webAvailabilityTabs.inc"
+        />
+
+        <!-- add the property sheet for deployment page, specific for web app -->
+        <integration-point
+                id="web_deploy"
+                type="org.glassfish.admingui:uploadPropertySheet"
+                priority="100"
+                parentId="form"
+                content="apps/deploymentWar.jsf"
+        />
+
+        <integration-point
+                id="web_edit_app"
+                type="org.glassfish.admingui:editAppPage"
+                content="war:web/apps/editWar.jsf"
+        />
+
+        <!-- add the dropdown option for selecting the type of app to deploy
+             in the form of  label:value
+         -->
+        <integration-point
+                id="web_deploy_type"
+                type="org.glassfish.admingui:appTypeDropdown"
+                priority="100"
+                parentId="form"
+                content="war|org.glassfish.admingui.core.Strings|deploy.type.war"
+        />
+
+        
+
+
+        <!-- add the http ports to the Server General page -->
+        <integration-point
+                id="serverGeneral"
+                type="org.glassfish.admingui:serverInstGeneralPe"
+                priority="200"
+                parentId=""
+                content="serverPageNode.jsf"
+        />
+        
+        
+                
+        <!-- Add a Common Task under the 'Deployment' Task group -->
+        <!--
+        <integration-point 
+                id="webAppDeployment" 
+                type="org.glassfish.admingui:commonTask" 
+                priority="100"
+                parentId="deployment"
+                content="webApp/webAppDeploymentTask.jsf"/>
+        -->
+                
+        <!-- Add view monitoring data under the 'Monitoring' Task group 
+        <integration-point 
+                id="webViewMonitor" 
+                type="org.glassfish.admingui:commonTask" 
+                priority="100"
+                parentId="monitoring"
+                content="monitor/webViewMonitoringDataTask.jsf"/>-->
+                
+       
+</console-config>

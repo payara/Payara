@@ -1,0 +1,114 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18n_ejb" bundle="org.glassfish.ejb.admingui.Strings");
+    setResourceBundle(key="i18n_ejbLite" bundle="org.glassfish.ejb-lite.admingui.Strings");
+    setResourceBundle(key="help_ejb" bundle="org.glassfish.ejb.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_ejb.headings.ejbMdbSettings}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+        setSessionAttribute(key="ejbContainerTabs" value="mdbSettingsTab");
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        setPageSessionAttribute(key="childType" value="mdb-container");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
+        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/mdb-container");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+
+        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/ejb/configuration/ejbContainerMDBSettings.jsf?configName=#{pageSession.configName}");
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="true" );
+        setPageSessionAttribute(key="showCancelButton" value="false" );
+        setPageSessionAttribute(key="hasPropertySheet" value="true" );
+        setPageSessionAttribute(key="hasPropertyTable" value="true" );
+    />
+    </event>
+
+    <sun:form id="form1">
+#include "/ejb-lite/configuration/ejbContainerTabs.inc"
+#include "/common/shared/alertMsg.inc"
+<sun:title id="propertyContentPage" title="$resource{i18n_ejb.headings.ejbMdbSettings}" helpText="$resource{i18n_ejb.ejb.ejbMdbSettingsInfo}" >
+#include "/common/shared/editPageButtons.inc"
+</sun:title>
+
+
+     <!-- PropertySheet .... -->
+     <sun:propertySheet id="propertySheet">
+         <!-- Text Field section -->
+#include "/common/shared/configNameSection.inc"
+         <sun:propertySheetSection id="propertySectionTextField">
+             <sun:property id="MinSizeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.minSizeLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.minSizeHelp}">
+                 <sun:textField id="MinSize" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.minSize']}" text="#{pageSession.valueMap['steadyPoolSize']}" />
+                 <sun:staticText id="nobeans" style="padding: 8pt" text="$resource{i18n_ejb.ejb.NumBeans}"/>
+             </sun:property>
+             <sun:property id="MaxSizeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.maxSizeLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.maxSizeHelp}">
+                 <sun:textField id="MaxSize" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.maxSize']}" text="#{pageSession.valueMap['maxPoolSize']}" />
+                 <sun:staticText id="nobeans" style="padding: 8pt" text="$resource{i18n_ejb.ejb.NumBeans}"/>
+             </sun:property>
+             <sun:property id="PoolResizeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejbLite.ejbSettings.poolResizeLabel}" helpText="$resource{i18n_ejbLite.ejbSettings.poolResizeHelp}">
+                 <sun:textField id="PoolResize" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbSettings.poolResize']}" text="#{pageSession.valueMap['poolResizeQuantity']}" />
+                 <sun:staticText id="nobeans" style="padding: 8pt" text="$resource{i18n_ejb.ejb.NumBeans}"/>
+             </sun:property>
+             <sun:property id="TimeoutProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_ejb.ejbMdbSettings.timeoutLabel}" helpText="$resource{i18n_ejb.ejbMdbSettings.timeoutHelp}">
+                 <sun:textField id="Timeout" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.ejbMdbSettings.timeout']}" style="padding-bottom 8pt" text="#{pageSession.valueMap['idleTimeoutInSeconds']}" />
+                 <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+             </sun:property>
+         </sun:propertySheetSection>
+     </sun:propertySheet>
+
+
+#include "/common/shared/propertyDescTable.inc"
+
+	<sun:hidden id="helpKey" value="$resource{help_ejb.ejbContainerMDBSettings}" />
+    </sun:form>
+    "<br/>
+#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>
+

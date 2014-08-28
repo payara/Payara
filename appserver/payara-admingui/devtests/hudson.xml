@@ -1,0 +1,209 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!--
+    To use this file, the Maven Ant tasks and Ant Contrib must be added to the local Ant installation
+-->
+        
+<project name="GlassFish Admin Console Dev Test Hudson Helper" default="test" basedir="."
+         xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+    <tstamp/>
+    <property file="test.properties"/>
+    <property environment="env"/>
+
+    <property name="install.dir" value="binaries/${TSTAMP}"/>
+    <property name="server.dir" value="${install.dir}/glassfish4"/>
+    <property name="maven.dir" value="${install.dir}/${maven.version}"/>
+    <property name="glassfish.download.dir" value="."/> 
+    <property name="glassfish.download" value="${glassfish.download.dir}/glassfish.zip"/>
+
+    <property name="http.proxyHost" value=""/>
+    <property name="http.proxyPort" value=""/>
+
+    <property name="BROWSER" value="firefox"/>
+    <property name="GUI_ADMIN_PORT" value="4848"/>
+    <property name="DOMAIN" value="domain1"/>
+    <property name="RELEASEAFTER" value="true"/>
+    <property name="SLOWDOWN" value="true"/>
+
+    <property name="env.ADMIN_PORT" value="14848"/>
+    <property name="env.INSTANCE_PORT" value="18080"/>
+    <property name="env.JMS_PORT" value="17676"/>
+    <property name="env.JMX_PORT" value="18686"/>
+    <property name="env.ORB_PORT" value="13700"/>
+    <property name="env.SSL_PORT" value="18181"/>
+    <property name="env.ORB_SSL_PORT" value="13820"/>
+    <property name="env.ORB_SSL_MUTUALAUTH_PORT" value="13920"/>
+    <property name="env.OSGI_SHELL" value="16666"/>
+    <property name="env.DEBUGGER_PORT" value="19009"/>
+
+    <property name="env.MAVEN_HOME" value="${user.home}/.m2"/>
+
+    <property name="ant.contrib.url"
+              value="http://mirrors.ibiblio.org/pub/mirrors/maven2/ant-contrib/ant-contrib/1.0b3/ant-contrib-1.0b3.jar"/>
+    <property name="maven.ant.tasks.url"
+              value="http://repo2.maven.org/maven2/org/apache/maven/maven-ant-tasks/2.1.1/maven-ant-tasks-2.1.1.jar"/>
+    <property name="glassfish.dist.url"
+              value="http://hudson.glassfish.org/job/gf-trunk-build-continuous/lastSuccessfulBuild/artifact/bundles/glassfish.zip"/>
+
+    <target name="download">
+        <get src="${glassfish.dist.url}" dest="${glassfish.download}" usetimestamp="true"/>
+        
+        <delete dir="binaries" failonerror="false" />
+        <mkdir dir="${install.dir}"/>
+        <unzip src="${glassfish.download}" dest="${install.dir}"/>
+        <if>
+            <not>
+                <os family="windows"/>
+            </not>
+            <then>
+                <chmod perm="a+x" file="${executable}"/>
+                <chmod perm="a+x" file="${server.dir}/glassfish/bin/asadmin"/>
+            </then>
+        </if>
+        <antcall target="shutdown-server"/>
+    </target>
+
+    <target name="setup">
+        <get src="${ant.contrib.url}" dest="ant-contrib.jar" skipexisting="true"/>
+        <get src="${maven.ant.tasks.url}" dest="maven-ant-tasks.jar" skipexisting="true"/>
+        <taskdef resource="net/sf/antcontrib/antlib.xml" classpath="ant-contrib.jar"/>
+        <typedef resource="org/apache/maven/artifact/ant/antlib.xml" uri="antlib:org.apache.maven.artifact.ant"
+                 classpath="maven-ant-tasks.jar"/>
+
+        <if>
+            <os family="windows"/>
+            <then>
+                <property name="executable" value="${server.dir}/bin/asadmin.bat"/>
+            </then>
+            <else>
+                <property name="executable" value="${server.dir}/bin/asadmin"/>
+            </else>
+        </if>
+    </target>
+
+    <target name="recreate-domain" depends="shutdown-server">
+        <echo>
+            Port assigments:
+            Admin port: ${env.ADMIN_PORT}
+            Instance port: ${env.INSTANCE_PORT}
+            JMS Port: ${env.JMS_PORT}
+            JMX Port: ${env.JMX_PORT}
+            ORB Port: ${env.ORB_PORT}
+            SSL Port: ${env.SSL_PORT}
+            ORB SSL Port: ${env.ORB_SSL_PORT}
+            ORB SSL Mutual Auth Port: ${env.ORB_SSL_MUTUALAUTH_PORT}
+            OSGi Shell: ${env.OSGI_SHELL}
+            JAVA Debugger Port: ${env.DEBUGGER_PORT}
+        </echo>
+        
+        <exec executable="${executable}">
+            <arg value="--port"/>
+            <arg value="${env.ADMIN_PORT}"/>
+            <arg value="delete-domain"/>
+            <arg value="${DOMAIN}"/>
+        </exec>
+
+        <delete dir="${server.dir}/glassfish/domains/domain1" failonerror="false" deleteonexit="true"/>
+
+        <exec executable="${executable}">
+            <arg value="--port"/>
+            <arg value="${env.ADMIN_PORT}"/>
+            <arg value="create-domain"/>
+            <arg value="--adminport"/>
+            <arg value="${env.ADMIN_PORT}"/>
+            <arg value="--nopassword=true"/>
+            <arg value="--domainproperties"/>
+            <arg value="jms.port=${env.JMS_PORT}:domain.jmxPort=${env.JMX_PORT}:orb.listener.port=${env.ORB_PORT}:http.ssl.port=${env.SSL_PORT}:orb.ssl.port=${env.ORB_SSL_PORT}:orb.mutualauth.port=${env.ORB_SSL_MUTUALAUTH_PORT}:osgi.shell.telnet.port=${env.OSGI_SHELL}:java.debugger.port=${env.DEBUGGER_PORT}"/>
+            <arg value="--instanceport"/>
+            <arg value="${env.INSTANCE_PORT}"/>
+            <arg value="${DOMAIN}"/>
+        </exec>
+    </target>
+
+    <target name="start-server" depends="recreate-domain">
+        <echo message="***** Starting GlassFish"/>
+        <exec executable="${executable}">
+            <arg value="start-domain"/>
+            <arg value="${DOMAIN}"/>
+        </exec>
+    </target>
+
+    <target name="test" depends="setup,download">
+        <trycatch>
+            <try>
+                <antcall target="start-server"/>
+                <artifact:mvn pom="pom.xml" fork="true" mavenHome="${env.MAVEN_HOME}" failonerror="false" resultproperty="test.result">
+                    <arg value="-Dhttp.proxyHost=${http.proxyHost}"/>
+                    <arg value="-Dhttp.proxyPort=${http.proxyPort}"/>
+                    <arg value="-Dadmin.port=${env.ADMIN_PORT}"/>
+                    <arg value="-Dinstance.port=${env.INSTANCE_PORT}"/>
+                    <arg value="-Dbrowser=${BROWSER}"/>
+                    <arg value="-DreleaseAfter=${RELEASEAFTER}"/>
+                    <arg value="-DslowDown=${SLOWDOWN}"/>
+                    <arg value="-Dtest=${testClasses}"/>
+                    <arg value="test"/>
+                </artifact:mvn>
+            </try>
+            <finally>
+                <antcall target="shutdown-server"/>
+                <delete dir="${install.dir}" failonerror="false" deleteonexit="true"/>
+            </finally>
+        </trycatch>
+        <fail message="The test run failed.  Please see the console output for details.">
+            <condition>
+                <not>
+                    <equals arg1="${test.result}" arg2="0"/>
+                </not>
+            </condition>
+        </fail>
+    </target>
+
+    <target name="shutdown-server">
+        <echo message="***** Stopping GlassFish"/>
+        <exec executable="${executable}">
+            <arg value="stop-domain"/>
+            <arg value="${DOMAIN}"/>
+        </exec>
+    </target>
+</project>

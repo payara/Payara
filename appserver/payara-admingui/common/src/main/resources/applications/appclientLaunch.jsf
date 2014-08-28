@@ -1,0 +1,141 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+    setAttribute(key="index" value="-1");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.appClientLaunch.PageTitle}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        getRequestValue(key="appName" value="#{pageSession.appName}");
+        getRequestValue(key="moduleName" value="#{pageSession.moduleName}");
+        urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+        urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
+        gf.createAttributeMap(keys={"appname", "modulename" }, values={"$pageSession{encodedAppName}" , "$pageSession{encodedModuleName}"}, map="#{requestScope.attrsMap}")
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/_get-relative-jws-uri", attrs="#{requestScope.attrsMap}" method="get", result="#{requestScope.result}");
+        if ("!(#{requestScope.result.data}=#{null})") {
+            mapGet(Map="#{requestScope.result.data}" Key="properties" Value="#{requestScope.propMap}");
+        }
+        if ("!(#{requestScope.propMap}=#{null})"){
+            mapGet(Map="#{requestScope.propMap}" Key="relative-uri" Value="#{pageSession.relativeURI}");
+        }
+        getTargetURLList(AppID="#{pageSession.appName}",contextRoot="#{pageSession.relativeURI}",  URLList="#{requestScope.uList}");
+        foreach(var="list" list="#{requestScope.uList}"){
+            listAdd(list="#{pageSession.urlList}" value="#{requestScope.list.url}" result="#{pageSession.urlList}");
+        }
+        setPageSessionAttribute(key="configOption" value="#{pageSession.urlList[0]}");
+        setPageSessionAttribute(key="myOption" value="#{pageSession.configOption}");
+        setAttribute(key="index" value="-1");
+    />
+    </event>
+        <sun:form id="form1">
+#include "/common/shared/alertMsg_1.inc"
+        <!-- Page Title -->
+        <sun:title id="propertyContentPage" title="$resource{i18nc.appClientLaunch.PageTitle}" helpText="$resource{i18nc.appClientLaunch.PageTitleHelp}">
+            <!facet pageButtonsTop>
+                <sun:panelGroup id="topButtons">
+                    <sun:button id="launchButton" primary="#{true}" text="$resource{i18n.deployTable.launch}"
+                        onClick="var pfix=document.getElementById('form1:option').value;
+                        var args = document.getElementById('#{pageSession.argId}').value;
+                        if(!(args==null || args=='')){
+                            args='?'+args;
+                        }
+                        var win=window.open(pfix+args,'appclient','width='+.50*screen.width+',height='+.50*screen.height+',top='+.1*screen.height+',left='+.1*screen.width+',toolbar=yes,status=yes,menubar=yes,scrollbars=yes,location=yes');
+                        win.focus();
+                        return false;"
+                    />
+                    <sun:button id="backButton" immediate="#{true}"
+                        text="$resource{i18n.button.Back}" primary="#{false}" >
+                        <!command
+                            gf.redirect(page="#{request.contextPath}/common/applications/applicationEdit.jsf?appName=#{pageSession.encodedAppName}");
+                        />
+                    </sun:button>
+                </sun:panelGroup>
+            </facet>
+            </sun:title>
+        "<br><br>
+        <sun:propertySheet id="propertySheet">
+            <sun:propertySheetSection id="propertySheetSection">
+
+                <sun:property id="appProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.appClientLaunch.application}">
+                    <sun:staticText id="app" text="#{pageSession.appName}" />
+                </sun:property>
+                <sun:property id="module"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.appClientLaunch.module}">
+                    <sun:staticText id="module" text="#{pageSession.moduleName}" />
+                </sun:property>
+
+                <sun:property id="configOptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{true}" label=" ">
+                    "<br><br>
+                    <foreach key="oneUrl" list="#{pageSession.urlList}">
+                        <event>
+                        <!beforeEncode
+                            inc(number="${index}" value="#{requestScope.index}");
+                        />
+                        </event>
+                        <sun:radioButton id="A${index}" name="configOptionGrp" label="#{pageSession.urlList[requestScope.index]}" selected="#{configOption}" selectedValue="#{pageSession.urlList[requestScope.index]}"
+                           onClick="document.getElementById('form1:option').value='#{pageSession.urlList[requestScope.index]}'; "
+                        />
+                        "<br><br>
+                    </foreach>
+                </sun:property>
+
+                <sun:property id="argsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.appClientLaunch.argLabel}">
+                    <sun:textField id="args" text="#{pageSession.args}" columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.appClientLaunch.args']}" >
+                        <!afterCreate
+                            getClientId(component="$this{component}" clientId="#{pageSession.argId}");
+                        />
+                    </sun:textField>
+                    <sun:helpInline id="argsHelp" type="field" text="$resource{i18nc.appClientLaunch.argHelp}"/>
+                </sun:property>
+            </sun:propertySheetSection>
+        </sun:propertySheet>
+        <sun:hidden id="option"  value="#{myOption}" />
+        <sun:hidden id="helpKey" value="$resource{help_common.appclientLaunch}" />
+
+</sun:form>
+
+</define>
+</composition>
+

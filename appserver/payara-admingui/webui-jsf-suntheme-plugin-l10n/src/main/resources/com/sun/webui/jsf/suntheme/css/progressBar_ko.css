@@ -1,0 +1,146 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+/* LAYOUT */
+.progressBar_4_sun4 {
+	margin:12px 11px;
+}
+.progressBar_4_sun4 .operationLabel_sun4 {
+	margin:0 0 9px 1px;
+	line-height:1.0;
+}
+.progressBar_4_sun4 .barContainer_sun4 {
+	display:block;
+	float:left;
+	position:relative;
+	margin-bottom:6px;
+	padding:.09em;
+	border-style:solid;
+	border-width:1px;
+	width:16.9em;
+}
+.progressBar_4_sun4 .barDeterminate_sun4, .progressBar_4_sun4 .barIndeterminate_sun4, .progressBar_4_sun4 .barIndeterminatePaused_sun4 {
+	width:48%;
+	height:.8em;
+}
+.progressBar_4_sun4 .failure_sun4{
+	
+	float:left;
+	margin-bottom:7px;
+	padding:1px;
+	width:17.1em;
+}
+.progressBar_4_sun4 .failureLabel_sun4 {
+	color:#C00;
+	padding:0 0 0 1.3em;
+	line-height:1.0;
+}
+.progressBar_4_sun4 .barIndeterminate_sun4, .progressBar_4_sun4 .barIndeterminatePaused_sun4{
+	width:100%
+}
+.progressBar_4_sun4 .barLabel_sun4 {
+	position:absolute;
+	line-height:.9;
+	top:.09em;
+	left:0;
+	width:16.9em;
+	height:.9em;
+	text-align:right;
+}
+.progressBar_4_sun4 .statusLabel_sun4 {
+	padding:0 0 0 1px ;
+	line-height:1.0;
+	width:16.9em;
+	margin-bottom:20px;
+}
+.progressBar_4_sun4 .buttonsBottom_sun4 {
+	margin: 11px 0 20px -1px;
+}
+.progressBar_4_sun4 .buttonsRight_sun4 {
+	float:left;
+	clear:right;
+	margin: -2px 0 0 0;
+	padding-left:.9em;
+}
+.progressBar_4_sun4 .log_sun4 {
+	margin:20px 0;
+}
+.progressBar_4_sun4 .busy_sun4 {
+	margin:10px;
+}
+/*---*/
+
+/* TYPOGRAPHY */
+.progressBar_4_sun4 {
+	font-size:1.0em;
+}
+.progressBar_4_sun4 .operationLabel_sun4, .progressBar_4_sun4 .failureLabel_sun4 {
+	font-weight:bold;
+}
+/*---*/
+/* COLOR AND MEDIA */
+.progressBar_4_sun4 {
+	border-color:#F1F1F1;
+}
+.progressBar_4_sun4 .barContainer_sun4 {
+	background-color:#F2F3F4;
+	border-color:#666664;
+}
+.progressBar_4_sun4 .barIndeterminatePaused_sun4 {
+	background: #A0CCE7 url(../images/progressBar/still-indeterminate.gif) repeat-x top;
+}
+.progressBar_4_sun4 .barIndeterminate_sun4 {
+	background: #A0CCE7 url(../images/progressBar/indeterminate.gif) repeat-x top;
+}
+.progressBar_4_sun4 .barDeterminate_sun4 {
+	background: #A0CCE7 url(../images/progressBar/reg-slice.gif) repeat-x top;
+}
+.progressBar_4_sun4 .failure_sun4 {
+	background-image:url(../images/alerts/failed_small.gif);
+	background-position:top left;
+	background-repeat:no-repeat;
+}
+.progressBar_4_sun4 .failureLabel_sun4 {
+	color:#CC0000;
+}
+.progressBar_4_sun4 .checkboxContainer_sun4 label {
+	cursor:pointer;
+}
+/*---*/
