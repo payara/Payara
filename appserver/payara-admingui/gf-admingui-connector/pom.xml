@@ -55,7 +55,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Integration</name>
-    <description>GlassFish Admin Console Integration</description>
+    <description>Payara Admin Console Integration</description>
 
     <developers>
         <!-- See parent POM -->

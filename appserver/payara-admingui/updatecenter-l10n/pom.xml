@@ -46,14 +46,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.admingui</groupId>
-        <artifactId>admingui</artifactId>
+        <artifactId>payara-admingui</artifactId>
         <version>4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-updatecenter-plugin-l10n</artifactId>
     
     <name>Admin Console Update Center Plugin l10n</name>
-    <description>Update Center plugin bundle for GlassFish Admin Console Localization</description>
+    <description>Update Center plugin bundle for Payara Admin Console Localization</description>
     
     <properties>
         <javadoc.skip>true</javadoc.skip>

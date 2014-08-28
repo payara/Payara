@@ -55,7 +55,7 @@
     <artifactId>dataprovider</artifactId>
     <name>DataProvider</name>
     <modelVersion>4.0.0</modelVersion>
-    <description>DataProvider Repackaged as OSGi bundle for GlassFish</description>
+    <description>DataProvider Repackaged as OSGi bundle for Payara</description>
 
     <properties>
         <!--

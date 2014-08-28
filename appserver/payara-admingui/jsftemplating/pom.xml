@@ -55,7 +55,7 @@
     <name>Admin Console JSFTemplating Repackaging</name>
     <version>${jsftemplating.version}</version>
     <modelVersion>4.0.0</modelVersion>
-    <description>JSFTemplating Repackaged as OSGi bundle for GlassFish</description>
+    <description>JSFTemplating Repackaged as OSGi bundle for Payara</description>
 
     <developers>
         <!-- See parent POM -->

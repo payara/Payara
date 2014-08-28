@@ -45,14 +45,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.admingui</groupId>
-        <artifactId>admingui</artifactId>
+        <artifactId>payara-admingui</artifactId>
         <version>4.0</version>
     </parent>
     <artifactId>console-web-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Web Container Plugin</name>
-    <description>Web container plugin bundle for GlassFish Admin Console</description>
+    <description>Web container plugin bundle for Payara Admin Console</description>
 
     <developers>
         <!-- See parent POM -->
