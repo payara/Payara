@@ -52,7 +52,7 @@
     </parent>    
     <artifactId>glassfish-parent</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish Appserver Parent Project</name>
+    <name>Payara Appserver Parent Project</name>
     
     <scm>
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/trunk/main/appserver</connection>
@@ -84,9 +84,9 @@
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
         <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
         
-        <product.name>GlassFish Server Open Source Edition</product.name>
-        <brief_product_name>GlassFish Server</brief_product_name>
-        <abbrev_product_name>glassfish</abbrev_product_name>
+        <product.name>Payara Server Open Source Edition</product.name>
+        <brief_product_name>Payara Server</brief_product_name>
+        <abbrev_product_name>Payara</abbrev_product_name>
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
         <version_prefix></version_prefix>
@@ -94,7 +94,7 @@
         <major_version>4</major_version>
         <minor_version>0</minor_version>
         <update_version></update_version>
-        <install.dir.name>glassfish${major_version}</install.dir.name>
+        <install.dir.name>payara${major_version}</install.dir.name>
         
         <javaee.major_version>7</javaee.major_version>
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
@@ -151,7 +151,7 @@
         <module>concurrent</module>
         <module>batch</module>
         <module>extras</module>
-        <module>admingui</module>
+        <module>payara-admingui</module>
         <module>extras/embedded/shell</module>
         <module>packager</module>
         <module>distributions</module>

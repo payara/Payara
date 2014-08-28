@@ -50,9 +50,9 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.main.admingui</groupId>
-    <artifactId>admingui</artifactId>
+    <artifactId>payara-admingui</artifactId>
     <packaging>pom</packaging>
-    <name>Admin Console Packages</name>
+    <name>Payara Admin Console Packages</name>
 
     <developers>
         <developer>
