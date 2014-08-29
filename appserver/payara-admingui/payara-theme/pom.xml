@@ -50,10 +50,10 @@
         <version>4.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>console-community-branding-plugin</artifactId>
+    <artifactId>console-payara-branding-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
     
-    <name>Admin Console Community Edition Theme Plugin</name>
+    <name>Admin Console Payara Theme Plugin</name>
     <description>Custom Theme Plugin for Payara Admin Console</description>
 
     <developers>

@@ -76,7 +76,7 @@
 
 [#|2012-10-19T15:27:28.303-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848303;_LevelValue=800;|this.makeModuleFor(com.sun.pkg.client, 1.0.0) returned OSGiModuleImpl:: Bundle = [com.sun.pkg.client [176]], State = [READY]|#]
 
-[#|2012-10-19T15:27:28.304-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848304;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-community-branding-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-community-branding-plugin [153]], State = [READY]|#]
+[#|2012-10-19T15:27:28.304-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848304;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-payara-branding-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-payara-branding-plugin [153]], State = [READY]|#]
 
 [#|2012-10-19T15:27:28.304-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674848304;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-ejb-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-ejb-plugin [201]], State = [READY]|#]
 
@@ -152,7 +152,7 @@
 
 [#|2012-10-19T15:27:30.729-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850729;_LevelValue=800;|this.makeModuleFor(com.sun.pkg.client, 1.0.0) returned OSGiModuleImpl:: Bundle = [com.sun.pkg.client [176]], State = [READY]|#]
 
-[#|2012-10-19T15:27:30.729-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850729;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-community-branding-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-community-branding-plugin [153]], State = [READY]|#]
+[#|2012-10-19T15:27:30.729-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850729;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-payara-branding-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-payara-branding-plugin [153]], State = [READY]|#]
 
 [#|2012-10-19T15:27:30.730-0400|INFO|44.0|null|_ThreadID=72;_ThreadName=Thread-12;_TimeMillis=1350674850730;_LevelValue=800;|this.makeModuleFor(org.glassfish.main.admingui.console-ejb-plugin, 4.0.0.SNAPSHOT) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.admingui.console-ejb-plugin [201]], State = [READY]|#]
 
