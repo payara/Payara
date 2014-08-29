@@ -126,7 +126,7 @@
         <module>common-l10n</module>
         <module>corba-l10n</module>
         <module>jts-l10n</module>
-        <module>community-theme-l10n</module>
+        <module>payara-theme-l10n</module>
         <module>web-l10n</module>
         <module>jms-plugin-l10n</module>
         <module>jdbc-l10n</module>
