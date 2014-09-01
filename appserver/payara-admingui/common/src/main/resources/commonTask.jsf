@@ -72,12 +72,6 @@
               onClick="javascript:var win=window.open('$resource{i18n.commonTasks.task.supportLink}','_blank');if (win) {win.focus();}; return false;">
             </sun:commonTask>
             <sun:commonTask
-                rendered="#{pageSession.isRegistrationEnabled}"
-                text="$resource{i18n.tree.registration}"
-                toolTip="$resource{i18n.tree.registration}"
-                onClick="javascript:var win=window.open('#{request.contextPath}/common/registration.jsf','_blank');if (win) {win.focus();}; return false;">
-            </sun:commonTask>
-            <sun:commonTask
                 rendered="#{!sessionScope._noNetwork}"
                 text="$resource{i18n.commonTasks.task.aquarium}"
                 toolTip="$resource{i18n.commonTasks.task.aquarium.toolTip}"
