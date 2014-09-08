@@ -119,6 +119,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency> 
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-common-full-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
     
 
         <!-- ejb full package -->
@@ -128,6 +134,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>     
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-ejb-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
 	
         <!-- CMP package -->
         <dependency>
@@ -136,6 +148,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>    
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-cmp-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         
         <!-- EntityBeans Container package -->
         <dependency>
@@ -160,6 +178,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>metro-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
 
         <!-- appclient package -->
         <dependency>
@@ -168,11 +192,23 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-appclient-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
 
         <!-- jms package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jms</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jms-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

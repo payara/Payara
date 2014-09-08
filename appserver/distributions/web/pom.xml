@@ -128,9 +128,21 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-registration-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jpa</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jpa-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
@@ -140,12 +152,24 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jts-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ejb-lite</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>    
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-ejb-lite-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jsf</artifactId>
@@ -186,6 +210,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>    
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-gui-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
 
         <!-- javadb package -->
         <dependency>

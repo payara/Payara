@@ -129,11 +129,23 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-nucleus-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
  
         <!-- all previous web-nb distribution packages -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-common-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
@@ -149,6 +161,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-cluster-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>jersey</artifactId>
@@ -158,6 +176,12 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-management</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-management-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
@@ -181,6 +205,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>       
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-common-web-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ha</artifactId>
@@ -193,24 +223,48 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jca-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jta</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>   
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jta-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-web</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>    
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-web-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jdbc</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency> 
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jdbc-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jmx</artifactId>
