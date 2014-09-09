@@ -114,9 +114,14 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <configuration>
-                        <skip>true</skip>
-                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>default-deploy</id>
+                            <configuration>
+                                <skip>true</skip>
+                            </configuration>
+                        </execution>
+                    </executions>
                     <inherited>false</inherited>
                 </plugin>
                 <plugin>
@@ -151,7 +156,7 @@
                                     <groupId>net.java</groupId>
                                     <artifactId>jvnet-parent</artifactId>
                                     <version>3</version>
-				</parent>
+                                </parent>
                                 <groupId>javax</groupId>
                                 <artifactId>${projet.artifactId}</artifactId>
                                 <version>${javaee.version}</version>
@@ -184,6 +189,6 @@
                     </configuration>
                 </plugin>
             </plugins>
-        </pluginManagement>        
+        </pluginManagement>
     </build>    
 </project>
