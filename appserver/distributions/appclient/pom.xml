@@ -137,7 +137,7 @@
                                   <groupId>org.glassfish.main.appclient</groupId>
                                   <artifactId>appclient-scripts</artifactId>
                                   <version>${project.version}</version>
-                                  <type>distribution-fragment</type>
+                                  <type>zip</type>
                                   <includes>glassfish/bin/*</includes>
                                 </artifactItem>
                               </artifactItems>
@@ -160,7 +160,7 @@
             <groupId>org.glassfish.main.appclient</groupId>
             <artifactId>appclient-scripts</artifactId>
             <version>${project.version}</version>
-            <type>distribution-fragment</type>
+            <type>zip</type>
         </dependency>
     </dependencies>
 </project>

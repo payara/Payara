@@ -103,7 +103,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>cmp-scripts</artifactId>
             <version>${project.version}</version>
-            <type>distribution-fragment</type>
+            <type>zip</type>
         </dependency>
     </dependencies>
 </project>

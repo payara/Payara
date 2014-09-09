@@ -120,7 +120,7 @@
       <groupId>org.glassfish.main.jdbc</groupId>
       <artifactId>templates</artifactId>
       <version>${project.parent.version}</version>
-      <type>distribution-fragment</type>
+      <type>zip</type>
     </dependency>
 
   </dependencies>

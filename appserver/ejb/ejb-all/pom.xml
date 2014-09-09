@@ -68,7 +68,7 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>ejb-timer-databases</artifactId>
             <version>${project.version}</version>
-            <type>distribution-fragment</type>
+            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
