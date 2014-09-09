@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.tests.cdi.cases</groupId>
         <artifactId>multiBeansXml</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.2-SNAPSHOT</version>
     </parent>
 
     <groupId>org.glassfish.tests.cdi.cases.multiBeansXml</groupId>

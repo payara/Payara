@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded.basic</groupId>
     <artifactId>cdi_basic</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
     <name>Basic CDI Test</name>
     <build>
         <finalName>cdi_basic</finalName>
@@ -81,7 +81,7 @@
                 <dependency>
                     <groupId>org.glassfish.main.extras</groupId>
                     <artifactId>glassfish-embedded-all</artifactId>
-                    <version>4.1-SNAPSHOT</version>
+                    <version>4.2-SNAPSHOT</version>
                 </dependency>
                 <dependency>
                     <groupId>junit</groupId>

@@ -47,14 +47,14 @@
     <parent>
         <groupId>org.glassfish.tests.cdi</groupId>
         <artifactId>cases</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.glassfish.tests.cdi.cases</groupId>
     <artifactId>preDestroyScoping</artifactId>
     <packaging>pom</packaging>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
 
     <name>GlassFish CDI PreDestroyScoping Test</name>  
     <modules>

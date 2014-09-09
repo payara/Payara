@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded.ejb</groupId>
     <artifactId>ejb-api-test</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
     <name>EJB Embedded API test</name>
   <build>
     <plugins>
@@ -81,7 +81,7 @@
                 <dependency>
                     <groupId>org.glassfish.main.extras</groupId>
                     <artifactId>glassfish-embedded-all</artifactId>
-                    <version>4.1-SNAPSHOT</version>
+                    <version>4.2-SNAPSHOT</version>
                 </dependency>
             </dependencies>
         </profile>

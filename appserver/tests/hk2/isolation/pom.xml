@@ -47,14 +47,14 @@
     <parent>
         <groupId>org.glassfish.tests</groupId>
         <artifactId>hk2</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.glassfish.tests.hk2</groupId>
     <artifactId>isolation</artifactId>
     <packaging>pom</packaging>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
 
     <name>GlassFish HK2 Isolation Tests</name>  
     <modules>

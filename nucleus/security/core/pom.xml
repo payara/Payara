@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.security</groupId>
         <artifactId>nucleus-security</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.2-SNAPSHOT</version>
     </parent>
     <artifactId>security</artifactId>
     <packaging>glassfish-jar</packaging>

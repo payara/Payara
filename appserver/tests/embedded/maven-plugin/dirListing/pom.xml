@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.tests.embedded</groupId>
         <artifactId>maven-plugin</artifactId>
-        <version>4.1-SNAPSHOT</version>        
+        <version>4.2-SNAPSHOT</version>        
     </parent>
     <groupId>org.glassfish.tests.embedded.maven-plugin</groupId>
     <artifactId>dirListing</artifactId>

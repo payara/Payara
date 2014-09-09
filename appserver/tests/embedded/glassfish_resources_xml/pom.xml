@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded.basic</groupId>
     <artifactId>glassfish_resources_xml</artifactId>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
     <name>CDI, EJB, JPA integration test which has glassfish-resources.xml</name>
     <build>
         <finalName>glassfish_resources_xml</finalName>

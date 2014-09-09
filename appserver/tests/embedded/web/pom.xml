@@ -47,7 +47,7 @@
     <groupId>org.glassfish.tests.embedded</groupId>
     <artifactId>web</artifactId>
     <packaging>pom</packaging>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
     <name>GlassFish Web Embedded Tests</name>  
     <modules>
         <module>web-api</module>

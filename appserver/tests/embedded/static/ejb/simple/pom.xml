@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.tests.embedded.static</groupId>
         <artifactId>ejb</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -68,7 +68,7 @@
         <dependency>
             <groupId>org.glassfish.extras</groupId>
             <artifactId>glassfish-embedded-web</artifactId>
-            <version>4.1-SNAPSHOT</version>
+            <version>4.2-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

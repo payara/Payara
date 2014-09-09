@@ -78,13 +78,13 @@ of COPY_LIB map constant.)
     <parent>
         <groupId>org.glassfish.main.tests</groupId>
         <artifactId>nucleus-tests</artifactId>
-        <version>4.1-SNAPSHOT</version>
+        <version>4.2-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>org.glassfish.tests</groupId>
     <artifactId>nucleus-admin</artifactId>
     <name>Nucleus Admin Devtests</name>
-    <version>4.1-SNAPSHOT</version>
+    <version>4.2-SNAPSHOT</version>
     <description>This pom describes how to run admin developer tests on the Nucleus Bundle</description>
     <build>
         <plugins>
