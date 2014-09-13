@@ -435,10 +435,6 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             
             if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
                 httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
-                if (httpHeader.containsHeader(Header.XPoweredBy)) {
-                    System.out.println("It's STILL there damn it " + httpHeader.getHeader(Header.XPoweredBy));
-                }
-
             }
         }
     }
