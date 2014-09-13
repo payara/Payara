@@ -415,6 +415,8 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             if (serverVersion != null && !serverVersion.isEmpty()) {
                 response.addHeader(Header.Server, serverVersion);
             }
+
+
             
             // Set response "X-Powered-By" header
             if (xPoweredBy != null) {
@@ -422,6 +424,18 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             }
             
             return result;
+        }
+        
+        // override to chec whether x-Powered By has been added by something else
+        @Override
+        protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
+            if (httpHeader.containsHeader(Header.XPoweredBy)) {
+                System.out.println("It's there damn it " + httpHeader.getHeader(Header.XPoweredBy));
+            }
+            
+            if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
+                httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
+            }
         }
     }
 }
