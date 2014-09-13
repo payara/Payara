@@ -115,7 +115,6 @@ public class ResourceInjectorImpl implements ResourceInjector {
     public void preDestroy(JspTag handler) {
         if (desc != null) {
             try {
-                injectionMgr.invokeInstancePreDestroy(handler, desc);
                 injectionMgr.destroyManagedObject(handler);
             } catch (Exception e) {
                 String msg = _rb.getString(EXCEPTION_DURING_JSP_TAG_HANDLER_PREDESTROY);
