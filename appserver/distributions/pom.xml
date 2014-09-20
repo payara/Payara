@@ -86,6 +86,7 @@
         <module>minnow</module>
         <module>web</module>
         <module>glassfish</module>
+        <module>payara</module>
         <!-- disable appclient distribution build since we're not using it yet -->
         <!-- 	<module>appclient</module> -->
     </modules>
