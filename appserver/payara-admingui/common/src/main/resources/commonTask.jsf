@@ -66,19 +66,12 @@
       <sun:form id="form">
         <sun:commonTasksSection id="commonTasksSection" helpText="$resource{i18n.commonTasks.help}"  title="$resource{i18n.commonTasks.title}" columns="$int{2}" style="visibility: #{commonTaskVisibility}">
           <sun:commonTasksGroup title="$resource{i18n.commonTasks.task.glassfishNews}">
-            <!-- GLASSFISH-21123, GLASSFISH-21124
+            <!-- GLASSFISH-21123, GLASSFISH-21124 -->
             <sun:commonTask
               text="$resource{i18n.commonTasks.task.support}"
               toolTip="$resource{i18n.commonTasks.task.support.toolTip}"
               onClick="javascript:var win=window.open('$resource{i18n.commonTasks.task.supportLink}','_blank');if (win) {win.focus();}; return false;">
             </sun:commonTask>
-            <sun:commonTask
-                rendered="#{pageSession.isRegistrationEnabled}"
-                text="$resource{i18n.tree.registration}"
-                toolTip="$resource{i18n.tree.registration}"
-                onClick="javascript:var win=window.open('#{request.contextPath}/common/registration.jsf','_blank');if (win) {win.focus();}; return false;">
-            </sun:commonTask>
-            -->
             <sun:commonTask
                 rendered="#{!sessionScope._noNetwork}"
                 text="$resource{i18n.commonTasks.task.aquarium}"
