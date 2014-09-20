@@ -1,0 +1,15 @@
+These are the unit tests for testing the APIs provided in org.glassfish.embeddable package.
+
+Mainly these tests require the following artifacts :
+ 
+1.  ~/.m2/repository/org/glassfish/extras/glassfish-embedded-all/3.1-SNAPSHOT/glassfish-embedded-all-3.1-SNAPSHOT.jar
+
+2. ~/.m2/repository/junit/junit/4.3.1/junit-4.3.1.jar
+
+3. ~/.m2/repository/org/apache/maven/plugins/maven-compiler-plugin/2.0.2/maven-compiler-plugin-2.0.2.jar
+
+4. ~/.m2/repository/org/apache/maven/plugins/maven-surefire-plugin/2.4.2/maven-surefire-plugin-2.4.2.jar
+
+
+
+

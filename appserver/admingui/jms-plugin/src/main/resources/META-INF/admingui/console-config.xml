@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<console-config id="jms">
+    <integration-point  id="jms_resources_nodes"
+                        type="org.glassfish.admingui:navNode"
+                        priority="400"
+                        parentId="resources"
+                        content="resourcesNodes.jsf" />
+
+    <integration-point  id="jms_configuration_nodes"
+                        type="org.glassfish.admingui:navNode"
+                        priority="400"
+                        parentId="#{configNameId}"
+                        content="configurationNodes.jsf" />
+
+    <integration-point  id="configureJmsClusterDropDown"
+                        type="org.glassfish.admingui:newClusterDropDown"
+                        priority="500"
+                        parentId="propertySectionTextField"
+                        content="configureJmsClusterDropDown.inc"/>
+
+    <integration-point  id="configureJmsClusterSheet"
+                        type="org.glassfish.admingui:newClusterPropSheet"
+                        priority="500"
+                        parentId="propertyForm"
+                        content="configureJmsClusterSheet.inc"/>
+
+    <!-- Add a link under the Configuration Page -->
+    <integration-point id="jms_ConfigurationLink"
+                        type="org.glassfish.admingui:configuration"
+                        priority="400"
+                        parentId="propSheetSection"
+                        content="configLinks.jsf"
+    />
+
+    <integration-point
+                id="jmsavailabilitytabs"
+                type="org.glassfish.admingui:availabilityTabs"
+                priority="60"
+                parentId="availabilityTabs"
+                content="jmsAvailabilityTabs.inc"
+    />
+    <integration-point
+                id="jmsResourceLink"
+                parentId="propSheetSection"
+                type="org.glassfish.admingui:resources"
+                priority="300"
+                content="jmsResourceLink.jsf"
+    />
+    <integration-point
+                id="physDestStandaloneInstance"
+                parentId="standaloneInstanceTabs"
+                type="org.glassfish.admingui:standaloneInstTab"
+                priority="300"
+                content="/physdest/standaloneInstPhysDestTab.jsf"
+    />
+    <integration-point
+                id="physDestCluster"
+                parentId="clusterTabs"
+                type="org.glassfish.admingui:clusterTab"
+                priority="300"
+                content="/physdest/clusterPhysDestTab.jsf"
+    />
+    <integration-point
+                id="physDestServer"
+                parentId="serverInstTabs"
+                type="org.glassfish.admingui:serverInstTab"
+                priority="300"
+                content="/physdest/serverPhysDestTab.jsf"
+    />
+
+    <!-- add dropdown option for the resource dropdown of cluster/standalone instance resource table. -->
+    <integration-point
+            id="jmsResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="150"
+            content="jms/jmsConnectionNew.jsf|org.glassfish.admingui.core.Strings|tree.connectionFactories"
+    />
+    <integration-point
+            id="jmsResourceDropDown2"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="350"
+            content="jms/jmsDestinationNew.jsf|org.glassfish.admingui.core.Strings|tree.destinationResources"
+    />
+</console-config>

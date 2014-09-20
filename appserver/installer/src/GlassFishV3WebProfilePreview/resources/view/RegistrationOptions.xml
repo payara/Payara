@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="RegistrationOptions" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:oor="http://openoffice.org/2001/registry"
+  xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+  <apt:category apt:name="RegistrationOptions" apt:label="Registration Options" >
+
+    <apt:page apt:name="RegistrationOptionsPage" apt:label="Registration Options" >
+
+      <apt:section apt:name="regoptions" apt:label="Registration Options" >
+
+        <apt:property apt:name="REGISTRATION_OPTIONS_HEADER" apt:dataPath="" apt:type="xs:string">
+	<apt:prop-value>$REGISTRATION_OPTIONS_HEADER</apt:prop-value>
+	    <apt:visual>
+	        <apt:htmlPanel/>
+	    </apt:visual>
+        </apt:property>
+
+	<apt:property apt:name="CREATE_NEWACCT" 
+	        apt:label="" 
+		apt:dataPath="regoptions.CREATE_NEWACCT" 
+		apt:type="xs:string">
+
+            <apt:visual>
+                <apt:radioButtons apt:toolTip=""/>
+            </apt:visual>
+
+	    <apt:constraints>
+	        <apt:enumeration 
+		    apt:value="CREATE_NEWACCT" 
+		    apt:label="$CREATE_NEWACCT"/>
+            </apt:constraints>
+
+	    <apt:scriptHandler apt:scriptLanguage="beanshell" >
+		<apt:scriptCode><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+theAL = new ActionListener() {
+    actionPerformed(e) {
+	setRegOption("CREATE_NEWACCT");
+        ValidateCredentials();
+    }
+};
+return theAL;
+		]]></apt:scriptCode>
+	    </apt:scriptHandler>
+        </apt:property>
+
+	<apt:property apt:name="USE_EXISTINGACCT" 
+	        apt:label="" 
+		apt:dataPath="regoptions.USE_EXISTINGACCT" 
+		apt:type="xs:string">
+
+            <apt:visual>
+                <apt:radioButtons apt:toolTip=""/>
+            </apt:visual>
+
+	    <apt:constraints>
+	        <apt:enumeration 
+		    apt:value="USE_EXISTINGACCT" 
+		    apt:label="$USE_EXISTINGACCT"/>
+            </apt:constraints>
+
+	    <apt:scriptHandler apt:scriptLanguage="beanshell" >
+		<apt:scriptCode><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+theAL = new ActionListener() {
+    actionPerformed(e) {
+	setRegOption("USE_EXISTINGACCT");
+        ValidateCredentials();
+    }
+};
+return theAL;
+		]]></apt:scriptCode>
+	    </apt:scriptHandler>
+
+
+        </apt:property>
+
+        <apt:property apt:name="USERNAME" apt:label="$USERNAME"
+                apt:dataPath="regoptions.USERNAME"
+                apt:type="xs:string">
+	  <apt:visual>
+	    <apt:textField apt:columns="15" apt:toolTip="$USERNAME"/>
+	  </apt:visual>
+        </apt:property>
+
+        <apt:property apt:name="USERPASSWORD" apt:label="$USERPASSWORD"
+                      apt:dataPath="regoptions.USERPASSWORD"
+                      apt:type="xs:string">
+	  <apt:visual>
+	    <apt:password apt:columns="15" apt:toolTip="$USERPASSWORD"/>
+	  </apt:visual>
+        </apt:property>
+
+	<apt:property apt:name="SKIP_REGISTRATION" 
+	        apt:label="" 
+		apt:dataPath="regoptions.SKIP_REGISTRATION" 
+		apt:type="xs:string">
+
+            <apt:visual>
+                <apt:radioButtons apt:toolTip=""/>
+            </apt:visual>
+
+	    <apt:constraints>
+	        <apt:enumeration 
+		    apt:value="SKIP_REGISTRATION" 
+		    apt:label="$SKIP_REGISTRATION"/>
+            </apt:constraints>
+
+	    <apt:scriptHandler apt:scriptLanguage="beanshell" >
+		<apt:scriptCode><![CDATA[
+import java.lang.String;
+import java.util.List;
+import org.openinstaller.provider.conf.ConfigHelper;
+
+theAL = new ActionListener() {
+    actionPerformed(e) {
+	setRegOption("SKIP_REGISTRATION");
+        ValidateCredentials();
+    }
+};
+return theAL;
+		]]></apt:scriptCode>
+	    </apt:scriptHandler>
+        </apt:property>
+
+
+        <apt:property apt:name="DUMMY_PROP" apt:label=""
+                      apt:dataPath="regoptions.DUMMY_PROP"
+                      apt:type="xs:string">
+	  <apt:prop-value></apt:prop-value>
+	  <apt:visual>
+	    <apt:textField/>
+	  </apt:visual>
+        </apt:property>
+
+      </apt:section>
+
+  <apt:scriptHandler apt:scriptLanguage="beanshell" >
+  <apt:scriptCode><![CDATA[
+  import java.lang.String;
+  import java.util.List;
+  import java.util.HashMap;
+  import java.util.Properties;
+  import java.io.*;
+  import org.openinstaller.provider.conf.ConfigHelper;
+
+
+    getComponentByName(aParent, aName) {
+      if (aParent == null || ! (aParent instanceof Container)) {
+        return null;
+      }
+      Component[] theComponents = ((Container)aParent).getComponents();
+      for (Component theComp : theComponents) {
+        if (aName.equals(theComp.getName())) {
+          return theComp;
+        }
+      }
+      for (Component theComp : theComponents) {
+        if (theComp instanceof Container) {
+          Object theCompo = getComponentByName((Container) theComp, aName);
+          if (theCompo != null) {
+            return theCompo;
+          }
+        }
+      }
+      return null;
+    }
+
+    setRegOption(String s)  {
+        ConfigHelper.setValue("RegistrationOptions.regoptions.REGISTRATION_MODE", s);
+
+	List activeModes = (List)ConfigHelper.getValue("PageFlow.Mode.ACTIVE_MODES_LIST");
+
+	if (activeModes.contains("CREATE_NEWACCT"))  {
+	    activeModes.remove("CREATE_NEWACCT");
+	}
+	if (activeModes.contains("SKIP_REGISTRATION"))  {
+	    activeModes.remove("SKIP_REGISTRATION");
+	}
+	if (activeModes.contains("USE_EXISTINGACCT"))  {
+	    activeModes.remove("USE_EXISTINGACCT");
+	}
+
+	activeModes.add(s);
+
+	ConfigHelper.setValue("PageFlow.Mode.ACTIVE_MODES_LIST", activeModes);
+    }
+
+    getRegOption()  {
+	String regOption = 
+	    (String)ConfigHelper.getValue("RegistrationOptions.regoptions.REGISTRATION_MODE");
+
+	return (regOption);
+    }
+
+    ValidateCredentials()  {
+	String regOption = getRegOption();
+
+        usernameTF = getComponentByName(content, "USERNAME");
+        passwdTF = getComponentByName(content, "USERPASSWORD");
+
+	if ((regOption != null) && regOption.equals("USE_EXISTINGACCT"))  {
+           usernameTF.setEnabled(true);
+           passwdTF.setEnabled(true);
+	} else  {
+           usernameTF.setEnabled(false);
+           passwdTF.setEnabled(false);
+	}
+    }
+
+    checkForNullValues(prop)  {
+	String inputStatus = (String)ConfigHelper.getValue("RegistrationOptions.regoptions.STATUS");
+
+	/*
+	 * If the error status is already set, don't do the check again. One error dialog
+	 * is enough. If there are 5 fields on the form and the user didn't fill in any of 
+	 * them, we don't need to show 5 popups.
+	 */
+	if ((inputStatus != null) && (inputStatus.equals("ERROR")))  {
+	    return;
+	}
+
+	String myValue = (String)prop.getUnconfirmedValue();
+	if ((myValue == null) || myValue.equals("")) {
+            ConfigHelper.setValue("RegistrationOptions.regoptions.STATUS", "ERROR");
+	    throw new EnhancedException("NULL_OR_EMPTY_VALUE", new String[]{});
+	}
+    }
+
+
+    run() {
+      // Group the 3 separately create radio buttons
+      radio1 = getComponentByName(content, "CREATE_NEWACCT");
+      radio2 = getComponentByName(content, "USE_EXISTINGACCT");
+      radio3 = getComponentByName(content, "SKIP_REGISTRATION");
+
+      ButtonGroup bg = new ButtonGroup();
+      bg.add(radio1);
+      bg.add(radio2);
+      bg.add(radio3);
+
+      // Select first radio button when first displayed.
+      radio2.setSelected(false);
+      radio3.setSelected(false);
+      radio1.setSelected(true);
+
+      wizard.enableNext(true);
+      wizard.enableCancel(false);
+      wizard.enableBack(false);
+
+      setRegOption("CREATE_NEWACCT");
+ 
+     dummyProp = getComponentByName(content, "DUMMY_PROP");
+      if (dummyProp != null)  {
+	dummyProp.setVisible(false);
+	dummyProp.setText("");
+      }
+
+
+      radio1.requestFocus();
+
+     }
+
+    return (Runnable)this;
+  ]]></apt:scriptCode>
+  </apt:scriptHandler>
+
+    </apt:page>
+  </apt:category>
+</apt:template>
+

@@ -1,0 +1,123 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<ui:event type="initPage">
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
+    if(!$session{supportCluster}) {
+        if (!$pageSession{configName}) {
+            setPageSessionAttribute(key="configName" value="server-config");
+        }
+    }
+    getPluginIdFromViewId(viewId="#{facesContext.viewRoot.viewId}", pluginId="#{pluginId}");
+</ui:event>
+<event>
+    <!-- Before Create must be inside a component, cannot be at page-level -->
+    <ui:event type="beforeCreate">
+        setPartialRequest("false");
+    </ui:event>
+    <ui:event type="beforeEncode">
+        <!-- Set request-scoped restart flag to compare w/ session -->
+        if (!$session{supportCluster}) {
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/_get-restart-required", method="get", result="#{requestScope.result}");
+            setSessionAttribute(key="restartRequired", value="#{requestScope.result.data.extraProperties.entity.restartRequired}");
+            setSessionAttribute(key="unprocessedChanges", value="#{requestScope.result.data.extraProperties.entity.unprocessedChanges}");
+        }
+        if($session{supportCluster}) {
+            setSessionAttribute(key="restartRequired" value="$boolean{false}");
+        }
+
+        gf.restRequest(endpoint="#{request.scheme}://#{sessionScope.serverName}:#{sessionScope.serverPort}/management/domain/anonymous-user-enabled"
+            method="GET", result="#{requestScope.result}", quiet="true");
+        
+        setPageSessionAttribute(key="loginUser" value="#{requestScope.result.data.extraProperties.anonymousUserName}");
+        setPageSessionAttribute(key="anonymousUserEnabled", value="#{requestScope.result.data.extraProperties.anonymousUserEnabled}");
+        setSessionAttribute(key="showLogoutButton" value="#{pageSession.anonymousUserEnabled != 'true'}");
+        
+        if ("!(#{sessionScope.restartRequired})") {
+            if ("!(#{sessionScope.showLogoutButton})") {
+                setAttribute(key="reloadJS" value="if (document.getElementById('Masthead:statusPanel:restartLink') || document.getElementById('Masthead:logoutLink')) {reloadHeaderFrame();}");
+            }
+            if ("#{sessionScope.showLogoutButton}") {
+                setAttribute(key="reloadJS" value="if (document.getElementById('Masthead:statusPanel:restartLink') || !document.getElementById('Masthead:logoutLink')) {reloadHeaderFrame();}");
+            }
+        }
+        if ("#{sessionScope.restartRequired}") {
+            if ("!(#{sessionScope.showLogoutButton})") {
+                setAttribute(key="reloadJS" value="if (!document.getElementById('Masthead:statusPanel:restartLink') || document.getElementById('Masthead:logoutLink')) {reloadHeaderFrame();}");
+            }
+            if ("#{sessionScope.showLogoutButton}") {
+                setAttribute(key="reloadJS" value="if (!document.getElementById('Masthead:statusPanel:restartLink') || !document.getElementById('Masthead:logoutLink')) {reloadHeaderFrame();}");
+            }
+        }
+        if ("!(#{sessionScope._currentUpdateCountMsg}=#{sessionScope._updateCountMsg})"){
+            setAttribute(key="reloadJS" , value="reloadHeaderFrame();");
+            setSessionAttribute(key="_currentUpdateCountMsg", value="#{sessionScope._updateCountMsg}");
+        }
+
+    </ui:event>
+</event>
+
+// Need to write the title so it is updated in the browser.
+//******************************************************************************
+// Do not put a script as the first element on the page. IE will ignore it.
+//******************************************************************************
+"<div class="guiPageContent">
+    <!insert name="content">
+        Content Missing!
+    </insert>
+"</div>
+<f:verbatim>
+<script type="text/javascript">
+    var loc = top.window.location.href;
+    var index = loc.indexOf("bare=true");
+    if (index > -1) {
+        top.window.location = loc.substring(0, index);
+    }
+
+    admingui.help.pluginId = '#{pluginId}';
+    document.title = "#{guiTitle}";
+
+    #{guiTemplateOnLoad};
+    #{guiOnLoad};
+    #{requestScope.reloadJS}
+</script>
+</f:verbatim>

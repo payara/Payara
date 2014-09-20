@@ -1,0 +1,156 @@
+#
+# The list of classes to be tested when the AMX unit tests are run.
+#
+# BE SURE TO ADD NEW TESTS TO Tests.java
+#
+
+#
+# tests that are *standalone*; no server connection required, run these first
+# since implementation (server and client) depend on them.
+#
+org.glassfish.admin.amxtest.support.CoverageInfoTest
+
+# Run this before doing any tests against AMX MBeans
+org.glassfish.admin.amxtest.RunMeFirstTest
+org.glassfish.admin.amxtest.config.ConfigRunMeFirstTest
+
+
+#
+# Tests for client specific code
+#
+org.glassfish.admin.amxtest.client.ProxyTest
+org.glassfish.admin.amxtest.client.ProxyFactoryTest
+
+
+#
+# Logging
+#
+#org.glassfish.admin.amxtest.ext.logging.LogMBeanTest
+org.glassfish.admin.amxtest.ext.logging.LoggingTest
+org.glassfish.admin.amxtest.ext.logging.LoggingHelperTest
+org.glassfish.admin.amxtest.ext.logging.StatefulLoggingHelperTest
+
+#
+# Top level tests
+#
+org.glassfish.admin.amxtest.TestTemplateTest
+org.glassfish.admin.amxtest.DomainRootTest
+
+#
+# Tests for Deployment.  Do this before other generic tests
+# because they deploy a number of apps that will then be
+# subsequently tested.
+#
+#org.glassfish.admin.amxtest.deploy.DeploymentProgressTest
+#org.glassfish.admin.amxtest.deploy.DeploymentSourceTest
+#org.glassfish.admin.amxtest.deploy.DeploymentStatusTest
+#org.glassfish.admin.amxtest.deploy.DeploymentMgrTest
+
+#
+# Tests for interfaces defined in com.sun.appserv.management.base
+#
+org.glassfish.admin.amxtest.base.AMXTest
+org.glassfish.admin.amxtest.base.GetSetAttributeTest
+org.glassfish.admin.amxtest.base.ContainerTest
+org.glassfish.admin.amxtest.base.GenericTest
+org.glassfish.admin.amxtest.config.PropertiesAccessTest
+org.glassfish.admin.amxtest.config.SystemPropertiesAccessTest
+org.glassfish.admin.amxtest.base.UploadDownloadMgrTest
+org.glassfish.admin.amxtest.base.BulkAccessTest
+org.glassfish.admin.amxtest.base.QueryMgrTest
+org.glassfish.admin.amxtest.base.NotificationEmitterServiceTest
+org.glassfish.admin.amxtest.base.NotificationServiceMgrTest
+org.glassfish.admin.amxtest.base.NotificationServiceTest
+org.glassfish.admin.amxtest.base.ListenerTest
+org.glassfish.admin.amxtest.client.MiscTest
+
+#
+# Tests for Monitoring
+#
+#org.glassfish.admin.amxtest.monitor.ComSunAppservMonitorTest
+org.glassfish.admin.amxtest.monitor.StatisticTest
+org.glassfish.admin.amxtest.monitor.MonitorTest
+org.glassfish.admin.amxtest.monitor.JMXMonitorMgrTest
+
+#
+# Tests for JSR 77
+#
+org.glassfish.admin.amxtest.j2ee.J2EETest
+org.glassfish.admin.amxtest.j2ee.ServletTest
+
+
+
+#
+# Tests for configuration
+#
+org.glassfish.admin.amxtest.config.DanglingRefsTest
+org.glassfish.admin.amxtest.helper.RefHelperTest
+#org.glassfish.admin.amxtest.config.ComSunAppservConfigTest
+org.glassfish.admin.amxtest.config.EnabledTest
+org.glassfish.admin.amxtest.config.DescriptionTest
+org.glassfish.admin.amxtest.config.LibrariesTest
+org.glassfish.admin.amxtest.config.DomainConfigTest
+org.glassfish.admin.amxtest.config.ConfigConfigTest
+org.glassfish.admin.amxtest.config.SecurityServiceConfigTest
+org.glassfish.admin.amxtest.config.MessageSecurityConfigTest
+org.glassfish.admin.amxtest.config.StandaloneServerConfigTest
+org.glassfish.admin.amxtest.config.ClusteredServerConfigTest
+org.glassfish.admin.amxtest.config.CustomMBeanConfigTest
+org.glassfish.admin.amxtest.config.ConnectorResourceConfigTest
+org.glassfish.admin.amxtest.config.ReferencesTest
+org.glassfish.admin.amxtest.config.HTTPServiceConfigTest
+org.glassfish.admin.amxtest.config.HTTPListenerConfigTest
+org.glassfish.admin.amxtest.config.ClusterConfigTest
+org.glassfish.admin.amxtest.config.SSLConfigTest
+org.glassfish.admin.amxtest.config.JMXConnectorConfigTest
+org.glassfish.admin.amxtest.config.IIOPListenerConfigTest
+org.glassfish.admin.amxtest.config.HTTPListenerConfigTest
+org.glassfish.admin.amxtest.config.AuditModuleConfigTest
+org.glassfish.admin.amxtest.config.AuthRealmConfigTest
+org.glassfish.admin.amxtest.config.JavaConfigTest
+org.glassfish.admin.amxtest.config.ProfilerConfigTest
+org.glassfish.admin.amxtest.config.VirtualServerConfigTest
+org.glassfish.admin.amxtest.config.JACCProviderConfigTest
+org.glassfish.admin.amxtest.config.AdminObjectResourceConfigTest
+org.glassfish.admin.amxtest.config.JDBCResourceConfigTest
+org.glassfish.admin.amxtest.config.MailResourceConfigTest
+org.glassfish.admin.amxtest.config.ConnectorConnectionPoolConfigTest
+org.glassfish.admin.amxtest.config.JDBCConnectionPoolConfigTest
+org.glassfish.admin.amxtest.config.PersistenceManagerFactoryResourceConfigTest
+org.glassfish.admin.amxtest.config.JNDIResourceConfigTest
+org.glassfish.admin.amxtest.config.ThreadPoolConfigTest
+org.glassfish.admin.amxtest.config.AvailabilityServiceConfigTest
+org.glassfish.admin.amxtest.config.LBTest
+org.glassfish.admin.amxtest.config.ResourceAdapterConfigTest
+org.glassfish.admin.amxtest.config.ConnectorConnectionPoolConfigTest
+org.glassfish.admin.amxtest.config.SecurityMapConfigTest
+org.glassfish.admin.amxtest.config.CustomResourceConfigTest
+org.glassfish.admin.amxtest.config.ConnectorServiceConfigTest
+org.glassfish.admin.amxtest.config.DiagnosticServiceConfigTest
+org.glassfish.admin.amxtest.config.NodeAgentConfigTest
+
+
+#
+# Tests for client performance
+#
+org.glassfish.admin.amxtest.client.PerformanceTest
+
+
+#
+# Test for callflow
+#
+#org.glassfish.admin.amxtest.monitor.CallFlowMonitorTest
+
+# run again, to hit any MBeans created during testing
+org.glassfish.admin.amxtest.base.GenericTest
+org.glassfish.admin.amxtest.base.AMXTest
+org.glassfish.admin.amxtest.base.GetSetAttributeTest
+
+
+# do this last!!!
+org.glassfish.admin.amxtest.RunMeLastTest
+
+
+
+
+

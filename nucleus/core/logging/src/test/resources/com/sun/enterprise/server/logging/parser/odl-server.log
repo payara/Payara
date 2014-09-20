@@ -1,0 +1,80 @@
+[2012-10-19T15:33:26.194-0400] [AS] [NOTIFICATION] [NCLS-LOGGING-00009] [javax.enterprise.logging] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675206194] [levelValue: 800] Running GlassFish Version: GlassFish Server Open Source Edition  4.0  (build sanshriv-private)
+[2012-10-19T15:33:26.198-0400] [AS] [NOTIFICATION] [NCLS-LOGGING-00010] [javax.enterprise.logging] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675206198] [levelValue: 800] Server log file is using Formatter class: com.sun.enterprise.server.logging.ODLLogFormatter
+[2012-10-19T15:33:26.572-0400] [AS] [NOTIFICATION] [] [com.sun.enterprise.config.modularity.StartupConfigBeanOverrider] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675206572] [levelValue: 800] Starting the config overriding procedure
+[2012-10-19T15:33:26.831-0400] [AS] [NOTIFICATION] [] [com.sun.enterprise.config.modularity.StartupConfigBeanOverrider] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675206831] [levelValue: 800] Finished the config overriding procedure
+[2012-10-19T15:33:27.104-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.services.impl] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207104] [levelValue: 800] Grizzly Framework 2.3 started in: 85ms - bound to [/0.0.0.0:8,080]
+[2012-10-19T15:33:27.139-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.services.impl] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207139] [levelValue: 800] Grizzly Framework 2.3 started in: 8ms - bound to [/0.0.0.0:8,181]
+[2012-10-19T15:33:27.148-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.services.impl] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207148] [levelValue: 800] Grizzly Framework 2.3 started in: 3ms - bound to [/0.0.0.0:4,848]
+[2012-10-19T15:33:27.177-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.admin.adapter] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207177] [levelValue: 800] The Admin Console is already installed, but not yet loaded.
+[2012-10-19T15:33:27.210-0400] [AS] [NOTIFICATION] [realm.loaded.successfully] [javax.enterprise.system.core.security.com.sun.enterprise.security.auth.realm] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207210] [levelValue: 800] SEC1115: Realm [admin-realm] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.
+[2012-10-19T15:33:27.211-0400] [AS] [NOTIFICATION] [realm.loaded.successfully] [javax.enterprise.system.core.security.com.sun.enterprise.security.auth.realm] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207211] [levelValue: 800] SEC1115: Realm [file] of classtype [com.sun.enterprise.security.auth.realm.file.FileRealm] successfully created.
+[2012-10-19T15:33:27.214-0400] [AS] [NOTIFICATION] [realm.loaded.successfully] [javax.enterprise.system.core.security.com.sun.enterprise.security.auth.realm] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207214] [levelValue: 800] SEC1115: Realm [certificate] of classtype [com.sun.enterprise.security.auth.realm.certificate.CertificateRealm] successfully created.
+[2012-10-19T15:33:27.502-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.services.impl] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207502] [levelValue: 800] Grizzly Framework 2.3 started in: 2ms - bound to [/0.0.0.0:3,700]
+[2012-10-19T15:33:27.606-0400] [AS] [NOTIFICATION] [] [null] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207606] [levelValue: 800] this.makeModuleFor(org.glassfish.main.web.glue, null) returned OSGiModuleImpl:: Bundle = [org.glassfish.main.web.glue [190]], State = [READY]
+[2012-10-19T15:33:27.609-0400] [AS] [NOTIFICATION] [] [null] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207609] [levelValue: 800] this.makeModuleFor(org.glassfish.web.javax.servlet.jsp, null) returned OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.servlet.jsp [163]], State = [READY]
+[2012-10-19T15:33:27.610-0400] [AS] [NOTIFICATION] [] [null] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207610] [levelValue: 800] this.makeModuleFor(org.glassfish.web.javax.el, null) returned OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.el [116]], State = [READY]
+[2012-10-19T15:33:27.885-0400] [AS] [NOTIFICATION] [security.secmgroff] [javax.enterprise.system.core.security.com.sun.enterprise.security] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207885] [levelValue: 800] SEC1002: Security Manager is OFF.
+[2012-10-19T15:33:27.886-0400] [AS] [NOTIFICATION] [sec.service.startup.enter] [javax.enterprise.system.core.security.com.sun.enterprise.security] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207886] [levelValue: 800] SEC1010: Entering Security Startup Service
+[2012-10-19T15:33:27.889-0400] [AS] [NOTIFICATION] [policy.loading] [javax.enterprise.system.core.security.com.sun.enterprise.security] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207889] [levelValue: 800] SEC1143: Loading policy provider com.sun.enterprise.security.provider.PolicyWrapper.
+[2012-10-19T15:33:27.915-0400] [AS] [NOTIFICATION] [sec.service.startup.exit] [javax.enterprise.system.core.security.com.sun.enterprise.security] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207915] [levelValue: 800] SEC1011: Security Service(s) Started Successfully
+[2012-10-19T15:33:27.916-0400] [AS] [NOTIFICATION] [] [null] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207916] [levelValue: 800] Snifer com.sun.enterprise.security.ee.SecuritySniffer@389278a3 set up following modules: null
+[2012-10-19T15:33:27.942-0400] [AS] [NOTIFICATION] [] [null] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675207942] [levelValue: 800] Snifer org.glassfish.web.sniffer.WebSniffer@1ccb7 set up following modules: [OSGiModuleImpl:: Bundle = [org.glassfish.main.web.glue [190]], State = [READY], OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.servlet.jsp [163]], State = [READY], OSGiModuleImpl:: Bundle = [org.glassfish.web.javax.el [116]], State = [READY]]
+[2012-10-19T15:33:28.156-0400] [AS] [NOTIFICATION] [AS-WEB-00022] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208156] [levelValue: 800] Created HTTP listener http-listener-1 on host/port 0.0.0.0:8080
+[2012-10-19T15:33:28.201-0400] [AS] [NOTIFICATION] [AS-WEB-00022] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208201] [levelValue: 800] Created HTTP listener http-listener-2 on host/port 0.0.0.0:8181
+[2012-10-19T15:33:28.206-0400] [AS] [NOTIFICATION] [AS-WEB-00022] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208206] [levelValue: 800] Created HTTP listener admin-listener on host/port 0.0.0.0:4848
+[2012-10-19T15:33:28.231-0400] [AS] [NOTIFICATION] [AS-WEB-00024] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208231] [levelValue: 800] Created virtual server server
+[2012-10-19T15:33:28.234-0400] [AS] [NOTIFICATION] [AS-WEB-00024] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208234] [levelValue: 800] Created virtual server __asadmin
+[2012-10-19T15:33:28.627-0400] [AS] [NOTIFICATION] [] [org.apache.catalina.realm.JAASRealm] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208627] [levelValue: 800] Setting JAAS app name glassfish-web
+[2012-10-19T15:33:28.628-0400] [AS] [NOTIFICATION] [AS-WEB-00025] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675208628] [levelValue: 800] Virtual server server loaded default web module 
+[2012-10-19T15:33:29.150-0400] [AS] [NOTIFICATION] [AS-WEB-00324] [javax.enterprise.web] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675209150] [levelValue: 800] Loading application [hello-world] at [/hello-world]
+[2012-10-19T15:33:29.151-0400] [AS] [NOTIFICATION] [loading.application.time] [javax.enterprise.system.core.com.sun.enterprise.v3.server] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675209151] [levelValue: 800] CORE10010: Loading application hello-world done in 1,599 ms
+[2012-10-19T15:33:29.180-0400] [AS] [NOTIFICATION] [] [org.glassfish.ha.store.spi.BackingStoreFactoryRegistry] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675209180] [levelValue: 800] Registered org.glassfish.ha.store.adapter.cache.ShoalBackingStoreProxy for persistence-type = replicated in BackingStoreFactoryRegistry
+[2012-10-19T15:33:29.195-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.server] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675209195] [levelValue: 800] GlassFish Server Open Source Edition  4.0  (sanshriv-private) startup time : Felix (4,366ms), startup services(3,123ms), total(7,489ms)
+[2012-10-19T15:33:29.384-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.core.com.sun.enterprise.v3.services.impl] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675209384] [levelValue: 800] Grizzly Framework 2.3 started in: 109ms - bound to [/0.0.0.0:7,676]
+[2012-10-19T15:33:30.482-0400] [AS] [NOTIFICATION] [] [com.sun.enterprise.glassfish.bootstrap.osgi] [tid: _ThreadID=1 _ThreadName=main] [timeMillis: 1350675210482] [levelValue: 800] Registered com.sun.enterprise.glassfish.bootstrap.osgi.EmbeddedOSGiGlassFishImpl@651a9ec3 as OSGi service registration: org.apache.felix.framework.ServiceRegistrationImpl@521352d8
+[2012-10-19T15:33:30.518-0400] [AS] [NOTIFICATION] [AS-JMX-00005] [javax.enterprise.system.jmx] [tid: _ThreadID=39 _ThreadName=Thread-7] [timeMillis: 1350675210518] [levelValue: 800] JMXStartupService has started JMXConnector on JMXService URL service:jmx:rmi://adc6260176.us.oracle.com:8686/jndi/rmi://adc6260176.us.oracle.com:8686/jmxrmi
+[2012-10-19T15:33:54.671-0400] [AS] [WARNING] [] [com.oracle.logging] [tid: _ThreadID=64 _ThreadName=http-listener-1(1)] [timeMillis: 1350675234671] [levelValue: 900] [[
+Hello World XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX0
+java.lang.Exception
+	at org.apache.jsp.hello_jsp._jspService(hello_jsp.java:71)
+	at org.apache.jasper.runtime.HttpJspBase.service(HttpJspBase.java:111)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at org.apache.jasper.servlet.JspServletWrapper.service(JspServletWrapper.java:411)
+	at org.apache.jasper.servlet.JspServlet.serviceJspFile(JspServlet.java:473)
+	at org.apache.jasper.servlet.JspServlet.service(JspServlet.java:377)
+	at javax.servlet.http.HttpServlet.service(HttpServlet.java:790)
+	at org.apache.catalina.core.StandardWrapper.service(StandardWrapper.java:1593)
+	at org.apache.catalina.core.StandardWrapperValve.invoke(StandardWrapperValve.java:285)
+	at org.apache.catalina.core.StandardContextValve.invoke(StandardContextValve.java:175)
+	at org.apache.catalina.core.StandardPipeline.doInvoke(StandardPipeline.java:665)
+	at org.apache.catalina.core.StandardPipeline.invoke(StandardPipeline.java:604)
+	at org.apache.catalina.core.StandardHostValve.invoke(StandardHostValve.java:162)
+	at org.apache.catalina.connector.CoyoteAdapter.doService(CoyoteAdapter.java:337)
+	at org.apache.catalina.connector.CoyoteAdapter.service(CoyoteAdapter.java:240)
+	at com.sun.enterprise.v3.services.impl.ContainerMapper.service(ContainerMapper.java:172)
+	at org.glassfish.grizzly.http.server.HttpHandler.doHandle(HttpHandler.java:164)
+	at org.glassfish.grizzly.http.server.HttpServerFilter.handleRead(HttpServerFilter.java:175)
+	at org.glassfish.grizzly.filterchain.ExecutorResolver$9.execute(ExecutorResolver.java:119)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.executeFilter(DefaultFilterChain.java:265)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.executeChainPart(DefaultFilterChain.java:200)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.execute(DefaultFilterChain.java:134)
+	at org.glassfish.grizzly.filterchain.DefaultFilterChain.process(DefaultFilterChain.java:112)
+	at org.glassfish.grizzly.ProcessorExecutor.execute(ProcessorExecutor.java:77)
+	at org.glassfish.grizzly.nio.transport.TCPNIOTransport.fireIOEvent(TCPNIOTransport.java:825)
+	at org.glassfish.grizzly.strategies.AbstractIOStrategy.fireIOEvent(AbstractIOStrategy.java:112)
+	at org.glassfish.grizzly.strategies.WorkerThreadIOStrategy.run0(WorkerThreadIOStrategy.java:115)
+	at org.glassfish.grizzly.strategies.WorkerThreadIOStrategy.access$100(WorkerThreadIOStrategy.java:55)
+	at org.glassfish.grizzly.strategies.WorkerThreadIOStrategy$WorkerThreadRunnable.run(WorkerThreadIOStrategy.java:135)
+	at org.glassfish.grizzly.threadpool.AbstractThreadPool$Worker.doWork(AbstractThreadPool.java:578)
+	at org.glassfish.grizzly.threadpool.AbstractThreadPool$Worker.run(AbstractThreadPool.java:558)
+	at java.lang.Thread.run(Thread.java:722)
+]]
+[2012-10-19T15:34:19.155-0400] [AS] [NOTIFICATION] [] [org.glassfish.jersey.server.ApplicationHandler] [tid: _ThreadID=65 _ThreadName=admin-listener(1)] [timeMillis: 1350675259155] [levelValue: 800] [failed to localize] init.msg(Jersey: 2.0-m09 2012-10-15 12:52:42)
+[2012-10-19T15:34:20.127-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.tools.admin.org.glassfish.admin.rest.adapter] [tid: _ThreadID=65 _ThreadName=admin-listener(1)] [timeMillis: 1350675260127] [levelValue: 800] REST00001: Listening to REST requests at context: /command/domain
+[2012-10-19T15:34:20.235-0400] [AS] [NOTIFICATION] [] [org.hibernate.validator.internal.util.Version] [tid: _ThreadID=65 _ThreadName=admin-listener(1)] [timeMillis: 1350675260235] [levelValue: 800] HV000001: Hibernate Validator 4.3.0.Final
+[2012-10-19T15:34:20.468-0400] [AS] [NOTIFICATION] [] [javax.enterprise.system.tools.admin.com.sun.enterprise.v3.admin] [tid: _ThreadID=67 _ThreadName=Thread-13] [timeMillis: 1350675260468] [levelValue: 800] Server shutdown initiated
+[2012-10-19T15:34:20.473-0400] [AS] [NOTIFICATION] [] [com.sun.enterprise.glassfish.bootstrap.osgi] [tid: _ThreadID=67 _ThreadName=Thread-13] [timeMillis: 1350675260473] [levelValue: 800] Unregistered com.sun.enterprise.glassfish.bootstrap.osgi.EmbeddedOSGiGlassFishImpl@651a9ec3 from service registry
+[2012-10-19T15:34:20.474-0400] [AS] [NOTIFICATION] [] [javax.enterprise.logging.stdout] [tid: _ThreadID=67 _ThreadName=Thread-13] [timeMillis: 1350675260474] [levelValue: 800] FileMonitoring shutdown
+[2012-10-19T15:34:20.478-0400] [AS] [NOTIFICATION] [AS-JMX-00002] [javax.enterprise.system.jmx] [tid: _ThreadID=67 _ThreadName=Thread-13] [timeMillis: 1350675260478] [levelValue: 800] JMXStartupService: Stopped JMXConnectorServer: null
+[2012-10-19T15:34:20.479-0400] [AS] [NOTIFICATION] [AS-JMX-00001] [javax.enterprise.system.jmx] [tid: _ThreadID=67 _ThreadName=Thread-13] [timeMillis: 1350675260479] [levelValue: 800] JMXStartupService and JMXConnectors have been shut down.
+[2012-10-19T15:34:20.586-0400] [AS] [NOTIFICATION] [] [javax.enterprise.logging.stdout] [tid: _ThreadID=67 _ThreadName=Thread-13] [timeMillis: 1350675260586] [levelValue: 800] JdbcRuntimeExtension,  getAllSystemRAResourcesAndPools = [GlassFishConfigBean.org.glassfish.jdbc.config.JdbcResource, GlassFishConfigBean.org.glassfish.jdbc.config.JdbcResource, GlassFishConfigBean.org.glassfish.jdbc.config.JdbcConnectionPool, GlassFishConfigBean.org.glassfish.jdbc.config.JdbcConnectionPool]

@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<console-config id="common">
+
+    <!-- add the property sheet for deployment page, specific for web app -->
+        <integration-point
+                id="common_deploy"
+                type="org.glassfish.admingui:uploadPropertySheet"
+                priority="600"
+                parentId="form"
+                content="applications/deploymentOther.jsf"
+        />
+
+        <!-- add the dropdown option for selecting the type of app to deploy
+             in the form of  label:value
+         -->
+        <integration-point
+                id="common_deploy_type"
+                type="org.glassfish.admingui:appTypeDropdown"
+                priority="1000"
+                parentId="form"
+                content="other|org.glassfish.admingui.core.Strings|deploy.type.other"
+
+        />
+
+        <integration-point
+                id="common_edit_app"
+                type="org.glassfish.admingui:editAppPage"
+                content="other:common/applications/editDefaultType.jsf"
+        />
+
+
+        <!-- Add a link under the Configuration Page, matching the tree node order  -->
+        <integration-point
+                id="common_jvmConfigurationLink"
+                type="org.glassfish.admingui:configuration"
+                priority="350"
+                parentId="propSheetSection"
+                content="configuration/jvmConfigurationLink.jsf"
+        />
+        <integration-point
+            id="common_loggerConfigurationLink"
+            type="org.glassfish.admingui:configuration"
+            priority="450"
+            parentId="propSheetSection"
+            content="configuration/loggerConfigurationLink.jsf"
+            />
+        <integration-point
+                id="common_securityLink"
+                type="org.glassfish.admingui:configuration"
+                priority="650"
+                parentId="propSheetSection"
+                content="security/configurationLink.jsf"
+        />
+        <integration-point
+                id="common_adminServiceLink"
+                type="org.glassfish.admingui:configuration"
+                priority="50"
+                parentId="propSheetSection"
+                content="configuration/jmxConfigurationLink.jsf"
+        />
+        <integration-point
+                id="web_MonitorConfigurationLink"
+                type="org.glassfish.admingui:configuration"
+                priority="500"
+                parentId="propSheetSection"
+                content="monitor/configurationLink.jsf"
+        />
+        <integration-point
+                id="sysPropsConfigurationLink"
+                type="org.glassfish.admingui:configuration"
+                priority="700"
+                parentId="propSheetSection"
+                content="configuration/systemPropsConfigurationLink.jsf"
+        />
+	<!-- navNode IPs -->
+        
+        <integration-point
+                id="common_domain"
+                type="org.glassfish.admingui:navNode"
+                priority="170"
+                parentId="tree"
+                content="pluginTreeNodeDomain.jsf" />
+        <integration-point
+                id="common_server"
+                type="org.glassfish.admingui:navNode"
+                priority="200"
+                parentId="tree"
+                content="pluginTreeNodeServer.jsf" />
+        <integration-point
+                id="common_apps"
+                type="org.glassfish.admingui:navNode"
+                priority="500"
+                parentId="tree"
+                content="pluginTreeNodeApps.jsf" />
+        <integration-point
+                id="monitoring_data"
+                type="org.glassfish.admingui:navNode"
+                priority="550"
+                parentId="tree"
+                content="pluginTreeNodeMonitoringInfo.jsf" />
+        <integration-point
+                id="common_resources"
+                type="org.glassfish.admingui:navNode"
+                priority="600"
+                parentId="tree"
+                content="pluginTreeNodeResources.jsf" />
+        <integration-point
+                id="common_config"
+                type="org.glassfish.admingui:navNode"
+                priority="700"
+                parentId="tree"
+                content="pluginTreeNodeConfigurations.jsf" />
+        <integration-point
+                id="common_jvm"
+                type="org.glassfish.admingui:navNode"
+                priority="350"
+                parentId="#{configNameId}"
+                content="pluginTreeNodeJVM.jsf" />
+        <integration-point
+                id="common_logger"
+                type="org.glassfish.admingui:navNode"
+                priority="450"
+                parentId="#{configNameId}"
+                content="pluginTreeNodeLogger.jsf" />
+        <integration-point
+                id="common_security"
+                type="org.glassfish.admingui:navNode"
+                priority="650"
+                parentId="#{configNameId}"
+                content="pluginTreeNodeSecurity.jsf" />
+        <integration-point
+                id="common_adminService"
+                type="org.glassfish.admingui:navNode"
+                priority="50"
+                parentId="#{configNameId}"
+                content="pluginTreeNodeAdminService.jsf" />
+        <integration-point
+                id="monitor"
+                type="org.glassfish.admingui:navNode"
+                priority="500"
+                parentId="#{configNameId}"
+                content="monitor/monitoringNode.jsf" />
+        <integration-point
+                id="sysprops_node"
+                type="org.glassfish.admingui:navNode"
+                priority="700"
+                parentId="#{configNameId}"
+                content="configuration/pluginTreeNodeConfigSysProps.jsf"/>
+
+
+        <integration-point
+                id="monitoring"
+                type="org.glassfish.admingui:serverInstTab"
+                priority="20"
+                parentId="serverInstTabs"
+                content="monitor/monitoringTab.jsf" />
+        <integration-point
+                id="monitor_appstats"
+                type="org.glassfish.admingui:serverInstTab"
+                priority="20"
+                parentId="monitoring"
+                content="monitor/monitoringAppStatsTab.jsf" />
+        <integration-point
+                id="monitor_server"
+                type="org.glassfish.admingui:serverInstTab"
+                priority="30"
+                parentId="monitoring"
+                content="monitor/monitoringServerTab.jsf" />
+       <integration-point
+                id="monitor_resources"
+                type="org.glassfish.admingui:serverInstTab"
+                priority="40"
+                parentId="monitoring"
+                content="monitor/monitoringResourcesTab.jsf" />
+        <integration-point
+                id="clusterInstanceMonitoring"
+                type="org.glassfish.admingui:clusterInstTab"
+                priority="30"
+                parentId="clusterInstanceTabs"
+                content="monitor/clusterInstanceMonitoringTab.jsf" />
+        <integration-point
+                id="standaloneInstanceMonitoring"
+                type="org.glassfish.admingui:standaloneInstTab"
+                priority="30"
+                parentId="standaloneInstanceTabs"
+                content="monitor/standaloneInstanceMonitoringTab.jsf" />
+
+        <!-- target selection if any cluster/standalone instance is presence -->
+        <integration-point
+                id="deployTargetSection"
+                type="org.glassfish.admingui:uploadPropertySheetTargetSection"
+                priority="800"
+                parentId="form"
+                content="/shared/targetSectionForCreate.inc"/>
+        <integration-point
+                id="TargetSectionForResource"
+                type="org.glassfish.admingui:TargetSectionForResource"
+                priority="800"
+                parentId="form"
+                content="/shared/targetSectionForCreate.inc"/>
+
+</console-config>

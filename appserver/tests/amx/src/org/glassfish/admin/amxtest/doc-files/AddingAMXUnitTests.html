@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+    <meta http-equiv="content-type"
+          content="text/html; charset=ISO-8859-1">
+    <title>Adding an AMX Unit Test</title>
+</head>
+<body>
+<div style="text-align: center;">
+<h1>Adding AMX Unit Tests</h1>
+
+<div style="text-align: left;"><span style="font-family: monospace;">contact:
+</span><a
+        href="mailto:lloyd.chambers@sun.com?subject=Adding%20AMX%20Unit%20Tests"
+        style="font-family: monospace;">lloyd.chambers@sun.com</a><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">
+Last updated: 23 June 2005<br>
+<br>
+</span><span style="font-weight: bold;">NOTE</span>: the
+hyperlinks in this document <span style="color: rgb(255, 0, 0);">assume
+you are reading it from its location
+in the <span style="font-weight: bold;">source </span>tree</span> eg <span
+        style="font-family: monospace;">glassfish/admin/mbeanapi-impl/tests/org.glassfish.admin.amxtest</span>.<span
+        style="font-family: monospace;"><br>
+</span>
+
+<h2 style="font-weight: bold;">1.&nbsp; Introduction</h2>
+The Appserver Management Extensions (AMX) rely heavily on detailed
+JUnit unit tests to prove that they work correctly. No modification,
+addition or removal of code from AMX or underlying support code should
+be checked in without also <a target="_blank"
+                              href="RunningUnitTests.html">running </a>the
+unit tests.<br>
+<br>
+<span style="font-weight: bold;"><span style="color: rgb(255, 0, 0);">Any
+code change which involves a new AMX interface, method or Attribute
+must not be checked in without either (1) verifying that an existing
+unit test adequately covers the new addition, or (2) writing a new unit
+test which thoroughly tests the new addition.&nbsp; The code must also
+be reviewed by amx-dev@sun.com.</span><br>
+</span>
+
+<h2 style="font-weight: bold;">2.&nbsp; Adding Tests</h2>
+
+<h3>2.1&nbsp; Adding a new test method to an existing unit test</h3>
+Adding a new test <span style="font-style: italic;">method </span>is
+easy. Simple add a method of the appropriate form to an existing unit
+test:<br>
+<br>
+<span style="font-family: monospace;">&nbsp; public void</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">testFoo()</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">{</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; // test code
+here</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">}</span><br>
+<br>
+
+<h2>2.2 Adding a new unit test class</h2>
+A new unit test should be added whenever you add a new class in <span
+        style="font-family: monospace;">com.sun.appserv.management</span>, or
+any of its subpackages.&nbsp; There are exceptions, but generally
+speaking a unit test class should test only a single class. Examples of
+exceptions include <span style="font-family: monospace;">AMXTest</span>
+and <span style="font-family: monospace;">GenericTest</span>, which
+test all of AMX generically, regardless of the specific interface.<br>
+<br>
+You may want to start by duplicating the file <a target="_blank"
+                                                 href="../TestTemplateTest.java">TestTemplateTest.java</a>.<br>
+<br>
+Your new unit test should extend one of the classes in the table below:<br>
+<br>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+       cellspacing="2">
+    <tbody>
+        <tr>
+            <td style="vertical-align: top; font-weight: bold;">Parent class<br>
+            </td>
+            <td style="vertical-align: top; font-weight: bold;">Discussion<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><span
+                    style="font-family: monospace;">junit.framework.TestCase</span></td>
+            <td style="vertical-align: top;">Extend <span
+                    style="font-family: monospace;">junit.framework.TestCase</span> if
+                your unit test is a standalone test which doesn't connect to the server
+                and doesn't make use of any JMX MBeanServerConnection.<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; font-family: monospace;">
+                org.glassfish.admin.amxtest.util.jmx.JMXTestBase<br>
+            </td>
+            <td style="vertical-align: top;">Extend <span
+                    style="font-family: monospace;">JMXTestBase </span>only if your unit
+                test involves generic JMX, with nothing specific to Appserver.&nbsp;
+                This should be very rare.<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top; font-family: monospace;">org.glassfish.admin.amxtest.AMXTestBase</td>
+            <td style="vertical-align: top;">All unit tests which depend on a
+                live connection to the AppServer should extend <span
+                    style="font-family: monospace;">AMXTestBase.</span></td>
+        </tr>
+    </tbody>
+</table>
+<br>
+Your new class should thus be of the form:<span
+        style="font-family: monospace;"></span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">public final class <span
+        style="font-style: italic;">ClassBeingTested</span>Test extends <span
+        style="font-style: italic;">appropriate-parent-class</span></span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">{</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; public</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; </span><span
+        style="font-family: monospace;"><span style="font-style: italic;">ClassBeingTested</span></span><span
+        style="font-family: monospace;">Test()</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; {</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; }</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; public void</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; testMethodA()</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; {</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; // test code</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; }</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;"><br>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; public void</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; testMethodB()</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; {</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp; // test code</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; }</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">}<br>
+<br>
+</span>You class should generally reside in a <span
+        style="font-family: monospace;">org.glassfish.admin.amxtest</span>
+subpackage <span style="font-style: italic;">which parellels the
+package of the class being tested</span>.&nbsp; For example, here are
+the classe and its unit test for SetUtil:<br>
+<br>
+<span style="font-family: monospace;">com.sun.appserv.management.util.misc.SetUtil</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">org.glassfish.admin.amxtest.util.misc.SetUtilTest<br>
+</span>
+
+<h2>2.3&nbsp; Adding your new unit test to the official list</h2>
+
+<h3>2.3.1 First, make sure your test compiles:</h3>
+<span style="font-family: monospace;">G:\glassfish\admin\mbeanapi-impl&gt;ant
+compile-tests</span><br style="font-family: monospace;">
+<span style="font-family: monospace;">Buildfile: build.xml</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">init:</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">compile:</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">compile-tests:</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp; [delete] Deleting
+directory G:\glassfish\admin\mbeanapi-impl\build\tests</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [mkdir]
+Created dir: G:\glassfish\admin\mbeanapi-impl\build\tests</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac]
+Compiling 80 source files to
+G:\glassfish\admin\mbeanapi-impl\build\tests</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+* uses or overrides a deprecated API.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+Recompile with -Xlint:deprecation for details.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+Some input files use unchecked or unsafe operations.</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [javac] Note:
+Recompile with -Xlint:unchecked for details.</span><br
+        style="font-family: monospace;">
+<br style="font-family: monospace;">
+<span style="font-family: monospace;">BUILD SUCCESSFUL</span><br
+        style="font-family: monospace;">
+<span style="font-family: monospace;">Total time: 3 seconds<br>
+</span>
+
+<h3>2.3.1 Next add your test to the official list</h3>
+Add your class to <a target="_blank" href="../Tests.java"><span
+        style="font-family: monospace;">org.glassfish.admin.amxtest.Tests</span></a>.&nbsp;
+Choose a position in the list that is appropriate; more basic
+standalone tests should come first.&nbsp; Facilities your new
+functionality depends on should be unit-tested before your test,
+etc.&nbsp; This is the "master list" that is consulted when the unit
+tests are run to warn if any unit tests are being omitted when the unit
+tests are run.<br>
+<br>
+Also add your test to <a target="_blank"
+                         href="../../../../../../amxtest.classes"><span
+        style="font-family: monospace;">amxtest.classes</span></a>.&nbsp; This
+file contains the actual unit tests that will be run when "<span
+        style="font-family: monospace;">ant
+run-tests</span>" is invoked.&nbsp; Due to the risk of someone checking
+in
+<span style="font-family: monospace;">amxtest.classes</span> with a
+reduced list of tests, <a target="_blank" href="../Tests.java"><span
+        style="font-family: monospace;">org.glassfish.admin.amxtest.Tests</span></a>
+is always consulted and warnings issued about the missing tests.&nbsp;
+When you checkin, make sure there are no such warnings.<br>
+<br>
+The best practise is to never modify <span
+        style="font-family: monospace;">amxtest.classes</span> (other than
+adding items), but instead to have your own "<span
+        style="font-family: monospace;">myamxtest.classes</span>" and modify <span
+        style="font-family: monospace;">amxtest.properties</span> to reference
+it instead of <span style="font-family: monospace;">amxtest.classes</span>.<br>
+
+<h3>2.3.2 Run the tests</h3>
+Please see <a target="_blank" href="RunningUnitTests.html">RunningUnitTests.html</a>.<br>
+<br>
+If you see any failing unit tests, be sure you haven't created the
+problem by first mailing <a
+        href="mailto:amx-dev@sun.com?subject=AMX%20unit%20test%20failure%28s%29">amx-dev@sun.com</a>.
+If you believe the problem is unrelated to your work, add the failure
+to the <a target="_blank" href="RunningUnitTests.html#KnownIssues">Known
+    Issues</a>
+section of RunningUnitTests.html and check in the revised file.<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<span style="font-family: monospace;"><br>
+</span><br>
+<span style="font-family: monospace;"><br>
+</span><br>
+<br>
+<br>
+<br>
+
+<h2><br>
+</h2>
+<br>
+<br>
+<span style="font-family: monospace;"><br>
+</span></div>
+</div>
+</body>
+</html>

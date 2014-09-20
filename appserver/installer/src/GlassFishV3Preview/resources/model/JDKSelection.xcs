@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<oor:component-schema oor:version="1.1" oor:name="JDKSelection" oor:package="org.openinstaller.JDKSelection"
+ xsi:schemaLocation="http://openoffice.org/2001/registry"
+ xmlns:xs="http://www.w3.org/2001/XMLSchema"
+ xmlns:oor="http://openoffice.org/2001/registry"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xml:lang='en-US'>
+ <component>
+     <group oor:name="directory">
+        <prop oor:name="JDK_FROM_LIST_CHOICE" oor:type="xs:boolean">
+          <value>false</value>
+          <info>
+            <desc xml:lang="en-US">JDK Home Directory Path.</desc>
+          </info>
+        </prop>
+        <prop oor:name="JDK_TYPED_IN_CHOICE" oor:type="xs:boolean">
+          <value>false</value>
+          <info>
+            <desc xml:lang="en-US">JDK Home Directory Path.</desc>
+          </info>
+        </prop>
+        <prop oor:name="JDK_LIST" oor:type="xs:string" oor:nillable="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">JDK List.</desc>
+          </info>
+        </prop>
+        <prop oor:name="JDK_VERSIONRANGE" oor:type="xs:string" oor:nillable="true">
+          <value>JDK[1.7--INFINITY)</value>
+          <info>
+            <desc xml:lang="en-US">Version range to be reported in the JDK list.</desc>
+          </info>
+        </prop>
+        <prop oor:name="JDK_TYPE_IN" oor:type="xs:string" oor:nillable="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">JDK List.</desc>
+          </info>
+          <actions>
+            <onSet><![CDATA[
+            import org.openinstaller.provider.dependency.JavaDetection;
+            import org.openinstaller.util.EnhancedException;
+            import org.openinstaller.provider.conf.ConfigHelper;
+
+            theValue = (String) thisProperty.getUnconfirmedValue();
+            theChoice = ConfigHelper.getBooleanValue("JDKSelection.directory.JDK_TYPED_IN_CHOICE");
+            theSpec   = ConfigHelper.getStringValue("JDKSelection.directory.JDK_VERSIONRANGE");
+            if (theChoice) {
+              if (!new JavaDetection(theSpec).isValidDir(theValue)) {
+                throw new EnhancedException("INVALID_JAVA_PER_CONSTRAINTS", new String[] {"dir=" + theValue});
+              }
+            }
+            ]]></onSet>
+          </actions>
+        </prop>
+        <prop oor:name="HIDDEN_JDK" oor:type="xs:string" oor:nillable="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">JDK Home Directory Path.</desc>
+          </info>
+          <actions>
+            <onSet><![CDATA[
+            import java.io.File;
+            import org.openinstaller.provider.dependency.JavaDetection;
+            import org.openinstaller.provider.dependency.DependencyControl;
+            import org.openinstaller.util.EnhancedException;
+            import org.openinstaller.provider.conf.ConfigHelper;
+
+            theValue = (String) thisProperty.getUnconfirmedValue();
+            theChoice2 = ConfigHelper.getBooleanValue("JDKSelection.directory.JDK_FROM_LIST_CHOICE");
+            theInstallHome = ConfigHelper.getStringValue("InstallHome.directory.INSTALL_HOME");
+            theJDK = ConfigHelper.getStringValue("JDK.Installation.JDK_HOME_BASEDIR");
+            theValueToSet = null;
+            selectJDKToInstall = null;
+           if (theChoice2) {
+              theValueToSet = theValue;
+              selectJDKToInstall = "false";
+            } else {
+              try {
+                theValueToSet = ConfigHelper.getStringValue("JDKSelection.directory.JDK_TYPE_IN");
+              } catch (EnhancedException e) {
+                theValueToSet = "";
+              }
+              selectJDKToInstall = "false";
+            }
+            ConfigHelper.setValue("JDKSelection.directory.SELECTED_JDK", theValueToSet);
+            ConfigHelper.setValue("JDKSelection.directory.SELECT_JDK_TO_INSTALL", selectJDKToInstall);
+
+            /* de-select jdk if the user chooses an existing one */
+            if (selectJDKToInstall.equalsIgnoreCase("true")) {
+               /* user chose to install bundled jdk so let's select it */
+                ctl = new DependencyControl(DependencyControl.COMMAND.FORCE_SELECT_ELEMENT, "jdk5");
+                thereq = new BusRequest("Select JDK", ctl);
+                bus.publishRequest(thereq, "svc://general/Dependency");
+            } else {
+                /* user chose existing jdk, so we should not install a new one */
+                ctl = new DependencyControl(DependencyControl.COMMAND.FORCE_DESELECT_ELEMENT, "jdk5");
+                thereq = new BusRequest("Deselect JDK", ctl);
+                bus.publishRequest(thereq, "svc://general/Dependency");
+            }
+
+            ]]></onSet>
+          </actions>
+        </prop>
+        <prop oor:name="SELECTED_JDK" oor:type="xs:string" oor:nillable="true">
+          <value/>
+          <info>
+            <desc xml:lang="en-US">JDK List.</desc>
+          </info>
+        </prop>
+        <prop oor:name="SELECT_JDK_TO_INSTALL" oor:type="xs:boolean">
+          <value>true</value>
+          <info>
+            <desc xml:lang="en-US">Denotes the presence (or absence) of embedded JDK</desc>
+          </info>
+        </prop>
+        <prop oor:name="ONLOAD" oor:type="xs:string" oor:nillable="false">
+         <value>true</value>
+         <actions>
+           <onSet><![CDATA[
+	    /* JDKSelection.xcs */
+            import java.util.List;
+            import java.util.ArrayList;
+            import org.openinstaller.provider.conf.ConfigHelper;
+            import org.openinstaller.bus.ControlBus;
+            import org.openinstaller.bus.BusRequest;
+            import org.openinstaller.bus.BusResponse;
+            import org.openinstaller.util.EnhancedException;
+            import org.openinstaller.provider.dependency.JavaDetection;
+
+            run(){
+            }
+            return (Runnable)this;]]>
+           </onSet>
+         </actions>
+       </prop>
+     </group>
+ </component>
+</oor:component-schema>
+
+

@@ -1,0 +1,120 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- uploadCommonFields.jsf -->
+
+<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
+    <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.ear['name']}" styleClass="required" required="#{true}"
+        onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{appNameId});
+        />
+    </sun:textField>
+</sun:property>
+
+<sun:property id="vsProp"  rendered="#{pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.virtualServerLabel}" helpText="$resource{i18n.deploy.vsHelp}">
+    <sun:listbox id="vs" immediate="#{true}" multiple="#{true}"  rows="$int{4}"
+        labels="$pageSession{availableVS}"
+        selected="#{pageSession.ear['virtualservers']}" >
+        <!beforeCreate
+            getVsForDeployment(result="#{pageSession.vsList}");
+            getListBoxOptions(
+                availableList="#{pageSession.vsList}",
+                selectedCommaString="",
+                availableListResult="#{pageSession.availableVS}",
+                selectedOptions="#{pageSession.ear['virtualservers']}"
+                addEmptyFirstChoice="true");
+        />
+    </sun:listbox>
+</sun:property>
+
+<sun:property id="enableProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.status}"  helpText="$resource{i18n.deploy.statusHelp}">
+	<sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.ear['enabled']}" selectedValue="true" >
+        <!beforeCreate
+            mapPut(map="#{pageSession.ear}", key="enabled", value="true" );
+        />
+    </sun:checkbox>
+</sun:property>
+
+<sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
+    <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ear['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="availability"  rendered="#{!pageSession.onlyDASExist}"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
+    <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ear['availabilityEnabled']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="jw" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.JavaWebStart}" helpText="$resource{i18n.deploy.JavaWebStartHelp}">
+	<sun:checkbox id="jwc" label="$resource{i18n.common.Enabled}" selected="#{pageSession.ear['PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="precmplProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.precompile}" helpText="$resource{i18n.deploy.PrecompileHelp}">
+	<sun:checkbox id="precompileJSP" label=" " selected="#{pageSession.ear['precompilejsp']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="v2" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.run}" helpText="$resource{i18n.deploy.runHelp}">
+        <sun:checkbox id="ver2" label=" " selected="#{pageSession.ear['verify']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="compatibility" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.compatibility}" helpText="$resource{i18n.deploy.compatibilityHelp}">
+        <sun:checkbox id="compatibility" label=" " selected="#{pageSession.ear['PROPERTY-compatibility']}" selectedValue="v2" />
+</sun:property>
+
+<sun:property id="force" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceRedeploy}" helpText="$resource{i18n.deploy.forceRedeployHelp}">
+        <sun:checkbox id="force"  label=" " selected="#{pageSession.ear['force']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="keepState" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}">
+        <sun:checkbox id="keepState"  label=" " selected="#{pageSession.ear['keepState']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}" >
+	<sun:textField id="deploymentOrder" styleClass="integer" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.ear['deploymentOrder']}" />
+</sun:property>
+
+<sun:property id="librariesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}" helpText="$resource{i18n.deploy.libraryHelp}" >
+	<sun:textField id="library" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Libraries']}" text="#{pageSession.ear['libraries']}" />
+</sun:property>
+
+<sun:property id="descriptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}" helpText="$resource{i18n.deploy.descHelp}" >
+	<sun:textField id="description" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.ear['description']}" />
+</sun:property>

@@ -1,0 +1,10 @@
+This directory contains tests to check the transaction feature in JavaEE service engine.
+
+These tests require database to be up and running.
+Every test here creates a different table and drops that table in the end of the execution.
+
+Tests jse_only* have JavaEE SE as consumer as well as provider. No binding component is used in these tests.
+
+How to Run:
+1. Start appserver and start database.
+2. asant all

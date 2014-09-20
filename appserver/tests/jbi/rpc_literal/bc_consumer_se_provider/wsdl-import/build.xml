@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<!DOCTYPE project [
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!ENTITY commonBuild SYSTEM "./../../../config/common.xml">
+<!ENTITY jaxwsTools SYSTEM "./../../../config/jaxwstools.xml">
+<!ENTITY jbiproperties SYSTEM "./../../../config/common.properties">
+<!ENTITY testproperties SYSTEM "./build.properties">
+]>
+
+<project name="warservice" default="all" basedir=".">
+
+    &commonBuild;
+    &testproperties;
+    &jaxwsTools;
+    &jbiproperties;
+
+    <target name="all" depends="clean, setup, runtest,undeploy"/> 
+
+    <target name="clean">
+      <antcall target="clean-common"/>
+	  <delete dir="common:endpoint"/>
+    </target>
+
+    <target name="setup" depends="assemble-web, deploy-app, deploy-dummy-app,assemble-client"/>
+
+    <target name="compile">
+      <antcall target="compile-common">
+        <param name="src" value="common:endpoint"/>
+      </antcall>
+    </target>
+
+    <target name="assemble-web" depends="compile">
+      <antcall target="pkg-war">
+        <param name="war.classes" value="${build.classes.dir}"/>
+        <param name="war.file" value="${assemble.dir}/${appname}.war"/>
+       </antcall>
+	   <!-- Add the WSDL -->
+	   <mkdir dir="${build.classes.dir}/tmp/WEB-INF/wsdl"/>
+	   <copy file="${basedir}/wsdl/CalculatorService_schema1.xsd" todir="${build.classes.dir}/tmp/WEB-INF/wsdl"/>
+	   <copy file="${basedir}/wsdl/CalculatorService.wsdl" todir="${build.classes.dir}/tmp/WEB-INF/wsdl"/>
+	   <copy file="${basedir}/wsdl/MessageTypes.wsdl" todir="${build.classes.dir}/tmp/WEB-INF/wsdl"/>
+	   <jar jarfile="${assemble.dir}/${appname}.war" update="true">
+	   		<fileset dir="${build.classes.dir}/tmp">
+				<include name="WEB-INF/wsdl/CalculatorService_schema1.xsd"/>
+				<include name="WEB-INF/wsdl/CalculatorService.wsdl"/>
+				<include name="WEB-INF/wsdl/MessageTypes.wsdl"/>
+			</fileset>
+	   </jar>
+    </target>
+
+    <target name="deploy-app">
+      <property name="app.war" value="${assemble.dir}/${appname}.war"/>
+      <echo message="Deploying ${appname}.war from ${assemble.dir}." level="verbose"/>
+      <exec executable="${ASADMIN}">
+        <arg line="deploy"/>
+        <arg line="--user ${admin.user}"/>
+        <arg line="--host ${admin.host}"/>
+        <arg line="--port ${admin.port}"/>
+        <arg line="${app.war}"/>
+      </exec>
+    </target>
+
+    <target name="deploy-dummy-app">
+      <antcall target="deploy-jbi-component-su">
+        <param name="jbi-su-dir" value="${jbi-dummy-su-dir}"/>
+	<param name="jbi-component-su" value="${jbi-dummy-su}"/>
+        <param name="jbi-su-assembly" value="${jbi-dummy-su-assembly}"/>
+      </antcall>
+    </target>
+
+    <target name="assemble-client" >
+      <antcall target="compile-client">
+        <param name="test-wsdl-uri" value="${appname}/webservice/CalculatorService?WSDL"/>
+        <param name="client-src" value="client"/>
+      </antcall>
+      <antcall target="deploy-jbi-component"/>
+    </target>
+
+    <target name="deploy-jbi-component">
+      <antcall target="deploy-jbi-component-su">
+        <param name="jbi-su-dir" value="${jbi-component-su-dir}"/>
+        <param name="jbi-su-assembly" value="${jbi-component-su-assembly}"/>
+      </antcall>
+    </target>
+
+    <target name="undeploy" >
+        <antcall target="undeploy-app"/>
+        <antcall target="undeploy-dummy-app"/>
+        <antcall target="undeploy-jbi-component"/>
+    </target>
+
+    <target name="undeploy-app">
+      <exec executable="${ASADMIN}">
+        <arg line="undeploy"/>
+        <arg line="--user ${admin.user}"/>
+        <arg line="--host ${admin.host}"/>
+        <arg line="--port ${admin.port}"/>
+        <arg line="${appname}"/>
+      </exec>
+    </target>
+
+    <target name="undeploy-dummy-app">
+      <antcall target="undeploy-jbi-component-su">
+        <param name="jbi-su-assembly" value="${jbi-dummy-su-assembly}"/>
+      </antcall>
+    </target>    
+
+    <target name="undeploy-jbi-component">
+      <antcall target="undeploy-jbi-component-su">
+        <param name="jbi-su-assembly" value="${jbi-component-su-assembly}"/>
+      </antcall>
+    </target>
+
+    <target name="runtest" >
+      <echo message="Running SOAP Binding client"/>
+      <unjar src="${env.APS_HOME}/jbi/lib/reporter.jar" dest="${build.classes.dir}/client"/>
+      <exec executable="${APPCLIENT}" dir="${build.classes.dir}/client">
+        <arg value="client.SOAPWebConsumer"/>
+      </exec>
+    </target>
+</project>
+

@@ -1,0 +1,1092 @@
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License. You can obtain
+ a copy of the License at https://glassfish.dev.java.net/public/CDDL+GPL.html
+ or glassfish/bootstrap/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+ 
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at glassfish/bootstrap/legal/LICENSE.txt.
+ Sun designates this particular file as subject to the "Classpath" exception
+ as provided by Sun in the GPL Version 2 section of the License file that
+ accompanied this code.  If applicable, add the following below the License
+ Header, with the fields enclosed by brackets [] replaced by your own
+ identifying information: "Portions Copyrighted [year]
+ [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ If you wish your version of this file to be governed by only the CDDL or
+ only the GPL Version 2, indicate your decision by adding "[Contributor]
+ elects to include this software in this distribution under the [CDDL or GPL
+ Version 2] license."  If you don't indicate a single choice of license, a
+ recipient has the option to distribute your version of this file under
+ either the CDDL, the GPL Version 2 or to extend the choice of license to
+ its licensees as provided above.  However, if you add GPL Version 2 code
+ and therefore, elected the GPL Version 2 license, then the option applies
+ only if the new code is made subject to such option by the copyright
+ holder.
+-->
+
+
+<!ENTITY % boolean "(yes | no | on | off | 1 | 0 | true | false)">
+<!ENTITY % severity "(FINEST|FINER|FINE|CONFIG|INFO|WARNING|SEVERE|ALERT|FATAL)">
+<!ENTITY % isolation "(read-uncommitted | read-committed | repeatable-read | serializable)">
+
+<!-- J2EE Application Server Configuration 
+
+     Each Application Server instance is a J2EEv1.3 compliant container. 
+     One server instance is specially designated as the Administration Server. 
+     User applications cannot be deployed to an Adminsitration Server instance.
+
+     instance-name     name of the server instance.
+
+     locale            If present logging and Administration interface, will use 
+                       the specified locale. Overrides OS locale setting.
+
+     log-root          specifies where the server instance's log files are kept,
+                       including HTTP access logs, server logs, and transaction 
+                       logs. Default is $INSTANCE_ROOT/logs
+
+     session-store     specifies the directory where passivated beans and 
+                       persisted HTTP sessions are stored on the file system. 
+                       Defaults to $INSTANCE_ROOT/session-store 
+  
+     applications-root Directory where deployed application are stored. Defaults 
+                       to $INSTANCE_ROOT/applications
+-->
+<!ELEMENT server (http-service, iiop-service, admin-service?, 
+                  web-container, ejb-container, mdb-container, 
+                  jms-service, log-service, security-service, transaction-service, 
+                  java-config, resources, applications, property*)>
+<!ATTLIST server name                            CDATA #REQUIRED
+                 locale                          CDATA #IMPLIED
+                 log-root                        CDATA #IMPLIED
+                 application-root                CDATA #IMPLIED
+                 session-store                   CDATA #IMPLIED>
+
+<!-- HTTP service configuration -->
+<!ELEMENT http-service ((http-listener | mime | acl | virtual-server-class)*, http-qos?, property*)>
+<!ATTLIST http-service qos-metrics-interval-in-seconds       CDATA      "30"
+                       qos-recompute-time-interval-in-millis CDATA      "100"
+                       qos-enabled                           %boolean;  "true">
+
+<!-- Configure HTTP listener
+
+    id     Unique identifier for http listener.
+
+    address IP address of the listen socket. Can be in dotted-pair or IPv6 notation. 
+            Can also be any for INADDR_ANY. Configuring a listen socket to listen on 
+            any is required if more than one http-listener is configured to it. 
+
+    port    Port number to create the listen socket on. Legal values are 1 - 65535. 
+            On Unix, creating sockets that listen on ports 1 - 1024 requires
+            superuser privileges. Configuring an SSL listen socket to listen on 
+            port 443 is recommended. 
+
+    security-enabled (optional) Determines whether the http listener runs SSL. You can 
+                     turn SSL2 or SSL3 on or off and set ciphers using an ssl element 
+                     The Security setting in the init.conf file globally enables or disables 
+                     SSL by making certificates available to the server instance. Therefore, 
+                     Security in init.conf must be on or security in server.xml does not work. 
+
+    acceptor-threads (optional) Number of acceptor threads for the listen socket. 
+                     The recommended value is the number of processors in the machine. 
+
+    family   (optional) The socket family type. The default is inet. Legal values are 
+             inet, inet6, and nca. Use the value inet6 for IPv6 listen sockets.
+             When using the value of inet6, IPv4 addresses will be prefixed with 
+             ::ffff: in the log file. Specify nca to make use of the 
+             Solaris Network Cache and Accelerator. 
+
+    blocking-enabled (optional) Determines whether the http listener socket and the accepted 
+             socket are put in to blocking mode. Use of blocking mode may improve
+             benchmark scores. 
+
+    default-virtual-server The id attribute of the default virtual server for this 
+                           particular connection group. 
+
+    server-name Tells the server what to put in the host name section of any URLs 
+                it sends to the client. This affects URLs the server automatically generates;
+                it doesn't affect the URLs for directories and files stored in the server. 
+                This name should be the alias name if your server uses an alias. 
+                If you append a colon and port number, that port will be used in URLs 
+                the server sends to the client. 
+-->
+<!ELEMENT http-listener (ssl?)>
+<!ATTLIST http-listener  id                     CDATA     #REQUIRED
+                         address                CDATA     #REQUIRED
+                         port                   CDATA     #REQUIRED
+                         family                 CDATA     #IMPLIED
+                         acceptor-threads       CDATA     "1"
+                         blocking-enabled       %boolean; "false"
+                         security-enabled       %boolean; "false"
+                         default-virtual-server CDATA     #REQUIRED
+                         server-name            CDATA     #REQUIRED
+                         enabled                %boolean; "true">
+
+<!-- Define SSL processing parameters
+
+     cert-nickname nickname of the server certificate in the certificate database 
+                   or the PKCS#11 token. In the certificate, the name format is
+                   tokenname:nickname. Including the tokenname: part of the name 
+                   in this attribute is optional. 
+
+     ssl2-enabled  (optional) Determines whether SSL2 is enabled. 
+
+     ssl3-enabled  (optional) Determines whether SSL3 is enabled. 
+
+                   If both SSL2 and SSL3 are enabled for a virtual server, the server 
+                   tries SSL3 encryption first. If that fails, the server tries SSL2
+                   encryption. 
+
+     ssl2-ciphers  (optional) A comma-separated list of the SSL2 ciphers used, with 
+                   the prefix + to enable or - to disable, for example +rc4. Allowed 
+                   values are rc4, rc4export, rc2, rc2export, idea, des, desede3. 
+                   If no value is specified, all supported ciphers are assumed to 
+                   be enabled.
+
+     ssl3-tls-ciphers (optional) A comma-separated list of the SSL3 ciphers used, with 
+                      the prefix + to enable or - to disable, for example +rsa_des_sha.
+                      Allowed SSL3 values are rsa_rc4_128_md5, rsa3des_sha, rsa_des_sha, 
+                      rsa_rc4_40_md5, rsa_rc2_40_md5, rsa_null_md5. Allowed TLS values 
+                      are rsa_des_56_sha, rsa_rc4_56_sha. If no value is specified, 
+                      all supported ciphers are assumed to be enabled.
+
+     tls-enabled     (optional) Determines whether TLS is enabled. 
+
+     tls-rollback-enabled  (optional) Determines whether TLS rollback is enabled. TLS 
+                           rollback should be enabled for Microsoft Internet Explorer 
+                           5.0 and 5.5. 
+ 
+     client-auth-enabled   (optional) Determines whether SSL3 client authentication is 
+                          performed on every request, independent of ACL-based access 
+                          control.
+--> 
+<!ELEMENT ssl EMPTY>
+<!ATTLIST ssl cert-nickname        CDATA     #REQUIRED
+              ssl2-enabled         %boolean; "false"
+              ssl2-ciphers         CDATA     #IMPLIED
+              ssl3-enabled         %boolean; "true"
+              ssl3-tls-ciphers     CDATA     #IMPLIED
+              tls-enabled          %boolean; "true"
+              tls-rollback-enabled %boolean; "true"
+              client-auth-enabled  %boolean; "false">
+
+<!-- Defines MIME types. 
+
+    The most common way that the server determines the MIME type of a requested 
+    resource is by invoking the type-by-extension directive in the ObjectType
+    section of the obj.conf file. The type-by-extension function does not work 
+    if no MIME element has been defined in the SERVER element. 
+
+    id      Internal name for the MIME types listing. Used in a virtual-server 
+            element to define the MIME types used by the virtual server. 
+    file    name of a MIME types file. 
+-->
+
+<!ELEMENT mime EMPTY>
+<!ATTLIST mime id   CDATA  #REQUIRED
+               file CDATA  #REQUIRED>
+
+<!-- ACL File references
+
+    id       internal name for the ACL file listing. Used in a Vrtual Server 
+             element to define the ACL file used by the virtual server.
+    file     name of the default ACL file 
+-->
+<!ELEMENT acl EMPTY>
+<!ATTLIST acl id   CDATA  #REQUIRED
+              file CDATA  #REQUIRED>
+
+<!-- virtual-server-class provides a way to specify a set of properties that will 
+     apply to several virtual server instances. 
+
+    id              Virtual server class ID. This is a unique ID that allows lookup of a 
+                    specific virtual server class.
+
+    config-file     file name of alternative obj.conf file for class of virtual servers. 
+                    Can be overridden in a virtual-server element. 
+
+    default-object  (optional) names the object loaded from an obj.conf file which is 
+                    the default. The default object is expected to have all the name
+                    translation (NameTrans) directives for the virtual server; any 
+                    server behavior that is configured in the default object affects 
+                    the entire virtual server class. The default value is default. 
+                    If you specify an object that doesn't exist, the server doesn't 
+                    report an error until a client tries to retrieve a document. The 
+                    Server Manager assumes the default to be the object named default. 
+                    Don't deviate from this convention if you use (or plan to use) the 
+                    Server Manager. 
+    accept-language (optional) If on, the server parses the Accept-Language header 
+                    and sends an appropriate language version based on which language 
+                    the client can accept. You should set this value to on only if the 
+                    server supports multiple languages. The default is off. Can be 
+                    overridden in a virtual-server element. 
+-->
+<!ELEMENT virtual-server-class (virtual-server*, http-qos?, property*)>
+<!ATTLIST virtual-server-class  id                 CDATA     #REQUIRED
+                                config-file        CDATA     #IMPLIED
+                                default-object     CDATA     "default"
+                                accept-language    %boolean; "false" 
+                                enabled            %boolean; "true">
+
+<!-- Configuration of Virtual Server
+  
+     Virtualization in Application Server allows multiple URL domains to be served by 
+     the same HTTP server process, which is listening on multiple host addresses If 
+     an application is available at two virtual servers, they still share same physical 
+     resource pools, such as JDBC connection pools.
+
+     Sun Application Server allows a list of virtual servers, to be specified 
+     along with web-module and j2ee-application elements. This establishes an 
+     association between URL domains, represented by the virtual server and the web 
+     modules (standalone web modules or web modules inside the ear file)
+
+     id          Virtual server ID. This is a unique ID that allows lookup of a 
+                 specific virtual server. Can also be referred to as the 
+                 variable $id in an obj.conf file. A virtual server ID cannot 
+                 begin with a number. 
+
+     http-listeners  (optional) A comma-separated list of http-listener id(s),
+                     Required only for a Virtual Server that is not the default 
+                     virtual server. 
+
+     default-web-module (optional) stand alone web module associated with this 
+                        virtual server by default.
+
+     config-file        (optional) Typically all virtual server initialization is 
+                        from $INSTANCE_ROOT/config/obj.conf. This can be changed 
+                        using this attribute.
+
+     hosts              A comma-separated list of values allowed in the Host request 
+                        header to select the current virtual server. Each Virtual Server 
+                        that is configured to the same Connection Group must have a 
+                        unique hosts value for that group. 
+
+     mime               The id of the mime element used by the virtual server. 
+
+     state              (optional) Determines whether a Virtual Server is active 
+                        (on) or inactive (off, disable). The default is on (active). 
+                        When inactive, a Virtual Server does not service requests. 
+                        If a Virtual Server is disabled, only the server administrator 
+                        can turn it on. 
+
+     acls               (optional) One or more id attributes of <acl> elements, 
+                        separated by commas. Specifies the ACL file(s) used by the 
+                        virtual server. 
+
+     log-file           (optional) Specifies a log file for virtual-server-specific 
+                        log messages. If this is not specified, log messages go to
+                        $LOG_ROOT/server.log 
+
+     accept-language    (optional) If on, the server parses the Accept-Language header 
+                        and sends an appropriate language version based on which language 
+                        the client can accept. You should set this value to on only if 
+                        the server supports multiple languages. The default is picked
+                        up from the virtual-server-class.
+-->
+<!ELEMENT virtual-server (http-qos?, auth-db*, property*)>
+<!ATTLIST virtual-server  id                 CDATA     #REQUIRED
+                          http-listeners     CDATA     #IMPLIED
+                          default-web-module CDATA     #IMPLIED
+                          config-file        CDATA     #IMPLIED
+                          default-object     CDATA     #IMPLIED
+                          hosts              CDATA     #REQUIRED
+                          mime               CDATA     #REQUIRED
+                          state              (on | off | disabled )  "on"
+                          acls               CDATA     #IMPLIED
+                          accept-language    %boolean; #IMPLIED
+                          log-file           CDATA     #IMPLIED>
+
+<!-- http-qos defines the Quality of Service paramaters on HTTP path.
+
+    bandwidth-limit          (optional) maximum bandwidth limit for the Virtual Server Class, 
+                             or Virtual Server, in bytes per second. Default is No Limit.
+    enforce-bandwidth-limit  (optional) whether the bandwidth limit should be enforced or not. 
+    connection-limit         (optional) maximum number of concurrent connections for the 
+                             server, virtual-server-class, or virtual-server. 
+    enforce-connection-limit (optional) whether the connection limit should be enforced or not. 
+-->
+<!ELEMENT http-qos EMPTY>
+<!ATTLIST http-qos bandwidth-limit          CDATA     #IMPLIED
+                   enforce-bandwidth-limit  %boolean; "false"
+                   connection-limit         CDATA     #IMPLIED
+                   enforce-connection-limit %boolean; "false">
+
+<!-- auth-db defines the user database used by the virtual server. 
+
+    id          user database name in the virtual server's ACL file. 
+    database    user database name in the dbswitch.conf file. 
+    basedn      (optional) Overrides the base DN lookup in the dbswitch.conf file. 
+                However, the basedn value is still relative to the base DN value from the
+                dbswitch.conf entry. 
+    certmaps    (optional) certificate to LDAP entry mappings (defined in certmap.conf) 
+                to use. If not present, all mappings are used. All lookups based on mappings 
+                in certmap.conf are relative to the final base DN (distinguished name) 
+                of the Virtual Server. 
+-->
+<!ELEMENT auth-db EMPTY>
+<!ATTLIST auth-db id       CDATA  #REQUIRED
+                  database CDATA  #REQUIRED
+                  basedn   CDATA  #IMPLIED
+                  certmaps CDATA  #IMPLIED>
+                   
+<!-- ORB underlies the EJB container. Requests for EJBs from Application Client 
+     Container(s) or from another EJB interoperability capable J2EE Container(s) 
+     are serviced by iiop listener(s). One non-SSL iiop listener can be configured.
+     SSL support may require up to two SSL secured IIOP listeners to be configured: 
+     Server Authentication only, Mutual Authentication only, or both.
+
+     ssl-client-config element specifies the SSL configuration when the Application 
+     Server is making outbound IIOP/SSL connections.
+
+     By default, a server instance will configure non-secure IIOP access.
+     Administrator can create and configure IIOP/SSL listener(s).
+-->
+<!ELEMENT iiop-service (orb, ssl-client-config?, iiop-listener*)>
+
+<!-- Orb Configuration properties 
+
+     message-fragment-size           GIOPv1.2 messages larger than this will get fragmented.
+     steady-thread-pool-size         minimum number of threads listening for incoming requests.
+     max-thread-pool-size            maximum number of threads that can listen for requests
+     idle-thread-timeout-in-seconds  idle threads are removed from pool, after this time
+     log-level                       Can be set to control verbosity of log messages from Orb
+     monitoring-enabled              Enables statistics collection
+     max-connections                 maximum number of incoming connections, on all listeners
+-->
+<!ELEMENT orb (property*)>
+<!ATTLIST orb  message-fragment-size          CDATA     "1024"
+               steady-thread-pool-size        CDATA     "10"
+               max-thread-pool-size           CDATA     "200"
+               idle-thread-timeout-in-seconds CDATA     "300"
+               max-connections                CDATA     "1024"
+               log-level                      %severity;#IMPLIED
+               monitoring-enabled             %boolean; "false">
+
+<!-- Client SSL Configuration -->
+<!ELEMENT ssl-client-config (ssl)>
+
+<!-- IIOP Listener Configuration.
+  
+     ssl             element specifies optional SSL configuration 
+     id              unique identifier for this listener.
+     address         ip address or hostname (resolvable by DNS) 
+     port            port number
+     enabled         if false, a configured listener, is disabled
+--> 
+<!ELEMENT iiop-listener (ssl?, property*)>
+<!ATTLIST iiop-listener  id              CDATA     #REQUIRED
+                         address         CDATA     #REQUIRED
+                         port            CDATA     "1072"
+                         enabled         %boolean; "true">
+
+<!-- Administration Server is a distinguished server instance.
+
+     server-instance    group of server instances administered by this 
+                        Administration Server.
+     log-level          controls verbosity of log messages from Administration
+-->
+<!ELEMENT admin-service (server-instance |  property)*>
+<!ATTLIST admin-service  log-level  %severity; #IMPLIED>
+
+<!-- Administered Server instance
+     name        Name of the server instance
+-->
+<!ELEMENT server-instance EMPTY>
+<!ATTLIST server-instance name       CDATA  #REQUIRED>
+
+<!-- J2EE Applications look up resources registered with the 
+     Application server, using portable JNDI names.
+-->
+<!ELEMENT resources ((custom-resource | external-jndi-resource |
+                     jdbc-resource | mail-resource | jms-resource |
+                     persistence-manager-factory-resource |
+                     jdbc-connection-pool)*)>
+
+<!-- Textual description of a configured entity -->
+<!ELEMENT description (#PCDATA)>
+
+<!-- custom (or generic) resource managed by a user-written factory class. -->
+<!ELEMENT custom-resource (description?, property*)>
+
+<!-- 
+   JNDI name for generic resource, the fully qualified type of the resource 
+   and whether it is enabled at runtime 
+-->
+<!ATTLIST custom-resource jndi-name     CDATA     #REQUIRED
+                          res-type      CDATA     #REQUIRED
+                          factory-class CDATA     #REQUIRED
+                          enabled       %boolean; "true">
+
+<!-- resource residing in an external JNDI repository -->
+<!ELEMENT external-jndi-resource (description? , property*)>
+<!ATTLIST external-jndi-resource  jndi-name        CDATA     #REQUIRED
+                                  jndi-lookup-name CDATA     #REQUIRED
+                                  res-type         CDATA     #REQUIRED
+                                  factory-class    CDATA     #REQUIRED
+                                  enabled          %boolean; "true">
+
+<!-- JDBC javax.sql.(XA)DataSource resource definition -->
+<!ELEMENT jdbc-resource (description?, property*)>
+<!ATTLIST jdbc-resource  jndi-name                    CDATA  #REQUIRED
+                         pool-name                    CDATA  #REQUIRED
+                         enabled                      %boolean; "true">
+
+<!-- 
+  jdbc-connection-pool defines configuration used to create and manage 
+  a pool physical database connections. Pool definition is named, and 
+  can be referred to by multiple jdbc-resource elements (See <jdbc-resource>). 
+
+  Each named pool definition results in a pool instantiated at server 
+  start-up. Pool is populated when accessed for the first time. If two 
+  or more jdbc-resource elements point to the same jdbc-connection-pool 
+  element, they are using the same pool of connections, at run time. 
+
+  name                                unique name of the pool definition.
+
+  datasource-classname                Name of the vendor supplied JDBC datasource 
+                                      resource manager. An XA or global transactions
+                                      capable datasource class will implement 
+                                      javax.sql.XADatasource interface. Non XA or 
+                                      Local transactions only datasources will 
+                                      implement javax.sql.Datasource interface. 
+
+  res-type                            DataSource implementation class could implement 
+                                      one or both of javax.sql.DataSource, javax.sql.XADataSource 
+                                      interfaces. This optional attribute must be specified to 
+                                      disambiguate when a Datasource class implements both 
+                                      interfaces. An error is produced when this attribute has 
+                                      a legal value and the indicated interface is not implemented 
+                                      by the datasource class. This attribute has no default value. 
+
+  steady-pool-size                    minimum and initial number of connections 
+                                      maintained in the pool.
+
+  max-pool-size                       maximum number of conections that can be created 
+
+  max-wait-time-in-millis             amount of time the caller will wait before getting 
+                                      a connection timeout. The default is 60 seconds.
+                                      A value of 0 will force caller to wait indefinitely. 
+
+  pool-resize-quantity                number of connections to be removed when 
+                                      idle-timeout-in-seconds timer expires. Connections 
+                                      that have idled for longer than the timeout are 
+                                      candidates for removal. When the pool size reaches 
+                                      steady-pool-size, the connection removal stops.
+
+  idle-timeout-in-seconds             maximum time in seconds, that a connection can 
+                                      remain idle in the pool. After this time, the pool 
+                                      implementation can close this connection.  Note that 
+                                      this does not control connection timeouts enforced
+                                      at the database server side. Adminsitrators are 
+                                      advised to keep this timeout shorter than the database
+                                      server side timeout (if such timeouts are configured 
+                                      on the specific vendor's database), to prevent 
+                                      accumulation of unusable connection in Application Server.
+
+  transaction-isolation-level         Specifies the Transaction Isolation Level on the pooled
+                                      database connections. Optional. Has no default. If left unspecified 
+                                      the pool operates with default isolation level provided by the 
+                                      JDBC Driver. A desired isolation level can be set using one 
+                                      of the standard transaction isolation levels: 
+                                      read-uncommitted, read-committed, repeatable-read, serializable
+
+                                      Applications that change the Isolation level on a pooled 
+                                      connection programmatically, risk polluting the pool and this
+                                      could lead to program errors. 
+                                      Also see: is-isolation-level-guaranteed
+
+  is-isolation-level-guaranteed       Applicable only when a particular isolation level is specified
+                                      for transaction-isolation-level. The default value is true. 
+                                      This assures that every time a connection is obtained from 
+                                      the pool, it is guaranteed to have the isolation set to the 
+                                      desired value. This could have some performance impact on 
+                                      some JDBC drivers. Can be set to false by that administrator 
+                                      when they are certain that the application does not 
+                                      change the isolation level before returning the connection.
+
+  is-connection-validation-required   if true, connections are validated (checked to 
+                                      find out if they are usable) before giving out to 
+                                      the application. The default is false. 
+
+     If is-connection-validation-required is true then connection-validation-type 
+     specifies the type of validation to be performed. Three types of validation
+     are supported:
+
+        1) using connection.autoCommit(), 
+        2) using connection.getMetaData() 
+        3) performing a query on a user specified table (see validation-table-name). 
+
+     The possible values are one of:  auto-commit | meta-data | table 
+
+     validation-table-name specifies the table name to be used to perform a query to 
+     validate a connection. This parameter is mandatory, if connection-validation-type 
+     set to table. Verification by accessing a user specified table may become necessary
+     for connection validation, particularly if database driver caches calls to
+     setAutoCommit() and getMetaData(). 
+
+  fail-all-connections:              indicates if all connections in the pool must be 
+                                     closed should a single validation check fail. The 
+                                     default is false. One attempt will be made to 
+                                     re-establish failed connections.
+
+  Use of property lists:
+
+  Most JDBC 2.0 drivers permit use of standard property lists, to specify User, Password 
+  and other resource configuration. While these are optional properties, according to the 
+  specification, several of these properties may be necessary for most databases. See 
+  Section 5.3 of JDBC 2.0 Standard Extension API.
+
+  Name                                Value
+
+  databaseName                        Name of the Database.
+  serverName                          Database Server name.
+  port                                Port where a Database server is listening for requests. 
+  networkProtocol                     Communication Protocol used.
+  user                                default name of the database user with which connections 
+                                      will be stablished. Programmatic database authentication
+                                      or default-resource-principal specified in vendor specific 
+                                      web and ejb deployment descriptors will take precedence, 
+                                      over this default. The details and caveats are described 
+                                      in detail in the Administrator's guide.
+  password                            password for default database user
+  roleName                            The initial SQL role name.
+  datasourceName                      used to name an underlying XADataSource, or 
+                                      ConnectionPoolDataSource when pooling of connections is done
+  description                         Textual description
+
+  When one or more of these properties are specified, they are passed as is using set<Name>(<Value>) 
+  methods to the vendors Datasource class (specified in datasource-classname). User and Password 
+  properties are used as default principal, if Container Managed authentication is specified and 
+  a default-resource-principal is not found in application deployment descriptors.
+-->
+<!ELEMENT jdbc-connection-pool (description?, property*)>
+<!ATTLIST jdbc-connection-pool  name                               CDATA      #REQUIRED
+                                datasource-classname               CDATA      #REQUIRED
+                                res-type                           CDATA      #IMPLIED
+                                steady-pool-size                   CDATA      "8"
+                                max-pool-size                      CDATA      "32"
+                                max-wait-time-in-millis            CDATA      "60000"
+                                pool-resize-quantity               CDATA      "2"
+                                idle-timeout-in-seconds            CDATA      "300"
+                                transaction-isolation-level        %isolation; #IMPLIED
+                                is-isolation-level-guaranteed      %boolean;   "true"
+                                is-connection-validation-required  %boolean;   "false" 
+                                connection-validation-method       (auto-commit | 
+                                                                   meta-data   | 
+                                                                   table )    "auto-commit"
+                                validation-table-name              CDATA      #IMPLIED
+                                fail-all-connections               %boolean;  "false">
+                                  
+
+<!-- The mail-resource element describes a javax.mail.Session resource -->
+<!ELEMENT mail-resource (description?, property*)> 
+<!ATTLIST mail-resource jndi-name                CDATA        #REQUIRED 
+                        store-protocol           CDATA        "imap" 
+                        store-protocol-class     CDATA        "com.sun.mail.imap.IMAPStore"
+                        transport-protocol       CDATA        "smtp" 
+                        transport-protocol-class CDATA        "com.sun.mail.smtp.SMTPTransport" 
+                        host                     CDATA        #REQUIRED 
+                        user                     CDATA        #REQUIRED 
+                        from                     CDATA        #REQUIRED 
+                        debug                    %boolean;    "false"
+                        enabled                  %boolean;    "true"> 
+
+<!-- 
+     Persistence Manager runtime configuration.
+
+     jndi-name                     JNDI name for this resource
+     jdbc-resource-jndi-name:      jdbc resource with which database connections are obtained. 
+                                   must be the name of one of pre-created jdbc resources.
+     factory-class:                Class that creates persistence manager instance. 
+-->
+<!ELEMENT persistence-manager-factory-resource (description? , property*)>
+<!ATTLIST persistence-manager-factory-resource  jndi-name                   CDATA     #REQUIRED
+                                                factory-class               CDATA     
+          "com.sun.jdo.spi.persistence.support.sqlstore.impl.PersistenceManagerFactoryImpl"
+                                                jdbc-resource-jndi-name     CDATA     #IMPLIED
+                                                enabled 	            %boolean; "true">
+                                                
+<!--
+    The jms-resource element contains JMS resource definitions for the
+    built-in JMS service that is managed by the Application Server.
+
+    property            This is used to list optional JMS vendor specific
+                        attribute=value pairs for configuring the resource.
+
+    jndi-name           JNDI name.
+
+    res-type            JMS resource type. This can be one of:
+                            javax.jms.Topic
+                            javax.jms.Queue
+                            javax.jms.TopicConnectionFactory
+                            javax.jms.QueueConnectionFactory
+
+    enabled             Determines whether the resource is enabled (can be used)
+                        at runtime or not. This attribute is not used currently.
+-->
+<!ELEMENT jms-resource (description?, property*)>
+<!ATTLIST jms-resource  jndi-name     CDATA     #REQUIRED
+                        res-type      CDATA     #REQUIRED
+                        enabled       %boolean; "true">
+
+
+<!--
+     The jms-service element specifies information about the bundled/built-in
+     JMS service that is managed by Application Server.
+
+     If the "enabled" attribute is set to "true", the server instance
+     will be responsible for starting up and shutting down the JMS service.
+     If the "enabled" attribute is set to "false", the server instance
+     will not startup nor shutdown the JMS service (either because JMS
+     is not used or because it is managed independently of application server).
+
+     "port" attribute specifies the port number used by the JMS service.
+     "admin-username" attribute specifies the admin username.
+     "admin-password" attribute specifies the admin password.
+
+     "init-timeout-in-seconds" specifies the time server instance
+     will wait at start up, for its corresponding JMS service instance
+     to respond. If there is no response within the specifies timeout
+     period, application server startup is aborted.
+
+     "start-args" specifies the arguments that will be supplied to
+     start up the corresponding JMS service instance.
+-->
+<!ELEMENT jms-service (property*)>
+<!ATTLIST jms-service  port                    CDATA     "7676"
+                       admin-user-name          CDATA     "admin"
+                       admin-password          CDATA     "admin"
+                       init-timeout-in-seconds CDATA     "60"
+                       start-args              CDATA     #IMPLIED
+                       log-level               %severity;#IMPLIED
+                       enabled                 %boolean; "true">
+
+<!-- 
+    Configuration of EJB Container. Properties apply to all beans in all deployed applications, 
+    unless different parameters are specified in Sun Application Server specific deployment 
+    descriptors. Applicability is indicated in middle column, using the following acronyms:
+
+    slsb  - stateless session bean 
+    sfsb  - stateful session bean 
+    eb    - entity bean (incl. read-only)
+
+    steady-pool-size            slsb,eb    number of bean instances normally maintained in pool. When a pool 
+                                           is first created, it will be populated with size equal to 
+                                           steady-pool-size. When an instance is removed from the pool, it 
+                                           is replenished asynchronously, so that the pool size is at 
+                                           or above the steady-pool-size. This additions will be in multiples
+                                           of pool-resize-quantity. When a bean is disassociated from a 
+                                           method invocation, it is put back in the pool, subject to 
+                                           max-pool-size limit. If the max pool size is exceeded the bean 
+                                           id destroyed immediately. A pool cleaning thread, executes at 
+                                           an interval defined by pool-idle-timeout-in-seconds. This thread 
+                                           reduces the pool size to steady-pool-size, in steps defined by 
+                                           pool-resize-quantity. If the pool is empty, the required object 
+                                           will be created and returned immediately. This prevents threads
+                                           from blocking till the pool is replenished by the background
+                                           thread. steady-pool-size must be greater than 1 and at most equal
+                                           to the max-pool-size. 
+
+    max-pool-size               slsb,eb    maximum size, a pool can grow to. A value of 0 implies 
+                                           an unbounded pool. Unbounded pools eventually shrink to the 
+                                           steady-pool-size, in steps defined by pool-resize-quantity. 
+
+    pool-resize-quantity        slsb,eb    size of bean pool grows (shrinks) in steps specified by 
+                                           pool-resize-quantity, subject to max-pool-size (steady-pool-size) limit.
+
+                                           Pool is resized when the pool cleaner thread runs. This rate at which 
+                                           this thread runs is defined by pool-idle-timeout-in-seconds 
+
+					   pool-resize-quantity must be greater 1 and less than max-pool-size.
+                                           pool will never be resized below the steady pool size.
+
+    pool-idle-timeout-in-seconds  slsb,eb  defines the rate at which the pool cleaning thread is executed.
+                                           this thread checks if current size is greater than steady pool 
+                                           size, it removes pool-resize-quantity elements. If the current 
+                                           size is less than steady-pool-size it is increased by 
+                                           pool-resize-quantity, with a ceiling of 
+                                           min (current-pool-size + pool-resize-quantity, max-pool-size)
+                                           Only objects that have not been accessed for more than 
+                                           pool-idle-timeout-in-seconds are candidates for removal.
+
+    cache-resize-quantity       eb,sfsb    Cache elements have identity, hence growth is in unit steps
+                                           and created on demand. Shrinking of cache happens 
+
+                                           when cache-idle-timeout-in-seconds timer expires and a cleaner 
+                                           thread passivates beans which have been idle for longer than 
+                                           cache-idle-timeout-in-seconds. All idle instances are passivated at once.
+                                           cache-resize-quantity does not apply in this case.
+
+                                           when max cache size is reached, an asynchronous task is created 
+                                           to bring the size back under the max-cache-size limit. This task 
+                                           removes cache-resize-quantity elements, consulting the 
+                                           victim-selection-policy. 
+
+                                           Must be greater than 1 and less than max-cache-size.
+
+    max-cache-size              sfsb,eb    specifies the maximum number of instances that can be cached.
+                                           For entity beans, internally two caches are maintained for 
+                                           higher concurrency: (i) Ready (R$) (ii) Active in an Incomplete 
+                                           Transaction (TX$). The TX$ is populated with instances from R$ 
+                                           or from the Pool directly. When an instance in TX$ completes the 
+                                           transaction, it is placed back in the R$ (or in pool, in case an 
+                                           instance with same identity already is in R$). max-cache-size 
+                                           only specifies the upper limit for R$. The container computes 
+                                           an appropriate size for TX$. For SFSBs, after the
+                                           max-cache-size is reached, beans (as determined by
+                                           the victim-selection-policy) get passivated.
+
+    cache-idle-timeout-in-seconds sfsb,eb  specifies the rate at which the cache cleaner thread is scheduled.
+                                           All idle instances are passivated at once.
+
+    removal-timeout-in-seconds    sfsb     Instance is removed from cache or passivation store, if it is 
+                                           not accesed within this time. All instances that can be removed, 
+                                           will be removed.
+
+    victim-selection-policy       sfsb     Victim selection policy  when cache needs to shrink. fifo method 
+                                           picks victims, oldest instance first. lru algorithm picks least 
+                                           recently accessed instances.  nru policy tries to pick 
+                                           "not recently used" instances and is a pseudo-random selection 
+                                           process. Victims are passivated. Entity Bean Victims are selected 
+                                           always using fifo discipline. Does not apply to slsb because it 
+                                           does not matter, which particular instances are removed. 
+
+
+    commit-option                 eb	   Entity Beans caching is controlled by this setting. Commit Option 
+                                           C implies that no caching is performed in the container. 
+
+
+    Above defaults, apply only if they are not specified in vendor specific Bean Deployment Descriptors.
+
+    log-level                              Log level verbosity, set for messages that appear from container.
+
+    monitoring-enabled                     Enable statistics gathering in EJB container.
+-->
+<!ELEMENT ejb-container (property*)>
+<!ATTLIST ejb-container  steady-pool-size              CDATA         "32"
+                         pool-resize-quantity          CDATA         "16"
+                         max-pool-size                 CDATA         "64"
+                         cache-resize-quantity         CDATA         "32"
+                         max-cache-size                CDATA         "512"
+                         pool-idle-timeout-in-seconds  CDATA         "600"
+                         cache-idle-timeout-in-seconds CDATA         "600"
+                         removal-timeout-in-seconds    CDATA         "5400"
+                         victim-selection-policy       (fifo | lru | nru)  "nru"
+                         commit-option                 (B | C)       "B"
+                         log-level                     %severity;    #IMPLIED
+                         monitoring-enabled            %boolean;     "false">
+
+<!ELEMENT web-container (property*)>
+<!ATTLIST web-container  monitoring-enabled %boolean; "false"
+                         log-level          %severity;#IMPLIED>
+
+<!-- 
+    Configuration of MDB Container 
+
+    steady-pool-size                     minimum and initial number of message driven beans in pool. 
+    pool-resize-quantity                 quantum of increase/decrease, when the size of pool grows/shrinks. 
+    max-pool-size                        maximum size, pool can grow to.
+    idle-timeout-in-seconds              idle bean instance in pool becomes a candidate for deletion, 
+                                         when this timeout expires.
+
+                                         The above pool defaults, apply if they are not specified in the 
+                                         Sun Application Server specific Deployment Descriptors.
+
+    log-level                            Log level verbosity, set for messages that appear from MDB container.
+    monitoring-enabled                   Enable statistics gathering in MDB container.
+-->
+<!ELEMENT mdb-container (property*)>
+<!ATTLIST mdb-container  steady-pool-size                   CDATA     "10"
+                         pool-resize-quantity               CDATA     "2"
+                         max-pool-size                      CDATA     "60"
+                         idle-timeout-in-seconds            CDATA     "600"
+                         log-level                          %severity;#IMPLIED
+                         monitoring-enabled                 %boolean; "false">
+
+<!-- Logging Configuration 
+
+     By default, logs would be kept in $INSTANCE_ROOT/logs. This can be changed 
+     by changing server.log-root attribute. The following log files will be stored 
+     under the logs directory. 
+
+        access.log keeps default virtual server HTTP access messages. 
+        server.log keeps log messages from default virtual server. 
+                         Messages from other configured virtual servers 
+                         also go here, unless log-file is explicitly
+                         specified in the virtual-server element.
+
+     file attribute can be used to rename or relocate server.log using absolute 
+     path or relative to logs-root (specified in <server> element)
+
+     level specifies the system default log verbosity level. Various server
+     sub systems can override this level, so as to configure different log 
+     reporting levels. See log-level attribute under <transaction-service>,
+     <admin-service>, <web-container>, <ejb-container>, <mdb-container> 
+
+     log-stdout  if true, messages written to stdout will appear in log file.
+
+     log-stderr  if true, messages written to stderr will appear in log file.
+
+     echo-log-messages-to-stderr  if true, all log messages will also appear 
+                 on console, if avaialable
+
+     create-console if true, console window will be created to show log messages.
+
+
+     log-virtual-server-id if true, log message is also decorated with the 
+                 virtual server instance from which the log message was 
+                 produced. Useful when multiple virtual servers are 
+                 configured and they do not have separate log files. 
+                 It is possible to configure separate log files for each 
+                 virtual server. See <virtual-server> element.
+
+     use-system-logging if true, will utilize Unix syslog service or Windows
+                 Event Logging to produce and manage logs.
+-->
+
+<!ELEMENT log-service (property*)>
+<!ATTLIST log-service  file                        CDATA      #IMPLIED
+                       level                       %severity; "INFO"
+                       log-stdout                  %boolean;  "true"
+                       log-stderr                  %boolean;  "true"
+                       echo-log-messages-to-stderr %boolean;  "true"
+                       create-console              %boolean;  "false"
+                       log-virtual-server-id       %boolean;  "false"
+                       use-system-logging          %boolean;  "false">
+
+<!-- 
+   The security service element defines parameters and configuration
+   information needed by the core J2EE security service. Some
+   container-specific security configuration elements are in the various
+   container configuration elements and not here. SSL configuration is also
+   elsewhere. At this time the security service configuration consists of a set of 
+   authentication realms. A number of top-level attributes are defined as well.
+
+   default-realm: Specifies which realm (by name) is used by default when no 
+       realm is specifically requested. The file realm is the common default.
+   default-principal: Used as the identity of default security contexts when
+       necessary and no principal is provided.
+   default-principal-pwd: Password of default principal.
+   anonymous-role: Used as role name for default/anonymous role.
+   audit-enabled: If true, additional access logging is performed to provide
+     audit information.
+-->
+<!ELEMENT security-service (auth-realm+ , property*)>
+<!ATTLIST security-service  default-realm                CDATA     "file"
+                            default-principal            CDATA     #IMPLIED
+                            default-principal-password   CDATA     #IMPLIED
+                            anonymous-role               CDATA     "ANYONE"
+			                audit-enabled	             %boolean; "false"
+                            log-level                    %severity;#IMPLIED>
+
+<!--
+The auth-realm element defines and configures one authentication realm.
+There must be at least one realm available for a server instance; any 
+number can be configured, as desired.
+
+Authentication realms need provider-specific parameters which vary depending
+on what a particular implementation needs; these are defined as properties
+since they vary by provider and cannot be predicted for any custom or add-on
+providers.
+
+For the default file provider, the param used is: filename.
+
+  name: defines the name of this realm
+  classname: defines the java class which implements this realm
+  property: name/value pairs of provider implementation specific attributes.
+
+-->
+
+<!ELEMENT auth-realm (property*)>
+<!ATTLIST auth-realm name            CDATA   #REQUIRED
+                     classname       CDATA   #REQUIRED>
+
+<!-- Configuration for Transaction Manager. 
+     automatic-recovery   if true, server instance attempts recovery at restart.
+     timeout-in-seconds   amount of time the transaction manager waits for 
+                          response from a datasource participating in transaction. 
+                          A value of 0 implies infinite timeout. 
+
+     tx-log-dir           By default the transaction log is kept in the directory
+                          $INSTANCE_ROOT/logs/tx.log. If user specifies log-root 
+                          attribute under <server> element, tx.log would appear 
+                          in that directory. User can also specify an alternative 
+                          location using transaction-service.txlog-file attribute. 
+                          The transaction service creates and uses 3 files for 
+                          logging and tracking transactions in progress. 
+  
+     heuristic-decision   During recovery, if outcome of a transaction cannot be 
+                          determined from the logs, then this property is used 
+                          to fix the outcome.
+
+     keypoint-interval    property used to specify the number of transactions between 
+                          keypoint operations on the log.  A Keypoint operations could 
+                          reduce the size of the transaction log files.  A larger value 
+                          for this property (for example, 1000) will result in larger 
+                          transaction log files, between log compactions, but less 
+                          keypoint operations, and potentially better performance.  
+                          A smaller value (e.g. 20) results in smaller log files but 
+                          slightly reduced performance due to the greater frequency of 
+                          keypoint operations.
+
+     interoperability     this flag when true, propagates the transaction context 
+                          over IIOP. Transactions can span across beans executing in 
+                          separate, J2EE interoperability capable, containers.
+
+     log-level            If greater or less verbosity is desired from transaction 
+                          sub-system this can be adjusted. Note that this refers to 
+                          logging messages and not transaction co-ordination logs.
+     monitoring-enabled   If true, statistics will be collected
+--> 
+                       
+<!ELEMENT transaction-service (property*)>
+<!ATTLIST transaction-service  automatic-recovery %boolean;   "false"
+                               timeout-in-seconds CDATA       "0"
+                               tx-log-dir         CDATA       #IMPLIED
+                               heuristic-decision (rollback | commit) "rollback"
+                               keypoint-interval  CDATA       "2048"
+                               log-level          %severity;  #IMPLIED 
+                               monitoring-enabled %boolean;   "false">
+
+               
+<!-- Various types of applications that can be deployed on Sun Application 
+     Server instance
+
+     applications-dir specifies an absolute path to where deployed 
+     applications will reside for this instance. The default location
+     is $INSTANCE_ROOT/applications 
+
+     dynamic-reload-enabled when true, server checks timestamp on a .reload
+     file at every module and application directory level to trigger reload.
+     polling frequency is controlled by reload-poll-interval-in-seconds
+  -->
+<!ELEMENT applications ((lifecycle-module | j2ee-application | ejb-module | 
+                         web-module | connector-module)*)>
+<!ATTLIST applications dynamic-reload-enabled                   %boolean; "false"
+                       dynamic-reload-poll-interval-in-seconds  CDATA     "2">
+<!-- 
+     Server Lifecycle Listener Modules 
+
+     name       unqiue identifier for the deployed server lifecycle event 
+                listener module. 
+     class-name fully qualified name of the startup class.
+     classpath  where this module is actually located, if it is not under 
+                applications-root
+     load-order integer value that can be used to force the order in which deployed 
+                lifecycle modules are loaded at server start up. Smaller numbered
+                modules get loaded sooner. Order is unspecified if two or more 
+                lifecycle modules have the same load-order value.
+     is-failure-fatal, if true, aborts server start up if this module does not 
+                load properly.
+     enabled    boolean attribute. If set to "false" this module will not be 
+                loaded at server start up.
+-->
+<!ELEMENT lifecycle-module (description?, property*)>
+<!ATTLIST lifecycle-module  name             CDATA     #REQUIRED
+                            class-name       CDATA     #REQUIRED
+                            classpath        CDATA     #IMPLIED
+                            load-order       CDATA     #IMPLIED
+                            is-failure-fatal %boolean; "false"
+                            enabled          %boolean; "true">
+
+<!ELEMENT j2ee-application (description?)>
+<!ATTLIST j2ee-application  name                      CDATA     #REQUIRED
+                            location                  CDATA     #REQUIRED
+                            virtual-servers           CDATA     #IMPLIED
+                            enabled                   %boolean; "true">
+                            
+<!ELEMENT web-module (description?)>
+<!ATTLIST web-module  name                      CDATA     #REQUIRED
+                      context-root              CDATA     #REQUIRED
+                      location                  CDATA     #REQUIRED
+                      virtual-servers           CDATA     #IMPLIED
+                      enabled                   %boolean; "true">
+                      
+<!ELEMENT ejb-module (description?)>
+<!ATTLIST ejb-module  name      CDATA      #REQUIRED
+                      location  CDATA      #REQUIRED
+                      enabled   %boolean;  "true">
+
+<!ELEMENT connector-module (description?)>
+<!ATTLIST connector-module  name      CDATA      #REQUIRED
+                            location  CDATA      #REQUIRED
+                            enabled   %boolean;  "true">
+
+<!-- Java Runtime environment configuration 
+
+     java-home 		Specifies the installation directory for Java runtime. JDK 1.4 or higher is supported.
+     debug-enabled 	If set to true, the server starts up in debug mode ready for attaching with a JPDA
+                        based debugger.
+     debug-options      JPDA based debugging options string.
+     rmic-options       Options string passed to RMI compiler, at application deployment time.
+     javac-options      Options string passed to Java compiler, at application deployment time.
+     classpath-prefix   A java classpath string that is prefixed to server-classpath
+     classpath-suffix   A java classpath string that is  appended to server-classpath
+     server-classpath   A java classpath string that specifies the classes needed by the Application server. 
+                        Do not expect users to change this under normal conditions.
+
+     native-library-path is automatically constructed to be a concatenation of Application Server 
+     installation relative path for its native shared libraries, standard JRE native library path,
+     the shell environment setting (LD_LIBRARY_PATH on Unix) and any path that may be specified 
+     in the profile element. Since this is synthesied, it is not required to have this appear 
+     explicitly in the server configuration. 
+
+     native-library-path-prefix (native-library-path-suffix) is prepended (appended) to the native 
+     library path, which is constricted as per the above description.
+
+     bytecode-preprocessors A comma separated list of classnames, each of which must implement the 
+                            com.sun.appserv.BytecodePreprocessor interface. Each of the specified
+                            preprocessor class will be called in the order specified. At the moment 
+                            the comelling use is for a 3rd party Performance Profiling tool. 
+
+     env-classpath-ignored  If set to false, the CLASSPATH environment variable will be read and 
+                            appended to the Application Server classpath, which is constructed as
+                            described above. The CLASSPATH environment variable will be added after 
+                            the classpath-suffix, at the very end.
+-->
+<!ELEMENT java-config (profiler?, (jvm-options | property)*)>
+<!ATTLIST java-config java-home                  CDATA      #REQUIRED
+                      debug-enabled              %boolean;  "false"
+                      debug-options              CDATA      "-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n"
+                      rmic-options               CDATA      "-iiop -poa -alwaysgenerate -keepgenerated -g"
+                      javac-options              CDATA      "-g"
+                      classpath-prefix           CDATA      #IMPLIED
+                      server-classpath           CDATA      #IMPLIED
+                      classpath-suffix           CDATA      #IMPLIED
+                      native-library-path-prefix CDATA      #IMPLIED
+                      native-library-path-suffix CDATA      #IMPLIED
+                      bytecode-preprocessors     CDATA      #IMPLIED
+                      env-classpath-ignored      %boolean;  "true">
+
+<!-- String value for options that will be passed to the JVM -->
+<!ELEMENT jvm-options (#PCDATA)>
+
+<!-- Profilers could be one of jprobe, optimizeit, hprof, wily and so on
+     jvm-options and property elements are used to record the settings
+     needed to get a particular profiler going. A server instance is tied
+     to a particular profiler, by the profiler element in java-config.  
+     Changing the profiler will require a server restart.
+
+     The adminstrative graphical interfaces, could list multiple supported 
+     profilers (incomplete at this point) and will populate server.xml 
+     appropriately. Admin CLI support for profilers, need not be supported. 
+  -->
+<!ELEMENT profiler ((jvm-options | property)*)>
+<!ATTLIST profiler name                CDATA     #REQUIRED
+                   classpath           CDATA     #IMPLIED
+                   native-library-path CDATA     #IMPLIED
+                   enabled             %boolean; "true">
+
+<!-- Syntax for supplying properties as name value pairs -->
+<!ELEMENT property (description?)>
+<!ATTLIST property name  CDATA  #REQUIRED
+                   value CDATA  #REQUIRED>

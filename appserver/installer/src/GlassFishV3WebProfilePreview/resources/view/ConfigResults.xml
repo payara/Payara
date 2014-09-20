@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2008-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="ConfigResults" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:oor="http://openoffice.org/2001/registry"
+              xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+    <apt:category apt:name="ConfigResults" apt:label="ConfigResults" >
+        <apt:page apt:name="summary_page" apt:label="ConfigResults" >
+            <apt:section apt:name="Information" apt:label="ConfigResults" >
+                <apt:property apt:name="SUMMARY_HEADER"
+                              apt:dataPath=""
+                              apt:type="xs:string">
+                    <apt:prop-value></apt:prop-value>
+                    <apt:visual>
+                        <apt:htmlPanel>
+
+                        </apt:htmlPanel>
+                    </apt:visual>
+                </apt:property>
+
+
+                <apt:property apt:name="SUMMARY_OF_CONFIGURATION"
+                              apt:dataPath=""
+                              apt:type="xs:string">
+                    <apt:prop-value></apt:prop-value>
+                    <apt:visual>
+                        <apt:textArea apt:rows="9" apt:columns="33" apt:readOnly="true"/>
+                    </apt:visual>
+                </apt:property>
+            </apt:section>
+            <apt:scriptHandler apt:scriptLanguage="beanshell" >
+                <apt:scriptCode><![CDATA[
+
+import org.openinstaller.util.*;
+import org.glassfish.installer.util.*;
+import org.glassfish.installer.conf.*;
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+  
+
+
+    setupShortCuts(Product prodRef) {
+
+        WindowsShortcutManager wsShortMgr = new WindowsShortcutManager();
+        String modifiedInstallDir = prodRef.getInstallLocation().replace("\\","\\\\");
+        // First delete the shortcut if it still exists, this is needed
+        // as we do support users iterating through configuration multiple
+        // times and in that case, the last used domain attributes will be
+        // used in the shortcuts.
+        // Create short cut for starting server.
+
+        wsShortMgr.deleteShortCut(
+                prodRef.getProductName(),
+                Msg.get("START_SERVER",null) + ".lnk");
+
+        wsShortMgr.createShortCut(
+                     prodRef.getProductName(),
+                     Msg.get("START_SERVER",null),
+                     modifiedInstallDir + "\\\\glassfish\\\\bin\\\\asadmin.bat",
+                     Msg.get("START_SERVER",null),
+                     "start-domain " +
+                        ConfigHelper.getStringValue("Domain.Configuration.DOMAIN_NAME") + "\"",
+                     modifiedInstallDir + "\\\\glassfish\\\\icons\\\\startAppserv.ico",
+                     modifiedInstallDir + "\\\\glassfish",
+                     "2");
+
+        // Create short cut for stopping server.
+         wsShortMgr.deleteShortCut(
+                prodRef.getProductName(),
+                Msg.get("STOP_SERVER",null) + ".lnk");
+
+        wsShortMgr.createShortCut(
+                     prodRef.getProductName(),
+                     Msg.get("STOP_SERVER",null),
+                     modifiedInstallDir + "\\\\glassfish\\\\bin\\\\asadmin.bat",
+                     Msg.get("STOP_SERVER",null),
+                     "stop-domain " +
+                        ConfigHelper.getStringValue("Domain.Configuration.DOMAIN_NAME") + "\"",
+                     modifiedInstallDir + "\\\\glassfish\\\\icons\\\\stopAppserv.ico",
+                     modifiedInstallDir + "\\\\glassfish",
+                     "2");
+
+     }
+
+
+
+    String createDomain(Product productRef, String runningMode) throws EnhancedException {
+
+       DomainManager domainManager = new DomainManager(productRef);
+       domainManager.createDomain(
+                ConfigHelper.getStringValue("Domain.Configuration.DOMAIN_NAME"),
+                productRef.getInstallLocation() + File.separator + "glassfish" + File.separator + "domains",
+                ConfigHelper.getStringValue("Domain.Configuration.HTTP_PORT"),
+                ConfigHelper.getStringValue("Domain.Configuration.ADMIN_PORT"),
+                true,
+                false,
+                ConfigHelper.getStringValue("Domain.Configuration.ADMIN_USER"),
+                ConfigHelper.getStringValue("Domain.Configuration.ADMIN_PASSWORD"),
+                runningMode);
+        overallStatus = domainManager.isConfigSuccessful();
+        return domainManager.getOutputFromRecentRun();
+    }
+	
+	String startDomain(Product productRef, String runningMode) throws EnhancedException {
+
+       DomainManager domainManager = new DomainManager(productRef);
+       domainManager.startDomain(ConfigHelper.getStringValue("Domain.Configuration.DOMAIN_NAME"), runningMode);
+	   overallStatus = domainManager.isConfigSuccessful();
+	   return domainManager.getOutputFromRecentRun();
+    }
+
+
+    /* Creates the service for the specified domain
+     * Wrapper for "asadmin create-service" command.
+     * Currently support is available only for Windows and Solaris platforms.
+     */
+    String createDomainService(Product productRef,String runningMode) throws EnhancedException {
+
+        Domain glassfishDomain = new Domain();
+        glassfishDomain.setDomainName(ConfigHelper.getStringValue("Domain.Configuration.DOMAIN_NAME"));
+
+        ServiceManager glassfishServiceManager = new ServiceManager();
+        glassfishServiceManager.createService(ConfigHelper.getStringValue("Domain.Configuration.SERVICE_NAME"),
+		null,
+                GlassFishUtils.getGlassfishAdminScriptPath(productRef.getInstallLocation()),
+                glassfishDomain,
+                runningMode);
+
+        overallStatus = glassfishServiceManager.isConfigSuccessful();
+        return glassfishServiceManager.getOutputFromRecentRun();
+
+    }
+
+    String createStandaloneInstance(Product productRef, String runningMode) throws EnhancedException {
+
+        InstanceManager glassfishInstanceManager = new InstanceManager(productRef);
+        glassfishInstanceManager.createInstance(
+                ConfigHelper.getStringValue("StandaloneInstance.Configuration.INSTANCE_NAME"),
+                ConfigHelper.getStringValue("StandaloneInstance.Configuration.SERVER_HOST_NAME"),
+                ConfigHelper.getStringValue("StandaloneInstance.Configuration.SERVER_ADMIN_PORT"),
+                "standalone",
+                null,
+                runningMode);
+
+        overallStatus = glassfishInstanceManager.isConfigSuccessful();
+        return glassfishInstanceManager.getOutputFromRecentRun();
+
+    }
+
+    String createClusteredInstance(Product productRef,String runningMode) throws EnhancedException {
+
+        InstanceManager glassfishInstanceManager = new InstanceManager(productRef);
+        glassfishInstanceManager.createInstance(
+                ConfigHelper.getStringValue("ClusteredInstance.Configuration.INSTANCE_NAME"),
+                ConfigHelper.getStringValue("ClusteredInstance.Configuration.SERVER_HOST_NAME"),
+                ConfigHelper.getStringValue("ClusteredInstance.Configuration.SERVER_ADMIN_PORT"),
+                "clustered",
+                ConfigHelper.getStringValue("ClusteredInstance.Configuration.CLUSTER_NAME"),
+                runningMode);
+
+        overallStatus = glassfishInstanceManager.isConfigSuccessful();
+        return glassfishInstanceManager.getOutputFromRecentRun();
+
+    }
+
+    String createCluster(Product productRef,String runningMode) throws EnhancedException {
+
+        Domain glassfishDomain = new Domain();
+        glassfishDomain.setDomainName(ConfigHelper.getStringValue("ClusteredInstance.Configuration.DOMAIN_NAME"));
+        glassfishDomain.setAdminPort(ConfigHelper.getStringValue("ClusteredInstance.Configuration.SERVER_ADMIN_PORT"));
+
+        ClusterManager glassfishClusterManager = new ClusterManager(productRef);
+        glassfishClusterManager.createCluster(glassfishDomain, ConfigHelper.getStringValue("ClusteredInstance.Configuration.CLUSTER_NAME"), null, runningMode);
+
+        overallStatus = glassfishClusterManager.isConfigSuccessful();
+        return glassfishClusterManager.getOutputFromRecentRun();
+
+    }
+
+    String formatMsg(String inputMsg) {
+        String returnMsg = "\n" + inputMsg + "\n";
+        for (int i=0;i<inputMsg.length();i++)
+            returnMsg += "_";
+        returnMsg += "\n";
+        return returnMsg;
+     }
+
+    updateGlobalPageSkips(String optionValue , boolean remove)  {
+        List activeModes = (List)ConfigHelper.getValue("PageFlow.Mode.ACTIVE_MODES_LIST");
+
+        if (activeModes.contains(optionValue))  {
+            activeModes.remove(optionValue);
+        }
+
+        if (!remove)
+        	activeModes.add(optionValue);
+
+        ConfigHelper.setValue("PageFlow.Mode.ACTIVE_MODES_LIST", activeModes);
+    }
+
+
+    void run() throws EnhancedException {
+        wizard.enableNext(false);
+        wizard.enableCancel(true);
+	// Set the next button text to "Finish" in case of config only mode as this would be the last panel.
+        if (ConfigHelper.getStringValue("InstallType.Option.CONFIGURATION_MODE").equals("CONFIG_ONLY")) {
+        	wizard.setNextButtonText(Msg.get("exit",null));
+	}
+        wizard.setBackButtonText(Msg.get("CONFIG_PANEL_BACK_BUTTON_TEXT",null));
+
+	global.overallStatus = true;
+        updateGlobalPageSkips("CREATE_DOMAIN",true);
+        updateGlobalPageSkips("CREATE_STANDALONEINSTANCE",true);
+    	updateGlobalPageSkips("CREATE_CLUSTEREDINSTANCE",true);
+        String output = formatMsg(Msg.get("CONFIG_PANEL_CONTENT_HEADER",null));
+        summaryHeader = wizard.getComponentByName((Container) content, "SUMMARY_HEADER");
+        summaryTab = wizard.getComponentByName((Container) content, "SUMMARY_OF_CONFIGURATION");
+        summaryHeader.setText(
+        "<HTML><body><font face='Sans-Serif'>" + Msg.get("CONFIG_PANEL_HEADER_TEXT",null) + "<body><HTML>");
+        summaryHeader.repaint();
+		
+	frame.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        Product productRef = new Product(
+                (String) TemplateProcessor.getInstance().getFromDataModel("PRODUCT_NAME"),
+                ConfigHelper.getStringValue("InstallHome.directory.INSTALL_HOME"),
+                GlassFishUtils.getGlassfishAdminScriptPath(ConfigHelper.getStringValue("InstallHome.directory.INSTALL_HOME")),
+                GlassFishUtils.getGlassfishConfigFilePath(ConfigHelper.getStringValue("InstallHome.directory.INSTALL_HOME")));
+
+        // Create a clusterd instance
+        if (ConfigHelper.getStringValue("ConfigType.Option.CONFIGURATION_MODE").equals("CREATE_CLUSTEREDINSTANCE")) {
+            output += formatMsg(Msg.get("CONFIG_PANEL_CREATE_CLUSTERED_INSTANCE_TEXT",null));
+            // Create a cluster if user chooses to do so.
+            if (ConfigHelper.getBooleanValue("ClusteredInstance.Configuration.CREATE_CLUSTER")) {
+                output += formatMsg(Msg.get("CONFIG_PANEL_CREATE_CLUSTER_TEXT",null));
+                output += Msg.get("CONFIG_PANEL_EXECUTING_COMMAND",null) + createCluster(productRef, "DRYRUN");
+		output += "\n";
+                summaryTab.setText(output);
+                summaryTab.repaint();
+		summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+                output += createCluster(productRef,"REALRUN");
+		output += "\n";
+                summaryTab.setText(output);
+                summaryTab.repaint();
+		summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+            }
+
+            // Continue only when cluster creation is ok.
+            if (overallStatus) {
+                output += formatMsg(Msg.get("CONFIG_PANEL_CREATE_INSTANCE_TEXT",null));
+                output += Msg.get("CONFIG_PANEL_EXECUTING_COMMAND",null) + createClusteredInstance(productRef, "DRYRUN");
+		output += "\n";
+                summaryTab.setText(output);
+                summaryTab.repaint();
+		summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+                output += createClusteredInstance(productRef,"REALRUN") + "\n";
+            }
+        }
+
+        // Create a standalone instance
+        if (ConfigHelper.getStringValue("ConfigType.Option.CONFIGURATION_MODE").equals("CREATE_STANDALONEINSTANCE")) {
+            output += formatMsg(Msg.get("CONFIG_PANEL_CREATE_STANDALONE_INSTANCE_TEXT",null));
+            output += Msg.get("CONFIG_PANEL_EXECUTING_COMMAND",null) + createStandaloneInstance(productRef, "DRYRUN");
+            output += "\n";
+            summaryTab.setText(output);
+            summaryTab.repaint();
+	    summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+            output += createStandaloneInstance(productRef,"REALRUN");
+            output += "\n";
+        }
+
+        // Create a Domain.
+        if (ConfigHelper.getStringValue("ConfigType.Option.CONFIGURATION_MODE").equals("CREATE_DOMAIN")) {
+            output += formatMsg(Msg.get("CONFIG_PANEL_CREATE_DOMAIN_TEXT",null));
+            output += Msg.get("CONFIG_PANEL_EXECUTING_COMMAND",null) + createDomain(productRef, "DRYRUN");
+            output += "\n";
+            summaryTab.setText(output);
+            summaryTab.repaint();
+            output += createDomain(productRef,"REALRUN");
+            output += "\n";
+            summaryTab.setText(output);
+            summaryTab.repaint();
+	    summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+
+            // Create start/stop items if the domain creation is successful.
+            if (overallStatus && OSUtils.isWindows()){
+                // Don't do this in CONFIG_ONLY mode.
+                String installMode =
+                    (String)ConfigHelper.getValue("InstallType.Option.CONFIGURATION_MODE");
+                    if (!installMode.equals("CONFIG_ONLY"))
+                        setupShortCuts(productRef);
+            }
+
+            // Create a service for domain if needed.
+            // Continue only when the domain is created successfully.
+            if (overallStatus == true) {
+                if (ConfigHelper.getBooleanValue("Domain.Configuration.CREATE_SERVICE")) {
+                    output += formatMsg(Msg.get("CONFIG_PANEL_CREATE_DOMAIN_SERVICE_TEXT",null));
+                    output += Msg.get("CONFIG_PANEL_EXECUTING_COMMAND",null) + createDomainService(productRef, "DRYRUN");
+            	    output += "\n";
+                    summaryTab.setText(output);
+                    summaryTab.repaint();
+                    summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+                    output += createDomainService(productRef,"REALRUN");
+                    output += "\n";
+                }
+            }
+			
+	    // start the recently created domain if needed.
+            // Continue only when the domain is created successfully.
+            if (overallStatus == true) {
+		if (ConfigHelper.getStringValue("Domain.Configuration.STARTUP_TYPE").equals("AUTOMATIC")) {
+			output += formatMsg(Msg.get("CONFIG_PANEL_START_DOMAIN_TEXT",null));
+			output += Msg.get("CONFIG_PANEL_EXECUTING_COMMAND",null) + startDomain(productRef, "DRYRUN");
+			output += "\n";
+			summaryTab.setText(output);
+			summaryTab.repaint();
+			summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+			output += startDomain(productRef,"REALRUN");
+			output += "\n";
+		}
+            }
+
+        }
+     LOGGER.log(Level.INFO, Msg.get("CONFIG_PANEL_CONFIGURING_GLASSFISH",null));
+     LOGGER.log(Level.INFO, output);
+     summaryTab.setText(output);
+     summaryTab.repaint();
+     summaryTab.setCaretPosition(summaryTab.getDocument().getLength());
+     if (overallStatus == true) {
+        summaryHeader.setText
+            ("<HTML><body><font face='Sans-Serif'>" + Msg.get("CONFIG_PANEL_SUCCESS_HEADER_STATUS_TEXT",null) + "<body><HTML>");
+    }
+    else {
+        summaryHeader.setText
+            ("<HTML><body><font face='Sans-Serif'>" + Msg.get("CONFIG_PANEL_FAILURE_HEADER_STATUS_TEXT",null) + "<body><HTML>");
+        updateGlobalPageSkips(ConfigHelper.getStringValue("ConfigType.Option.CONFIGURATION_MODE"),false);
+    }
+    // Enable the previous panel, so that users can correct the errors and try again
+
+    summaryHeader.repaint();
+    frame.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+   
+    // Enable back only for Advanced installation.
+    if (ConfigHelper.getStringValue("InstallUserType.Option.USER_TYPE").equals("ADVANCED_USER"))
+    	wizard.enableBack(true);
+
+
+    wizard.enableNext(true);
+    summaryTab.requestFocus();
+  }
+return (Runnable)this;]]>
+                </apt:scriptCode>
+            </apt:scriptHandler>
+        </apt:page>
+    </apt:category>
+</apt:template>

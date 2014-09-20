@@ -1,0 +1,218 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nc" bundle="org.glassfish.admingui.core.Strings");
+    setResourceBundle(key="i18njms" bundle="org.glassfish.jms.admingui.Strings");
+    setResourceBundle(key="helpjms" bundle="org.glassfish.jms.admingui.Helplinks")
+/>
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18njms.jms.Title}" >
+<!define name="content">
+    <event>
+        <!beforeCreate
+            getRequestValue(key="configName" value="#{pageSession.configName}" default="server-config");
+            setPageSessionAttribute(key="selfPage", value="#{request.contextPath}/jms/jmsService.jsf?name=#{pageSession.Name}&configName=#{pageSession.configName}");
+            setAttribute(key="edit" value="#{true}");
+            setPageSessionAttribute(key="hasPropertySheet" value="#{true}");
+
+            setPageSessionAttribute(key="childType" value="jms-service");
+            setPageSessionAttribute(key="convertToFalseList" value={"reconnectEnabled"});
+
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
+            setPageSessionAttribute(key="childType", value="jms-service");
+            setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+            setPageSessionAttribute(key="rest-api" value="true");
+            gf.restRequest(endpoint="#{pageSession.selfUrl}", method="get", result="#{pageSession.result}");
+            setPageSessionAttribute(key="valueMap", value="#{pageSession.result.data.extraProperties.entity}");
+
+            gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="GET", result="#{requestScope.propTable}");
+            setPageSessionAttribute(key="tableList", value="#{requestScope.propTable.data.extraProperties.properties}");
+
+            setPageSessionAttribute(key="edit" value="#{true}" );
+            setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+            setPageSessionAttribute(key="showCancelButton" value="#{false}" );
+            setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+            setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+            
+            gf.getClusterForConfig(configName="#{configName}" cluster="#{pageSession.clusterName}");
+
+        />
+    </event>   
+<!-- TO DO: NEED TO ADD CHECK FOR PE OR EE IN ORDER TO POPULATE JMS HOST DROPDOWN  -->   
+<!-- TO DO: NEED TO ADD HANDLER FOR PING BUTTON ONCE MESSAGES ARE WORKING  -->  
+            <sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+                <!-- Page Title -->
+                <sun:title id="propertyContentPage" title="$resource{i18njms.jms.Title}" helpText="$resource{i18njms.jms.PageHelp}">
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton" rendered="#{edit}" text="$resource{i18n.button.Save}"
+                    onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                <!command
+                    gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                        attrs="#{pageSession.valueMap}"
+                        skipAttrs="#{pageSession.skipAttrsList}"
+                        convertToFalse="#{pageSession.convertToFalseList}"
+                        onlyUseAttrs="#{pageSession.onlyUseAttrs}"
+                    );
+                    
+                    // Save properties...
+                    removeEmptyProps(props="#{pageSession.tableList}" modifiedProps="#{pageSession.tableList}");
+                    javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+
+                    if (#{pageSession.valueMap['masterBroker']}) {
+                        createMap(result="#{requestScope.mbAttrs}");
+                        mapPut(map="#{requestScope.mbAttrs}" key="id" value="#{pageSession.valueMap['masterBroker']}");
+                        gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession['clusterName']}/change-master-broker",
+                            attrs="#{requestScope.mbAttrs}",
+                            method="post",
+                            result="#{pageSession.resultMap}",
+                            throwException="#{true}");
+                    }
+
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+    <sun:button id="pingButton" text="$resource{i18njms.jms.Ping}"
+                        rendered="#{pageSession.configName != 'default-config'}"
+                        onClick="return submitAndDisable(this, '$resource{i18n.button.Processing}');" >
+                        <!command
+                            prepareSuccessfulMsg();
+
+                            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/servers/server", result="#{pageSession.serverList}");
+                            foreach (var="server" list="#{pageSession.serverList}") {
+                                gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}", method="GET", result="#{requestScope.serverDetails}");
+                                if ("#{pageSession.configName} = #{requestScope.serverDetails.data.extraProperties.entity.configRef}") {
+                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}/jms-ping", method="get", result="#{requestScope.pingResults}");
+                                    if ("(#{requestScope.pingResults.responseCode} = 200)") {
+                                        prepareAlertMsg(type="success", summary="$resource{i18nc.msg.PingSucceed}");
+                                    }
+                                    if ("!(#{requestScope.pingResults.responseCode} = 200)") {
+                                        gf.handleError(detail="#{requestScope.pingResults.data.message}");
+                                    }
+                                }
+                            }
+                        />
+                    </sun:button>
+
+                    <!-- PropertySheet .... -->
+                    <sun:propertySheet id="propertySheet">			 
+                        <!-- Text Field section -->
+#include "/common/shared/configNameSection.inc"
+                        <sun:propertySheetSection id="propertSectionTextField">
+                            <event>
+                              <!beforeCreate
+                                //getJmsHosts(ConfigName="#{configName}", Hosts=>$attribute{hosts});
+                              />   
+                            </event>
+                            // TODO: Figure what this needs to make it work. :(
+                            <sun:property id="typeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Type}" helpText="$resource{i18njms.jms.TypeHelp}">
+                                <sun:dropDown id="Type"  selected="#{pageSession.valueMap['type']}" labels={"LOCAL" "REMOTE" "EMBEDDED"} values={"LOCAL" "REMOTE" "EMBEDDED"}/>
+                            </sun:property>
+                            <sun:property id="timeoutProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Timeout}" helpText="$resource{i18njms.jms.TimeoutHelp}">
+                                <sun:textField id="Timeout" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Timeout']}" text="#{pageSession.valueMap['initTimeoutInSeconds']}" />
+                                <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+                            </sun:property>
+                            <sun:property id="argumentsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Arguments}" helpText="$resource{i18njms.jms.ArgumentsHelp}">
+                                <sun:textField id="Arguments" columns="$int{35}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Arguments']}" text="#{pageSession.valueMap['startArgs']}"/>
+                            </sun:property>
+                            <sun:property id="reconnectProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Reconnect}" helpText="$resource{i18njms.jms.ReconnectHelp}">
+                                <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['reconnectEnabled']}" selectedValue="true"/>
+                            </sun:property>
+                            <sun:property id="intervalProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Interval}" helpText="$resource{i18njms.jms.IntervalHelp}">
+                                <sun:textField id="Interval" styleClass="intAllowMinusOne" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Interval']}" text="#{pageSession.valueMap['reconnectIntervalInSeconds']}" />
+                                <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+                            </sun:property>
+                            <sun:property id="attemptsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Attempts}" helpText="$resource{i18njms.jms.AttemptsHelp}">
+                                <sun:textField id="Attempts" styleClass="intAllowMinusOne" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Attempts']}" text="#{pageSession.valueMap['reconnectAttempts']}" />
+                            </sun:property>
+                            <sun:property id="maseterBrokerProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.MasterBroker}" 
+                                          helpText="$resource{i18njms.jms.MasterBrokerHelp}" rendered="#{! empty clusterName}">
+                                <sun:dropDown id="MasterBroker" labels="#{pageSession.instanceList}" selected="#{pageSession.valueMap['masterBroker']}">
+                                    <!beforeCreate
+                                        if (#{pageSession.clusterName}) {
+                                            gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.clusterName}/list-instances",  
+                                                method="get", result="#{requestScope.result}");
+                                            setPageSessionAttribute(key="instanceList" value={});
+                                            listAdd(list="#{pageSession.instanceList}", value="");
+                                            foreach (var="instance", list="#{requestScope.result.data.extraProperties.instanceList}") {
+                                                listAdd(list="#{pageSession.instanceList}", value="#{instance.name}");
+                                            }
+                                        }
+                                    />
+                                </sun:dropDown>
+                            </sun:property>
+                            <sun:property id="hostProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Host}" helpText="$resource{i18njms.jms.HostHelp}">
+                                <sun:dropDown id="Host" labels="$pageSession{jmsHostList}" selected="#{pageSession.valueMap['defaultJmsHost']}">
+                                    <!beforeCreate
+                                        gf.getChildrenNamesList(endpoint="#{pageSession.selfUrl}/jms-host", result="#{pageSession.jmsHosts}");
+                                        getListBoxOptions( availableList="#{pageSession.jmsHosts}", selectedCommaString="name", availableListResult="#{pageSession.jmsHostList}");
+                                    />
+                                </sun:dropDown>
+                            </sun:property>
+                            <sun:property id="behaviorProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.AddressListBehavior}" helpText="$resource{i18njms.jms.BehaviorHelp}">
+                                <sun:dropDown id="Behavior" selected="#{pageSession.valueMap['addresslistBehavior']}" labels={"random" "priority"} />
+                            </sun:property>
+                            <sun:property id="iterationsProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.AddressListIterations}" helpText="$resource{i18njms.jms.IterationsHelp}">
+                                <sun:textField id="Iterations" styleClass="intAllowMinusOne" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Iterations']}" text="#{pageSession.valueMap['addresslistIterations']}" />
+                            </sun:property>
+                            <sun:property id="schemeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Scheme}" helpText="$resource{i18njms.jms.SchemeHelp}">
+                                <sun:textField id="Scheme" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Scheme']}" text="#{pageSession.valueMap['mqScheme']}"/>
+                            </sun:property>
+                            <sun:property id="serviceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Service}" helpText="$resource{i18njms.jms.ServiceHelp}">
+                                <sun:textField id="Service" columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Service']}" text="#{pageSession.valueMap['mqService']}"/>
+                            </sun:property>
+                            "<br /><br />
+                        </sun:propertySheetSection>
+                    </sun:propertySheet>    
+#include "/common/shared/propertyDescTable.inc"
+                </sun:title>
+                <sun:hidden id="helpKey" value="$resource{helpjms.jmsService}" />
+            </sun:form>
+</define>
+</composition>

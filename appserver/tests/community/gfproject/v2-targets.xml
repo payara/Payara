@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="v2-targets" default="all" basedir=".">
+    <property name="war.file.ext" value="${war.file}.war"/>
+    <property name="deployed.app" value=""/>
+    
+    <property name="as.props"
+              value="--user ${admin.user} --passwordfile ${admin.password.file} --echo=true --terse=true --port=${admin.port}"/>
+   <!--<echo file="${admin.password.file}" append="false">
+     AS_ADMIN_PASSWORD=${admin.password}
+    AS_ADMIN_ADMINPASSWORD=${admin.password}
+    AS_ADMIN_MASTERPASSWORD=${master.password}</echo>-->
+    
+   <!--<target name="setup" unless="bInitialised">
+        <echo message="${config.dir}"/>
+        <echo message="${config.dir}/${admin.password.file}"/>
+        <replace file="${config.dir}/${admin.password.file}" token="@@ADMIN_PASSWORD@@" value="${admin.password}"/>
+        <replace file="${config.dir}/${admin.password.file}" token="@@ADMIN_PASSWORD@@" value="${admin.password}"/>
+        <replace file="${config.dir}/${admin.password.file}" token="@@ADMIN_MASTER_PASSWORD@@" value="${master.password}"/>
+        <property name="bInitialised" value=""/>
+    </target>-->
+       
+    <target name="deploy-v2-impl">
+        <echo message="${deployed.app}"/>
+        <echo message="Please set property ${deployed.app} before calling this target"/>
+        <echo message="glassfish.home is ${glassfish.home}"/>
+        <echo message="deploying in v2 mode"/>
+        <echo message="./${war.file.ext}"/>
+        <echo message="OS is ${os.name}"/> 
+        <record name="deploy.output" action="start"/>
+        <exec executable="cmd" osfamily="Windows">
+            <arg value="/c"/>
+            <arg value="${glassfish.home}/bin/asadmin.bat"/>
+            <arg value="deploy"/>
+            <arg line="${as.props}"/>
+            <arg line="${deployed.app}"/>
+        </exec>
+        
+        <exec executable="${glassfish.home}/bin/asadmin" osfamily="unix">
+            <arg value="deploy"/>
+            <arg line="${as.props}"/>
+            <arg line="${deployed.app}"/>
+        </exec>
+        
+        <echo message="URL of deployed app : http://${glassfish.http.host}:${glassfish.http.port}/${contextroot}"/>
+        <record name="deploy.output" action="stop"/>
+    </target>
+    
+    
+    <target name="undeploy-v2-impl">
+        <echo message="undeploying in v3 mode"/>
+        <echo message="./${war.file.ext}"/>
+        
+        <exec executable="cmd" osfamily="Windows">
+            <arg value="/c"/>
+            <arg value="${glassfish.home}/bin/asadmin.bat"/>
+            <arg line="undeploy"/>    
+            <arg line="${war.file}"/>
+        </exec>  
+        
+        <exec executable="${glassfish.home}/bin/asadmin" osfamily="unix">
+            <arg value="undeploy"/>
+            <arg value="${war.file}"/>
+        </exec>      
+    </target>
+    
+    <target name="start-server">
+        <echo message="${as.props}"/>
+        <exec executable="cmd" osfamily="Windows">
+            <arg value="/c"/>
+            <arg value="${glassfish.home}/bin/asadmin.bat"/>
+            <arg line="start-domain"/>
+            <arg line="--user ${admin.user}"/>
+            <arg line="--passwordfile ${admin.password.file} "/>                   
+            <arg line="${admin.domain}"/> 
+        </exec>
+        
+        <exec executable="${glassfish.home}/bin/asadmin" osfamily="unix">
+            <arg line="start-domain"/>    
+            <arg line="${as.props}"/>
+            <arg line="${admin.domain}"/> 
+        </exec>
+        
+    </target>
+
+<target name="stop-server">
+    <exec executable="cmd" osfamily="Windows">
+        <arg value="/c"/>
+        <arg value="${glassfish.home}/bin/asadmin.bat"/>
+        <arg line="stop-domain"/>
+        <arg line="${as.props}"/>
+        <arg line="${admin.domain}"/>   
+        
+    </exec>
+    
+    <exec executable="${glassfish.home}/bin/asadmin" osfamily="unix">
+        <arg line="stop-domain"/>
+        <arg line="${as.props}"/>
+        <arg line="${admin.domain}"/>       
+    </exec>
+    
+</target>
+
+
+<target name="create-jdbc-connpool">
+    <property name="jdbc.conpool.name" value="sample-derby-pool"/>
+<echo message="created jdbc connection pool ${jdbc.conpool.name}" 
+    level="verbose"/>
+    <exec executable="cmd" osfamily="Windows">
+    <arg value="/c"/>
+    <arg value="${glassfish.home}/bin/asadmin.bat"/>
+        <arg line="create-jdbc-connection-pool"/>
+        <arg line="--datasourceclassname ${db.class}"/>
+        <arg line="--restype ${jdbc.resource.type}"/>
+        <arg line="--target ${appserver.instance.name}"/>
+        <arg line="${as.props}"/>
+        <arg line="${jdbc.conpool.name}"/>
+    </exec>  
+</target>
+
+
+<!-- ================================================================ -->
+<!-- Target to create JDBC resource  -->
+<!-- ================================================================ -->
+<target name="create-jdbc-resource">
+    <echo message="Creating jdbc resource pool ${jdbc.resource.name}" 
+          level="verbose"/>
+    <echo message="asadmin create-jdbc-resource ${as.props} --connectionpoolid ${jdbc.conpool.name} --target ${appserver.instance.name} ${jdbc.resource.name}"/>
+    <exec executable="cmd" osfamily="Windows">
+        <arg value="/c"/>
+        <arg value="${glassfish.home}/bin/asadmin.bat"/>
+        <arg line="create-jdbc-resource"/>
+        <arg line="${as.props}"/>
+        <arg line="--port ${admin.port}"/>
+        <arg line="--connectionpoolid ${jdbc.conpool.name}"/>
+        <arg line="--target ${appserver.instance.name}"/>
+        <arg line="${jdbc.resource.name}"/>
+    </exec>
+    <echo message="cmd executed for ${appserver.instance.name}"/>
+</target>
+
+
+
+
+
+
+</project>

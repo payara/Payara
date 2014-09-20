@@ -1,0 +1,118 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- applications/manageVirtualServers.jsf -->
+
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout" guiTitle="$resource{i18n.manageVS.PageTitle}" >
+<!define name="content">
+    <event>
+        <!beforeCreate
+            getRequestValue(key="highLight" value="#{pageSession.highLight}");
+            getRequestValue(key="appName" value="#{pageSession.appName}");
+            urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+            getRequestValue(key="targetName" value="#{pageSession.targetName}");
+            getRequestValue(key="targetPageLink" value="#{pageSession.targetPageLink}");
+
+            gf.getTargetEndpoint(target="#{pageSession.targetName}" endpoint="#{pageSession.targetEndpoint}")
+            gf.restRequest(endpoint="#{pageSession.targetEndpoint}"  method="GET" result="#{requestScope.resp}");
+            setPageSessionAttribute(key="targetConfig" value="#{requestScope.resp.data.extraProperties.entity.configRef}");
+
+            getVsForDeployment(targetConfig="#{pageSession.targetConfig}" result="#{pageSession.vsList}");
+            gf.convertListToOptionArray(list="#{pageSession.vsList}", optionArray="#{pageSession.availableTargets}");
+            
+            gf.restRequest(endpoint="#{pageSession.targetEndpoint}/application-ref/#{pageSession.encodedAppName}" method="GET"  result="#{requestScope.ref}");
+            convertStringtoList(str="#{requestScope.ref.data.extraProperties.entity.virtualServers}"  result="#{requestScope.selectedVsList}");
+            convertListToArray(list="#{requestScope.selectedVsList}" array="#{pageSession.selectedTargets}");
+        />
+    </event>
+    <sun:form id="form">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$attribute{formId})
+        />
+
+#include "/common/shared/alertMsg_1.inc"
+ <sun:title id="propertyContentPage" title="$resource{i18n.manageVS.PageTitle}" helpText="$resource{i18n.manageVS.PageTitleHelp}">
+ <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}" 
+                    onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    convertArrayToCommaString(array="#{pageSession.selectedTargets}", commaString="#{requestScope.vsString}");
+                    createMap(result="#{requestScope.attrsMap}")
+                    mapPut(map="#{requestScope.attrsMap}" key="virtualServers" value="#{requestScope.vsString}");
+                    gf.restRequest(endpoint="#{pageSession.targetEndpoint}/application-ref/#{pageSession.encodedAppName}"
+                            attrs="#{requestScope.attrsMap}"  method="POST" result="#{requestScope.ref}");
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{pageSession.targetPageLink}?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
+                <!command
+
+                    gf.redirect(page="#{pageSession.targetPageLink}?appName=#{pageSession.encodedAppName}&listPageLink=#{pageSession.listPageLink}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="targetSection">
+    <sun:propertySheetSection id="vsSectionId"   >
+        <sun:property id="addRemoveProp" noWrap="#{true}" overlapLabel="#{false}">
+#include "/common/shared/commonAddRemove.inc"
+        </sun:property>
+        <!afterCreate
+            getClientId(component="$this{component}" clientId="#{pageSession.targetSectionId}");
+        />
+    </sun:propertySheetSection>
+</sun:propertySheet>
+
+<sun:hidden id="helpKey" value="$resource{help_common.manageVirtualServers}" />
+    </sun:form>
+
+#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>

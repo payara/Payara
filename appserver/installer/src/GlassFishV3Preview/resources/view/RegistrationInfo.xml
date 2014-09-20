@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="RegistrationInfo" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:oor="http://openoffice.org/2001/registry"
+  xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+  <apt:category apt:name="RegistrationInfo" apt:label="Registration Progress" >
+
+ <apt:page apt:name="RegistrationInfo" apt:label="RegistrationInfo" >
+
+  <apt:section apt:name="regprogress" apt:label="WELCOME" >
+    <apt:property apt:name="TOP_MESSAGE"
+                  apt:dataPath=""
+                  apt:type="xs:string">
+      <apt:visual>
+        <apt:htmlPanel/>
+      </apt:visual>
+    </apt:property>
+    <apt:property apt:name="REGPROGRESS"
+        apt:dataPath=""
+        apt:type="xs:string">
+      <apt:prop-value >0</apt:prop-value>
+      <apt:visual>
+        <apt:progressBar apt:determinate="false" apt:toolTip="REGISTARTATION_PROGRESS" apt:progressMax="100"/>
+      </apt:visual>
+    </apt:property>
+    <apt:property apt:name="BOTTOM_MESSAGE"
+                  apt:dataPath=""
+                  apt:type="xs:string">
+      <apt:prop-value>$PROGRESS_WAIT</apt:prop-value>
+      <apt:visual>
+        <apt:htmlPanel/>
+      </apt:visual>
+    </apt:property>
+  </apt:section>
+
+   <apt:scriptHandler apt:scriptLanguage="beanshell">
+    <apt:scriptCode><![CDATA[
+
+import java.lang.*;
+import java.lang.reflect.*;
+import java.io.*;
+import java.util.*;
+import java.net.*;
+import com.sun.enterprise.registration.*;
+import com.sun.enterprise.registration.impl.*;
+import com.sun.enterprise.registration.RegistrationException;
+
+
+
+ 
+ /* Validates the given SDN credentials and Register the product*/
+    validateAccountAndRegister(String username, String passwd, String localRegistryPath, String proxyHost, int proxyPort)
+    throws ClassNotFoundException, NoSuchMethodException,
+            IllegalAccessException, InstantiationException,
+            InvocationTargetException, RegistrationException,
+            UnknownHostException, ConnectException {
+        boolean valid = false;
+        
+       	File regPath = new File(localRegistryPath);
+        SysnetRegistrationService rs = null;
+   	if (proxyHost.trim() == null || proxyHost.length() == 0 || proxyPort == 0) 
+		rs = new SysnetRegistrationService(regPath);	
+	else
+                rs = new SysnetRegistrationService(regPath,proxyHost, proxyPort);
+
+        /* validate account */
+        HashMap map = new HashMap();
+        map.put(RegistrationAccount.USERID, username);
+        map.put(RegistrationAccount.PASSWORD, passwd);
+        SOAccount account = new SOAccount(map);
+
+	/* Validate the Account */
+        rs.isRegistrationAccountValid(account);
+
+	/* Register product with account */
+        rs.register(account);
+
+    }
+
+   /* Creates the SDN Account */
+    createSDNAccount(String email, String passwd,
+            String country, String firstname, String lastname, String companyname, String localRegistryPath, String proxyHost, int proxyPort)
+            throws RegistrationException, ConnectException, UnknownHostException,
+            NoSuchMethodException, ClassNotFoundException,
+            InstantiationException, IllegalAccessException,
+            InvocationTargetException {
+        
+	File regPath = new File(localRegistryPath);
+        SysnetRegistrationService rs = null;
+	if (proxyHost.trim() == null || proxyHost.length() == 0 || proxyPort == 0) 
+		rs = new SysnetRegistrationService(regPath);	
+	else
+                rs = new SysnetRegistrationService(regPath,proxyHost, proxyPort);
+        Map map = new HashMap();
+        map.put(RegistrationAccount.EMAIL, email);
+        map.put(RegistrationAccount.PASSWORD, passwd);
+        map.put(RegistrationAccount.USERID, email);
+        map.put(RegistrationAccount.FIRSTNAME, firstname);
+        map.put(RegistrationAccount.LASTNAME, lastname);
+        map.put(RegistrationAccount.COUNTRY, country);
+	map.put("company", companyname);
+        SOAccount soAccount = new SOAccount(map);
+
+	/* Create the Account */
+        rs.createRegistrationAccount(soAccount);
+
+	/* Register the product */
+        rs.register(soAccount);
+
+    }
+      /** Code Reused/Copied from ExceptionUtil in "common"
+		Get the chain of exceptions via getCause(). The first element is the
+		Exception passed.
+		
+		@param start	the Exception to traverse
+		@return		a Throwable[] or an Exception[] as appropriate
+	 */
+	public static Throwable[]
+	getCauses(Throwable start)
+	{
+
+                ArrayList list = new ArrayList();
+	
+		boolean	haveNonException	= false;
+		
+		Throwable t	= start;
+		while ( t != null )
+		{
+			list.add( t );
+			
+			if ( ! ( t instanceof Exception ) )
+			{
+				haveNonException	= true;
+			}
+			
+			Throwable temp	= t.getCause();
+			if ( temp == null )
+				break;
+			t	= temp;
+		}
+		
+		Throwable[]	results	= haveNonException ?
+			new Throwable[ list.size() ] : new Exception[ list.size() ];
+		
+		list.toArray( results );
+		
+		return( results );
+	}
+	
+	
+	/**
+		Code Reused/Copied from ExceptionUtil in "common"
+		Get the original troublemaker.
+		@param e	the Exception to dig into
+		@return		the original Throwable that started the problem
+	 */
+	public static Throwable
+	getRootCause( Throwable e )
+	{
+		Throwable[]	causes	= getCauses( e );
+		
+		return( causes[ causes.length - 1 ] );
+	}
+
+run() {
+  int regStatus = 0; // 0 = success, -1 = failure
+
+     String regOption = (String)ConfigHelper.getValue(
+		"RegistrationOptions.regoptions.REGISTRATION_MODE");
+
+     String installHome = (String)ConfigHelper.getValue("InstallHome.directory.INSTALL_HOME");
+     String regFilePath = installHome + File.separator + "glassfish" + File.separator + "lib" +
+			File.separator + "registration" + File.separator + "servicetag-registry.xml";
+
+    wizard.enableNext(false);
+   if (regOption.equals("USE_EXISTINGACCT")) {
+	
+     String proxyHost = (String)ConfigHelper.getValue("UpdateTool.Configuration.PROXY_HOST");
+     String proxyPortString = (String)ConfigHelper.getValue("UpdateTool.Configuration.PROXY_PORT");
+
+     String email = (String)ConfigHelper.getValue("RegistrationOptions.regoptions.USERNAME");
+     String password = (String)ConfigHelper.getValue("RegistrationOptions.regoptions.USERPASSWORD");
+  
+     int proxyPort;
+     if (proxyPortString.trim() == null || proxyPortString.length() == 0)
+		proxyPort = 0;
+     else
+     		proxyPort = Integer.parseInt(proxyPortString.trim());
+
+     try  {
+
+	// validate and register
+	validateAccountAndRegister(email, password, regFilePath,proxyHost, proxyPort);
+
+        JOptionPane.showMessageDialog(frame,
+	      Msg.get("REGISTRATION_USE_EXISTING_SUCCESSFUL", null),
+              Msg.get("INSTALLATION_TITLE", null),
+	      JOptionPane.INFORMATION_MESSAGE);
+      } 
+      catch(Exception e)  {
+	  regStatus = -1;
+      Throwable rootException = getRootCause(e);
+          JOptionPane.showMessageDialog(frame,
+		rootException.getMessage(),
+		Msg.get("INSTALLATION_TITLE", null),
+	        JOptionPane.ERROR_MESSAGE);
+     }
+    }
+    if (regOption.equals("CREATE_NEWACCT")) {
+      String email = (String)ConfigHelper.getValue("SOAccountCreation.accountinfo.EMAIL");
+      String password = (String)ConfigHelper.getValue("SOAccountCreation.accountinfo.PASSWORD");
+      String firstName = (String)ConfigHelper.getValue("SOAccountCreation.accountinfo.FIRSTNAME");
+      String lastName = (String)ConfigHelper.getValue("SOAccountCreation.accountinfo.LASTNAME");
+      String company = (String)ConfigHelper.getValue("SOAccountCreation.accountinfo.COMPANYNAME");
+      String country = (String)ConfigHelper.getValue("SOAccountCreation.accountinfo.COUNTRY");
+	
+     String proxyHost = (String)ConfigHelper.getValue("UpdateTool.Configuration.PROXY_HOST");
+     String proxyPortString = (String)ConfigHelper.getValue("UpdateTool.Configuration.PROXY_PORT");
+
+     int proxyPort;
+     if (proxyPortString.trim() == null || proxyPortString.length() == 0)
+		proxyPort = 0;
+     else
+     		proxyPort = Integer.parseInt(proxyPortString.trim());
+      try  {
+
+	// create and register
+	createSDNAccount(email, password, country, firstName, lastName, company,regFilePath,proxyHost, proxyPort);
+
+        JOptionPane.showMessageDialog(frame,
+	      Msg.get("REGISTRATION_CREATE_NEWACCT_SUCCESSFUL", null),
+              Msg.get("INSTALLATION_TITLE", null),
+	      JOptionPane.INFORMATION_MESSAGE);
+      } 
+      catch(Exception e)  {
+	  regStatus = -1;
+ 	   Throwable rootException = getRootCause(e);
+           JOptionPane.showMessageDialog(frame,
+		rootException.getMessage(),
+		Msg.get("INSTALLATION_TITLE", null),
+	        JOptionPane.ERROR_MESSAGE);
+     }
+    }
+
+    if (regStatus == 0)  {
+        wizard.enableNext(true);
+        wizard.clickNext();
+    } else  {
+        wizard.enableBack(true);
+        wizard.clickBack();
+    }
+}
+
+return (Runnable)this;]]>
+    </apt:scriptCode>
+  </apt:scriptHandler>
+
+  </apt:page>
+
+  </apt:category>
+</apt:template>

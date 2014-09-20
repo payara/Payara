@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.glassfish.main.distributions</groupId>
+        <artifactId>distributions</artifactId>
+        <version>4.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>appclient</artifactId>
+    <name>Glassfish Remote App Client Bundle</name>
+    <description>This module assembles the Glassfish Remote App Client Bundle</description>
+    <packaging>pom</packaging>
+
+    <properties>
+        <sun.acc.xml.include>**/domains/domain1/config/sun-acc.xml</sun.acc.xml.include>
+        <lib.appclient.include>**/lib/appclient/**</lib.appclient.include>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2-beta-3</version>
+                <executions>
+                    <execution>
+                        <id>assemble-client-distribution</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+
+                            <!-- Note: the bundle name "appclient" - from the 
+                                 descriptor file name - is appended to the
+                                 finalName value to get the real final file -->
+                            <finalName>glassfish</finalName>
+
+                            <descriptors>
+                                <descriptor>src/main/assembly/appclient.xml</descriptor>
+                            </descriptors>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+
+                    <!--
+                        This execution extracts the contents of the lib/appclient
+                        directory and the sun-acc.xml file from the
+                        glassfish.zip distribution so we can
+                        package those files in this distribution also.
+                    -->
+                    <execution>
+                        <id>extract-lib-appclient</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                  <groupId>org.glassfish.main.distributions</groupId>
+                                  <artifactId>glassfish</artifactId>
+                                  <version>${project.version}</version>
+                                  <type>zip</type>
+                                  <includes>${sun.acc.xml.include},${lib.appclient.include}</includes>
+                                </artifactItem>
+                              </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!--
+                        This execution extracts the appclient script files from
+                        the distribution fragment so we can include them in this
+                        distribution.  Normally we would just use the assembly
+                        plug-in config to do this using a dependencySet, except
+                        that the fileMode handling (which sets permissions)
+                        does not work correctly in a dependencySet although it
+                        does in a fileSet.
+                    -->
+                    <execution>
+                        <id>extract-appclient-scripts</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                  <groupId>org.glassfish.main.appclient</groupId>
+                                  <artifactId>appclient-scripts</artifactId>
+                                  <version>${project.version}</version>
+                                  <type>distribution-fragment</type>
+                                  <includes>glassfish/bin/*</includes>
+                                </artifactItem>
+                              </artifactItems>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.appclient</groupId>
+            <artifactId>gf-client</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.appclient</groupId>
+            <artifactId>appclient-scripts</artifactId>
+            <version>${project.version}</version>
+            <type>distribution-fragment</type>
+        </dependency>
+    </dependencies>
+</project>
+

@@ -1,0 +1,181 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- cluster/clusters.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"
+    guiTitle="$resource{i18nc.configurations.PageTitle}"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:configurations');"
+>
+<!define name="listTableDeleteButton">
+    <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
+        onClick="if (getConfirm(this,'$pageSession{confirmDeleteMsg}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+    <!command
+        getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
+        getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+        foreach (var="row" list="${selectedRows}") {
+            setPageSessionAttribute(key="configName" value="#{row['name']}");
+            setPageSessionAttribute(key="deleteConfigUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/delete-config");
+            gf.restRequest(endpoint="#{pageSession.deleteConfigUrl}", method="post");
+        }
+        gf.redirect(page="#{pageSession.listLink}");
+    />
+    </sun:button>
+</define>
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}/configs");
+        setPageSessionAttribute(key="childType" value="config");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}", result="#{requestScope.listOfRows}");
+        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18nc.msg.JS.confirmDeleteConfigs}");
+        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/common/configuration/configurationNew.jsf");
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/common/configuration/configurations.jsf");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/common/configuration/configuration.jsf");
+        gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{pageSession.standaloneList}" statusMap="#{pageSession.standaloneStatusMap}");
+        setAttribute(key="one" value="$int{1}");
+    />
+    </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations");</script>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+     <sun:title id="propertyContentPage" title="$resource{i18nc.configurations.PageTitle}"
+                 helpText="$resource{i18nc.configurations.PageTitleHelp}" />
+	"<br />
+
+<sun:table id="configs" title="$resource{i18nc.configurations.TableTitle}"
+    deselectMultipleButton="$boolean{true}"
+    deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+    selectMultipleButton="$boolean{true}"
+    selectMultipleButtonOnClick="setTimeout('admingui.table.c(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{tableId});
+    />
+
+#include "/common/shared/listTableButtons.inc"
+
+<sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
+        <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+       />
+
+    <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" valign="top" id="col0">
+        <sun:checkbox id="select"
+            toolTip="$resource{i18n.common.select}"
+            selected="#{td.value.selected}"
+            selectedValue="$boolean{true}"
+            onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+        />
+    </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n.common.name.header}" sort="name" rowHeader="$boolean{true}" valign="top" id="col1">
+        <event>
+            <!beforeEncode
+                setPageSessionAttribute(key="configName" value="#{td.value.name}");
+            />
+        </event>
+        <sun:hyperlink id="link" text="#{td.value.name}"
+                   url="#{request.contextPath}/common/configuration/configuration.jsf?configName=#{td.value.name}" />
+    </sun:tableColumn>
+
+     <sun:tableColumn
+        headerText="$resource{i18nc.configurations.instanceCol}"
+        rowHeader="$boolean{false}" id="col3">
+         <event>
+            <!beforeEncode
+                gf.listInstances(optionKeys={"id"} optionValues={"$pageSession{configName}"}, instances="#{requestScope.instanceList}" statusMap="#{requestScope.statusMap}");
+                if(#{pageSession.configName}=server-config){
+                    listAdd(list="#{requestScope.instanceList}" value="server" index="0");
+                }
+            />
+         </event>
+            <foreach key="instance" list="#{requestScope.instanceList}">
+                <event>
+                <!beforeEncode
+                    setAttribute(key="isAdminServer" value="#{false}");
+                     if (#{instance}=server){
+                        setAttribute(key="iurl" value="#{request.contextPath}/common/appServer/serverInstGeneralPe.jsf");
+                        setAttribute(key="isAdminServer" value="#{true}");
+                        //TODO:  need to check if restart is required.
+                        setAttribute(key="status" value="RUNNING");
+                    }
+
+                    if (!#{requestScope.isAdminServer}){
+                        setAttribute(key="status" value="#{requestScope.statusMap['${instance}']}");
+
+                        gf.containedIn(list="#{pageSession.standaloneList}" testStr="#{instance}" contain="#{requestScope.isStandalone}" );
+                        if (#{requestScope.isStandalone}){
+                            setAttribute(key="iurl" value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?instanceName=#{instance}");
+                        }
+
+                        if ( !#{requestScope.isStandalone}){
+                            setAttribute(key="iurl" value="#{request.contextPath}/cluster/cluster/clusterInstanceEdit.jsf?instanceName=#{instance}" );
+                        }
+                    }
+
+                    setAttribute(key="statusString" value="$resource{i18nc.status.$attribute{status}}  &nbsp; $resource{i18nc.status.image.$attribute{status}}");
+
+                />
+                </event>
+                <sun:hyperlink url="#{requestScope.iurl}" text="#{instance}" />
+                "&nbsp;&nbsp;&nbsp;
+                <staticText id="colStopped" value="#{requestScope.statusString}" />
+                "<br />
+            </foreach>
+    </sun:tableColumn>
+
+    </sun:tableRowGroup>
+
+</sun:table>
+
+<sun:hidden id="helpKey" value="$resource{help_common.configurations}" />
+    </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+
+</define>
+</composition>
+

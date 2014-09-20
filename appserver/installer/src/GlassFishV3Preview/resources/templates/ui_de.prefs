@@ -1,0 +1,291 @@
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ COMMON STUFF ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+PRODUCT_NAME=GlassFish Server Open Source Edition
+
+app_title=GlassFish Server Open Source Edition
+
+# Text for Buttons
+btnCancel_text=Abbrechen
+btnExit_text=Beenden
+btnHelp_text=Hilfe
+btnBack_text=Zur\u00FCck
+btnNext_text=Weiter
+
+# stuff that's used by templates regardless of viewmode
+mainpanel_bgcolor=e8e9ed
+navigpanel_image=/templates/LeftPanel.jpg
+logopanel_image=/templates/LogoPanel.jpg
+top_left_image=/templates/glassfish_logo.png
+bottom_left_image=/templates/community-logo.png
+icon_image=/templates/glassfishserver.gif
+
+# Do not translate 
+leftpanel_font=Sans-Serif-BOLD-14
+
+# Dynamic panel
+# Do not translate this section 
+dynamic_content_font=Sans-Serif-BOLD-14
+dynamic_component_background=WHITE
+dynamic_component_foreground=BLACK
+dynamic_component_border_color=BLACK
+
+# Font for titles
+# Do not translate 
+title1_font=Sans-Serif-BOLD-18
+# Do not translate 
+title2_font=Sans-Serif-BOLD-20
+
+# Text color for titles
+title1_color=587993
+# Do not translate 
+title2_color=BLACK
+
+# Text for titles - title2_text is appended to title1_text after forced
+# line break
+title1_text=Willkommen 
+title2_text=GlassFish 
+# Colors for content panel
+contentpanel_bordercolor=587993
+contentpanel_bgcolor=e8e9ed
+
+btnpanel_bgcolor=e8e9ed
+
+
+# Font for Buttons
+# Do not translate 
+button_font=Sans-Serif-BOLD-14
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~W E L C O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Welcome_WELCOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Willkommen bei der Installation von ${PRODUCT_NAME}.&lt;BR&gt;Dieses Installationsprogramm f\u00FChrt Sie durch den Installationsprozess. &lt;BR&gt;&lt;BR&gt;GlassFish Server ist ein modularer und schlanker Java EE 7-kompatibler Anwendungsserver. Zu seinen wesentlichen Markmalen z\u00E4hlen OSGi-Laufzeit, eine kurze Hochfahrzeit, Maven-Unterst\u00FCtzung und eine schnelle iterative Entwicklung mit aktivem Redeployment. GlassFish Server bietet au\u00DFerdem mit Webkonsole, Befehlszeile und RESTful-API eine Verwaltung mit vielen Funktionen. Weitere Informationen finden Sie unter &lt;a href=http://glassfish.java.net&gt; GlassFish Project Page&lt;/a&gt;. &lt;BR&gt;&lt;BR&gt;Klicken Sie auf "Weiter", um fortzufahren. &lt;BR&gt;&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~I N S T A L L    H O M E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#DEFAULT_INSTALL_HOME=C:\Program Files\Sun
+INSTALL_HOME_LABEL=Installationsverzeichnis
+INSTALL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie das Verzeichnis an, in dem ${PRODUCT_NAME} auf dem Zielsystem installiert werden soll.&lt;BR&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+SPECIFY_HOME_MSG=Geben Sie das Installationsverzeichnis an.
+INSTALL_BOTTOM_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Wenn das angegebene Installationsverzeichnis nicht vorhanden ist, wird das Installationsverzeichnis durch das Installationsprogramm automatisch f\u00FCr Sie erstellt.&lt;/BODY&gt;&lt;/HTML&gt;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~C O N F I G   M O D E   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  L10N SELECTION PAGE ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+L10N_HOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;W\u00E4hlen Sie aus der folgenden Liste eine Option:&lt;/BODY&gt;&lt;/HTML&gt;
+L10N_CHOICE_TEXT=Installieren Sie Sprachen, f\u00FCr die ausgew\u00E4hlten Produkte.
+INSTALL_L10N_TOOLTIP=W\u00E4hlen Sie diese Option, um Sprachen f\u00FCr die ausgew\u00E4hlten Produkte zu installieren.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~J D K  S E L E C T I O N  P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+JDK_HOME_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie aus der folgenden Liste eine Option:&lt;/BODY&gt;&lt;/HTML&gt;
+
+
+JDK_HOME=JDK-Home
+SELECTED_JDK_TEXT=&lt;HTML&gt;&lt;BODY&gt;Das ausgew\u00E4hlte JDK ist &lt;/BODY&gt;&lt;/HTML&gt;
+
+JDK_FROM_MEDIA_CHOICE_TEXT=Installieren und verwenden Sie die Standardversion von Java(TM) SDK.
+JDK_FROM_LIST_CHOICE_TEXT=W\u00E4hlen Sie ein Java(TM) SDK aus der Liste.
+JDK_TYPED_IN_CHOICE_TEXT=Geben Sie das Verzeichnis von Java(TM) SDK ein. 
+
+JDK_LIST_TOOLTIP=W\u00E4hlen Sie ein Java(TM) SDK aus der Dropdown-Liste.
+JDK_TYPE_IN_TOOLTIP=Geben Sie in diesem Feld das Verzeichnis f\u00FCr Java(TM) SDK ein. 
+
+AVAILABLE_JDK=Verf\u00FCgbare Java(TM) SDKs 
+ALTERNATE_JDK=Alternatives Verzeichnis f\u00FCr Java(TM) SDK
+
+UPDATETOOL_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; Das Updatetool sucht regelm\u00E4\u00DFig nach Updates f\u00FCr GlassFish Server, &lt;BR&gt;sodass Sie immer \u00FCber die aktuellen Builds verf\u00FCgen.&lt;BODY&gt;&lt;HTML&gt;
+
+
+UPDATE_TOOL_PRIVACY_NOTICE=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt; Das Updatetool sucht regelm\u00E4\u00DFig nach verf\u00FCgbaren Updates und erfasst &lt;BR&gt; einige Systemdaten. Weitere Informationen erhalten Sie auf der Webseite &lt;a href=https://wikis.oracle.com/display/GlassFish/UsageMetricsV3&gt; GlassFish Usage Metrics&lt;/a&gt; &lt;BR&gt; unter https://wikis.oracle.com/display/GlassFish/UsageMetricsV3.&lt;BODY&gt;&lt;HTML&gt;
+
+
+ADMINISTRATION_SERVICE_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie den Namen des Windows-Dienstes oder eines Solaris SMF-Service an.&lt;BODY&gt;&lt;HTML&gt;
+
+ADMINISTRATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif' size=3 &gt;Konfigurieren Sie die Administrationseinstellungen f\u00FCr den Server. Geben Sie den&lt;BR&gt;Benutzernamen und das Kennwort f\u00FCr den Server an. Sie k\u00F6nnen die Kennwortfelder&lt;BR&gt;leer lassen, wenn Sie den Server f\u00FCr nicht authentifizierte Anmeldungen konfigurieren&lt;BR&gt;m\u00F6chten. &lt;/BODY&gt;&lt;HTML&gt;
+
+ANONYMOUS=Als anonymer Benutzer konfigurieren
+NON_ANONYMOUS=Benutzername und Kennwort angeben 
+DOMAIN_NAME_TOOL_TIP=Geben Sie den Domainnamen ein
+ADMIN_PORT_TOOL_TIP=Geben Sie den Administrationsport ein
+HTTP_PORT_TOOL_TIP=Geben Sie den HTTP-Listener-Port ein
+ADMIN_USER_TOOL_TIP=Geben Sie den Administratorbenutzernamen ein
+ADMIN_PASSWORD_TOOL_TIP=Geben Sie das Administratorkennwort ein
+ADMIN_SERVICE_CHOICE_TOOL_TIP=W\u00E4hlen Sie diese Option, um einen Betriebssystemservice f\u00FCr die Domain zu erstellen
+ADMIN_SERVICE_CHOICE_TEXT=Betriebssystemservice f\u00FCr die Domain erstellen
+INSTANCE_SERVICE_CHOICE_TEXT=Betriebssystemservice f\u00FCr diese Instanz erstellen 
+INSTANCE_SERVICE_CHOICE_TOOL_TIP=W\u00E4hlen Sie diese Option, um einen Betriebssystemservice f\u00FCr diese Instanz zu erstellen
+ADMIN_SERVICE_NAME_TEXT=Servicename
+ADMIN_SERVICE_NAME_TOOL_TIP=Name des zu erstellenden Service; Standardwert: domain1Service
+START_SERVER_CHOICE_TEXT=Domain nach dem Erstellen starten
+START_SERVER_CHOICE_TOOL_TIP=W\u00E4hlen Sie diese Option, wenn Sie mit der Konfiguration dieser Domain fortfahren m\u00F6chten
+
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PRODUCT SELECTION PAGE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ADD_BUTTON_LABEL=Hinzuf\u00FCgen >
+ADD_ALL_BUTTON_LABEL=Alle hinzuf\u00FCgen >>
+REMOVE_BUTTON_LABEL=< Entfernen
+REMOVE_ALL_BUTTON_LABEL=<< Alle entfernen
+PSP_INTRO_TEXT=W\u00E4hlen Sie die zu installierenden Produkte.
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~PAGE FLOW~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONFIGURE_SELECT_MSG=Konfiguriert die ausgew\u00E4hlten Softwarekomponenten mit den standardm\u00E4\u00DFigen oder benutzerdefinierten Werten.
+EXPRESS=Express
+CUSTOM=Benutzerdefiniert
+SELECT_DESIRED_MODE_TEXT=&lt;HTML&gt;&lt;BODY&gt; W\u00E4hlen Sie den Konfigurationsmodus.  &lt;/BODY&gt;&lt;/HTML&gt;
+CUSTOM_CDATA_TXT=&lt;HTML&gt;&lt;BODY&gt;&lt;B&gt;Benutzerdefinierter&lt;/B&gt; Modus installiert die Software und konfiguriert sie mit den Werten, die Sie auf den folgenden Konfigurationsseiten angeben.&lt;BR&gt; &lt;/BODY&gt;&lt;/HTML&gt;
+EXPRESS_CDATA_TXT=&lt;HTML&gt;&lt;BODY&gt;&lt;B&gt;Express&lt;/B&gt;-Modus installiert die Software und konfiguriert sie mit Standardwerten.
+CONFIGURE_SELECTED_COMPONENTS_MSG=Konfiguriert die ausgew\u00E4hlten Softwarekomponenten mit den standardm\u00E4\u00DFigen oder benutzerdefinierten Werten.
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~A D M I N   P A S S W O R D   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ADMIN_USER_TEXT=Benutzername
+ADMIN_PASSWORD_TEXT=Kennwort
+ADMIN_REENTERPASSWORD_TEXT=Kennwort erneut eingeben
+ADMIN_PORT_TEXT=Admin-Port
+DOMAIN_NAME_TEXT=Domainname
+HTTP_PORT_TEXT=HTTP-Port
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~U P D A T E T O O L   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INSTALL_UPDATE_TOOL_TEXT=Updatetool installieren
+ENABLE_UPDATE_TOOL_TEXT=Updatetool aktivieren
+PROXY_HOST_TEXT=Proxyhost
+PROXY_PORT_TEXT=Proxyport
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ACCOUNT CREATION PAGE FOR PRODUCT REGISTRATION ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+EMAIL=E-Mail-Adresse
+PASSWORD=Kennwort
+REENTER_PASSWORD=Kennwort erneut eingeben
+FIRSTNAME=Vorname
+LASTNAME=Nachname
+COUNTRY=Land
+COMPANYNAME=Firmenname
+ACCOUNT_CREATION_HEADER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie die folgenden Informationen zur Erstellung eines Sun-Onlineaccounts an. Alle Feldwerte&lt;BR&gt;m\u00FCssen angegeben werden.&lt;BODY&gt;&lt;HTML&gt;
+ACCOUNT_CREATION_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;&lt;a href=http://www.oracle.com/us/legal/privacy/index.html&gt;Datenschutzrichtlinien von Oracle&lt;BODY&gt;&lt;HTML&gt;
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~USER TYPE OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INSTALLUSERTYPE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Installationsart w\u00E4hlen.&lt;BODY&gt;&lt;HTML&gt;
+
+BASIC_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Installiert eine GlassFish Server-Verwaltungsdomain. Dies eignet sich f\u00FCr Entwicklung oder&lt;BR&gt;nicht-gesch\u00E4ftskritische Verwendung. Vergewissern Sie sich, dass die Ports 4848 und&lt;BR&gt; 8080 frei sind.&lt;BODY&gt;&lt;HTML&gt;
+
+ADVANCED_USER_FOOTER_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Nicht unterst\u00FCtzt.&lt;BODY&gt;&lt;HTML&gt;
+
+BASIC_USER=Standardinstallation
+ADVANCED_USER=Benutzerdefinierte Installation
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INSTALLATION/CONFIGUARATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+INSTALL_CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Dieses Programm kann eine Neuinstallation und -konfiguration von&lt;BR&gt;GlassFish Server vornehmen oder bestehende installierte Bin\u00E4rdateien zur &lt;BR&gt;Durchf\u00FChrung der erforderlichen Konfiguration verwenden. Sie k\u00F6nnen nur die Bin\u00E4rdateien installieren&lt;BR&gt; und die Konfiguration \u00FCberspringen. W\u00E4hlen Sie eine Option, die Ihren Anforderungen entspricht.&lt;BODY&gt;&lt;HTML&gt; 
+
+INSTALL_ONLY_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um eine Installation durchzuf\u00FChren und die Konfiguration zu \u00FCberspringen.&lt;BR&gt;Um diese Installation zu konfigurieren, f\u00FChren Sie das Installationsprogramm erneut aus und w\u00E4hlen die Option 'Bestehende Installation konfigurieren'.&lt;BODY&gt;&lt;HTML&gt; 
+
+INSTALL_AND_CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um GlassFish Server zu installieren und zu konfigurieren.&lt;BODY&gt;&lt;HTML&gt; 
+
+CONFIG_ONLY_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um eine bereits installierte Version dieses Produkts zu konfigurieren.&lt;BODY&gt;&lt;HTML&gt; 
+
+INSTALL_AND_CONFIG=Installation und Konfiguration
+INSTALL_ONLY=Nur Installation
+CONFIG_ONLY=Bestehende Installation konfigurieren 
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~CONFIGURATION ONLY SUMMARY PANEL PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SUMMARY_HEADER_EXECUTING=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Warten Sie, bis dieses Tool Ihre Umgebung konfiguriert hat.&lt;BODY&gt;&lt;HTML&gt;
+SUMMARY_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Dieses Tool hat die erforderliche Konfiguration anhand Ihrer Eingaben durchgef\u00FChrt. &lt;BR&gt;\u00DCberpr\u00FCfen Sie die Daten- und Logausgaben, um die Richtigkeit der Angaben sicherzustellen.&lt;BR&gt; M\u00F6glicherweise m\u00FCssen Sie das Programm erneut ausf\u00FChren, um Glassfish erneut zu konfigurieren. &lt;BODY&gt;&lt;HTML&gt; 
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~CONFIGURATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+CONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie die entsprechende Konfigurationsoption.&lt;BODY&gt;&lt;HTML&gt; 
+
+DOMAIN_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um einen Domain Administration Server zu erstellen.&lt;BODY&gt;&lt;HTML&gt; 
+
+STANDALONEINSTANCE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um eine lokale Standalone-Instanz zu erstellen, die von einem Domain Administration Server verwaltet wird. Der Domain Administration Server muss ausgef\u00FChrt werden, damit diese Option erfolgreich abgeschlossen werden kann. &lt;BODY&gt;&lt;HTML&gt; 
+
+CLUSTEREDINSTANCE_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um eine Clusterinstanz zu erstellen, die von einem &lt;BR&gt;Domain Administration Server verwaltet wird. Der Domain Administration Server muss&lt;BR&gt;ausgef\u00FChrt werden, damit diese Option erfolgreich abgeschlossen werden kann.&lt;BODY&gt;&lt;HTML&gt; 
+
+
+NOCONFIG_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;W\u00E4hlen Sie diese Option, um GlassFish Server zu installieren und die Konfiguration zu \u00FCberspringen.&lt;BODY&gt;&lt;HTML&gt; 
+
+CREATE_DOMAIN=Serverdomain erstellen
+CREATE_STANDALONEINSTANCE=Standalone-Serverinstanz erstellen 
+CREATE_CLUSTEREDINSTANCE=Clusterserverinstanz erstellen
+NO_CONFIGURATION=Konfiguration \u00FCberspringen
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~INSTANCE INFORMATION PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CONFIGURATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie folgende Informationen an, um eine Instanz zu erstellen und zu&lt;BR&gt;konfigurieren.&lt;BR&gt; Der Domain Administration Server muss \u00FCber den angegebenen &lt;BR&gt; Host und Port ausgef\u00FChrt werden.&lt;BODY&gt;&lt;HTML&gt; 
+
+CLUSTERED_CONFIGURATION_TOP_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie die zum Erstellen einer lokalen Serverinstanz ben\u00F6tigten Informationen an. Sie k\u00F6nnen&lt;BR&gt; diese Instanz auch dem Cluster hinzuf\u00FCgen.&lt;BODY&gt;&lt;HTML&gt; 
+
+DAS_PARTITION_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font size='5' face='Sans-Serif'&gt;&lt;BR&gt;&lt;BR&gt;Domain Administration Server&lt;BODY&gt;&lt;HTML&gt; 
+
+INSTANCE_NAME_TEXT=Instanzname
+INSTANCE_NAME_TOOL_TIP=Geben Sie den Namen der zu erstellenden Instanz an. Standardeinstellung: instance1
+
+SERVER_ADMIN_PORT_TEXT=Administrationsport
+SERVER_ADMIN_PORT_TOOL_TIP=Domain Administration Port angeben
+
+SERVER_HOST_NAME_TEXT=Hostname 
+SERVER_HOST_NAME_TOOL_TIP=Geben Sie den Namen des Hosts an, auf dem die Domain liegt
+
+CREATE_CLUSTER_INFO_TEXT=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Geben Sie den Namen des Clusters an, zu dem diese Instanz geh\u00F6rt.&lt;BR&gt;Ein Cluster kann erstellt werden, wenn noch keines vorhanden ist. &lt;BODY&gt;&lt;HTML&gt;
+
+CREATE_CLUSTER_CHOICE_TEXT=Cluster erstellen
+
+PART_OF_CLUSTER_CHOICE_TOOL_TIP=
+
+CLUSTER_NAME_TEXT=Clustername 
+
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~REGISTRATION OPTIONS PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+REGISTRATION_OPTIONS_HEADER=&lt;HTML&gt;&lt;BODY&gt;&lt;font face='Sans-Serif'&gt;Warum registrieren? Sie erhalten bequemen Zugriff auf Vorteile wie &lt;UL&gt;&lt;LI&gt;Patchinformationen und Updates zu Bugs&lt;/LI&gt;&lt;LI&gt;Benachrichtigung zu Screencasts und Tutorials,&lt;/LI&gt;&lt;LI&gt;Sonderangebote&lt;/LI&gt;&lt;/UL&gt;&lt;BODY&gt;&lt;HTML&gt;
+
+CREATE_NEWACCT=Ich habe keinen Sun-Onlineaccount. Registrieren.
+USE_EXISTINGACCT=Ich habe bereits einen Sun-Onlineaccount.
+USERNAME=Benutzername
+USERPASSWORD=Benutzerkennwort
+SKIP_REGISTRATION=Registrierung \u00FCberspringen.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~R E A D Y   T O   I N S T A L L   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~UPGRADE PAGE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+UPGRADE_SOFTWARE=&lt;HTML&gt;&lt;BODY&gt;&lt;h3&gt;${PRODUCT_NAME}: Software upgraden&lt;/h3&gt;&lt;/BODY&gt;&lt;/HTML&gt;
+UPGRADE_ALLOW_TEXT=Upgraden
+UPGRADE_DECLINE_TEXT=Nicht upgraden
+UPGRADE_ALLOW_TOOLTIP=W\u00E4hlen Sie diese Option, um die Software upzugraden.
+UPGRADE_DECLINE_TOOLTIP=W\u00E4hlen Sie diese Option, um die Software nicht upzugraden.
+
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~P R O G R E S S   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# L10n: only translate the "Please wait" string.  leave the rest unchanged.
+PROGRESS_WAIT=Bitte haben Sie einen Moment Geduld ...
+
+## ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~S U M M A R Y   P A G E~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+REGISTRATION_PROGRESS=Registrierungsfortschritt

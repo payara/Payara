@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.glassfish.main.appclient</groupId>
+        <artifactId>client</artifactId>
+        <version>4.1</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>gf-client-module</artifactId>
+    <packaging>glassfish-jar</packaging>
+     <!-- the main artifact is the OSGi module JAR -->
+    <name>Client OSGi module (including ACC)</name>
+    
+    <!--
+        This module creates the app client container in three artifacts:
+            1. OSGi module for the ACC
+            2. stand-alone ACC JAR, suitable for running using java -jar ...
+            3. bundle suitable for distribution to remote clients.
+
+        Java programs that want to use the embeddable ACC would place the stand-
+        alone ACC JAR on their class paths.  OSGi modules that use the embeddable
+        ACC could simply declare a dependency on the ACC OSGi module.
+
+        The zip bundle contains the stand-alone ACC JAR and all other JARs on
+        which it depends.  End-users or administrators could copy this bundle
+        to remote clients and expand it, resulting in a single self-contained
+        directory which would contain all the required JARs.
+    -->
+
+    <properties>
+        <extracted-dtd-root>temp</extracted-dtd-root>
+        <extracted-dtd-top-level-directory>${extracted-dtd-root}/glassfish</extracted-dtd-top-level-directory>
+        <extracted-dtd-directory>${extracted-dtd-top-level-directory}/lib/dtds</extracted-dtd-directory>
+        <config-dtd-file>sun-application-client-container_1_2.dtd</config-dtd-file>
+
+        <standalone.classifier>lib</standalone.classifier>
+        <acc.osgi.module.classifier>module</acc.osgi.module.classifier>
+<!--
+        <config-xsd-dir>src/main/resources</config-xsd-dir>
+        <config-xsd-file>sun-application-client-container_1_2.xsd</config-xsd-file>
+-->
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
+
+    <developers>
+      <developer>
+            <id>tjquinn</id>
+            <name>Tim Quinn</name>
+            <url>http://blogs.sun.com/quinn</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+		        <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <!--
+                The next resource definition will include the DTDs and
+                schemas in the module so we can find them at runtime in the
+                client.  The dependency:unpack-dependency goal below will
+                by default deposit the unpacked contents into
+                target/dependency.  The .dtd and .xsd files are packaged into
+                their respective JARs in glassfish/lib, so we define that
+                combined directory as a resource
+                location so the .dtd and .xsd files will be packaged by default.
+                This is coordinated with the SaxParserHandlerBundled class
+                which resolves entities via the class path.
+            -->
+            <resource>
+                <directory>target/dependency/glassfish/lib/</directory>
+                <includes>
+                    <include>**/*.dtd</include>
+                    <include>**/*.xsd</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+
+            <!--
+                Unpack the modules which contain the DTDs and schemas so
+                we can package them as resources.
+            -->
+            <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-dependency-plugin</artifactId>
+                 <executions>
+                   <execution>
+                     <id>unpack-dtds-and-schemas</id>
+                     <phase>generate-resources</phase>
+                     <goals>
+                       <goal>unpack-dependencies</goal>
+                     </goals>
+                     <configuration>
+                       <includeGroupIds>org.glassfish.main.deployment</includeGroupIds>
+                       <includeArtifactIds>schemas,dtds</includeArtifactIds>
+                       <includes>**/*.dtd,**/*.xsd</includes>
+                     </configuration>
+                   </execution>
+                       <execution>
+                           <id>unpack</id>
+                           <phase>process-classes</phase>
+                           <goals>
+                             <goal>unpack</goal>
+                           </goals>
+                           <configuration>
+                               <artifactItems>
+                                   <artifactItem>
+                                       <groupId>org.glassfish.docs.man</groupId>
+                                       <artifactId>gf-client-module-manpage</artifactId>
+                                       <version>${v3-docs.version}</version>
+                                       <type>zip</type>
+                                       <overWrite>true</overWrite>
+                                       <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                   </artifactItem>
+                                </artifactItems>
+                           </configuration>
+                        </execution>
+                  </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+
+                            <archive>
+
+                                <manifest>
+                                    <mainClass>org.glassfish.main.appclient.client.acc.AppClientCommand</mainClass>
+                                </manifest>
+                                <!--
+                                    It's discouraging to have to specify the class path
+                                    manually.  Ideally the plug-in would do this
+                                    for us, but the jar plug-in uses the name
+                                    of the modules including the version strings;
+                                    when the GlassFish modules are packaged into
+                                    the distributions the version strings are
+                                    stripped off. 
+                                -->
+                            </archive>
+                        </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>core</artifactId>
+        </dependency>
+        
+        <!--
+            required for annotation processing support
+        -->
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>common-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.ejb</groupId>
+            <artifactId>ejb-full-container</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+            We depend on the deployment/dtds and deployment/schemas modules
+            but only at build-time.  We extract the DTD and schema files and
+            add them to the module JAR so they will be accessible at tuntime
+            on the class path.  Because we don't really rely on the zip files
+            at runtime, we use scope "provided" for the dependencies.
+        -->
+        <dependency>
+            <scope>provided</scope>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dtds</artifactId>
+            <type>zip</type>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <scope>provided</scope>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>schemas</artifactId>
+            <type>zip</type>
+            <version>${project.version}</version>
+        </dependency>
+
+
+        <!-- required for InjectionManager -->
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>container-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+            Required for AnnotationDetector, AnnotationScanner, PersistenceUnitDescriptor
+        -->
+        <dependency>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dol</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!--
+            Required for security.
+        -->
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>appclient.security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!--
+            Required for ClientNamingConfigurator
+        -->
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- required for ClientPipeCloser -->
+        <dependency>
+            <groupId>org.glassfish.main.security</groupId>
+            <artifactId>webservices.security</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>glassfish-naming</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
+	 <dependency>
+            <groupId>org.glassfish.main.connectors</groupId>
+            <artifactId>work-management</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+ 	<dependency>
+            <groupId>org.glassfish.main.connectors</groupId>
+            <artifactId>connectors-inbound-runtime</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        
+        <dependency>
+            <groupId>org.glassfish.main.orb</groupId>
+            <artifactId>orb-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.webservices</groupId>
+            <artifactId>webservices-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+
+        <!--
+            Ken C. reports that eight ORB-related modules are needed, but
+            the one "orb" module directly or indirectly depends on the others
+            so I have just included it here.
+        -->
+        <dependency>
+            <groupId>org.glassfish.corba</groupId>
+            <artifactId>glassfish-corba-orb</artifactId>
+        </dependency>
+
+        <dependency>
+            <scope>runtime</scope>
+            <groupId>org.glassfish.main.orb</groupId>
+            <artifactId>orb-iiop</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>glassfish</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.main.appclient</groupId>
+            <artifactId>acc-config</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+     <dependency>
+         <groupId>org.glassfish.main.transaction</groupId>
+         <artifactId>jts</artifactId>
+         <version>${project.version}</version>
+     </dependency>
+
+     <dependency>
+         <scope>runtime</scope>
+         <groupId>org.glassfish.main.jms</groupId>
+         <artifactId>jms-core</artifactId>
+         <version>${project.version}</version>
+     </dependency>
+
+     <dependency>
+         <scope>runtime</scope>
+         <groupId>javax.jms</groupId>
+         <artifactId>javax.jms-api</artifactId>
+     </dependency>
+
+     <!-- for EclipseLink support -->
+     <dependency>
+         <type>pom</type>
+         <scope>runtime</scope>
+         <groupId>org.glassfish.main.persistence</groupId>
+         <artifactId>eclipselink-wrapper</artifactId>
+         <version>${project.version}</version>
+     </dependency>
+
+     <dependency>
+         <groupId>org.glassfish.main.persistence</groupId>
+         <artifactId>jpa-container</artifactId>
+         <version>${project.version}</version>
+     </dependency>
+
+     <dependency>
+         <scope>runtime</scope>
+         <groupId>org.glassfish.main.persistence.cmp</groupId>
+         <artifactId>cmp-internal-api</artifactId>
+         <version>${project.version}</version>
+     </dependency>
+
+     <!-- explicit dependencies for endorsed JARs the ACC needs -->
+
+     <!-- endorsed: javax.annotation-api.jar -->
+     <dependency>
+         <groupId>javax.annotation</groupId>
+         <artifactId>javax.annotation-api</artifactId>
+     </dependency>
+
+     <!-- endorsed: jaxb-api.jar -->
+     <dependency>
+         <groupId>javax.xml.bind</groupId>
+         <artifactId>jaxb-api</artifactId>
+     </dependency>
+
+     <dependency>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-osgi</artifactId>
+     </dependency>
+
+     <dependency>
+         <scope>runtime</scope>
+         <groupId>com.sun.xml.bind</groupId>
+         <artifactId>jaxb-extra-osgi</artifactId>
+     </dependency>
+
+     <!-- endorsed: webservices-api-osgi.jar -->
+     <dependency>
+        <groupId>org.glassfish.metro</groupId>
+        <artifactId>webservices-api-osgi</artifactId>
+     </dependency>
+
+     <!-- end of endorsed JAR dependencies -->
+
+     <!-- JAXR -JSR-93 Support-->
+     <dependency>
+         <groupId>javax.xml.registry</groupId>
+         <artifactId>javax.xml.registry-api</artifactId>
+     </dependency>
+
+        <!--
+        This is needed because it provides the sniffer/detector/moduletype
+        -->
+        <dependency>
+            <groupId>org.glassfish.main.appclient.server</groupId>
+            <artifactId>appclient-connector</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+      
+      <!--
+        The next two mail-related dependencies allow mail session look-up
+        and use from clients.
+      -->
+      <dependency>
+          <scope>runtime</scope>
+          <groupId>org.glassfish.main.resources</groupId>
+          <artifactId>javamail-connector</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+      <dependency>
+          <scope>runtime</scope>
+          <groupId>org.glassfish.main.resources</groupId>
+          <artifactId>javamail-runtime</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+
+      <!-- as of EE 7, JSON needs to be available to clients -->
+      <dependency>
+        <scope>runtime</scope>
+        <groupId>org.glassfish</groupId>
+        <artifactId>javax.json</artifactId>
+      </dependency>
+
+      <!-- CDI support -->
+      <dependency>
+          <groupId>org.jboss.weld.se</groupId>
+          <artifactId>weld-se-core</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>javax.enterprise</groupId>
+          <artifactId>cdi-api</artifactId>
+          <scope>compile</scope>
+      </dependency>
+
+    </dependencies>
+</project>

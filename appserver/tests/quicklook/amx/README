@@ -1,0 +1,12 @@
+Author: Lloyd.Chambers@sun.com
+Last modified:  30 July 2009
+
+To run AMX tests standalone on glassfish distribution:
+
+ant -Dglassfish.home=$V3_RUN/glassfish all
+
+I put my repo elsewhere:
+
+export V3_REPO=/v3/repo
+ant -Dmaven.repo.local=$V3_REPO -Dglassfish.home=$V3_RUN/glassfish all
+

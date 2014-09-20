@@ -1,0 +1,182 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+    setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout" 
+    guiTitle="$resource{i18ncs.clusterNew.PageTitle}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="configOption", value="copy");
+        setPageSessionAttribute(key="config", value="default-config");
+        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/configs/config", result="#{requestScope.tmpList}");
+        listRemove(list="#{requestScope.tmpList}" value="server-config" result="#{pageSession.configsList}");
+        gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/nodes/node", result="#{pageSession.nodesList}");
+        setPageSessionAttribute(key="jmsType" value="#{jmsTypeOptionGrp}");
+    />
+    </event>
+    <sun:form id="propertyForm">
+#include "/cluster/shared/handlers.inc"
+#include "/cluster/shared/jmsHandlers.inc"
+#include "/common/shared/alertMsg.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18ncs.clusterNew.PageTitle}" helpText="$resource{i18ncs.clusterNew.PageTitleHelp}">
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="newButton" text="$resource{i18n.button.OK}"
+                onClick="if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+            <!command
+                getUIComponent(clientId="#{pageSession.clusterTableRowGroupId}", component="#{requestScope.tableRowGroup}");
+                getAllSingleMapRows(TableRowGroup="#{requestScope.tableRowGroup}",  Rows="#{requestScope.instances}");
+                setAttribute(key="nameToCheck" value="#{pageSession.name}");
+                gfj.checkNameExist();
+                if ('#{configOptionGrp}=copy'){
+                    setAttribute(key="nameToCheck" value="#{pageSession.name}-config");
+                    gfj.checkNameExist();
+                    createMap(result="#{requestScope.attrs}")
+                    mapPut(map="#{requestScope.attrs}" key="id"  value={"$pageSession{config}" , "$pageSession{name}-config" } );
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/configs/copy-config"  attrs="#{requestScope.attrs}" );
+                    setPageSessionAttribute(key="config", value="#{pageSession.name}-config");
+                }
+                createMap(result="#{requestScope.ct}");
+                mapPut(map="#{requestScope.ct}" key="config"  value="$pageSession{config}");
+                mapPut(map="#{requestScope.ct}" key="id" value="#{pageSession.name}" );
+                gf.createEntity( endpoint="#{sessionScope.REST_URL}/clusters/cluster"   attrs="#{requestScope.ct}")
+
+                if ('#{pageSession.jmsConfigType}=Custom') {
+                    setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/cluster/cluster/clusterNew.jsf?configName=#{pageSession.config}");
+                    setPageSessionAttribute(key="deleteClusterOnFailure" value="#{true}");
+                    gf.configureJmsCluster();
+                }
+                
+                gf.createClusterInstances(clusterName="#{pageSession.name}", instanceRow="#{instances}");
+                gf.redirect(page="#{request.contextPath}/cluster/cluster/clusters.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+             />
+            </sun:button>
+            <sun:button id="cancelButton" immediate="#{true}" text="$resource{i18n.button.Cancel}" primary="#{false}" >
+                <!command
+                    gf.redirect(page="#{request.contextPath}/cluster/cluster/clusters.jsf");
+                />
+            </sun:button>
+
+        </sun:panelGroup>
+        </facet>
+       
+    </sun:title>
+
+    <sun:propertySheet id="propertySheet">
+        <sun:propertySheetSection id="propertySectionTextField">
+            <sun:property id="NameTextProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.cluster.ClusterName}" >
+                <sun:textField id="NameText" text="#{pageSession.name}" styleClass="required" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.ClusterName']}" required="#{true}" />
+            </sun:property>
+            <sun:property id="configProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.clusterNew.Configuration}" helpText="$resource{i18ncs.clusterNew.ConfigurationHelp}">
+                <sun:dropDown id="Config" labels="#{pageSession.configsList}" selected="#{pageSession.config}"/>
+            </sun:property>
+            <sun:property id="configOptionProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}">
+                <sun:radioButton id="optC"  name="configOptionGrp" label="$resource{i18ncs.clusterNew.CopyConfig}" selected="#{configOption}" selectedValue="copy" />
+                "<br />
+                <sun:radioButton id="optR"  name="configOptionGrp" label="$resource{i18ncs.clusterNew.ReferenceConfig}" selected="#{configOption}" selectedValue="ref" />
+                "<br />
+            </sun:property>
+            <event>
+                <!afterCreate
+                    includeIntegrations(type="org.glassfish.admingui:newClusterDropDown");
+                />
+            </event>
+        </sun:propertySheetSection>
+    </sun:propertySheet>
+                
+    <event>
+        <!afterCreate
+            includeIntegrations(type="org.glassfish.admingui:newClusterPropSheet");
+        />
+    </event>
+
+    <sun:table id="basicTable" style="padding: 10pt" deselectMultipleButton="$boolean{true}" selectMultipleButton="$boolean{true}"
+               title="$resource{i18ncs.clusterNew.TableTitle}">
+        <!-- Actions (Top) -->
+        <!facet actionsTop>
+        <sun:panelGroup id="topActionsGroup1">
+            <sun:button id="addSharedTableButton" disabled="#{false}" text="$resource{i18n.button.New}" primary="#{true}">
+                <!command
+                getUIComponent(clientId="$pageSession{clusterTableRowGroupId}", component="#{requestScope.tableRowGroup}" );
+                addRowToTable(TableRowGroup="$attribute{tableRowGroup}", NameList={"name", "weight", "node"});
+                />
+            </sun:button>
+            <sun:button id="deleteSharedTableButton" disabled="#{false}" text="$resource{i18n.button.Delete}" primary="#{false}">
+                <!command
+                getUIComponent(clientId="$pageSession{clusterTableRowGroupId}", component=>$attribute{trg});
+                getSelectedTableRowKeys(tableRowGroup="${trg}" rowKeys=>$attribute{rowKeys});
+                deleteTableRows(tableRowGroup="${trg}" rowKeys="${rowKeys}");
+                commitTableRowGroup(tableRowGroup="${trg}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+        </facet>
+        <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{tableList}"} sourceVar="td">
+            <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{clusterTableRowGroupId});
+            />
+            <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col1">
+                <sun:checkbox id="select" selected="#{td.value.selected}" selectedValue="$boolean{true}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18ncs.clusterNew.InstanceNameCol}" rowHeader="$boolean{false}" id="col2">
+                <sun:textField columns="$int{35}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.instanceName']}" id="name" value="#{td.value.name}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18ncs.clusterNew.WeightCol}" rowHeader="$boolean{false}" id="col3">
+                <sun:textField columns="$int{25}" maxLength="#{sessionScope.fieldLengths['maxLength.cluster.Weight']}" id="weight" value="#{td.value.weight}"  toolTip="100" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18ncs.clusterNew.NodeCol}" rowHeader="$boolean{false}" id="col4">
+                <sun:dropDown id="node" labels="#{pageSession.nodesList}" selected="#{td.value.node}">
+                </sun:dropDown>
+            </sun:tableColumn>
+        </sun:tableRowGroup>
+    </sun:table>
+
+
+    <sun:hidden id="helpKey" value="$resource{help_cluster.clusterNew}" />
+</sun:form>
+</define>
+</composition>

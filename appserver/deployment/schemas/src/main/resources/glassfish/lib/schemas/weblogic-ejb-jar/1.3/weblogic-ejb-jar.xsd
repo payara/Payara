@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-ejb-jar" 
+  xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-ejb-jar" 
+  xmlns="http://www.w3.org/2001/XMLSchema" 
+  xmlns:j2ee="http://java.sun.com/xml/ns/javaee" 
+  elementFormDefault="qualified" 
+  attributeFormDefault="unqualified" 
+  version="1.3">
+
+  <include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.4/weblogic-javaee.xsd"/>
+  <import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/ejb-jar_3_1.xsd"/>
+
+  <element name="weblogic-ejb-jar" type="wls:weblogic-ejb-jarType">
+  </element>
+
+<!-- **************************************************** -->
+
+  <complexType name="weblogic-ejb-jarType">
+    <sequence>
+      <element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+      <element name="weblogic-enterprise-bean" type="wls:weblogic-enterprise-beanType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="security-role-assignment" type="wls:security-role-assignmentType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="run-as-role-assignment" type="wls:run-as-role-assignmentType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="security-permission" type="wls:security-permissionType" minOccurs="0"/>
+      <element name="transaction-isolation" type="wls:transaction-isolationType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="message-destination-descriptor" type="wls:message-destination-descriptorType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="idempotent-methods" type="wls:idempotent-methodsType" minOccurs="0"/>
+      <element name="skip-state-replication-methods" type="wls:skip-state-replication-methodsType" minOccurs="0"/>
+      <element name="retry-methods-on-rollback" type="wls:retry-methods-on-rollbackType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="enable-bean-class-redeploy" type="wls:true-falseType" minOccurs="0"/>
+      <element name="timer-implementation" type="wls:timer-implementationType" minOccurs="0"/>
+      <element name="disable-warning" type="wls:disable-warningType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="work-manager" type="wls:work-managerType" minOccurs="0" maxOccurs="unbounded"/>
+      <!-- Enable the Spring extension by setting the component-factory-class-name element to org.springframework.jee.interfaces.SpringComponentFactory.
+           This element exists in EJB, Web, and application descriptors. A module level descriptor overwrites an application level descriptor. 
+           If the tag is set to null (default), the Spring extension is disabled.
+      -->
+      <element name="component-factory-class-name" type="j2ee:xsdStringType" minOccurs="0" maxOccurs="1"/>
+      <element name="weblogic-compatibility" type="wls:weblogic-compatibilityType" minOccurs="0"/>
+      <element name="coherence-cluster-ref" type="wls:coherence-cluster-refType" minOccurs="0" maxOccurs="1" />
+    </sequence>
+    <attribute name="id" type="ID"/>
+	<attribute name="version" type="string" use="optional"/>
+  </complexType>
+  <complexType name="cache-typeType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="client-authenticationType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="client-cert-authenticationType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="weblogic-compatibilityType">
+    <sequence>
+      <element name="entity-always-uses-transaction" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="concurrency-strategyType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="confidentialityType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="connection-factory-jndi-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="create-as-principal-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="disable-warningType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="timer-implementationType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="distributed-destination-connectionType">
+     <annotation>
+       <documentation>This element was introduced in the 9.0.1 version of
+         WebLogic Server.  It should not be used in instance documents that may
+         be consumed by prior WebLogic Server versions
+       </documentation>
+     </annotation>
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="entity-cacheType">
+    <sequence>
+      <element name="max-beans-in-cache" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="max-queries-in-cache" type="j2ee:xsdIntegerType" minOccurs="0"/>
+      <element name="idle-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="read-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="concurrency-strategy" type="wls:concurrency-strategyType" minOccurs="0"/>
+      <element name="cache-between-transactions" type="wls:true-falseType" minOccurs="0"/>
+      <element name="disable-ready-instances" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="entity-cache-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="entity-cache-refType">
+    <sequence>
+      <element name="entity-cache-name" type="wls:entity-cache-nameType"/>
+      <element name="idle-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="read-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="concurrency-strategy" type="wls:concurrency-strategyType" minOccurs="0"/>
+      <element name="cache-between-transactions" type="wls:true-falseType" minOccurs="0"/>
+      <element name="estimated-bean-size" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="entity-clusteringType">
+    <sequence>
+      <element name="home-is-clusterable" type="wls:true-falseType" minOccurs="0"/>
+      <element name="home-load-algorithm" type="wls:load-algorithmType" minOccurs="0"/>
+      <element name="home-call-router-class-name" type="wls:call-router-class-nameType" minOccurs="0"/>
+      <element name="use-serverside-stubs" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="entity-descriptorType">
+    <sequence>
+      <element name="pool" type="wls:poolType" minOccurs="0"/>
+      <element name="timer-descriptor" type="wls:timer-descriptorType" minOccurs="0"/>
+      <choice minOccurs="0">
+        <element name="entity-cache" type="wls:entity-cacheType"/>
+        <element name="entity-cache-ref" type="wls:entity-cache-refType"/>
+      </choice>
+      <element name="persistence" type="wls:persistenceType" minOccurs="0"/>
+      <element name="entity-clustering" type="wls:entity-clusteringType" minOccurs="0"/>
+      <element name="invalidation-target" type="wls:invalidation-targetType" minOccurs="0"/>
+      <element name="enable-dynamic-queries" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="load-algorithmType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="idempotent-methodsType">
+    <sequence>
+      <element name="method" type="wls:methodType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="skip-state-replication-methodsType">
+    <sequence>
+      <element name="method" type="wls:methodType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="identity-assertionType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="iiop-security-descriptorType">
+    <sequence>
+      <element name="transport-requirements" type="wls:transport-requirementsType" minOccurs="0"/>
+      <element name="client-authentication" type="wls:client-authenticationType" minOccurs="0"/>
+      <element name="identity-assertion" type="wls:identity-assertionType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="integrityType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="invalidation-targetType">
+    <sequence>
+      <element name="ejb-name" type="j2ee:ejb-nameType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="is-modified-method-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="isolation-levelType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="jms-client-idType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="message-driven-descriptorType">
+    <sequence>
+      <element name="pool" type="wls:poolType" minOccurs="0"/>
+      <element name="timer-descriptor" type="wls:timer-descriptorType" minOccurs="0"/>
+
+      <choice>
+        <sequence>
+          <element name="resource-adapter-jndi-name" type="wls:resource-adapter-jndi-nameType" minOccurs="0"/>
+        </sequence>
+        <sequence>
+          <choice>
+            <sequence>
+              <element name="destination-jndi-name" type="wls:destination-jndi-nameType" minOccurs="0"/>
+              <element name="initial-context-factory" type="wls:initial-context-factoryType" minOccurs="0"/>
+              <element name="provider-url" type="wls:provider-urlType" minOccurs="0"/>
+              <element name="connection-factory-jndi-name" type="wls:connection-factory-jndi-nameType" minOccurs="0"/>
+            </sequence>
+            <sequence>
+              <element name="destination-resource-link" type="j2ee:string" minOccurs="0"/>
+              <element name="connection-factory-resource-link" type="j2ee:string" minOccurs="0"/>
+            </sequence>
+          </choice>
+          <element name="jms-polling-interval-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+          <element name="jms-client-id" type="wls:jms-client-idType" minOccurs="0"/>
+          <element name="generate-unique-jms-client-id" type="wls:true-falseType" minOccurs="0"/>
+          <element name="durable-subscription-deletion" type="wls:true-falseType" minOccurs="0"/>
+          <element name="max-messages-in-transaction" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+          <element name="distributed-destination-connection" type="wls:distributed-destination-connectionType" minOccurs="0"/>
+          <element name="use81-style-polling" type="wls:true-falseType" minOccurs="0"/>
+        </sequence>
+      </choice>
+
+      <element name="init-suspend-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="max-suspend-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="security-plugin" type="wls:security-pluginType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="passivate-as-principal-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="persistenceType">
+    <sequence>
+      <element name="is-modified-method-name" type="wls:is-modified-method-nameType" minOccurs="0"/>
+      <element name="delay-updates-until-end-of-tx" type="wls:true-falseType" minOccurs="0"/>
+      <element name="finders-load-bean" type="wls:true-falseType" minOccurs="0"/>
+      <element name="persistence-use" type="wls:persistence-useType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="persistence-useType">
+    <sequence>
+      <element name="type-identifier" type="wls:type-identifierType"/>
+      <element name="type-version" type="wls:type-versionType"/>
+      <element name="type-storage" type="wls:type-storageType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="persistent-store-dirType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="poolType">
+    <sequence>
+      <element name="max-beans-in-free-pool"     type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="initial-beans-in-free-pool" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="idle-timeout-seconds"       type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="principal-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="remove-as-principal-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="replication-typeType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="res-env-ref-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="res-ref-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="resource-adapter-jndi-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="retry-methods-on-rollbackType">
+    <sequence>
+      <element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+      <element name="retry-count" type="j2ee:xsdNonNegativeIntegerType" minOccurs="1" maxOccurs="1"/>
+      <element name="method" type="wls:methodType" minOccurs="1" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="security-permission-specType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="security-pluginType">
+    <sequence>
+      <element name="plugin-class" type="j2ee:xsdStringType"/>
+      <element name="key" type="j2ee:xsdStringType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="stateful-session-cacheType">
+    <sequence>
+      <element name="max-beans-in-cache" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="idle-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="session-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="cache-type" type="wls:cache-typeType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="stateful-session-clusteringType">
+    <sequence>
+      <element name="home-is-clusterable" type="wls:true-falseType" minOccurs="0"/>
+      <element name="home-load-algorithm" type="wls:load-algorithmType" minOccurs="0"/>
+      <element name="home-call-router-class-name" type="wls:call-router-class-nameType" minOccurs="0"/>
+      <element name="use-serverside-stubs" type="wls:true-falseType" minOccurs="0"/>
+      <element name="replication-type" type="wls:replication-typeType" minOccurs="0"/>
+      <element name="passivate-during-replication" type="wls:true-falseType" minOccurs="0"/>
+      <element name="calculate-delta-using-reflection" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="stateful-session-descriptorType">
+    <sequence>
+      <element name="stateful-session-cache" type="wls:stateful-session-cacheType" minOccurs="0"/>
+      <element name="persistent-store-dir" type="wls:persistent-store-dirType" minOccurs="0"/>
+      <element name="stateful-session-clustering" type="wls:stateful-session-clusteringType" minOccurs="0"/>
+      <element name="allow-remove-during-transaction" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="call-router-class-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="stateless-clusteringType">
+    <sequence>
+      <element name="home-is-clusterable" type="wls:true-falseType" minOccurs="0"/>
+      <element name="home-load-algorithm" type="wls:load-algorithmType" minOccurs="0"/>
+      <element name="home-call-router-class-name" type="wls:call-router-class-nameType" minOccurs="0"/>
+      <element name="use-serverside-stubs" type="wls:true-falseType" minOccurs="0"/>
+      <element name="stateless-bean-is-clusterable" type="wls:true-falseType" minOccurs="0"/>
+      <element name="stateless-bean-load-algorithm" type="wls:load-algorithmType" minOccurs="0"/>
+      <element name="stateless-bean-call-router-class-name" type="wls:call-router-class-nameType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="stateless-session-descriptorType">
+    <sequence>
+      <element name="pool" type="wls:poolType" minOccurs="0"/>
+      <element name="timer-descriptor" type="wls:timer-descriptorType" minOccurs="0"/>
+      <element name="stateless-clustering" type="wls:stateless-clusteringType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="singleton-clusteringType">
+    <sequence>
+      <element name="use-serverside-stubs" type="wls:true-falseType" minOccurs="0"/>
+      <element name="singleton-bean-is-clusterable" type="wls:true-falseType" minOccurs="0"/>
+      <element name="singleton-bean-load-algorithm" type="wls:load-algorithmType" minOccurs="0"/>
+      <element name="singleton-bean-call-router-class-name" type="wls:call-router-class-nameType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="singleton-session-descriptorType">
+    <sequence>
+      <element name="timer-descriptor" type="wls:timer-descriptorType" minOccurs="0"/>
+      <element name="singleton-clustering" type="wls:singleton-clusteringType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="timer-descriptorType">
+    <sequence>
+      <element name="persistent-store-logical-name" type="j2ee:xsdStringType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="transaction-descriptorType">
+    <sequence>
+      <element name="trans-timeout-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="transaction-isolationType">
+    <sequence>
+      <element name="isolation-level" type="wls:isolation-levelType"/>
+      <element name="method" type="wls:methodType" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="transport-requirementsType">
+    <sequence>
+      <element name="integrity" type="wls:integrityType" minOccurs="0"/>
+      <element name="confidentiality" type="wls:confidentialityType" minOccurs="0"/>
+      <element name="client-cert-authentication" type="wls:client-cert-authenticationType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="type-identifierType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="type-storageType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="type-versionType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="weblogic-enterprise-beanType">
+    <sequence>
+      <element name="ejb-name" type="j2ee:ejb-nameType"/>
+      <choice minOccurs="0">
+        <element name="entity-descriptor" type="wls:entity-descriptorType"/>
+        <element name="stateless-session-descriptor" type="wls:stateless-session-descriptorType"/>
+        <element name="stateful-session-descriptor" type="wls:stateful-session-descriptorType"/>
+        <element name="singleton-session-descriptor" type="wls:singleton-session-descriptorType"/>
+        <element name="message-driven-descriptor" type="wls:message-driven-descriptorType"/>
+      </choice>
+      <element name="transaction-descriptor" type="wls:transaction-descriptorType" minOccurs="0"/>
+      <element name="iiop-security-descriptor" type="wls:iiop-security-descriptorType" minOccurs="0"/>
+      <group ref="wls:reference-descriptorGroup"/>
+      <element name="enable-call-by-reference" type="wls:true-falseType" minOccurs="0"/>
+      <element name="network-access-point" type="j2ee:xsdStringType" minOccurs="0" maxOccurs="1"/>
+      <element name="clients-on-same-server" type="wls:true-falseType" minOccurs="0"/>
+      <element name="run-as-principal-name" type="wls:run-as-principal-nameType" minOccurs="0"/>
+      <element name="create-as-principal-name" type="wls:create-as-principal-nameType" minOccurs="0"/>
+      <element name="remove-as-principal-name" type="wls:remove-as-principal-nameType" minOccurs="0"/>
+      <element name="passivate-as-principal-name" type="wls:passivate-as-principal-nameType" minOccurs="0"/>
+      <element name="jndi-name" type="j2ee:jndi-nameType" minOccurs="0"/>
+      <element name="local-jndi-name" type="j2ee:jndi-nameType" minOccurs="0"/>
+      <element name="dispatch-policy" type="wls:dispatch-policyType" minOccurs="0"/>
+      <element name="remote-client-timeout" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="stick-to-first-server" type="wls:true-falseType" minOccurs="0"/>
+      <element name="jndi-binding" type="wls:jndi-bindingType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="jndi-bindingType">
+    <sequence>
+      <element name="class-name" type="j2ee:fully-qualified-classType" minOccurs="0"/>
+      <element name="jndi-name" type="j2ee:jndi-nameType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="methodType">
+    <sequence>
+      <element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+      <element name="ejb-name" type="j2ee:ejb-nameType"/>
+      <element name="method-intf" type="j2ee:method-intfType" minOccurs="0"/>
+      <element name="method-name" type="j2ee:method-nameType"/>
+      <element name="method-params" type="wls:method-paramsType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+</schema>
+

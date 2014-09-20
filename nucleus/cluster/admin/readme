@@ -1,0 +1,91 @@
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+
+DOCS -- 
+1. added a new arg to uninstall-node command == --type
+
+
+
+Here is a command to create a remote ssh node --
+
+asadmin --passwordfile ~/chandu_pw create-node-ssh --install --nodehost chandu.us.oracle.com --installdir /export/home/hudson/devtest-bnlocal/foo  --sshuser hudson ssh_node1 
+
+
+And here is the resulting config in domain.xml
+
+<nodes>
+	<node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
+
+	<node node-host="chandu.us.oracle.com" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/foo">
+		<ssh-connector>
+			<ssh-auth user-name="hudson" password="actual-password-would-be-here-removed-from-readme!"></ssh-auth>
+		</ssh-connector>
+	</node>
+
+    <node node-host="wnevins-lnr" name="xyz" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+      <ssh-connector ssh-port="135">
+        <ssh-auth user-name="wnevins" password="password-here!!"></ssh-auth>
+      </ssh-connector>
+    </node>
+
+</nodes>
+
+
+
+
+============================================================================
+
+bunch-o-nodes
+
+  <nodes>
+    <node node-host="chandu" name="ssh_node1" type="SSH" install-dir="/export/home/hudson/devtest-bnlocal/glassfish4-xyz">
+      <ssh-connector>
+        <ssh-auth user-name="hudson"></ssh-auth>
+      </ssh-connector>
+    </node>
+    <node node-host="localhost" name="localhost-domain1" type="CONFIG" install-dir="${com.sun.aas.productRoot}"></node>
+
+    <node node-host="wnevins-lnr" name="lnr" windows-domain="wnevins-lnr" type="DCOM" install-dir="${com.sun.aas.productRoot}">
+      <ssh-connector ssh-port="135">
+        <ssh-auth password="Bolongo23Nasal"></ssh-auth>
+      </ssh-connector>
+    </node>
+
+  </nodes>

@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+    <meta content="text/html; charset=ISO-8859-1"
+          http-equiv="content-type">
+    <title>AMX Unit Tests</title>
+    <meta content="lloyd.chambers@sun.com" name="author">
+</head>
+<body>
+<div style="text-align: center;"><big><big><big><span
+        style="font-weight: bold;">AMX Unit Tests FAQ</span></big></big></big><br>
+</div>
+<br>
+<span style="font-weight: bold;">Questions?&nbsp; </span><a
+        style="font-weight: bold;"
+        href="mailto:lloyd.chambers@sun.com?subject=Question%20about%20AMX%20unit%20tests">lloyd.chambers@sun.com</a><br>
+Last updated: 23 June 2005<br>
+<br>
+NOTE: some of the links in this document refer to an internal sun
+server and thus may not work.&nbsp; This will be fixed.<br>
+<br>
+<big><span style="font-weight: bold;">1. Introduction<br>
+<br>
+</span></big>When developing for AMX, please also refer to the&nbsp; <a
+        href="../../../admin-core/mbeanapi/src/java/com/sun/enterprise/management/doc-files/amx-internal-developer-guide.html">AMX
+    Internal Developer's Guide</a> (<span style="font-family: monospace;">glassfish/admin-core/mbeanapi/src/java/com/sun/enterprise/management<br>
+/doc-files/amx-internal-developer-guide.html</span>).<br>
+<br>
+The unit tests for AMX are written using <a
+        href="http://junit.org/index.htm">JUnit </a>as the framework.&nbsp;
+When you introduce a new <a
+        href="http://llcs.sfbay.sun.com:8080/mbean-api/9_0/index.html">AMX
+    MBean</a>, or modify an existing one, you <span
+        style="font-weight: bold;">must </span><a target="_blank"
+                                                  href="com/sun/enterprise/management/doc-files/AddingAMXUnitTests.html">write
+    a new unit tes</a>t and/or add/change existing unit tests to correspond
+to the changes you've made.&nbsp; This is a <span
+        style="font-weight: bold; color: rgb(255, 0, 0);">requirement</span><span
+        style="color: rgb(255, 0, 0);"> </span>before you check in
+changes to the AMX interfaces or implementation.&nbsp; Code should also
+be reviewed by <a
+        href="mailto:amx-dev@sun.com?subject=AMX%20code%20review">amx-dev@sun.com</a>.<span
+        style="font-family: monospace;"></span><br>
+<big><span style="font-weight: bold;"><br>
+<br>
+<a name="CheckinProcedure"></a>2.&nbsp; Checkin procedure<br>
+</span></big><big>
+    <small><br>
+<span style="font-weight: bold;">See the procedure in <a
+        target="_blank"
+        href="../../../admin-core/mbeanapi/src/java/com/sun/enterprise/management/doc-files/amx-internal-developer-guide.html">admin-core/mbeanapi/src/java/com/sun/enterpise/management/doc-files/amx-internal-developer-guide.html.</a></span><br>
+    </small>
+</big><big><br style="font-weight: bold;">
+    <small><span style="font-weight: bold;"><br>
+<a name="Reference"></a>3. Reference<br>
+<br>
+</span></small>
+</big>
+<table style="text-align: left; width: 100%;" border="1" cellpadding="2"
+       cellspacing="2">
+    <tbody>
+        <tr>
+            <td style="vertical-align: top; font-weight: bold;">Item<br>
+            </td>
+            <td style="vertical-align: top; font-weight: bold;">Discussion<br>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><a target="_blank"
+                                                href="com/sun/enterprise/management/doc-files/AddingAMXUnitTests.html">AddingAMXUnitTests.html</a>
+            </td>
+            <td style="vertical-align: top;">How to modify an existing unit
+                test and/or add a new unit test for AMX or its support code.<br>
+                <br>
+                <span style="font-family: monospace;">glassfish/admin/mbeanapi-impl/tests/</span><br
+                    style="font-family: monospace;">
+                <span style="font-family: monospace;">com/sun/enterprise/management/doc-files/AddingAMXUnitTests.html</span><br>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><a target="_blank"
+                                                href="com/sun/enterprise/management/doc-files/RunningUnitTests.html">RunningUnitTests.html</a>
+            </td>
+            <td style="vertical-align: top;">How to run the AMX unit tests..<br>
+                <br>
+                <span style="font-family: monospace;">glassfish/admin/mbeanapi-impl/tests/</span><br
+                    style="font-family: monospace;">
+                <span style="font-family: monospace;">com/sun/enterprise/management/doc-files/RunningUnitTests.html</span><br>
+            </td>
+        </tr>
+        <tr>
+            <td style="vertical-align: top;"><a target="_blank"
+                                                href="../../../admin-core/mbeanapi/src/java/com/sun/enterprise/management/doc-files/amx-internal-developer-guide.html">AMX
+                Internal Developer's Guide</a></td>
+            <td style="vertical-align: top;">How to write new AMX MBeans.<br>
+                <br>
+                <span style="font-family: monospace;">glassfish/admin-core/mbeanapi/src/java/com/sun/enterprise/management/doc-files/</span><br
+                    style="font-family: monospace;">
+                <span style="font-family: monospace;">amx-internal-developer-guide.html</span><br>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<big>
+    <small><span style="font-weight: bold;"><br>
+<br>
+<br>
+</span><br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+        <br>
+    </small>
+    <span style="font-weight: bold;"></span></big>
+</body>
+</html>

@@ -1,0 +1,97 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- /common/help/help.jsf -->
+
+<ui:event type="initPage">
+    if ("!#{pageSession.newVR}") {
+	createDefaultViewRoot(viewRoot="#{requestScope.newVR}");
+	gf.navigate("#{requestScope.newVR}");
+    }
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
+    getRequestValue(key="contextRef" value="#{pageSession.tempContextRef}" );
+    urlencode(value="#{pageSession.tempContextRef}" encoding="UTF-8" result="#{pageSession.contextRef}");
+</ui:event>
+<sun:page>
+<sun:html>
+    <sun:head title="$resource{i18n.helpWindowTitle}" debug="false" parseOnLoad="false">
+	<sun:link url="/resource/common/help/help.css" />
+	<sun:script url="/resource/common/js/adminjsf.js" />
+	<h:outputScript name="jsf.js" library="javax.faces" target="head" />
+    </sun:head>
+    <sun:body id="bodyTag" style="display:none;" onLoad="admingui.help.fixTreeOnclick(document.getElementById('tocTree')); admingui.help.fixTreeOnclick(document.getElementById('indexTree')); admingui.help.loadHelpPageFromContextRef('#{pageSession.contextRef}', 'helpContent'); document.getElementById('bodyTag').style.display='block';">
+	"<div id="menuContent" class="helpMenuBox">
+	    <sun:form id="tabForm">
+
+	    <sun:tabSet id="helpTabs">
+		<sun:tab id="tableOfContents" text="$resource{i18n.helpWindowTOC}" onClick="admingui.help.switchTab(this, 'tocTree', 'indexTree'); return false;" url="#{null}" />
+		<sun:tab id="idx" text="$resource{i18n.helpWindowIndex}" onClick="admingui.help.switchTab(this, 'indexTree', 'tocTree'); return false;" url="#{null}" />
+	    </sun:tabSet>
+	    </sun:form>
+	    <dynamicTreeNode id="tocTree" 
+		treeAdaptorClass="org.glassfish.admingui.common.help.HelpTreeAdaptor"
+		toc="$attribute{toc}">
+		    <ui:event type="beforeCreate">
+                        setPageSessionAttribute(key="newVR" value="set");
+			getHelpTOC("#{view.locale}" toc="#{requestScope.toc}");
+		    </ui:event>
+	    </dynamicTreeNode>
+
+	    <dynamicTreeNode id="indexTree" style="display: none"
+		treeAdaptorClass="org.glassfish.admingui.common.help.HelpTreeIndexAdaptor"
+		index="$attribute{index}">
+		    <ui:event type="beforeCreate">
+                        setPageSessionAttribute(key="newVR" value="set");
+			getHelpIndex("#{view.locale}" index="#{requestScope.index}");
+		    </ui:event>
+	    </dynamicTreeNode>
+
+<f:verbatim>
+	</div>
+    <div id="outer" class="helpContentBox">
+	<div id="helpContent">
+	</div>
+    </div>
+</f:verbatim>
+    </sun:body>
+</sun:html>
+</sun:page>

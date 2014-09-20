@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<xsd:schema
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  elementFormDefault="qualified">
+
+<!-- allow 0 occurrences in many contexts to accommodate placeholders -->
+  <xsd:element name="stringsubs-definition" type="StringsubsDefinition">
+    <!-- the id attributes must be unique -->
+    <xsd:key name="componentKey">
+      <xsd:selector xpath="component"/>
+      <xsd:field xpath="@id"/>
+    </xsd:key>
+    <xsd:key name="groupKey">
+      <xsd:selector xpath="group"/>
+      <xsd:field xpath="@id"/>
+    </xsd:key>
+    <xsd:key name="changePairKey">
+      <xsd:selector xpath="change-pair"/>
+      <xsd:field xpath="@id"/>
+    </xsd:key>
+    <xsd:keyref name="group-ref" refer="groupKey">
+      <xsd:selector xpath="component/group-ref"/>
+      <xsd:field xpath="@name"/>
+    </xsd:keyref>
+    <xsd:keyref name="change-pair-ref" refer="changePairKey">
+      <xsd:selector xpath="group/change-pair-ref"/>
+      <xsd:field xpath="@name"/>
+    </xsd:keyref>
+       
+  </xsd:element>
+    
+  <xsd:complexType name="StringsubsDefinition">
+    <xsd:sequence>
+      <xsd:element ref="component" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element ref="group" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element ref="change-pair" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element ref="defaults" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" use="required" type="xsd:string"/>
+    <xsd:attribute name="version" use="required" type="xsd:string"/>
+  </xsd:complexType>
+
+  <xsd:element name="component">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="group-ref" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+      <xsd:attribute name="id" use="required" type="non-empty-string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="group-ref">
+    <xsd:complexType>
+      <xsd:attribute name="name" use="required" type="non-empty-string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="group">
+    <xsd:complexType>
+      <xsd:sequence>
+        <!-- allow 0 occurrences to accommodate existing xxx_subs.properties -->
+        <xsd:element ref="file-entry" minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:element ref="archive" minOccurs="0" maxOccurs="unbounded"/>
+        <xsd:element ref="change-pair-ref" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+      <xsd:attribute name="id" use="required" type="non-empty-string"/>
+      <xsd:attribute name="mode" type="modeType"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="defaults">
+    <xsd:complexType>
+      <xsd:sequence>
+        <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+      </xsd:sequence>
+    </xsd:complexType>    
+  </xsd:element>
+
+  <xsd:element name="file-entry">
+    <xsd:complexType>
+      <xsd:attribute name="name" use="required" type="non-empty-string"/>
+      <xsd:attribute name="regex" use="optional" type="non-empty-string" />
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="archive">
+    <xsd:complexType>
+      <xsd:choice minOccurs="1" maxOccurs="unbounded">
+        <xsd:element ref="archive"/>
+        <xsd:element ref="member-entry"/>
+      </xsd:choice>
+      <xsd:attribute name="name" use="required" type="non-empty-string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="member-entry">
+    <xsd:complexType>
+      <xsd:attribute name="name" use="required" type="non-empty-string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="change-pair-ref">
+    <xsd:complexType>
+      <xsd:attribute name="name" use="required" type="non-empty-string"/>
+      <xsd:attribute name="mode" type="non-empty-string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="change-pair">
+    <xsd:complexType>
+      <xsd:attribute name="id" use="required" type="non-empty-string"/>
+      <xsd:attribute name="before" use="required" type="non-empty-string"/>
+      <xsd:attribute name="after" use="required" type="xsd:string"/>
+    </xsd:complexType>
+  </xsd:element>
+
+  <xsd:element name="property">
+    <xsd:complexType>
+      <xsd:attribute name="key" use="required"/>
+      <xsd:attribute name="value" use="required"/>
+      <xsd:attribute name="type" type="propertyType"/>
+    </xsd:complexType>
+     <xsd:unique name="uniquepropertyname">
+      <xsd:selector xpath="property"/>
+      <xsd:field xpath="@key"/>
+    </xsd:unique> 
+  </xsd:element>
+  
+  <xsd:simpleType name="non-empty-string">
+    <xsd:restriction base="xsd:string">
+      <xsd:minLength value="1"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+ <xsd:simpleType name="propertyType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="port"/>
+      <xsd:enumeration value="string"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:simpleType name="modeType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="forward"/>
+      <xsd:enumeration value="double"/>
+      <xsd:enumeration value="policy"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+</xsd:schema>

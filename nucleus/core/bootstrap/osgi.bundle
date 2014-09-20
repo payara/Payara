@@ -1,0 +1,66 @@
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2011-2012 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
+Bundle-Activator: com.sun.enterprise.glassfish.bootstrap.osgi.GlassFishMainActivator
+
+# Please note we don't everything that's required by every class in this module.
+# We only import packages required by GlassFishMainActivator and its dependencies
+# such as EmbeddedOSGiGlassFishRuntimeBuilder. The rest of the dependencies are 
+# pulled in dynamically via DynamicImport-Package. By doing this, we will be able
+# to install and start this bundle in a vanilla OSGi environment and then bootstrap
+# rest of GlassFish bundles. Please contact Sahoo or Bhavani before you make any change in this 
+# bundle's manifest.
+Import-Package: \
+    org.glassfish.embeddable.*,
+    org.osgi.*
+
+DynamicImport-Package: *
+
+# For ease of use reasons, we bundle & export embeddable packages in this bundle,
+# although the source of those packages is simple-glassfish-api module.
+# We have not figured out a way to configure bundle-plugin to deduce the package version
+# for a package that's borrowed from another bundle, hence we have to configure the
+# version here as well. We understand this is a duplication, but that's easy to manage given that
+# we don't revise these packages that often. The version here is same as what's specified in
+# simple-glassfish-api/osgi.bundle. That's the source of truth.
+# Also note that, those embeddable packages use semantic versioning.
+-exportcontents: \
+    org.glassfish.embeddable.*; version=3.1.1, \
+    com.sun.enterprise.glassfish.bootstrap; version=${project.osgi.version}

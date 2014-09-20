@@ -1,0 +1,12 @@
+It tests the security feature of JavaEE service engine. JavaEE SE is used on consumer as well as on the provider side. 
+An EJB webservice is invoked by a servlet that requires authentication. This webservice method returns the caller principal associated with the invocation. 
+A temporary file user is created in this test.
+
+Here is the invocation flow-
+
+1. Standalone client invokes the servlet after passing proper user credential.
+2. Apserver invokes the servlet with a Principal.
+3. Servlet calls the EJB webservice.
+4. EJB webservice returns the caller principal associated with the EJBContext.
+5. Servlet sends the returned value of EJB webservice in the response.
+6. Client checks whether the returned principal matches with the one it was invoked.

@@ -1,0 +1,673 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:j2ee="http://java.sun.com/xml/ns/javaee" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+ elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.4">
+  <xsd:import namespace="http://java.sun.com/xml/ns/javaee" schemaLocation="http://java.sun.com/xml/ns/javaee/ejb-jar_3_0.xsd"/>
+
+  <xsd:complexType name="true-falseType">
+    <xsd:annotation>
+      <xsd:documentation>
+  This simple type designates a boolean with permissible values
+  - true/false
+  - yes/no
+  - 1/0
+      </xsd:documentation>
+    </xsd:annotation>
+    <xsd:simpleContent>
+      <xsd:restriction base="j2ee:xsdBooleanType">
+  <xsd:pattern value="(true|True|TRUE|false|False|FALSE|yes|Yes|YES|Y|no|No|NO|N|1|0)"/>
+      </xsd:restriction>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="group-nameType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="id" type="xsd:ID"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="method-paramsType">
+    <xsd:sequence>
+      <xsd:element name="method-param"
+       type="j2ee:java-typeType"
+       minOccurs="0"
+       maxOccurs="unbounded">
+      </xsd:element>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:group name="reference-descriptorGroup">
+    <xsd:sequence>
+      <xsd:element name="resource-description" type="resource-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="resource-env-description" type="resource-env-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="ejb-reference-description" type="ejb-reference-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="service-reference-description" type="service-reference-descriptionType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+  </xsd:group>
+  <xsd:complexType name="resource-descriptionType">
+    <xsd:sequence>
+      <xsd:element name="res-ref-name" type="j2ee:jndi-nameType"/>
+      <xsd:group ref="resource-lookup" />
+      <xsd:element name="default-resource-principal" type="default-resource-principalType" minOccurs="0" maxOccurs="1" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:complexType name="default-resource-principalType">
+    <xsd:sequence>
+      <xsd:element name="name" type="j2ee:string" maxOccurs="1" />
+      <xsd:element name="password" type="j2ee:string" maxOccurs="1" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="resource-env-descriptionType">
+    <xsd:sequence>
+      <xsd:element name="resource-env-ref-name" type="j2ee:jndi-nameType"/>
+      <xsd:group ref="resource-lookup" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:complexType name="ejb-reference-descriptionType">
+    <xsd:sequence>
+      <xsd:element name="ejb-ref-name" type="j2ee:ejb-ref-nameType"/>
+      <xsd:element name="jndi-name" type="j2ee:jndi-nameType"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:complexType name="service-reference-descriptionType">
+    <xsd:sequence>
+      <xsd:element name="service-ref-name" type="j2ee:jndi-nameType"/>
+      <xsd:element name="wsdl-url" type="j2ee:string" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="call-property" type="property-namevalueType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="port-info" type="port-infoType" minOccurs="0" maxOccurs="unbounded"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:complexType name="port-infoType">
+    <xsd:sequence>
+      <xsd:element name="port-name" type="j2ee:string"/>
+      <xsd:element name="stub-property" type="property-namevalueType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="call-property" type="property-namevalueType" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="wsat-config" type="wsat-configType" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>
+                  Specifies the transaction configuration for this web service port component.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+      <xsd:element name="owsm-policy" type="owsm-policyType" minOccurs="0" maxOccurs="unbounded">
+        <xsd:annotation>
+          <xsd:documentation>
+                  Specifies the owsm security policy configuration for this web service port component.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element> 
+	  <xsd:element name="operation" type="operation-infoType"
+        minOccurs="0" maxOccurs="unbounded">
+      </xsd:element>
+    </xsd:sequence>
+  </xsd:complexType>
+  <xsd:complexType name="property-namevalueType">
+    <xsd:sequence>
+      <xsd:element name="name" type="j2ee:string"/>
+      <xsd:element name="value" type="j2ee:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+<!--begin of owsm policy type declaration -->
+<xsd:complexType name="owsm-policyType">
+    <xsd:sequence>
+      <xsd:element name="uri" type="j2ee:string"/>
+      <xsd:element name="status" type="j2ee:string" minOccurs="0" />
+      <xsd:element name="category" type="j2ee:string" />
+      <xsd:element name="security-configuration-property " type="property-namevalueType" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+</xsd:complexType>
+<!--end of owsm policy type declaration -->
+<!--begin of webservice atomic transaction types declaration-->
+
+<xsd:simpleType name="transaction-version">
+  <xsd:restriction base="xsd:string">
+        <xsd:enumeration value="DEFAULT" />
+	<xsd:enumeration value="WSAT10" />
+        <xsd:enumeration value="WSAT11" />
+	<xsd:enumeration value="WSAT12" />
+  </xsd:restriction>
+</xsd:simpleType>
+
+
+<xsd:simpleType name="transactionFlowType">
+  <xsd:restriction base="xsd:string">
+	<xsd:enumeration value="SUPPORTS" />
+    <xsd:enumeration value="MANDATORY" />
+	<xsd:enumeration value="NEVER" />
+  </xsd:restriction>
+</xsd:simpleType>
+
+  <xsd:complexType name="wsat-configType">
+    <xsd:sequence>
+      <xsd:element name="enabled"
+                   type="xsd:boolean"
+                   minOccurs="0"/>
+	 <xsd:element name="flow-type" type="transactionFlowType" minOccurs="0"/>
+     <xsd:element name="version"
+                   type="transaction-version"
+                   minOccurs="0"/>
+	</xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="operation-infoType">
+    <xsd:sequence>
+      <xsd:element name="name" type="j2ee:string"/>
+      <xsd:element name="wsat-config" type="wsat-configType" minOccurs="0" maxOccurs="1">
+        <xsd:annotation>
+          <xsd:documentation>
+                  Specifies the transaction configuration for this web service operation.
+          </xsd:documentation>
+        </xsd:annotation>
+      </xsd:element>
+
+	</xsd:sequence>
+  </xsd:complexType>
+
+<!-- end webservice -->
+  <xsd:complexType name="dispatch-policyType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="id" type="xsd:ID"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="run-as-role-assignmentType">
+    <xsd:sequence>
+      <xsd:element name="role-name" type="j2ee:role-nameType"/>
+      <xsd:element name="run-as-principal-name" type="j2ee:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:complexType name="run-as-principal-nameType">
+    <xsd:simpleContent>
+      <xsd:extension base="xsd:string">
+        <xsd:attribute name="id" type="xsd:ID"/>
+      </xsd:extension>
+    </xsd:simpleContent>
+  </xsd:complexType>
+  <xsd:complexType name="security-permissionType">
+    <xsd:sequence>
+      <xsd:element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+      <xsd:element name="security-permission-spec" type="j2ee:string"/>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  <xsd:complexType name="security-role-assignmentType">
+    <xsd:sequence>
+      <xsd:element name="role-name" type="j2ee:role-nameType"/>
+      <xsd:choice>
+        <xsd:element name="principal-name" type="j2ee:string" maxOccurs="unbounded"/>
+        <xsd:element name="externally-defined" type="j2ee:emptyType"/>
+      </xsd:choice>
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+
+<xsd:complexType name="response-time-request-classType">
+  <xsd:sequence>
+    <xsd:element name="name" type="j2ee:xsdStringType"/>
+    <xsd:element name="goal-ms" type="j2ee:xsdIntegerType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="fair-share-request-classType">
+  <xsd:sequence>
+    <xsd:element name="name" type="j2ee:xsdStringType"/>
+    <xsd:element name="fair-share" type="j2ee:xsdIntegerType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="context-request-classType">
+  <xsd:sequence>
+    <xsd:element name="name" type="j2ee:xsdStringType"/>
+    <xsd:element name="context-case" type="context-caseType" maxOccurs="unbounded"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="context-caseType">
+  <xsd:sequence>
+    <xsd:choice>
+      <xsd:element name="user-name" type="j2ee:xsdStringType"/>
+      <xsd:element name="group-name" type="group-nameType"/>
+    </xsd:choice>
+    <xsd:element name="request-class-name" type="j2ee:xsdStringType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+  
+<xsd:complexType name="application-admin-mode-triggerType">
+  <xsd:sequence>
+    <xsd:element name="max-stuck-thread-time" type="j2ee:xsdIntegerType" minOccurs="0" maxOccurs="1"/>
+    <xsd:element name="stuck-thread-count" type="j2ee:xsdIntegerType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+  
+<xsd:complexType name="work-manager-shutdown-triggerType">
+  <xsd:sequence>
+    <xsd:element name="max-stuck-thread-time" type="j2ee:xsdIntegerType" minOccurs="0" maxOccurs="1"/>
+    <xsd:element name="stuck-thread-count" type="j2ee:xsdIntegerType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+  
+<xsd:complexType name="max-threads-constraintType">
+  <xsd:sequence>
+    <xsd:element name="name" type="j2ee:xsdStringType"/>
+    <xsd:choice>
+      <xsd:element name="count" type="j2ee:xsdIntegerType"/>
+      <xsd:element name="pool-name" type="j2ee:xsdStringType"/>
+    </xsd:choice>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="min-threads-constraintType">
+  <xsd:sequence>
+    <xsd:element name="name" type="j2ee:xsdStringType"/>
+    <xsd:element name="count" type="j2ee:xsdIntegerType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="capacityType">
+  <xsd:sequence>
+    <xsd:element name="name" type="j2ee:xsdStringType"/>
+    <xsd:element name="count" type="j2ee:xsdIntegerType"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="work-managerType">
+  <xsd:sequence>
+    <xsd:element name="name" type="dispatch-policyType"/>
+    <xsd:choice minOccurs="0">
+      <xsd:element name="response-time-request-class" type="response-time-request-classType"/>
+      <xsd:element name="fair-share-request-class" type="fair-share-request-classType"/>
+      <xsd:element name="context-request-class" type="context-request-classType"/>
+      <xsd:element name="request-class-name" type="j2ee:xsdStringType"/>
+    </xsd:choice>
+    <xsd:choice minOccurs="0">
+      <xsd:element name="min-threads-constraint" type="min-threads-constraintType"/>
+      <xsd:element name="min-threads-constraint-name" type="j2ee:xsdStringType"/>
+    </xsd:choice>
+    <xsd:choice minOccurs="0">
+      <xsd:element name="max-threads-constraint" type="max-threads-constraintType"/>
+      <xsd:element name="max-threads-constraint-name" type="j2ee:xsdStringType"/>
+    </xsd:choice>
+    <xsd:choice minOccurs="0">
+    <xsd:element name="capacity" type="capacityType"/>
+    <xsd:element name="capacity-name" type="j2ee:xsdStringType"/>
+    </xsd:choice>
+    <xsd:choice minOccurs="0">
+      <xsd:element name="work-manager-shutdown-trigger" type="work-manager-shutdown-triggerType"/>
+      <xsd:element name="ignore-stuck-threads" type="j2ee:xsdBooleanType"/>
+    </xsd:choice>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name = "loggingType">
+  <xsd:sequence>
+    <xsd:element name = "log-filename" type = "j2ee:string" minOccurs="0"/>
+    <xsd:element name = "logging-enabled" type = "true-falseType" minOccurs="0"/>
+    <xsd:element name = "rotation-type" type = "j2ee:string" minOccurs="0"/>
+    <xsd:element name = "number-of-files-limited" type = "true-falseType" minOccurs="0"/>
+    <xsd:element name = "file-count" type = "j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+    <xsd:element name = "file-size-limit" type = "j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+    <xsd:element name = "rotate-log-on-startup" type = "true-falseType" minOccurs="0"/>
+    <xsd:element name = "log-file-rotation-dir" type = "j2ee:string" minOccurs="0"/>
+    <xsd:element name = "rotation-time" type = "j2ee:string" minOccurs="0"/>
+    <xsd:element name = "file-time-span" type = "j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+   <xsd:element name  = "date-format-pattern" type = "j2ee:string" minOccurs="0"/>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:group name="resource-lookup">
+    <xsd:choice>
+      <xsd:element name="jndi-name" type="j2ee:string"/>
+      <xsd:element name="resource-link" type="j2ee:string"/>
+    </xsd:choice>
+</xsd:group>
+
+<xsd:complexType name = "connection-pool-paramsType">
+  <xsd:sequence>
+    <xsd:element name = "initial-capacity" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <xsd:element name = "max-capacity" type = "j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    <xsd:element name = "capacity-increment" type = "j2ee:xsdPositiveIntegerType" minOccurs = "0"/>
+    <xsd:element name = "shrinking-enabled" type = "true-falseType" minOccurs = "0"/>
+    <xsd:element name = "shrink-frequency-seconds" type = "j2ee:xsdPositiveIntegerType" minOccurs = "0"/>
+    <xsd:element name = "highest-num-waiters" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <xsd:element name = "highest-num-unavailable" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <xsd:element name = "connection-creation-retry-frequency-seconds" type = "j2ee:xsdIntegerType" minOccurs = "0"/>
+    <!--Valid range of connection-reserve-timeout-seconds is from -1 to maximum of integer -->
+    <xsd:element name = "connection-reserve-timeout-seconds" type = "j2ee:xsdIntegerType" minOccurs="0"/>
+    <xsd:element name = "test-frequency-seconds" type = "j2ee:xsdNonNegativeIntegerType" minOccurs = "0"/>
+    <xsd:element name = "test-connections-on-create" type = "true-falseType" minOccurs = "0"/>
+    <xsd:element name = "test-connections-on-release" type = "true-falseType" minOccurs = "0"/>
+    <xsd:element name = "test-connections-on-reserve" type = "true-falseType" minOccurs = "0"/>
+    <xsd:element name = "profile-harvest-frequency-seconds" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    <xsd:element name = "ignore-in-use-connections-enabled" type="true-falseType" minOccurs="0"/>
+  </xsd:sequence>
+  <xsd:attribute name = "id" type = "xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="message-destination-descriptorType">
+  <xsd:sequence>
+    <xsd:element name="message-destination-name" type="message-destination-nameType"/>
+     <xsd:choice>
+       <xsd:sequence>
+         <xsd:element name="destination-jndi-name" type="destination-jndi-nameType"/>
+         <xsd:element name="initial-context-factory" type="initial-context-factoryType" minOccurs="0"/>
+         <xsd:element name="provider-url" type="provider-urlType" minOccurs="0"/>
+       </xsd:sequence>
+       <xsd:element name="destination-resource-link" type="j2ee:string"/>
+     </xsd:choice>
+  </xsd:sequence>
+  <xsd:attribute name="id" type="xsd:ID"/>
+</xsd:complexType>
+
+<xsd:complexType name="message-destination-nameType">
+  <xsd:simpleContent>
+    <xsd:extension base="xsd:string">
+      <xsd:attribute name="id" type="xsd:ID"/>
+    </xsd:extension>
+  </xsd:simpleContent>
+</xsd:complexType>
+
+<xsd:complexType name="destination-jndi-nameType">
+  <xsd:simpleContent>
+    <xsd:extension base="xsd:string">
+      <xsd:attribute name="id" type="xsd:ID"/>
+    </xsd:extension>
+  </xsd:simpleContent>
+</xsd:complexType>
+
+<xsd:complexType name="initial-context-factoryType">
+  <xsd:simpleContent>
+    <xsd:extension base="xsd:string">
+      <xsd:attribute name="id" type="xsd:ID"/>
+    </xsd:extension>
+  </xsd:simpleContent>
+</xsd:complexType>
+
+<xsd:complexType name="provider-urlType">
+  <xsd:simpleContent>
+    <xsd:extension base="xsd:string">
+      <xsd:attribute name="id" type="xsd:ID"/>
+    </xsd:extension>
+  </xsd:simpleContent>
+</xsd:complexType>
+
+  <!--
+     This element references a J2EE library that is required by the application.
+       
+      Example:
+
+           <library-ref>
+             <library-name>WorkFlowEJB</library-name>
+             <specification-version>8.1</specification-version>
+             <implementation-version>0.1</implementation-version>
+             <exact-match>false</exact-match>
+           </library-ref>
+  -->
+	<xsd:complexType name="library-refType">
+		<xsd:sequence>
+			<xsd:element name="library-name" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+			<xsd:element name="specification-version" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="implementation-version" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="exact-match" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+			<xsd:element name="context-root" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+			<!--
+        The name of the referenced library (required).
+      -->
+			<!--
+        The minimum specification-version required (optional).  
+      -->
+      <!--
+        The minimum implementation-version requited (optional).
+      -->
+			<!--
+        Controls "match highest version" behavior. Default is false (optional).
+      -->
+      <!-- 
+        For webapp libraries, allows setting their context-root (optional).
+      -->
+		</xsd:sequence>
+	</xsd:complexType>  
+  
+  <!--
+  The sesson-descriptor specifies a list of configuration params
+  for servlet sessions.
+  -->
+  <xsd:complexType name="session-descriptorType">
+    <xsd:sequence>
+      <!-- session timeout; default=3600 secs -->
+      <xsd:element name="timeout-secs" type="j2ee:xsdIntegerType" minOccurs="0" />
+
+      <!-- invalidation trigger interval in seconds; default=60 secs -->
+      <xsd:element name="invalidation-interval-secs" type="j2ee:xsdIntegerType"
+        minOccurs="0" />
+
+      <!-- debugging for http sessions; default=false -->
+      <xsd:element name="debug-enabled" type="true-falseType" minOccurs="0" />
+
+      <!-- session id length; default=52 -->
+      <xsd:element name="id-length" type="j2ee:xsdIntegerType" minOccurs="0" />
+
+      <!-- session tracking enabled between http requests; default=true -->
+      <xsd:element name="tracking-enabled" type="true-falseType" minOccurs="0" />
+
+      <!-- cache size for jdbc and file persistent sessions; default=1028 -->
+      <xsd:element name="cache-size" type="j2ee:xsdIntegerType" minOccurs="0" />
+
+      <!-- max sessions limit for memory/replicated sessions; default=-1 (unlimited) -->
+      <xsd:element name="max-in-memory-sessions" type="j2ee:xsdIntegerType" minOccurs="0" />
+
+      <!-- Should the webapp container set cookies in the response; default=true -->
+      <xsd:element name="cookies-enabled" type="true-falseType" minOccurs="0" />
+
+      <!-- Session tracking cookie name; default="JSESSIONID" -->
+      <xsd:element name="cookie-name" type="xsd:string" minOccurs="0" />
+
+      <!-- Session tracking cookie path; default="/" -->
+      <xsd:element name="cookie-path" type="xsd:string" minOccurs="0" />
+
+      <!-- Session tracking cookie domain; default=null -->
+      <xsd:element name="cookie-domain" type="xsd:string" minOccurs="0" />
+
+      <!-- Session tracking cookie comment; default=null -->
+      <xsd:element name="cookie-comment" type="xsd:string" minOccurs="0" />
+
+      <!-- Mark session tracking cookie secure; default=false -->
+      <xsd:element name="cookie-secure" type="true-falseType" minOccurs="0" />
+
+      <!-- Session tracking cookie max-age; default=-1 (unlimited) -->
+      <xsd:element name="cookie-max-age-secs" type="j2ee:xsdIntegerType" minOccurs="0" />
+
+      <!-- Mark the session cooke as HttpOnly; default=true -->
+      <xsd:element name="cookie-http-only" type="true-falseType" minOccurs="0" />
+
+      <!--
+      Session Persistence Storage type. Legal values:
+        1. "memory" (default)
+        2. "replicated" (requires clustering)
+        3. "replicated_if_clustered" (defaults to memory in non-clustered case)
+        4. "file"
+        5. "jdbc"
+        6. "cookie"
+        7. "coherence-web"
+      -->
+      <xsd:element name="persistent-store-type" type="xsd:string" minOccurs="0" />
+
+      <!--
+      Cookie name which holds the attribute name and values for "cookie" based
+      persistence; default="WLCOOKIE"
+      -->
+      <xsd:element name="persistent-store-cookie-name" type="xsd:string" minOccurs="0" />
+
+      <!--
+      The storage dir used for "file" based persistence
+      default: "session_db" (relative to the temp dir for the webapp)
+      -->
+      <xsd:element name="persistent-store-dir" type="xsd:string" minOccurs="0" />
+
+      <!-- jdbc connection pool name used for "jdbc" based persistence -->
+      <xsd:element name="persistent-store-pool" type="xsd:string" minOccurs="0" />
+      <!-- Data Source jndi name for the jdbc connection used for "jdbc" and
+       "async-jdbc" based persistence.  Required for "async-jdbc".
+        -->
+	<xsd:element name="persistent-data-source-jndi-name" type="xsd:string" minOccurs="0" />
+
+      <!-- Session flush interval in seconds used for "async-jdbc" persistence
+       default 180-->
+      <xsd:element name="persistent-session-flush-interval" type="j2ee:xsdIntegerType" minOccurs="0" />
+
+      <!-- Session flush threshold used for "async-jdbc" persistence
+       default 100-->
+      <xsd:element name="persistent-session-flush-threshold" type="j2ee:xsdPositiveIntegerType" minOccurs="0" />
+
+       <!-- AsyncQueue timeout value used for "async-jdbc" persistence default 30 -->
+      <xsd:element name="persistent-async-queue-timeout" type="j2ee:xsdPositiveIntegerType" minOccurs="0" />
+
+
+      <!--
+      database table name used to store "jdbc" based persistent sessions
+      default: "wl_servlet_sessions"
+      -->
+      <xsd:element name="persistent-store-table" type="xsd:string" minOccurs="0"/>
+
+      <!--
+      Alternative name for the "wl_max_inactive_interval" colum name. Applies only
+      to "jdbc" based persistence. Required for certain databases which don't
+      support long column names
+      -->
+      <xsd:element name="jdbc-column-name-max-inactive-interval" type="xsd:string"
+        minOccurs="0" />
+
+      <!-- DEPRECATED; default=120 -->
+      <xsd:element name="jdbc-connection-timeout-secs" type="j2ee:xsdIntegerType"
+        minOccurs="0" />
+
+      <!-- default: true; -->
+      <xsd:element name="url-rewriting-enabled" type="true-falseType"
+        minOccurs="0" />
+      <!--
+      When this flag is set to false, WebLogic will add following header with the response:
+        "Cache-control: no-cache=set-cookie"
+      So that the proxy caches do not cache the cookies. default: true
+      -->
+      <xsd:element name="http-proxy-caching-of-cookies" type="true-falseType"
+        minOccurs="0" />
+
+      <!--
+      Servlet spec requires the containers to encode the session id in path params. There
+      are some webservers which do not work well with path params. In such a case this
+      parameter needs to be turned on; default=false
+      -->
+      <xsd:element name="encode-session-id-in-query-params" type="true-falseType"
+        minOccurs="0" />
+
+      <!--
+      The monitoring-attribute-name element is useful for tagging session
+      runtime information for different sessions. For example, you can set it
+      to "username", if you have an "username" attribute which is guarenteed to
+      be unique.
+
+      This element is used for the following:
+
+      1. In the WebAppComponentRuntimeBean.getSessionIds() method. If this
+         attribute is set it returns an array of session attributes values with
+         this name. If this attribute is not set then it will return an array of
+         randomly generated Strings, which is not the same as session IDs for
+         security reasons.
+
+      2. In the deprecated ServletSessionRuntimeMBean. The getMainAttribute()
+         of the ServletSessionRuntimeMBean returns the session attribute value
+         using this String as a key.
+      -->
+      <xsd:element name="monitoring-attribute-name" type="xsd:string" minOccurs="0" />
+
+      <!--
+        Enable sharing of http sessions across webapps; default=false
+      -->
+      <xsd:element name="sharing-enabled" type="true-falseType" minOccurs="0" />
+
+      <!--
+        Indicate whether or not the container to invalidate the current session
+        the the current logged-in user switch to another user. If the flag is
+        set to true, the current session will be invalidated once the user
+        re-login as another security user.
+
+        The default value is false.
+     -->
+      <xsd:element name="invalidate-on-relogin" type="true-falseType" minOccurs="0" />
+    </xsd:sequence>
+    <xsd:attribute name="id" type="xsd:ID"/>
+  </xsd:complexType>
+  
+  <!--
+    This element references a CoherenceClusterSystemResourceMBean.Application or webapp or 
+    ejb module defines a coherence-cluster-ref in weblogic-application.xml or weblogic.xml 
+    or weblogic-ejb-jar.xml. This allows to inject Coherence cluster related properties 
+    to the app scoped or module scoped Coherence Cluster node.
+         
+    Example:
+        <coherence-cluster-ref>
+          <coherence-cluster-name>coherenceSystemResource</coherence-cluster-name>
+        </coherence-cluster-ref>
+  -->
+  <xsd:complexType name="coherence-cluster-refType">
+    <xsd:sequence> 
+        <xsd:element name="coherence-cluster-name" type="xsd:string" minOccurs="0" maxOccurs="1" />	          
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <!--
+     A list of packages for classes that must always be loaded from the application.
+     Even if the listed classes are found in the System Class Loader, they are loaded
+     by the Application Class Loader providing a way for an application to use classes
+     from a different version of the same classes.
+     <prefer-application-packages>
+      <package-name>antlr.*</package-name>
+      <package-name>org.apache.struts.*</package-name>
+     </use-application-packages>
+  -->
+  <xsd:complexType name="prefer-application-packagesType">
+    <xsd:sequence>
+      <xsd:element name="package-name" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+  <!--
+     A list of resource that must always be loaded from the application.
+     Even if the listed resources are found in the System Class Loader.
+     Note that resource loading behavior is different from the resource
+     loading behavior when only <prefer-application-packages> is used.
+     In that case, application resources get a preference over system
+     resources. But the resource captured in this element are never looked
+     up in system class loader.
+     <prefer-application-resources>
+      <resource-name>properties.txt</resource-name>
+      <resource-name>meta-inf/schemas/*</resource-name>
+     </use-application-resources>
+  -->
+  <xsd:complexType name="prefer-application-resourcesType">
+    <xsd:sequence>
+      <xsd:element name="resource-name" type="xsd:string" minOccurs="0" maxOccurs="unbounded" />
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:group name="filtering-configurationGroup">
+    <xsd:sequence>
+      <xsd:element name="prefer-application-packages" type="prefer-application-packagesType" minOccurs="0" maxOccurs="1"/>
+      <xsd:element name="prefer-application-resources" type="prefer-application-resourcesType" minOccurs="0" maxOccurs="1"/>
+    </xsd:sequence>
+  </xsd:group>
+</xsd:schema>

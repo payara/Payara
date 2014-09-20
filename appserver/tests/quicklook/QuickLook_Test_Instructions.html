@@ -1,0 +1,278 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- 
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+<HTML>
+<HEAD>
+        <META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
+        <TITLE>QuickLook Instructions</TITLE>
+        <META NAME="GENERATOR" CONTENT="OpenOffice.org 3.2  (Linux)">
+        <META NAME="AUTHOR" CONTENT="d s">
+        <META NAME="CREATED" CONTENT="20080319;10465100">
+        <META NAME="CHANGED" CONTENT="20101026;23422600">
+	<STYLE TYPE="text/css">
+	<!--
+		@page { margin: 0.79in }
+		P { margin-bottom: 0.08in }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 STYLE="margin-left: 0.83in"><FONT FACE="Trebuchet MS, sans-serif"><FONT SIZE=5><B>Instructions
+for QuickLook tests</B></FONT></FONT></H1>
+<P>Last updated at: Oct 26, 2010<BR>By: Ming.Zhang@sun.com</P>
+<P ALIGN=LEFT STYLE="margin-bottom: 0in"><FONT SIZE=5><B>I. Running
+QuickLook tests:</B></FONT></P>
+<P><BR>The QuickLook (QL) implements three profiles (web profile,
+dev_debug profile and glassfish profile) to run QL in 3 different
+scenarios: testing v3 web distribution, testing v3 web distribution
+in debug mode, testing v3 glassfish distribution.<BR><BR>First,
+install/unzip the glassfish bundle to a directory. Let's call the
+full path to glassfish directory as {V3 Installation Dir}.&nbsp;
+Please do not install glassfish under v3/tests/quicklook since the
+&quot;clean&quot; target of QL will clean up all war files under
+quicklook directory. Change directory to <B>v3/tests/quicklook</B>.
+All italic text below indicate a command. <BR><BR>QL will work with
+the default admin password &quot;NULL&quot; (empty). Please clean up
+the previous ~/.asadminpass if it contains other password.<BR><BR><B>1.
+To Run QL in Glassfish Profile:</B><BR><BR>The v3 glassfish
+distribution includes extra modules such as EJB, jts and corba other
+than the modules in web distribution. The glassfish profile is the
+<B>default</B> profile of QL. <BR><B>New:</B> Added cluster testing
+support for QL glassfish. 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">For <B>glassfish</B> bundle of V3,
+	{V3 Installation Dir} is equivalent to /test/glassfish in the
+	example above. 
+	</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in"><I>mvn -Dglassfish.home={V3
+		Installation Dir} test | tee run.log </I>
+		</P>
+	</UL>
+	<LI><P STYLE="margin-bottom: 0in">For <B>glassfish-ips.zip</B>
+	bundle of V3, the same command can be used but {V3 Installation Dir}
+	is equivelent to in /test/glassfish4/glassfish: 
+	</P>
+	<LI><P>To run cluster tests only, you can go to <B>v3/tests/quicklook</B>
+	and do: <I>ant -Dglassfish.home={V3 Installation Dir} all_cluster</I></P>
+</UL>
+<P STYLE="margin-bottom: 0in">The test results will be in test-output
+directory.</P>
+<P STYLE="margin-bottom: 0in"><A NAME="__DdeLink__0_178707749"></A><B>2.
+To Run QL in Web Profile:</B><BR>The web profile (-P test_wd) should
+be used for testing the v3 web distribution.</P>
+<UL>
+	<LI><P><I>mvn -Dglassfish.home={V3 Installation Dir} <B>-P test_wd
+	test</B> | tee run.log </I>
+	</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>3. To Run QL in Embedded
+Profile:</B><BR>The web profile (-P test_em) should be used for
+testing the v3 embedded mode.</P>
+<UL>
+	<LI><P><I>mvn -Dglassfish.home={V3 Installation Dir} <B>-P test_em
+	test</B> | tee run.log </I>
+	</P>
+</UL>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in"><B>4. To Run QL in Glassfish</B>
+<B>Profile with Security Manager Turned On:</B><BR><BR>The web
+profile (-P test_wd_security) should be used for testing the v3 web
+distribution.</P>
+<UL>
+	<LI><P><I>mvn -Dglassfish.home={V3 Installation Dir} <B>-P
+	test_gd_security test</B> | tee run.log </I>
+	</P>
+</UL>
+<P><B>5. To Run QL in Web Profile with Security Manager Turned
+On:</B><BR><BR>The web profile (-P test_wd_security) should be used
+for testing the v3 web distribution.</P>
+<UL>
+	<LI><P><I>mvn -Dglassfish.home={V3 Installation Dir} <B>-P
+	test_wd_security test</B> | tee run.log </I>
+	</P>
+</UL>
+<P><B>6. To Run QL in V3 Debug Profile:</B><BR><BR>Usually, user
+wants to run QL against a running v3 instance started in debug mode.
+The dev_debug profile can be used (-P dev_debug) in this scenario. 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Start v3 in debug mode. For
+	example: <I>java -jar modules/glassfish.jar</I></P>
+	<LI><P><I>mvn -Dglassfish.home={V3 Installation Dir} </I><I><B>-Pdev_debug</B></I>
+	<I>test | tee run.log</I></P>
+</UL>
+<P>Note: The tests require restart domain (admincli) will be skipped
+in this scenario.<BR><BR><B>7. To Run Individual Test Suite from
+Directory Level:</B><BR><BR>After the first run with maven from top
+level, the dependency jars will be downloaded to local maven
+repository. Now it's possible to run individual test suite from
+directory level. Change directory to the test directory. For example,
+to run quicklook/ejb/slsbnicmt test suite against <B>glassfish</B>
+bundle:</P>
+<UL>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in"><I>{V3 Installation
+		Dir}/bin/asadmin start-domain</I></P>
+		<LI><P STYLE="margin-bottom: 0in"><I>{V3 Installation
+		Dir}/bin/asadmin start-database</I> 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in"><I>cd ejb/slsbnicmt</I> 
+		</P>
+		<LI><P><I>ant -Dglassfish.home={V3 Installation Dir} all</I></P>
+	</UL>
+</UL>
+<P><B>8. Using Local Maven Repository in Non-Default
+Directory:</B><BR>Section 1 and 2 assume the use of default local
+maven repository directory, ${user.home}/.m2/repository. If you local
+maven repository is in another directory, say directory
+{Local_Maven}, you can use one of the following ways to point to your
+specific maven repository:</P>
+<UL>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0in">Add option on command line:
+		<I>-Dmaven.repo.local={Local_Maven}</I> 
+		</P>
+		<LI><P STYLE="margin-bottom: 0in">Set MVN_OPTS environment
+		varialable: <I>MVN_OPTS=&quot;-D-Xmx512M
+		-Dmaven.repo.local={Local_Maven}&quot;</I> 
+		</P>
+		<LI><P>Make a symbolic link from&nbsp;${user.home}/.m2/repository
+		to the actuall maven repository (will not work on windows
+		platform). 
+		</P>
+	</UL>
+</UL>
+<P STYLE="margin-bottom: 0in"><FONT SIZE=5><B>II. Adding Tests to
+QuickLook</B></FONT></P>
+<P STYLE="margin-bottom: 0in"><B>1. Requirements for the Adding Tests
+to QL:</B></P>
+<P STYLE="margin-bottom: 0in">The QL has a wide user community which
+includes developer, RE and SQE teams. So the candidate tests need
+conform to the following criteria:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">The tests need to be robust. For
+	example, the failure of the test in any process (compile, build,
+	deploy, run ...) should not stop the process of generating the
+	finial QL report. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in">Not depend on internet access. The
+	tests should be off-line and self-sufficient. 
+	</P>
+	<LI><P>Performance. The QL tests should be testing the basic
+	features of the module and fast. Ideally, tests for one&nbsp;module
+	should be less than 1 minute. 
+	</P>
+</UL>
+<P>To make sure the tests don't break the RE and SQE processes,
+please send the tests to Ming.Zhang@sun.com for reviewing. 
+</P>
+<P STYLE="margin-bottom: 0in"><B>2. Steps of Adding Tests to QL</B></P>
+<P STYLE="margin-bottom: 0in">The test framework of QuickLook is
+<A HREF="http://testng.org/doc/">TestNG</A>. TestNG allows us to
+add/remove tests from harness easily and simplifies the client side
+programming. Below is an example of how to add a test suite to QL:</P>
+<P STYLE="margin-bottom: 0in">An easy way to do is to copy an
+existing test suite, such as quicklook/web/helloworld, to your test
+directory. Then add your java or xml files (or your test logics to
+the existing files) to the test directory. The build.xml and
+properties files are inherited. <BR><BR>For examples on the client
+side java testing code, please look at the following files for
+reference:</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in">Using HttpURLConnection to access
+	URL and read the content:
+	quicklook/web/helloworld/src/test/HelloJSPTestNG.java 
+	</P>
+	<LI><P>Using httpclient as a testing tool:
+	quicklook/adminconsole/src/test/admin/BaseAdminConsoleTest.java</P>
+</UL>
+<P STYLE="margin-bottom: 0in">Here is an example of adding a test
+suite hellouniverse. All italic text indicate a command. Unix OS is
+used for the commands<BR><BR><I>% cp -r helloworld hellouniverse</I><BR><I>%
+cd hellouniverse</I><BR><BR>Please make the following changes to
+build.properties<BR>&nbsp;<BR>war.file=hellouniverse<BR>testsuite.name=basicweb<BR>testng.test.name=web_jsp_hello_universe<BR>contextroot=hellouniverse<BR>deploy.platform=v3<BR><BR>Please
+make&nbsp; following changes to build.xml.&nbsp; Change Project
+name<BR>&lt;project name=&quot;hello-universe&quot; default=&quot;default&quot;
+basedir=&quot;.&quot;&gt;<BR>Under runtest target<BR>&lt;param
+name=&quot;contextroot&quot; value=&quot;hellouniverse&quot;/&gt;<BR><BR><I>%
+cd metadata</I><BR><BR>Edit web.xml to reflect the new application as
+universe .<BR><BR>Edit src/java/SimpleServlet.java, change the name
+of servlet to SimpleServlet1, change the package directory from myapp
+to hellouniverse and rename to src/java/SimpleServlet1.java<BR><BR>Edit
+src/test/HelloJSPTestNG.java, change the classname, testurl&nbsp; and
+rename to src/test/HelloUniverseTestNG.java<BR><BR>Now all editing is
+complete, lets try to build/deploy/run from leaf level (hellouniverse
+level)<BR><BR>Assume we are using web.zip for glassfish. Make sure
+javadb and server are started&nbsp; (please use ant 1.6.5)<BR><I>% cd
+v3/test/quicklook</I><BR><I>% ant -Dglassfish.home={V3 Installation
+Dir} startDerby</I><BR><I>% ant -Dglassfish.home={V3 Installation
+Dir} start-server</I><BR><BR>Once the server and derby are started,
+go to <BR><I>% cd web/hellouniverse</I><BR><I>% ant&nbsp;
+-Dglassfish.home={V3 Installation Dir} build </I><BR><BR>Make sure no
+errorss on consol<BR><I>% ant&nbsp; -Dglassfish.home={V3 Installation
+Dir} deploy </I><BR><BR>make sure no errors in server.log (while
+loading application)<BR><I>% ant&nbsp; -Dglassfish.home={V3
+Installation Dir}&nbsp; runtest</I></P>
+<P STYLE="margin-bottom: 0in">Now you should see 4 tests run and
+passed <BR>Please add &quot;all&quot; target to include &quot;build
+deploy runtest&quot;</P>
+<P STYLE="margin-bottom: 0in">Since QL runs in multiple profiles, the
+test cases need to be defined in the 3 test lists (under
+quicklook/testng dir) for the profiles: testng_wd.xml for the Web
+profile, testng_gd.xml for Glassfish profile, testng_debug.xml for
+the debug profile. The module level testng.xml is optional but it
+provides the conveniences of running the module test locally. User
+can also choose to define the class name in the local build.xml. In
+this case, there is no need to defined the test cases in local
+testng.xml . 
+</P>
+<P STYLE="margin-bottom: 0in">To integrate your tests into quicklook,
+please contact <A HREF="ming.zhang@sun.com">Ming Zhang</A> .</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+</BODY>
+</HTML>

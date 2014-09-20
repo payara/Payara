@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"><html><head>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1998-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+  <title>MonitoringRegistry Interface</title>
+</head><body bgcolor="white">Provides for <b>collection of monitoring statistics from JSR77 compliant Stats implementations through the JMX API. </b>&nbsp;Various
+J2EE server components can expose their JSR 77 compliant Stats implementations
+to a JMX client with the help of this package. <br>
+<br>
+The J2EE server components register their <tt>Stats </tt>implementations through
+the implementation of &nbsp;<tt><b>MonitoringRegistry</b></tt>
+interface class that provides the ability to register and unregister components
+to make them available (or unavailable) to JMX clients. The registration
+implementation would introspect the <tt>Stats </tt>implementation, create a <tt>DynamicMBean </tt>out of the introspected parts, and exposes this derived management interface to JMX clients by registering the <tt>DynamicMBean </tt>with the <tt>MBeanServer. </tt>Any calls to the MBean's public API is delegated to the <tt>Stats </tt>implementation and the underlying <tt>Statistic</tt>'s monitored attribute value is returned. &nbsp;<br>
+<br>
+One can obtain an instance of this interface's implementation instance by
+using the following code as an example:
+<p><code>
+import com.sun.enterprise.server.ApplicationServer;// (appserver-core
+module)<br>
+import com.sun.enterprise.server.ServerContext;    // (appserv-core module)<br>
+import com.sun.enterprise.server.admin.monitor.registry.MonitoringRegistry;//(admin-core module
+-compile time dependency)<br>
+...<br>
+final MonitoringRegistry registry = ApplicationServer.getServerContext().getMonitoringRegistry(); // returns an
+implementation.<br>
+registry.registerEJBStats( ...);<br>
+</code>
+</p>
+<p>
+The magnitude of monitoring and corresponding number of attributes involved
+in monitoring is dependent on the level at which monitoring of each component
+is set. A change in monitoring level to <tt>OFF, LOW </tt>or<tt> HIGH</tt>
+from a prior setting results in a change in the extent to which monitoring
+is performed for that component. Following each such change in state, the
+J2EE server component has to unregister its previous <tt>Stats </tt>implementation. The <tt>MonitoringRegistrationHelper&nbsp;</tt> unregisters the <tt>DynamicMBean </tt>from the <tt>MBeanServer </tt>as a result. If the change in state results in monitoring level being either <tt>HIGH</tt> or <tt>LOW</tt>(i.e. not <tt>OFF</tt>), the component will now register a <tt>Stats </tt>implementation that reflects the higher or lower set of attributes that are monitored. The <tt>MonitoringRegistrationHelper </tt>will now generate a new <tt>DynamicMBean</tt> that will expose the revised higher or lower level of observed attributes as a result of the change in setting. <br>
+<br>
+<br>
+<h2>Package Specification</h2>
+The registration interface and its related classes are defined in the
+<tt>com.sun.enterprise.admin.monitor.registry</tt> &nbsp;package. The following interfaces and classes are part of this package.<br>
+<ul>
+  <li><tt>MonitoringRegistry</tt> interface - declares methods to register, unregister and to find if a component's <tt>Stats </tt>implementation&nbsp; is already registered.</li>
+  <li><tt>MonitoringRegistrationException</tt> class - reports exceptions that may occur during registration or unregistration process.</li>
+  <li><tt>MonitoringLevelListener</tt> interface - interface provides <code>setLevel</code> method. Implementations will be notified of changes in monitoring level through this method.</li>
+  <li><tt>MonitoringLevel</tt> class - describes various recognized monitoring levels</li>  
+</ul>
+
+<h2>Related Documentation</h2>
+The implementations and associated helper classes are defined in the<br>
+<tt>com.sun.enterprise.admin.monitor.stats.spi</tt> and<br>
+<tt>com.sun.enterprise.admin.monitor.stats.util</tt> packages<br><br>
+See the associated package file for information on how client will access the
+stats implementations.<br><br>
+
+<!-- Put @see and @since tags down here. -->
+</body></html>

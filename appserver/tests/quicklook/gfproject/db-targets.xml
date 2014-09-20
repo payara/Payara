@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="db-targets" default="all" basedir=".">
+
+<target name="start-derby" depends="setOSConditions" if="v3">
+    <antcall target="start-derby-unix"/>
+    <antcall target="start-derby-windows"/>
+</target>
+
+<target name="start-derby-windows" if="isWindows">
+    <exec executable="cmd" spawn="true">
+        <arg value="/c"/>
+        <arg value="${glassfish.home}\bin\asadmin.bat"/>
+        <arg value="start-database"/>
+    </exec>
+</target>
+
+<target name="start-derby-unix" if="isUnix">
+    <exec executable="${glassfish.home}/bin/asadmin" spawn="true">
+        <arg value="start-database"/>
+    </exec>
+</target>
+
+<target name="stop-derby" depends="setOSConditions" if="v3">
+    <antcall target="stop-derby-unix"/>
+    <antcall target="stop-derby-windows"/>
+</target>
+
+<target name="stop-derby-windows" if="isWindows">
+    <exec executable="cmd" spawn="true">
+        <arg value="/c"/>
+        <arg value="${glassfish.home}\bin\asadmin.bat"/>
+        <arg value="stop-database"/>
+    </exec>
+</target>
+
+<target name="stop-derby-unix" if="isUnix">
+    <exec executable="${glassfish.home}/bin/asadmin">
+        <arg value="stop-database"/>
+    </exec>
+</target>
+
+<target name="enable-security-manager" depends="setOSConditions">
+    <antcall target="enable-security-manager-unix"/>
+    <antcall target="enable-security-manager-windows"/>
+</target>
+
+<target name="enable-security-manager-windows" if="isWindows">
+    <exec executable="cmd" spawn="true">
+        <arg value="/c"/>
+        <arg value="${glassfish.home}\bin\asadmin.bat"/>
+        <arg line="create-jvm-options"/>
+        <arg line="-Djava.security.manager"/>
+    </exec>
+</target>
+
+<target name="enable-security-manager-unix" if="isUnix">
+    <exec executable="${glassfish.home}/bin/asadmin">
+        <arg line="create-jvm-options"/>
+        <arg line="-Djava.security.manager"/>
+    </exec>
+</target>
+
+<target name="disable-security-manager" depends="setOSConditions">
+    <antcall target="disable-security-manager-unix"/>
+    <antcall target="disable-security-manager-windows"/>
+</target>
+
+<target name="disable-security-manager-windows" if="isWindows">
+    <exec executable="cmd" spawn="true">
+        <arg value="/c"/>
+        <arg value="${glassfish.home}\bin\asadmin.bat"/>
+        <arg line="delete-jvm-options"/>
+        <arg line="-Djava.security.manager"/>
+    </exec>
+</target>
+
+<target name="disable-security-manager-unix" if="isUnix">
+    <exec executable="${glassfish.home}/bin/asadmin">
+        <arg line="delete-jvm-options"/>
+        <arg line="-Djava.security.manager"/>
+    </exec>
+</target>
+
+<target name="add-quicklook-policy-grants">
+  <move file="${glassfish.home}/domains/domain1/config/server.policy"
+        tofile="${glassfish.home}/domains/domain1/config/server_policy.orig"/>
+  <concat append="true"
+          destfile="${glassfish.home}/domains/domain1/config/server.policy">
+    <fileset file="${glassfish.home}/domains/domain1/config/server_policy.orig"/>
+    <fileset file="${basedir}/weld/numberguess/numberguess.policy"/>   
+    <fileset file="${basedir}/weld/extensions/extensions.policy"/>   
+    <fileset file="${basedir}/osgitest/basicosgi/security.policy"/>   
+  </concat>
+</target>
+
+<target name="remove-quicklook-policy-grants">
+  <delete file="${glassfish.home}/domains/domain1/config/server.policy"/>
+  <move file="${glassfish.home}/domains/domain1/config/server_policy.orig"
+        tofile="${glassfish.home}/domains/domain1/config/server.policy"/>
+</target>
+
+<target name="startDerby" depends="initprop">
+    <echo message="Starting Derby DB servers in the Network Mode"/>    
+    
+    <java classname="org.apache.derby.drda.NetworkServerControl"
+          classpathref="db.class.path" fork="true" spawn="true">
+        <sysproperty key="derby.system.home" value="${derby.home}"/>
+        <arg line="-h localhost -p ${db.port} start"/>
+    </java> 
+    <echo message="Finished starting datbase"/>
+</target>
+
+<target name="stopDerby" depends="initprop">
+    <echo message="Stopping Derby DB servers in the Network Mode"/>
+    
+    <java classname="org.apache.derby.drda.NetworkServerControl"
+          classpathref="db.class.path" fork="true">
+        <sysproperty key="derby.system.home" value="${derby.home}"/>
+        <arg line="shutdown -h localhost -p ${db.port}"/>
+    </java> 
+    <echo message="Finished stopping datbase"/>
+</target>
+
+<target name="sql-common" depends="initprop">
+  <echo message="sql.file = ${sql.file}"/>
+  <echo message="db.class.path = ${db.class.path}"/>
+  <sql
+    driver="${db.driver}"
+    url="${db.url}"
+    userid="${db.user}"
+    password="${db.pwd}"
+    src="${sql.file}"
+    onerror="continue"
+    print="yes"
+    classpath="${db.class.path}">
+  </sql> 
+</target>
+
+<target name="create-db" depends="initprop,delete-db"
+        description="Create database tables and populate database." >
+    <echo>database=${db.type}</echo>
+    <echo>driver=${db.driver}</echo>
+    <echo>url=${db.url}</echo>
+    <echo>user=${db.user}</echo>
+    <echo>password=${db.password}</echo>
+    <echo>db.class.path=db.class.path</echo>
+    
+    <sql driver="${db.driver}"
+         encoding="utf-8"
+         url="${db.url}"
+         userid="${db.user}"
+         password="${db.password}"
+         classpathref="db.class.path"
+         delimiter="${db.delimiter}"
+         print="true"
+         autocommit="false"
+         onerror="abort" >
+        <transaction src="sql/create_${db.type}.sql"/>
+        <transaction>
+		    select city from web_customer where cust_id=1;
+		    select * from web_customer where custname Like 'Alice_1';
+	    </transaction>
+	    
+    </sql>
+    
+</target>
+<target name="delete-db"  
+        description="Deletes the database tables." depends="initprop">
+    <echo>driver=${db.driver}</echo>
+    <echo>url=${db.url}</echo>
+    <echo>user=${db.user}</echo>
+    <echo>password=${db.password}</echo>       
+    <sql driver="${db.driver}"
+         encoding="utf-8"
+         url="${db.url}"
+         userid="${db.user}"
+         password="${db.password}"
+         classpathref="db.class.path"
+         delimiter="${db.delimiter}"
+         autocommit="true"
+         onerror="continue">       
+        <transaction src="sql/drop_${db.type}.sql"/>
+    </sql>
+</target>
+
+<target name="initprop" >
+    <echo message="JavaDB Database Location : ${derby.home}" />
+    <property name="ips.derby" value="${glassfish.home}/../javadb"/>
+    <property name="db.class.path" value="${derby.home}/lib/derbyclient.jar:${ips.derby}/lib/derbyclient.jar"/>
+</target>
+</project>

@@ -1,0 +1,40 @@
+Author: Kedar (km@dev.java.net)
+Added: 29 Aug 2008.
+
+Here is a simple recipe to add a new asadmin command test to this test suite.
+Please let me know if you like it. Adding a new test should not take
+more than 2 minutes, if you know what to test.
+
+0- This suite is meant *exclusively* for asadmin tests. It uses TestNG.
+1- Extend BaseAsAdminTest which has got bunch of utility routines.
+   The design of this tests is done with this in mind. You have to
+   extend BaseAsAdminTest. Don't reinvent the wheel.
+2- Start with *CAREFUL* copy + paste.
+3- Look at any of the existing subclasses of BaseAsadminTest. Add
+   the command of your choice and annotate it with @Test.
+   Most of the time what you want is the "Manifest" object from an
+   asadmin command invocation. Utilities are provided for the same.
+4- Add the command class in ../testng.xml.
+5- That's it.
+
+Limitations:
+1- Does not use Maven. (That is not a real limitation :))
+   Pom.xml is provided only for IDE. It's imperative that
+   you use IDE. Just point NetBeans to this pom.xml and your test development
+   will be easier. Pom.xml is not used for building.
+2- As of now, tests can't be run from this folder. You have to run them from
+   the parent folder (../)
+3- Assumes a standard setup (default domain.xml etc.).
+4- If the suite fails then you'll need to modify domain.xml by hand before
+   re-running it.
+
+Note:
+1- ../testng.xml
+  <parameter name="admin.url" value="http://localhost:4848/__asadmin"/>
+  <parameter name="admin.user" value="admin"/>
+  <parameter name="admin.password" value=""/>
+  are the real parameters available to every test. You don't have to worry
+  about this.
+
+TBD:
+1- Make the suite runnable with a domain that has password protection.

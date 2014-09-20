@@ -1,0 +1,96 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<network-config>
+    <protocols>
+
+        <protocol name="listener">
+            <port-unification>
+                <protocol-finder protocol="listener-http"
+                                 classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"
+                                 name="http-finder"/>
+                <protocol-finder protocol="https-redirect"
+                                 classname="org.glassfish.grizzly.config.portunif.HttpProtocolFinder"
+                                 name="http-redirect"/>
+            </port-unification>
+        </protocol>
+
+        <protocol name="listener-http">
+            <http max-connections="250" default-virtual-server="server"
+                  server-name="">
+                <file-cache enabled="false"/>
+            </http>
+        </protocol>
+
+        <protocol name="https-redirect" security-enabled="true">
+            <http-redirect secure="true" port="48481"/>
+            <ssl ssl3-enabled="false"
+                 trust-store="target/test-classes/cacerts.jks"
+                 trust-store-password="changeit"
+                 key-store="target/test-classes/keystore.jks"
+                 key-store-password="changeit"/>
+        </protocol>
+
+        <protocol name="listener-https" security-enabled="true">
+            <http max-connections="250" default-virtual-server="server"
+                  server-name="">
+                <file-cache enabled="false"/>
+            </http>
+            <ssl ssl3-enabled="false"
+                 trust-store="target/test-classes/cacerts.jks"
+                 trust-store-password="changeit"
+                 key-store="target/test-classes/keystore.jks"
+                 key-store-password="changeit"/>
+        </protocol>
+    </protocols>
+    <network-listeners>
+        <thread-pool name="defaultThreadPool"/>
+        <network-listener port="48480" protocol="listener" transport="tcp"
+                          name="listener" thread-pool="defaultThreadPool"/>
+        <network-listener port="48481" protocol="listener-https" transport="tcp"
+                          name="listener-https" thread-pool="defaultThreadPool"/>
+
+    </network-listeners>
+    <transports>
+        <transport name="tcp"/>
+    </transports>
+</network-config>

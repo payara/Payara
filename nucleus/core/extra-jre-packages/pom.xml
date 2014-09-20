@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main.core</groupId>
+        <artifactId>nucleus-core</artifactId>
+        <version>4.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>glassfish-extra-jre-packages</artifactId>
+    <packaging>jar</packaging>
+    <name>GlassFish Extra JRE Packages</name>
+    <description>This bundle extends System Bundle to provide access to additional classes available in JRE</description>
+    
+    <developers>
+        <developer>
+            <id>ss141213</id>
+            <name>Sahoo</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+                            <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                            <Fragment-Host>system.bundle; extension:=framework</Fragment-Host>
+                            <Export-Package>
+ com.ibm.security.util,
+ com.ibm.security.x509,
+ com.sun.corba.se.impl.orbutil.threadpool,
+ com.sun.corba.se.spi.orbutil.threadpool,
+ com.sun.j3d.loaders,
+ com.sun.j3d.loaders.lw3d,
+ com.sun.j3d.loaders.objectfile,
+ com.sun.j3d.utils.behaviors.keyboard,
+ com.sun.j3d.utils.behaviors.mouse,
+ com.sun.j3d.utils.geometry,
+ com.sun.j3d.utils.image,
+ com.sun.j3d.utils.timer,
+ com.sun.java.swing.plaf.windows,
+ com.sun.jndi.cosnaming,
+ com.sun.jndi.ldap,
+ com.sun.mirror.apt,
+ com.sun.mirror.declaration,
+ com.sun.mirror.type,
+ com.sun.mirror.util,
+ com.sun.net.httpserver,
+ com.sun.org.apache.xalan.internal.res,
+ com.sun.org.apache.xalan.internal.xsltc.trax,
+ com.sun.org.apache.xerces.internal.dom,
+ com.sun.org.apache.xerces.internal.impl,
+ com.sun.org.apache.xerces.internal.impl.dv.util,
+ com.sun.org.apache.xerces.internal.jaxp,
+ com.sun.org.apache.xerces.internal.parsers,
+ com.sun.org.apache.xerces.internal.util,
+ com.sun.org.apache.xerces.internal.xni,
+ com.sun.org.apache.xerces.internal.xni.grammars,
+ com.sun.org.apache.xerces.internal.xni.parser,
+ com.sun.org.apache.xml.internal.dtm,
+ com.sun.org.apache.xml.internal.serialize,
+ com.sun.org.apache.xml.internal.utils,
+ com.sun.org.apache.xpath.internal,
+ com.sun.org.apache.xpath.internal.compiler,
+ com.sun.org.apache.xpath.internal.functions,
+ com.sun.org.apache.xpath.internal.jaxp,
+ com.sun.org.apache.xpath.internal.objects,
+ com.sun.security.auth,
+ com.sun.security.auth.login,
+ com.sun.security.auth.callback,
+ com.sun.tools.apt,
+ com.sun.tools.javac,
+ org.omg.stub.java.rmi,
+ org.w3c.dom.css,
+ org.w3c.dom.html,
+ org.w3c.dom.ranges,
+ org.w3c.dom.traversal,
+ org.w3c.dom.views,
+ sun.awt.shell,
+ sun.corba,
+ sun.misc,
+ sun.net.www,
+ sun.nio.cs,
+ sun.reflect,
+ sun.rmi.rmic,
+ sun.rmi.transport,
+ sun.security.action,
+ sun.security.jgss,
+ sun.security.jgss.spi,
+ sun.security.krb5,
+ sun.security.krb5.internal.crypto,
+ com.sun.security.jgss,
+ sun.security.provider,
+ sun.security.tools,
+ sun.security.util,
+ sun.security.x509,
+ sun.security.pkcs,
+ sun.tools.javac,
+ sunw.io,
+ sunw.util
+                            </Export-Package>
+                            <Bundle-Description>${project.description}</Bundle-Description> 
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,461 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+
+<xs:schema targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-pubsub"
+           xmlns:wlps="http://xmlns.oracle.com/weblogic/weblogic-pubsub"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           elementFormDefault="qualified"
+	   attributeFormDefault="unqualified"
+	   version="1.0">
+
+  <xs:element name="weblogic-pubsub" type="wlps:weblogic-pubsubType"/>
+
+  <xs:complexType name="weblogic-pubsubType">
+    <xs:sequence>
+      <xs:element name="server-config" type="wlps:server-configType"
+                  minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Server configuration, defines server name; whether allow publish
+            message without handshake or connect, reconnect timeout and
+            interval; offline client timeout, supported transport types, etc.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="jms-handler-mapping"
+                    type="wlps:jms-handler-mappingType"
+                    minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              JMS handler mapping configuration, defines jms handler name and
+              related configurations.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="channel" type="wlps:channelType"
+                    minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Channel mapping configuration, defines whether and how to use JMS;
+              message filter chain, etc.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="channel-constraint" type="wlps:channel-constraintType"
+                    minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Security constraint configuration, defines allowed operations for
+              certain roles on given channel pattern.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="message-filter" type="wlps:message-filterType"
+                    minOccurs="0" maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Message filter configuration, defines message filter's name for
+              given message filter class.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+        <xs:element name="service" type="wlps:serviceType" minOccurs="0"
+                    maxOccurs="unbounded">
+          <xs:annotation>
+            <xs:documentation>
+              Service channel configuration.
+            </xs:documentation>
+          </xs:annotation>
+        </xs:element>
+      </xs:choice>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="server-configType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Configure pubsub server's name. If it is not explicitly configured,
+            server name will be set automatically with servlet context path as its
+            value when startup.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="work-manager" type="xs:string" minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Set the WorkManager name that will be used to deliver event messages to 
+            subscribed clients. If it is not explicitly configured, the server will use
+            server name to find or create the work manager.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="publish-without-connect-allowed" type="xs:boolean"
+                  minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Decide if allow publish message to server without handshake or
+            connect. When it's set to true, client can publish messages
+            directly. The default value is false.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="supported-transport"
+                  type="wlps:supported-transportType"
+                  minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Transport configuration, defines supported transport types.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connection-idle-timeout-secs" type="xs:int"
+                  minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Connection idle timeout value in second unit. If client's connection
+            with reconnect message doesn't receive any message during this
+            period, it will receive a reconnect response with advice to suggest
+            it to re-handshake. The default value is 40 seconds.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="client-timeout-secs" type="xs:int" minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Timeout value in second unit. Client will get timeout and
+            disconnected by server if it doesn't send back connect/reconnect
+            message during this period. The default value is 60 seconds.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="persistent-client-timeout-secs" type="xs:int"
+                  minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            An integer representing the period in seconds for a client which
+            subscribed persistent channel(s) going offline and re-connect
+            afterwards. If the client reconnect during this period, client
+            could receive all messages it may interested during this period,
+            otherwise messages will be lost. The default value is 600 seconds.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="interval-millisecs" type="xs:int" minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            An integer representing the period in milliseconds for a client
+            to delay subsequent requests to the /meta/connect channel. A
+            negative period indicates that the message should not be retried.
+            The default value is 500 milliseconds.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="multi-frame-interval-millisecs" type="xs:int"
+                  minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            An integer representing the period in milliseconds for a client to
+            delay subsequent requests to the /meta/connect channel when multi
+            frame is detected. Traditional polling will be used when multi
+            frame from same client is detected by server. The values defines
+            interval between traditional pollings. The default value is 3000
+            milliseconds.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="supported-transportType">
+    <xs:sequence>
+      <xs:element name="type" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Transport types supported by pubsub server. Currently server
+            supports 'long-polling' and 'callback-polling'
+          </xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="long-polling"/>
+            <xs:enumeration value="callback-polling"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="jms-handler-mappingType">
+    <xs:sequence>
+      <xs:element name="jms-handler-name" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define JMS handler name.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jms-handler" type="wlps:jms-handlerType" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Configure JMS related parameters, include jms-provider-url,
+            connection-factory-jndi-name and topic-jndi-name.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="channelType">
+    <xs:sequence>
+      <xs:element name="channel-pattern" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define channel pattern, for examples: /foo/bar, /foo/bar/*,
+            /foo/bar/**
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="channel-persistence" type="wlps:channel-persistenceType"
+                  minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Configure persistence setting for one given channel pattern
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jms-handler-name" type="xs:string" minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Enable JMS channel, specify the JMS Handler used by this channel pattern.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="message-filter" type="xs:string" minOccurs="0"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Configure message filter chain. The message chain consists of
+            message filter names. The sequence of message filters in the
+            chain is their definition sequence in pubsub server descriptor
+            file.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="jms-handlerType">
+    <xs:sequence>
+      <xs:element name="jms-provider-url" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Specify JMS provider's URL.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connection-factory-jndi-name" type="xs:string"
+                  minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Specify JMS connection factory's JNDI name.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="topic-jndi-name" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Specify JNDI name of JMS topics mapped to the given channel pattern.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="channel-persistenceType">
+    <xs:sequence>
+      <xs:element name="max-persistent-message-duration-secs" type="xs:int"
+                  minOccurs="0" maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define max persistent period in seconds for how long persistent
+            messages should be persisted on one given channel pattern. The
+            default value is 3600 seconds.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="persistent-store" type="xs:string" minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define where to store persistent messages, specify a persistent store name of logical name.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="channel-constraintType">
+    <xs:annotation>
+      <xs:documentation>
+        Define security constraints for channel
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="channel-resource-collection"
+                  type="wlps:channel-resource-collectionType" minOccurs="1"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Define channel resource collection.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="auth-constraint" type="wlps:auth-constraintType"
+                  minOccurs="0"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define authentication constraint.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>                  
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="channel-resource-collectionType">
+    <xs:annotation>
+      <xs:documentation>
+        Define channel resources which include channel patterns and channel 
+        operations
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="channel-resource-name" type="xs:string">
+        <xs:annotation>
+          <xs:documentation>
+            The name of channel resource
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="description" type="xs:string" minOccurs="0"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Description of this channel resource collection.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="channel-pattern" type="xs:string" minOccurs="1"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Specify a channel pattern.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="channel-operation" type="xs:string" minOccurs="0"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Specify the operation to channel, validate values include "create",
+            "delete", "subscribe" and "publish".
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>            
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="auth-constraintType">
+    <xs:annotation>
+      <xs:documentation>
+        Define roles who can be authorized to access the channel resources.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="description" type="xs:string" minOccurs="0"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+      	  <xs:documentation>
+      	    Description of this constraint.
+      	  </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="role-name" type="xs:string" minOccurs="0"
+                  maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>
+            Specify role name for this constraint.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="message-filterType">
+    <xs:sequence>
+      <xs:element name="message-filter-name" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define a message filter's name
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="message-filter-class" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Specify message filter's class name. A message filter class must
+            implement interface com.bea.httppubsub.MessageFilter.
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="serviceType">
+    <xs:sequence>
+      <xs:element name="service-channel" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define a service channel, for example: /service/echo
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="service-class" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define the class to service this service, for example: EchoService
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="service-method" type="xs:string" minOccurs="1"
+                  maxOccurs="1">
+        <xs:annotation>
+          <xs:documentation>
+            Define a service method in the service class. The service method
+            must have only one payload parameter with type 'Object'. For
+            example: Object echo(Object payload).
+          </xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+

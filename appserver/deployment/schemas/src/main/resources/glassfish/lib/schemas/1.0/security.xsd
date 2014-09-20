@@ -1,0 +1,1212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://xmlns.oracle.com/weblogic/security" elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:complexType name="group-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to GroupReaderMBean
+ (Interface=weblogic.management.security.authentication.GroupReaderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:name-listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="name-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to NameListerMBean
+ (Interface=weblogic.management.utils.NameListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ListerMBean
+ (Interface=weblogic.management.utils.ListerMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="user-attribute-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserAttributeReaderMBean
+ (Interface=weblogic.management.security.authentication.UserAttributeReaderMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="user-lockout-managerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserLockoutManagerMBean
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="lockout-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+        <xs:annotation>
+          <xs:documentation>Returns whether the server locks out users when there are invalid login attempts.
+
+ A &lt;code&gt;true&lt;/code&gt; value for this attribute causes the server to consider
+ the other attributes of this MBean. A &lt;code&gt;false&lt;/code&gt; value causes the server
+ to ignore the other attributes of this MBean."
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=isLockoutEnabled)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="lockout-threshold" minOccurs="0" nillable="false" default="5">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum number of consecutive invalid login attempts before account is locked out.
+
+ When the number of invalid logins within a specified period of time is greater than
+ &lt;code&gt;LockoutThreshold&lt;/code&gt;value, the user is locked out. For example,
+ with the default setting of &lt;code&gt;1&lt;/code&gt;, the user is locked out on the
+ second consecutive invalid login. With a setting of &lt;code&gt;2&lt;/code&gt;, the user
+ is locked out on the third consecutive invalid login.
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getLockoutThreshold)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:long">
+            <xs:minInclusive value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="lockout-duration" minOccurs="0" nillable="false" default="30">
+        <xs:annotation>
+          <xs:documentation>Returns the number of minutes that a user account is locked out.
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getLockoutDuration)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:long">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="lockout-reset-duration" minOccurs="0" nillable="false" default="5">
+        <xs:annotation>
+          <xs:documentation>The number of minutes within which consecutive invalid login attempts cause the user account to be locked out.
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getLockoutResetDuration)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:long">
+            <xs:minInclusive value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="lockout-cache-size" minOccurs="0" nillable="false" default="5">
+        <xs:annotation>
+          <xs:documentation>Returns the number of invalid login records that the server places in a cache.
+ The server creates one record for each invalid login.
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getLockoutCacheSize)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:long">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="lockout-gc-threshold" minOccurs="0" nillable="false" default="400">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum number of invalid login records that the server keeps in memory.
+
+ If the number of invalid login records is equal to or greater than this value,
+ the server's garbage collection purges the records that have expired.
+ A record expires when the user associated with the record has been locked out.
+ &lt;p&gt;
+ The lower the threshold, the more often the server uses its resources to collect garbage.
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getLockoutGCThreshold)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:long">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="name" type="xs:string" minOccurs="0" nillable="true" default="UserLockoutManager">
+        <xs:annotation>
+          <xs:documentation>The name of this configuration. WebLogic Server uses an MBean to
+ implement and persist the configuration.
+ (Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="compatibility-object-name" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.authentication.UserLockoutManagerMBean Attribute=getCompatibilityObjectName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="policy-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PolicyEditorMBean
+ (Interface=weblogic.management.security.authorization.PolicyEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:policy-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="policy-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PolicyReaderMBean
+ (Interface=weblogic.management.security.authorization.PolicyReaderMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="policy-consumerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PolicyConsumerMBean
+ (Interface=weblogic.management.security.authorization.PolicyConsumerMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="providerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ProviderMBean
+ (Interface=weblogic.management.security.ProviderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0" nillable="true" default="Provider">
+        <xs:annotation>
+          <xs:documentation>The name of this configuration. WebLogic Server uses an MBean to
+ implement and persist the configuration.
+ (Interface=weblogic.management.security.ProviderMBean Attribute=getName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="compatibility-object-name" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.ProviderMBean Attribute=getCompatibilityObjectName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="pki-credential-map-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PKICredentialMapReaderMBean
+ (Interface=weblogic.management.security.credentials.PKICredentialMapReaderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-password-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserPasswordEditorMBean
+ (Interface=weblogic.management.security.authentication.UserPasswordEditorMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="importType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ImportMBean
+ (Interface=weblogic.management.security.ImportMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="adjudicatorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to AdjudicatorMBean
+ (Interface=weblogic.management.security.authorization.AdjudicatorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-password-credential-map-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserPasswordCredentialMapEditorMBean
+ (Interface=weblogic.management.security.credentials.UserPasswordCredentialMapEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:user-password-credential-map-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-password-credential-map-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserPasswordCredentialMapReaderMBean
+ (Interface=weblogic.management.security.credentials.UserPasswordCredentialMapReaderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="role-mapperType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RoleMapperMBean
+ (Interface=weblogic.management.security.authorization.RoleMapperMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="password-validatorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PasswordValidatorMBean
+ (Interface=weblogic.management.security.authentication.PasswordValidatorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="role-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RoleEditorMBean
+ (Interface=weblogic.management.security.authorization.RoleEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:role-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="role-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RoleReaderMBean
+ (Interface=weblogic.management.security.authorization.RoleReaderMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="auditorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to AuditorMBean
+ (Interface=weblogic.management.security.audit.AuditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deployable-credential-mapperType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to DeployableCredentialMapperMBean
+ (Interface=weblogic.management.security.credentials.DeployableCredentialMapperMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:credential-mapperType">
+        <xs:sequence>
+          <xs:element name="credential-mapping-deployment-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+            <xs:annotation>
+              <xs:documentation>Returns whether this Credential Mapping provider stores
+ stores credential maps created when deploying a resource adapter.
+ (Interface=weblogic.management.security.credentials.DeployableCredentialMapperMBean Attribute=isCredentialMappingDeploymentEnabled)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="credential-mapperType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to CredentialMapperMBean
+ (Interface=weblogic.management.security.credentials.CredentialMapperMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="predicate-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PredicateReaderMBean
+ (Interface=weblogic.management.security.authorization.PredicateReaderMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="realmType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RealmMBean
+ (Interface=weblogic.management.security.RealmMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="auditor" maxOccurs="unbounded" type="sec:auditorType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Auditing providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getAuditors)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="authentication-provider" maxOccurs="unbounded" type="sec:authentication-providerType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Authentication providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getAuthenticationProviders)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="role-mapper" maxOccurs="unbounded" type="sec:role-mapperType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Role Mapping providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getRoleMappers)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="authorizer" maxOccurs="unbounded" type="sec:authorizerType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Authorization providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getAuthorizers)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="adjudicator" type="sec:adjudicatorType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Adjudication provider for this security realm.
+ (Interface=weblogic.management.security.RealmMBean Attribute=getAdjudicator)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="credential-mapper" maxOccurs="unbounded" type="sec:credential-mapperType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Credential Mapping providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getCredentialMappers)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="cert-path-provider" maxOccurs="unbounded" type="sec:cert-path-providerType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Certification Path providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getCertPathProviders)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cert-path-builder" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.RealmMBean Attribute=getCertPathBuilderAsString)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="key-store" maxOccurs="unbounded" type="sec:key-storeType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the KeyStore providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getKeyStores)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="user-lockout-manager" type="sec:user-lockout-managerType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the User Lockout Manager for this security realm.
+ (Interface=weblogic.management.security.RealmMBean Attribute=getUserLockoutManager)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="deploy-role-ignored" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether role deployment calls on the security system
+ are ignored or passed to the configured Role Mapping providers.
+ (Interface=weblogic.management.security.RealmMBean Attribute=isDeployRoleIgnored)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="deploy-policy-ignored" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether policy deployment calls on the security system
+ are ignored or passed to the configured Authorization providers.
+ (Interface=weblogic.management.security.RealmMBean Attribute=isDeployPolicyIgnored)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="deploy-credential-mapping-ignored" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether credential mapping deployment calls on the security system
+ are ignored or passed to the configured Credential Mapping providers.
+ (Interface=weblogic.management.security.RealmMBean Attribute=isDeployCredentialMappingIgnored)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="fully-delegate-authorization" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether the Web and EJB containers should
+ call the security framework on every access.
+ &lt;p&gt;
+ If false the containers are free to only call the security framework when
+ security is set in the deployment descriptors.
+ (Interface=weblogic.management.security.RealmMBean Attribute=isFullyDelegateAuthorization)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="validate-dd-security-data" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Not used in this release.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="security-dd-model" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Specifies the default security model for Web applications or EJBs
+     that are secured by this security realm. You can override this default
+    during deployment.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:enumeration value="DDOnly"/>
+            <xs:enumeration value="CustomRoles"/>
+            <xs:enumeration value="CustomRolesAndPolicies"/>
+            <xs:enumeration value="Advanced"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="combined-role-mapping-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+        <xs:annotation>
+          <xs:documentation>Determines how the role mappings in the Enterprise Application, Web
+     application, and EJB containers interact. This setting is valid only
+     for Web applications and EJBs that use the Advanced security model and
+     that initialize roles from deployment descriptors.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="enable-web-logic-principal-validator-cache" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+        <xs:annotation>
+          <xs:documentation>Returns whether the WebLogic Principal Validator caching is enabled.
+ &lt;p&gt;
+ The Principal Validator is used by Oracle supplied authentication providers
+ and may be used by custom authentication providers. If enabled, the default principal
+ validator will cache WebLogic Principal signatures.
+ (Interface=weblogic.management.security.RealmMBean Attribute=isEnableWebLogicPrincipalValidatorCache)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="max-web-logic-principals-in-cache" type="xs:int" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum size of the LRU cache for holding WebLogic Principal signatures.
+ This value is only used if &lt;code&gt;EnableWebLogicPrincipalValidatorCache&lt;/code&gt; is set
+ to &lt;code&gt;true&lt;/code&gt;
+ (Interface=weblogic.management.security.RealmMBean Attribute=getMaxWebLogicPrincipalsInCache)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="name" type="xs:string" minOccurs="0" nillable="true" default="Realm">
+        <xs:annotation>
+          <xs:documentation>The name of this configuration. WebLogic Server uses an MBean to
+ implement and persist the configuration.
+ (Interface=weblogic.management.security.RealmMBean Attribute=getName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="delegate-m-bean-authorization" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Configures the WebLogic Server MBean servers to use the security realm's Authorization providers
+ to determine whether a JMX client has permission to access an MBean attribute or invoke an
+ MBean operation.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="auth-methods" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns a comma separated string of authentication methods that should be
+ used when the Web application specifies "REALM" as its auth-method. The
+ authentication methods will be applied in order in which they appear in
+ the list.
+ (Interface=weblogic.management.security.RealmMBean Attribute=getAuthMethods)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="compatibility-object-name" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.RealmMBean Attribute=getCompatibilityObjectName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="rdbms-security-store" type="sec:rdbms-security-storeType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns RDBMSSecurityStoreMBean for this realm, which is a singleton MBean describing RDBMS
+ security store configuration.
+ (Interface=weblogic.management.security.RealmMBean Attribute=getRDBMSSecurityStore)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element xmlns:sec="http://xmlns.oracle.com/weblogic/security" name="password-validator" maxOccurs="unbounded" type="sec:password-validatorType" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Password Validator providers for this security realm (in invocation order).
+ (Interface=weblogic.management.security.RealmMBean Attribute=getPasswordValidators)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="deployable-provider-synchronization-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Specifies whether synchronization for deployable Authorization and Role Mapping providers is enabled.
+ &lt;p&gt;The Authorization and Role Mapping providers may or may not support parallel security policy and role modification,
+ respectively, in the security provider database. If the security providers do not support parallel modification, 
+ the WebLogic Security Framework enforces a synchronization mechanism that results in each application and module 
+ being placed in a queue and deployed sequentially.
+ (Interface=weblogic.management.security.RealmMBean Attribute=isDeployableProviderSynchronizationEnabled)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="deployable-provider-synchronization-timeout" type="xs:int" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the timeout value, in milliseconds, for the deployable security provider synchronization operation.
+ This value is only used if &lt;code&gt;DeployableProviderSynchronizationEnabled&lt;/code&gt; is set
+ to &lt;code&gt;true&lt;/code&gt;
+ (Interface=weblogic.management.security.RealmMBean Attribute=getDeployableProviderSynchronizationTimeout)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="authentication-providerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to AuthenticationProviderMBean
+ (Interface=weblogic.management.security.authentication.AuthenticationProviderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="authorizerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to AuthorizerMBean
+ (Interface=weblogic.management.security.authorization.AuthorizerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cert-path-providerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to CertPathProviderMBean
+ (Interface=weblogic.management.security.pk.CertPathProviderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="key-storeType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to KeyStoreMBean
+ (Interface=weblogic.management.security.pk.KeyStoreMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType">
+        <xs:sequence>
+          <xs:element name="private-key-store-pass-phrase-encrypted" type="xs:string" minOccurs="0" nillable="true">
+            <xs:annotation>
+              <xs:documentation>(Interface=weblogic.management.security.pk.KeyStoreMBean Attribute=getPrivateKeyStorePassPhraseEncryptedAsString)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="root-ca-key-store-pass-phrase-encrypted" type="xs:string" minOccurs="0" nillable="true">
+            <xs:annotation>
+              <xs:documentation>(Interface=weblogic.management.security.pk.KeyStoreMBean Attribute=getRootCAKeyStorePassPhraseEncryptedAsString)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="private-key-store-location" type="xs:string" minOccurs="0" nillable="true">
+            <xs:annotation>
+              <xs:documentation>Returns the location of the keystore used to store identities - that is, certificate and private key pairs.
+ &lt;p&gt;
+ The configured Keystore provider implementation determines the requirements for this attribute.
+ For more information about legal values, refer to the documentation supplied by the Keystore security vendor.
+ (Interface=weblogic.management.security.pk.KeyStoreMBean Attribute=getPrivateKeyStoreLocation)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="root-ca-key-store-location" type="xs:string" minOccurs="0" nillable="true">
+            <xs:annotation>
+              <xs:documentation>Returns the location of the keystore used to store trusted certificate authority certificates.
+ &lt;p&gt;
+ The configured Keystore provider implementation determines the requirements for this attribute.
+ For more information about legal values, refer to the documentation supplied by the Keystore security vendor.
+ (Interface=weblogic.management.security.pk.KeyStoreMBean Attribute=getRootCAKeyStoreLocation)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="rdbms-security-storeType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RDBMSSecurityStoreMBean
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="username" minOccurs="0" nillable="false">
+        <xs:annotation>
+          <xs:documentation>The username to use when connecting to the datastore.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getUsername)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="password-encrypted" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getPasswordEncryptedAsString)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jndi-username" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>The JNDI user name used for Kodo notification.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getJNDIUsername)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jndi-password-encrypted" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getJNDIPasswordEncryptedAsString)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connection-url" minOccurs="0" nillable="false">
+        <xs:annotation>
+          <xs:documentation>The URL of the database to which to connect. The format of the URL varies by JDBC driver.
+ &lt;p/&gt;
+ &lt;p&gt;The URL is passed to the JDBC driver to create the physical database connections.&lt;/p&gt;
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getConnectionURL)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="driver-name" minOccurs="0" nillable="false">
+        <xs:annotation>
+          <xs:documentation>The full package name of the JDBC driver class used to create the physical database connections in the
+ connection pool. Note that this driver class must be in the classpath of any server to which it is deployed.
+ &lt;p/&gt;
+ &lt;p&gt;For example:&lt;/p&gt;
+ &lt;ol&gt;&lt;li&gt;&lt;code&gt;com.pointbase.jdbc.jdbcUniversalDriver&lt;/code&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;oracle.jdbc.OracleDriver&lt;/code&gt;&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;com.microsoft.sqlserver.jdbc.SQLServerDriver&lt;/code&gt;&lt;/li&gt;
+ &lt;/ol&gt;
+ &lt;p&gt;It must be the name of a class that implements the &lt;code&gt;java.sql.Driver&lt;/code&gt; interface. The full
+ pathname of the JDBC driver is available in the documentation. &lt;/p&gt;
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getDriverName)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:string">
+            <xs:minLength value="1"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="connection-properties" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>The JDBC driver specific connection parameters. This attribute is a comma-delimited list of key-value
+ properties to pass to the driver for configuration of JDBC connection pool, in the form of &lt;i&gt;xx&lt;/i&gt;Key=&lt;i&gt;xx&lt;/i&gt;Value,
+ &lt;i&gt;xx&lt;/i&gt;Key=&lt;i&gt;xx&lt;/i&gt;Value.
+ &lt;p/&gt;
+ The syntax of the attribute will be validated and an &lt;code&gt;InvalidAttributeValueException&lt;/code&gt; is thrown
+ if the check failed.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getConnectionProperties)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jms-topic" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>The JMS topic to which the Kodo remote commit provider should publish notifications and subscribe 
+ for notifications sent from other JVMs. This setting varies depending on the application server in use.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getJMSTopic)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jms-topic-connection-factory" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>The JNDI name of a &lt;code&gt;javax.jms.TopicConnectionFactory&lt;/code&gt; instance to use for finding JMS topics.
+ &lt;p/&gt;
+ This setting varies depending on the application server in use. Consult the JMS documentation for details
+ about how this parameter should be specified.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getJMSTopicConnectionFactory)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="jms-exception-reconnect-attempts" minOccurs="0" nillable="false" default="0">
+        <xs:annotation>
+          <xs:documentation>The number of times to attempt to reconnect if the JMS system notifies Kodo of a serious connection
+ error.
+ &lt;p/&gt;
+ The default is 0, and by default the error is logged but ignored. The value cannot be less than 0.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getJMSExceptionReconnectAttempts)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="notification-properties" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>The comma-delimited list of key-value properties to pass to the JNDI InitialContext on construction,
+ in the form of &lt;i&gt;xx&lt;/i&gt;Key=&lt;i&gt;xx&lt;/i&gt;Value, &lt;i&gt;xx&lt;/i&gt;Key=&lt;i&gt;xx&lt;/i&gt;Value.
+ &lt;/p&gt;
+ &lt;p&gt;The following are examples of keys:&lt;/p&gt;
+ &lt;ol&gt;&lt;li&gt;&lt;code&gt;java.naming.provider.url:&lt;/code&gt; property for specifying configuration information for the service provider
+ to use. The value of the property should contain a URL string (For example: &lt;code&gt;iiops://localhost:7002&lt;/code&gt;).&lt;/li&gt;
+ &lt;li&gt;&lt;code&gt;java.naming.factory.initial:&lt;/code&gt; property for specifying the initial context factory to use. The value of
+ the property should be the fully qualified class name of the factory class that will create an initial
+ context (For example: &lt;code&gt;weblogic.jndi.WLInitialContextFactory&lt;/code&gt;).&lt;/li&gt;
+ &lt;/ol&gt;
+ &lt;/p&gt;
+ &lt;p&gt;When setting the attribute, the syntax of its value is validated, and an
+ &lt;code&gt;InvalidAttributeValueException&lt;/code&gt; is thrown if the check fails.&lt;/p&gt;
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getNotificationProperties)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="name" type="xs:string" minOccurs="0" nillable="true" default="RDBMSSecurityStore">
+        <xs:annotation>
+          <xs:documentation>The name of this configuration.
+ (Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="compatibility-object-name" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.security.RDBMSSecurityStoreMBean Attribute=getCompatibilityObjectName)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="member-group-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to MemberGroupListerMBean
+ (Interface=weblogic.management.security.authentication.MemberGroupListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:group-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="policy-storeType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PolicyStoreMBean
+ (Interface=weblogic.management.security.authorization.PolicyStoreMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:properties-listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="properties-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PropertiesListerMBean
+ (Interface=weblogic.management.utils.PropertiesListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="application-versionerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ApplicationVersionerMBean
+ (Interface=weblogic.management.security.ApplicationVersionerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="exportType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ExportMBean
+ (Interface=weblogic.management.security.ExportMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="user-attribute-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserAttributeEditorMBean
+ (Interface=weblogic.management.security.authentication.UserAttributeEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:user-attribute-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-password-credential-map-extended-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserPasswordCredentialMapExtendedReaderMBean
+ (Interface=weblogic.management.security.credentials.UserPasswordCredentialMapExtendedReaderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:user-password-credential-map-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-readerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserReaderMBean
+ (Interface=weblogic.management.security.authentication.UserReaderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:name-listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="credential-cacheType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to CredentialCacheMBean
+ (Interface=weblogic.management.security.credentials.CredentialCacheMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="credential-caching-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether non-null credentials are cached by the credential
+ mappers
+ (Interface=weblogic.management.security.credentials.CredentialCacheMBean Attribute=isCredentialCachingEnabled)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="credentials-cache-size" type="xs:int" minOccurs="0" nillable="false" default="100">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum size of the LRU cache for holding credentials if caching is enabled.
+ (Interface=weblogic.management.security.credentials.CredentialCacheMBean Attribute=getCredentialsCacheSize)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="credential-cache-ttl" type="xs:int" minOccurs="0" nillable="false" default="600">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum number of seconds a credential entry is valid in the LRU cache.
+ (Interface=weblogic.management.security.credentials.CredentialCacheMBean Attribute=getCredentialCacheTTL)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="deployable-role-mapperType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to DeployableRoleMapperMBean
+ (Interface=weblogic.management.security.authorization.DeployableRoleMapperMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:role-mapperType">
+        <xs:sequence>
+          <xs:element name="role-deployment-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+            <xs:annotation>
+              <xs:documentation>Returns whether this Role Mapping provider stores
+ roles that are created while deploying a Web application or EJB.
+ (Interface=weblogic.management.security.authorization.DeployableRoleMapperMBean Attribute=isRoleDeploymentEnabled)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="pki-credential-map-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PKICredentialMapEditorMBean
+ (Interface=weblogic.management.security.credentials.PKICredentialMapEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:pki-credential-map-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="group-member-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to GroupMemberListerMBean
+ (Interface=weblogic.management.security.authentication.GroupMemberListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:group-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="context-handlerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ContextHandlerMBean
+ (Interface=weblogic.management.security.audit.ContextHandlerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="active-context-handler-entry" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the ContextHandler entries that the Audit provider is currently
+ configured to process.
+ (Interface=weblogic.management.security.audit.ContextHandlerMBean Attribute=getActiveContextHandlerEntries)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="cert-path-validatorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to CertPathValidatorMBean
+ (Interface=weblogic.management.security.pk.CertPathValidatorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:cert-path-providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="policy-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PolicyListerMBean
+ (Interface=weblogic.management.security.authorization.PolicyListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:properties-listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="group-user-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to GroupUserListerMBean
+ (Interface=weblogic.management.security.authentication.GroupUserListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:group-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="role-listerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RoleListerMBean
+ (Interface=weblogic.management.security.authorization.RoleListerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:properties-listerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="policy-auxiliaryType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PolicyAuxiliaryMBean
+ (Interface=weblogic.management.security.authorization.PolicyAuxiliaryMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:policy-editorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ldap-serverType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to LDAPServerMBean
+ (Interface=weblogic.management.utils.LDAPServerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="host" type="xs:string" minOccurs="0" nillable="true" default="localhost">
+        <xs:annotation>
+          <xs:documentation>Returns the host name or IP address of the LDAP server.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getHost)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="port" minOccurs="0" nillable="false" default="389">
+        <xs:annotation>
+          <xs:documentation>Returns the port number on which the LDAP server is listening.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getPort)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:int">
+            <xs:minInclusive value="1"/>
+            <xs:maxInclusive value="65534"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="ssl-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether SSL will be used to connect to the LDAP server.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=isSSLEnabled)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="principal" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the Distinguished Name (DN) of the LDAP user that is
+ used by WebLogic Server to connect to the LDAP server.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getPrincipal)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="credential-encrypted" type="xs:string" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>(Interface=weblogic.management.utils.LDAPServerMBean Attribute=getCredentialEncryptedAsString)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cache-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+        <xs:annotation>
+          <xs:documentation>Returns whether to cache LDAP requests with the LDAP server.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=isCacheEnabled)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="cache-size" minOccurs="0" nillable="false" default="32">
+        <xs:annotation>
+          <xs:documentation>Returns the size of the cache in K.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getCacheSize)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="cache-ttl" minOccurs="0" nillable="false" default="60">
+        <xs:annotation>
+          <xs:documentation>Returns the time-to-live (TTL) of the cache in seconds.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getCacheTTL)</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+          <xs:restriction base="xs:int">
+            <xs:minInclusive value="0"/>
+          </xs:restriction>
+        </xs:simpleType>
+      </xs:element>
+      <xs:element name="follow-referrals" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+        <xs:annotation>
+          <xs:documentation>Returns whether referrals will automatically be followed within the LDAP Directory.
+ If set to false, then a Referral exception will be thrown when referrals are
+ encountered during LDAP requests.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=isFollowReferrals)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="bind-anonymously-on-referrals" type="xs:boolean" minOccurs="0" nillable="false" default="false">
+        <xs:annotation>
+          <xs:documentation>Returns whether to anonymously bind when following referrals within the LDAP directory. 
+ If set to false, then the current Principal and Credential will be used.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=isBindAnonymouslyOnReferrals)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="results-time-limit" type="xs:int" minOccurs="0" nillable="false" default="0">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum number of milliseconds to wait for results before timing out.
+ If set to 0, there is no maximum time limit.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getResultsTimeLimit)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connect-timeout" type="xs:int" minOccurs="0" nillable="false" default="0">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum number of seconds to wait for the LDAP connection to be established.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getConnectTimeout)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="parallel-connect-delay" type="xs:int" minOccurs="0" nillable="false" default="0">
+        <xs:annotation>
+          <xs:documentation>Returns the number of seconds to delay when making concurrent attempts to connect to multiple servers.
+ &lt;p&gt;
+ If set to 0, connection attempts are serialized. An attempt is made to connect to the first server in the list. 
+ The next entry in the list is tried only if the attempt to connect to the current host fails. This might 
+ cause your application to block for unacceptably long time if a host is down. If set to greater than 0, 
+ another connection setup thread is started after this number of delay seconds has passed.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getParallelConnectDelay)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connection-retry-limit" type="xs:int" minOccurs="0" nillable="false" default="1">
+        <xs:annotation>
+          <xs:documentation>Specifies the number of times to attempt to connect to the LDAP server
+ if the initial connection failed.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getConnectionRetryLimit)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="connection-pool-size" type="xs:int" minOccurs="0" nillable="false" default="6">
+        <xs:annotation>
+          <xs:documentation>The LDAP connection pool size. Default is 6.
+ (Interface=weblogic.management.utils.LDAPServerMBean Attribute=getConnectionPoolSize)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="servlet-authentication-filterType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to ServletAuthenticationFilterMBean
+ (Interface=weblogic.management.security.authentication.ServletAuthenticationFilterMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:authentication-providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-removerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserRemoverMBean
+ (Interface=weblogic.management.security.authentication.UserRemoverMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="cert-path-builderType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to CertPathBuilderMBean
+ (Interface=weblogic.management.security.pk.CertPathBuilderMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:cert-path-providerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="user-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to UserEditorMBean
+ (Interface=weblogic.management.security.authentication.UserEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:user-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="role-auxiliaryType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RoleAuxiliaryMBean
+ (Interface=weblogic.management.security.authorization.RoleAuxiliaryMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:role-editorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="identity-asserterType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to IdentityAsserterMBean
+ (Interface=weblogic.management.security.authentication.IdentityAsserterMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:authentication-providerType">
+        <xs:sequence>
+          <xs:element name="active-type" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true">
+            <xs:annotation>
+              <xs:documentation>Returns the token types that the Identity Assertion provider is currently
+ configured to process.
+ (Interface=weblogic.management.security.authentication.IdentityAsserterMBean Attribute=getActiveTypes)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+          <xs:element name="base64-decoding-required" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+            <xs:annotation>
+              <xs:documentation>Returns whether the tokens that are passed to the Identity Assertion provider
+ will be will base64 decoded first.
+
+ If &lt;code&gt;false&lt;/code&gt; then the server will not base64 decode the token
+ before passing it to the identity asserter.
+ This defaults to &lt;code&gt;true&lt;/code&gt; for backwards compatibility but
+ most providers will probably want to set this to &lt;code&gt;false&lt;/code&gt;.
+ (Interface=weblogic.management.security.authentication.IdentityAsserterMBean Attribute=getBase64DecodingRequired)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="authenticatorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to AuthenticatorMBean
+ (Interface=weblogic.management.security.authentication.AuthenticatorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:authentication-providerType">
+        <xs:sequence>
+          <xs:element name="control-flag" minOccurs="0" nillable="true">
+            <xs:annotation>
+              <xs:documentation>Returns how the login sequence uses the Authentication provider.
+ &lt;p&gt;
+ A &lt;code&gt;REQUIRED&lt;/code&gt; value specifies this LoginModule must succeed. Even if
+ it fails, authentication proceeds down the list of LoginModules for the configured
+ Authentication providers. This setting is the default.
+ &lt;p&gt;
+ A &lt;code&gt;REQUISITE&lt;/code&gt; value specifies this LoginModule must succeed. If other
+ Authentication providers are configured and this LoginModule succeeds, authentication proceeds
+ down the list of LoginModules. Otherwise, control is return to the application.
+ &lt;p&gt;
+ A &lt;code&gt;SUFFICIENT&lt;/code&gt; value specifies this LoginModule need not succeed. If it
+ does succeed, return control to the application. If it fails and other Authentication providers
+ are configured, authentication proceeds down the LoginModule list.
+ &lt;p&gt;
+ An &lt;code&gt;OPTIONAL&lt;/code&gt; value specifies this LoginModule need not succeed. Whether it
+ succeeds or fails, authentication proceeds down the LoginModule list.
+ (Interface=weblogic.management.security.authentication.AuthenticatorMBean Attribute=getControlFlag)</xs:documentation>
+            </xs:annotation>
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="REQUIRED"/>
+                <xs:enumeration value="REQUISITE"/>
+                <xs:enumeration value="SUFFICIENT"/>
+                <xs:enumeration value="OPTIONAL"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="group-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to GroupEditorMBean
+ (Interface=weblogic.management.security.authentication.GroupEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:group-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deployable-authorizerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to DeployableAuthorizerMBean
+ (Interface=weblogic.management.security.authorization.DeployableAuthorizerMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:authorizerType">
+        <xs:sequence>
+          <xs:element name="policy-deployment-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true">
+            <xs:annotation>
+              <xs:documentation>Returns whether this Authorization provider stores
+ policies that are created while deploying a Web application or EJB.
+ (Interface=weblogic.management.security.authorization.DeployableAuthorizerMBean Attribute=isPolicyDeploymentEnabled)</xs:documentation>
+            </xs:annotation>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="group-removerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to GroupRemoverMBean
+ (Interface=weblogic.management.security.authentication.GroupRemoverMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+  <xs:complexType name="group-membership-hierarchy-cacheType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to GroupMembershipHierarchyCacheMBean
+ (Interface=weblogic.management.security.authentication.GroupMembershipHierarchyCacheMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="enable-group-membership-lookup-hierarchy-caching" type="xs:boolean" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns whether group membership hierarchies found
+ during recursive membership lookup will be cached. If true, each subtree
+ found will be cached.
+ (Interface=weblogic.management.security.authentication.GroupMembershipHierarchyCacheMBean Attribute=getEnableGroupMembershipLookupHierarchyCaching)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="max-group-hierarchies-in-cache" type="xs:int" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum size of the LRU cache for holding group membership hierarchies if caching is enabled.
+ (Interface=weblogic.management.security.authentication.GroupMembershipHierarchyCacheMBean Attribute=getMaxGroupHierarchiesInCache)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+      <xs:element name="group-hierarchy-cache-ttl" type="xs:int" minOccurs="0" nillable="true">
+        <xs:annotation>
+          <xs:documentation>Returns the maximum number of seconds a group membership hierarchy entry is valid in the LRU cache.
+ (Interface=weblogic.management.security.authentication.GroupMembershipHierarchyCacheMBean Attribute=getGroupHierarchyCacheTTL)</xs:documentation>
+        </xs:annotation>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="predicate-editorType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to PredicateEditorMBean
+ (Interface=weblogic.management.security.authorization.PredicateEditorMBean)</xs:documentation>
+    </xs:annotation>
+    <xs:complexContent>
+      <xs:extension xmlns:sec="http://xmlns.oracle.com/weblogic/security" base="sec:predicate-readerType"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="role-consumerType">
+    <xs:annotation>
+      <xs:documentation>Corresponds to RoleConsumerMBean
+ (Interface=weblogic.management.security.authorization.RoleConsumerMBean)</xs:documentation>
+    </xs:annotation>
+  </xs:complexType>
+</xs:schema>

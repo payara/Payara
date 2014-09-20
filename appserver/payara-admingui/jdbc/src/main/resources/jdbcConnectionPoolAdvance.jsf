@@ -1,0 +1,174 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- jdbc/jdbcConnectionPoolAdvance.jsf -->
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="i18njdbc" bundle="org.glassfish.jdbc.admingui.Strings")
+	setResourceBundle(key="help_jdbc" bundle="org.glassfish.jdbc.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18njdbc.jdbcConnectionPool.advancePageTitle}" guiOnLoad="disableTableField(); enableDisableLazyConnection('#{associateId}');" >
+<!define name="content">
+    <event>
+    <!beforeEncode
+        getUIComponent(clientId="$pageSession{tableDropdownTextId}" component=>$attribute{tableDropdownTextId});
+        getUIComponent(clientId="$pageSession{validCNDropdownTextId}" component=>$attribute{validCNDropdownTextId});
+        setDisableConnectionPoolTableField(tableDD="$attribute{tableDropdownTextId}" validationField="$attribute{validCNDropdownTextId}" methodValue="#{pageSession.valueMap['connectionValidationMethod']}");
+    />
+    </event>
+    <event>
+    <!beforeCreate
+        getRequestValue(key="name" value="#{pageSession.Name}");
+        urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+        getRequestValue(key="isAppScopedRes" value="#{pageSession.isAppScopedRes}");
+        if(#{pageSession.isAppScopedRes}){
+            getRequestValue(key="appName" value="#{pageSession.encodedAppName}");
+            getRequestValue(key="moduleName" value="#{pageSession.moduleName}");
+            if(#{pageSession.moduleName}) {
+                urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
+                setPageSessionAttribute(key="selfPageArgs" value="&isAppScopedRes=$boolean{true}&appName=#{pageSession.encodedAppName}&moduleName=#{pageSession.encodedModuleName}");
+                setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module/#{pageSession.encodedModuleName}/resources");
+            }
+            if(!#{pageSession.moduleName}) {
+                setPageSessionAttribute(key="selfPageArgs" value="&isAppScopedRes=$boolean{true}&appName=#{pageSession.encodedAppName}");
+                setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/resources");
+            }
+            setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/common/applications/resources/appScopedResources.jsf?appName=#{pageSession.encodedAppName}&listPageLink=/common/applications/applications.jsf");
+        }
+        if(!#{pageSession.isAppScopedRes}){
+            setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jdbc/jdbcConnectionPools.jsf");
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
+        }
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jdbc/jdbcConnectionPoolAdvance.jsf?name=#{pageSession.encodedName}#{pageSession.selfPageArgs}");
+        setPageSessionAttribute(key="childType" value="jdbc-connection-pool");
+
+        setPageSessionAttribute(key="childType" value="jdbc-connection-pool");
+        gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.resourceUrl}");
+
+        setPageSessionAttribute(key="poolGeneralAttrs" value={"resType" "datasourceClassname"
+            "driverClassname" "ping" "description" "steadyPoolSize" "maxPoolSize" "poolResizeQuantity"
+            "idleTimeoutInSeconds" "maxWaitTimeInMillis" "nonTransactionalConnections"
+            "transactionIsolationLevel" "isIsolationLevelGuaranteed"});
+
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getEntityAttrs(endpoint="#{pageSession.resourceUrl}.json", valueMap="#{pageSession.valueMap}");
+        if("#{pageSession.valueMap.resType}=java.sql.Driver") {
+            urlencode(value="#{pageSession.valueMap.driverClassname}" encoding="UTF-8" result=>$attribute{encodedClassName});
+        }
+        if("!(#{pageSession.valueMap.resType}=java.sql.Driver)") {
+            urlencode(value="#{pageSession.valueMap.datasourceClassname}" encoding="UTF-8" result=>$attribute{encodedClassName});
+        }
+        gf.filterMap(map="#{pageSession.valueMap}" attrNames="#{pageSession.poolGeneralAttrs}" keep="#{false}" resultMap="#{pageSession.valueMap}");
+
+        setPageSessionAttribute(key="convertToFalseList" value={"wrapJdbcObjects" "pooling" "connectionLeakReclaim"
+                                                                "lazyConnectionAssociation" "lazyConnectionEnlistment"
+                                                                "associateWithThread" "matchConnections" "allowNonComponentCallers"
+                                                                "isConnectionValidationRequired" "failAllConnections"});
+        setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
+        gf.createAttributeMap(keys={"poolName"} values={"$pageSession{encodedName}"} map="#{pageSession.attrMap}");
+        if(#{pageSession.isAppScopedRes}){
+            mapPut(map="#{pageSession.attrMap}" key="appName" value="#{pageSession.encodedAppName}");
+            if(#{pageSession.moduleName}){
+                mapPut(map="#{pageSession.attrMap}" key="modulename" value="#{pageSession.encodedModuleName}");
+            }
+        }
+        gf.createAttributeMap(keys={"className"} values={"$attribute{encodedClassName}"} map="#{pageSession.validCNAttrMap}");
+        if ("#{pageSession.valueMap.isConnectionValidationRequired}=true") {
+            if ("#{pageSession.valueMap.connectionValidationMethod}=custom-validation") {
+                gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-validation-class-names"
+                    attrs="#{pageSession.validCNAttrMap}"
+                    method="get"
+                    result="#{requestScope.result}");
+                setPageSessionAttribute(key="classNameList" value="#{requestScope.result.data.extraProperties.validationClassNames}");
+                gf.containedIn(list="#{pageSession.classNameList}" testStr="#{pageSession.valueMap.validationClassname}" contain="#{requestScope.isClassNames}");
+            }
+        }
+        setAttribute(key="emptyStr" value="");
+        setPageSessionAttribute(key="myTableOption" value="text");
+        setPageSessionAttribute(key="myValidCNOption" value="dropdown");
+        if (#{pageSession.valueMap.validationTableName}) {
+            if ("!(#{pageSession.valueMap.validationTableName}='')") {
+                setPageSessionAttribute(key="tableTextValue" value="#{pageSession.valueMap.validationTableName}");
+                setPageSessionAttribute(key="myTableOption" value="text");
+            }
+        }
+        if (#{requestScope.isClassNames}) {
+            setPageSessionAttribute(key="validCNDropDownValue" value="#{pageSession.valueMap.validationClassname}");
+        }
+        if (!#{requestScope.isClassNames}) {
+            if (#{pageSession.valueMap.validationClassname}) {
+                if ("!(#{pageSession.valueMap.validationClassname}='')") {
+                    setPageSessionAttribute(key="validCNTextValue" value="#{pageSession.valueMap.validationClassname}");
+                    setPageSessionAttribute(key="myValidCNOption" value="text");
+                }
+            }
+        }
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        />
+        </event>
+            <sun:form id="propertyForm">
+#include "/jdbc/jdbcConnectionPoolTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+<!-- Page Title -->
+<sun:title id="propertyContentPage" title="$resource{i18njdbc.jdbcConnectionPool.advancePageTitle}" 
+    helpText="$resource{i18njdbc.jdbcConnectionPool.advancePageTitleHelp}">
+#include "/common/shared/editPageLoadDefaultButton.inc"
+#include"/jdbc/jdbcConnectionPoolAdvanceButtons.inc"
+</sun:title>
+                
+#include "/jdbc/advancePool.inc"
+"<br>
+<sun:title >
+#include"/jdbc/jdbcConnectionPoolAdvanceButtons.inc"
+</sun:title>
+	<sun:hidden id="helpKey" value="$resource{help_jdbc.jdbcConnectionPoolAdvance}" />
+</sun:form>
+
+#include "/jdbc/lazyConnectionJS.inc"
+#include "/jdbc/jdbcConnectionPoolAdvanceJS.inc"
+
+</define>
+</composition>
+
+

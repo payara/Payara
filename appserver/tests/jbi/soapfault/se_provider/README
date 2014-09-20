@@ -1,0 +1,17 @@
+The sample tests that exceptions are properly propagated through the JavaEE
+service engine to the webservice client. Service engine acts as a provider in 
+this test.
+
+There is a Calculator web service, packaged as a servlet, with only one 
+operation add which throws an exception. Client is a standalone java 
+application which sends request to the webservice through SOAPBinding.
+
+ant all of this sample does the following : 
+ 
+1. compiles and deploys the web service on application server, deploys a 
+   producer service unit on SOAP Binding
+
+2. runs the client which makes a webservice request through SOAP binding.
+
+3. undeploy application from app server and service assembly deployment from 
+SOAP Binding.

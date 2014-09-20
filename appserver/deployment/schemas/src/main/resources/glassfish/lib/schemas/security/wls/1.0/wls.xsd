@@ -1,0 +1,702 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://xmlns.oracle.com/weblogic/security/wls" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import namespace="http://xmlns.oracle.com/weblogic/security"/>
+  <xs:complexType name="realm-adapter-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:login-exception-propagatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="active-type" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="base64-decoding-required" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="login-exception-propagatorType">
+    <xs:complexContent>
+      <xs:extension base="sec:authenticatorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="propagate-cause-for-login-exception" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="realm-adapter-auditorType">
+    <xs:complexContent>
+      <xs:extension base="sec:auditorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="web-logic-cert-path-providerType">
+    <xs:complexContent>
+      <xs:extension base="sec:cert-path-builderType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="read-only-sql-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:dbms-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="descriptions-supported" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="sql-get-users-password" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-user-exists" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-list-member-groups" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-list-users" type="xs:string" minOccurs="0" nillable="true" default="SELECT U_NAME FROM USERS WHERE U_NAME LIKE ?"/>
+          <xs:element name="sql-get-user-description" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-list-groups" type="xs:string" minOccurs="0" nillable="true" default="SELECT G_NAME FROM GROUPS WHERE G_NAME LIKE ?"/>
+          <xs:element name="sql-group-exists" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-is-member" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-get-group-description" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="dbms-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="sec:authenticatorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="enable-group-membership-lookup-hierarchy-caching" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="max-group-hierarchies-in-cache" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="data-source-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="group-hierarchy-cache-ttl" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="group-membership-searching" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="unlimited"/>
+                <xs:enumeration value="limited"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="max-group-membership-search-level" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="plaintext-passwords-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-adjudicatorType">
+    <xs:complexContent>
+      <xs:extension base="sec:adjudicatorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="require-unanimous-permit" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="windows-nt-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="sec:authenticatorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="domain-controllers" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Local"/>
+                <xs:enumeration value="LocalAndDomain"/>
+                <xs:enumeration value="Domain"/>
+                <xs:enumeration value="List"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="domain-controller" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="bad-domain-controller-retry" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Delay"/>
+                <xs:enumeration value="Never"/>
+                <xs:enumeration value="Always"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="bad-domain-controller-retry-interval" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="map-upn-names" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="First"/>
+                <xs:enumeration value="Last"/>
+                <xs:enumeration value="Always"/>
+                <xs:enumeration value="Never"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="logon-type" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="Interactive"/>
+                <xs:enumeration value="Network"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="map-nt-domain-name" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="OldUPN"/>
+                <xs:enumeration value="UPN"/>
+                <xs:enumeration value="Never"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-identity-asserter-v2Type">
+    <xs:complexContent>
+      <xs:extension base="sec:identity-asserterType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="name-mapper-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="minimum-parser-pool-size" minOccurs="0" nillable="false" default="5">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-partner-registryType">
+    <xs:complexContent>
+      <xs:extension base="sec:providerType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:login-exception-propagatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="enable-group-membership-lookup-hierarchy-caching" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="max-group-hierarchies-in-cache" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="minimum-password-length" minOccurs="0" nillable="false" default="8">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="group-hierarchy-cache-ttl" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="group-membership-searching" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="unlimited"/>
+                <xs:enumeration value="limited"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="max-group-membership-search-level" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="use-retrieved-user-name-as-principal" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="password-digest-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="keep-alive-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ldap-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:login-exception-propagatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="enable-group-membership-lookup-hierarchy-caching" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="host" type="xs:string" minOccurs="0" nillable="true" default="localhost"/>
+          <xs:element name="max-group-hierarchies-in-cache" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="port" minOccurs="0" nillable="false" default="389">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1"/>
+                <xs:maxInclusive value="65534"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="user-object-class" type="xs:string" minOccurs="0" nillable="true" default="person"/>
+          <xs:element name="group-hierarchy-cache-ttl" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="ssl-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="user-name-attribute" type="xs:string" minOccurs="0" nillable="true" default="uid"/>
+          <xs:element name="principal" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="user-dynamic-group-dn-attribute" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="user-base-dn" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="credential-encrypted" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="user-search-scope" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="subtree"/>
+                <xs:enumeration value="onelevel"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="cache-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="user-from-name-filter" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="cache-size" minOccurs="0" nillable="false" default="32">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="all-users-filter" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="cache-ttl" minOccurs="0" nillable="false" default="60">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="group-base-dn" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="follow-referrals" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="group-search-scope" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="subtree"/>
+                <xs:enumeration value="onelevel"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="bind-anonymously-on-referrals" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="group-from-name-filter" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="results-time-limit" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="all-groups-filter" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="connect-timeout" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="static-group-object-class" type="xs:string" minOccurs="0" nillable="true" default="groupofuniquenames"/>
+          <xs:element name="parallel-connect-delay" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="static-group-name-attribute" type="xs:string" minOccurs="0" nillable="true" default="cn"/>
+          <xs:element name="connection-retry-limit" type="xs:int" minOccurs="0" nillable="false" default="1"/>
+          <xs:element name="static-member-dn-attribute" type="xs:string" minOccurs="0" nillable="true" default="uniquemember"/>
+          <xs:element name="static-group-dns-from-member-dn-filter" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="dynamic-group-object-class" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="dynamic-group-name-attribute" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="dynamic-member-url-attribute" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="group-membership-searching" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="unlimited"/>
+                <xs:enumeration value="limited"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="max-group-membership-search-level" type="xs:int" minOccurs="0" nillable="true"/>
+          <xs:element name="use-retrieved-user-name-as-principal" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="ignore-duplicate-membership" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="keep-alive-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-relying-party-registryType">
+    <xs:complexContent>
+      <xs:extension base="wls:saml-partner-registryType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-asserting-party-registryType">
+    <xs:complexContent>
+      <xs:extension base="wls:saml-partner-registryType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="realm-adapter-adjudicatorType">
+    <xs:complexContent>
+      <xs:extension base="sec:adjudicatorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="oracle-internet-directory-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="novell-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension base="sec:identity-asserterType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="assertion-consumer-uri" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="post-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="artifact-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="minimum-parser-pool-size" minOccurs="0" nillable="false" default="5">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="recipient-check-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="used-assertion-cache-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="used-assertion-cache-properties" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="enforce-one-use-policy" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="name-mapper-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="assertion-configuration" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="source-site-redirects" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="realm-adapter-authorizerType">
+    <xs:complexContent>
+      <xs:extension base="sec:authorizerType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="wls-user-principal-allowed" type="xs:boolean" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cert-reg-managerType">
+    <xs:complexContent>
+      <xs:extension base="sec:providerType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-authorizerType">
+    <xs:complexContent>
+      <xs:extension base="sec:deployable-authorizerType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension base="sec:identity-asserterType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="user-name-mapper-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="trusted-client-principal" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="use-default-user-name-mapper" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="default-user-name-mapper-attribute-type" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="C"/>
+                <xs:enumeration value="CN"/>
+                <xs:enumeration value="E"/>
+                <xs:enumeration value="L"/>
+                <xs:enumeration value="O"/>
+                <xs:enumeration value="OU"/>
+                <xs:enumeration value="S"/>
+                <xs:enumeration value="STREET"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="default-user-name-mapper-attribute-delimiter" type="xs:string" minOccurs="0" nillable="true" default="@"/>
+          <xs:element name="digest-replay-detection-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="digest-expiration-time-period" type="xs:int" minOccurs="0" nillable="false" default="300"/>
+          <xs:element name="digest-data-source-name" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="pki-credential-mapperType">
+    <xs:complexContent>
+      <xs:extension base="sec:credential-mapperType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="key-store-type" type="xs:string" minOccurs="0" nillable="true" default="JKS"/>
+          <xs:element name="key-store-provider" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="key-store-file-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="use-resource-hierarchy" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="use-initiator-group-names" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="key-store-pass-phrase-encrypted" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="sec:authenticatorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-credential-mapper-v2Type">
+    <xs:complexContent>
+      <xs:extension base="sec:credential-mapperType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="issuer-uri" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="name-qualifier" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="signing-key-alias" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="default-time-to-live" minOccurs="0" nillable="false" default="120">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="default-time-to-live-delta" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="name-mapper-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="minimum-parser-pool-size" minOccurs="0" nillable="false" default="5">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="cred-cache-size" minOccurs="0" nillable="false" default="0">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="cred-cache-min-viable-ttl" minOccurs="0" nillable="false" default="20">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="signing-key-pass-phrase-encrypted" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="negotiate-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension base="sec:identity-asserterType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="form-based-negotiation-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="oracle-virtual-directory-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-credential-mapperType">
+    <xs:complexContent>
+      <xs:extension base="sec:deployable-credential-mapperType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="certificate-registryType">
+    <xs:complexContent>
+      <xs:extension base="sec:cert-path-builderType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="sql-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:read-only-sql-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="password-algorithm" type="xs:string" minOccurs="0" nillable="true" default="SHA-1"/>
+          <xs:element name="password-style" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="PLAINTEXT"/>
+                <xs:enumeration value="HASHED"/>
+                <xs:enumeration value="SALTEDHASHED"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="password-style-retained" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="sql-create-user" type="xs:string" minOccurs="0" nillable="true" default="INSERT INTO USERS VALUES ( ? , ? , ? )"/>
+          <xs:element name="sql-remove-user" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-remove-group-memberships" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-set-user-description" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-set-user-password" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-create-group" type="xs:string" minOccurs="0" nillable="true" default="INSERT INTO GROUPS VALUES ( ? , ? )"/>
+          <xs:element name="sql-set-group-description" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-add-member-to-group" type="xs:string" minOccurs="0" nillable="true" default="INSERT INTO GROUPMEMBERS VALUES( ?, ?)"/>
+          <xs:element name="sql-remove-member-from-group" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-remove-group" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-remove-group-member" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="sql-list-group-members" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ldap-x509-identity-asserterType">
+    <xs:complexContent>
+      <xs:extension base="sec:identity-asserterType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="host" type="xs:string" minOccurs="0" nillable="true" default="localhost"/>
+          <xs:element name="port" minOccurs="0" nillable="false" default="389">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1"/>
+                <xs:maxInclusive value="65534"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="ssl-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="principal" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="user-filter-attribute" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="username-attribute" type="xs:string" minOccurs="0" nillable="true" default="cn"/>
+          <xs:element name="certificate-attribute" type="xs:string" minOccurs="0" nillable="true" default="userCertificate;binary"/>
+          <xs:element name="credential-encrypted" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="certificate-mapping" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="cache-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="cache-size" minOccurs="0" nillable="false" default="32">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="cache-ttl" minOccurs="0" nillable="false" default="60">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="follow-referrals" type="xs:boolean" minOccurs="0" nillable="false" default="true"/>
+          <xs:element name="bind-anonymously-on-referrals" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="results-time-limit" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="connect-timeout" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="parallel-connect-delay" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="connection-retry-limit" type="xs:int" minOccurs="0" nillable="false" default="1"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="active-directory-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="use-token-groups-for-group-membership-lookup" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="enable-sid-to-group-lookup-caching" type="xs:boolean" minOccurs="0" nillable="true"/>
+          <xs:element name="max-sid-to-group-lookups-in-cache" type="xs:int" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="custom-dbms-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:dbms-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls">
+        <xs:sequence>
+          <xs:element name="plugin-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="plugin-properties" type="xs:string" minOccurs="0" nillable="true"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-role-mapperType">
+    <xs:complexContent>
+      <xs:extension base="sec:deployable-role-mapperType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-auditorType">
+    <xs:complexContent>
+      <xs:extension base="sec:auditorType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="active-context-handler-entry" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="severity" minOccurs="0" nillable="true">
+            <xs:simpleType>
+              <xs:restriction base="xs:string">
+                <xs:enumeration value="INFORMATION"/>
+                <xs:enumeration value="WARNING"/>
+                <xs:enumeration value="ERROR"/>
+                <xs:enumeration value="SUCCESS"/>
+                <xs:enumeration value="FAILURE"/>
+                <xs:enumeration value="CUSTOM"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="information-audit-severity-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="warning-audit-severity-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="error-audit-severity-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="success-audit-severity-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="failure-audit-severity-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="output-medium" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="rotation-minutes" minOccurs="0" nillable="false" default="1440">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="1"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="begin-marker" type="xs:string" minOccurs="0" nillable="true" default="#### Audit Record Begin"/>
+          <xs:element name="end-marker" type="xs:string" minOccurs="0" nillable="true" default="Audit Record End ####"/>
+          <xs:element name="field-prefix" type="xs:string" minOccurs="0" nillable="true" default="&lt;"/>
+          <xs:element name="field-suffix" type="xs:string" minOccurs="0" nillable="true" default=">"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="default-key-storeType">
+    <xs:complexContent>
+      <xs:extension base="sec:key-storeType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="saml-credential-mapperType">
+    <xs:complexContent>
+      <xs:extension base="sec:credential-mapperType" xmlns:sec="http://xmlns.oracle.com/weblogic/security">
+        <xs:sequence>
+          <xs:element name="issuer-uri" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="name-mapper-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="name-qualifier" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="default-time-to-live" minOccurs="0" nillable="false" default="120">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="default-time-to-live-delta" type="xs:int" minOccurs="0" nillable="false" default="0"/>
+          <xs:element name="source-site-url" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="intersite-transfer-uri" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="assertion-retrieval-uri" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="artifact-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="assertion-store-class-name" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="assertion-store-properties" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="post-enabled" type="xs:boolean" minOccurs="0" nillable="false" default="false"/>
+          <xs:element name="default-post-form" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="minimum-parser-pool-size" minOccurs="0" nillable="false" default="5">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="assertion-configuration" type="xs:string" minOccurs="0" nillable="true"/>
+          <xs:element name="cred-cache-size" minOccurs="0" nillable="false" default="0">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+          <xs:element name="cred-cache-min-viable-ttl" minOccurs="0" nillable="false" default="20">
+            <xs:simpleType>
+              <xs:restriction base="xs:int">
+                <xs:minInclusive value="0"/>
+              </xs:restriction>
+            </xs:simpleType>
+          </xs:element>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="group-cert-reg-managerType">
+    <xs:complexContent>
+      <xs:extension base="sec:providerType" xmlns:sec="http://xmlns.oracle.com/weblogic/security"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="open-ldap-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="iplanet-authenticatorType">
+    <xs:complexContent>
+      <xs:extension base="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:element name="realm-adapter-authenticator" type="wls:realm-adapter-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="realm-adapter-auditor" type="wls:realm-adapter-auditorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="web-logic-cert-path-provider" type="wls:web-logic-cert-path-providerType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="read-only-sql-authenticator" type="wls:read-only-sql-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-adjudicator" type="wls:default-adjudicatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="windows-nt-authenticator" type="wls:windows-nt-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="saml-identity-asserter-v2" type="wls:saml-identity-asserter-v2Type" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-authenticator" type="wls:default-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="ldap-authenticator" type="wls:ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="realm-adapter-adjudicator" type="wls:realm-adapter-adjudicatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="oracle-internet-directory-authenticator" type="wls:oracle-internet-directory-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="novell-authenticator" type="wls:novell-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="saml-identity-asserter" type="wls:saml-identity-asserterType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="realm-adapter-authorizer" type="wls:realm-adapter-authorizerType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-authorizer" type="wls:default-authorizerType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-identity-asserter" type="wls:default-identity-asserterType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="pki-credential-mapper" type="wls:pki-credential-mapperType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="saml-authenticator" type="wls:saml-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="saml-credential-mapper-v2" type="wls:saml-credential-mapper-v2Type" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="negotiate-identity-asserter" type="wls:negotiate-identity-asserterType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="oracle-virtual-directory-authenticator" type="wls:oracle-virtual-directory-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-credential-mapper" type="wls:default-credential-mapperType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="certificate-registry" type="wls:certificate-registryType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="sql-authenticator" type="wls:sql-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="ldapx509-identity-asserter" type="wls:ldap-x509-identity-asserterType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="active-directory-authenticator" type="wls:active-directory-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="custom-dbms-authenticator" type="wls:custom-dbms-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-role-mapper" type="wls:default-role-mapperType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-auditor" type="wls:default-auditorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="default-key-store" type="wls:default-key-storeType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="saml-credential-mapper" type="wls:saml-credential-mapperType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="i-planet-authenticator" type="wls:iplanet-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+  <xs:element name="open-ldap-authenticator" type="wls:open-ldap-authenticatorType" xmlns:wls="http://xmlns.oracle.com/weblogic/security/wls"/>
+</xs:schema>

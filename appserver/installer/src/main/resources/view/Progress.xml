@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2007-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="Progress" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:oor="http://openoffice.org/2001/registry"
+  xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+  <apt:category apt:name="Progress" apt:label="Progress" >
+
+ <apt:page apt:name="ProgressPage" apt:label="ProgressPage" >
+
+  <apt:section apt:name="progress" apt:label="WELCOME" >
+    <apt:property apt:name="SLIDESHOW"
+        apt:dataPath=""
+        apt:type="xs:string">
+      <apt:prop-value/>
+      <apt:visual>
+        <apt:slideShow timePerSlide="5">
+          <apt:updateURL>http://www.sun.com/foo</apt:updateURL>
+          <apt:slideResource>/view/jwsdp_1.png</apt:slideResource>
+	  <apt:slideResource>/view/jwsdp_2.png</apt:slideResource> 
+	  <apt:slideResource>/view/jwsdp_3.png</apt:slideResource>
+	  <apt:slideResource>/view/jwsdp_4.png</apt:slideResource>
+	  <apt:slideResource>/view/jwsdp_5.png</apt:slideResource>
+	  <apt:slideResource>/view/jwsdp_6.png</apt:slideResource>
+        </apt:slideShow>
+      </apt:visual>
+    </apt:property>
+    <apt:property apt:name="TOP_MESSAGE"
+                  apt:dataPath=""
+                  apt:type="xs:string">
+      <apt:prop-value><![CDATA[<HTML><BODY>0%</BODY></HTML>]]></apt:prop-value>
+      <apt:visual>
+        <apt:htmlPanel/>
+      </apt:visual>
+    </apt:property>
+    <apt:property apt:name="PROGRESS"
+        apt:dataPath=""
+        apt:type="xs:string">
+      <apt:prop-value >0</apt:prop-value>
+      <apt:visual>
+        <apt:progressBar apt:determinate="true" apt:toolTip="Progress" apt:progressMax="100" />
+      </apt:visual>
+    </apt:property>
+    <!--apt:property apt:name="BOTTOM_MESSAGE"
+                  apt:dataPath=""
+                  apt:type="xs:string">
+      <apt:prop-value><![CDATA[<HTML><BODY>Please wait</BODY></HTML>]]>
+      </apt:prop-value>
+      <apt:visual>
+        <apt:htmlPanel/>
+      </apt:visual>
+    </apt:property-->
+  </apt:section>
+   <apt:scriptHandler apt:scriptLanguage="beanshell">
+    <apt:scriptCode><![CDATA[
+import org.openinstaller.bus.*;
+import org.openinstaller.core.*;
+import org.openinstaller.provider.dependency.*;
+import org.openinstaller.provider.operation.*;
+import org.openinstaller.provider.sims.*;
+import org.openinstaller.provider.task.*;
+import org.openinstaller.provider.task.TaskControl.TaskCommand;
+import org.openinstaller.util.*;
+import java.util.logging.Logger;
+import javax.swing.*;
+
+getComponentByName(aParent, aName) {
+  if (aParent == null || ! (aParent instanceof Component)) {
+    return null;
+  }
+  Component[] theComponents = ((Container)aParent).getComponents();
+  for (Component theComp : theComponents) {
+    if (aName.equals(theComp.getName())) {
+      return theComp;
+    }
+  }
+  for (Component theComp : theComponents) {
+    if (theComp instanceof Container) {
+      theCompo = getComponentByName((Container) theComp, aName);
+      if (theCompo != null) {
+        return theCompo;
+      }
+    }
+  }
+  return null;
+}
+
+    /**
+     * This method detects if this is a normal run or a dry run.
+     */
+    detectDryRun() {
+        boolean gDryRun = false;
+
+        try {
+            BusRequest theModeReq = new BusRequest("ModeRequest",
+                new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, 
+			EngineConfigItem.DRY_RUN_FILE));
+            BusResponse theModeResp 
+			= ControlBus.getInstance().publishRequest(theModeReq, 
+				"svc://general/EngineConfig");
+            gDryRun = (theModeResp.getResult() != null);
+        } catch (Exception theEx) {
+            // default to normal run.
+        }
+
+	return (gDryRun);
+    } 
+
+run() {
+  // Burn the bridge
+  wizard.enableCancel(true);
+  wizard.enableHelp(true);
+  wizard.setNextButtonText(Msg.get("next", null));
+
+  // Determine if this is dry run in order to skip registration panels.
+  if (detectDryRun()) {
+      List activeModes = (List)ConfigHelper.getValue("PageFlow.Mode.ACTIVE_MODES_LIST");
+      activeModes.add("DRY_RUN_MODE");
+  }
+
+  BusResponse theTaskResp =  Scripting.getInterpreter().get("gSharedResponse");
+  while (theTaskResp == null) {
+    /* wait for task resp to be set */
+    Thread.sleep(250);
+  }
+  // Get the Progress Bar instance
+  theProgressBar = getComponentByName(content, "PROGRESS");
+  theTopMsg = getComponentByName(content, "TOP_MESSAGE");
+  
+
+  ProgressReporter theReporter = null;
+  String theOldProgressStr = "";
+  String theOldTopMsgStr = "";
+ 
+  while (theTaskResp.isMore()) {
+    theObject = theTaskResp.getResult();
+    if (theObject != null) {
+      ProgressReporter theProgReporter = (ProgressReporter) theObject;
+      if (theProgReporter == theReporter) {
+         Thread.sleep(250);
+         continue;
+      }
+      theReporter = theProgReporter;
+      theProgressBar.setValue(theProgReporter.totalPercent);
+      String progressStr = theProgReporter.totalPercent + "%";
+      if (theProgReporter.getEstimatedCompletionTime() >= 0) {
+        int hours = theProgReporter.getEstimatedCompletionTime() / 3600;
+        int mins = (theProgReporter.getEstimatedCompletionTime() % 3600) / 60;
+        int secs = (theProgReporter.getEstimatedCompletionTime() % 3600) % 60;
+
+        progressStr += String.format(" Time Remaining: %02d:%02d:%02d", new Integer[] {hours, mins, secs});
+      }
+      if (!theOldProgressStr.equals(progressStr)) {
+        theOldProgressStr = progressStr;
+        theProgressBar.setString(theOldProgressStr);
+        theProgressBar.setStringPainted(true);
+      }
+      if (!theOldTopMsgStr.equals(theProgReporter.totalString)) {
+        theOldTopMsgStr = theProgReporter.totalString;
+        if (theOldTopMsgStr == null || theOldTopMsgStr.equals("")) {
+          theTopMsg.setText("...");
+        } else {
+          theTopMsg.setText(theOldTopMsgStr);
+        }
+      }
+    } else {
+      LOGGER.fine("Progress information not available yet");
+    }
+    Thread.sleep(250);
+  }
+  if (theTaskResp.getException() != null) {
+    String theMsg = Msg.get("INTERNAL_FATAL_ERROR",
+      new String[]{EnhancedException.getLastCause(theTaskResp.getException()).getLocalizedMessage()});
+    JOptionPane.showMessageDialog(frame, theMsg, Msg.get("ERROR", new String[] {}), JOptionPane.ERROR_MESSAGE);
+    bus.publishEvent(new BusEvent("shutdown"));
+  } else {
+    wizard.enableNext(true);
+    Thread.sleep(250);
+    wizard.clickNext();
+  }
+}
+
+return (Runnable)this;]]>
+
+    </apt:scriptCode>
+  </apt:scriptHandler>
+  </apt:page>
+
+  </apt:category>
+</apt:template>

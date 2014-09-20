@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!DOCTYPE project []>
+
+<project name="GlassFish Installer build" default="all" basedir=".">
+	<property name="stage.dir" value="${basedir}/target/stage" />
+	<property name="component.classes.dir" value="${basedir}/target/classes" />
+	<property name="maven.repo.local" value="${user.home}/.m2/repository"/>
+	<property name="tmp.dir" value="${basedir}/target/tmp" />
+	<!-- all -->
+	<target name="all" description="Build all of GlassFish distritions" depends="setup_dependencies">
+		<!-- Build GlassFish Enterprise Server v3 Web Profile Preview distribution. -->
+		<!-- Could have used ant-contrib's foreach :-) -->
+		<antcall target="do_processing">
+			<param name="bundle.name" value="GlassFishV3WebProfilePreview" />
+			<param name="sourcezip.name" value="../distributions/web/target/web-ips-installer.zip" />
+			<param name="sourcezip.ml.name" value="../distributions/web/target/web-ips-ml-installer.zip" />
+			<param name="selfextractexe.name" value="glassfish-web" />
+			<param name="selfextractexe.ml.name" value="glassfish-web-ml" />
+		</antcall>
+
+		<!-- Build GlassFish Enterprise Server v3 Preview distribution. -->
+		<!-- Could have used ant-contrib's foreach :-) -->
+		<antcall target="do_processing">
+			<param name="bundle.name" value="GlassFishV3Preview" />
+			<param name="sourcezip.name" value="../distributions/glassfish/target/glassfish-ips-installer.zip" />
+			<param name="sourcezip.ml.name" value="../distributions/glassfish/target/glassfish-ips-ml-installer.zip" />
+			<param name="selfextractexe.name" value="glassfish-full" />
+			<param name="selfextractexe.ml.name" value="glassfish-full-ml" />
+		</antcall>
+
+		<antcall target="push_zip_artifact_to_repository"/>
+		<delete dir="${stage.dir}/GlassFishV3WebProfilePreview"/>
+		<delete dir="${stage.dir}/GlassFishV3Preview"/>
+	</target>
+
+	<!-- Repeatedly called for each bundle, currently only 2. -->
+	<target name="do_processing">
+		<antcall target="prepare_stage" />
+		<antcall target="recreate_resource_zip" />
+		<antcall target="recreate_engine_zip" />
+		<antcall target="create_final_stage_area" />
+		<antcall target="create_self_extract_executable" />
+	</target>
+
+	<!-- Set up staging directories for build/runtime. -->
+	<target name="prepare_stage" description="Setup appropriate staging directories for each bundle to be used for build/runtime">
+		<echo message="Setting up staging directories for ${bundle.name}" />
+		<delete dir="${stage.dir}/${bundle.name}" />
+		<mkdir dir="${stage.dir}/${bundle.name}" />
+		<mkdir dir="${stage.dir}/${bundle.name}/Product/Packages" />
+		<mkdir dir="${stage.dir}/${bundle.name}_engine_tmp" />
+	</target>
+
+	<!-- This is a onetime task, so just do this once. -->
+	<target name="setup_dependencies" description="Pull in required dependencies for build/runtime of installer.">
+		<echo message="Setting up required IPS dependencies" />
+		<resolveArtifact groupID="com.sun.pkg" artifactId="pkg-bootstrap" property="pkg-bootstrap.jar" />
+		<resolveArtifact groupID="com.sun.pkg" artifactId="pkg-client" property="pkg-client.jar" />
+
+		<echo message="Setting up required registration module dependencies" />
+		<resolveArtifact groupID="org.glassfish.main.registration" artifactId="registration-api" property="registration-api.jar" />
+		<resolveArtifact groupID="org.glassfish.main.registration" artifactId="registration-impl" property="registration-impl.jar" />
+                <resolveArtifact groupID="org.glassfish.main.common" artifactId="common-util" property="common-util.jar" />
+
+		<echo message="Setting up required OpenInstaller dependencies" />
+		<resolveArtifact groupID="org.openinstaller" artifactId="resources" property="resources.zip" />
+		<resolveArtifact groupID="org.openinstaller" artifactId="engine" property="engine.zip" />
+	</target>
+
+	<!-- Extract Open Installer's resource.zip file. -->
+	<target name="extract_resource_zip" description="Extract resource.zip">
+		<!-- Explode the resources.zip to enable installer to refer the contents -->
+		<unzip src="${resources.zip}" dest="${stage.dir}/${bundle.name}"/>
+		<delete>
+			<fileset dir="${stage.dir}/${bundle.name}">
+				<include name="**/ui_*.prefs"/>
+			</fileset>
+		</delete>
+	</target>
+
+	<!-- No changes are required for resource.zip, so just copy to the CD image. -->
+	<target name="recreate_resource_zip" depends="extract_resource_zip" description="Re-create resource.zip">
+		<!-- Copy Resources.zip to payload directly as there are no changes to it for now-->
+		<copy tofile="${stage.dir}/${bundle.name}/Product/Packages/Resources.zip" file="${resources.zip}" />
+	</target>
+
+	<!-- Extract Open Installer's engine.zip file. -->
+	<target name="extract_engine_zip" description="Extract engine.zip">
+		<!-- Explode the engine.zip to repack -->
+		<unzip src="${engine.zip}" dest="${stage.dir}/${bundle.name}_engine_tmp"/>
+		<delete>
+			<fileset dir="${stage.dir}/${bundle.name}_engine_tmp">
+				<include name="**/ResourceMsgs_*.properties"/>
+			</fileset>
+		</delete>
+	</target>
+
+
+	<!-- Compile configurator classes. -->
+	<target name="compile" description="Compiling configurator classes">
+		<mkdir dir="${component.classes.dir}" />
+		<javac srcdir="${basedir}/src/main/java" destdir="${component.classes.dir}" source="1.6" target="1.6" failonerror="true">
+			<classpath>
+				<pathelement location="${stage.dir}/${bundle.name}_engine_tmp/install/lib/engine.jar" />
+				<pathelement location="${stage.dir}/${bundle.name}_engine_tmp/install/lib/config.jar" />
+				<pathelement location="${stage.dir}/${bundle.name}_engine_tmp/install/lib/providers/providers.jar" />
+				<pathelement location="${pkg-bootstrap.jar}" />
+				<pathelement location="${pkg-client.jar}" />
+			</classpath>
+		</javac>
+	</target>
+
+	<!-- Create a modified Engine.zip file new configurator, wrappers and provider.jar. -->
+	<target name="update_engine_zip" description="Recreating the engine.zip with updated contents">
+		<!-- Overwrite the Default resource file bundled in OI with GlassFish Resource file -->
+		<copy todir="${stage.dir}/${bundle.name}_engine_tmp/install/lib/resources/org/openinstaller/resources">
+		<fileset dir="${basedir}/src/${bundle.name}/java/org/openinstaller/resource">
+			<include name="ResourceMsg*.properties"/>
+			</fileset>
+		</copy>
+
+		<!-- Copy the uninstaller wrapper also into Engine.zip -->
+		<copy todir="${stage.dir}/${bundle.name}_engine_tmp">
+			<fileset dir="${basedir}/src/${bundle.name}/resources/wrappers">
+				<include name="uninstall*" />
+			</fileset>
+		</copy>
+
+		<!-- Copy the modified uninstaller wrapper of OI into Engine.zip -->
+		<copy tofile="${stage.dir}/${bundle.name}_engine_tmp/install/bin/uninstaller" file="${basedir}/src/${bundle.name}/resources/wrappers/oiuninstaller" overwrite="true" />
+		<!-- Change the permission on wrapper that is also to be used for uninstaller. -->
+		<chmod file="${stage.dir}/${bundle.name}_engine_tmp/install/bin/engine-wrapper" perm="ugo+rx" />
+
+
+		<!-- Update providers.jar that is part of the original Open Installer distribution. -->
+		<mkdir dir="${tmp.dir}"/>	
+		<unjar src="${stage.dir}/${bundle.name}_engine_tmp/install/lib/providers/providers.jar" dest="${tmp.dir}" />
+		<copy todir="${tmp.dir}">
+			<fileset dir="${component.classes.dir}">
+				<include name="**/*.class" />
+			</fileset>
+		</copy>
+		<jar jarfile="${stage.dir}/${bundle.name}_engine_tmp/install/lib/providers/providers.jar" basedir="${tmp.dir}" manifest="${tmp.dir}/META-INF/MANIFEST.MF">
+		</jar>
+		<delete dir="${tmp.dir}" />
+	</target>
+
+	<!-- Cleanup temporary engine.zip staging area. -->
+	<target name="recreate_engine_zip" depends="extract_engine_zip, compile, update_engine_zip" description="Recreating the engine.zip with updated contents">
+
+		<!-- Now create the updated engine.zip directly under payload -->
+		<zip destfile="${stage.dir}/${bundle.name}/Product/Packages/Engine.zip" basedir="${stage.dir}/${bundle.name}_engine_tmp" />
+
+		<!-- Delete the temporary install stage directory used to host engine.zip contents. -->
+		<delete dir="${stage.dir}/${bundle.name}_engine_tmp" />
+
+		<!-- unzip the newly created file under stage.dir for reference to installer. -->
+		<unzip src="${stage.dir}/${bundle.name}/Product/Packages/Engine.zip" dest="${stage.dir}/${bundle.name}" />
+
+		<!-- Change wrapper permission on exploded directory to be used for install. -->
+		<chmod file="${stage.dir}/${bundle.name}/install/bin/engine-wrapper" perm="ugo+rx" />
+	</target>
+
+
+	<!-- Pull up required pieces all in one place as the final staging area. -->
+	<target name="create_final_stage_area" description="Assembling installer distribution layout">
+
+		<echo message="Staging installer metadata" />
+		<copy todir="${stage.dir}/${bundle.name}/install/metadata/dependency">
+			<fileset dir="${basedir}/src/${bundle.name}/resources/dependency" excludes=".svn" />
+		</copy>
+		<copy todir="${stage.dir}/${bundle.name}/install/metadata/model">
+			<fileset dir="${basedir}/src/${bundle.name}/resources/model" excludes=".svn" />
+		</copy>
+		<copy todir="${stage.dir}/${bundle.name}/install/metadata/templates">
+			<fileset dir="${basedir}/src/${bundle.name}/resources/templates" excludes=".svn" />
+		</copy>
+		<copy todir="${stage.dir}/${bundle.name}/install/metadata/view">
+			<fileset dir="${basedir}/src/${bundle.name}/resources/view" excludes=".svn" />
+		</copy>
+		<copy todir="${stage.dir}/${bundle.name}/install/metadata" file="${basedir}/src/${bundle.name}/resources/pagesequence.xml">
+		</copy>
+		<copy todir="${stage.dir}/${bundle.name}/install/metadata">
+			<fileset dir="${basedir}/src/${bundle.name}/resources"> 
+				<include name="pagesequence*.properties"/>
+			</fileset>
+		</copy>
+
+		<zip destfile="${stage.dir}/${bundle.name}/Product/Packages/metadata.zip" basedir="${stage.dir}/${bundle.name}" includes="install/metadata/**" />
+
+		<echo message="Staging wrappers" />
+		<copy todir="${stage.dir}/${bundle.name}">
+			<fileset dir="${basedir}/src/${bundle.name}/resources/wrappers" excludes=".svn,engine-wrapper" />
+		</copy>
+
+		<echo message="Staging registration jar files" />
+		<copy tofile="${stage.dir}/${bundle.name}/registration-api.jar" file="${registration-api.jar}" />
+		<copy tofile="${stage.dir}/${bundle.name}/registration-impl.jar" file="${registration-impl.jar}" />
+                <copy tofile="${stage.dir}/${bundle.name}/common-util.jar" file="${common-util.jar}" />
+
+		<echo message="Staging binaries required for IPS" />
+		<copy tofile="${stage.dir}/${bundle.name}/pkg-client.jar" file="${pkg-client.jar}" />
+		<copy tofile="${stage.dir}/${bundle.name}/pkg-bootstrap.jar" file="${pkg-bootstrap.jar}" />
+
+		<echo message="Staging product payload" />
+		<copy tofile="${stage.dir}/${bundle.name}/Product/Packages/glassfish.zip" file="${sourcezip.name}" />
+
+		<echo message="Creating icons zip file" />
+                <delete dir="${tmp.dir}"/>
+         	<copy todir="${tmp.dir}/glassfish/icons">
+             		<fileset dir="${basedir}/src/${bundle.name}/resources/icons" excludes=".svn"/>
+         	</copy>
+         	<zip destfile="${stage.dir}/${bundle.name}/Product/Packages/icons.zip" basedir="${tmp.dir}" />
+                <delete dir="${tmp.dir}"/>
+		<chmod file="${stage.dir}/${bundle.name}/product-installer.sh" perm="ugo+rx" />
+	</target>
+
+	<!-- Create self-extract file on both windows and unix platforms, irrespective of where the build is run.
+	Currently there is no native component that might require a forking here. -->
+	<target name="create_self_extract_executable" description="Packaging installer distributions">
+		<delete dir="${stage.dir}/${bundle.name}/install" />
+
+		<!-- Windows -->
+		<copy tofile="${stage.dir}/${bundle.name}/Product/Packages/glassfish.zip" file="${sourcezip.name}" overwrite="true"/>
+		<zip destfile="${stage.dir}/installer_distro.zip" basedir="${stage.dir}/${bundle.name}" />
+		<copy tofile="${stage.dir}/${selfextractexe.name}.exe" file="${basedir}/src/${bundle.name}/resources/wrappers/setup.exe" overwrite="true" />
+		<concat append="true" encoding="ISO-8859-1" destfile="${stage.dir}/${selfextractexe.name}.exe">
+			<fileset dir="${stage.dir}" includes="installer_distro.zip" />
+		</concat>
+		<delete file="${stage.dir}/installer_distro.zip"/>
+
+		<!-- Create ML bundle -->
+		<!-- Update GlassFish bundle with L10n bundle -->
+		<copy tofile="${stage.dir}/${bundle.name}/Product/Packages/glassfish.zip" file="${sourcezip.ml.name}" overwrite="true"/>
+		<zip destfile="${stage.dir}/installer_distro_ml.zip" basedir="${stage.dir}/${bundle.name}" />
+		<copy tofile="${stage.dir}/${selfextractexe.ml.name}.exe" file="${basedir}/src/${bundle.name}/resources/wrappers/setup.exe" overwrite="true" />
+		<concat append="true" encoding="ISO-8859-1" destfile="${stage.dir}/${selfextractexe.ml.name}.exe">
+			<fileset dir="${stage.dir}" includes="installer_distro_ml.zip" />
+		</concat>
+		<delete file="${stage.dir}/installer_distro_ml.zip"/>
+
+		<!-- Unix -->
+		<copy tofile="${stage.dir}/${bundle.name}/Product/Packages/glassfish.zip" file="${sourcezip.name}" overwrite="true"/>
+		<jar jarfile="${stage.dir}/installer_distro.jar" basedir="${stage.dir}/${bundle.name}">
+		</jar>
+		<copy tofile="${stage.dir}/${selfextractexe.name}.sh" file="${basedir}/src/${bundle.name}/resources/wrappers/wrapper.sh" overwrite="true" />
+		<concat append="true" encoding="ISO-8859-1" destfile="${stage.dir}/${selfextractexe.name}.sh">
+			<fileset dir="${stage.dir}" includes="installer_distro.jar" />
+		</concat>
+		<delete file="${stage.dir}/installer_distro.jar"/>
+
+		<!-- Create ML bundle -->
+		<!-- Update GlassFish bundle with L10n bundle -->
+		<copy tofile="${stage.dir}/${bundle.name}/Product/Packages/glassfish.zip" file="${sourcezip.ml.name}" overwrite="true"/>
+		<jar jarfile="${stage.dir}/installer_distro_ml.jar" basedir="${stage.dir}/${bundle.name}">
+		</jar>
+		<copy tofile="${stage.dir}/${selfextractexe.ml.name}.sh" file="${basedir}/src/${bundle.name}/resources/wrappers/wrapper.sh" overwrite="true" />
+		<concat append="true" encoding="ISO-8859-1" destfile="${stage.dir}/${selfextractexe.ml.name}.sh">
+			<fileset dir="${stage.dir}" includes="installer_distro_ml.jar" />
+		</concat>
+		<delete file="${stage.dir}/installer_distro_ml.jar"/>
+	</target>
+
+	<target name="push_zip_artifact_to_repository" description="Pushing the distros created to be used for internal builds">
+		<!-- prepare installer zip artifact for consumption in Sun branded build -->
+		<zip destfile="${stage.dir}/installer_artifact.zip" basedir="${stage.dir}/GlassFishV3Preview" excludes="**/glassfish.zip" />
+		<attachArtifact file="${stage.dir}/installer_artifact.zip" />
+	</target>
+</project>

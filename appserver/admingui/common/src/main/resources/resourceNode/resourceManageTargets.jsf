@@ -1,0 +1,154 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- applications/manageTargets.jsf -->
+
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout" guiTitle="$resource{i18n.manageResourceTargets.PageTitle}" >
+<!define name="content">
+    <event>
+        <!beforeCreate
+            getRequestValue(key="resName" value="#{pageSession.resName}");
+            getRequestValue(key="generalPage" value="#{pageSession.generalPage}");
+            setPageSessionAttribute(key="resourceName" value="#{pageSession.resName}");
+            urlencode(value="#{pageSession.resName}" encoding="UTF-8" result="#{pageSession.encodedResName}");
+#include "/common/shared/targetsList.inc"
+            setPageSessionAttribute(key="resTargets" value={});
+            foreach(var="targetName" list="#{pageSession.targetList}") {
+                 gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isCluster");
+                 if ("!#{requestScope.isCluster}") {
+                     gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/servers/server/#{requestScope.targetName}/resource-ref/#{pageSession.encodedResName}" exists="isServer");
+                     if("#{requestScope.isServer}") {
+                         listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
+                     }
+                 }
+                 if ("#{requestScope.isCluster}") {
+                     listAdd(list="#{pageSession.resTargets}" value="#{requestScope.targetName}");
+                 }
+             }
+             convertListToArray(list="#{pageSession.resTargets}" array="#{pageSession.selectedTargets}");
+        />
+    </event>
+<sun:form id="form">
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$attribute{formId})
+    />
+
+#include "/common/shared/alertMsg_1.inc"
+<sun:title id="propertyContentPage" title="$resource{i18n.manageResourceTargets.PageTitle}" helpText="$resource{i18n.manageResourceTargets.PageTitleHelp}">
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}" 
+                    onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    setAttribute(key="clusterEndpoint" value="#{sessionScope.REST_URL}/clusters/cluster");
+                    setAttribute(key="serverEndpoint" value="#{sessionScope.REST_URL}/servers/server");
+                    //Convert the seleted Targets Array to String
+                    convertArrayToCommaString(array="#{pageSession.selectedTargets}" commaString="#{requestScope.selTargetsString}");
+                    convertStringtoList(str="#{requestScope.selTargetsString}" result="#{requestScope.selTargetsList}");
+                    
+                    //For each selected target, verify if it is an already associated target.
+                    //If it is already associated, no need to add or remove.
+                    //If it is a new target, create an element under the target.
+                    foreach(var="newTarget" list="#{requestScope.selTargetsList}") {
+                        gf.containedIn(list="#{pageSession.resTargets}" testStr="#{newTarget}" contain="#{requestScope.isAssociatedTarget}");
+                        if (#{requestScope.isAssociatedTarget}) {
+                            //no need to add or remove.
+                            removeListElement(list="#{pageSession.resTargets}" name="#{newTarget}" finalList="#{pageSession.resTargets}");
+                        }
+                        if (!#{requestScope.isAssociatedTarget}) {
+                            gf.containedIn(list="#{pageSession.clusterList}" testStr="#{newTarget}" contain="#{requestScope.isCluster}");
+                            if (#{requestScope.isCluster}) {
+                                setAttribute(key="endpoint" value="#{clusterEndpoint}/#{newTarget}/resource-ref");
+                            }
+                            if (!#{requestScope.isCluster}) {
+                                setAttribute(key="endpoint" value="#{serverEndpoint}/#{newTarget}/resource-ref");
+                            }
+                            createMap(result="#{requestScope.resAttrsMap}");
+                            mapPut(map="#{requestScope.resAttrsMap}" key="id" value="#{pageSession.resName}");
+                            mapPut(map="#{requestScope.resAttrsMap}" key="target" value="#{newTarget}");
+                            gf.restRequest(endpoint="#{endpoint}" attrs="#{requestScope.resAttrsMap}", method="post");
+                        }
+                    }
+                    foreach(var="oTarget" list="#{pageSession.resTargets}") {
+                        gf.containedIn(list="#{pageSession.clusterList}" testStr="#{oTarget}" contain="#{requestScope.isCluster}");
+                        if (#{requestScope.isCluster}) {
+                            setAttribute(key="endpoint" value="#{clusterEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
+                        }
+                        if (!#{requestScope.isCluster}) {
+                            setAttribute(key="endpoint" value="#{serverEndpoint}/#{oTarget}/resource-ref/#{pageSession.encodedResName}");
+                        }
+                        createMap(result="#{requestScope.resRefAttrsMap}");
+                        mapPut(map="#{requestScope.resRefAttrsMap}" key="target" value="#{oTarget}");
+                        gf.restRequest(endpoint="#{endpoint}" attrs="#{requestScope.resRefAttrsMap}", method="DELETE");
+                    }
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedResName}&generalPage=#{pageSession.generalPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
+                <!command
+                    gf.redirect(page="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedResName}&generalPage=#{pageSession.generalPage}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+#include "/common/resourceNode/resourceNameSection.inc"
+<event>
+    <!afterCreate
+        getUIComponent(clientId="#{formId}"  component=>$attribute{component})
+        setPageSessionAttribute(key="setDefaultTarget" value="false");
+        includeIntegrations(type="org.glassfish.admingui:uploadPropertySheetTargetSection" );
+    />
+</event>
+
+<sun:hidden id="helpKey" value="$resource{help_common.manageResourceTarget}" />
+</sun:form>
+
+#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>
