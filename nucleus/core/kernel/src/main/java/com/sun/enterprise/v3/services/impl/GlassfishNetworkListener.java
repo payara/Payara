@@ -429,10 +429,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         // override to chec whether x-Powered By has been added by something else
         @Override
         protected void onInitialLineEncoded(HttpHeader httpHeader, FilterChainContext ctx) {
-            if (httpHeader.containsHeader(Header.XPoweredBy)) {
-                System.out.println("It's there damn it " + httpHeader.getHeader(Header.XPoweredBy));
-            }
-            
+          
             if (xPoweredBy == null && httpHeader.containsHeader(Header.XPoweredBy)) {
                 httpHeader.getHeaders().removeHeader(Header.XPoweredBy);
             }
