@@ -1,0 +1,114 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- lifecycleEdit.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.lifecycleModule.editPageTitle}" 
+    guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/common/applications/lifecycleEdit.jsf?appName=#{pageSession.encodedName}');"
+    >
+<!define name="content">
+    <event>
+    <!beforeCreate
+
+        setSessionAttribute(key="lcGeneralTabs" value="general");
+        setPageSessionAttribute(key="edit" value="true")
+        getRequestValue(key="appName" value="#{pageSession.name}");
+        urlencode(value="#{pageSession.name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/applications/lifecycleEdit.jsf?appName=#{pageSession.encodedName}");
+        setPageSessionAttribute(key="listPageLink" value="#{request.contextPath}/common/applications/lifecycles.jsf");
+        gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+        setPageSessionAttribute(key="selfUrl" value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedName}");
+        setPageSessionAttribute(key="appRefUrl" value="#{sessionScope.REST_URL}/servers/server/server/application-ref/#{pageSession.encodedName}");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedName}/property.json"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="propsMap" value="#{requestScope.resp.data.extraProperties.properties}");
+        gf.getTargetEnableInfo(appName="#{pageSession.name}" status="#{pageSession.status}")
+        if (#{pageSession.onlyDASExist}){
+            mapPut(map="#{pageSession.valueMap}"  key="enabled" value="#{pageSession.status}");
+        }
+        setPageSessionAttribute(key="attrList" value={"classpath" , "is-failure-fatal", "class-name", "load-order", "isLifecycle"} );
+        setPageSessionAttribute(key="tableList" value={});
+        foreach( var="oneProp" list="#{pageSession.propsMap}"){
+            gf.containedIn(list="#{pageSession.attrList}" testStr="#{requestScope.oneProp.name}" contain="#{requestScope.contain}");
+            if( #{requestScope.contain}){
+                if (#{requestScope.oneProp.name}=classpath){
+                    mapPut(map="#{pageSession.valueMap}"  key="classpath" value="#{requestScope.oneProp.value}");
+                }
+                if (#{requestScope.oneProp.name}=is-failure-fatal){
+                    mapPut(map="#{pageSession.valueMap}"  key="failurefatal" value="#{requestScope.oneProp.value}");
+                }
+                if (#{requestScope.oneProp.name}=class-name){
+                    mapPut(map="#{pageSession.valueMap}"  key="classname" value="#{requestScope.oneProp.value}");
+                }
+                if (#{requestScope.oneProp.name}=load-order){
+                    mapPut(map="#{pageSession.valueMap}"  key="loadorder" value="#{requestScope.oneProp.value}");
+                }
+            }
+            if (!#{requestScope.contain}){
+                listAdd(list="#{pageSession.tableList}", value="#{requestScope.oneProp}")
+            }
+        }
+        />
+    </event>
+
+            <sun:form id="propertyForm">
+
+#include "/common/applications/lifecycleTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+
+        <!-- Page Title -->
+<sun:title id="propertyContentPage" title="$resource{i18nc.lifecycleModule.editPageTitle}" helpText="$resource{i18nc.lifecycleModule.editPageTitleHelp}">
+#include "/common/applications/lifecycleButtons.inc"
+</sun:title>
+        "<br><br>
+#include "/common/applications/lifecycleAttr.inc"
+#include "/common/shared/propertyDescTable.inc"
+	<sun:hidden id="helpKey" value="$resource{help_common.lifecycleEdit}" />
+        </sun:form>
+</define>
+</composition>
+

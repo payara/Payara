@@ -1,0 +1,117 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18n_jts" bundle="org.glassfish.jts.admingui.Strings");
+    setResourceBundle(key="help_jts" bundle="org.glassfish.jts.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_jts.ts.TransactionService}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        setPageSessionAttribute(key="childType" value="transaction-service");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}");
+        setPageSessionAttribute(key="childType" value="transaction-service");
+        setPageSessionAttribute(key="selfUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/transaction-service");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+        
+        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+        
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jts/transactionService.jsf?configName=#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList" value={"automaticRecovery"});
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{false}" );
+        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+    />
+     
+    </event>   
+            <sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+    <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18n_jts.ts.TransactionService}" helpText="$resource{i18n_jts.ts.PageHelp}">
+#include "/common/shared/editPageButtons.inc"
+    </sun:title>
+        <!-- PropertySheet .... -->
+        <sun:propertySheet id="propertySheet">
+            <!-- Text Field section -->
+#include "/common/shared/configNameSection.inc"
+            <sun:propertySheetSection id="propertSectionTextField">
+                <sun:property id="onRestartProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_jts.ts.OnRestart}" helpText="$resource{i18n_jts.ts.OnRestartHelp}">
+                    <sun:checkbox id="enabled" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['automaticRecovery']}" selectedValue="true">
+                   </sun:checkbox>
+                </sun:property>
+                <sun:property id="timeoutProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_jts.ts.Timeout}" helpText="$resource{i18n_jts.ts.TimeoutHelp}">
+                    <sun:textField id="Timeout" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.ts.Timeout']}" text="#{pageSession.valueMap['timeoutInSeconds']}" />
+                    <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+                </sun:property>
+                <sun:property id="retryProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_jts.ts.Retry}" helpText="$resource{i18n_jts.ts.RetryHelp}">
+                    <sun:textField id="Retry" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.ts.Retry']}" text="#{pageSession.valueMap['retryTimeoutInSeconds']}" />
+                    <sun:staticText id="sec" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+                </sun:property>
+                <sun:property id="logLocationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_jts.ts.LogLocation}">
+                    <sun:textField id="LogLocation" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.ts.LogLocation']}" text="#{pageSession.valueMap['txLogDir']}"/>
+                </sun:property>
+                <sun:property id="heuristicProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_jts.ts.HeuristicDesc}" helpText="$resource{i18n_jts.ts.HeuristicDescHelp}">
+                   <sun:dropDown id="HeuristicDecision" selected="#{pageSession.valueMap['heuristicDecision']}" labels={"$resource{i18n_jts.ts.rollback}" "$resource{i18n_jts.ts.commit}"} values={"rollback" "commit"} >
+                    </sun:dropDown>
+                 </sun:property>
+                <sun:property id="keyPointProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_jts.ts.KeypointInterval}" helpText="$resource{i18n_jts.ts.KeypointIntervalHelp}">
+                    <sun:textField id="Keypoint" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.ts.KeypointInterval']}" text="#{pageSession.valueMap['keypointInterval']}" />
+                </sun:property>
+                "<br /><br />
+            </sun:propertySheetSection>
+        </sun:propertySheet>
+#include "/common/shared/propertyDescTable.inc"
+    <sun:title id="propertyContentPage2">
+#include "/common/shared/editPageButtons_2.inc"
+    </sun:title>
+	<sun:hidden id="helpKey" value="$resource{help_jts.transactionService}" />
+            </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>

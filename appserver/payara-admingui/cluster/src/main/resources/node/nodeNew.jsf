@@ -1,0 +1,97 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+    setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncs.node.NewPageTitle}" 
+        guiOnLoad="showSshPswdSection('#{pageSession.psSelected}', '#{pageSession.ps1PropId}',  '#{pageSession.pswdAliasPropId}');
+                   showPswdSection('#{pageSession.winPsSelected}', '#{pageSession.winPs1PropId}',  '#{pageSession.winPswdAliasPropId}'); " >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="edit" value="#{false}");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/cluster/node/nodes.jsf");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/nodes");
+
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/create-node-ssh");
+        gf.getDefaultValues(endpoint="#{pageSession.selfUrl}",  valueMap="#{pageSession.valueMap}");
+        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/create-node-dcom",  valueMap="#{requestScope.dcMap}");
+        gf.getDefaultValues(endpoint="#{pageSession.parentUrl}/validate-dcom",    valueMap="#{requestScope.vMap}");
+        mapPut(map="#{requestScope.vMap}", key="remotetestdir" value="C:\\");
+        mapPut(map="#{pageSession.valueMap}", key="windowsuser" value="#{requestScope.dcMap['windowsuser']}");
+        mapPut(map="#{pageSession.valueMap}", key="remotetestdir" value="#{requestScope.vMap['remotetestdir']}");
+        mapPut(map="#{pageSession.valueMap}", key="validateDcom" value="true");
+        mapPut(map="#{pageSession.valueMap}", key="type" value="SSH");
+        mapPut(map="#{pageSession.valueMap}", key="installdirConfig" value="");
+        mapPut(map="#{pageSession.valueMap}", key="setupSsh" value="false");
+
+        setPageSessionAttribute(key="showInstalldirSSH" value="#{true}");
+        setPageSessionAttribute(key="showInstalldirConfig" value="#{false}");
+
+        setPageSessionAttribute(key="showSetupSsh" value="#{true}");
+        setPageSessionAttribute(key="showGenerateKey" value="#{false}");
+        setPageSessionAttribute(key="showPublicKey" value="#{false}");
+        setPageSessionAttribute(key="showSetupPswd" value="#{false}");
+        setPageSessionAttribute(key="showKeyFile" value="#{true}");
+
+
+        setPageSessionAttribute(key="showTestdir" value="#{true}");
+        setPageSessionAttribute(key="title" value="$resource{i18ncs.node.NewPageTitle}");
+        setPageSessionAttribute(key="titleHelp" value="$resource{i18ncs.node.NewPageTitleHelp}");
+        setPageSessionAttribute(key="convertToFalseList" value="force");
+        setPageSessionAttribute(key="psSelected" value="1");
+        setPageSessionAttribute(key="winPsSelected" value="2");
+
+    />
+    </event>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+#include "/cluster/node/nodeAttr.inc"
+
+    <sun:hidden id="helpKey" value="$resource{help_cluster.nodeNew}" />
+</sun:form>
+#include "/cluster/node/nodeJS.inc"
+</define>
+</composition>

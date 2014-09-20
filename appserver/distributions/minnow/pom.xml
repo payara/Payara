@@ -111,5 +111,13 @@
             <type>pom</type>
             <optional>true</optional>
         </dependency>
+
+        <!-- temporary pkg-bootstrap content dependency -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>pkg-bootstrap-fragment</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>	
     </dependencies>
 </project>

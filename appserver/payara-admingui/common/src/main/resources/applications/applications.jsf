@@ -1,0 +1,104 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- applications/applications.jsf -->
+
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="help" bundle="org.glassfish.common.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout"
+    guiTitle="$resource{i18n.enterpriseApplications.title}"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:applications');">
+<!define name="content">
+    <event>
+        <!beforeCreate
+            getRequestValue(key="filterValue" value=>$page{filterValue});
+            gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+            createMap(result="#{requestScope.attrsMap}");
+            mapPut(map="#{requestScope.attrsMap}"  key="target" value="domain");
+            gf.restRequest( endpoint="#{sessionScope.REST_URL}/list-components" , attrs="#{requestScope.attrsMap}" method="GET"  result="#{requestScope.result}");
+            gf.getDeployedAppsInfo(appPropsMap="#{requestScope.result.data.properties}" filterValue="#{pageSession.filterValue}", filters=>$attribute{filters} result=>$attribute{listOfRows} );
+            setPageSessionAttribute(key="tableTitle" value="$resource{i18n.deployTable.applications}");
+            setPageSessionAttribute(key="editLink" value="/common/applications/applicationEdit.jsf");
+            setPageSessionAttribute(key="listPageLink" value="/common/applications/applications.jsf");
+            setPageSessionAttribute(key="targetLink" value="/common/applications/targetListing.jsf");
+
+            setPageSessionAttribute(key="nextPageLink" value="/common/applications/upload.jsf?cancelPage=#{pageSession.listPageLink}&listPageLink=#{pageSession.listPageLink}");
+            setPageSessionAttribute(key="isLifecycle" value="#{false}");
+            setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n.msg.JS.confirmUndeploy}");
+
+        setSessionAttribute(key="gf_application_list_page" value="#{pageSession.listPageLink}");
+        setSessionAttribute(key="gf_application_cancel_page" value="#{pageSession.listPageLink}");
+        setSessionAttribute(key="gf_application_predefine_target" value="#{null}");
+        setSessionAttribute(key="gf_application_extra_args" value="#{null}");
+
+
+            <!--
+            setPageSessionAttribute(key="viewKey" value="$pageSession{viewKeyValue}");
+            setPageSessionAttribute(key="showDetail" value="$boolean{false}");
+            setPageSessionAttribute(key="viewValue" value="summary");
+            if ( !$session{$pageSession{viewKeyValue}} ){
+                setPageSessionAttribute(key="showDetail" value="$boolean{true}");
+                setPageSessionAttribute(key="viewValue" value="detail");
+            }
+            -->
+
+        />
+    </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":applications");</script>
+            <sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+                <!-- Page Title -->
+                 <sun:title id="propertyContentPage" title="$resource{i18n.enterpriseApplications.title}" helpText="$resource{i18n.enterpriseApplications.titleHelp}"/>
+                 "<br />
+#include "/common/applications/deployTable.inc"
+	<sun:hidden id="helpKey" value="$resource{help.applications}" />
+            </sun:form>
+<f:verbatim>
+    <script type="text/javascript">
+
+    </script>
+</f:verbatim>
+</define>
+</composition>

@@ -177,7 +177,7 @@ public class ModuleMap {
                 put("org.glassfish.main.admingui.console-cluster-plugin", 119);
                 put("org.glassfish.main.admingui.console-common", 120);
                 put("org.glassfish.main.admingui.console-common-full-plugin", 121);
-                put("org.glassfish.main.admingui.console-community-branding-plugin", 122);
+                put("org.glassfish.main.admingui.console-payara-branding-plugin", 122);
                 put("org.glassfish.main.admingui.console-corba-plugin", 123);
                 put("org.glassfish.main.admingui.console-ejb-lite-plugin", 124);
                 put("org.glassfish.main.admingui.console-ejb-plugin", 125);

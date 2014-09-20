@@ -101,7 +101,7 @@ public class LogFacade {
     @LogMessageInfo(message = "The log file {0} for the instance does not exist.", level="WARNING")
     public static final String INSTANCE_LOG_FILE_NOT_FOUND = "NCLS-LOGGING-00008";
 
-    @LogMessageInfo(message = "Running GlassFish Version: {0}", level="INFO")
+    @LogMessageInfo(message = "Running Payara Version: {0}", level="INFO")
     public static final String GF_VERSION_INFO = "NCLS-LOGGING-00009";
     
     @LogMessageInfo(message = "Server log file is using Formatter class: {0}", level="INFO")

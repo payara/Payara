@@ -1,0 +1,169 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- jca/jcaResourceEdit.jsf -->
+<!initPage
+    setResourceBundle(key="i18njca" bundle="org.glassfish.jca.admingui.Strings");
+    setResourceBundle(key="help_jca" bundle="org.glassfish.jca.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18njca.adminObjectResource.editPageTitle}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+    getRequestValue(key="reload" value="#{reload}");
+    if(#{reload}){
+         createMap(result="#{pageSession.tmpMap}")
+         getRequestValue(key="name" value="#{pageSession.Name}");
+         getRequestValue(key="resAdapter" value="#{resAdapter}");
+         getRequestValue(key="resType" value="#{resType}");
+         getRequestValue(key="className" value="#{className}");
+         getRequestValue(key="status" value="#{status}");
+         getRequestValue(key="description" value="#{desc}");
+         mapPut(map="#{pageSession.tmpMap}" key="name" value="#{pageSession.Name}");
+         mapPut(map="#{pageSession.tmpMap}" key="resAdapter" value="#{resAdapter}");
+         mapPut(map="#{pageSession.tmpMap}" key="resType" value="#{resType}");
+         mapPut(map="#{pageSession.tmpMap}" key="className" value="#{className}");
+         mapPut(map="#{pageSession.tmpMap}" key="description" value="#{desc}");
+    }
+    if(!#{reload}){
+        getRequestValue(key="name" value="#{pageSession.Name}");
+    }
+    urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+    getRequestValue(key="isAppScopedRes" value="#{pageSession.isAppScopedRes}");
+    if(#{pageSession.isAppScopedRes}){
+        getRequestValue(key="appName" value="#{pageSession.encodedAppName}");
+        getRequestValue(key="moduleName" value="#{pageSession.moduleName}");
+        if(#{pageSession.moduleName}) {
+            urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
+            setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jca/adminObjectEdit.jsf?name=#{pageSession.encodedName}&isAppScopedRes=$boolean{true}&appName=#{pageSession.encodedAppName}&moduleName=#{pageSession.encodedModuleName}");
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module/#{pageSession.encodedModuleName}/resources");
+        }
+        if(!#{pageSession.moduleName}) {
+            setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jca/adminObjectEdit.jsf?name=#{pageSession.encodedName}&isAppScopedRes=$boolean{true}&appName=#{pageSession.encodedAppName}");
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/resources");
+        }
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/common/applications/resources/appScopedResources.jsf?appName=#{pageSession.encodedAppName}&listPageLink=/common/applications/applications.jsf");
+    }
+    if(!#{pageSession.isAppScopedRes}){
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jca/adminObjectEdit.jsf?name=#{pageSession.encodedName}");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jca/adminObjectResources.jsf");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
+    }    
+    setPageSessionAttribute(key="childType" value="admin-object-resource");
+    //For resourceEditTabs.inc
+    setSessionAttribute(key="resEditTabs" value="general");
+    setPageSessionAttribute(key="generalPage" value="#{pageSession.selfPage}");
+    setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
+    
+    setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}");
+    gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+    
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled"});
+    setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
+    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+    setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+    
+    //set the following for including buttons.inc
+    setPageSessionAttribute(key="edit" value="#{true}" );
+    setPageSessionAttribute(key="showCancelButton" value="#{true}" );
+    setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+    setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+    setPageSessionAttribute(key="reload" value="#{false}" );
+    
+    setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
+
+    gf.getAdminObjectResourceWizard(
+        reload="#{reload}"
+        attrMap="#{pageSession.tmpMap}"
+        currentMap="#{pageSession.valueMap}"
+        valueMap=>$pageSession{valueMap});
+    //To get the resource types
+    createMap(result="#{pageSession.attrsMap}");
+    mapPut(map="#{pageSession.attrsMap}" key="rarName" value="#{pageSession.valueMap.resAdapter}");
+    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-admin-object-interface-names"
+                   attrs="#{pageSession.attrsMap}"
+                   method="GET"
+                   result="#{requestScope.result}");
+    setAttribute(key="resourceTypes" value="#{requestScope.result.data.extraProperties.adminObjectInterfaceNames}");
+    setAttribute(key="zero" value="$int{0}");
+    setAttribute(key="size" value="#{requestScope.resourceTypes.size()}");
+    if (#{requestScope.size} > #{requestScope.zero}) {
+        if("!(#{pageSession.valueMap['resType']})") {
+            mapPut(map="#{pageSession.valueMap}" key="resType" value="#{requestScope.resourceTypes[0]}");
+        }
+        mapPut(map="#{pageSession.attrsMap}" key="adminObjectInterface" value="#{pageSession.valueMap.resType}");
+        //To get the get-admin-object-class-names
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-admin-object-class-names"
+                       attrs="#{pageSession.attrsMap}"
+                       method="GET"
+                       result="#{requestScope.result}");
+        setAttribute(key="classNames" value="#{requestScope.result.data.extraProperties.adminObjectClassNames}");
+        setAttribute(key="size" value="#{requestScope.resourceTypes.size()}");
+        if (#{requestScope.size} > #{requestScope.zero}) {
+            if(!#{pageSession.valueMap['className']}) {
+                mapPut(map="#{pageSession.valueMap}" key="className" value="#{requestScope.classNames[0]}");
+            }
+        }        
+    }
+    />
+</event>
+<sun:form id="propertyForm">
+#include "/common/resourceNode/resourceEditTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+    
+    <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18njca.adminObjectResource.editPageTitle}" helpText="$resource{i18njca.adminObjectResource.editPageHelp}" >
+#include "/common/resourceNode/resourceEditPageButtons.inc"
+    </sun:title>
+    "<br><br>
+    
+#include "/jca/adminObjectAttr.inc"
+#include "/common/shared/propertyDescTable.inc"
+    
+    <sun:hidden id="helpKey" value="$resource{help_jca.adminObjectEdit}" />
+</sun:form>
+            "<br/>
+#include "/common/shared/changeButtonsJS.inc" 
+</define>
+</composition>
+
+

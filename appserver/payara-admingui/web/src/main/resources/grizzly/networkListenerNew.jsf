@@ -1,0 +1,200 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- grizzly/networkListenerNew.jsf -->
+
+
+<!initPage
+    setResourceBundle(key="i18n_web" bundle="org.glassfish.web.admingui.Strings");
+	setResourceBundle(key="help_web" bundle="org.glassfish.web.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n_web.grizzly.networkListenerNewPageTitle}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        getRequestValue(key="configName" value=>$page{configName});
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/web/grizzly/networkListeners.jsf");
+        setPageSessionAttribute(key="childType" value="network-listener");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners");
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getDefaultValues(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList" value={"Enabled"});
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{true}" );
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{false}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{false}" );
+    />
+    </event>
+
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners");</script>
+
+            <sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18n_web.grizzly.networkListenerNewPageTitle}" helpText="$resource{i18n_web.grizzly.networkListenerNewPageTitleHelp}">
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="newButton" rendered="#{!edit}" text="$resource{i18n.button.OK}"
+                onClick="if (checkRequired()) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+                <!command
+                    setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol");
+                    urlencode(value="#{pageSession.valueMap['name']}" result="#{requestScope.encodedListenerNameToCheck}");
+                    gf.checkIfEndPointExist(endpoint="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener/#{requestScope.encodedListenerNameToCheck}", exists="#{requestScope.exist}");
+                    if (#{requestScope.exist}){
+                        gf.handleError(detail="$resource{i18n_web.grizzly.networkListener.alreadyExist, #{requestScope.encodedListenerNameToCheck}}");
+                    }
+                    createMap(result="#{pageSession.protocolMap}");
+                    if("#{pageSession.valueMap['securityEnabled']}=#{null}") {
+                        mapPut(map="#{pageSession.valueMap}", key="securityEnabled", value="false");
+                    }
+                    if("#{pageSession.valueMap['jkenabled']}=#{null}") {
+                        mapPut(map="#{pageSession.valueMap}", key="jkenabled", value="false");
+                    }
+                    if("#{pageSession.valueMap['enabled']}=#{null}") {
+                        mapPut(map="#{pageSession.valueMap}", key="enabled", value="false");
+                    }
+                    mapPut(map="#{pageSession.protocolMap}", key="securityEnabled", value="#{pageSession.valueMap['securityEnabled']}");
+                    if ("#{pageSession.valueMap['protocolChoice']}=create") {
+                        urlencode(value="#{pageSession.valueMap['newProtocolName']}" result="#{requestScope.encodedProtocolToCheck}");
+                        gf.checkIfEndPointExist(endpoint="#{pageSession.protocolUrl}/#{requestScope.encodedProtocolToCheck}", exists="#{requestScope.pExist}");
+                        if (#{requestScope.pExist}){
+                            gf.handleError(detail="$resource{i18n_web.grizzly.protocol.alreadyExist, #{requestScope.encodedProtocolToCheck}}");
+                        }
+                        mapPut(map="#{pageSession.protocolMap}", key="name", value="#{pageSession.valueMap['newProtocolName']}");
+                        mapPut(map="#{pageSession.protocolMap}", key="target", value="#{pageSession.valueMap['target']}");
+                        setPageSessionAttribute(key="protocolName", value="#{pageSession.valueMap['newProtocolName']}");
+
+
+                        gf.createEntity(endpoint="#{pageSession.protocolUrl}", attrs="#{pageSession.protocolMap}");
+                        createMap(result="#{pageSession.httpMap}");
+                        mapPut(map="#{pageSession.httpMap}", key="defaultVirtualServer", value="#{pageSession.valueMap['defaultVirtualServer']}");
+                        mapPut(map="#{pageSession.httpMap}", key="target", value="#{pageSession.valueMap['target']}");
+
+                        gf.createEntity(endpoint="#{pageSession.protocolUrl}/#{pageSession.protocolName}/create-http", attrs="#{pageSession.httpMap}");
+                    }
+                    if ("!(#{pageSession.valueMap['protocolChoice']}=create)") {
+                        createMap(result="#{pageSession.protocolMap}");
+                        mapPut(map="#{pageSession.protocolMap}", key="Name", value="#{pageSession.valueMap['existingProtocolName']}");
+                        setPageSessionAttribute(key="protocolName", value="#{pageSession.valueMap['existingProtocolName']}");
+                        gf.restRequest(endpoint="#{pageSession.protocolUrl}/#{pageSession.protocolName}", attrs="#{pageSession.protocolMap}", method="post");
+                    }
+                    createMap(result="#{pageSession.networkListenerMap}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="name", value="#{pageSession.valueMap['name']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="address", value="#{pageSession.valueMap['address']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="port", value="#{pageSession.valueMap['port']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="transport", value="#{pageSession.valueMap['transport']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="threadpool", value="#{pageSession.valueMap['threadpool']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="enabled", value="#{pageSession.valueMap['enabled']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="jkenabled", value="#{pageSession.valueMap['jkenabled']}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="protocol", value="#{pageSession.protocolName}");
+                    mapPut(map="#{pageSession.networkListenerMap}", key="target", value="#{pageSession.valueMap['target']}");
+                    gf.createEntity(endpoint="#{pageSession.parentUrl}/network-listener", attrs="#{pageSession.networkListenerMap}");
+                    gf.restRequest(endpoint="#{pageSession.protocolUrl}/#{pageSession.protocolName}/http.json", method="get", result="#{pageSession.protocolAttrHttp}");
+                    setPageSessionAttribute(key="vsName" value="#{pageSession.protocolAttrHttp.data.extraProperties.entity['defaultVirtualServer']}");
+                    gf.redirect(page="#{pageSession.parentPage}?configName=#{configName}");
+                />
+            </sun:button>
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}" rendered="#{pageSession.showCancelButton}" text="$resource{i18n.button.Cancel}" >
+                <!command
+                    gf.redirect(page="#{parentPage}?configName=#{configName}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+        </sun:title>
+
+#include "/web/grizzly/networkListenerAttr.inc"
+
+	<sun:hidden id="helpKey" value="$resource{help_web.networkListenerNew}" />
+    </sun:form>
+
+<f:verbatim>
+    <script type="text/javascript">
+
+    function radioBtnAction(choice) {
+        var compt = getTextElement('#{pageSession.protocolChoiceId}');
+        compt.value = choice;
+        if (choice == 'create'){
+            disableComponent('$pageSession{PdropDownId}', 'select');
+            enableComponent('$pageSession{pNameId}', 'text');
+            enableComponent('$pageSession{newVsId}', 'select');
+        }else{
+            enableComponent('$pageSession{PdropDownId}', 'select');
+            disableComponent('$pageSession{pNameId}', 'text');
+            disableComponent('$pageSession{newVsId}', 'select');
+        }
+    }
+    
+    function setProtocolName(){
+        var currentChoice = getTextElement('#{pageSession.protocolChoiceId}').value;
+        if (currentChoice == 'create'){
+            getTextElement('#{pageSession.pNameId}').value = getTextElement('#{pageSession.listenerId}').value+"-protocol";
+        }
+    }
+
+    function checkRequired(){
+        var currentChoice = getTextElement('#{pageSession.protocolChoiceId}').value;
+        if (currentChoice == 'create'){
+            var component = getTextElement('#{pageSession.pNameId}');
+            if (component.value==''){
+                component.select();
+                component.focus();
+                return showAlert('#{reqMsg}' + ' ' + getLabel(component));
+            }
+        }
+        return guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}');
+    }
+    
+    function disableProtocolNameField() {
+        var methodType = document.getElementById("$pageSession{protocolChoice}");
+        webui.suntheme.field.setDisabled("$pageSession{protocolNmField}", methodType.getSelectedValue() != '__create__');
+    }
+    </script>
+</f:verbatim>
+</define>
+</composition>

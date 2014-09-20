@@ -147,7 +147,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
-            <artifactId>console-community-branding-plugin</artifactId>
+            <artifactId>console-payara-branding-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>        

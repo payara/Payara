@@ -56,7 +56,7 @@
     <name>Console extensions for OSGi platforms</name>
     <modules>
         <module>felix-webconsole-extension</module>
-        <module>glassfish-osgi-console-plugin</module>
+        <module>payara-osgi-console-plugin</module>
         <module>glassfish-osgi-console-plugin-l10n</module>
     </modules>
 </project>
