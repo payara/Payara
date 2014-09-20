@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,74 +40,33 @@
 
 -->
 
-<!-- deploymentWarFields.jsf -->
+<!-- deploymentWeb.jsf -->
+<!-- This is the plugin property sheet for deploying web apps.
+     id of the property sheet has to be the same as the plugin options for the Type dropdown in the deployment page.
+ -->
 
-<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
-    <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.war['name']}" styleClass="required" required="#{true}"
-        onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
-        <!afterCreate
-            getClientId(component="$this{component}" clientId=>$page{appNameId});
-        />
-    </sun:textField>
-</sun:property>
+<sun:propertySheet id="war" visible="#{false}" >
+    <!beforeCreate
+        createMap(result="#{pageSession.war}")
+        mapPut(map="#{pageSession.deployMap}", key="war", value="#{pageSession.war}");
+        mapPut(map="#{pageSession.war}", key="convertToFalseList", value={"enabled", "precompilejsp", "availabilityEnabled","PROPERTY-implicitCdiEnabled", "verify" ,"force", "keepState",  "PROPERTY-preserveAppScopedResources" } );
+        mapPut(map="#{pageSession.war}", key="PROPERTY-implicitCdiEnabled", value="true");
 
-<sun:property id="vsProp"  rendered="#{pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.virtualServerLabel}" helpText="$resource{i18n.deploy.vsHelp}">
-    <sun:listbox id="vs" immediate="#{true}" multiple="#{true}"  rows="$int{4}"
-        labels="$pageSession{availableVS}"
-        selected="#{pageSession.war['virtualservers']}" >
-        <!beforeCreate
-            getVsForDeployment(result="#{pageSession.vsList}");
-            getListBoxOptions(
-                availableList="#{pageSession.vsList}",
-                selectedCommaString="",
-                availableListResult="#{pageSession.availableVS}",
-                selectedOptions="#{pageSession.war['virtualservers']}"
-                addEmptyFirstChoice="true");
-        />
-    </sun:listbox>
-</sun:property>
+     />
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{warId});
+    />
+    <sun:propertySheetSection id="psection" >
 
-<sun:property id="enableProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.status}"  helpText="$resource{i18n.deploy.statusHelp}">
-	<sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['enabled']}" selectedValue="true" >
-        <!beforeCreate
-            mapPut(map="#{pageSession.war}", key="enabled", value="true" );
-        />
-    </sun:checkbox>
-</sun:property>
+        <sun:property id="cxp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.webApp.ContextRoot}" helpText="$resource{i18n.webApp.contextRootHelp}" >
+            <sun:textField id="ctx" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.webApp.ContextRoot']}" text="#{pageSession.war['contextroot']}" >
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$page{contextRootId});
+                />
+            </sun:textField>
+        </sun:property>
 
-<sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
-    <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
-</sun:property>
+#include "/web/apps/deploymentWarFields.jsf"
 
-<sun:property id="availability" rendered="#{!pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
-    <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.war['availabilityEnabled']}" selectedValue="true" />
-</sun:property>
-
-<sun:property id="precmplProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.precompile}" helpText="$resource{i18n.deploy.PrecompileHelp}">
-	<sun:checkbox id="precompileJSP" label=" " selected="#{pageSession.war['precompilejsp']}" selectedValue="true" />
-</sun:property>
-
-
-<sun:property id="v2" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.run}" helpText="$resource{i18n.deploy.runHelp}">
-        <sun:checkbox id="ver2" label=" " selected="#{pageSession.war['verify']}" selectedValue="true" />
-</sun:property>
-
-<sun:property id="force" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceRedeploy}" helpText="$resource{i18n.deploy.forceRedeployHelp}">
-        <sun:checkbox id="force"  label=" " selected="#{pageSession.war['force']}" selectedValue="true" />
-</sun:property>
-
-<sun:property id="keepState" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}">
-        <sun:checkbox id="keepState"  label=" "  selected="#{pageSession.war['keepState']}" selectedValue="true" />
-</sun:property>
-
-<sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}" >
-	<sun:textField id="deploymentOrder" styleClass="integer" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.war['deploymentOrder']}" />
-</sun:property>
-
-<sun:property id="librariesProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.Libraries}" helpText="$resource{i18n.deploy.libraryHelp}" >
-	<sun:textField id="library" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.Libraries']}" text="#{pageSession.war['libraries']}" />
-</sun:property>
-
-<sun:property id="descriptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}" helpText="$resource{i18n.deploy.descHelp}" >
-	<sun:textField id="description" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.war['description']}" />
-</sun:property>
+    </sun:propertySheetSection>
+</sun:propertySheet>    
