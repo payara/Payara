@@ -90,6 +90,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-common-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-shoal</artifactId>
@@ -104,6 +111,13 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>       
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-cluster-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-jersey</artifactId>
@@ -114,6 +128,13 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-management</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-management-l10n</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>

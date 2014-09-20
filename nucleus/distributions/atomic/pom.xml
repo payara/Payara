@@ -103,6 +103,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-l10n</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>nucleus-jmx</artifactId>
