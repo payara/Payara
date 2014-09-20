@@ -688,15 +688,18 @@ public class MonitoringHandlers {
     }
 
     private static String formatActiveIdsForDisplay(String str) {
+        if (str==null){
+            return "";
+        }
         StringBuilder values = new StringBuilder(" ");
         String[] strArray = str.split("%%%EOL%%%");
-        if (strArray != null && strArray.length > 0) {
+        if (strArray.length > 0) {
             values.append("<table>");
             for (String s : (String[]) strArray) {
                 if (s.startsWith("Transaction")) {
                     String sh = s.replaceFirst(" ", "_");
                     String[] strHeaders = sh.split(" ");
-                    if (strHeaders != null && strHeaders.length > 0) {
+                    if (strHeaders.length > 0) {
                         values.append("<tr>");
                         for (String h : (String[]) strHeaders) {
                             if (!h.isEmpty()) {
@@ -708,7 +711,7 @@ public class MonitoringHandlers {
                     }
                 } else {
                     String[] strData = s.split(" ");
-                    if (strData != null && strData.length > 0) {
+                    if (strData.length > 0) {
                         values.append("<tr>");
                         for (String d : (String[]) strData) {
                             if (!d.isEmpty()) {
@@ -729,7 +732,7 @@ public class MonitoringHandlers {
     private static String formatStringForDisplay(String strToFormat) {
         String[] strs = strToFormat.split(",");
         StringBuilder formattedStr = new StringBuilder();
-        if (strs != null && strs.length > 10) {
+        if (strs.length > 10) {
             for (int i = 0; i < strs.length; i++) {
                 String str = strs[i];
                 if (! (formattedStr.length() == 0)) {

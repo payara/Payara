@@ -81,7 +81,7 @@ public class ResourceHandlers {
                 String name = (String) oneRow.get("name");
                 String encodedName = URLEncoder.encode(name, "UTF-8");
                 List<String> targets = DeployUtil.getApplicationTarget(name, "resource-ref");
-                if (targets == null || targets.size() == 0) {
+                if (targets.size() == 0) {
                     continue; //The resource is only created on domain, no source-ref exists.
                 }
                 String enabledStr = DeployUtil.getTargetEnableInfo(encodedName, false, false);

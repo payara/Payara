@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -782,7 +782,7 @@ public class CommonHandlers {
       */
     @Handler( id="filterProtocols")
     public static List filterProtocols(HandlerContext context) {
-        FilterTreeEvent event = (FilterTreeEvent) context.getEventObject();
+        FilterTreeEvent event = FilterTreeEvent.class.cast(context.getEventObject());
         List protocols = event.getChildObjects();
         ArrayList result = new ArrayList();
 
@@ -803,8 +803,13 @@ public class CommonHandlers {
     @Handler( id="filterAdminObjects")
     public static List filterAdminObjects(HandlerContext context) {
         List result = new ArrayList();
+	FilterTreeEvent event = null;
         try{
-            FilterTreeEvent event = (FilterTreeEvent) context.getEventObject();
+	    if (context.getEventObject() instanceof FilterTreeEvent){
+                event = FilterTreeEvent.class.cast(context.getEventObject());
+	    }else{
+		return result;
+	    }
             List<String> jmsResources = event.getChildObjects();
             if (jmsResources == null || jmsResources.size() <=0){
                 return result;

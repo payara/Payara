@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -394,9 +394,9 @@ public class ListTreeAdaptor extends TreeAdaptorBase {
 	    // This is needed here b/c the factory has already executed -- the
 	    // factory is normally the place where this is added (iff there is
 	    // at least one command handler).
-	    ((ActionSource) link).addActionListener(
+        (ActionSource.class.cast(link)).addActionListener(
 		    CommandActionListener.getInstance());
-	    ((ActionSource) imageLink).addActionListener(
+	    (ActionSource.class.cast(imageLink)).addActionListener(
 		    CommandActionListener.getInstance());
 	}
 

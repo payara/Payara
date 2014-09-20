@@ -648,7 +648,7 @@ public class UtilHandlers {
         }
         if (availableList != null && (availableList.size() > 0) ) {
             selectedOptions = GuiUtil.stringToArray(selectedCommaString, ",");
-            if (selectedOptions != null && !(selectedOptions.length > 0)) {
+            if ( !(selectedOptions.length > 0)) {
                 //None is selected by default
                 selectedOptions = new String[]{availableList.get(0)};
             }

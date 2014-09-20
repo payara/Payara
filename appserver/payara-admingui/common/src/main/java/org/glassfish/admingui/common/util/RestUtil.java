@@ -108,7 +108,7 @@ public class RestUtil {
     public static final String REST_TOKEN_COOKIE = "gfresttoken";
     private static Client JERSEY_CLIENT;
 
-    public static Client getJerseyClient() {
+    public static synchronized Client getJerseyClient() {
         if (JERSEY_CLIENT == null) {
             JERSEY_CLIENT = initialize(ClientBuilder.newBuilder()).build();
             JERSEY_CLIENT.register(new RequiredHeadersFilter())
@@ -449,8 +449,11 @@ public class RestUtil {
                             if (handlerCtx != null) {
                                 GuiUtil.handleError(handlerCtx, message);
                                 if (!quiet) {
-                                    GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
-                                    GuiUtil.getLogger().finest("response.getResponseBody(): " + response.getResponseBody());
+				    Logger logger = GuiUtil.getLogger();
+                                    logger.severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
+				    if (logger.isLoggable(Level.FINEST)){
+                                    	logger.finest("response.getResponseBody(): " + response.getResponseBody());
+				    }
                                 }
                                 return new HashMap();
                             } else {
@@ -459,8 +462,11 @@ public class RestUtil {
                             }
                         } else { // Issue Number :13312 handling the case when throwException is false.
                             if (!quiet) {
-                                GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
-                                GuiUtil.getLogger().finest("response.getResponseBody(): " + response.getResponseBody());
+				Logger logger = GuiUtil.getLogger();
+                                logger.severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
+				if (logger.isLoggable(Level.FINEST)){
+                                	logger.finest("response.getResponseBody(): " + response.getResponseBody());
+				}
                             }
                             return responseMap;
                         }
@@ -476,14 +482,17 @@ public class RestUtil {
                 }
             } catch (Exception ex) {
                 if (!quiet) {
-                    GuiUtil.getLogger().severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
-                    GuiUtil.getLogger().finest("response.getResponseBody(): " + response.getResponseBody());
+		    Logger logger = GuiUtil.getLogger();
+                    logger.severe(GuiUtil.getCommonMessage("LOG_REQUEST_RESULT", new Object[]{exitCode, endpoint, maskedAttr}));
+		    if (logger.isLoggable(Level.FINEST)){
+                        logger.finest("response.getResponseBody(): " + response.getResponseBody());
+		    }
                 }
                 if (handlerCtx != null) {
                     //If this is called from the jsf as handler, we want to stop processing and show error
                     //instead of dumping the exception on screen.
                     if (throwException) {
-                        if ("".equals(message) || message == null) {
+                        if ("".equals(message)) {
                             GuiUtil.handleException(handlerCtx, ex);
                         } else {
                             GuiUtil.handleError(handlerCtx, message);
@@ -491,7 +500,7 @@ public class RestUtil {
                     }
                 } else {
                     //if this is called by other java handler, we tell the called handle the exception.
-                    if ("".equals(message) || message == null) {
+                    if ("".equals(message)) {
                         throw new RuntimeException(ex);
                     } else {
                         throw new RuntimeException(message, ex);
@@ -554,6 +563,9 @@ public class RestUtil {
             } else {
                 //formData.putSingle(key, (value != null) ? value.toString() : value);
                 try {
+                    if (key.equals("availabilityEnabled")) {
+                        System.out.println("================== availabilityEnabled  skipped ");
+                    }
                     formData.putSingle(key, value);
                 } catch (ClassCastException ex) {
                     Logger logger = GuiUtil.getLogger();
@@ -745,9 +757,7 @@ public class RestUtil {
     public static List<String> getChildList(String endpoint) throws Exception {
         List<String> childElements = new ArrayList<String>();
         Map<String, String> childResources = getChildMap(endpoint);
-        if (childResources != null) {
-            childElements.addAll(childResources.values());
-        }
+        childElements.addAll(childResources.values());
         Collections.sort(childElements);
         return childElements;
     }
@@ -942,14 +952,6 @@ public class RestUtil {
                     .register(CsrfProtectionFilter.class);
 
         } catch (Exception ex) {
-            Throwable cause = ex;
-            int lcv = 0;
-            while (cause != null) {
-                System.out.println("JRW(10) RestUtil [" + lcv++ + "]=" + cause.getMessage());
-                cause.printStackTrace(System.out);
-                cause = cause.getCause();
-            }
-
             GuiUtil.getLogger().warning("RestUtil.initialize() failed");
             if (GuiUtil.getLogger().isLoggable(Level.FINE)) {
                 ex.printStackTrace();
