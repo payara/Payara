@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2010 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -48,7 +48,8 @@
         setAttribute(key="fieldMap" value="other");
         createMap(result="#{pageSession.other}")
         mapPut(map="#{pageSession.deployMap}", key="other", value="#{pageSession.other}");
-        mapPut(map="#{pageSession.other}", key="convertToFalseList", value={"enabled", "precompilejsp" , "availabilityEnabled" "verify", "force", "keepState"} );
+        mapPut(map="#{pageSession.other}", key="convertToFalseList", value={"enabled", "precompilejsp" , "availabilityEnabled" "verify", "force", "keepState", "PROPERTY-implicitCdiEnabled" } );
+        mapPut(map="#{pageSession.other}", key="PROPERTY-implicitCdiEnabled", value="true");
      />
     <!afterCreate
         getClientId(component="$this{component}" clientId=>$page{otherId});

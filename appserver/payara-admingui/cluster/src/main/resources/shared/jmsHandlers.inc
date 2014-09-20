@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2012-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -45,11 +45,9 @@
     //println("***** #{pageSession}\n\n\n\n\n\n");
     mapPut(map="#{requestScope.jmsAttrs}" key="clustertype" value="$pageSession{clusterType}");
     mapPut(map="#{requestScope.jmsAttrs}" key="property" value="$pageSession{properties}");
-    mapPut(map="#{requestScope.jmsAttrs}" key="availabilityEnabled" value="#{true}");
     if ('$pageSession{clusterType}=conventional') {
         mapPut(map="#{requestScope.jmsAttrs}" key="configStoreType" value="$pageSession{configStoreType}");
         mapPut(map="#{requestScope.jmsAttrs}" key="messageStoreType" value="$pageSession{messageStoreType}");
-        mapPut(map="#{requestScope.jmsAttrs}" key="availabilityEnabled" value="#{false}");
     }
 
     // Save JMS integration type

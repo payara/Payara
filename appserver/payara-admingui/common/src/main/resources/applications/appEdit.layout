@@ -146,6 +146,23 @@
                     }
                 }
 
+                if(!#{pageSession.implicitCdiEnabled}){
+                    //will be null if checkbox is unchecked.
+                    setPageSessionAttribute(key="implicitCdiEnabled" value="false");
+                }
+                foreach (var="oneProp" list="#{pageSession.tableList}") {
+                    if (#{requestScope.oneProp.name}=implicitCdiEnabled){
+                        setAttribute(key="foundCdi" value="true");
+                        mapPut(map="#{requestScope.oneProp}" key="value" value="#{pageSession.implicitCdiEnabled}")
+                    }
+                }
+                if (!#{requestScope.foundCdi}){
+                    createMap(result="#{requestScope.cdimap}");
+                    mapPut(map="#{requestScope.cdimap}" key="name" value="implicitCdiEnabled")
+                    mapPut(map="#{requestScope.cdimap}" key="value" value="#{pageSession.implicitCdiEnabled}")
+                    listAdd(list="#{pageSession.tableList}" value="#{requestScope.cdimap}");
+                }
+
                 javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
                 gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
 
