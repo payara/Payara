@@ -785,12 +785,4 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     public void setDeploymentComplete(boolean deploymentComplete) {
         this.deploymentComplete = deploymentComplete;
     }
-
-    public boolean isDeploymentComplete() {
-        return deploymentComplete;
-    }
-
-    public void setDeploymentComplete(boolean deploymentComplete) {
-        this.deploymentComplete = deploymentComplete;
-    }
 }
