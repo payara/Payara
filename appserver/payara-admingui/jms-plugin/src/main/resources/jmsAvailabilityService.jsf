@@ -1,0 +1,117 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+<!initPage
+    setResourceBundle(key="i18njms" bundle="org.glassfish.jms.admingui.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+    setResourceBundle(key="helpjms" bundle="org.glassfish.jms.admingui.Helplinks")
+/>
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18njms.availability.jmsAvailability}" >
+
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setSessionAttribute(key="availabilityTabs" value="jmsAvailabilityTab");
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        setPageSessionAttribute(key="childType" value="jms-availability");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.configName}/availability-service");
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl}/property" exists="#{pageSession.edit}");
+        if(!#{edit}) {
+            gf.restRequest(endpoint="#{pageSession.selfUrl}" method="POST");
+        }
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jms/jmsAvailabilityService.jsf?configName=#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList" value={"availabilityEnabled"});
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{false}" );
+        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+    />
+    </event>
+    <sun:form id="propertyForm">
+#include "/cluster/availability/availabilityTabs.inc"
+#include "/common/shared/alertMsg.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18njms.availability.jmsAvailability}" helpText="$resource{i18njms.availability.jmsAvailabilityInfo}">
+#include "/common/shared/editPageButtons.inc"
+    </sun:title>
+        <sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+            <sun:propertySheetSection id="propertSectionTextField">
+                <sun:property id="AvailabilityEnabledProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18ncs.availability.availabilityService}" helpText="$resource{i18njms.availability.jmsAvailabilityInfoHelp}">
+                    <sun:checkbox id="avail" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['availabilityEnabled']}" selectedValue="true" />
+                </sun:property>
+                <sun:property id="ConfigStoreTypeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.availability.configStoreType}" helpText="$resource{i18njms.availability.configStoreTypeHelp}">
+                    <sun:dropDown id="ConfigStoreType" selected="#{pageSession.valueMap['configStoreType']}" labels={"masterbroker" , "shareddb"} />
+                </sun:property>
+                <sun:property id="MessageStoreTypeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.availability.messageStoreType}" helpText="$resource{i18njms.availability.messageStoreTypeHelp}">
+                    <sun:dropDown id="MessageStoreType" selected="#{pageSession.valueMap['messageStoreType']}" labels={"file" , "jdbc"} />
+                </sun:property>
+                <sun:property id="DbVendorProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.availability.dbVendor}" helpText="$resource{i18njms.availability.dbVendorHelp}">
+                    <sun:textField id="DbVendor" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.availabilty.dbVendor']}" text="#{pageSession.valueMap['dbVendor']}" />
+                </sun:property>
+                <sun:property id="DbUserNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.availability.dbUserName}" helpText="$resource{i18njms.availability.dbUserNameHelp}">
+                    <sun:textField id="DbUserName" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.availabilty.dbUserName']}" text="#{pageSession.valueMap['dbUsername']}" />
+                </sun:property>
+                <sun:property id="DbPasswordProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.availability.dbPassword}" helpText="$resource{i18njms.availability.dbPasswordHelp}">
+                    <sun:textField id="DbPassword" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.availabilty.dbPassword']}" text="#{pageSession.valueMap['dbPassword']}" />
+                </sun:property>
+                <sun:property id="DbUrlProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.availability.dbUrl}" helpText="$resource{i18njms.availability.dbUrlHelp}">
+                    <sun:textField id="DbUrl" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.availabilty.dbUrl']}" text="#{pageSession.valueMap['dbUrl']}" />
+                </sun:property>
+                "<br /><br />
+            </sun:propertySheetSection>
+        </sun:propertySheet>
+#include "/common/shared/propertyDescTable.inc"
+    <sun:title id="propertyContentPage2">
+#include "/common/shared/editPageButtons_2.inc"
+    </sun:title>
+        <sun:hidden id="helpKey" value="$resource{helpjms.jmsAvailabilityService}" />
+    </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>

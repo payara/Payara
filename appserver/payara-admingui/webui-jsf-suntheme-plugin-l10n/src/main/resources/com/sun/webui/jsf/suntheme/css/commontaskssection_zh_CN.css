@@ -1,0 +1,262 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+/* LAYOUT */
+.commonTaskSection_4_sun4 {
+	width: 100%;
+}
+.commonTaskSection_4_sun4 .TskScnTpBx_sun4 .header_sun4 {
+	margin: 17px 0px 0px 20px;
+}
+.commonTaskSection_4_sun4 .TskScnTpBx_sun4 .help_sun4 {
+	margin: 3px 0 23px 21px;
+}
+.commonTaskGroup_4_sun4 {
+	margin:0 0 20px 20px;
+}
+.commonTaskSection_4_sun4 .header_sun4 {
+	padding-bottom: 5px;
+	display: block;
+}
+.commonTask_4_sun4 {
+	margin:0 22px 20px;
+}
+.commonTaskGroup_4_sun4 .commonTask_4_sun4 {
+	margin:0 0 2px 0;
+}
+.commonTask_4_sun4 .left_sun4 {
+	border-top-style:solid;
+	border-top-width:1px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-left-style:solid;
+	border-left-width:1px;
+}
+.commonTask_4_sun4 .center_sun4 {
+	border-top-style:solid;
+	border-top-width:1px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+}
+.commonTask_4_sun4 .right_sun4 {
+	border-top-style:solid;
+	border-top-width:1px;
+	border-bottom-style:solid;
+	border-bottom-width:1px;
+	border-right-style:solid;
+	border-right-width:1px;
+}
+.commonTask_4_sun4 a.TskScnTxtBg_sun4,.commonTask_4_sun4  a.TskScnTxtBgOvr_sun4 {
+	display: block;
+	position: relative;
+	width: 100%;
+	min-height:21px;
+}
+.commonTask_4_sun4 .infoPanel_sun4 {
+	border-style:solid;
+	border-width:1px;
+	position:absolute;
+	height: 20em;
+	width: 10em;
+	z-index:2;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .closeButton_sun4 {
+	float: right;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .info_sun4 {
+	padding: 0 18px 0 0;
+	margin: 21px 3px 15px 12px;
+	height:14.2em;
+	overflow:auto;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 {
+	height:1.5em;
+	margin:5px 5px 0 5px;
+	border-top-style:solid;
+	border-top-width:1px;
+	padding:2px 0 0 5px;
+	overflow:hidden;
+}
+.commonTask_4_sun4 .bullet_sun4 {
+	margin-right:.4em;
+}
+.commonTask_4_sun4 a.TskScnTxtBg_sun4, .commonTask_4_sun4 a.TskScnTxtBgOvr_sun4 {
+	border-left-style:solid;
+	border-left-width:1px;
+}
+.commonTask_4_sun4 .TskScnTskPdng_sun4 {
+	padding: 0px 7px;
+	display: block;
+	padding-top: 4px;
+	padding-bottom: 3px;
+}
+.commonTask_4_sun4 .TskScnTskLftBtm_sun4, .commonTask_4_sun4 .TskScnTskLftTp_sun4, .commonTask_4_sun4 .TskScnTskRghtBtm_sun4, .commonTask_4_sun4 .TskScnTskRghtTp_sun4 {
+	position: absolute;
+	width: 8px;
+	height: 11px;
+	cursor: pointer;
+	background-position: top left;
+	background-repeat: no-repeat;
+}
+.commonTask_4_sun4 .TskScnTskLftBtm_sun4 {
+	bottom: -1px;
+	left: -1px;
+}     
+.commonTask_4_sun4 .TskScnTskLftTp_sun4 {
+	top: -1px;
+	left: -1px;
+}             
+.commonTask_4_sun4 .TskScnTskRghtBtm_sun4 {
+	bottom: -1px;
+	right: 0px;
+	z-index:1;
+}     
+.commonTask_4_sun4 .TskScnTskRghtTp_sun4 {
+	position: absolute;
+	top: -1px;
+	right: 0px;
+	z-index:1;
+} 
+.commonTask_4_sun4 .TskScnTskRghtBrdr_sun4 {
+	display: block;
+	position: absolute;
+	height: 100%;
+	right: 0px;
+	width: 1px;
+	cursor: pointer;
+}
+/*---*/
+
+/* COLOR AND MEDIA */
+.commonTaskbgColor_sun4 {
+	background:#B6C6D6
+}
+.commonTaskSection_4_sun4 {
+	background:#B6C6D6 url(../images/commontaskssection/bkgrnd.gif) right top repeat-x;
+}
+.commonTaskSection_4_sun4 .TskScnTpBx_sun4 {
+	background:url(../images/commontaskssection/s-curve.gif) bottom left repeat-x;
+}
+.commonTaskSection_4_sun4 .header_sun4, .commonTaskSection_4_sun4 .help_sun4, .commonTaskGroup_4_sun4 .header_sun4 {
+	color: #4B5E6A;
+}
+.commonTask_4_sun4 .left_sun4 {
+	border-top-color:#AEB3B8;
+	border-bottom-color:#AEB3B8;
+	border-left-color:#AEB3B8;
+}
+.commonTask_4_sun4 .center_sun4 {
+	border-top-color:#AABCC8;
+	border-bottom-color:#AABCC8;
+}
+.commonTask_4_sun4 .right_sun4 {
+	background-color: #99B3C0;
+	border-top-color:#AABCC8;
+	border-bottom-color:#AABCC8;
+	border-right-color:#AABCC8;
+}
+.commonTask_4_sun4 .background_sun4 {
+	background: #9AB2BF url(../images/commontaskssection/gradation-grey.gif) right top repeat-x;
+}
+.commonTask_4_sun4 a.TskScnTxtBg_sun4 {
+	border-left-color:#AABCC8;
+}
+.commonTask_4_sun4 a.TskScnTxtBg_sun4:link,.commonTask_4_sun4  a.TskScnTxtBg_sun4:visited {
+	background: #E2E7EA url(../images/commontaskssection/grad1.gif) right top repeat-x;
+	color:#333333;
+}
+.commonTask_4_sun4 a.TskScnTxtBg_sun4:hover {
+	background:#4581B3 url(../images/commontaskssection/grad2.gif) right top repeat-x;
+	color:#FFF;
+}
+.commonTask_4_sun4 .infoPanel_sun4 {
+	border-color: #AABCC8;
+	background-color: #F4F6F7;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 {
+	border-top-color:#CFD7D9;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:link, .commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:visited, .commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:hover {
+	color:#003399;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:link, .commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:visited, .commonTask_4_sun4 a.TskScnTxtBg_sun4, .commonTask_4_sun4 a.TskScnTxtBgOvr_sun4 {
+	text-decoration:none;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:hover {
+	text-decoration:underline;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .header_sun4 {
+	color:#666666;
+}
+.commonTask_4_sun4 .TskScnTskLftBtm_sun4 {
+	background-image: url(../images/commontaskssection/leftBottom.gif);
+}     
+.commonTask_4_sun4 .TskScnTskLftTp_sun4 {
+	background-image: url(../images/commontaskssection/leftTop.gif);
+}             
+.commonTask_4_sun4 .TskScnTskRghtBtm_sun4 {
+	background-image: url(../images/commontaskssection/rightBottom.gif);
+}     
+.commonTask_4_sun4 .TskScnTskRghtTp_sun4 {
+	background-image: url(../images/commontaskssection/rightTop.gif);
+} 
+.commonTask_4_sun4 .TskScnTskRghtBrdr_sun4 {
+	background-color: #AABCC8;
+}
+/*---*/
+
+/* TYPOGRAPHY */
+.commonTaskSection_4_sun4 .header_sun4 {
+	font-size:1.8em;
+}
+.commonTaskGroup_4_sun4 .header_sun4 {
+	font-size: 1.3em;
+}
+.commonTask_4_sun4 .infoPanel_sun4 .header_sun4, .commonTaskSection_4_sun4 .help_sun4 {
+	font-size:1.2em;
+}
+.commonTask_4_sun4 .TskScnTskPdng_sun4, .commonTask_4_sun4 .infoPanel_sun4 .content_sun4,.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:link,
+.commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:visited, .commonTask_4_sun4 .infoPanel_sun4 .more_sun4 a:hover {
+	font-size: 1.1em;
+} 
+.commonTaskSection_4_sun4 .header_sun4, .commonTaskGroup_4_sun4 .header_sun4, .commonTask_4_sun4 .infoPanel_sun4 .header_sun4 {
+	font-weight: bold;
+}
+

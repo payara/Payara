@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="3.0" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+    <context-param>
+        <param-name>com.sun.jsftemplating.DEBUG</param-name>
+        <param-value>false</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.faces.enableMultiThreadedStartup</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.jsftemplating.FS_DENY_PATHS</param-name>
+        <param-value>META-INF/:WEB-INF/:*.jsf:*.inc:*.xhtml:*.xml</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.jsftemplating.CLASSLOADER</param-name>
+        <param-value>org.glassfish.admingui.common.plugin.ConsoleClassLoader</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.jsftemplating.RESOURCE_PREFIX</param-name>
+        <param-value>/html</param-value>
+    </context-param>
+    <context-param>
+        <param-name>com.sun.faces.enableRestoreView11Compatibility</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.faces.VALIDATE_EMPTY_FIELDS</param-name>
+        <param-value>false</param-value>
+    </context-param>
+    <context-param>
+        <param-name>javax.faces.validator.DISABLE_DEFAULT_BEAN_VALIDATOR</param-name>
+        <param-value>true</param-value>
+    </context-param>
+
+    <filter>
+        <filter-name>UploadFilter</filter-name>
+        <filter-class>com.sun.webui.jsf.util.UploadFilter</filter-class>
+        <init-param>
+            <param-name>maxSize</param-name>
+            <param-value>-1</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>UploadFilter</filter-name>
+        <servlet-name>FacesServlet</servlet-name>
+    </filter-mapping>
+    <servlet>
+        <servlet-name>FacesServlet</servlet-name>
+        <servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet>
+        <servlet-name>ThemeServlet</servlet-name>
+        <servlet-class>com.sun.webui.theme.ThemeServlet</servlet-class>
+        <load-on-startup>2</load-on-startup>
+    </servlet>
+    <servlet>
+	<servlet-name>DownloadServlet</servlet-name>
+	<servlet-class>org.glassfish.admingui.common.servlet.DownloadServlet</servlet-class>
+	<init-param>
+	    <param-name>ContentSources</param-name>
+	    <param-value>
+                org.glassfish.admingui.common.servlet.LBConfigContentSource,
+                org.glassfish.admingui.common.servlet.ClientStubsContentSource,
+                org.glassfish.admingui.common.servlet.LogFilesContentSource
+                org.glassfish.admingui.common.servlet.LogViewerContentSource
+	    </param-value>
+	</init-param>
+	<init-param>
+		<param-name>contentSourceId</param-name>
+		<param-value>LBConfig</param-value>
+	</init-param>
+    </servlet>
+    <servlet-mapping>
+	<servlet-name>DownloadServlet</servlet-name>
+	<url-pattern>/download/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>/resource/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>/html/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>/faces/*</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>FacesServlet</servlet-name>
+        <url-pattern>*.jsf</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ThemeServlet</servlet-name>
+        <url-pattern>/theme/*</url-pattern>
+    </servlet-mapping>
+    <session-config>
+        <cookie-config>
+            <http-only>true</http-only>
+        </cookie-config>
+    </session-config>
+    <!-- following mapping added to avoid JSF warning. refer to GLASSFISH-19403 -->
+    <mime-mapping>
+        <extension>jsp</extension>
+        <mime-type>text/html</mime-type>
+    </mime-mapping>
+
+    <welcome-file-list>
+        <welcome-file>/index.jsf</welcome-file>
+    </welcome-file-list>
+    <error-page>
+        <exception-type>javax.faces.application.ViewExpiredException</exception-type>
+        <location>/</location>
+    </error-page>
+
+    <!-- only user from admin realm can access any URL pattern -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>protected</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+
+
+    <!-- resources like images, css, etc. there is no executable code, and everyone should be able to do a GET , this is for presenting the login page. -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>public</web-resource-name>
+            <url-pattern>/theme/com/*</url-pattern>
+            <url-pattern>/theme/org/*</url-pattern>        
+            <url-pattern>/resource/*</url-pattern>
+            <url-pattern>/theme/META-INF/*</url-pattern>
+            <http-method>GET</http-method>
+        </web-resource-collection>
+    </security-constraint>
+
+    <!-- The following constraint is added to avoid the WARNING or INFO msg for uncovered http method.  This will not allow *anyone*  to do any method
+         except GET on these resources. -->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>public</web-resource-name>
+            <url-pattern>/theme/com/*</url-pattern>
+            <url-pattern>/theme/org/*</url-pattern>
+            <url-pattern>/resource/*</url-pattern>
+            <url-pattern>/theme/META-INF/*</url-pattern>
+            <http-method-omission>GET</http-method-omission>
+        </web-resource-collection>
+        <auth-constraint/>
+    </security-constraint>
+
+
+
+    <login-config>
+        <auth-method>FORM</auth-method>
+        <realm-name>admin-realm</realm-name>
+        <form-login-config>
+            <form-login-page>/login.jsf</form-login-page>
+            <form-error-page>/loginError.jsf</form-error-page>
+        </form-login-config>
+    </login-config>
+    <security-role>
+        <role-name>admin</role-name>
+    </security-role>
+</web-app>

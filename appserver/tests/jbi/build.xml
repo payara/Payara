@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE project [
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!ENTITY commonBuild SYSTEM "./config/common.xml">
+<!ENTITY commonProperties SYSTEM "./config/common.properties">
+<!ENTITY reporting   SYSTEM "./config/report.xml"> 
+]>
+
+<project name="jbi-serviceengine" default="all" basedir=".">
+    &commonBuild;
+    &commonProperties;
+    &reporting;
+ 
+    <target name="setup">
+	<property file="config/init-common.properties" />
+	<mkdir dir="temp"/>
+	<get src="${fuji-gf-container.jar}" dest="temp/fuji-gf-container.jar" />
+	<unjar src="temp/fuji-gf-container.jar" dest="${env.S1AS_HOME}" />
+<!--	
+	wsdl library is packaged with fuji-glassfish-container.
+	<echo message="Downloading sun-wsdl-library.jar..." />
+	<get src="${sun-wsdl-library.jar}" dest="${env.S1AS_HOME}/fuji/sun-wsdl-library.jar" />
+-->
+	<echo message="Downloading sun-http-binding.jar, this may take a few minutes..." />
+	<get src="${sun-http-binding.jar}" dest="${env.S1AS_HOME}/modules/sun-http-binding.jar" />
+	<copy file="${sun-javaee-engine.jar}" todir="${env.S1AS_HOME}/modules" overwrite="true"/>
+	<delete dir="temp" />
+    </target>
+    
+    <target name="all">
+        <delete file="${env.APS_HOME}/jbi/test_results.html"/>
+        <delete file="${env.APS_HOME}/jbi/test_resultsValid.xml"/>
+        <delete file="${env.APS_HOME}/jbi/test_results.xml"/>
+        <record name="jbi-serviceengine.output" action="start" />
+        <ant dir="bare_doc_literal" target="all"/>
+	<ant dir="client" target="all"/>
+        <ant dir="rpc_literal" target="all"/>
+        <ant dir="security" target="all"/>
+        <ant dir="service_unit" target="all"/>
+        <ant dir="soapfault" target="all"/>
+        <ant dir="transactions" target="all"/>
+        <record name="jbi-serviceengine.output" action="stop" />
+        <antcall target="report"/>
+    </target>
+</project>

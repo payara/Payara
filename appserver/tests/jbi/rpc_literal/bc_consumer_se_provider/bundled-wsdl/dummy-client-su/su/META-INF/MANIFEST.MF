@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+DynamicImport-Package: *
+Dynamic-Update: false
+Bundle-Version: 1.0
+Bundle-Name: Dummy App
+Created-By: 1.6.0_10 (Sun Microsystems Inc.)
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: dummyApp 
+

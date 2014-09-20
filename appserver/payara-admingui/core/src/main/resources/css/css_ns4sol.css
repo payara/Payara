@@ -1,0 +1,676 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2004-2010 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+/* Global Styles */
+BODY, TH, TD, P, DIV, SPAN, INPUT, SELECT, TEXTAREA, FORM, B, STRONG, I, U, DL, DD, DT, UL, LI, OL, OPTION, OPTGROUP, A {font-family:sans-serif;font-size:12pt}
+H1 {font-family:sans-serif;font-weight:bold;font-size:18pt}
+H2 {font-family:sans-serif;font-weight:bold;font-size:15pt}
+H3, H4 {font-family:sans-serif;font-weight:bold;font-size:12pt}
+H5, H6 {font-family:sans-serif;font-weight:bold;font-size:11pt}
+.DefBdy {color:#333;background-color:#FFF;margin:-10px 0px 0px -10px}
+a:link, a:visited {color:#3a2eb5;text-decoration:none}
+.ConMgn {margin:0px 10px}
+
+/* SKIP NAVIGATION */	
+.SkpWht {background-color:#FFF}
+.SkpMedGry1 {background-color:#CCC}
+
+/* WIZARD */
+.WizMst {}
+.WizTtl {}
+.WizStp {margin-top:5px}
+.WizBdy {color:#333;margin-top:5px}
+.WizBtn {}
+.WizStpTab {margin:2px 0px 0px 0px;background:#FFF}
+.WizStpTbl {background:#FFF}
+.WizStpNumDiv {margin:0px 5px 20px 22px}
+.WizStpArwDiv {margin:0px 5px 20px 1px}
+.WizStpTxtDiv {margin:0px 10px 20px 5px}
+.WizStpTxt {color:#333;font-weight:normal}
+.WizStpCurTxt {color:#333;font-weight:bold;vertical-align:top}
+a.WizStpLnk:link, a.WizStpLnk:visited {color:#3A2EB5;text-decoration:none}
+.WizHlpDiv {margin:15px 10px 10px 10px}
+.WizHlpTxt {color:#333}
+.WizSubTtlDiv {margin:10px 0px 0px 10px}
+.WizSubTtlTxt {color:#333;font-weight:bold;font-size:15pt}
+.WizSubStpTtlDiv {margin:2px 0px 0px 10px}
+.WizSubStpTtlTxt {color:#333;font-weight:bold}
+.WizCntHlpTxt {color:#333;margin:15px 10px 10px 10px}
+.WizBtnDiv {margin:20px 10px 10px 10px}
+
+
+/* HELP WiNDOW */
+.HlpStpTab {margin:5px 0px 15px 0px;background:#FFF}
+.HlpBtnDiv {margin:3px 10px}
+.HlpTtlDiv {margin:15px 0px 0px 10px}
+.HlpSchDiv {margin:5px 5px 5px 10px}
+.HlpRltDiv {margin-top:6px}
+.HlpIdxDiv {margin:5px 5px 5px 10px}
+body.HlpBdy {background-color:#FFF;color:#333}
+body.HlpBdy h1 {font-family:sans-serif;font-weight:bold;font-size:16pt}
+body.HlpBdy h2 {font-family:sans-serif;font-weight:bold;font-size:14pt}
+body.HlpBdy h3 {font-family:sans-serif;font-weight:bold;font-size:13pt}
+body.HlpBdy h4 {font-family:sans-serif;font-weight:bold;font-size:12pt}
+body.HlpBdy h5, H6 {font-family:sans-serif;font-weight:bold;font-size:11pt}
+body.HlpBdy a:link {color:#3A2EB5;text-decoration:underline}
+body.HlpBdy a:visited {color:#3A2EB5;text-decoration:underline}
+body.HlpBdy a:hover {color:#3A2EB5;text-decoration:underline}
+
+/* Used for interim help solution */
+.help-body {background-color:#FFF;color:#000}
+.help-body a:link,a:active {color:#3a2eb5;text-decoration:underline}
+.help-body a:hover,a:visited {color:#594fbf;text-decoration:underline}
+.help-header-1 {color:#333;font-weight:bold;margin:0px;font-size:18pt}
+.help-header-2 {color:#333;font-weight:bold;margin:0px;font-size:15pt}
+.help-header-3 {color:#333;font-weight:bold;margin:0px}
+.help-table-header-row {background-color:#CCC}
+a.help-toc-link:link, a.help-toc-link:active {color:#3a2eb5;text-decoration:underline}
+a.help-toc-link:hover, a.help-toc-link:visited {color:#594fbf;text-decoration:underline}
+a.help-return-link:link, a.help-return-link:active {color:#3a2eb5;text-decoration:underline}
+a.help-return-link:hover, a.help-return-link:visited {color:#594fbf;text-decoration:underline}
+
+/* CONTENT-PROPERTIES PAGES */
+.ConLin {border-right:solid 10px #FFF;background-color:#e5e5e5}
+.ConFldSetDiv {margin:7px 10px 0px}
+.ConFldSet {}
+.ConFldSetLgd {}
+.ConFldSetLgdDiv {color:#333;font-size:15pt;font-weight:bold;margin-bottom:10px}
+.ConSubSecTtlTxt {margin:0px 0px 3px;color:#333;font-weight:bold}
+.ConSubSecDiv {margin:10px 10px 5px 10px}
+.ConTblCl1Div {margin:8px 10px 0px 10px}
+.ConTblCl2Div {margin:7px 10px 0px 10px}
+.ConEmbTblCl1Div {margin:6px 10px 0px 30px}
+.ConEmbTblCl2Div {margin:3px 10px 0px 10px}
+.ConJmpScnDiv {margin:8px 10px 0px 0px}
+.ConJmpLnkDiv {margin:7px 25px 0px 36px;text-indent:-16px}
+.ConRqdDiv {text-align:right;margin:5px 10px 5px 0px}
+.ConDefTxt {color:#333}
+.ConRqdTxt {color:#333}
+.ConJmpTopDiv {margin:15px 10px 15px 10px}
+.ConErrLblTxt {color:#C00;font-weight:bold}
+.ConWrnLblTxt {color:#C90;font-weight:bold}
+div.ConEmbTblCl1Div input {vertical-align:middle}
+div.ConEmbTblCl1Div select {vertical-align:middle}
+div.ConTblCl2Div input {vertical-align:middle}
+div.ConTblCl2Div select {vertical-align:middle}
+a.JmpLnk:link, a.JmpLnk:visited {color:#3a2eb5;text-decoration:none}
+a.JmpTopLnk:link, a.JmpTopLnk:visited {color:#3a2eb5;text-decoration:none}
+
+/* TREE */
+a.TreParLnk:link, a.TreParLnk:visited {color:#3a2eb5;text-decoration:none;font-weight:bold}
+a.TreLnk:link, a.TreLnk:visited {color:#3a2eb5;text-decoration:none}
+.TreSelTxt {color:#333;font-weight:bold}
+a.TreSelLnk:link, a.TreSelLnk:visited {color:#333;text-decoration:none;font-weight:bold}
+.TreLnkSpc {margin-left:3px}
+.TreRotRow {background-color:#CCC}
+tr.TreSelRow td {background-color:#FFF}
+.TreImg {padding-top:2px;padding-bottom:1px} 
+.TreTbl {background-color:#E5E5E5}
+.TreBdy {color:#333;background-color:#E5E5E5;margin:-10px}
+.TreTtl {color:#333;font-weight:bold}
+/* white version */
+tr.TreWhtSelRow td {background-color:#F2F2F2}
+.TreWhtTbl {background-color:#FFF}
+.TreWhtBdy {color:#333;background-color:#FFF;margin:-10px}
+
+/* ACTION TABLE  */
+.TblMgn {margin:0px 10px}
+table.Tbl {background-color:#FFF;color:#333}
+table.Tbl td {}
+th {font-weight:normal}
+.TblTdLyt {padding:3px 10px} 
+table.Tbl td.TblTtlTd {background-color:#919191}
+.TblTtlTxt {background-color:#919191;color:#FFF;font-weight:bold;font-size:15pt}
+table.Tbl td.TblActTd {background-color:#CCC;vertical-align:middle} 
+.TblActLbl {color:#666;font-weight:bold}
+table.Tbl td.TblTdLst {}
+table.Tbl th.TblTdLst {}
+table.Tbl td.TblTdCl1 {}
+table.Tbl th.TblTdCl1 {}
+table.Tbl td.TblTdCl1Lst {}
+table.Tbl th.TblTdCl1Lst {}
+table.Tbl th.TblColHdr {vertical-align:bottom}
+table.Tbl th.TblColHdrCl1 {vertical-align:bottom}
+.TblHdrTxt {color:#666;font-weight:bold}
+table.Tbl th.TblColHdrSrt {background-color:#E5E5E5;vertical-align:bottom}
+table.Tbl td.TblTdSrt {background-color:#E5E5E5}
+table.Tbl th.TblTdSrt {background-color:#E5E5E5}
+table.Tbl td.TblTdSrtLst {background-color:#E5E5E5}
+table.Tbl th.TblTdSrtLst {background-color:#E5E5E5}
+table.Tbl th.TblColHdrSrtCl1 {background-color:#E5E5E5;vertical-align:bottom}
+table.Tbl td.TblTdSrtCl1 {background-color:#E5E5E5}
+table.Tbl th.TblTdSrtCl1 {background-color:#E5E5E5}
+table.Tbl td.TblTdSrtCl1Lst {background-color:#E5E5E5}
+table.Tbl th.TblTdSrtCl1Lst {background-color:#E5E5E5}
+table.Tbl th.TblColHdrSrtSelCl1 {background-color:#E5E5E5;text-align:center;vertical-align:bottom}
+table.Tbl td.TblTdSrtSelCl1 {background-color:#E5E5E5}
+table.Tbl td.TblTdSrtSelCl1Lst {background-color:#E5E5E5}
+table.Tbl th.TblColHdrSel {text-align:center;vertical-align:bottom}
+table.Tbl td.TblTdSel {text-align:center;vertical-align:top}
+table.Tbl td.TblTdSelLst {text-align:center;vertical-align:top}
+table.Tbl th.TblTdSpc {}
+table.Tbl td.TblTdSpc {}
+table.Tbl td.TblTdSpcLst {}
+table.Tbl td.TblTdAlm {background-color:#FFFEE7}
+table.Tbl th.TblTdAlm {background-color:#FFFEE7}
+table.Tbl td.TblTdAlmCl1 {background-color:#FFFEE7}
+table.Tbl th.TblTdAlmCl1 {background-color:#FFFEE7}
+table.Tbl td.TblTdAlmLst {background-color:#FFFEE7}
+table.Tbl th.TblTdAlmLst {background-color:#FFFEE7}
+table.Tbl td.TblTdAlmCl1Lst {background-color:#FFFEE7}
+table.Tbl th.TblTdAlmCl1Lst {background-color:#FFFEE7}
+table.Tbl td.TblTdSrtAlm {background-color:#FFFEE7}
+table.Tbl th.TblTdSrtAlm {background-color:#FFFEE7}
+table.Tbl td.TblTdSrtAlmLst {background-color:#FFFEE7}
+table.Tbl th.TblTdSrtAlmLst {background-color:#FFFEE7}
+a.TblHdrLnk:link, a.TblHdrLnk:visited {color:#3a2eb5;text-decoration:none;font-weight:bold}
+a.TblNavLnk:link, a.TblNavLnk:visited {color:#3a2eb5;text-decoration:none}
+a.TblActLnk:link, a.TblActLnk:visited {color:#3a2eb5;text-decoration:none}
+.TblMsgTxt {color:#333}
+.TblPgnTxtBld {color:#666;font-weight:bold}
+.TblPgnTxt {color:#666}
+
+/* MENUS */
+/* Netscape 4 doesn't support setting colors on these */ 
+.MnuJmp,.MnuJmpOpt,.MnuJmpOptSel,.MnuJmpOptSep,.MnuJmpOptDis,.MnuJmpOptGrp {}
+.MnuStd,.MnuStdOpt,.MnuStdOptSel,.MnuStdOptSep,.MnuStdOptDis,.MnuStdOptGrp {}
+
+/* LISTS */
+/* Netscape 4 doesn't support setting colors on these */ 
+.Lst,.LstOpt,.LstOptSel,.LstOptSep,.LstOptDis,.LstOptGrp,.LstDis {}
+/* Contextual Selectors for Monospace Version */
+.LstMno .LstOpt,.LstOptSel,.LstOptSep,.LstOptDis,.LstOptGrp {font-family:monospace}
+.LstMnoDis .LstOpt,.LstOptSel,.LstOptSep,.LstOptDis,.LstOptGrp {font-family:monospace}
+
+/* BUTTONS */
+.Btn1, .Btn1Hov, .Btn1Dis, .Btn1Def, .Btn1DefHov {background:#CCC;color:#000} 
+.Btn1Mni, .Btn1MniHov, .Btn1MniDis {background:#CCC;color:#000;font-size:10pt}
+.Btn2, .Btn2Hov, .Btn2Dis {background:#CCC;color:#000}
+.Btn2Mni, .Btn2MniHov, .Btn2MniDis {background:#CCC;color:#000;font-size:10pt}
+.BtnTbl .Btn1 {font-family:courier new, courier, mono}
+.BtnTbl .Btn1Hov {font-family:courier new, courier, mono}
+.BtnTbl .Btn1Dis {font-family:courier new, courier, mono}
+.BtnTbl .Btn2 {font-family:courier new, courier, mono}
+.BtnTbl .Btn2Hov {font-family:courier new, courier, mono}
+.BtnTbl .Btn2Dis {font-family:courier new, courier, mono}
+.BtnAryDiv {margin:5px 10px}
+
+/* ADD REMOVE IDIOM */
+.AddRmvLbl {color:#666;font-weight:bold;padding-bottom:3px}
+.AddRmvLbl2 {color:#333;padding-bottom:3px}
+.AddRmvBtnTbl .Btn1 {font-family:courier new, courier, mono}
+.AddRmvBtnTbl .Btn1Hov {font-family:courier new, courier, mono}
+.AddRmvBtnTbl .Btn1Dis {font-family:courier new, courier, mono}
+.AddRmvBtnTbl .Btn2 {font-family:courier new, courier, mono}
+.AddRmvBtnTbl .Btn2Hov {font-family:courier new, courier, mono}
+.AddRmvBtnTbl .Btn2Dis {font-family:courier new, courier, mono}
+.AddRmvVrtFst {margin:0px 0px 10px 0px}
+.AddRmvVrtWin {margin:0px 0px 10px 0px}
+.AddRmvVrtBwn {margin:0px 0px 10px -5px}
+.AddRmvHrzWin {margin-top:-10px}
+.AddRmvHrzBwn {margin-top:0px}
+
+/* BREADCRUMBS */
+.BcmWhtDiv {background-color:#fff;margin:10px 10px 0px 10px}
+.BcmGryDiv {background-color:#ccc;margin:8px 10px 7px 10px}
+.BcmGryTbl {background-color:#ccc}
+a.BcmLnk:link, a.BcmLnk:visited {color:#3a2eb5;text-decoration:none}
+a.BcmLnk:hover {color:#3a2eb5;text-decoration:underline}
+.BcmTxt {color:#333;font-weight:bold}
+.BcmSep {color:#333}
+
+/* PAGE TITLE */
+.TtlTxtDiv {margin:15px 0px 3px 10px}
+.TtlLin {background-color:#808080}
+.TtlTxt {color:#808080;font-size:22pt;font-weight:normal}
+.TtlActDiv {margin:3px 10px 0px 10px}
+.TtlHlpDiv {margin:5px 10px 0px 10px}
+.TtlVewDiv {margin:3px 0px 0px 10px}
+.TtlVewLbl {color:#666;font-weight:bold}
+.TtlBtnDiv {margin:0px 10px 0px 10px}
+.TtlBtnBtmDiv {margin:3px 10px 0px 10px}
+
+/* INLINE ALERTS */
+.AlrtErrTxt {color:#C00;font-weight:bold}
+.AlrtWrnTxt {color:#C90;font-weight:bold}
+.AlrtInfTxt {color:#669;font-weight:bold}
+.AlrtLnkDiv {padding-top:4px}
+a.AlrtLnk:link, a.AlrtLnk:visited {color:#3a2eb5;text-decoration:none}
+a.AlrtLnk:hover {color:#3a2eb5;text-decoration:underline}
+
+/* FULL ALERTS */
+.FulAlrtHdrDiv {margin:10px 10px 5px 10px}
+.FulAlrtHdrTxt {color:#333;font-weight:bold;font-size:15pt} 
+.FulAlrtMsgDiv {margin:5px 10px}
+.FulAlrtFrmDiv {margin:10px 10px 5px 10px}
+.FulAlrtMsgTxt {color:#333}
+
+/* GENERIC FIELD LABELS */
+.LblLev1Txt {color:#333;font-weight:bold;font-size:15pt}
+.LblLev2Txt {color:#666;font-weight:bold}
+.LblLev3Txt {color:#333}
+.LblRqdDiv {color:#333}
+
+/* INLINE HELP  */
+.HlpPgeTxt {color:#333}
+.HlpFldTxt {font-size:11pt;color:#333}
+a.HlpPgeLnk:link, a.HlpPgeLnk:visited {color:#3a2eb5;text-decoration:none}
+a.HlpFldLnk:link, a.HlpFldLnk:visited {color:#3a2eb5;text-decoration:none;font-size:11pt}
+
+/* TAB NAVIGATION */
+a.Tab1NotSelLnk:link, a.Tab1NotSelLnk:visited {font-weight:bold;color:#3a2eb5;text-decoration:none}
+span.Tab1SelTxt {font-weight:bold;color:#333;text-decoration:none}
+a.TabNotSelLnk:link, a.TabNotSelLnk:visited {color:#3a2eb5;text-decoration:none}
+span.TabSelTxt {font-weight:bold;color:#333;text-decoration:none}
+/* Level 1 Tab Navigation */
+div.Tab1 {background-color:#CCC}
+table.Tab1Tbl {background-color:#CCC}
+td.Tab1TdSel {background-color:#FFF;min-width:90px}
+td.Tab1TdNotSel {background-color:#EAEAEA;min-width:90px}
+div.Tab1DivSel {padding-left:10px;padding-top:5px;padding-bottom:3px}
+div.Tab1DivNotSel {padding-left:10px;padding-top:3px;padding-bottom:2px}
+td.Tab1Gtr {background-color:#CCC}
+/* Level 2 Tab Navigation */
+div.Tab2 {background-color:#FFF}
+table.Tab2Tbl {background-color:#FFF}
+td.Tab2LinBak {background-color:#CCC}
+div.Tab2Sel {padding-top:3px;padding-bottom:1px}
+div.Tab2NotSel {padding-top:4px;padding-bottom:2px}
+/* Level 3 Tab Navigation */
+div.Tab3 {background-color:#FFF}
+table.Tab3Tbl {background-color:#FFF}
+/* Left Navigation Mini-Tabs -- for help and wizard */
+.LftTab {background-color:#FFF}
+.LftTabTbl {background-color:#FFF}
+.LftTabLinBak {background-color:#CCC}
+.LftTabDivSel {padding-top:4px;padding-bottom:1px}
+.LftTabDivNotSel {padding:4px 8px 2px;background-color:#e5e5e5}
+.LftTabTdNotSel {background-color:#e5e5e5}
+a.LftTabLnk:link, a.LftTabLnk:visited {font-weight:bold;color:#3a2eb5;text-decoration:none}
+.LftTabSelTxt {font-weight:bold;color:#333;text-decoration:none}
+
+/* FILE CHOOSER */
+.ChoLblTxt {color:#666;font-weight:bold}
+.ChoSrvTxt {color:#333}
+
+/* DATE AND TIME */
+a.DatLnk:link, a.DatLnk:visited {color:#3A2EB5;text-decoration:none;padding:0px}
+a.DatBldLnk:link, a.DatBldLnk:visited {color:#3A2EB5;padding:0px;background-color:#ccf;text-decoration:none;font-weight:bold}
+a.DatOthLnk:link, a.DatOthLnk:visited {color:#666;text-decoration:none;padding:0px}
+a.DatOthBldLnk:link, a.DatOthBldLnk:visited {color:#666;padding:0px;background-color:#ccf;text-decoration:none;font-weight:bold}
+.DatSelDiv {background-color:#ccc;padding:5px 5px 4px}
+.DatCalDiv {background-color:#e5e5e5}
+.DatDayHdrTxt {color:#666;font-weight:bold;padding:1px 3px}
+.DatLblTxt {color:#666;font-weight:bold}
+.DatZonTxt {color:#333}
+
+/* MASTHEAD */
+span.MstLbl {color:#666}
+span.MstTxt {color:#333}
+span.MstUsrRole {color:#333}
+span.MstAlmDwnTxt {color:#333}
+span.MstAlmCrtTxt {color:#333}
+span.MstAlmMajTxt {color:#333}
+span.MstAlmMinTxt {color:#333}
+table.MstTbl {background-color:#CCC}
+td.MstTdTtl {background-color:#FFF;vertical-align :top}
+td.MstTdBnd {background-color:#81C39F}
+td.MstTdAlm {background-color:#eeeeee}
+td.MstTdLogo {background-color:#594FBF}
+div.MstDivTtl {padding-left:10px;vertical-align:top}
+div.MstDivSecTtl {padding-left:10px;vertical-align:top;padding-bottom:15px}
+div.MstDivUsr {margin:3px 10px 4px;vertical-align:bottom}
+div.MstDivAlmRow {padding: 0px 10px 2px;vertical-align:text-bottom}
+div.MstDivAlmBotRow {padding: 0px 10px 3px;vertical-align:text-bottom}
+div.MstDivPrgRow {padding:5px 10px 3px;vertical-align:text-top}
+div.MstDivSch {vertical-align:middle}
+a.MstLnk:link, a.MstLnk:visited {color:#3a2eb5;text-decoration:none;font-weight:bold}
+a.MstUsrLnk:link, a.MstUsrLnk:visited {color:#3a2eb5;text-decoration:none}
+a.MstAlmLnk:link, a.MstAlmLnk:visited {color:#3a2eb5;text-decoration:none}
+a.MstPrgLnk:link, a.MstPrgLnk:visited {color:#3A2EB5;text-decoration:none}
+div.MstTmeDiv {padding:5px 10px 0px}
+div.MstAlmDiv {padding:5px 10px 0px}
+div.MstStatDiv {padding:5px 10px 0px}
+
+
+/* VERSION DIALOG */
+.VrsMgn {margin:10px 25px 20px}
+.VrsHdrTxt {color:#666;font-weight:bold;margin-top:20px;margin-bottom:7px;font-size:15pt;} 
+.VrsTxt {color:#666;margin-bottom:10px}
+.VrsPrdTd {background-color:#FFF}
+.VrsLgoTd {background-color:#594FBF}
+.VrsLin {background-color:#808080}
+.VrsBtnAryDiv {margin-top:5px}
+
+/* LOCKHART LOGIN */
+.logLblSvrNam {margin:0px 0px 5px 15px}
+.logTxtSvrNam {margin:0px 0px 5px 10px}
+.LogUsrLbl {margin:4px 0px 6px 15px}
+.LogUsrNam {margin:4px 0px 6px 10px}
+.logLbl {margin:0px 0px 3px 15px}
+.logInp {margin:0px 0px 3px 10px}
+.logLblLst {margin:0px 0px 10px 15px}
+.logInpLst {margin:0px 0px 10px 10px}
+.logBtn {margin:0px 0px 7px 10px}
+.logHlp {margin:0px 15px 7px 10px}
+.logErr {margin:5px 15px 5px 10px}
+.logCpy {width :720px;margin-top:5px}
+.logTxtCpy {font-size:10pt;color:#999}
+
+
+/* LOCKHART LAUNCH PAGE */
+.LncMgn {margin:10px}
+.LncTbl {background-color:#FFF}
+.LncCbDiv {margin:0px 10px 5px 10px}
+.LncHdr {font-weight:bold;color:#FFF;background-color:#999;padding:2px 10px}
+.LncHdrTd {background-color:#999}
+.LncAppBox {padding:8px}
+.LncAppTd {background-color:#EEE}
+.LncApp {padding:0px 0px 3px 2px}
+.LncTxt {color:#333;padding:0px 0px 3px 2px}
+a.LncLnk:link, a.LncLnk:visited {color:#3a2eb5;text-decoration:none}
+
+
+
+
+
+
+/* ---------------------------------------------*/
+/* ---------------------------------------------*/
+/* ---------------------------------------------*/
+/* THESE ARE OLD 1.0 STYLES -- DO NOT USE  for 2.0 */
+/* ---------------------------------------------*/
+/* ---------------------------------------------*/
+
+/* NETSCAPE 4.X FOR SOLARIS STYLE SHEET */
+/* Last Updated 08/20/2002 */
+/* See readme.txt for modification history */
+
+
+/* MASTHEAD */
+.masthead-body {background-color:#669}
+.masthead-background {background-color:#669}
+.masthead-title-row {background-color:#000}
+.masthead-separator-row {background-color:#FFF}
+.masthead-bottom-row {background-color:#669}
+.masthead-text {color:#FFF}
+.masthead-role-text {color:#FFF;font-weight:bold}
+.masthead-server-text {color:#FFF;font-weight:bold}
+a.masthead-link:link, a.masthead-link:visited {color:#FFF;text-decoration:none}
+a.masthead-link:hover {color:#FFF;text-decoration:underline}
+a.masthead-link:active {color:#F00;text-decoration:underline}
+.masthead-link-divider {color:#F90}
+.secondary-masthead-title {color:#FFF;font-size:1.3em;font-weight:bold;margin:5px 10px}
+
+
+/* CONSOLE-SPECIFIC STYLES  */
+.copyright-text {color:#999;font-size:.9em}
+.copyright-separator {background-color:#CCC}
+a.plugin-link:link, a.plugin-link:visited {font-weight:bold;color:#669;text-decoration:underline}
+a.plugin-link:active {font-weight:bold;color:#F00;text-decoration:underline}
+.plugin-description-text {color:#000}
+
+
+/* NAVIGATION TREE  */
+.tree-body {background-color:#FFF;color:#000} 
+a.tree-node-link:link, a.tree-node-link:visited, a.tree-node-link:active {color:#000;text-decoration:none}
+
+
+/* GLOBAL TAB NAVIGATION STYLES */
+
+/* Primary Tabs */
+.global-tab-unselected {background-color:#99C;text-align:center}
+a.global-tab-link:link, a.global-tab-link:visited {color:#FFF;font-weight:bold;text-decoration:none;background-color:#99C}
+a.global-tab-link:hover {color:#FFF;font-weight:bold;text-decoration:underline;background-color:#99C}
+a.global-tab-link:active {color:#F00;text-decoration:underline}
+.global-tab-selected {background-color:#FFC;text-align:center}
+.global-tab-text {color:#000;font-weight:bold;background-color:#FFC}
+
+/* Secondary Navigation */
+.global-tab-sec-back {background-color:#FFC}
+.global-tab-sec-divider {color:#F90;margin:2px 0px}
+a.global-tab-sec-link:link, a.global-tab-sec-link:visited {margin:2px 0px;color:#000;background-color:#FFC;text-decoration:none}
+a.global-tab-sec-link:hover {margin:2px 0px;color:#000;background-color:#FFC;text-decoration:underline}
+a.global-tab-sec-link:active {margin:2px 0px;color:#F00;text-decoration:underline}
+.global-tab-sec-text {margin:2px 0px;color:#000;background-color:#FFC;font-weight:bold}
+
+
+/* LOCAL TAB NAVIGATION STYLES */
+
+/* Primary Tabs */
+.local-tab-back {background-color:#CCC}
+.local-tab-unselected {background-color:#999;text-align:center}
+a.local-tab-link:link, a.local-tab-link:visited {color:#000;font-weight:bold;text-decoration:none;background-color:#999}
+a.local-tab-link:hover {color:#000;font-weight:bold;text-decoration:underline;background-color:#999}
+a.local-tab-link:active {color:#F00;text-decoration:underline}
+.local-tab-selected {background-color:#FFF;text-align:center}
+.local-tab-text {color:#000;font-weight:bold;background-color:#FFF}
+
+/* Secondary Navigation */
+.local-tab-sec-back {background-color:#FFF}
+.local-tab-sec-divider {color:#000;margin:4px 0px}
+a.local-tab-sec-link:link, a.local-tab-sec-link:visited {margin:4px 0px;color:#000;background-color:#FFF;text-decoration:underline}
+a.local-tab-sec-link:hover {margin:4px 0px;color:#000;background-color:#FFF;text-decoration:underline}
+a.local-tab-sec-link:active {margin:4px 0px;color:#F00;text-decoration:underline}
+.local-tab-sec-text {margin:4px 0px;color:#000;background-color:#FFF;font-weight:bold}
+
+
+/* BREADCRUMBS */
+.breadcrumb-row {background-color:#CCC}
+.breadcrumb-text {color:#000;font-weight:bold;margin:3px 10px}
+a.breadcrumb-link:link, a.breadcrumb-link:visited {color:#000;font-weight:normal;text-decoration:underline}
+a.breadcrumb-link:active {color:#F00;text-decoration:underline}
+
+
+/* CONTENT AREA */
+.content-layout {margin:0px 10px}
+
+
+/* BUTTONS */
+
+/* Regular Button - Enabled */
+.button-frame-enabled {background-color:#000}
+.button-content-enabled {background-color:#CCC}
+.button-link-enabled-text {color:#000;margin:1px 0px;font-weight:bold}
+a.button-link:link, a.button-link:visited {color:#000;background-color:#CCC;text-decoration:none}
+a.button-link:active {color:#000;background-color:#999;text-decoration:none}
+
+/* Regular Button - Disabled */
+.button-frame-disabled {background-color:#999}
+.button-content-disabled {background-color:#CCC}
+.button-link-disabled-text {color:#999;margin:1px 0px;font-weight:bold}
+
+/* Mini Button - Enabled */
+.mini-button-frame-enabled {background-color:#000}
+.mini-button-content-enabled {background-color:#CCC}
+.mini-button-link-enabled-text {color:#000;font-size:.9em;margin:1px 0px;font-weight:bold}
+a.mini-button-link:link, a.mini-button-link:visited {color:#000;background-color:#CCC;text-decoration:none}
+a.mini-button-link:active {color:#000;background-color:#999;text-decoration:none}
+
+/* Mini Button - Disabled */
+.mini-button-frame-disabled {background-color:#999}
+.mini-button-content-disabled {background-color:#CCC}
+.mini-button-link-disabled-text {color:#999;font-size:.9em;margin:1px 0px;font-weight:bold}
+
+
+/* TABLES */
+
+/* Table Title */
+.table-title-text {color:#000;font-weight:bold;margin:0px 5px 2px 0px}
+
+/* Table Colors */
+.table-frame {background-color:#99C}
+.table-content {background-color:#FFF}
+.table-header-row {background-color:#99C}
+.table-sort-row {background-color:#CCF}
+.table-separator-row {background-color:#CCC}
+
+/* Table text styles  */
+.table-header-text {color:#FFF;font-weight:bold;margin:2px 5px 2px 10px}
+.table-label-text {color:#000;margin:3px 5px 3px 10px}
+.table-normal-text {color:#000;margin:3px 5px 3px 10px}
+.table-status-ok-text {color:#000;margin:3px 5px 3px 10px}
+.table-status-critical-text {color:#000;margin:3px 5px 3px 10px}
+.table-status-major-text {color:#000;margin:3px 5px 3px 10px}
+.table-status-minor-text {color:#000;margin:3px 5px 3px 10px}
+.table-strong-text {color:#000;margin:3px 5px 3px 10px;font-weight:bold}
+.sort-row-margin {margin:0px 5px 0px 10px}
+.select-all-margin {margin:2px}
+
+/* Table hyperlinks that navigate users to other pages */
+.table-navlink-text {color:#669;margin:3px 5px 3px 10px}
+a.table-navlink:link, a.table-navlink:visited {color:#669;text-decoration:underline}
+a.table-navlink:active {color:#F00;text-decoration:underline}
+
+/* Table hyperlinks that invoke actions */
+.table-actlink-text {color:#99C;margin:3px 5px 3px 10px;font-weight:bold}
+a.table-actlink:link, a.table-actlink:visited {font-weight:normal;color:#669;text-decoration:underline}
+a.table-actlink:active {font-weight:normal;color:#F00;text-decoration:underline}
+
+/* Vertical Pagination Text */
+.table-vertpag-label-text {color:#000;font-weight:bold}
+.table-vertpag-pages-text {color:#000}
+.table-vertpag-title-text {color:#000;font-weight:normal}
+
+
+/* ALERTS */
+
+/* Inline Alert Frame and Contents */ 
+.alert-error-frame {background-color:#C00}
+.alert-error-content {background-color:#FFF}
+.alert-warning-frame {background-color:#FC0}
+.alert-warning-content {background-color:#FFF}
+.alert-info-frame {background-color:#99C}
+.alert-info-content {background-color:#FFF}
+
+/* Alert Text */
+.alert-header-text {color:#000;font-weight:bold;margin:0px 0px 5px 0px}
+.alert-normal-text {color:#000}
+.alert-mono-text {color:#000;font-family:monospace}
+.alert-strong-text {color:#000;font-weight:bold}
+a.alert-link:link, a.alert-link:visited {color:#669;text-decoration:underline}
+a.alert-link:active {color:#F00;text-decoration:underline}
+
+
+/* PROPERTY SHEETS */
+.properties-jumpto-text {color:#000}
+.properties-level1-label-text {color:#000;margin:20px 0px 0px 0px;font-weight:bold}
+.properties-level2-label-text {color:#000;margin:20px 0px 5px 20px;font-weight:bold}
+.properties-level3-label-text {color:#000;margin:0px 0px 0px 40px}
+.properties-separator {background-color:#CCC}
+.properties-normal-text {color:#000}
+.properties-required {color:#00F}
+
+
+/* WIZARDS */
+
+/* Title and Frame Body Colors */
+.wizard-title-text {color:#FFF;margin:5px;font-size:1.3em;font-weight:bold}
+.wizard-steps-body {background-color:#FFF;color:#000}
+.wizard-contents-body {background-color:#FFF;color:#000}
+.wizard-navigation-body {background-color:#FFF;color:#000}
+
+/* Steps & Help Area */
+.wizard-steps-title-text {color:#000;font-weight:bold}
+.wizard-steps-divider {background-color:#000}
+.wizard-step-text {color:#000}
+.wizard-help-text {color:#000;margin:3px 0px}
+.wizard-step-current-text {color:#000;font-weight:bold}
+a.wizard-step-link:link, a.wizard-step-link:visited {color:#669;text-decoration:underline}
+a.wizard-step-link:active {color:#F00;text-decoration:underline}
+
+/* Content Area */
+.wizard-content-title-text {color:#000;font-weight:bold;margin:3px 5px}
+.wizard-content-title-row {background-color:#CCC}
+.wizard-content-instr-text {color:#000}
+.wizard-content-label-text {color:#000}
+
+/* Wizard Tabs */
+.wizard-tab-frame-forward {background-color:#000}
+.wizard-tab-content-forward {background-color:#FFF}
+.wizard-tab-link-forward-text {color:#000;font-weight:bold;text-decoration:none}
+.wizard-tab-frame-back {background-color:#666}
+.wizard-tab-content-back {background-color:#CCC}
+a.wizard-tab-link:link, a.wizard-tab-link:visited {color:#000;font-weight:bold;text-decoration:none}
+a.wizard-tab-link:active {color:#000;font-weight:bold;background-color:#999;text-decoration:none}
+
+
+/* HELP */
+
+/* Inline Help */
+.help-text {color:#000} 
+a.help-link:link, a.help-link:visited {color:#000;text-decoration:underline}
+a.help-link:active {color:#F00;text-decoration:underline} 
+.help-small-text {color:#000;font-size:.9em} 
+a.help-small-link:link, a.help-link:visited {color:#000;text-decoration:underline}
+a.help-small-link:active {color:#F00;text-decoration:underline} 
+
+ /* OLD BRANDING -- STYLES-REDEFINED ABOVE */
+/* Online Help 
+.help-body {background-color:#FFF;color:#000}
+.help-header-1 {color:#669;font-weight:bold;font-size:1.3em}
+.help-table-header-row {background-color:#CCC}
+a.help-toc-link:link, a.help-toc-link:visited {color:#669;text-decoration:underline}
+a.help-toc-link:active {color:#F00;text-decoration:underline}
+a.help-return-link:link, a.help-return-link:visited {color:#669;text-decoration:underline;font-size:.9em}
+a.help-return-link:active {color:#F00;text-decoration:underline;font-size:.9em}
+*/
+
+/* DATE-TIME COMPONENT */
+
+.date-time-day-header {color:#000;font-weight:bold}
+.date-time-help-text {color:#000;font-size:.9em} 
+.date-time-label-text {color:#000} 
+a.date-time-link:link, a.date-time-link:visited {color:#000;text-decoration:underline}
+a.date-time-link:active {color:#F00;text-decoration:underline}
+a.date-time-other-link:link, a.date-time-other-link:visited {color:#999;text-decoration:underline}
+a.date-time-other-link:active {color:#F00;text-decoration:underline}
+a.date-time-mark-link:link, a.date-time-mark-link:visited {color:#000;font-weight:bold;text-decoration:underline}
+a.date-time-mark-link:active {color:#F00;text-decoration:underline}
+
+
+/* FILE CHOOSER COMPONENT */
+
+.chooser-server-header {color:#000;font-weight:bold}
+.chooser-server-text {color:#000}
+.chooser-label-text {color:#000}
+select.chooser-list {font-family:monospace}
+option.chooser-folder-text {color:#000;font-family:monospace}
+option.chooser-file-text {color:#666;font-family:monospace}

@@ -1,0 +1,8 @@
+Simple test case with a static resource. 
+It has an additional twist like this:
+When you use webbundle, don't specify Web-ContextPath in the query.
+The non-OSGied war has no contextpath set in manifest, so
+it uses /FirstV3Test which is set in sun-web.xml.
+
+When you install using fileinstall, the final war does have contextpath
+set in manifest as well as in sun-web.xml. It shows that MANIFEST.MF takes precedence.

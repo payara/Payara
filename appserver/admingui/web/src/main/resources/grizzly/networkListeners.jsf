@@ -1,0 +1,185 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- grizzly/networkListeners.jsf -->
+
+
+<!initPage
+    setResourceBundle(key="i18n_web" bundle="org.glassfish.web.admingui.Strings");
+    setResourceBundle(key="help_web" bundle="org.glassfish.web.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"
+    guiTitle="$resource{i18n_web.grizzly.networkListenersPageTitle}"
+    guiTemplateOnLoad="
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:protocols');
+        admingui.nav.refreshTree('treeForm:tree:configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners');"
+>
+<!define name="listTableDeleteButton">
+    <sun:button id="button1" text="$resource{i18n.button.Delete}" disabled="#{true}" primary="#{false}"
+        onClick="if (getConfirm(this,'$pageSession{confirmDeleteMsg}')) {submitAndDisable(this, '$resource{i18n.button.Processing}');}; return false;" >
+    <!command
+        getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
+        getSelectedSingleMapRows(TableRowGroup="${tableRowGroup}" selectedRows=>$attribute{selectedRows});
+        foreach (var="row" list="${selectedRows}") {
+            setPageSessionAttribute(key="networkListenerName" value="#{row['name']}");
+            setPageSessionAttribute(key="networkListenerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners/network-listener");
+            gf.restRequest(endpoint="#{pageSession.networkListenerUrl}/#{pageSession.networkListenerName}.json", method="get", result="#{pageSession.networkListAttrs}");
+            setPageSessionAttribute(key="protocolName" value="#{pageSession.networkListAttrs.data.extraProperties.entity['protocol']}");
+            urlencode(value="#{pageSession.protocolName}" encoding="UTF-8" result="#{pageSession.encodedProtocolName}");
+            setPageSessionAttribute(key="protocolUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol/#{pageSession.encodedProtocolName}");
+            setPageSessionAttribute(key="protocolHttpUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/protocols/protocol/#{pageSession.encodedProtocolName}/http");
+            setPageSessionAttribute(key="virtualServerUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/http-service/virtual-server");
+            gf.checkIfEndPointExist(endpoint="#{pageSession.protocolHttpUrl}", exists="#{pageSession.protocolHttpExist}");
+            // check if there is no listener exists for this protocol and it was created by GUI, then delete
+            gf.getChildrenNamesList(endpoint="#{pageSession.networkListenerUrl}", id="name", result="#{pageSession.networkListeners}");
+            createList(size="0" result="#{pageSession.listenerList}");
+            foreach (var="listener" list="#{pageSession.networkListeners}") {
+                gf.restRequest(endpoint="#{pageSession.networkListenerUrl}/#{listener}.json", method="get", result="#{pageSession.networkListenerAttrs}");
+                if ("#{pageSession.networkListenerAttrs.data.extraProperties.entity['protocol']}=#{pageSession.protocolName}"){
+                    listAdd(value="#{pageSession.networkListAttrs.data.extraProperties.entity['name']}" list="#{pageSession.listenerList}");
+                }
+                setPageSessionAttribute(key="listSize" value="#{pageSession.listenerList.size()}");
+                setPageSessionAttribute(key="protocolExtn" value="$resource{i18n_web.grizzly.protocolExtension}");
+                setPageSessionAttribute(key="deleteProcotol" value="#{false}");
+                if ("#{pageSession.listSize}=1") {
+                    if ("#{pageSession.protocolName}=#{pageSession.networkListenerName}$resource{i18n_web.grizzly.protocolExtension}") {
+                        setPageSessionAttribute(key="deleteProcotol" value="#{true}");
+                    }
+                }
+            }
+            if (#{pageSession.protocolHttpExist}) {
+                gf.restRequest(endpoint="#{pageSession.protocolHttpUrl}.json", method="get", result="#{pageSession.protocolAttrHttp}");
+                setPageSessionAttribute(key="vsName" value="#{pageSession.protocolAttrHttp.data.extraProperties.entity['defaultVirtualServer']}");
+                gf.restRequest(endpoint="#{pageSession.virtualServerUrl}/#{vsName}.json", method="get", result="#{pageSession.vsAttrs}");
+                changeNetworkListenersInVS(vsAttrs="#{pageSession.vsAttrs.data.extraProperties.entity}", listenerName="#{pageSession.networkListAttrs.data.extraProperties.entity['name']}", addFlag="{#false}", result="#{pageSession.vsAttrModified}");
+                gf.restRequest(endpoint="#{pageSession.virtualServerUrl}/#{vsName}", attrs="#{pageSession.vsAttrModified}", method="post");
+            }
+            gf.restRequest(endpoint="#{pageSession.networkListenerUrl}/#{pageSession.networkListenerName}?target=#{pageSession.valueMap['target']}", method="delete");
+            if (#{pageSession.deleteProcotol}) {
+                gf.restRequest(endpoint="#{pageSession.protocolUrl}?target=#{pageSession.valueMap['target']}", method="delete");
+            }
+        }
+        gf.redirect(page="#{pageSession.listLink}");
+    />
+    </sun:button>
+</define>
+<!define name="content">
+    <event>
+    <!beforeCreate
+        getRequestValue(key="configName" value=>$page{configName} );
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="childType" value="network-listener");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}/network-config/network-listeners");
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        setPageSessionAttribute(key="rest-api" value="true");
+
+        gf.getNetworkListeners(configName="#{pageSession.configName}", result="#{requestScope.listOfRows}");
+        createMap(result="#{pageSession.valueMap}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18n_web.msg.JS.confirmDeleteNL}");
+        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/web/grizzly/networkListenerNew.jsf?configName=#{configName}");
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/web/grizzly/networkListeners.jsf?configName=#{configName}");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/web/grizzly/networkListenerEdit.jsf?configName=#{configName}");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18n_web.grizzly.networkListeners.tableName}");
+    />
+    </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":configurations:#{pageSession.encodedConfigName}:networkConfig:networkListeners");</script>
+    <sun:form id="propertyForm">
+#include "/common/shared/alertMsg.inc"
+     <sun:title id="propertyContentPage" title="$resource{i18n_web.grizzly.networkListenersPageTitle}"
+     helpText="$resource{i18n_web.grizzly.networkListenersPageTitleHelp}" />
+#include "/common/shared/configNameSection.inc"
+<sun:table id="configs" title="#{tableTitle}"
+            deselectMultipleButton="$boolean{true}"
+            deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+            selectMultipleButton="$boolean{true}"
+            selectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{tableId});
+            />
+
+#include "/common/shared/listTableConfigButtons.inc"
+
+   <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{listOfRows}"} sourceVar="td">
+     <!afterCreate
+         getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+        />
+    <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col0">
+            <sun:checkbox id="select"
+                toolTip="$resource{i18n.common.select}"
+                selected="#{td.value.selected}"
+                selectedValue="$boolean{true}"
+                onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+            />
+    </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.nameCol}"  sort="name" rowHeader="$boolean{true}" id="col1">
+        <sun:hyperlink id="link" text="#{td.value.name}"
+            url="#{pageSession.editLink}&name=#{td.value.name}&cancelTo=web/grizzly/networkListeners.jsf" />
+    </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.portCol}"  sort="port" rowHeader="$boolean{false}" id="col3">
+        <sun:staticText id="port" value="#{td.value.port}" />
+    </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.protocolCol}"  sort="protocol" rowHeader="$boolean{false}" id="pro">
+        <sun:hyperlink id="link" text="#{td.value.protocol}" url="#{request.contextPath}/web/grizzly/protocolEdit.jsf?name=#{td.value.protocol}&cancelTo=web/grizzly/networkListeners.jsf&configName=#{pageSession.configName}" />
+    </sun:tableColumn>
+
+    <sun:tableColumn headerText="$resource{i18n_web.grizzly.table.threadPoolCol}" sort="threadPool" rowHeader="$boolean{false}" id="threadPool">
+        <sun:hyperlink id="link" text="#{td.value.threadPool}" url="#{request.contextPath}/web/configuration/threadPoolEdit.jsf?name=#{td.value.threadPool}&cancelTo=grizzly/networkListeners.jsf&configName=#{pageSession.configName}" />
+    </sun:tableColumn>
+
+    <sun:tableColumn  headerText="$resource{i18n_web.grizzly.table.enabledCol}" sort="enabled" rowHeader="$boolean{false}" id="col22">
+        <sun:staticText id="enCol" text="#{td.value.enabled}" />
+    </sun:tableColumn>
+
+  </sun:tableRowGroup>
+
+</sun:table>
+
+	<sun:hidden id="helpKey" value="$resource{help_web.networkListeners}" />
+            </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+
+</define>
+</composition>

@@ -1,0 +1,111 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<FindBugsFilter>
+    <!--
+        From Tim Quinn:
+
+        The current structure of the code makes it complicated to arrange a  
+        series of method returns back to the main method return to accomplish  
+        the same as invoking System.exit.  If the user ran "appclient -help"  
+        then we're not going to even try to run the ACC, just display the  
+        help, so exit seems OK here.
+    -->
+    <Match>
+        <Class name="org.glassfish.appclient.client.AppClientFacade"/>
+        <Method name="help"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+
+    <!--
+        From Tim Quinn:
+
+        The only (supported) way that JWSAppClientContainerMain's main method  
+        is invoked is during a Java Web Start launch of a client, in which  
+        case the usage method in question would be invoked only if there was  
+        an error in how GF prepared the URL and/or the JNLP document.  A user  
+        could cause GF to add the equivalent of the -usage option to the JNLP  
+        but there's no good reason to do that and exiting in that case is fine  
+        as far as I'm concerned.
+    -->
+    <Match>
+        <Class name="org.glassfish.appclient.client.AppClientFacade"/>
+        <Method name="usage"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+
+    <!--
+        From Tim Quinn:
+
+        This call to exit supports a seldom-used feature of the Java Web Start  
+        support for app clients in which the caller can ask that the ACC exit  
+        right away after returning from the client.  (Normally we'll wait  
+        until the event dispatcher thread runs down.)  This has been useful,  
+        at least in the past, when oddities in the vendor's Java Web Start  
+        implementation caused the VM to hang around when the client is a non- 
+        GUI client (as in our devtests).  This primarily affected Apple's VM a  
+        few releases ago, IIRC.
+    -->
+    <Match>
+        <Class name="org.glassfish.appclient.client.jws.boot.JWSACCMain$1"/>
+        <Method name="run"/>
+        <Bug pattern="DM_EXIT"/>
+    </Match>
+
+    <!--
+        From Tim Quinn:
+
+        Refactoring is possible, but at the cost of greater complexity.  Plus  
+        I think FindBugs has missed something.  It is correct that the "this"  
+        of the containing class is used only during construction, but part of  
+        what the constructor does is to instantiate other inner classes of the  
+        same common containing object and those constructors use the implicit  
+        "this" argument.  Changing the UserVMArgs inner class to be static  
+        would force refactoring of several other inner classes.  That seems to  
+        me to be a fair amount of work and added complexity to suppress this  
+        FindBugs notification.
+    -->
+    <Match>
+        <Class name="org.glassfish.appclient.client.CLIBootstrap$UserVMArgs"/>
+        <Bug pattern="SIC_INNER_SHOULD_BE_STATIC_NEEDS_THIS"/>
+    </Match>
+</FindBugsFilter>

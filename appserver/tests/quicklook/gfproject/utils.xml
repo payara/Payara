@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!--
+    Contributor(s): Dies Koper (Fujitsu Ltd.)
+-->
+
+<project name="utils" basedir=".">
+
+<target name="check-logged-messages" description="Check server.log for message issues">
+    <!--
+        Process:
+        - set up regexp for each type of issue (using <property> instead of <regexp>
+          as latter cannot be used in <replaceregex>)
+        - load exclude list (add -Dlog.msg.excl.path=other-list.txt to load another
+          list (or empty file to include all messages)
+        - copy server.log to temp file while removing messages from exclude list
+        - search temp file for each type of issue and report
+        - at the end, fail if any issue found
+    -->
+
+    <property file="../build.properties"/>
+
+    <property name="server.log.path" location="${glassfish.home}/domains/domain1/logs/server.log"/>
+    <property name="log.msg.excl.path" location="gfproject/log_msg_excl.txt"/>
+    <tempfile property="log.msg.tmp.path" destdir="../test-output" prefix="server_log_filtered" deleteonexit="true"/>
+
+    <!-- prepare regex patterns to detect missing Ids, typos, etc. -->
+    <!-- like in IT 11637 -->
+    <property name="msg_with_id" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|\w+\d+\s?:\s?.*?\|#\]"/>
+    <!-- like in IT 11627, 11545, 6988, 7004, 7001, 9883, 9910, 9147, 10998 -->
+    <property name="msg_key" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|(\w+\.)+\w*\|#\]"/>
+    <!-- like in IT 7141 -->
+    <property name="msg_not_found" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|No local string defined\|#\]"/>
+    <!-- like in IT 9922, 11542 -->
+    <property name="bundle_not_found_msg" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|Can not find resource bundle for this logger\.\|#\]"/>
+    <!-- like in IT 9266, 8285 -->
+    <property name="null_or_empty_msg" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|(null|The log message is null)?\|#\]"/>
+    <!-- like in IT 10884 -->
+    <property name="msg_common_typos" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|.*?(occure| dont ).*?\|#\]"/>
+    <!-- like in IT 7053, 6990, 6989, 7002, 10038, 10769 -->
+    <property name="msg_unsubst_param" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|.*?\{\d\}.*?\|#\]"/>
+    <!-- like in IT 9896, 9212 -->
+    <property name="msg_double_apos" value="\[#\|\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d\.\d\d\d\D\d\d\d\d\|(INFO|WARNING|SEVERE)\|[\w.]+?\|.+?\|.*?\|.*?\w''\w.*?\|#\]"/>
+    <!-- example msg for reference to understand above regex's:
+    [#|2010-05-15T15:07:39.453+1000|INFO|glassfishv3.0|javax.enterprise.resource.jta.com.sun.enterprise.transaction|_ThreadID=15;_ThreadName=Thread-1;|DTX5019: Using [com.sun.enterprise.transaction.jts.JavaEETransactionManagerJTSDelegate] as the delegate|#]
+    [#|yyyy-mm-ddTHH:mm:ss:SSS-ZZZZ|Level|ProductId|Logger Name|Name Value Pairs|MsgId: Message|#]
+    -->
+
+    <echo>Checking messages in:
+    ${server.log.path}
+    </echo>
+
+    <!-- load file that lists excluded loggers, messages, message fragments and convert to regex 'OR' pattern -->
+    <loadfile srcfile="${log.msg.excl.path}" property="log_msg_excl" failonerror="false">
+      <filterchain>
+    <striplinecomments>
+      <comment value="#"/>
+    </striplinecomments>
+    <ignoreblank/>
+        <prefixlines prefix="|"/>
+        <striplinebreaks/>
+      </filterchain>
+    </loadfile>
+    <!-- Following regex is explained here http://www.regular-expressions.info/completelines.html -->
+    <property name="excl_msgs" value="^(?:(?!dummymsg${log_msg_excl}).)*$"/>
+    <!--echo>excl_msgs: ${excl_msgs}</echo-->
+    <!-- copy log file, filter excluded loggers and messages (start-up, stacktrace, etc.) -->
+    <!-- further checks are based on this file -->
+    <copy file="${server.log.path}" tofile="${log.msg.tmp.path}" overwrite="true">
+        <filterchain>
+            <linecontainsregexp>
+                <regexp pattern="${excl_msgs}"/>
+            </linecontainsregexp>
+            <ignoreblank/>
+            <!-- also exclude lines that do not start with [#|nnnn as they are probably
+                 multi-line messages, stacktraces, etc. continuing from the previous line -->
+            <linecontainsregexp>
+                <regexp pattern="^\[#\|\d\d\d\d.*"/>
+            </linecontainsregexp>
+        </filterchain>
+    </copy>
+
+    <!-- extract and report message keys and other issues-->
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_msg_key" regexp="${msg_key}">
+* Message keys logged instead of message:
+    </filter-log-file>
+
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_msg_unsubst_param" regexp="${msg_unsubst_param}">
+* Parameter marker not substituted with value:
+    </filter-log-file>
+
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_bundle_not_found_msg" regexp="${bundle_not_found_msg}">
+* Bundle not found:
+    </filter-log-file>
+
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_msg_not_found" regexp="${msg_not_found}">
+* Messages not found in message bundle:
+    </filter-log-file>
+
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_null_or_empty_msg" regexp="${null_or_empty_msg}">
+* No message:
+    </filter-log-file>
+
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_msg_common_typos" regexp="${msg_common_typos}">
+* Messages with common typo's ('occured' with one 'r', 'dont' missing apostrophe, etc.):
+    </filter-log-file>
+
+    <filter-log-file srcfile="${log.msg.tmp.path}" property="lines_with_msg_double_apos" regexp="${msg_double_apos}">
+* Messages with double apostrophes:
+    </filter-log-file>
+
+    <!-- filter excluded loggers and messages for correct messages and already reported issues to find remaining issues -->
+    <loadfile srcfile="${log.msg.tmp.path}" property="remaining_messages">
+        <filterchain>
+            <replaceregex pattern="${msg_with_id}"/>
+            <replaceregex pattern="${msg_key}"/>
+            <replaceregex pattern="${msg_not_found}"/>
+            <replaceregex pattern="${bundle_not_found_msg}"/>
+            <replaceregex pattern="${null_or_empty_msg}"/>
+            <ignoreblank/>
+        </filterchain>
+    </loadfile>
+
+    <property name="remaining_messages" value="(none)"/>
+    <echo>
+* Messages with no proper message Id:
+    ${remaining_messages}
+    </echo>
+
+	<condition property="cond-is-true">
+    	<not>
+    		<and>
+    			<equals arg1="(none)" arg2="${lines_with_msg_key}"/>
+                <equals arg1="(none)" arg2="${lines_with_msg_unsubst_param}"/>
+                <equals arg1="(none)" arg2="${lines_with_bundle_not_found_msg}"/>
+                <equals arg1="(none)" arg2="${lines_with_null_or_empty_msg}"/>
+                <equals arg1="(none)" arg2="${lines_with_msg_not_found}"/>
+                <equals arg1="(none)" arg2="${lines_with_msg_common_typos}"/>
+                <equals arg1="(none)" arg2="${lines_with_msg_double_apos}"/>
+                <equals arg1="(none)" arg2="${remaining_messages}"/>
+    	    </and>
+    	</not>
+    </condition>
+
+	<antcall target="pass"/>
+	<antcall target="fail"/>
+</target>
+
+	<target name="pass" unless="cond-is-true">
+		<echo message="======================================================================"/>
+		<echo message="PASSED: check-logged-messages"/>
+		<echo message="======================================================================"/>
+	</target>
+
+	<target name="fail"  if="cond-is-true">
+		<echo message="======================================================================"/>
+		<echo message="FAILED: check-logged-messages"/>
+		<echo message="Issues found in one or more messages (see results above)."/>
+		<echo message="Please address them, or if the message should be left as-is,"/>
+		<echo message="add it to the exclusion list with details why it should be excluded:"/>
+		<echo message="${log.msg.excl.path}"/>
+		<echo message="======================================================================"/>
+	</target>
+
+
+    <macrodef name="filter-log-file">
+        <attribute name="srcfile" description="path to server.log file"/>
+        <attribute name="property" description="name of property to store result in"/>
+        <attribute name="regexp" description="regular expression of lines to include"/>
+        <text name="text" description="caption for result"/>
+        <sequential>
+            <loadfile srcfile="@{srcfile}" property="@{property}">
+                <filterchain>
+                    <linecontainsregexp>
+                        <regexp pattern="@{regexp}"/>
+                    </linecontainsregexp>
+                </filterchain>
+            </loadfile>
+
+            <property name="@{property}" value="(PASSED: no problems found)"/>
+            <echo message="@{text}${@{property}}${line.separator}"/>
+        </sequential>
+    </macrodef>
+
+</project>

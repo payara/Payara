@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<console-config id="concurrent">
+     <!-- following is for JSR236, may need to move this to its own console plugin -->
+    <integration-point
+        id="concurrent-Nodes"
+        type="org.glassfish.admingui:navNode"
+        priority="100"
+        parentId="resources"
+        content="concurrentNode.jsf"
+    />
+    <integration-point
+        id="concurrent-Link"
+        parentId="propSheetSection"
+        type="org.glassfish.admingui:resources"
+        priority="450"
+        content="concurrentLink.jsf"
+    />
+    <!-- add dropdown option for the resource dropdown of cluster/standalone instance resource table. -->
+    <integration-point
+        id="csResourceDropDown"
+        type="org.glassfish.admingui:resourceTypeDropdown"
+        priority="250"
+        content="contextServiceNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ContextServices"
+    />
+    <integration-point
+        id="csResourceFilter"
+        type="org.glassfish.admingui:resFilterDropdown"
+        priority="250"
+        content="context-service|org.glassfish.concurrent.admingui.Strings|tree.ContextServices"
+    />
+
+    <integration-point
+            id="mtfResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="650"
+            content="managedThreadFactoryNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ManagedThreadFactories"
+            />
+
+    <integration-point
+            id="mtfResourceFilter"
+            type="org.glassfish.admingui:resFilterDropdown"
+            priority="650"
+            content="managed-thread-factory|org.glassfish.concurrent.admingui.Strings|tree.ManagedThreadFactories"
+            />
+
+    <integration-point
+            id="mesResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="550"
+            content="managedExecutorServiceNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ManagedExecutorServices"
+            />
+
+    <integration-point
+            id="mesResourceFilter"
+            type="org.glassfish.admingui:resFilterDropdown"
+            priority="550"
+            content="managed-executor-service|org.glassfish.concurrent.admingui.Strings|tree.ManagedExecutorServices"
+            />
+
+    <integration-point
+            id="msesResourceDropDown"
+            type="org.glassfish.admingui:resourceTypeDropdown"
+            priority="600"
+            content="managedScheduledExecutorServiceNew.jsf|org.glassfish.concurrent.admingui.Strings|tree.ManagedScheduledExecutorServices"
+            />
+
+    <integration-point
+            id="msesResourceFilter"
+            type="org.glassfish.admingui:resFilterDropdown"
+            priority="600"
+            content="managed-scheduled-executor-service|org.glassfish.concurrent.admingui.Strings|tree.ManagedScheduledExecutorServices"
+            />
+
+
+</console-config>

@@ -1,0 +1,118 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- updateCenter/acceptLicense.jsf -->
+
+
+<!initPage 
+    setResourceBundle(key="i18nUC" bundle="org.glassfish.updatecenter.admingui.Strings");
+    setResourceBundle(key="help_uc" bundle="org.glassfish.updatecenter.admingui.Helplinks");
+    setAttribute(key="useBottomTitle" value="true" );
+/>
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nUC.licensePg.Title}" guiOnLoad="admingui.help.pluginId = 'common';">
+<!define name="content">
+
+#include "/common/shared/alertMsg_1.inc"
+        <sun:form id="form">
+             <sun:title id="topTitle" title="$resource{i18nUC.licensePg.Title}" />
+             
+    <sun:propertySheet requiredFields="#{hasRequiredFields}">
+    <sun:propertySheetSection>
+        <sun:property id="accept"  labelAlign="left" noWrap="#{true}" overlapLabel="#{true}" label="" >
+            "<pre><font size="4" />
+                <staticText id="" value="$resource{i18nUC.licensePg.TitleHelp}" />
+            "</pre> 
+	</sun:property>
+        <sun:property id="name"  labelAlign="left" noWrap="#{true}" overlapLabel="#{true}" label="" >
+            <!beforeCreate
+                getRequestValue(key="fromPage" value=>$page{fromPage});
+                getRequestValue(key="successMsg" value=>$page{successMsg});
+                getRequestValue(key="action" value=>$page{action});
+                getRequestValue(key="selectedRows" value=>$page{selectedRows});
+                getLicenseText(selectedRows="#{selectedRows}" license="#{pageSession.licenseText}" hasLicense="#{requestScope.hasLicense}");
+                if (! #{requestScope.hasLicense}){
+                    updateCenterProcess(selectedRows="$pageSession{selectedRows}" action="#{action}" );
+                    prepareAlertMsg(summary="#{successMsg}" type="success");
+                    setApplicationAttribute(key="restartNeeded" value="#{true}");
+                    gf.redirect(page="#{fromPage}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                }
+            />
+            "<pre><font size="2" />
+                //<sun:textArea id="lic" rows="$int{20}" columns="$int{90}" text="#{pageSession.licenseText}" disabled="#{true}" />
+                //use the following due to support IE as well. issue# 8088
+                "<div style=" background-color:#eee; color:#444; border:1px solid #444;  overflow:auto; width:800px; height:300px; " /> #{pageSession.licenseText} </div>
+"</pre> 
+        </sun:property>
+        
+    </sun:propertySheetSection>
+    </sun:propertySheet>
+    <sun:title id="bottomTitle">
+        <!facet pageButtonsBottom>
+                    <sun:panelGroup id="bottomButtons">
+        "<div style="width: 25px; margin: auto">
+        <sun:button id="acceptButton" text="$resource{i18n.button.Accept}" 
+                onClick="disableButton('#{pageSession.declineButtonId}'); return submitAndDisable(this, '$resource{i18n.button.Processing}')"
+        >
+            <!command
+                updateCenterProcess(selectedRows="$pageSession{selectedRows}" action="#{action}" );
+                prepareAlertMsg(summary="#{successMsg}" type="success");
+                gf.redirect(page="#{fromPage}?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+            />
+        </sun:button>
+        <sun:button id="declineButton" text="$resource{i18n.button.Decline}" >
+            <!afterCreate
+                getClientId(component="$this{component}" clientId="#{pageSession.declineButtonId}");
+            />
+            <!command
+                gf.redirect(page="#{fromPage}");
+            />
+        </sun:button>
+        "</div>  
+        "<br /><br /><br />
+    </sun:panelGroup>
+                </facet>
+            </sun:title>
+<sun:hidden id="helpKey" value="$resource{help_uc.uc.licensePage}" />
+</sun:form>
+</define>
+</composition>

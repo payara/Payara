@@ -1,0 +1,164 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage 
+    setResourceBundle(key="common" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="help_web" bundle="org.glassfish.common.admingui.Helplinks")
+/>
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{common.monitoring.Title}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+        getRequestValue(key="configName" value=>$page{configName} default="server-config");
+        urlencode(value="#{pageSession.configName}" encoding="UTF-8" result="#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="childType" value="monitoring-service");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.encodedConfigName}");
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+        setPageSessionAttribute(key="convertToFalseList" value={"dtraceEnabled", "monitoringEnabled", "mbeanEnabled"});
+        gf.getMonitorLevels(endpoint="#{pageSession.parentUrl}" monitorCompList="#{requestScope.tableList}")
+        
+    />
+</event>
+
+            <sun:form id="form1">
+#include "/common/shared/alertMsg.inc"
+<sun:title id="title" title="$resource{common.monitoring.Title}"  helpText="$resource{common.monitoring.PageHelp}">
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}" >
+                <!command
+                    getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
+                    getAllSingleMapRows(TableRowGroup="${tableRowGroup}" Rows=>$attribute{allRows});
+                    updateMonitorLevels(endpoint="#{pageSession.selfUrl}/module-monitoring-levels",  allRows="#{requestScope.allRows}")
+                    gf.updateEntity(endpoint="#{pageSession.selfUrl}"  attrs="#{pageSession.valueMap}"
+                        skipAttrs="#{pageSession.skipAttrsList}"
+                        convertToFalse="#{pageSession.convertToFalseList}"
+                        onlyUseAttrs="#{pageSession.onlyUseAttrs}"
+                    );
+                    prepareSuccessfulMsg();
+                    gf.redirect(page="#{request.contextPath}/common/monitor/monitoringPage.jsf?alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}&name=#{pageSession.Name}&configName=#{pageSession.encodedConfigName}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+    <sun:propertySheetSection id="propertSectionTextField">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$attribute{sheetId});
+        />
+
+        <sun:property id="monServiceProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.monService}"  helpText="$resource{common.monitoring.monServiceHelp}">
+            <sun:checkbox id="momServiceCheckbox"  label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['monitoringEnabled']}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="monMbeansProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{common.monitoring.monMbeans}"  helpText="$resource{common.monitoring.monMbeansHelp}">
+            <sun:checkbox id="momBbeanCheckbox" label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['mbeanEnabled']}" selectedValue="true" />
+        </sun:property>
+        "<br />
+    </sun:propertySheetSection>
+    <event>
+        <!afterCreate
+            getUIComponent(clientId="#{sheetId}"  component=>$attribute{component})
+            includeIntegrations(type="org.glassfish.admingui:monitoringCheckbox" root="#{component}");
+        />
+    </event>
+</sun:propertySheet>
+<!-- Table .... -->
+<sun:table id="basicTable"  style="padding: 10pt" title="$resource{common.monitoring.MonitorLevelTableTitle}"  sortPanelToggleButton="#{false}"
+             deselectMultipleButton="$boolean{true}"
+            deselectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)"
+            selectMultipleButton="$boolean{true}"
+            selectMultipleButtonOnClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0)" >
+            <!afterCreate
+                getClientId(component="$this{component}" clientId=>$page{tableId});
+            />
+<!-- Actions (Top) -->
+    <!facet actionsTop>
+    <sun:panelGroup id="topActionsGroup1">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{topActionGroup});
+        />
+         <sun:dropDown id="change" selected="#{changeValue}" label="$resource{common.monitoring.Level}" submitForm="#{false}" immediate="#{false}"  values={"", "OFF", "LOW", "HIGH"}  labels={"", "$resource{common.monitoring.Off}" , "$resource{common.monitoring.Low}", "$resource{common.monitoring.High}" } />
+        <sun:button id="button1" text="$resource{i18n.button.changeLevel}" disabled="#{true}" primary="#{true}" >
+        <!command
+            getUIComponent(clientId="$pageSession{tableRowGroupId}", component=>$attribute{tableRowGroup});
+            getAllSingleMapRows(TableRowGroup="${tableRowGroup}" Rows=>$attribute{allRows});
+            changeLoggerLevels( newLogLevel="#{changeValue}" allRows="${allRows}" newList="#{requestScope.tmpList}");
+            setAttribute(key="tableList" value="#{requestScope.tmpList}")
+        />
+        </sun:button>
+    </sun:panelGroup>
+    </facet>
+    <sun:tableRowGroup id="rowGroup1" selected="#{td.value.selected}" data={"$attribute{tableList}"}  sourceVar="td">
+        <!afterCreate
+         getClientId(component="$this{component}" clientId=>$page{tableRowGroupId});
+        />
+        <sun:tableColumn headerText="$resource{i18n.common.SelectHeader}" selectId="select" rowHeader="$boolean{false}" id="col1">
+            <sun:checkbox id="select"
+                toolTip="$resource{i18n.common.select}"
+                selected="#{td.value.selected}"
+                selectedValue="$boolean{true}"
+                onClick="setTimeout('admingui.table.changeOneTableButton(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\'); admingui.table.initAllRows(\\\\\'#{pageSession.tableId}\\\\\');', 0);"
+            />
+        </sun:tableColumn>
+        <sun:tableColumn headerText="$resource{common.monitoring.MonitorCompNameCol}" sort="monCompName" rowHeader="$boolean{true}" id="col2">
+            <sun:staticText id="col1St" text="#{td.value.monCompName}" />
+        </sun:tableColumn>
+        <sun:tableColumn headerText="$resource{common.monitoring.MonitorCompLevelCol}" sort="level" rowHeader="$boolean{false}" id="col3">
+            <sun:dropDown id="level" selected="#{td.value.level}" values={"OFF", "LOW", "HIGH"}  labels={ "$resource{common.monitoring.Off}" , "$resource{common.monitoring.Low}", "$resource{common.monitoring.High}" } />
+
+        </sun:tableColumn>
+        "<br/>
+    </sun:tableRowGroup>
+</sun:table>
+
+    	<sun:hidden id="helpKey" value="$resource{help_web.monitoringService}" />
+</sun:form>
+            "<br/>
+#include "/common/shared/changeButtonsJS.inc" 
+    </define>
+</composition>

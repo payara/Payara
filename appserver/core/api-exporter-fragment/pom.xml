@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main.core</groupId>
+        <artifactId>core</artifactId>
+        <version>4.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <artifactId>api-exporter-fragment</artifactId>
+    <packaging>jar</packaging>
+    <name>GlassFish API Exporter Module Fragment</name>
+    <description>This bundle attached itself as a fragment to api-exporter bundle</description>
+    
+    <!--
+        Since DynamicImport-Package resolution happens incremantally, that can lead to minor performance issues,
+        so we attach this fragment to api-exporter bundle. This bundle statically imports packages. Since it 
+        optionally imports them, even if some package is absent, it is not an issue. Please note,
+        any package imported by this bundle is also visible to "Common Class Loader."
+    -->
+    <developers>
+        <developer>
+            <id>ss141213</id>
+            <name>Sahoo</name>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <!-- tmp workaround for http://jira.codehaus.org/browse/MJAR-153 -->
+                <version>2.3</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Bundle-SymbolicName>GlassFish-Application-Common-Module-Fragment</Bundle-SymbolicName>
+                            <Bundle-ManifestVersion>2</Bundle-ManifestVersion>
+                            <Fragment-Host>GlassFish-Application-Common-Module</Fragment-Host>
+                            <Bundle-Name>${project.name}</Bundle-Name>
+                            <!-- This is the most important attribute of this bundle 
+                                 We currently import all EE6 APIs. We could include some appserver pkgs as well.
+                                 Tune this as per performance requirement.
+                            -->
+                            <Import-Package>
+javax.accessibility; \
+javax.activation; \
+javax.activity; \
+javax.annotation; \
+javax.annotation.processing; \
+javax.annotation.security; \
+javax.annotation.sql; \
+javax.crypto; \
+javax.crypto.interfaces; \
+javax.crypto.spec; \
+javax.decorator; \
+javax.ejb; \
+javax.ejb.embeddable; \
+javax.ejb.spi; \
+javax.el; \
+javax.enterprise.context; \
+javax.enterprise.context.spi; \
+javax.enterprise.deploy.model; \
+javax.enterprise.deploy.model.exceptions; \
+javax.enterprise.deploy.shared; \
+javax.enterprise.deploy.shared.factories; \
+javax.enterprise.deploy.spi; \
+javax.enterprise.deploy.spi.exceptions; \
+javax.enterprise.deploy.spi.factories; \
+javax.enterprise.deploy.spi.status; \
+javax.enterprise.event; \
+javax.enterprise.inject; \
+javax.enterprise.inject.spi; \
+javax.enterprise.util; \
+javax.faces; \
+javax.faces.application; \
+javax.faces.bean; \
+javax.faces.component; \
+javax.faces.component.behavior; \
+javax.faces.component.html; \
+javax.faces.component.visit; \
+javax.faces.context; \
+javax.faces.convert; \
+javax.faces.el; \
+javax.faces.event ; \
+javax.faces.lifecycle; \
+javax.faces.model; \
+javax.faces.render; \
+javax.faces.validator; \
+javax.faces.view.facelets; \
+javax.faces.webapp; \
+javax.inject; \
+javax.imageio; \
+javax.imageio.event; \
+javax.imageio.metadata; \
+javax.imageio.plugins.bmp; \
+javax.imageio.plugins.jpeg; \
+javax.imageio.spi; \
+javax.imageio.stream; \
+javax.interceptor; \
+javax.jms; \
+javax.jws; \
+javax.jws.soap; \
+javax.lang.model; \
+javax.lang.model.element; \
+javax.lang.model.type; \
+javax.lang.model.util; \
+javax.mail; \
+javax.mail.event; \
+javax.mail.internet; \
+javax.mail.search; \
+javax.mail.util; \
+javax.management; \
+javax.management.j2ee; \
+javax.management.j2ee.statistics; \
+javax.management.loading; \
+javax.management.modelmbean; \
+javax.management.monitor; \
+javax.management.openmbean; \
+javax.management.relation; \
+javax.management.remote; \
+javax.management.remote.generic; \
+javax.management.remote.jmxmp; \
+javax.management.remote.rmi; \
+javax.management.remote.message; \
+javax.management.timer; \
+javax.naming; \
+javax.naming.directory; \
+javax.naming.event; \
+javax.naming.ldap; \
+javax.naming.spi; \
+javax.net; \
+javax.net.ssl; \
+javax.persistence; \
+javax.persistence.criteria; \
+javax.persistence.metamodel; \
+javax.persistence.spi; \
+javax.print; \
+javax.print.attribute; \
+javax.print.attribute.standard; \
+javax.print.event; \
+javax.resource; \
+javax.resource.cci; \
+javax.resource.spi; \
+javax.resource.spi.endpoint; \
+javax.resource.spi.security; \
+javax.resource.spi.work; \
+javax.rmi; \
+javax.rmi.CORBA; \
+javax.rmi.ssl; \
+javax.script; \
+javax.security.auth; \
+javax.security.auth.callback; \
+javax.security.auth.kerberos; \
+javax.security.auth.message; \
+javax.security.auth.message.callback; \
+javax.security.auth.message.config; \
+javax.security.auth.message.module; \
+javax.security.auth.login; \
+javax.security.auth.spi; \
+javax.security.auth.x500; \
+javax.security.cert; \
+javax.security.jacc; \
+javax.security.sasl; \
+javax.servlet; \
+javax.servlet.annotation; \
+javax.servlet.descriptor; \
+javax.servlet.http; \
+javax.servlet.jsp; \
+javax.servlet.jsp.el; \
+javax.servlet.jsp.jstl.core; \
+javax.servlet.jsp.jstl.fmt; \
+javax.servlet.jsp.jstl.sql; \
+javax.servlet.jsp.jstl.tlv; \
+javax.servlet.jsp.tagext; \
+javax.sound.midi; \
+javax.sound.midi.spi; \
+javax.sound.sampled; \
+javax.sound.sampled.spi; \
+javax.sql; \
+javax.sql.rowset; \
+javax.sql.rowset.serial; \
+javax.sql.rowset.spi; \
+javax.swing; \
+javax.swing.border; \
+javax.swing.colorchooser; \
+javax.swing.event; \
+javax.swing.filechooser; \
+javax.swing.plaf; \
+javax.swing.plaf.basic; \
+javax.swing.plaf.metal; \
+javax.swing.plaf.multi; \
+javax.swing.plaf.synth; \
+javax.swing.table; \
+javax.swing.text; \
+javax.swing.text.html; \
+javax.swing.text.html.parser; \
+javax.swing.text.rtf; \
+javax.swing.tree; \
+javax.swing.undo; \
+javax.tools; \
+javax.transaction; javax.transaction.xa; \
+javax.transaction.xa; \
+javax.validation; \
+javax.validation.bootstrap; \
+javax.validation.constraints; \
+javax.validation.groups; \
+javax.validation.metadata; \
+javax.validation.spi; \
+javax.ws.rs; \
+javax.ws.rs.core; \
+javax.ws.rs.ext; \
+javax.xml.bind; \
+javax.xml.bind.annotation; \
+javax.xml.bind.annotation.adapters; \
+javax.xml.bind.attachment; \
+javax.xml.bind.helpers; \
+javax.xml.bind.util; \
+javax.xml.crypto; \
+javax.xml.crypto.dom; \
+javax.xml.crypto.dsig; \
+javax.xml.crypto.dsig.dom; \
+javax.xml.crypto.dsig.keyinfo; \
+javax.xml.crypto.dsig.spec; \
+javax.xml.datatype; \
+javax.xml.namespace; \
+javax.xml.parsers; \
+javax.xml.registry; \
+javax.xml.registry.infomodel; \
+javax.xml.rpc; \
+javax.xml.rpc.encoding; \
+javax.xml.rpc.handler; \
+javax.xml.rpc.handler.soap; \
+javax.xml.rpc.holders; \
+javax.xml.rpc.server; \
+javax.xml.rpc.soap; \
+javax.xml.soap; \
+javax.xml.stream; javax.xml.stream.events; javax.xml.stream.util; \
+javax.xml.transform; \
+javax.xml.transform.dom; \
+javax.xml.transform.sax; \
+javax.xml.transform.stax; \
+javax.xml.transform.stream; \
+javax.xml.validation; \
+javax.xml.ws; \
+javax.xml.ws.handler; \
+javax.xml.ws.handler.soap; \
+javax.xml.ws.http; \
+javax.xml.ws.soap; \
+javax.xml.ws.spi; \
+javax.xml.ws.spi.http; \
+javax.xml.ws.wsaddressing; \
+javax.xml.xpath; \
+org.ietf.jgss; \
+org.omg.CORBA; \
+org.omg.CORBA_2_3; \
+org.omg.CORBA_2_3.portable; \
+org.omg.CORBA.DynAnyPackage; \
+org.omg.CORBA.ORBPackage; \
+org.omg.CORBA.portable; \
+org.omg.CORBA.TypeCodePackage; \
+org.omg.CosNaming; \
+org.omg.CosNaming.NamingContextExtPackage; \
+org.omg.CosNaming.NamingContextPackage; \
+org.omg.Dynamic; \
+org.omg.DynamicAny; \
+org.omg.DynamicAny.DynAnyFactoryPackage; \
+org.omg.DynamicAny.DynAnyPackage; \
+org.omg.IOP; \
+org.omg.IOP.CodecFactoryPackage; \
+org.omg.IOP.CodecPackage; \
+org.omg.Messaging; \
+org.omg.PortableInterceptor; \
+org.omg.PortableInterceptor.ORBInitInfoPackage; \
+org.omg.PortableServer; \
+org.omg.PortableServer.CurrentPackage; \
+org.omg.PortableServer.POAManagerPackage; \
+org.omg.PortableServer.POAPackage; \
+org.omg.PortableServer.portable; \
+org.omg.PortableServer.ServantLocatorPackage; \
+org.omg.SendingContext; \
+org.w3c.dom; \
+org.w3c.dom.bootstrap; \
+org.w3c.dom.events; \
+org.w3c.dom.ls; \
+org.xml.sax; \
+org.xml.sax.ext; \
+org.xml.sax.helpers; \
+org.glassfish.hk2.v3.admin; \
+org.glassfish.hk2.naming.impl; \
+org.glassfish.grizzly.http.server.res; \
+org.glassfish.hk2.security.ssl; \
+com.sun.org.apache.xerces.internal.jaxp; \
+com.sun.org.apache.xalan.internal.xsltc.trax; \
+com.sun.org.apache.xerces.internal.parsers; \
+com.sun.pkg.client; \
+com.ctc.wstx.stax; \
+com.sun.jmx.remote.protocol.jmxmp; \
+org.glassfish.hk2.security.provider; \
+org.glassfish.hk2.security.auth.realm.file; \
+org.glassfish.hk2.security.auth.realm.certificate; \
+org.glassfish.hk2.security; \
+com.sun.faces.config; \
+com.sun.jersey.server.impl.container.servlet; \
+org.apache.jasper.runtime; \
+com.sun.xml.ws.transport.http.servlet; \
+org.apache.jasper.servlet; \
+                    resolution:=optional
+                            </Import-Package>
+                            <Bundle-Description>${project.description}</Bundle-Description> 
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

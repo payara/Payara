@@ -1,0 +1,85 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage 
+    setResourceBundle(key="common" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="help_web" bundle="org.glassfish.common.admingui.Helplinks")
+    />
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{common.monitoring.Title}" >
+<!define name="content">
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18n.commonTasks.group.Monitoring}"
+               helpText="$resource{common.monitoringInfo.pageHelp}" />
+    "<br />
+#include "/common/shared/monitorHandlers.inc"
+    <sun:table id="monitorInstancesTable" title="$resource{i18n.commonTasks.group.Monitoring}">
+        <sun:tableRowGroup id="rowGroup1" data={"$pageSession{listOfRows}"} sourceVar="td">
+            <!beforeCreate
+                gfr.getMonitoringTable();
+            />
+            <sun:tableColumn headerText="$resource{i18n.instanceValues.colInstanceName}" sort="instanceName" rowHeader="$boolean{true}" id="col0">
+                <sun:hyperlink id="instanceName" text="#{td.value.instanceName}" url="#{td.value.instanceLink}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18n.instanceValues.colClusterName}" sort="clusterName" rowHeader="$boolean{true}" id="col1">
+                <sun:hyperlink id="clusterName" text="#{td.value.clusterName}" rendered="#{td.value.isCluster}" url="#{td.value.clusterLink}" />
+                <sun:staticText id="noValue" text="$resource{i18n.common.NA}" rendered="#{!td.value.isCluster}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18n.common.Action}" rowHeader="$boolean{true}" id="col2">
+                <sun:hyperlink id="actionLink" text="$resource{i18n.common.configMonitor}" url="#{td.value.actionLink}" />
+            </sun:tableColumn>
+            <sun:tableColumn headerText="$resource{i18n.commonTasks.task.monitor}" rowHeader="$boolean{true}" id="col3">
+                <sun:hyperlink url="#{td.value.appMonitor}" text="$resource{i18n.common.Application}" />
+                <sun:staticText text=",   " />
+                <sun:hyperlink url="#{td.value.serverMonitor}" text="$resource{i18n.common.Server}" />
+                <sun:staticText text=",   " />
+                <sun:hyperlink url="#{td.value.resMonitor}" text="$resource{i18n.common.Resources}" />
+            </sun:tableColumn>
+        </sun:tableRowGroup>
+
+    </sun:table>
+    <sun:hidden id="helpKey" value="$resource{help_web.monitoringInfo}" />
+</sun:form>
+</define>
+</composition>

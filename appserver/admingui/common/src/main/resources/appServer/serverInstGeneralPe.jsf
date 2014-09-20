@@ -1,0 +1,212 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- appServer/serverInstGeneralPe.jsf -->
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="i18core" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.instance.GeneralTitle}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="PE" value="#{false}");
+        setPageSessionAttribute(key="instanceName" value="server");
+        setSessionAttribute(key="serverInstTabs" value="general");
+        setPageSessionAttribute(key="pageName" value="common/appServer/serverInstGeneralPe.jsf");
+        setPageSessionAttribute(key="selfPage" value="/common/appServer/serverInstGeneralPe.jsf");
+        if ("#{sessionScope.restartRequired}"){
+                setPageSessionAttribute(key="statusString" value="$resource{i18nc.status.REQUIRES_RESTART} $resource{i18nc.status.image.REQUIRES_RESTART} ");
+        }
+        if ("!(#{sessionScope.restartRequired})"){
+                setPageSessionAttribute(key="statusString" value="$resource{i18nc.status.RUNNING} $resource{i18nc.status.image.RUNNING} ");
+        }
+        gf.getEntityAttrs(endpoint="#{sessionScope.REST_URL}/servers/server/#{pageSession.instanceName}", valueMap="#{pageSession.vMap}");
+        if (#{sessionScope.secureAdminEnabled}) {
+            setPageSessionAttribute(key="secureAdminString" value="$resource{i18core.common.Enabled}");
+        }
+        if (!#{sessionScope.secureAdminEnabled}) {
+            setPageSessionAttribute(key="secureAdminString" value="$resource{i18core.inst.notEnabled}");
+        }
+    />
+    </event>
+    <sun:form id="propertyForm">
+#include "/common/appServer/serverInstTabs.inc"
+        <!-- Page Title -->
+        <sun:title id="propertyContentPage" title="$resource{i18n.instance.GeneralTitle}" >
+                <sun:button id="stopInstance" text="$resource{i18n.button.Stop}" disabled="#{false}" primary="#{false}"
+                onClick="if ( getConfirm(this, '$resource{i18n.msg.JS.confirmStopInstance}') )
+                          { return submitAndDisable(this, '$resource{i18n.button.Processing}', target='_top');}
+                            else {return false;} " >
+                     <!command
+                        gf.redirect("#{facesContext.externalContext.requestContextPath}/common/appServer/shutdown.jsf");
+                    />
+                </sun:button>
+
+                <sun:button id="restartInstance" text="$resource{i18n.button.Restart}" disabled="#{false}" primary="#{false}"
+                onClick="if ( getConfirm(this, '$resource{i18n.msg.JS.confirmRestartInstance}') )
+                          { return submitAndDisable(this, '$resource{i18n.button.Processing}', target='_top');}
+                            else {return false;} " >
+                     <!command
+                        gf.redirect("#{facesContext.externalContext.requestContextPath}/common/appServer/restart-2.jsf");
+                 />
+                </sun:button>
+
+
+                <sun:button id="logViewer" text="$resource{i18n.button.logViewer}"  primary="#{false}"
+                    onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewer.jsf?instanceName=#{instanceName}&loglevel=INFO&viewResults=true','LogViewerWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
+                />
+                <sun:button id="logViewerRaw" text="$resource{i18n.button.logViewerRaw}"  primary="#{false}"
+                    onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/common/logViewer/logViewerRaw.jsf?instanceName=#{instanceName}','LogViewerRawWindow','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
+                />
+                <sun:button id="rotateLog" text="$resource{i18n.button.rotateLog}" primary="#{false}"
+                    onClick="if ( getConfirm(this, '$resource{i18nc.msg.JS.confirmRotateLog}') )
+                    { return submitAndDisable(this, '$resource{i18n.button.Processing}', target='_top');}
+                        else {return false;} " >
+                <!command
+                    createMap(result="#{requestScope.map}");
+                    mapPut(map="#{requestScope.map}", key="target", value="server");
+                    gf.restRequest(
+                        endpoint="#{sessionScope.REST_URL}/rotate-log"
+                        attrs="#{requestScope.map}"
+                        method="POST"
+                        result="#{pageSession.props}"); 
+                gf.redirect("#{pageSession.selfPage}");/>
+
+                </sun:button>
+                <sun:button id="recoverTrans" text="$resource{i18n.button.recoverTrans}" primary="#{false}">
+                <!command
+                    gf.redirect(page="serverRecoverTransactions.jsf?instanceName=#{pageSession.instanceName}");
+                />
+                </sun:button>
+
+                <sun:button id="secureAdmin" text="$resource{i18nc.button.secureAdmin}" primary="#{false}">
+                <!command
+                    setSessionAttribute(key="secureCancelUrl" value="#{facesContext.externalContext.requestContextPath}/common/appServer/serverInstGeneralPe.jsf")
+                    gf.redirect(page="securityAdmin.jsf");
+                />
+                </sun:button>
+        </sun:title>
+
+                        <!-- PropertySheet .... -->
+        <sun:propertySheet id="propertySheet" >
+
+            <!-- Text Field section -->
+            <sun:propertySheetSection id="serverGeneralPropSheet">
+                <!afterCreate
+                    getClientId(component="$this{component}" clientId=>$attribute{sheetId});
+                />
+                <sun:property id="hostName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.serverName}" >
+                    <sun:staticText id="hostName" text="server" />
+                </sun:property>
+
+                <sun:property id="statusProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.status}">
+                    <h:panelGroup id="statusRestart" rendered="#{sessionScope.restartRequired}">
+                        <sun:hyperlink id="restartLink"
+                                       text="$resource{i18nc.status.REQUIRES_RESTART}"
+                                       toolTip="$resource{i18nc.status.REQUIRES_RESTART}"
+                                       onMouseOver="window.status='$resource{i18nc.status.REQUIRES_RESTART}'; return true"
+                                       onMouseOut="window.status=''; return true"
+                                       onBlur="window.status=''; return true"
+                                       onFocus="window.status='$resource{i18nc.status.REQUIRES_RESTART}'; return true"
+                                       url="#{request.contextPath}/common/appServer/restart.jsf">
+                        </sun:hyperlink>
+                        "&#160;
+                        <sun:image id="alertImage" alt="$resource{i18nc.status.REQUIRES_RESTART}" icon="ALERT_WARNING_MEDIUM"/>
+                    </h:panelGroup>
+
+                    <sun:staticText id="status" rendered="#{!sessionScope.restartRequired}" text="$resource{i18nc.status.RUNNING} $resource{i18nc.status.image.RUNNING}" />
+                </sun:property>
+
+                <sun:property id="jvmProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.JVMLabel}">
+                    <sun:hyperlink id="jvmlink" text="$resource{i18nc.inst.jvmReport}"
+                        onClick="javascript:
+                        var jvmWin = window.open('#{request.contextPath}/common/appServer/jvmReport.jsf?reportType=summary&instanceName=#{instanceName}','JVMReport','width='+(screen.width-300)+',height='+(screen.height-100)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');
+                        jvmWin.focus(); return false;" />
+                </sun:property>
+
+                <sun:property id="configProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.ConfigurationLabel}">
+                    <sun:hyperlink id="configuration" text="#{pageSession.vMap['configRef']}"  url="#{request.contextPath}/common/configuration/configuration.jsf?configName=#{pageSession.vMap['configRef']}" />
+
+                </sun:property>
+
+                <sun:property id="installProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.installDirLabel}">
+                    <sun:staticText id="baseRootDir" text="#{sessionScope.baseRootDir}"/>
+                </sun:property>
+
+
+                <sun:property id="versionProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.versionLabel}">
+                    <sun:staticText id="version" text="#{sessionScope.appServerVersion}"/>
+                </sun:property>
+
+                <sun:property id="secureAdminProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.security.secureLabel}">
+                    <sun:staticText id="secureAdminEnabled" text="#{pageSession.secureAdminString}"/>
+                </sun:property>
+
+                <sun:property id="debugProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.debugLabel}">
+                    <sun:staticText id="debugEnabled" text="#{sessionScope.debugInfo}"/>
+                </sun:property>
+                <sun:property id="upTimeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.inst.upTimeLabel}">
+                    <!beforeCreate
+                        gf.restRequest(
+                        endpoint="#{sessionScope.REST_URL}/uptime"
+                        method="GET"
+                        result="#{requestScope.upTimeResult}");
+                        convertMillisToReadable(milliseconds="#{requestScope.upTimeResult.data.properties.milliseconds}"
+                            readableString=>$attribute{formattedUpTime});
+                    />
+                    <sun:staticText id="debugEnabled" text="#{formattedUpTime}"/>
+                </sun:property>
+            </sun:propertySheetSection>
+            <event>
+                <!afterCreate
+                    getUIComponent(clientId="#{sheetId}"  component=>$attribute{component})
+                    includeIntegrations(type="org.glassfish.admingui:serverInstGeneralPe" root="#{component}");
+                />
+            </event>
+        </sun:propertySheet>
+
+        <sun:hidden id="helpKey" value="$resource{help_common.serverInstGeneralPe}" />
+    </sun:form>
+</define>
+</composition>

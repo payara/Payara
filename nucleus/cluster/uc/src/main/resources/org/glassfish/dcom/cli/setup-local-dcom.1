@@ -1,0 +1,109 @@
+asadmin Utility Subcommands                             setup-local-dcom(1)
+
+NAME
+       setup-local-dcom - sets up DCOM on a host
+
+SYNOPSIS
+           setup-local-dcom [--help] [--verbose={false|true}]
+           --force={false|true}
+
+DESCRIPTION
+       The setup-local-dcom subcommand sets up the Distributed Component
+       Object Model (DCOM) remote protocol on the host where the subcommand is
+       run. The DCOM remote protocol is available only on Windows systems.
+
+       This subcommand must be run by the operating-system-level administrator
+       user on the host where DCOM is being set up. Before running this
+       command, ensure that items in the Windows operating system are set as
+       described in "Windows Operating System Settings" in Oracle GlassFish
+       Server High Availability Administration Guide.
+
+       Setting up DCOM on a host ensures that scripts can be run on the host
+       from a remote host. To run scripts on the host from a remote host, the
+       Windows user must be allowed full control over some Windows registry
+       keys.
+
+       In some versions of Windows, only the user NT SERVICE\TrustedInstaller
+       has full control over these Windows registry keys. If the version of
+       Windows on a host is configured in this way, this subcommand modifies
+       these keys to allow full control over them for the Windows user.
+
+           Caution
+           
+           This subcommand might modify the permissions of some keys in the 
+           Windows registry Before running this command, back up the Windows‚
+           registry. 
+
+       By default, the subcommand prompts you to confirm that you want to
+       update the Windows registry. To run the subcommand without being
+       prompted, set the --force option to true.
+
+       This subcommand is supported in local mode only.
+
+OPTIONS
+       --help, -?
+           Displays the help text for the subcommand.
+
+       --verbose, -v
+           Specifies whether the subcommand displays information about the
+           operations that are performed to set up DCOM on the host.
+
+           Possible values are as follows:
+
+           false
+               No information about the operations that are performed to set
+               up DCOM is displayed (default).
+
+           true
+               The subcommand displays information about the operations that
+               are performed to set up DCOM on the host.
+
+       --force, -f
+           Specifies whether the subcommand prompts you to confirm that you
+           want to update the Windows registry.
+
+           Possible values are as follows:
+
+           false
+               You are prompted to confirm that you want to update the Windows
+               registry (default).
+
+           true
+               The subcommand forcibly updates the Windows registry without
+               prompting you.
+
+EXAMPLES
+       Example 1 Setting Up DCOM on a Host
+       
+       This example sets up DCOM on the host where the subcommand is run.
+
+       asadmin> setup-local-dcom
+       Caution: This command might modify the permissions of some keys in the Windows registry.
+       Before running this command, back up the Windows registry.
+       The modification allows the Windows user full control over these keys.
+
+       Are you sure that you want to edit the Windows registry? If so, type yes in full: yes
+       Command setup-local-dcom executed successfully.
+
+       Example 2 Forcibly Setting Up DCOM on a Host
+
+       This example sets up DCOM without prompting for confirmation that the
+       user wants to update the Windows registry.
+
+       asadmin> setup-local-dcom --force=true
+       Command setup-local-dcom executed successfully.
+
+EXIT STATUS
+       0
+           command executed successfully
+
+       1
+           error in executing the command
+
+SEE ALSO
+       asadmin(1M)
+
+       "Windows Operating System Settings" in Oracle GlassFish Server High
+       Availability Administration Guide
+
+Java EE 6           Last change: 10 Feb 2012

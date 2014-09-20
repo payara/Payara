@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.bea.com/ns/weblogic/90/diagnostics/image" elementFormDefault="qualified" attributeFormDefault="unqualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="logging-image-sourceType">
+    <xs:sequence>
+      <xs:element name="log-entry" maxOccurs="unbounded" type="imag:log-entryType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="log-entryType">
+    <xs:sequence>
+      <xs:element name="formatted-date" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="message-id" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="machine-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="server-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="thread-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="user-id" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="transaction-id" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="severity" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="subsystem" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="timestamp" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="log-message" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="stack-trace" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="diagnostic-context-id" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="successful-image-sourceType">
+    <xs:sequence>
+      <xs:element name="image-source" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="image-capture-elapsed-time" type="xs:long" minOccurs="0" nillable="false"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="column-dataType">
+    <xs:complexContent>
+      <xs:extension base="imag:name-value-pairType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="name-value-pairType">
+    <xs:sequence>
+      <xs:element name="name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="value" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="instrumentation-eventType">
+    <xs:sequence>
+      <xs:element name="column-data" maxOccurs="unbounded" type="imag:column-dataType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="image-summaryType">
+    <xs:sequence>
+      <xs:element name="image-creation-date" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="image-file-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="image-creation-elapsed-time" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="image-capture-cancelled" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="server-release-info" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="server-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="muxer-class" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="system-property" maxOccurs="unbounded" type="imag:system-propertyType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+      <xs:element name="successful-image-source" maxOccurs="unbounded" type="imag:successful-image-sourceType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+      <xs:element name="failed-image-source" maxOccurs="unbounded" type="imag:failed-image-sourceType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+      <xs:element name="requester-thread-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="requester-user-id" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="request-stack-trace" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="system-propertyType">
+    <xs:complexContent>
+      <xs:extension base="imag:name-value-pairType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="failed-image-sourceType">
+    <xs:sequence>
+      <xs:element name="image-source" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="failure-exception-stack-trace" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="jvm-runtimeType">
+    <xs:sequence>
+      <xs:element name="object-pending-finalization-count" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="heap-memory-used-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="heap-memory-max-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="heap-memory-init-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="heap-memory-committed-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="non-heap-memory-used-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="non-heap-memory-max-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="non-heap-memory-init-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="non-heap-memory-committed-bytes" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="thread-count" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="peak-thread-count" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="total-started-thread-count" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="daemon-thread-count" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="thread-contention-monitoring-supported" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="thread-contention-monitoring-enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="current-thread-cpu-time" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="current-thread-user-time" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="thread-cpu-time-supported" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="current-thread-cpu-time-supported" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="thread-cpu-time-enabled" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="running-jvm-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="management-spec-version" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="vm-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="vm-vendor" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="vm-version" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="spec-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="spec-vendor" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="spec-version" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="class-path" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="library-path" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="boot-class-path" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="uptime" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="start-time" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="boot-class-path-supported" type="xs:boolean" minOccurs="0" nillable="false"/>
+      <xs:element name="os-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="os-version" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="os-arch" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="os-available-processors" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="loaded-class-count" type="xs:int" minOccurs="0" nillable="false"/>
+      <xs:element name="total-loaded-class-count" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="unloaded-class-count" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="thread-dump" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="instrumentation-image-sourceType">
+    <xs:sequence>
+      <xs:element name="instrumentation-event" maxOccurs="unbounded" type="imag:instrumentation-eventType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="harvester-image-sourceType">
+    <xs:sequence>
+      <xs:element name="harvester-cycle-start-time" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="harvester-cycle-duration-nanos" type="xs:long" minOccurs="0" nillable="false"/>
+      <xs:element name="harvester-sample" maxOccurs="unbounded" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="watch-alarm-stateType">
+    <xs:sequence>
+      <xs:element name="watch-name" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="alarm-reset-type" type="xs:string" minOccurs="0" nillable="true"/>
+      <xs:element name="alarm-reset-period" type="xs:string" minOccurs="0" nillable="true"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="watch-image-sourceType">
+    <xs:sequence>
+      <xs:element name="watch-alarm-state" maxOccurs="unbounded" type="imag:watch-alarm-stateType" minOccurs="0" nillable="true" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="logging-image-source" type="imag:logging-image-sourceType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+  <xs:element name="image-summary" type="imag:image-summaryType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+  <xs:element name="jvm-runtime" type="imag:jvm-runtimeType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+  <xs:element name="instrumentation-image-source" type="imag:instrumentation-image-sourceType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+  <xs:element name="harvester-image-source" type="imag:harvester-image-sourceType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+  <xs:element name="watch-image-source" type="imag:watch-image-sourceType" xmlns:imag="http://www.bea.com/ns/weblogic/90/diagnostics/image"/>
+</xs:schema>

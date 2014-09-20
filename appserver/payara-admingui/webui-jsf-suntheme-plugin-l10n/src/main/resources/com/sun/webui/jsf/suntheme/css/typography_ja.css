@@ -1,0 +1,389 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+/* CSS Document */
+
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:75%;
+}
+TABLE, TH, TD, P, DIV, SPAN, INPUT, BUTTON, SELECT, TEXTAREA, FORM, B, STRONG, LABEL, I, U, H1, H2, H3, H4, H5, H6, DL, DD, DT, UL, LI, OL, OPTION, OPTGROUP, A {
+	font-size:100%;
+}
+H1, H2, H3, H4, H5, H6 {
+	font-weight:bold;
+}
+H1 {
+	font-size:1.7em;
+}
+H2 {
+	font-size:1.4em;
+}
+H3 {
+	font-size:1.3em;
+}
+H4 {
+	font-size:1.2em;
+}
+H5, H6 {
+	font-size:1.0em;
+}
+input, select {
+	font-size:1.0em;
+}
+strong {
+	font-size:1.0em;
+	font-weight:bold;
+}
+
+/* ADDREMOVE [originalName: ADD-REMOVE-IDIOM]*/
+.AddRmvLbl_sun4, .AddRmvLbl2_sun4 {
+	font-size:1.0em;
+	font-weight:bold;
+}
+/*---*/
+
+/* BREADCRUMBS */
+a.BcmLnk_sun4 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* BUTTONS */
+.Btn1_sun4, .Btn1Hov_sun4, .Btn1Dis_sun4, .Btn2_sun4, .Btn2Hov_sun4, .Btn2Dis_sun4, .Btn1Mni_sun4, .Btn1MniHov_sun4, .Btn1MniDis_sun4, .Btn2Mni_sun4, .Btn2MniHov_sun4, .Btn2MniDis_sun4 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* FILE CHOOSER */
+.ChoLstHdr_sun4 {
+	font-size:1.0em;
+	font-weight: bold;
+}
+.ChoSrvTxt_sun4 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* PAGEALERT [originalName: FULL ALERTS]*/
+.FulAlrtHdrTxt_sun4, .FulAlrtMsgTxt_sun4 {
+	font-size:1.0em;
+}
+.FulAlrtHdrTxt_sun4 {
+	font-weight:bold;
+} 
+/*---*/
+
+/* INLINE ALERT */
+.inlineAlert_4_sun4 .middle_sun4 .details_sun4 {
+	font-size:1.0em;
+}
+.inlineAlert_4_sun4 .middle_sun4 .header_sun4 .label_sun4 {
+	font-size:1.2em;
+	font-weight:bold;
+}
+/*---*/
+
+/* HELP WINDOW */
+body.HlpBdy_sun4 h1, body.HlpBdy_sun4 h2, body.HlpBdy_sun4 h3, body.HlpBdy_sun4 h4, body.HlpBdy_sun4 h5, body.HlpBdy_sun4 h6 {
+	font-family:sans-serif;
+	font-weight:bold;
+}
+body.HlpBdy_sun4 h1 {
+	font-size:1.5em;
+}
+body.HlpBdy_sun4 h2 {
+	font-size:1.3em;
+}
+body.HlpBdy_sun4 h3 {
+	font-size:1.2em;
+}
+body.HlpBdy_sun4 h4 {
+	font-size:1.1em;
+}
+body.HlpBdy_sun4 h5, H6 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* HELPINLINE [originalName: INLINE HELP] */
+.inlineFieldHelp_sun4, a.HlpFldLnk_sun4 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* EDITABLE LIST */
+table.EdtLstTbl_sun4 td.EdtLstRmvLblTd_sun4 span.LblLev2Txt_sun4,
+table.EdtLstTbl_sun4 td.EdtLstAddLblTd_sun4 span.LblLev2Txt_sun4 {
+	font-weight: bold;
+	font-size:1.0em;
+}
+/*---*/
+/* LABEL [originalName: GENERIC FIELD LABELS]*/
+
+.LblLev2Txt_sun4, .LblLev2smTxt_sun4, .LblRqdDiv_sun4, .LblLev3Txt_sun4, .LblLev3TxtDis_sun4 {
+	font-size:1.0em;
+}
+.LblLev1Txt_sun4 {
+	font-size:1.3em;
+}
+.LblLev1Txt_sun4, .LblLev2Txt_sun4, .LblLev2smTxt_sun4,
+.LblLev1TxtDis_sun4, .LblLev2TxtDis_sun4, .LblLev2smTxtDis_sun4, .LblLev3Txt_sun4, .LblLev3TxtDis_sun4 {
+	font-weight:bold;
+}
+/*---*/
+
+/* LEFT PANE HELP */
+.LftHlpDiv_sun4 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* LISTS */
+.LstOptSel_sun4, 
+.LstOptSep_sun4, 
+.LstOptGrp_sun4, 
+.LstDis_sun4 .LstOptGrp_sun4 {
+	font-size:1.0em;
+}
+
+/* Use fixed font size in listboxes with mono-spaced fonts */
+.LstMno_sun4 .LstOptGrp_sun4, 
+.LstMnoDis_sun4 .LstOptGrp_sun4, 
+.LstMno_sun4, 
+.LstMno_sun4 option, 
+.LstMno_sun4 .LstOptGrp_sun4, 
+.LstMnoDis_sun4, 
+.LstMnoDis_sun4 option, 
+.LstMnoDis_sun4 .LstOptGrp_sun4  {
+	font-size:11px;
+}
+
+.LstOptGrp_sun4, .LstDis_sun4 .LstOptGrp_sun4, .LstMno_sun4 .LstOptGrp_sun4, .LstMnoDis_sun4 .LstOptGrp_sun4 {
+	font-weight:normal;
+	font-style:normal;
+}
+.LstMno_sun4, .LstMno_sun4 option, .LstMno_sun4 .LstOptGrp_sun4, .LstMnoDis_sun4, .LstMnoDis_sun4 option, .LstMnoDis_sun4 .LstOptGrp_sun4  {
+	font-family:monospace;
+}
+/*---*/
+
+/* PROPERTY SHEET */
+.ConFldSetLgdDiv_sun4 {
+	font-size:1.1em;
+}
+.ConSubSecTtlTxt_sun4 {
+	font-size:1.5em;
+	font-weight:bold;
+}
+.ConFldSetLgdDiv_sun4, .ConErrLblTxt_sun4, .ConWrnLblTxt_sun4 {
+	font-weight:bold;
+}
+.ConJmpTopDiv_sun4, a.JmpLnk_sun4 {
+	font-size:1.0em;
+}
+/*---*/
+
+/* CONTENTPAGETITLE [originalName: PAGE TITLE]*/
+.TtlVewLbl_sun4 {
+	font-weight:bold;
+}
+.TtlTxt_sun4 {
+	font-size:1.5em;
+	font-weight:bold;
+}
+/*---*/
+
+/* TEXTAREA*/
+.TxtAra_sun4, .TxtAraDis_sun4 {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:1.0em;
+}
+/*---*/
+
+/* TABSET [originalName: LEVEL TABS]*/
+.Tab1Div_sun4, .Tab2Div_sun4, .Tab3Div_sun4, .MniTabDiv_sun4, .TabGrpBox_sun4 {
+	font-size:1.0em;
+}
+.Tab1Div_sun4, .Tab2Div_sun4, .Tab3Div_sun4, .MniTabDiv_sun4 {
+	font-weight:bold;
+}
+/*---*/
+
+/* SCHEDULER/POPUP CALENDAR*/
+a.DatLnk_sun4:hover, a.DatOthLnk_sun4:hover, .DatLblTxt_sun4, a.DatBldLnk_sun4:link, a.DatBldLnk_sun4:visited, a.DatCurLnk_sun4:link,
+ a.DatCurLnk_sun4:visited, a.DatCurLnk_sun4:hover, a.DatOthBldLnk_sun4:link, a.DatOthBldLnk_sun4:visited, .DatSelContent_sun4 {
+	font-weight:bold;
+}
+.DatDayHdrTxt_sun4 {
+	font-weight:normal;
+}
+a.DatLnk_sun4, a.DatBldLnk_sun4, a.DatOthLnk_sun4, a.DatOthBldLnk_sun4, a.DatCurLnk_sun4, .DatDayHdrTxt_sun4, .DatSelContent_sun4 {
+	font-size:1.1em;
+}
+.DatZonTxt_sun4 {
+	font-size:1.0em;
+}
+.CalPopDiv_sun4 a.DatLnk_sun4, .CalPopDiv_sun4 a.DatBldLnk_sun4, .CalPopDiv_sun4 a.DatOthLnk_sun4, .CalPopDiv_sun4 a.DatOthBldLnk_sun4,
+.CalPopDiv_sun4 a.DatCurLnk_sun4, .CalPopDiv_sun4 .DatDayHdrTxt_sun4, .CalPopDiv_sun4 .DatSelContent_sun4 {
+	font-size:1.0em;
+}
+.CalPopDiv_sun4  a.DatCurLnk_sun4:link,.CalPopDiv_sun4 a.DatCurLnk_sun4:visited, .CalPopDiv_sun4 a.DatBldLnk_sun4:link,.CalPopDiv_sun4 a.DatBldLnk_sun4:visited,
+.CalPopDiv_sun4 a.DatOthBldLnk_sun4:link,.CalPopDiv_sun4 a.DatOthBldLnk_sun4:visited, .CalPopDiv_sun4 .DatDayHdrTxt_sun4 {
+	font-weight:bold;
+}
+/*---*/
+
+/* MASTHEAD */
+span.MstLbl_sun4, span.MstUsrRole_sun4 {
+	font-weight:bold;
+	font-size:1.0em;
+}
+span.MstTxt_sun4 {
+	font-weight:normal;
+	font-size:1.0em;
+}
+a.MstPrgLnk_sun4, a.MstAlmLnk_sun4 {
+	font-size:1.0em;
+	font-weight:bold;
+}
+/*---*/
+
+/* TABLE [originalName: ACTION TABLE] */
+.TblTtlTxt_sun4 {
+	font-size:1.0em;
+	font-weight:bold;
+}
+.TblTtlMsgSpn_sun4 {
+	font-weight:normal;
+}
+.TblHdrTxt_sun4, .TblMultHdrTxt_sun4, .TblGrpTxt_sun4 {
+	font-weight:bold;
+}
+table.Tbl_sun4 th {font-weight:normal}
+table.Tbl_sun4 th.TblMultColHdr_sun4 a.TblHdrLnk_sun4:link, table.Tbl_sun4 th.TblMultColHdr_sun4 a.TblHdrLnk_sun4:visited {font-weight:normal;}
+table.Tbl_sun4 th.TblMultColHdr_sun4 .TblHdrTxt_sun4 {font-weight:normal;}
+table.Tbl_sun4 th.TblMultColHdrSrt_sun4 a.TblHdrLnk_sun4:link, table.Tbl_sun4 th.TblMultColHdrSrt_sun4 a.TblHdrLnk_sun4:visited {font-weight:normal;}
+.TblActLbl_sun4 {font-weight:bold;}
+table.Tbl_sun4 th.TblColHdrSrtSel_sun4 a.TblHdrImgLnk_sun4:link, th.TblColHdrSrtSel_sun4 a.TblHdrImgLnk_sun4:visited {font-weight:bold;}
+table.Tbl_sun4 a.TblHdrLnk_sun4:link, table.Tbl_sun4 a.TblHdrLnk_sun4:visited {font-weight:bold;}
+table.Tbl_sun4 a.TblHdrLnk_sun4:hover {font-weight:bold;}
+table.Tbl_sun4 th.TblColHdrSrt_sun4 a.TblHdrLnk_sun4:link, table.Tbl_sun4 th.TblColHdrSrt_sun4 a.TblHdrLnk_sun4:visited {font-weight:bold;}
+table.Tbl_sun4 th.TblColHdrSrt_sun4 a.TblHdrLnk_sun4:hover {font-weight:bold;}
+table.Tbl_sun4 th.TblColHdrSrt_sun4 a.TblHdrImgLnk_sun4:link, table.Tbl_sun4 th.TblColHdrSrt_sun4 a.TblHdrImgLnk_sun4:visited {font-weight:bold;}
+table.Tbl_sun4 .TblHdrSrtNum_sun4 {font-size:.9em;font-weight:normal;}
+.TblGrpTxt_sun4 {font-weight:bold;}
+.TblColFtrTxt_sun4 {font-weight:bold;}
+table.Tbl_sun4 .TblFtrRowTxt_sun4 {font-weight:bold;}
+table.Tbl_sun4 .TblFtrLft_sun4 {font-weight:bold;}
+.TblGrpColFtrTxt_sun4 {font-weight:bold;}
+.TblGrpFtrRowTxt_sun4 {font-weight:bold;}
+.TblPnlTtl_sun4 {
+	font-size:1.2em;
+	font-weight:bold;
+}
+.TblPnlHlpTxt_sun4 {font-size:1.0em;}
+/*---*/
+
+/* LIGHTWEIGHT TABLE DESIGN */
+/* Table Caption/Title */
+table.TblLt_sun4 caption.TblTtlTxt_sun4 {font-weight:bold;font-size:1.0em;}
+table.TblLt_sun4 caption.TblTtlTxt_sun4 span.TblTtlTxtSpn_sun4 {font-weight:bold;font-size:1.0em;}
+table.TblLt_sun4 caption.TblTtlTxt_sun4 span.TblTtlMsgSpn_sun4 {font-weight:normal;font-size:1.0em;}
+/* Table Footers */ 
+table.TblLt_sun4 .TblFtrRowTxt_sun4 {font-weight:normal;}
+/*---*/
+
+/* TREE */
+.Tree_sun4 {
+	font-size:1.0em;
+}
+.TreTtl_sun4 {
+	font-weight:bold;
+}
+a.TreeParentLink_sun4:link, a.TreeParentLink_sun4:visited {
+	font-weight:bold;
+}
+a.TreeParentLink_sun4:hover {
+	font-weight:bold;
+}
+a.TreeSelLink_sun4:link, a.TreeSelLink_sun4:visited {
+	font-weight:bold;
+}
+a.TreeSelLink_sun4:hover {
+	font-weight:bold;
+}
+.TreeSelText_sun4 {
+	font-weight:bold;
+}
+/*---*/
+
+/* VERSION DIALOG */
+.VrsHdrTxt_sun4 {
+	font-size:1.3em;
+	font-weight:bold;
+} 
+.VrsTxt_sun4 {
+	font-size:1.1em;
+} 
+/*---*/
+
+/* WIZARD */
+.WizStpTitle_sun4, .WizStpTxt_sun4, .WizHlpTxt_sun4, .WizStpCurTxt_sun4, a.WizStpLnk_sun4, .WizSubStpTtlTxt_sun4, .WizCntHlpTxt_sun4 {
+	font-size:1.0em;
+}
+.WizTtlBar_sun4 {
+	font-size:1.3em;
+	font-weight:bold;
+}
+.WizStpTxt_sun4 {
+	font-weight:normal;
+}
+.WizStpTitle_sun4 {
+        font-weight:bold;
+}
+.WizSubStpTtlTxt_sun4, .WizStpCurTxt_sun4 {
+	font-weight:bold;
+}
+.WizSubTtlTxt_sun4 {
+	font-weight:bold;
+	font-size:1.4em;
+}
+/*---*/

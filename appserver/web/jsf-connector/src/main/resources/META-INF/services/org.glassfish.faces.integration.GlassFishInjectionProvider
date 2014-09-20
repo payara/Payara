@@ -1,0 +1,6 @@
+# Hack to make GlassFishInjectionProvider visible globally in GFv3,
+# so that javax.faces.jar can discover it from webapp classloaders.
+#
+# When HK2 sees the service discovery pattern, it exposes the classes
+# to all the modules in the habitat (AKA class loader punch-in)
+org.glassfish.faces.integration.GlassFishInjectionProvider

@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.glassfish.main.appclient</groupId>
+        <artifactId>client</artifactId>
+        <version>4.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>acc-config</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
+    <name>ACC Config Classes (JAXB)</name>
+    
+    <!--
+        This module contains classes for the app client configuration
+        XML, generated using JAXB from sun-application-client-container_x_y.dtd.
+    -->
+
+    <properties>
+        <extracted-dtd-root>temp</extracted-dtd-root>
+        <extracted-dtd-top-level-directory>${extracted-dtd-root}/glassfish</extracted-dtd-top-level-directory>
+        <extracted-dtd-directory>${extracted-dtd-top-level-directory}/lib/dtds</extracted-dtd-directory>
+        <dtd-for-jaxb-compilation>glassfish-application-client-container_1_3.dtd</dtd-for-jaxb-compilation>
+        <config-dtd-file>*-application-client-container*.dtd</config-dtd-file>
+        <added-test-classpath>${project.build.directory}/../${extracted-dtd-root}</added-test-classpath>
+<!--
+        <config-xsd-dir>src/main/resources</config-xsd-dir>
+        <config-xsd-file>sun-application-client-container_1_2.xsd</config-xsd-file>
+-->
+        <findbugs.exclude>${project.basedir}/exclude.xml</findbugs.exclude>
+    </properties>
+
+    <developers>
+      <developer>
+            <id>tjquinn</id>
+            <name>Tim Quinn</name>
+            <url>http://blogs.sun.com/quinn</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+		        <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/*.properties</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <!--
+                Extracts the DTD(s) from the
+                deployment/dtds module into a temp file.
+                The "generate" phase will use it to create JAXB classes.  
+                Unit tests use both DTDs for parse testing.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+
+                <executions>
+                  <execution>
+                    <id>unpack-dtd</id>
+                    <phase>initialize</phase> <!-- make sure this is before generate -->
+                    <goals>
+                      <goal>unpack</goal>
+                    </goals>
+                    <configuration>
+                      <artifactItems>
+                        <artifactItem>
+                          <groupId>org.glassfish.main.deployment</groupId>
+                          <artifactId>dtds</artifactId>
+                          <version>${project.version}</version>
+                          <type>zip</type>
+                          <includes>**/${config-dtd-file}</includes>
+                          <overWrite>true</overWrite>
+                          <outputDirectory>${extracted-dtd-root}</outputDirectory>
+                        </artifactItem>
+                      </artifactItems>
+                    </configuration>
+                  </execution>
+                </executions>
+
+
+            </plugin>
+
+            <!--
+                Generates JAXB classes based on the ACC configuration file DTD.
+            -->
+            <plugin>
+                <groupId>org.jvnet.jaxb2.maven2</groupId>
+                <artifactId>maven-jaxb2-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>JAXB-gen-for-glassfish-acc</id>
+                        <goals>
+                            <goal>generate</goal> <!-- must be before compile -->
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <schemaLanguage>DTD</schemaLanguage>
+                    <schemaDirectory>${extracted-dtd-directory}</schemaDirectory>
+<!--
+                    <schemaDirectory>${config-xsd-dir}</schemaDirectory>
+-->
+                    <generatePackage>org.glassfish.appclient.client.acc.config</generatePackage>
+                    <schemaIncludes>
+                        <include>${dtd-for-jaxb-compilation}</include>
+<!--
+                        <include>${config-xsd-file}</include>
+-->
+                    </schemaIncludes>
+                    <bindingDirectory>src/main/resources</bindingDirectory>
+                    <bindingIncludes>
+                        <include>configBindings.xml</include>
+                    </bindingIncludes>
+                </configuration>
+            </plugin>
+
+
+            <!--
+                Adds the temp directory (which holds the extracted DTD) to the
+                directories cleaned by the 'clean' phase.
+            -->
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-extracted-dtd</id>
+                    </execution>
+                </executions>
+                <configuration>
+                  <filesets>
+                    <fileset>
+                      <directory>${extracted-dtd-root}</directory>
+                    </fileset>
+                  </filesets>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                  <additionalClasspathElements>
+                    <additionalClasspathElement>${added-test-classpath}</additionalClasspathElement>
+                  </additionalClasspathElements>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!--
+            We depend on the deployment/dtds module which contains the
+            sun-application-client-container_1_2.dtd and
+            glassfish-application-client-container_1_3.dtd.  We use that for
+            generating JAXB classes but we do not want to package the DTD
+            with the ACC module, nor do we want the ACC module depending on
+            the deploymenet/dtds module at runtime.  Note the scope is "provided"
+            to indicate this.
+        -->
+        <dependency>
+            <scope>provided</scope>
+            <groupId>org.glassfish.main.deployment</groupId>
+            <artifactId>dtds</artifactId>
+            <type>zip</type>
+            <version>${project.version}</version>
+        </dependency>
+   </dependencies>
+</project>

@@ -1,0 +1,138 @@
+/*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2007-2013 Oracle and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * Oracle designates this particular file as subject to the "Classpath"
+ * exception as provided by Oracle in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
+ */
+
+/* Top level div tag */
+.Tbl2_sun4 {
+  /* Styles from old table */
+  -moz-border-radius-topleft:5px; 
+  -moz-border-radius-topright:5px;
+  border-style:solid;
+  border-width:1px;
+  border-color:#A0A3A5; 
+  border-top-color:#35556A; 
+  background-color:#E5E9ED; 
+  color:#000;
+}
+
+/* Title */ 
+.Tbl2Ttl_sun4 {
+  border-bottom-style:solid; 
+  border-bottom-width:1px;
+
+  /* Styles from old table */
+  color:#fff; 
+  background:#36586F url(../images/table/table_titlebar_gradient.gif) bottom left repeat-x;
+  text-align:left; 
+  background-position:5px 5px; 
+  padding:3px 10px 2px 10px;
+  -moz-border-radius-topleft:5px; 
+  -moz-border-radius-topright:5px;
+}
+
+/* Margin */
+.Tbl2Mgn_sun4 {
+  padding:6px;
+}
+
+/* Actions */
+.Tbl2Act_sun4 {
+  /* Styles from old table */
+  vertical-align:middle;
+}
+
+/* Outer div to capture absolutely positioned header/footer */
+.Tbl2Grps_sun4 {
+  position: relative;
+  padding-bottom: 2.9em; /* Must be dynamic */
+  padding-top: 3.1em; /* Must be dynamic */
+  width: 100%; /* Required for IE */
+}
+
+/* Inner div enabling table to scroll */
+.Tbl2Grp_sun4 {
+  overflow: auto;
+}
+
+/* Group header */
+.Tbl2GrpHdr_sun4 {
+  position: absolute;
+  top: 7px;
+  left: 0px;
+}
+.Tbl2GrpHdr_sun4 th {
+  min-height:1.5em;
+}
+.Tbl2GrpHdrTxt_sun4 {
+  float: left;
+}
+.Tbl2GrpHdrRowsTxt_sun4 {
+  float: right;
+}
+
+/* Column header */
+.Tbl2ColHdr_sun4 {
+  position: absolute;
+  top: 1.95em; /* Must be dynamic */
+  left: 0px;
+}
+.Tbl2ColHdr_sun4 th {
+  text-align: left;
+  min-height:1.5em;
+}
+
+/* Column footer */
+.Tbl2ColFtr_sun4 {
+  position: absolute;
+  bottom: 1.35em; /* Must be dynamic */
+  left: 0px;
+}
+.Tbl2ColFtr_sun4 td {
+  min-height:1.5em;
+}
+
+/* Group footer */
+.Tbl2GrpFtr_sun4 {
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+}
+.Tbl2GrpFtr_sun4 td {
+  min-height:1.5em;
+}

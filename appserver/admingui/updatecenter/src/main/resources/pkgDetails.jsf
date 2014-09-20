@@ -1,0 +1,131 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- updateCenter/pkgDetails.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18nUC" bundle="org.glassfish.updatecenter.admingui.Strings");
+    setResourceBundle(key="help_uc" bundle="org.glassfish.updatecenter.admingui.Helplinks");
+/>
+//<sun:page id="page1">
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nUC.pkgDetails.Title}" guiOnLoad="admingui.help.pluginId = 'common';">
+<!define name="content">
+    <event>
+        <!beforeCreate
+            if (! $pageSession{fromPage}){
+                    getRequestValue(key="fromPage" value=>$page{fromPage});
+                }
+                getRequestValue(key="fmriStr" value=>$page{fmriStr});
+                getRequestValue(key="auth" value=>$page{auth});
+                getPkgDetailsInfo(fmriStr="#{fmriStr}" auth="#{auth}" details=>$page{details});
+        />
+    </event>
+
+            <sun:form id="propertyForm">
+        <f:verbatim>
+            <script type="text/javascript">
+                admingui.nav.selectTreeNodeById('form:tree:updateCenter');
+            </script>
+        </f:verbatim>
+#include "/updateCenter/ucTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+        <!-- Page Title -->
+ <sun:title id="propertyContentPage" title="$resource{i18nUC.pkgDetails.Title}" helpText="$resource{i18nUC.pkgDetails.TitleHelp}">
+ <!facet pageButtonsTop>
+    <sun:panelGroup id="topButtons">
+
+        <sun:button id="backButton" text="$resource{i18n.button.Back}" >
+            <!command
+                gf.redirect(page="#{fromPage}");
+            />
+        </sun:button>
+</sun:panelGroup>
+    </facet>
+</sun:title>
+"<br><br>
+<sun:propertySheet id="propertySheet">
+    <sun:propertySheetSection id="propertySectionTextField">
+        <sun:property id="name"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsPkgName}" >
+            <staticText id="name" value="#{details.pkgName}" />
+        </sun:property>
+        
+        <sun:property id="id"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsUid}" >
+            <staticText id="id" value="#{details.uid}" />
+        </sun:property>
+        
+        <sun:property id="category"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsCategory}" >
+            <staticText id="category" value="#{details.category}" />
+        </sun:property>
+        
+        <sun:property id="version"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsVersion}" >
+            <staticText id="versioin" value="#{details.version}" />
+        </sun:property>
+        
+        <sun:property id="size"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsInstalledSize}" >
+            <staticText id="size" value="#{details.bytes}  $resource{i18nUC.detailsBytes}  (#{details.pkgSize})" />
+        </sun:property>
+        
+        <sun:property id="date"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsDate}" >
+            <staticText id="date" value="#{details.date}" />
+        </sun:property>
+        
+        <sun:property id="source"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsSource}" >
+            <staticText id="source" value="#{details.auth}" />
+        </sun:property>
+        
+        <!--
+        <sun:property id="url"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsURL}" >
+            <staticText id="url" value="#{details.url}" />
+        </sun:property>
+        -->
+        
+        <sun:property id="desc"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nUC.detailsDesc}" >
+            <staticText id="desc" value="#{details.desc}" />
+        </sun:property>
+        
+    </sun:propertySheetSection >
+    </sun:propertySheet>
+        
+<sun:hidden id="helpKey" value="$resource{help_uc.uc.pkgDetails}" />
+    </sun:form>
+</define>
+</composition>

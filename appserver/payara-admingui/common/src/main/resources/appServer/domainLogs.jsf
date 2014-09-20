@@ -1,0 +1,172 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- enableSecurityAdmin.jsf -->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domainLogs.PageTitle}"
+	guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/common/appServer/serverInstDomainAttrs.jsf');">
+<!define name="content">
+    <sun:form id="form">
+#include "/common/appServer/domainTabs.inc"
+#include "/common/shared/alertMsg.inc"
+
+        <!-- Page Title -->
+        <sun:title id="propertyContentPage" title="$resource{i18nc.domainLogs.PageTitle}" helpText="$resource{i18nc.domainLogs.PageHelp}">
+            <!facet pageButtonsTop>
+                <sun:panelGroup id="topButtons">
+                    <sun:button id="collectLogFiles" text="$resource{i18n.button.collectLogFiles}"
+                            onClick="return download(event);" >
+					</sun:button>
+                </sun:panelGroup>
+            </facet>
+            
+        </sun:title>
+		<sun:hidden id="targetName" name="targetName" value="#{targetName}">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{targetNameId});
+        />
+		</sun:hidden>
+		<sun:propertySheet id="propertySheetLogResults">
+		    <sun:propertySheetSection id="propertSectionLogResults">
+			<sun:property id="clusterProp" labelAlign="left" noWrap="true" overlapLabel="false" rendered="#{requestScope.clusters.size() != 0}">
+                <sun:radioButton 
+                    id="clusterRB" 
+                    label="$resource{i18n.common.Cluster}"
+                    name="targetType"
+                    selected="#{targetType}"  
+                    selectedValue="cluster"
+                    onChange="$('#{targetNameId}').value = $('#{clusterNameId}').value"/>
+			    <sun:dropDown id="clusterDropDown" selected="#{clusterName}" labels="#{requestScope.clusters}" submitForm="true">
+		        <!afterCreate
+		            getClientId(component="$this{component}" clientId=>$page{clusterNameId});
+		        />
+				<!beforeCreate
+				    /* Get the cluster list */
+				    gf.restRequest(
+					endpoint="#{sessionScope.REST_URL}/clusters/cluster.json"
+					method="GET"
+					result="#{requestScope.resp}");
+                    setAttribute(key="clusters" value="#{requestScope.resp.data.extraProperties.childResources}");
+                    gf.getMapKeys(Map="#{requestScope.resp.data.extraProperties.childResources}" Keys="#{requestScope.clusters}" );
+				/>
+				<!command
+					setAttribute(key="targetType" value="cluster");
+					setAttribute(key="targetName" value="$attribute{clusterName}");
+				    gf.navigate(page="#{request.contextPath}/common/appServer/domainLogs.jsf");
+				/>
+			    </sun:dropDown>
+			</sun:property>
+			<sun:property id="instanceProp" labelAlign="left" noWrap="true" overlapLabel="false">
+                <sun:radioButton 
+                    id="instanceRB" 
+                    name="targetType"  
+                    label="$resource{i18n.common.Instance}"
+                    selected="#{targetType}"  
+                    selectedValue="instance"
+                    onChange="$('#{targetNameId}').value = $('#{instanceNameId}').value" />
+			    <sun:dropDown id="instanceDropDown" name="instanceName" selected="#{instanceName}" labels="#{requestScope.servers}" submitForm="true">
+		        <!afterCreate
+		            getClientId(component="$this{component}" clientId=>$page{instanceNameId});
+		        />
+    			<!beforeCreate
+				    /* Get the server list */
+				    gf.listInstances(optionKeys={"standaloneonly"} optionValues={"true"}, instances="#{requestScope.servers}" );
+				    listAdd(list="#{requestScope.servers}", value="server" index="0");
+				    if ($attribute{targetType}=#{null}) {
+						setAttribute(key="targetType" value="instance");
+						setAttribute(key="targetName" value="server");
+					}
+				/>
+				<!command
+					setAttribute(key="targetType" value="instance");
+					setAttribute(key="targetName" value="$attribute{instanceName}");
+				    gf.navigate(page="#{request.contextPath}/common/appServer/domainLogs.jsf");
+				/>
+			    </sun:dropDown>
+			</sun:property>
+		    </sun:propertySheetSection>
+		
+		</sun:propertySheet>
+    <sun:hidden id="helpKey" value="$resource{help_common.serverInstDomainLogs}" />
+    </sun:form>
+    <f:verbatim>
+        <script type="text/javascript">
+          function download(event) {
+            if (event.preventDefault) {
+              event.preventDefault();
+            }
+            var url = '#{request.contextPath}/download/log-files-' + $('#{targetNameId}').value + '.zip?contentSourceId=LogFiles&target=' + $('#{targetNameId}').value + '&restUrl=#{sessionScope.REST_URL}';
+            if(location.protocol != 'https:' &&
+              navigator.appName.indexOf("Internet Explorer") != -1 &&
+              navigator.appVersion.indexOf("MSIE 10") != -1) {
+              // bug#16542371 IE10 is super secure. Because of https community page, it throws
+              // SEC7111: HTTPS security is compromised by http://localhost:4848/download/log-files-server.zip?contentSourceId=LogFiles&target=server&restUrl=http://localhost:4848/management/domainindex.jsf
+              // and then iframe is loaded with res:// page, so it throws
+              // SCRIPT5: Access is denied
+              // for iframe.contentWindow
+              // thus GLASSFISH-17921 is not fixed for the case, let user see raw 500 error, if any.
+              window.location = url;
+            } else {
+              var iframe = $('download'); 
+              iframe.src = url;
+              setTimeout(function() {
+                  var doc = iframe.contentWindow.document; 
+                  var matches = doc.body.innerHTML.match('Exception: (.+)?</pre>');
+                  if (matches) {
+                      matches = matches[1].match('Exception: (.+)$') || matches;
+                      alert(matches[1]);
+                  }
+              }, 1000);
+              return false;
+            }
+          }
+        </script>
+        <iframe id="download" src="#" style="display: none"></iframe>
+    </f:verbatim>
+    
+</define>
+</composition>
+

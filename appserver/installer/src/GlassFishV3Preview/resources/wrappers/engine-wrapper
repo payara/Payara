@@ -1,0 +1,370 @@
+#!/bin/sh
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
+# Sun Install engine wrapper script
+#
+
+# binaries needed on both Solaris, Linux, etc.
+CAT=/bin/cat
+CHMOD=/bin/chmod
+CP=/bin/cp
+CUT=/bin/cut
+ECHO=/bin/echo
+EGREP=/bin/egrep
+GETTEXT=/usr/bin/gettext
+ID=/usr/bin/id
+MKDIR=/bin/mkdir
+PRINTF=/usr/bin/printf
+_PWD=/bin/pwd # "${PWD}" is defined as a built-in variable in some shells
+RM=/bin/rm
+SED=/bin/sed
+SU=/bin/su
+TOUCH=/bin/touch
+XAUTH=/openwin/bin/xauth,/usr/X11R6/bin/xauth
+
+if [ "`uname -s`" = Darwin ] ; then
+  # Mac OS does not have gettext by default, so don't try and localize
+  GETTEXT=echo
+fi
+
+PP_FAMILY="Unix"
+PP_OSNAME="Solaris"
+OS_ARCH="sparc"
+
+# static constants
+DEF_SUP_JVM_VER=1.5				# default supported jdk version
+
+NAME=`basename $0`
+MYDIR=`dirname $0`
+MYDIR=`cd ${MYDIR}; ${_PWD}`
+
+INSTALL_HOME=${MYDIR}/..
+INSTALL_HOME=`cd ${INSTALL_HOME}; ${_PWD}`
+
+TEXTDOMAINDIR=${INSTALL_HOME}/lib/resources/templates
+
+INSTALLCONFIG_PROPERTIES="$INSTALL_HOME/install-config.properties"	# installer specific properties
+
+# global settings
+JAVAHOME=""				# java home path
+JAVA_OPTIONS="-client"			# default java options
+ADDITIONALCLASSPATHS=""
+INSTALLPROPS=""         # install specific properties
+
+# user options
+DRYRUN=
+ANSWERFILE=
+ALTROOT=
+VERSIONFLAG=
+DEBUGLEVEL="INFO"
+MEDIALOC=
+INSTALLABLES=
+CONFIGSTATE=
+
+
+#-------------------------------------------------------------------------------
+# usage only: define what parameters are available here
+# input(s):  exitCode
+#-------------------------------------------------------------------------------
+usage() {
+  ${CAT} <<EOF
+Usage: $NAME [OPTION]
+
+Options:
+  -a <path>, --answerfile=<path>
+    Supply a file containing install configuration. Can be used multiple times
+    for multiple answer files.
+  -n <file>, --dry-run=<file>:
+    Dry run mode. Do not install anything. Configuration answers written to <file>
+  -R <path>, --altroot=<path>
+    Operation with respect to an alternate root
+  -h, --help :
+    display this help list
+  -V, --version :
+    display version of install engine.
+  -l <level>, --level=<level>
+    Debug level.  One of FATAL, WARNING, INFO, CONFIG, FINE, FINER, FINEST
+  -m <url>, --media-location=<url>
+    Specify location of metadata used to drive install.  If blank,
+    assume no media.
+  -s <dir>, --configstate=<dir>
+    Directory where the config data is persisted as xcu files.
+  -i <path>, --installables=<path>
+    Root directory containing installable units for support of install and repair.
+
+Private options:
+
+  -j <javahome>, --javahome=<javahome> :
+    use this java vm instead of searching for suitable one
+  -J <joptions>, --jvmoptions=<joptions> :
+    specify java vm options.  For example -J "-verbose -Dhttp.proxy=foo.com:3434"
+  -C <classpaths>, --classpaths=<classpaths> :
+    specify a colon-separated list of additional classpaths
+  -c <file>, --config-file=<file> :
+    Specify extra properties in a file
+  -p <props>, --properties=<props> :
+    specify 1 or more config properties options, separated by comma,
+    to the install engine.  For example:
+    --properties=Logs-Location=/tmp,Platform-Plugin-Path=c:\\Sun\\ppp
+
+EOF
+  exit $1
+}
+
+#-------------------------------------------------------------------------------
+# perform actual operation for the script: install/uninstall
+# input(s):  none
+# output(s): instCode
+#-------------------------------------------------------------------------------
+perform() {
+  theInstallEngine="${INSTALL_HOME}/lib/engine.jar:${INSTALL_HOME}/lib/sims.jar"
+  theInstallEngine="${theInstallEngine}:${INSTALL_HOME}/lib/config.jar"
+  theCP="${INSTALL_HOME}/lib/bootstrap.jar:${INSTALL_HOME}/lib/bindings.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/beanshell/bsh.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/chaxml/chaxml.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/charva/charva.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/swixml/swixml.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/swixml/j2h.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/swixml/ui.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/jdom/jdom.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/freemarker/freemarker.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jaxb-impl.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jaxb-jsr173_1.0_api.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/jaxb-api.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/jaxb/activation.jar"
+  theCP="${theCP}:${INSTALL_HOME}/lib/external/apache/commons-logging.jar"
+  if [ -n "${ADDITIONALCLASSPATHS}" ]; then
+      theCP="${theCP}:${ADDITIONALCLASSPATHS}"
+  fi
+  if [ -n "${CLASSPATH}" ]; then
+      theCP="${theCP}:${CLASSPATH}"
+  fi
+
+  theLP="${INSTALL_HOME}/lib/external/charva/${PP_FAMILY}/${PP_OSNAME}/${OS_ARCH}"
+  theLP="${theLP}:${INSTALL_HOME}/lib/external/ncurses/${PP_FAMILY}/${PP_OSNAME}/${OS_ARCH}"
+
+  JAVA_HOME=${JAVAHOME}
+  export JAVA_HOME
+  CLASSPATH=${theCP}
+  export CLASSPATH
+  LD_LIBRARY_PATH=${theLP}
+  export LD_LIBRARY_PATH
+
+  INSTALLPROPS="${INSTALLPROPS} -p Platform-Plugin-Path=${INSTALL_HOME}/lib/platforms"
+  INSTALLPROPS="${INSTALLPROPS} -p Provider-Path=${INSTALL_HOME}/lib/providers"
+
+  if [ -n "${DRYRUN}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Dry-Run-File=${DRYRUN}"
+  fi
+
+  if [ -n "${CONFIGSTATE}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Config-State=${CONFIGSTATE}"
+  fi
+
+  if [ -n "${ANSWERFILE}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Answer-Files=${ANSWERFILE}"
+  fi
+
+  if [ -n "${ALTROOT}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Alternate-Root=${ALTROOT}"
+  fi
+
+  if [ -n "${DEBUGLEVEL}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Log-Level=${DEBUGLEVEL}"
+  fi
+
+  if [ -n "${MEDIALOC}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Media-Location=${MEDIALOC}"
+  fi
+
+  if [ -n "${INSTALLABLES}" ]; then
+    INSTALLPROPS="${INSTALLPROPS} -p Installable-Unit-Path=${INSTALLABLES}"
+  fi
+
+  # Uninstalls typically remove the files that make up the installer,
+  # which can cause problems on unix, so as a precautionary measure,
+  # cd to a safe place
+  cd /
+
+  # start the installer
+  ${JAVA_HOME}/bin/java ${JAVA_OPTIONS} -Dinstall.engine=${theInstallEngine} \
+     -Dinstaller.resources.url=${MEDIALOC}/ \
+     -Ddefault.resources.url=file:${INSTALL_HOME}/lib/resources/ \
+     -classpath ${theCP} \
+     -Dsims.native-file-dir=${INSTALL_HOME}/lib \
+     org.openinstaller.core.EngineBootstrap \
+     ${INSTALLPROPS}
+
+  instCode=$?
+  unset theInstallEngine
+  unset theCP
+}
+
+#-------------------------------------------------------------------------------
+# ****************************** MAIN THREAD ***********************************
+#-------------------------------------------------------------------------------
+
+LONGOPT="h(help)V(version)n:(dry-run)s:(configstate)a:(answerfile)R:(altroot)l:(level)m:(media-location)i:(installables)j:(javahome)J:(jvmoptions)C:(classpaths)c:(config-file)p:(properties)"
+
+SHORTOPT="hVn:a:s:R:l:m:i:j:J:C:p:c:"
+
+export TEXTDOMAINDIR
+
+if [ "`uname -s`" = SunOS ] ; then
+    case "`uname -r`" in
+      2.* | 5.7 | 5.8)
+        echo `${GETTEXT} "openInstaller is only supported on Solaris 9 or later"`
+        exit 1
+        ;;
+     esac
+fi
+# Long opt doesnt work on Open Solaris also, so have shortopt for all of OS.
+OPTSTRING=${SHORTOPT}
+
+# check arguments
+while getopts "${OPTSTRING}" opt ; do
+    case "${opt}" in
+
+  # The engine knows how to deal with a leading "," so we can use this with no problems:
+	a) case ${OPTARG} in
+     *:/*|*:[*)
+       # Answer file is a URL or contains substitutions, so don't try and parse it
+       ANSWERFILE="${ANSWERFILE},${OPTARG}"
+     ;;
+     *)
+      # Answer file is not a URL, so resolve relative paths
+       ANSDIR=`dirname ${OPTARG}`
+       ANSNAME=`basename ${OPTARG}`
+       if [ ! -d "${ANSDIR}" -o ! -w "${ANSDIR}" ]; then
+         ${PRINTF} "`${GETTEXT} '%s is not a directory or is not writable'`\n" "${ANSDIR}"
+         exit 1
+       fi
+       ANSDIR=`cd $ANSDIR; pwd`
+       ANSWERFILE="${ANSWERFILE},${ANSDIR}/${ANSNAME}"
+       ;;
+     esac
+	;;
+
+	R) ALTROOT=${OPTARG}
+
+	    if [ ! -d ${ALTROOT} -o ! -r ${ALTROOT} ] ; then
+		${PRINTF} "`${GETTEXT} '%s is not a valid alternate root'`\n" "${ALTROOT}"
+                exit 1
+	    fi
+	;;
+
+    n) case ${OPTARG} in
+	   *:/*|*:[*)
+	     # Dry-Run file is a URL or contains substitutions, so don't try and parse it
+	     DRYRUN="${OPTARG}"
+	     ;;
+	   *)
+	     # Dry-Run file is not a URL, so resolve relative paths
+	     DRYDIR=`dirname ${OPTARG}`
+       DRYNAME=`basename ${OPTARG}`
+       if [ ! -d "${DRYDIR}" -o ! -w "${DRYDIR}" ]; then
+         ${PRINTF} "`${GETTEXT} '%s is not a directory or is not writable'`\n" "${DRYDIR}"
+         exit 1
+       fi
+       DRYDIR=`cd $DRYDIR; pwd`
+       DRYRUN="${DRYDIR}/${DRYNAME}"
+       ;;
+     esac
+    ;;
+    s) CONFIGSTATE=${OPTARG}
+    ;;
+	V) VERSIONFLAG=true
+	;;
+	l) DEBUGLEVEL=${OPTARG}
+	;;
+	m) MEDIALOC=${OPTARG}
+	;;
+	i) INSTALLABLES=${OPTARG}
+	;;
+	j) JAVAHOME=${OPTARG}
+
+	    if [ ! -d ${JAVAHOME} -o ! -r ${JAVAHOME} ] ; then
+		${PRINTF} "`${GETTEXT} '%s must be the root directory of a valid JVM installation'`\n" "${JAVAHOME}"
+                exit 1
+	    fi
+	;;
+	J) [ -n "${OPTARG}" ] && JAVA_OPTIONS="${OPTARG}"
+	;;
+	C) ADDITIONALCLASSPATHS=${OPTARG}
+	;;
+	p) INSTALLPROPS="${INSTALLPROPS} -p ${OPTARG}"
+	;;
+	c) INSTALLPROPS="${INSTALLPROPS} -c ${OPTARG}"
+	;;
+	?|h) usage
+	;;
+    esac
+done
+
+if [ -n "${VERSIONFLAG}" ] ; then
+    ${ECHO} "openInstaller Install Framework 0.9.6"
+    ${ECHO}
+    echo `${GETTEXT} "Copyright (c) 2006-2010 Oracle and/or its affiliates. All rights reserved."`
+    echo `${GETTEXT} "Use is subject to license terms."`
+    ${ECHO}
+    ${PRINTF} "`${GETTEXT} 'Version      : %s'`\n" "0.9.6"
+    ${PRINTF} "`${GETTEXT} 'Release      : %s'`\n" "1.1"
+    ${PRINTF} "`${GETTEXT} 'Build        : %s'`\n" "65d65b03c578"
+    ${PRINTF} "`${GETTEXT} 'Assembled on : %s'`\n" "Mon, Sep 29, 2008 04:35 AM PDT"
+    exit 0
+fi
+
+# If its a dry-run and answer file is specified
+# Verify if it already exists. if so, inform the user to choose a different
+# answer file and quit.
+if [ -n "${DRYRUN}" -a -f "${DRYRUN}" ] ; then
+  ${PRINTF} "`${GETTEXT} 'Dry Run File %s already exists. Please choose a non-existing file path'`\n" "${DRYRUN}"
+  exit 1
+fi
+
+if [ -z "${JAVAHOME}" ] ; then
+    ${PRINTF} "`${GETTEXT} 'Must specify a java installation using %s'`\n" -j
+    exit 1
+fi
+
+perform
+
+exit $instCode

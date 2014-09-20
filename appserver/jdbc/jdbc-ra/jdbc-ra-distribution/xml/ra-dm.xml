@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<connector xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
+           version="1.5">
+
+    <!-- There can be any number of "description" elements including 0 -->
+    <!-- This field can be optionally used by the driver vendor to provide a
+         description for the resource adapter.
+    -->
+    <description>Resource adapter wrapping the driver through DriverManager</description>
+
+    <!-- There can be any number of "display-name" elements including 0 -->
+    <!-- The field can be optionally used by the driver vendor to provide a name that
+         is intended to be displayed by tools.
+    -->
+    <display-name>DriverManager Resource Adapter</display-name>
+
+    <!-- There can be any number of "icon" elements including 0 -->
+    <!-- The following is an example.
+        <icon>
+            This "small-icon" element can occur atmost once. This should specify the
+            absolute or the relative path name of a file containing a small (16 x 16)
+            icon - JPEG or GIF image. The following is an example.
+            <small-icon>smallicon.jpg</small-icon>
+
+            This "large-icon" element can occur atmost once. This should specify the
+            absolute or the relative path name of a file containing a small (32 x 32)
+            icon - JPEG or GIF image. The following is an example.
+            <large-icon>largeicon.jpg</large-icon>
+        </icon>
+    -->
+    <icon>
+        <small-icon></small-icon>
+        <large-icon></large-icon>
+    </icon>
+
+    <!-- The "vendor-name" element should occur exactly once. -->
+    <!-- This should specify the name of the driver vendor. The following is an example.
+        <vendor-name>XYZ INC.</vendor-name>
+    -->
+    <vendor-name>Sun Microsystems</vendor-name>
+
+    <!-- The "eis-type" element should occur exactly once. -->
+    <!-- This should specify the database, for example the product name of
+         the database independent of any version information. The following
+         is an example.
+        <eis-type>XYZ</eis-type>
+    -->
+    <eis-type>Database</eis-type>
+
+    <!-- The "resourceadapter-version" element should occur exactly once. -->
+    <!-- This specifies a string based version of the resource adapter from
+         the driver vendor. The default is being set as 1.0. The driver
+         vendor can change it as required.
+    -->
+    <resourceadapter-version>1.0</resourceadapter-version>
+
+    <!-- This "license" element can occur atmost once -->
+    <!-- This specifies licensing requirements for the resource adapter module.
+         The following is an example.
+        <license>
+            There can be any number of "description" elements including 0.
+            <description>
+                This field can be optionally used by the driver vendor to
+                provide a description for the licensing requirements of the
+                resource adapter like duration of license, numberof connection
+                restrictions.
+            </description>
+
+            This specifies whether a license is required to deploy and use the resource adapter.
+            Default is false.
+            <license-required>false</license-required>
+        </license>
+    -->
+    <license>
+        <license-required>false</license-required>
+    </license>
+
+    <resourceadapter>
+
+        <!--
+            The "config-property" elements can have zero or more "description"
+            elements. The "description" elements are not being included
+            in the "config-property" elements below. The driver vendor can
+            add them as required.
+        -->
+
+        <resourceadapter-class>com.sun.gjc.spi.ResourceAdapter</resourceadapter-class>
+
+        <outbound-resourceadapter>
+
+            <connection-definition>
+
+
+                <managedconnectionfactory-class>com.sun.gjc.spi.DMManagedConnectionFactory
+                </managedconnectionfactory-class>
+
+                <!-- There can be any number of these elements including 0 -->
+                <config-property>
+                    <config-property-name>User</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>APP</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>Password</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>APP</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>LoginTimeOut</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>0</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>ConnectionURL</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value></config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>ClassName</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>org.apache.derby.jdbc.ClientDriver</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>ConnectionValidationRequired</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value>false</config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>ValidationMethod</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value></config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>ValidationTableName</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value></config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>TransactionIsolation</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value></config-property-value>
+                </config-property>
+                <config-property>
+                    <config-property-name>GuaranteeIsolationLevel</config-property-name>
+                    <config-property-type>java.lang.String</config-property-type>
+                    <config-property-value></config-property-value>
+                </config-property>
+
+                <connectionfactory-interface>javax.sql.DataSource</connectionfactory-interface>
+
+                <!-- Since 9.1 supports both JDBC 3.0 and JDBC 4.0,
+                ConnectionFactory will be
+                com.sun.gjc.spi.jdbc30.DataSource (JDK 1.5) or
+                com.sun.gjc.spi.jdbc40.DataSource (JDK 1.6)
+                -->
+                <connectionfactory-impl-class>com.sun.gjc.spi.DataSource</connectionfactory-impl-class>
+
+                <connection-interface>java.sql.Connection</connection-interface>
+
+                <!-- Since 9.1 supports both JDBC 3.0 and JDBC 4.0,
+                Connection will be
+                com.sun.gjc.spi.jdbc30.ConnectionHolder30 (JDK 1.5) or
+                com.sun.gjc.spi.jdbc40.ConnectionHolder40 (JDK 1.6)
+                -->
+                <connection-impl-class>com.sun.gjc.spi.ConnectionHolder</connection-impl-class>
+
+            </connection-definition>
+
+            <transaction-support>LocalTransaction</transaction-support>
+
+            <authentication-mechanism>
+                <!-- There can be any number of "description" elements including 0 -->
+                <!-- Not including the "description" element -->
+
+                <authentication-mechanism-type>BasicPassword</authentication-mechanism-type>
+
+                <credential-interface>javax.resource.spi.security.PasswordCredential</credential-interface>
+            </authentication-mechanism>
+
+            <reauthentication-support>false</reauthentication-support>
+        </outbound-resourceadapter>
+
+    </resourceadapter>
+
+</connector>

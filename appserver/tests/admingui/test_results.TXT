@@ -1,0 +1,81 @@
+-------------------------------------------------------
+ T E S T S
+-------------------------------------------------------
+Concurrency config is parallel='none', perCoreThreadCount=true, threadCount=2, useUnlimitedThreads=false
+Running org.glassfish.admingui.devtests.StandaloneTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 289.533 sec
+Running org.glassfish.admingui.devtests.AdminObjectTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 155.045 sec
+Running org.glassfish.admingui.devtests.JavaMailTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 121.833 sec
+Running org.glassfish.admingui.devtests.JdbcTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 183.541 sec
+Running org.glassfish.admingui.devtests.MonitoringTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1,986.826 sec
+Running org.glassfish.admingui.devtests.WebContainerTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 112.101 sec
+Running org.glassfish.admingui.devtests.ApplicationTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 48.749 sec 
+Running org.glassfish.admingui.devtests.ConnectorsTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 166.592 sec
+Running org.glassfish.admingui.devtests.JvmSettingsTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 287.921 sec
+Running org.glassfish.admingui.devtests.IiopListenerTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 35.33 sec
+Running org.glassfish.admingui.devtests.AvailabilityServiceTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 71.37 sec
+Running org.glassfish.admingui.devtests.LifecycleModulesTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 37.97 sec
+Running org.glassfish.admingui.devtests.WorkSecurityMapTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.743 sec
+Running org.glassfish.admingui.devtests.ResourceAdapterConfigsTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 29.406 sec
+Running org.glassfish.admingui.devtests.SecurityTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 409.77 sec
+Running org.glassfish.admingui.devtests.EjbContainerTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 69.753 sec
+Running org.glassfish.admingui.devtests.ClusterTest
+Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 682.688 sec
+Running org.glassfish.admingui.devtests.JVMReportTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.918 sec
+Running org.glassfish.admingui.devtests.ThreadPoolsTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 21.128 sec
+Running org.glassfish.admingui.devtests.LogViewerTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 20.652 sec
+Running org.glassfish.admingui.devtests.NetworkConfigTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 290.336 sec
+Running org.glassfish.admingui.devtests.JavaMessageServiceTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 205.226 sec
+Running org.glassfish.admingui.devtests.HttpServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.261 sec
+Running org.glassfish.admingui.devtests.MsgSecurityTest
+Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 207.506 sec
+Running org.glassfish.admingui.devtests.NodeTest
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 172.599 sec
+Running org.glassfish.admingui.devtests.JndiTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 237.862 sec
+Running org.glassfish.admingui.devtests.ConfigTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.896 sec
+Running org.glassfish.admingui.devtests.VirtualServerTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 23.864 sec
+Running org.glassfish.admingui.devtests.LoggerSettingsTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 45.194 sec
+Running org.glassfish.admingui.devtests.AdminServiceTest
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 36.46 sec
+Running org.glassfish.admingui.devtests.GMSTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.883 sec
+Running org.glassfish.admingui.devtests.EnterpriseServerTest
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 171.996 sec
+Running org.glassfish.admingui.devtests.JmsResourcesTest
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 321.187 sec
+Running org.glassfish.admingui.devtests.AppScopedResourcesTest
+Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 179.081 sec
+Running org.glassfish.admingui.devtests.TransactionServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 17.639 sec
+Running org.glassfish.admingui.devtests.ConnectorServiceTest
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.829 sec
+
+Results :
+
+Tests run: 110, Failures: 0, Errors: 0, Skipped: 0
+ 

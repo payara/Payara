@@ -1,0 +1,158 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- jca/jcaResourceEdit.jsf -->
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings")
+    setResourceBundle(key="i18njca" bundle="org.glassfish.jca.admingui.Strings");
+    setResourceBundle(key="help_jca" bundle="org.glassfish.jca.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18njca.connectorConnectionPool.propertyPageTitle}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+    getRequestValue(key="name" value="#{pageSession.Name}");
+    urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+    getRequestValue(key="isAppScopedRes" value="#{pageSession.isAppScopedRes}");
+    if(#{pageSession.isAppScopedRes}){
+        getRequestValue(key="appName" value="#{pageSession.encodedAppName}");
+        getRequestValue(key="moduleName" value="#{pageSession.moduleName}");
+        if(#{pageSession.moduleName}) {
+            urlencode(value="#{pageSession.moduleName}" encoding="UTF-8" result="#{pageSession.encodedModuleName}");
+            setPageSessionAttribute(key="selfPageArgs" value="&isAppScopedRes=$boolean{true}&appName=#{pageSession.encodedAppName}&moduleName=#{pageSession.encodedModuleName}");
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module/#{pageSession.encodedModuleName}/resources");
+        }
+        if(!#{pageSession.moduleName}) {
+            setPageSessionAttribute(key="selfPageArgs" value="&isAppScopedRes=$boolean{true}&appName=#{pageSession.encodedAppName}");
+            setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/resources");
+        }
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/common/applications/resources/appScopedResources.jsf?appName=#{pageSession.encodedAppName}&listPageLink=/common/applications/applications.jsf");
+    }
+    if(!#{pageSession.isAppScopedRes}){
+        setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/jca/connectorConnectionPools.jsf");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
+    }
+    setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/jca/connectorConnectionPoolProperty.jsf?name=#{pageSession.encodedName}#{pageSession.selfPageArgs}");
+    setPageSessionAttribute(key="childType" value="connector-connection-pool");
+    setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
+    
+    setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}/#{pageSession.encodedName}");
+    gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+
+    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="GET", result="#{requestScope.propTable}");
+    
+    createMap(result="#{requestScope.tmpMap}")
+    mapPut(map="#{requestScope.tmpMap}" key="connectionDefnName" value="#{pageSession.valueMap['connectionDefinitionName']}");
+    mapPut(map="#{requestScope.tmpMap}" key="rarname" value="#{pageSession.valueMap['resourceAdapterName']}");
+    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/get-mcf-config-properties"
+                    attrs="#{requestScope.tmpMap}"
+                    method="GET"
+                    result="#{requestScope.result}");
+    gf.buildConfidentialPropsTable(propsMaps="#{requestScope.propTable.data.extraProperties.properties}", confidentialList="#{requestScope.result.data.extraProperties.confidentialConfigProps}",   result="#{pageSession.tableList}" hasConfidentialProps="#{pageSession.hasConfidential}");
+    />
+</event>
+<sun:form id="propertyForm">
+#include "/jca/connectorConnectionPoolTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+    
+    <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18njca.connectorConnectionPool.propertyPageTitle}" helpText="$resource{i18njca.connectorConnectionPool.propertyPageTitleHelp}" >
+    <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}">
+                <!command
+                
+                    if (#{pageSession.hasConfidential}){
+                        gf.combineProperties(tableList="#{pageSession.tableList}" combined="#{requestScope.newList}");
+                    }
+
+                    if (!#{pageSession.hasConfidential}){
+                        getUIComponent(clientId="$pageSession{propertyTableRowGroupId}", component=>$attribute{tableRowGroup});
+                        getAllSingleMapRows(TableRowGroup="$attribute{tableRowGroup}",  Rows=>$attribute{newList});
+                    }
+                        
+                    removeEmptyProps(props="#{requestScope.newList}" modifiedProps="#{pageSession.tableList}");
+                javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                
+                gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+                prepareSuccessfulMsg();
+                if ("#{valueMap['ping']}") {
+                    urlencode(value="#{valueMap['name']}" encoding="UTF-8" result="#{pageSession.encodeName}");
+                    gf.createAttributeMap(keys={"id"} values={"$pageSession{encodeName}"} map="#{requestScope.attrMap}");
+                    if(#{pageSession.isAppScopedRes}){
+                        mapPut(map="#{requestScope.attrMap}" key="appname" value="#{pageSession.encodedAppName}");
+                        if(#{pageSession.moduleName}){
+                            mapPut(map="#{requestScope.attrMap}" key="modulename" value="#{pageSession.encodedModuleName}");
+                        }
+                    }
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/ping-connection-pool.json"
+                                   attrs="#{requestScope.attrMap}"
+                                   method="GET"
+                                   result="#{requestScope.result}");
+                    if ("#{requestScope.result.data['exit_code']} = SUCCESS") {
+                         prepareAlertMsg(summary="$resource{i18n.msg.PingSucceed}", type="success");
+                    }
+                    if ("!(#{requestScope.result.data['exit_code']} = SUCCESS)") {
+                         prepareAlertMsg(summary="$resource{i18njca.msg.warning.poolSavedPingFailed}", type="error");
+                    }                    
+                }
+                gf.redirect(page="#{selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+                />
+            </sun:button>
+            <sun:button id="cancelButton" immediate="#{true}" primary="#{false}"text="$resource{i18n.button.Cancel}" >
+                <!command
+                    gf.redirect(page="#{parentPage}");
+                />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+    </sun:title>
+    "<br>
+#include "/common/resourceNode/poolNameSection.inc"
+#include "/common/resourceNode/confidentialPropsTable.inc"
+    
+    <sun:hidden id="helpKey" value="$resource{help_jca.connectorConnectionPoolProperty}" />
+</sun:form>
+            "<br/>
+#include "/common/shared/changeButtonsJS.inc" 
+</define>
+</composition>

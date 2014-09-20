@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="adminweb" default="default" basedir=".">
+    <property file="build.properties"/>
+    
+ <description>Builds, tests, and runs the GlassFish Admin GUI</description>
+<!-- <import file="nbproject/build-impl.xml"/>-->
+
+<target name="echo">
+    <echo message="Hello World"/>
+</target>
+<target name="sun-taskdef">
+    <taskdef name="sun-appserv-deploy" classname="org.apache.tools.ant.taskdefs.optional.sun.appserv.DeployTask">
+        <classpath>
+            <pathelement location="${sun.appserver.antjar}" />
+        </classpath>
+    </taskdef>
+    <taskdef name="sun-appserv-undeploy" classname="org.apache.tools.ant.taskdefs.optional.sun.appserv.UndeployTask">
+        <classpath>
+            <pathelement location="${sun.appserver.antjar}" />
+        </classpath>
+    </taskdef>
+</target>
+
+<!--<env key="APPCPATH" path="${env.APS_HOME}/lib/testng.jar"/>-->
+
+<path id="path2testng">
+    <pathelement location="../lib/testng-5.0-jdk15.jar"/>
+</path>
+      
+    
+
+<path id="class.path">
+    <fileset dir="${install.dir}/lib">
+        <include name="**/*.jar"/>
+    </fileset>      
+    <pathelement location="classes"/>
+</path>
+
+<path id="test.classpath">
+    <!--<fileset dir="${install.dir}/lib">
+        <include name="**/*.jar"/>
+    </fileset>-->
+    <fileset dir="../../lib">
+        <include name="**/*.jar"/>
+    </fileset>    
+    <pathelement location="./classes/test"/>
+</path>
+
+
+<taskdef name="testng"
+         classpathref="path2testng"
+         classname="org.testng.TestNGAntTask"/>
+         
+
+<!-- Generate the TestNG report -->
+<target name="report">
+    <!--<delete dir="../../test-report"/>-->
+    <mkdir dir="../../test-report"/>
+    <junitreport todir="../../test-report">
+        <fileset dir="../../">
+           <include name="**/test-output/**/*.xml"/>
+           <exclude name="**/testng-failed.xml"/>
+        </fileset>
+        <report format="noframes" todir="../test-report"/>
+    </junitreport>
+</target>
+<target name="compile-tests"
+            description="compile the test ng example" depends="">
+       <delete dir="classes/test" failonerror="false"/>
+       <mkdir dir="classes/test"/>
+       <javac   debug="true"
+              fork="true"
+              source="1.5"
+              classpathref="test.classpath"
+              srcdir="src/test"
+              destdir="classes/test"
+       />
+</target>
+
+<target name="start">
+  <echo message="Starting Selenium Server"/>
+  <java jar="../../lib/selenium/selenium-server.jar" fork="true">  
+      <arg line="-interactive"/>
+  </java>
+      
+</target>
+
+<target  name="run">    
+    
+    <echo message="=============Starting Selenium TestNG test at \n ${basedir}  ============"/>  
+  
+    <mkdir dir="../test-output"/>
+    <testng outputdir="../test-output"
+            classpathref="test.classpath" groups="">
+         <classfileset dir="classes/test" includes="**/SeleniumTest.class"/>
+        <!--<xmlfileset dir="../../../" includes="testng.xml"/>-->
+    </testng>
+    
+    <!--<antcall target="-post-test-run"/>    -->
+    
+</target>    
+
+<target name="stop">
+        <get taskname="selenium-shutdown"
+            src="http://localhost:4444/selenium-server/driver/?cmd=shutDown"
+            dest="result.txt"
+            ignoreerrors="true"/>
+        <echo taskname="selenium-shutdown"
+            message="Errors during shutdown are expected"/>
+    </target>
+
+<target name="dist">
+    <echo message="Save EAR/WAR/JAR file"/>
+</target>
+
+<target name="_start-selenium">
+ <java jar="../lib/selenium/${selenium-srvr-jar}" fork="true" spawn="true" />
+ <antcall target="_run-ua-tests" />
+ <get dest="${testreportdir}/results.txt" 
+        src="${selenium-srvr-loc}/selenium-server/driver/?cmd=shutDown" />
+</target>
+
+
+    
+
+</project>

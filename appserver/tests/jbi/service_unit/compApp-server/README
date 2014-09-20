@@ -1,0 +1,9 @@
+This test demonstrates usage of a composite application when JavaEE SE is provider. There
+is a Calculator webservice with add operation that adds two numbers. Client is a standalone
+Java application which sends request to the webservice through HTTP SOAPBinding.
+
+ant all of this test does the following : 
+ 
+1. task setup: A service assembly is created and deployed that contains a JavaEE service unit providing calculator service and a HTTP BC service unit that consumes calculator service.
+2. task runtest: Client sends an add request through SOAP binding,
+3. task undeploy: undeploys the composite application from from JBI

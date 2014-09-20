@@ -1,0 +1,469 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="common-impl" default="all" basedir=".">
+    
+    <property file="${ws.root}/build.properties"/>
+    <property name="app.file.ext" value="${app.file}.${archive.type}"/>
+    <property name="config.dir" value="${ant.file}"/>
+    <property name="is.war.module" value="true"/>
+    <property name="is.persistence.module" value="true"/>
+    <property name="result.output" value="${ws.root}/test-output"/>
+    <property name="assemble.dir" value="${ws.root}/dist/${testsuite.name}"/>
+    <property name="class.output" value="${ws.root}/classes/${testsuite.name}/app"/>
+    <!--<property name="test.class.output" value="${ws.root}/classes/${testsuite.name}/test"/>-->
+    <property name="test.class.output" value="${ws.root}/classes/test"/>
+    <property name="dist.dir" value="${ws.root}/dist/${testsuite.name}"/>
+    
+    <target name="clean">
+        <delete dir="${ws.root}/classes"/>
+        <delete dir="${result.output}"/>
+        <delete dir="${ws.root}/dist"/>
+        <echo message="Deleting all WAR/EAR in local testsuite directories!!!"/>
+        <echo message="There should not be any WAR file checked in."/>
+        <delete>
+            <fileset dir="." includes="**/*.war"/>
+        </delete>
+    </target>
+    
+    <!-- classpath at QL runtime (i.e. not for building of testing apps) -->
+    <path id="run.testng.classpath">
+        <fileset dir="${glassfish.home}/modules">
+            <include name="**/hk2*.jar"/>
+            <include name="**/glassfish-api.jar"/>
+            <include name="**/amx-core.jar"/>
+            <include name="**/amx-javaee.jar"/>
+            <include name="**/gf-client.jar"/>
+        </fileset>
+        <pathelement location="${class.output}"/>
+        <pathelement location="${test.class.output}"/>
+    </path>
+
+    <path id = "boot.classpath">
+        <fileset dir="${glassfish.home}/modules/endorsed">
+            <include name="**/*.jar"/>
+        </fileset>        
+    </path>
+
+
+    <!-- classpath at QL build time for building testing apps -->
+    <path id="class.path">
+        <fileset dir="${glassfish.home}/modules">
+            <include name="**/*.jar"/>
+            <!-- excluding some obviously unnecessary jars to reduce classpath length (> 32kB causes javac to fail on WinXP) -->
+            <exclude name="cmp*.jar"/>
+            <exclude name="connectors-*.jar"/>
+            <exclude name="console-*.jar"/>
+            <exclude name="deployment-*.jar"/>
+            <exclude name="*help.jar"/>
+            <exclude name="orb-*.jar"/>
+            <exclude name="org.apache.felix.*"/>
+            <exclude name="org.eclipse.persistence.*"/>
+            <exclude name="stats77.jar"/>
+            <exclude name="trilead-ssh2-repackaged.jar"/>
+            <exclude name="virt-core.jar"/>
+            <exclude name="woodstox-osgi.jar"/>
+        </fileset>
+        <pathelement location="${class.output}"/>
+        <pathelement location="${test.class.output}"/>
+        <pathelement path="${plugin_classpath}"/>
+    </path>
+    
+    <!-- TestNG class fileset -->
+    
+    <path id="path2testng">
+	    <pathelement location="${ws.root}/lib/testng-5.0-jdk15.jar"/>
+    </path>
+    
+    <taskdef name="testng" classname="org.testng.TestNGAntTask">
+        <classpath>
+	    <pathelement path="${plugin_classpath}"/>
+        </classpath>
+    </taskdef>
+    
+    
+    <target name="compile-tests" description="compile the test ng example">
+        <echo message="compiling test client to ${test.class.output}"/>
+
+        <fileset dir="${basedir}/src/test" id="java.source.id"> 
+            <include name="**/*.java"/> 
+        </fileset>
+        <property name="source.file.list" refid="java.source.id"/> 
+        <echo message="Listing of source files: ${source.file.list}"/> 
+
+        <mkdir dir="${test.class.output}"/>
+        <javac   debug="true"
+                 source="1.5"
+                 target="1.5"
+                 classpathref="class.path"
+                 srcdir="${basedir}/src/test"
+                 sourcepath=""
+                 destdir="${test.class.output}">
+            <include name="**/*.java"/> 
+        </javac>
+    </target>
+    
+    <target name="compile-util"
+	    description="compile the test ng util">
+        <mkdir dir="${test.class.output}"/>
+        <javac   debug="true"
+                 source="1.5"
+		 target="1.5"
+		 classpathref="class.path"
+                 srcdir="${ws.root}/admincli/src/test/admincli/util:${ws.root}/utils"
+                 destdir="${test.class.output}">
+        </javac>
+    </target>    
+    
+    <!-- Generate the TestNG report -->
+    <target name="report">
+        <delete dir="${result.output}"/>
+        <mkdir dir="${test-report}"/>
+        <junitreport todir="${test-report}">
+            <fileset dir=".">
+                <include name="**/test-output/**/*.xml"/>
+                <exclude name="**/testng-failed.xml"/>
+            </fileset>
+            <report format="noframes" todir="test-report"/>
+        </junitreport>
+    </target>
+    
+    <target name="archive-type">
+        <echo message="archive-type is ${archive.type}"/>
+        <condition property="archive.war">
+            <equals arg1="war" arg2="${archive.type}"/>
+        </condition>
+        <condition property="archive.ear">
+            <equals arg1="ear" arg2="${archive.type}"/>
+        </condition>
+        <condition property="archive.appclient_ear">
+            <equals arg1="appclient_ear" arg2="${archive.type}"/>
+        </condition>
+        <condition property="archive.jar">
+            <equals arg1="jar" arg2="${archive.type}"/>            
+        </condition>
+    </target>
+    
+    <target name="build-impl">
+        <antcall target="build-war"/>
+        <antcall target="build-ear"/>
+	<antcall target="build-appclient-ear"/>
+        <antcall target="build-jar"/>
+    </target>
+    
+    <target name="compile-single">
+	    <delete dir="$class.output}"/>
+	    <mkdir dir="${class.output}"/>
+        <javac   debug="true"
+                 source="1.5"
+		 target="1.5"
+                 classpathref="class.path"
+                 srcdir="src"
+                 destdir="${class.output}"/>
+        
+    </target>
+    
+
+<target name="build-war" depends="archive-type" if="archive.war">  
+    <echo message="Now creating a war file ${dist.dir}/${app.file.ext}"/>
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <delete file="${app.file.ext}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <javac   debug="true"
+    source="1.5"
+    target="1.5"
+    classpathref="class.path"
+    srcdir="src/java"
+    failonerror="false"
+    destdir="${class.output}"/>
+    
+    <mkdir dir="${class.output}/META-INF"/>
+    <copy file="metadata/persistence.xml" todir="${class.output}/META-INF" failonerror="false"/> 
+    
+    <war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
+        <fileset dir="web/html"/>
+        <fileset dir="web/jsp"/>
+        <classes dir="${class.output}">        
+            <include name="**/*.class"/>
+	    <include name="**/persistence.xml"/>
+	    <include name="**/*.properties"/>
+        </classes>
+        <!--<zipfileset dir="src/graphics/images/gifs"
+        prefix="images"/>-->
+        <webinf dir="metadata">                  
+            <include name="**/*.xml"/>                  
+            <exclude name="**/persistence.xml"/>
+        </webinf>        
+    </war>
+    <!-- antcall target="update-war-struts"/ -->
+    <!-- copy file="${dist.dir}/${app.file.ext}" tofile="./${app.file.ext}"/ -->
+</target>
+
+<target name="update-war-struts" if="add.struts.jar">
+	<echo message="Adding struts jar to WEB-INF/lib"/>
+<war destfile="${dist.dir}/${app.file.ext}" update="true">
+	<lib dir="${ws.root}/web/lib/struts-1.2.9">
+		<include name="**/*.jar"/>
+	</lib>
+</war>
+	
+</target>
+
+<target name="build-jar" depends="archive-type" if="archive.jar">    
+    <echo message="Now creating a jar file ${dist.dir}/${app.file.ext}"/>
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <echo message="Now compiling"/>
+    <javac   debug="true"
+    source="1.5"
+    target="1.5"
+    classpathref="class.path"
+    srcdir="src/java"
+    destdir="${class.output}"/>
+    <echo message="Now creating a war file ${dist.dir}/${app.file.ext}"/>
+    <jar destfile="${dist.dir}/${app.file.ext}" update="true" 
+	basedir="${class.output}"/>        
+</target>
+
+<target name="build-ear" depends="archive-type" if="archive.ear">    
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <delete file="${app.file.ext}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <javac   debug="true"
+    source="1.5"
+    target="1.5"
+    classpathref="class.path"
+    srcdir="src/java"
+    failonerror="false"
+    destdir="${class.output}"/>
+    <echo message="war.classes ============== : ${war.classes}"/>
+    <war destfile="${dist.dir}/${app.file}Web.war" webxml="metadata/web.xml">
+        <fileset dir="web/html"/>
+        <fileset dir="web/jsp"/>
+        <classes dir="${class.output}" includes="${war.classes}"/>
+        <webinf dir="metadata">
+            <include name="**/web.xml"/>
+        </webinf>
+    </war>
+    <mkdir dir="${class.output}/META-INF"/>
+    <copy file="metadata/ejb-jar.xml" tofile="${class.output}/META-INF/ejb-jar.xml" failonerror="false"/>
+    <copy file="metadata/sun-ejb-jar.xml" tofile="${class.output}/META-INF/sun-ejb-jar.xml" failonerror="false"/>
+    <copy file="metadata/sun-cmp-mappings.xml" tofile="${class.output}/META-INF/sun-cmp-mappings.xml" failonerror="false"/>
+    <copy file="metadata/${dbschema}" tofile="${class.output}/${dbschema}" failonerror="false"/>
+    <jar destfile="${dist.dir}/${app.file}EJB.jar"
+        basedir="${class.output}"
+        excludes="**/*Servlet.class"/>
+    <ear destfile="${dist.dir}/${app.file.ext}" appxml="metadata/application.xml">
+        <fileset dir="${dist.dir}" includes="*.jar,*.war"/>
+    </ear>
+    <echo message="Packaged Archive at ${dist.dir}/${app.file.ext}"/>
+</target>
+
+<target name="build-appclient-ear" depends="archive-type" if="archive.appclient_ear">
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <delete file="${app.file.ext}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <javac   debug="true"
+    source="1.5"
+    target="1.5"
+    classpathref="class.path"
+    srcdir="src/com"
+    failonerror="false"
+    destdir="${class.output}"/>
+    <mkdir dir="${class.output}/META-INF"/>
+    <copy file="metadata/sun-application-client.xml" tofile="${class.output}/META-INF/sun-application-client.xml" failonerror="false"/>
+    <jar destfile="${dist.dir}/${app.file}-client.jar"
+        basedir="${class.output}" includes="**/Client.class" manifest="./metadata/MANIFEST.MF">
+      <metainf dir="${class.output}/META-INF">
+        <include name="sun-application-client.xml"/>
+      </metainf>
+    </jar>
+    <delete dir="${class.output}/META-INF"/>
+    <jar destfile="${dist.dir}/${app.file}-ejb.jar"
+        basedir="${class.output}"
+        excludes="**/client/Client.*"/>
+    <ear destfile="${dist.dir}/${app.file}App.ear" appxml="metadata/application.xml">
+        <fileset dir="${dist.dir}" includes="*.jar,*.war"/>
+    </ear>
+    <echo message="Packaged Archive at ${dist.dir}/${app.file}App.ear"/>
+</target>
+
+<target name="checkTestNGXML">
+<available file="testng.xml" property="testng.xml.present"/>
+</target>
+
+
+<target name="runtest-impl">
+	<antcall target="runtest-impl-class"/>
+	<antcall target="runtest-impl-xml"/>
+</target>
+
+<target name="runtest-impl-class" depends="setOSConditions,asenv-unix,asenv-windows,checkTestNGXML" unless="testng.xml.present">
+    <echo message="=============Starting TestNG test at ${test.class.output}  ============"/>    
+    <mkdir dir="${result.output}"/>
+    <testng outputdir="${result.output}" verbose="2"
+    suitename="${testsuite.name}"
+    testname="${testng.test.name}"
+            classpathref="run.testng.classpath">
+	<sysproperty key="glassfish.home" value="${glassfish.home}"/>
+	<sysproperty key="BASEDIR" value="${ws.root}"/>
+        <classfileset dir="${test.class.output}" includes="**/${testng.testclient}.class"/>
+        <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+        <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+	<jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
+	<jvmarg value="-DASADMIN=${ASADMIN}" />
+    </testng>
+</target>
+
+<target name="runtest-impl-xml" depends="setOSConditions,asenv-unix,asenv-windows,checkTestNGXML" if="testng.xml.present">
+    <echo message="=============Starting TestNG test at ${test.class.output} from testng.xml  ============"/>    
+    <mkdir dir="${result.output}"/>
+    <testng outputdir="${result.output}"
+    suitename="${testsuite.name}"
+    testname="${testng.test.name}"
+            classpathref="run.testng.classpath">
+        <xmlfileset dir="." includes="testng.xml"/>
+        <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+        <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+	<jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
+	<jvmarg value="-DASADMIN=${ASADMIN}" />
+	<jvmarg value="-DAPPCLIENT=${APPCLIENT}" />
+    </testng>
+</target>
+
+<!-- the following targets are for running the embedded tests -->
+<target name="runtest-embedded-class" depends="setOSConditions,asenv-unix,asenv-windows,checkTestNGXML" unless="testng.xml.present">
+    <echo message="=============Starting TestNG test at ${test.class.output}  ============"/>
+    <mkdir dir="${result.output}"/>
+    <testng outputdir="${result.output}" verbose="2"
+    suitename="${testsuite.name}"
+    testname="${testng.test.name}"
+            classpathref="embedded.testng.classpath">
+        <sysproperty key="glassfish.home" value="${glassfish.home}"/>
+        <sysproperty key="BASEDIR" value="${ws.root}"/>
+        <classfileset dir="${test.class.output}" includes="**/${testng.testclient}.class"/>
+        <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+        <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+        <jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
+        <jvmarg value="-DASADMIN=${ASADMIN}" />
+    </testng>
+</target>
+
+    <path id="embedded.testng.classpath">
+        <fileset dir="${glassfish.home}/lib/embedded">
+            <include name="**/glassfish-embedded-static-shell.jar"/>
+        </fileset>
+        <pathelement location="${class.output}"/>
+        <pathelement location="${test.class.output}"/>
+    </path>
+    
+
+<!-- the following targets are for running the wsit tests -->
+    <path id="wsit.classpath">
+        <pathelement location="${java.home}/../lib/tools.jar"/>
+    </path>
+
+    <condition property="wsjar.available">
+        <and>
+            <available file="${glassfish.home}/modules/webservices-osgi.jar"/>
+            <available file="${glassfish.home}/modules/jaxb-osgi.jar"/>
+        </and>
+    </condition>
+
+    <target name="declare-wsimport" if="wsjar.available">
+      <taskdef name="wsimport" classname="com.sun.tools.ws.ant.WsImport">
+         <classpath refid="class.path"/>
+         <classpath refid="wsit.classpath"/>
+      </taskdef>
+    </target>
+
+    <target name="runwsittest-impl">
+        <antcall target="runwsittest-impl-class"/>
+        <antcall target="runwsittest-impl-xml"/>
+    </target>
+
+    <target name="runwsittest-impl-class" depends="checkTestNGXML" unless="testng.xml.present">
+        <echo message="=============Starting TestNG test at ${test.class.output}  ============"/>
+        <mkdir dir="${result.output}"/>
+        <testng outputdir="${result.output}" verbose="2"
+        suitename="${testsuite.name}"
+        testname="${testng.test.name}"
+                classpathref="wsit.classpath" classpath="${build.classes.home}:${basedir}/etc">
+            <classfileset dir="${build.classes.home}" includes="**/${testng.testclient}.class"/>
+            <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+            <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+            <jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
+            <bootclasspath classpathref="boot.class.path"/>
+<sysproperty key="-Djava.endorsed.dirs" value="${glassfish.home}/modules/endorsed"/>
+
+
+        </testng>
+    </target>
+
+    <target name="runwsittest-impl-xml" depends="checkTestNGXML" if="testng.xml.present">
+        <echo message="=============Starting TestNG test at ${test.class.output} from testng.xml  ============"/>
+        <mkdir dir="${result.output}"/>
+        <testng outputdir="${result.output}"
+        suitename="${testsuite.name}"
+        testname="${testng.test.name}"
+                classpathref="wsit.classpath" classpath="${build.classes.home}:${basedir}/etc">
+            <xmlfileset dir="." includes="testng.xml"/>
+            <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+            <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+            <jvmarg value="-Djava.endorsed.dirs=${glassfish.home}/modules/endorsed" />
+            <bootclasspath classpathref="boot.class.path"/>
+<sysproperty key="-Djava.endorsed.dirs" value="${glassfish.home}/modules/endorsed"/>
+
+
+        </testng>
+    </target>
+
+</project>

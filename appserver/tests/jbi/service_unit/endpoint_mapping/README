@@ -1,0 +1,28 @@
+This test case has :
+--------------------
+
+A simple webservice returns the sum of two integers. This is bundled as a 
+servlet inside a WAR file. This WAR file is included in the service assembly
+and is deployed by the JavaEE Service Engine.
+
+A simple servlet (with jbi_enabled=true) to access this web service
+
+A simple java client to invoke this servlet
+
+The test case uses:
+------------------
+
+Java EE Service Engine as the consumer.
+
+Java EE Service Engine as the provider.
+
+client <----> servlet <-----> JavaEE SE <-----NMR------> JavaEE SE <------> webservice
+
+Expected result:
+----------------
+
+The Java EE Service Engine should successfully deploy the service unit.
+
+Java client should be able to successfully invoke the webservice and get
+the sum of two numbers.
+

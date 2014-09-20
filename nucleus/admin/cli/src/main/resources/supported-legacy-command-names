@@ -1,0 +1,178 @@
+# This file contains GlassFish V2 asadmin commands that are carried 
+# forward to GlassFish v3. This is a very simple file with one command name 
+# per line. Anything with a leading # '#' like this line is treated a comment.
+# An 'L' or 'R' at the end tells you if it's a Local or Remote command.
+# I know it is a maintenance headache, but this file is needed to move to a 
+# more sensible command line syntax and separation of command options
+# from asadmin program options. For details, see CLI spec for GlassFish v3.
+# Also see the companion list of commands -- unsupported-legacy-command-names
+create-domain L
+delete-domain L
+start-domain L
+stop-domain L
+list-domains L
+deploy R
+deploydir R
+undeploy R
+list-components R
+list-sub-components R
+enable R
+disable R
+version R
+create-jmsdest R
+delete-jmsdest R
+flush-jmsdest R
+list-jmsdest R
+create-jdbc-resource R
+delete-jdbc-resource R
+list-jdbc-resources R
+create-connector-connection-pool R
+delete-connector-connection-pool R
+list-connector-connection-pools R
+create-connector-security-map R
+delete-connector-security-map R
+update-connector-security-map R
+list-connector-security-maps R
+create-connector-resource R
+delete-connector-resource R
+list-connector-resources R
+create-jdbc-connection-pool R
+delete-jdbc-connection-pool R
+list-jdbc-connection-pools R
+create-custom-resource R 
+delete-custom-resource R 
+list-custom-resources R 
+create-javamail-resource R
+delete-javamail-resource R
+list-javamail-resources R
+create-jms-resource R
+delete-jms-resource R
+list-jms-resources R
+create-admin-object R
+delete-admin-object R
+list-admin-objects R
+create-iiop-listener R
+delete-iiop-listener R
+list-iiop-listeners R
+create-lifecycle-module R
+delete-lifecycle-module R
+list-lifecycle-modules R
+create-http-listener R
+delete-http-listener R
+list-http-listeners R
+create-auth-realm R
+delete-auth-realm R
+list-auth-realms R
+create-virtual-server R
+delete-virtual-server R
+list-virtual-servers R
+create-profiler R
+delete-profiler R
+list-profilers R
+create-ssl R
+delete-ssl R
+#no list-ssl
+create-jvm-options R
+delete-jvm-options R
+# no list-jvm-options (it's a new command I added in v3)
+create-audit-module R
+delete-audit-module R
+list-audit-modules R
+create-file-user R
+delete-file-user R
+list-file-users R
+update-file-user R
+list-file-groups R
+create-resource-adapter-config R
+delete-resource-adapter-config R
+list-resource-adapter-configs R
+create-threadpool R
+delete-threadpool R
+list-threadpools R
+ping-connection-pool R
+get-client-stubs R
+get R
+set R
+list R
+multimode R
+add-resources R
+freeze-transaction-service R ?
+unfreeze-transaction-service R ?
+rollback-transaction R
+recover-transactions R
+jms-ping R
+list-jndi-entries R
+list-timers R
+migrate-timers R
+change-master-password R
+create-password-alias R
+delete-password-alias R
+update-password-alias R
+list-password-aliases R
+create-message-security-provider R
+delete-message-security-provider R
+list-message-security-providers R
+start-database L
+stop-database L
+display-log-records R ?
+create-mbean R
+delete-mbean R
+list-mbeans R
+generate-jvm-report R
+change-admin-password R
+configure-webservice-management ?
+create-transformation-rule ?
+delete-transformation-rule ?
+list-transformation-rules ?
+create-service L
+login R
+start-jbi-component
+stop-jbi-component
+shut-down-jbi-component
+install-jbi-component
+install-jbi-shared-library
+list-jbi-shared-libraries
+list-jbi-service-engines
+list-jbi-binding-components
+list-jbi-service-assemblies
+deploy-jbi-service-assembly
+undeploy-jbi-service-assembly
+uninstall-jbi-component
+uninstall-jbi-shared-library
+start-jbi-service-assembly
+stop-jbi-service-assembly
+shut-down-jbi-service-assembly
+show-jbi-service-assembly
+show-jbi-service-engine
+show-jbi-binding-component
+show-jbi-shared-library
+monitor R
+create-system-properties R
+delete-system-property R
+list-system-properties R
+crete-jms-host R
+delete-jms-host R
+list-jms-hosts R
+stop-instance R
+list-instances R
+start-cluster R
+stop-cluster R
+backup-domain L
+restore-domain L
+list-backups L
+start-instance R
+create-http-lb-config R
+delete-http-lb-config R
+list-http-lb-configs R
+create-http-health-checker R
+delete-http-health-checker R
+create-http-lb R
+delete-http-lb R
+list-http-lbs R
+create-http-lb-ref R
+delete-http-lb-ref R
+enable-http-lb-application R
+enable-http-lb-server R
+disable-http-lb-application R
+disable-http-lb-server R
+configure-lb-weight R

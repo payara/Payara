@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <!--
+        This module builds the free-standing JAR file for the app client
+        container which can be run without using an OSGi implementation.
+
+        This module contains little source of its own but mostly packages a JAR
+        with a manifest Class-Path that specifies all the OSGi JARs on which
+        it directly or indirectly depends.
+
+        Note that additional JARs which clients might need but which are not
+        declared as dependencies are added by updating the generated manifest's
+        Class-Path using some ant tasks.  The nicer way to do this would be to
+        create a custom plug-in which would delegate most of the work to the
+        archiver but would augment the generated Class-Path with the extra JARs.
+        Perhaps later.
+    -->
+    <parent>
+        <groupId>org.glassfish.main.appclient</groupId>
+        <artifactId>client</artifactId>
+        <version>4.1</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>gf-client</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>Client library (including ACC)</name>
+
+    <properties>
+        <classpath.file>${project.build.directory}/tmp/classpath.txt</classpath.file>
+        <!--
+            Property settings used for adding parts to the Class-Path used to
+            be defined here.  They are now in the fixup.xml file instead so
+            the pom is less changeable.
+        -->
+    </properties>
+    <developers>
+      <developer>
+            <id>tjquinn</id>
+            <name>Tim Quinn</name>
+            <url>http://blogs.sun.com/quinn</url>
+            <organization>Oracle, Inc.</organization>
+            <roles>
+		        <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>
+        <plugins>
+            <!--
+                Create a text file containing the generated class path.  This
+                file is used in the ant tasks when the original Class-Path is 
+                augmented.  Note: we force the path separator to be a colon
+                because the plug-in will use the platform-specific separator
+                otherwise.  The ant logic replaces colons with spaces to
+                reformat the contents of the file so it's useful in the manifest.
+            -->
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-dependency-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>generate-classpath-file</id>
+                      <phase>process-sources</phase>
+                      <goals>
+                          <goal>build-classpath</goal>
+                      </goals>
+                      <configuration>
+                          <outputFile>${classpath.file}</outputFile>
+                          <outputFilterFile>true</outputFilterFile>
+                          <pathSeparator>:</pathSeparator>
+                          <fileSeparator>/</fileSeparator>
+                          <prefix>../modules</prefix>
+                          <stripVersion>true</stripVersion>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+                    <configuration>
+
+              <!--
+                  Includes only the agent class.  All the rest are in
+                  the OSGi module.
+              -->
+
+                        <archive>
+
+<!-- We need the index eventually but until the plug-in itself knows the correct
+classpath we must comment this out, or else the index reflects nothing in
+this or the downstream JARs and so attempts to find things fail.
+
+                            <index>true</index>
+-->
+                            <manifest>
+                                <mainClass>org.glassfish.appclient.client.AppClientFacade</mainClass>
+                                <packageName>org.glassfish.appclient.client.acc</packageName>
+                                <addClasspath>true</addClasspath>
+                                <classpathLayoutType>custom</classpathLayoutType>
+                                <customClasspathLayout>../modules/$${artifact.artifactId}$${dashClassifier?}.$${artifact.extension}</customClasspathLayout>
+                            </manifest>
+                            <manifestEntries>
+                                <PreMain-Class>org.glassfish.appclient.client.acc.agent.AppClientContainerAgent</PreMain-Class>
+				<GlassFish-ServerExcluded>true</GlassFish-ServerExcluded>
+                            </manifestEntries>
+                        </archive>
+                    </configuration>
+          </plugin>
+
+          <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-antrun-plugin</artifactId>
+              <executions>
+                  <execution>
+                      <id>fixup-jar-classpath</id>
+                      <phase>package</phase>
+                      <goals>
+                          <goal>run</goal>
+                      </goals>
+                      <configuration>
+                          <target>
+                              <property name="output.file" value="${project.build.finalName}.jar" />
+                              <property name="output.dir" value="${project.build.directory}" />
+                              <property name="stage.dir" value="${project.build.directory}/stage" />
+                              <property name="classpath.file" value="${classpath.file}" />
+                              <ant antfile="${basedir}/fixup.xml" />
+                          </target>
+                      </configuration>
+                  </execution>
+              </executions>
+          </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <!--
+            We specify the ACC's OSGi JAR as a dependency.
+            The maven-jar-plugin will do the work of finding the transitive
+            closure of it and the modules on which it depends to build the
+            accurate Class-Path for the manifest.
+        -->
+        <dependency>
+            <groupId>org.glassfish.main.appclient</groupId>
+            <artifactId>gf-client-module</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+   </dependencies>
+</project>

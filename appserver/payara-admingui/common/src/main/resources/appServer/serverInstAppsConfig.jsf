@@ -1,0 +1,141 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- appServer/serverInstAppsConfig.jsf -->
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks")
+/>
+
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nc.domain.AppsConfigPageTitle}" >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setSessionAttribute(key="domainTabs" value="appConfig");
+        setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/common/appServer/serverInstAppsConfig.jsf?");
+        setPageSessionAttribute(key="convertToFalseList" value={"dynamicReloadEnabled" "autodeployEnabled" "autodeployVerifierEnabled" "autodeployJspPrecompilationEnabled"});
+
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/server-config/admin-service");
+        setPageSessionAttribute(key="childType", value="das-config");
+        setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/#{pageSession.childType}");
+
+        setPageSessionAttribute(key="rest-api" value="true");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+
+        //set the following for including buttons.inc
+        setPageSessionAttribute(key="edit" value="#{true}" );
+        setPageSessionAttribute(key="showDefaultButton" value="#{true}" );
+        setPageSessionAttribute(key="showCancelButton" value="#{false}" );
+        setPageSessionAttribute(key="hasPropertySheet" value="#{true}" );
+        setPageSessionAttribute(key="hasPropertyTable" value="#{true}" );
+	gf.restRequest(
+	    endpoint="#{pageSession.selfUrl}/property.json"
+	    method="GET"
+	    result="#{requestScope.propTable}");
+	setPageSessionAttribute(
+	    key="tableList"
+	    value="#{requestScope.propTable.data.extraProperties.properties}");
+        />
+    </event>
+            <sun:form id="propertyForm">
+#include "/common/appServer/domainTabs.inc"
+#include "/common/shared/alertMsg.inc"
+   <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18nc.domain.AppsConfigPageTitle}"   helpText="$resource{i18nc.domain.AppsConfigPageHelp}" >
+#include "/common/shared/editPageButtons.inc"
+    </sun:title>
+
+<sun:propertySheet id="propertySheet">
+    <!-- Text Field section -->
+    <sun:propertySheetSection id="propertSectionTextField">
+      <sun:property id="reloadProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.Reload}" helpText="$resource{i18nc.domain.ReloadHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['dynamicReloadEnabled']}" selectedValue="true" >
+            </sun:checkbox>
+        </sun:property>
+        <sun:property id="reloadIntervalProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.ReloadPollInterval}" helpText="$resource{i18nc.domain.ReloadPollIntervalHelp}">
+            <sun:textField id="ReloadInterval" styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.ReloadPollInterval']}" text="#{pageSession.valueMap['dynamicReloadPollIntervalInSeconds']}">
+
+            </sun:textField>
+            <sun:staticText id="secs" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+        </sun:property>
+        <sun:property id="AdminTimeoutProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.AdminTimeout}" helpText="$resource{i18nc.domain.AdminTimeoutHelp}">
+            <sun:textField id="AdminTimeout" styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.AdminTimeout']}" text="#{pageSession.valueMap['adminSessionTimeoutInMinutes']}"/>
+            <sun:staticText id="mins" style="padding: 8pt" text="$resource{i18n.common.Minutes}"/>
+        </sun:property>
+    </sun:propertySheetSection>
+    <sun:propertySheetSection id="propertSectionAutoDeploy" label="$resource{i18nc.domain.AutoDeploySettings}" >
+        <sun:property id="AutoDeployProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.AutoDeploy}" helpText="$resource{i18nc.domain.AutoDeployHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['autodeployEnabled']}" selectedValue="true" />
+        </sun:property>
+       <sun:property id="AutoDeployIntervalProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.AutoDeployPollInterval}" helpText="$resource{i18nc.domain.AutoDeployPollIntervalHelp}">
+            <sun:textField id="AutoDeployInterval" styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.AutoDeployPollInterval']}" text="#{pageSession.valueMap['autodeployPollingIntervalInSeconds']}" />
+            <sun:staticText id="secs" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+        </sun:property>
+        <sun:property id="AutoDeployTimeoutProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.AutoDeployTimeout}" helpText="$resource{i18nc.domain.AutoDeployTimeoutHelp}">
+            <sun:textField id="AutoDeployTimeout" styleClass="integer" columns="$int{15}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.AutoDeployTimeout']}" text="#{pageSession.valueMap['autodeployRetryTimeout']}" />
+            <sun:staticText id="secs" style="padding: 8pt" text="$resource{i18n.common.Seconds}"/>
+        </sun:property>
+       <sun:property id="AutoDeployDirectoryProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.AutoDeployDirectory}" helpText="$resource{i18nc.domain.AutoDeployDirectoryHelp}">
+            <sun:textField id="AutoDeployDirectory" columns="$int{55}" maxLength="#{sessionScope.fieldLengths['maxLength.domain.AutoDeployDirectory']}" text="#{pageSession.valueMap['autodeployDir']}" />
+        </sun:property>
+        <sun:property id="transprop"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.deployXmlValidation}" helpText="$resource{i18nc.domain.deployXmlValidationHelp}" >
+                    <sun:dropDown id="trans" selected="#{pageSession.valueMap['deployXmlValidation']}" labels={"$resource{i18nc.domain.Full}" "$resource{i18nc.domain.Parsing}"  "$resource{i18nc.domain.None}"}  values={"full" "parsing"  "none"} />
+                </sun:property>
+        <sun:property id="VerifierProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.Verifier}" helpText="$resource{i18nc.domain.VerifierHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['autodeployVerifierEnabled']}" selectedValue="true" />
+        </sun:property>
+         <sun:property id="PrecompileProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nc.domain.Precompile}" helpText="$resource{i18nc.domain.PrecompileHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap['autodeployJspPrecompilationEnabled']}" selectedValue="true" />
+        </sun:property>
+    "<br /><br />
+    </sun:propertySheetSection>
+
+</sun:propertySheet>
+
+#include "/common/shared/propertyDescTable.inc"
+#include "/common/shared/editPageBottomButtons.inc"
+<sun:hidden id="helpKey" value="$resource{help_common.serverInstAppsConfig}" />
+    </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+
+</define>
+</composition>

@@ -1,0 +1,405 @@
+<schema
+  xmlns="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-rdbms-jar"
+  xmlns:wls="http://xmlns.oracle.com/weblogic/weblogic-rdbms-jar"
+  xmlns:j2ee="http://java.sun.com/xml/ns/j2ee"
+  elementFormDefault="qualified"
+  attributeFormDefault="unqualified"
+  version="1.1"
+  >
+
+  <include schemaLocation = "http://xmlns.oracle.com/weblogic/weblogic-javaee/1.1/weblogic-javaee.xsd"/>
+  <import namespace="http://java.sun.com/xml/ns/j2ee" schemaLocation="http://java.sun.com/xml/ns/j2ee/j2ee_1_4.xsd"/>
+  <import namespace="http://java.sun.com/xml/ns/j2ee" schemaLocation="http://java.sun.com/xml/ns/j2ee/ejb-jar_2_1.xsd"/>
+
+  <element name="weblogic-rdbms-jar" type="wls:weblogic-rdbms-jarType">
+  </element>
+
+  <complexType name="weblogic-rdbms-jarType">
+    <sequence>
+      <element name="weblogic-rdbms-bean" type="wls:weblogic-rdbms-beanType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="weblogic-rdbms-relation" type="wls:weblogic-rdbms-relationType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="order-database-operations" type="wls:true-falseType" minOccurs="0"/>
+      <element name="enable-batch-operations" type="wls:true-falseType" minOccurs="0"/>
+      <element name="create-default-dbms-tables" type="wls:create-default-dbms-tablesType" minOccurs="0"/>
+      <element name="validate-db-schema-with" type="wls:validate-db-schema-withType" minOccurs="0"/>
+      <element name="database-type" type="wls:database-typeType" minOccurs="0"/>
+      <element name="default-dbms-tables-ddl" type="wls:default-dbms-tables-ddlType" minOccurs="0"/>
+      <element name="compatibility" type="wls:compatibilityType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+    <attribute name="version" type="string" use="optional"/>
+  </complexType>
+  <complexType name="automatic-key-generationType">
+    <sequence>
+      <element name="generator-type" type="wls:generator-typeType"/>
+      <element name="generator-name" type="wls:generator-nameType" minOccurs="0"/>
+      <element name="key-cache-size" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+      <element name="select-first-sequence-key-before-update" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="caching-elementType">
+    <sequence>
+      <element name="cmr-field" type="wls:cmr-fieldType"/>
+      <element name="group-name" type="wls:group-nameType" minOccurs="0"/>
+      <element name="caching-element" type="wls:caching-elementType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="caching-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="column-mapType">
+    <sequence>
+      <element name="foreign-key-column" type="wls:foreign-key-columnType"/>
+      <element name="key-column" type="wls:key-columnType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="compatibilityType">
+    <sequence>
+      <element name="serialize-byte-array-to-oracle-blob" type="wls:true-falseType" minOccurs="0"/>
+      <element name="serialize-char-array-to-bytes" type="wls:true-falseType" minOccurs="0"/>
+      <element name="allow-readonly-create-and-remove" type="wls:true-falseType" minOccurs="0"/>
+      <element name="disable-string-trimming" type="wls:true-falseType" minOccurs="0"/>
+      <element name="finders-return-nulls" type="wls:true-falseType" minOccurs="0"/>
+      <element name="load-related-beans-from-db-in-post-create" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="create-default-dbms-tablesType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="cmp-fieldType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="cmr-fieldType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="data-source-jndi-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="database-typeType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="dbms-columnType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="dbms-column-typeType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="default-dbms-tables-ddlType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="delay-database-insert-untilType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="field-groupType">
+    <sequence>
+      <element name="group-name" type="wls:group-nameType"/>
+      <choice maxOccurs="unbounded">
+        <element name="cmp-field" type="wls:cmp-fieldType"/>
+        <element name="cmr-field" type="wls:cmr-fieldType"/>
+      </choice>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="field-mapType">
+    <sequence>
+      <element name="cmp-field" type="wls:cmp-fieldType"/>
+      <element name="dbms-column" type="wls:dbms-columnType"/>
+      <element name="dbms-column-type" type="wls:dbms-column-typeType" minOccurs="0"/>
+      <element name="dbms-default-value" type="wls:true-falseType" minOccurs="0"/>
+      <element name="group-name" type="wls:group-nameType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="foreign-key-columnType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="foreign-key-tableType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="generator-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="generator-typeType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="instance-lock-orderType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="key-columnType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="optimistic-columnType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="primary-key-tableType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="query-methodType">
+    <sequence>
+      <element name="method-name"
+		   type="j2ee:method-nameType"/>
+      <element name="method-params"
+		   type="wls:method-paramsType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="relation-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="relationship-cachingType">
+    <sequence>
+      <element name="caching-name" type="wls:caching-nameType"/>
+      <element name="caching-element" type="wls:caching-elementType" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="relationship-role-mapType">
+    <sequence>
+      <element name="foreign-key-table" type="wls:foreign-key-tableType" minOccurs="0"/>
+      <element name="primary-key-table" type="wls:primary-key-tableType" minOccurs="0"/>
+      <element name="column-map" type="wls:column-mapType" maxOccurs="unbounded"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="relationship-role-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="sql-shape-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="sql-shapeType">
+  	<sequence>
+  	  <element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+  	  <element name="sql-shape-name" type="wls:sql-shape-nameType"/>
+  	  <element name="table" type="wls:tableType" minOccurs="0" maxOccurs="unbounded"/>
+  	  <element name="pass-through-columns" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+  	  <element name="ejb-relation-name" type="j2ee:string" minOccurs="0" maxOccurs="unbounded"/>
+  	</sequence>
+  </complexType>
+  <complexType name="table-mapType">
+    <sequence>
+      <element name="table-name" type="wls:table-nameType"/>
+      <element name="field-map" type="wls:field-mapType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="verify-rows" type="wls:verify-rowsType" minOccurs="0"/>
+      <element name="verify-columns" type="wls:verify-columnsType" minOccurs="0"/>
+      <element name="optimistic-column" type="wls:optimistic-columnType" minOccurs="0"/>
+      <element name="trigger-updates-optimistic-column" type="wls:true-falseType" minOccurs="0"/>
+      <element name="version-column-initial-value" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="table-nameType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="tableType">
+    <sequence>
+      <element name="table-name" type="wls:table-nameType"/>
+      <element name="dbms-column" type="wls:dbms-columnType" maxOccurs="unbounded"/>
+      <element name="ejb-relationship-role-name" type="j2ee:string" minOccurs="0"/>
+    </sequence>
+  </complexType >
+  <complexType name="validate-db-schema-withType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="verify-columnsType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="verify-rowsType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="weblogic-qlType">
+    <simpleContent>
+      <extension base="string">
+        <attribute name="id" type="ID"/>
+      </extension>
+    </simpleContent>
+  </complexType>
+  <complexType name="weblogic-queryType">
+    <sequence>
+      <element name="description" type="j2ee:descriptionType" minOccurs="0"/>
+      <element name="query-method" type="wls:query-methodType"/>
+      <choice minOccurs="0">
+        <element name="ejb-ql-query" type="wls:ejb-ql-queryType"/>
+        <element name="sql-query" type="wls:sql-queryType"/>
+      </choice>
+      <element name="max-elements" type="j2ee:xsdPositiveIntegerType" minOccurs="0"/>
+      <element name="include-updates" type="wls:true-falseType" minOccurs="0"/>
+      <element name="sql-select-distinct" type="wls:true-falseType" minOccurs="0"/>
+      <element name="enable-query-caching" type="wls:true-falseType" minOccurs="0"/>
+      <element name="enable-eager-refresh" type="wls:true-falseType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="ejb-ql-queryType">
+    <sequence>
+      <element name="weblogic-ql" type="wls:weblogic-qlType" minOccurs="0"/>
+      <element name="group-name" type="wls:group-nameType" minOccurs="0"/>
+      <element name="caching-name" type="wls:caching-nameType" minOccurs="0"/>
+    </sequence>
+  </complexType>
+  <complexType name="sql-queryType">
+    <sequence>
+      <element name="sql-shape-name" type="wls:sql-shape-nameType" minOccurs="0"/>
+      <element name="sql" type="j2ee:xsdStringType" minOccurs="0"/>
+      <element name="database-specific-sql" type="wls:database-specific-sqlType" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  <complexType name="database-specific-sqlType">
+    <sequence>
+      <element name="database-type" type="wls:database-typeType"/>
+      <element name="sql" type="j2ee:xsdStringType"/>
+    </sequence>
+  </complexType>
+  <complexType name="unknown-primary-key-fieldType">
+    <sequence>
+      <element name="cmp-field" type="wls:cmp-fieldType"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="weblogic-rdbms-beanType">
+    <sequence>
+      <element name="ejb-name" type="j2ee:ejb-nameType"/>
+      <element name="data-source-jndi-name" type="wls:data-source-jndi-nameType"/>
+      <element name="unknown-primary-key-field" type="wls:unknown-primary-key-fieldType" minOccurs="0"/>
+      <element name="table-map" type="wls:table-mapType" maxOccurs="unbounded"/>
+      <element name="field-group" type="wls:field-groupType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="relationship-caching" type="wls:relationship-cachingType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="sql-shape" type="wls:sql-shapeType" minOccurs="0" maxOccurs ="unbounded"/>
+      <element name="weblogic-query" type="wls:weblogic-queryType" minOccurs="0" maxOccurs="unbounded"/>
+      <element name="delay-database-insert-until" type="wls:delay-database-insert-untilType" minOccurs="0"/>
+      <element name="use-select-for-update" type="wls:true-falseType" minOccurs="0"/>
+      <element name="lock-order" type="j2ee:xsdNonNegativeIntegerType" minOccurs="0"/>
+      <element name="instance-lock-order" type="wls:instance-lock-orderType" minOccurs="0"/>
+      <element name="automatic-key-generation" type="wls:automatic-key-generationType" minOccurs="0"/>
+      <element name="check-exists-on-method" type="wls:true-falseType" minOccurs="0"/>
+      <element name="cluster-invalidation-disabled" type="wls:true-falseType" minOccurs="0"/>
+	  <element name="use-inner-join" type="wls:true-falseType" minOccurs="0"/>
+	  <element name="category-cmp-field" type="wls:cmp-fieldType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="weblogic-rdbms-relationType">
+    <sequence>
+      <element name="relation-name" type="wls:relation-nameType"/>
+      <element name="table-name" type="wls:table-nameType" minOccurs="0"/>
+      <element name="weblogic-relationship-role" type="wls:weblogic-relationship-roleType"/>
+      <element name="weblogic-relationship-role" type="wls:weblogic-relationship-roleType" minOccurs="0"/>
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+  <complexType name="weblogic-relationship-roleType">
+    <sequence>
+      <element name="relationship-role-name" type="wls:relationship-role-nameType"/>
+      <element name="group-name" type="wls:group-nameType" minOccurs="0"/>
+      <element name="relationship-role-map" type="wls:relationship-role-mapType" minOccurs="0"/>
+      <element name="db-cascade-delete" type="j2ee:emptyType" minOccurs="0"/>
+      <element name="enable-query-caching" type="wls:true-falseType" minOccurs="0"/> 
+    </sequence>
+    <attribute name="id" type="ID"/>
+  </complexType>
+</schema>

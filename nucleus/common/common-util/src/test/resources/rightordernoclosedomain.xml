@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2004-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- Generated from default-domain.xml.template -->
+<!-- Avoid manual edits of this file. Run "asadmin verify-domain-xml" otherwise.-->
+
+<domain application-root="${com.sun.aas.instanceRoot}/applications" log-root="${com.sun.aas.instanceRoot}/logs"> 
+ <applications>
+  <web-module name="adminapp" context-root="/web1" location="${com.sun.aas.installRoot}/lib/install/applications/adminapp/adminapp_war" object-type="system-admin" enabled="true" directory-deployed="true" availability-enabled="false">
+  <!-- System Web Module - DO NOT DELETE! -->
+  </web-module>
+  <web-module name="admingui" context-root="" location="${com.sun.aas.installRoot}/lib/install/applications/admingui/adminGUI_war" object-type="system-admin" enabled="true" directory-deployed="true" availability-enabled="false">
+  <!-- System Web Module - DO NOT DELETE! -->
+  </web-module>
+  <web-module name="WSTXServices" context-root="/__wstx-services" location="${com.sun.aas.installRoot}/lib/install/applications/wstx-services" object-type="system-all" enabled="true" directory-deployed="true" availability-enabled="false"/>
+  <lifecycle-module class-name="com.sun.jbi.framework.sun.SunASJBIBootstrap" classpath="${com.sun.aas.installRoot}/jbi/lib/jbi_framework.jar" enabled="true" is-failure-fatal="false" name="JBIFramework" object-type="system-all">       
+      <description>"JBI Framework LifecycleModule"</description>
+      <property name="com.sun.jbi.home" value="${com.sun.aas.installRoot}/jbi"/>
+      <property name="com.sun.jbi.defaultLogLevel" value="INFO"/>
+  </lifecycle-module> 
+  <lifecycle-module class-name="com.sun.xml.ws.transport.tcp.server.glassfish.WSTCPLifeCycleModule" classpath="${com.sun.aas.installRoot}/lib/webservices-rt.jar" enabled="true" is-failure-fatal="false" object-type="system-all" name="WSTCPConnectorLCModule"/>
+ </applications>
+ <resources>
+    <jdbc-resource jndi-name="jdbc/__TimerPool" pool-name="__TimerPool" object-type="system-admin" enabled="true"/>
+    <jdbc-resource jndi-name="jdbc/__CallFlowPool" pool-name="__CallFlowPool" object-type="system-all" enabled="true"/>
+    <jdbc-resource jndi-name="jdbc/__default" pool-name="DerbyPool" object-type="user" enabled="true"/>
+ 
+  <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" res-type="javax.sql.XADataSource" name="__CallFlowPool" pool-resize-quantity="2" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
+      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/sun-callflow"/>
+      <property name="connectionAttributes" value=";create=true"/>
+    </jdbc-connection-pool>
+ 
+    <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.apache.derby.jdbc.EmbeddedXADataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="true" max-pool-size="32" max-wait-time-in-millis="60000" res-type="javax.sql.XADataSource" name="__TimerPool" pool-resize-quantity="2" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
+      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer"/>
+    </jdbc-connection-pool>
+    <jdbc-connection-pool connection-validation-method="auto-commit" datasource-classname="org.apache.derby.jdbc.ClientDataSource" fail-all-connections="false" idle-timeout-in-seconds="300" is-connection-validation-required="false" is-isolation-level-guaranteed="false" max-pool-size="32" max-wait-time-in-millis="60000" name="DerbyPool" pool-resize-quantity="2" res-type="javax.sql.DataSource" steady-pool-size="8" non-transactional-connections="false" allow-non-component-callers="false" validate-atmost-once-period-in-seconds="0" connection-leak-timeout-in-seconds="0" connection-leak-reclaim="false" connection-creation-retry-attempts="0" connection-creation-retry-interval-in-seconds="10" statement-timeout-in-seconds="-1" lazy-connection-enlistment="false" lazy-connection-association="false" associate-with-thread="false" match-connections="false" max-connection-usage-count="0" wrap-jdbc-objects="false">
+     <property name="PortNumber" value="1527"/>
+     <property name="Password" value="APP"/>
+     <property name="User" value="APP"/>
+     <property name="serverName" value="localhost"/>
+     <property name="DatabaseName" value="sun-appserv-samples"/>
+     <property name="connectionAttributes" value=";create=true"/>
+   </jdbc-connection-pool>
+ </resources>
+  <servers>
+  <server name="server" config-ref="server-config" lb-weight="100"> 
+    <application-ref enabled="true" ref="adminapp" virtual-servers="__asadmin" lb-enabled="false" disable-timeout-in-minutes="30"/>
+    <application-ref enabled="true" ref="admingui" virtual-servers="__asadmin" lb-enabled="false" disable-timeout-in-minutes="30"/>
+    <application-ref enabled="true" ref="JBIFramework" lb-enabled="false" disable-timeout-in-minutes="30"/>
+    <application-ref enabled="true" ref="WSTXServices" lb-enabled="false" disable-timeout-in-minutes="30"/>
+    <application-ref enabled="true" ref="WSTCPConnectorLCModule" lb-enabled="false" disable-timeout-in-minutes="30"/> 
+    <system-property name="test-prop" value="valueFromServer"/>
+    <resource-ref enabled="true" ref="jdbc/__TimerPool"/>
+    <resource-ref enabled="true" ref="jdbc/__CallFlowPool"/>
+    <resource-ref enabled="true" ref="jdbc/__default"/>
+  </server>
+ </servers> 
+ <configs>
+  <config name="server-config" dynamic-reconfiguration-enabled="true">
+    <http-service> 
+    <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%" rotation-enabled="true" rotation-interval-in-minutes="15" rotation-policy="time" rotation-suffix="yyyy-MM-dd"/>
+    <http-listener id="http-listener-1" address="0.0.0.0" port="8080" acceptor-threads="1" security-enabled="false" default-virtual-server="server" server-name="" xpowered-by="true" enabled="true" family="inet" blocking-enabled="false">
+<property name="proxiedProtocols" value="ws/tcp"/>
+</http-listener>
+    <http-listener id="http-listener-2" address="0.0.0.0" port="8181" acceptor-threads="1" security-enabled="true" default-virtual-server="server" server-name="" xpowered-by="true" enabled="true" family="inet" blocking-enabled="false"/>
+    <http-listener id="admin-listener" address="0.0.0.0" port="4848" acceptor-threads="1" security-enabled="false" default-virtual-server="__asadmin" server-name="" xpowered-by="true" enabled="true" family="inet" blocking-enabled="false"/>
+     <virtual-server id="server" http-listeners="http-listener-1,http-listener-2" hosts="${com.sun.aas.hostName}" state="on" log-file="${com.sun.aas.instanceRoot}/logs/server.log">
+      <property name="docroot" value="${com.sun.aas.instanceRoot}/docroot"/>
+      <property name="accesslog" value="${com.sun.aas.instanceRoot}/logs/access"/>
+     <property name="sso-enabled" value="false"/>
+</virtual-server>
+     <virtual-server id="__asadmin" http-listeners="admin-listener" hosts="${com.sun.aas.hostName}" state="on" log-file="${com.sun.aas.instanceRoot}/logs/server.log">
+      <property name="docroot" value="${com.sun.aas.instanceRoot}/docroot"/>
+      <property name="accesslog" value="${com.sun.aas.instanceRoot}/logs/access"/>
+     <property name="sso-enabled" value="false"/>
+</virtual-server>
+     <request-processing header-buffer-length-in-bytes="8192" initial-thread-count="2" request-timeout-in-seconds="30" thread-count="20" thread-increment="1"/>
+     <keep-alive max-connections="250" thread-count="1" timeout-in-seconds="30"/>
+     <connection-pool max-pending-count="4096" queue-size-in-bytes="4096" receive-buffer-size-in-bytes="4096" send-buffer-size-in-bytes="8192"/>
+     <http-protocol default-response-type="text/plain; charset=iso-8859-1" dns-lookup-enabled="false" forced-response-type="text/plain; charset=iso-8859-1" ssl-enabled="true" version="HTTP/1.1"/>
+     <http-file-cache globally-enabled="false" file-caching-enabled="false" max-age-in-seconds="30" medium-file-size-limit-in-bytes="537600" medium-file-space-in-bytes="10485760" small-file-size-limit-in-bytes="2048" small-file-space-in-bytes="1048576" max-files-count="1024" file-transmission-enabled="false" hash-init-size="0"/>
+   <property name="accessLoggingEnabled" value="false"/>
+</http-service>
+   <iiop-service client-authentication-required="false">
+     <orb use-thread-pool-ids="thread-pool-1" message-fragment-size="1024" max-connections="1024"/>
+
+     <iiop-listener id="orb-listener-1" address="0.0.0.0" port="3700" enabled="true" security-enabled="false"/>
+     <iiop-listener id="SSL" address="0.0.0.0" port="3820" security-enabled="true" enabled="true">
+     <ssl cert-nickname="s1as" client-auth-enabled="false" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
+    </iiop-listener>
+    <iiop-listener id="SSL_MUTUALAUTH" address="0.0.0.0" port="3920" security-enabled="true" enabled="true">
+     <ssl cert-nickname="s1as" client-auth-enabled="true" ssl2-enabled="false" ssl3-enabled="true" tls-enabled="true" tls-rollback-enabled="true"/>
+     </iiop-listener>
+   </iiop-service>
+   <admin-service system-jmx-connector-name="system" type="das-and-server">
+     <!-- The JSR 160 "system-jmx-connector" -->
+     <jmx-connector accept-all="false" address="0.0.0.0" auth-realm-name="admin-realm" enabled="true" name="system" port="8686" protocol="rmi_jrmp" security-enabled="false"/>
+     <!-- The JSR 160 "system-jmx-connector" -->
+     <das-config dynamic-reload-enabled="true" dynamic-reload-poll-interval-in-seconds="2" autodeploy-enabled="true" autodeploy-polling-interval-in-seconds="2" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" autodeploy-verifier-enabled="false" autodeploy-jsp-precompilation-enabled="false" deploy-xml-validation="full" admin-session-timeout-in-minutes="60"/>
+   </admin-service>
+   <web-container>
+       <session-config>
+           <session-manager>
+               <manager-properties/>
+               <store-properties/>
+            </session-manager>
+            <session-properties/>
+       </session-config>
+   </web-container>
+   <ejb-container steady-pool-size="0" pool-resize-quantity="8" max-pool-size="32" cache-resize-quantity="32" max-cache-size="512" pool-idle-timeout-in-seconds="600" cache-idle-timeout-in-seconds="600" removal-timeout-in-seconds="5400" victim-selection-policy="nru" commit-option="B" session-store="${com.sun.aas.instanceRoot}/session-store"> 
+     <ejb-timer-service minimum-delivery-interval-in-millis="7000" max-redeliveries="1" redelivery-interval-internal-in-millis="5000"/>
+   </ejb-container>
+   <mdb-container steady-pool-size="0" pool-resize-quantity="8" max-pool-size="32" idle-timeout-in-seconds="600"/>
+   <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" use-system-logging="false" log-to-console="false" alarms="false" log-rotation-limit-in-bytes="2000000" log-rotation-timelimit-in-minutes="0" retain-error-statistics-for-hours="5">
+    <module-log-levels root="INFO" server="INFO" ejb-container="INFO" cmp-container="INFO" mdb-container="INFO" web-container="INFO" classloader="INFO" configuration="INFO" naming="INFO" security="INFO" admin="INFO" jts="INFO" jta="INFO" deployment="INFO" verifier="INFO" jaxr="INFO" jaxrpc="INFO" saaj="INFO" corba="INFO" javamail="INFO" jms="INFO" connector="INFO" jdo="INFO" cmp="INFO" util="INFO" resource-adapter="INFO" synchronization="INFO" node-agent="INFO" self-management="INFO" group-management-service="INFO" management-event="INFO"/>
+   </log-service>
+   <security-service default-realm="file" audit-enabled="false" jacc="default" audit-modules="default" anonymous-role="AttributeDeprecated" activate-default-principal-to-role-mapping="false">
+    <!-- All administrative users use this realm by default. -->
+    <auth-realm name="admin-realm" classname="com.sun.enterprise.security.auth.realm.file.FileRealm">
+     <property name="file" value="${com.sun.aas.instanceRoot}/config/admin-keyfile"/>
+     <property name="jaas-context" value="fileRealm"/>
+    </auth-realm>
+    <!-- All administrative users use this realm by default. -->
+    <auth-realm name="file" classname="com.sun.enterprise.security.auth.realm.file.FileRealm">
+     <property name="file" value="${com.sun.aas.instanceRoot}/config/keyfile"/>
+     <property name="jaas-context" value="fileRealm"/>
+    </auth-realm>
+    <auth-realm name="certificate" classname="com.sun.enterprise.security.auth.realm.certificate.CertificateRealm">
+    </auth-realm>
+    <jacc-provider name="default" policy-provider="com.sun.enterprise.security.provider.PolicyWrapper" policy-configuration-factory-provider="com.sun.enterprise.security.provider.PolicyConfigurationFactoryImpl">
+     <property name="repository" value="${com.sun.aas.instanceRoot}/generated/policy"/>
+    </jacc-provider>
+    <audit-module name="default" classname="com.sun.enterprise.security.ee.Audit">
+	<property name="auditOn" value="false"/>
+    </audit-module>
+   <message-security-config auth-layer="SOAP">
+	<!-- turned off by default -->
+         <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="XWS_ClientProvider" provider-type="client">
+         	<request-policy auth-source="content"/>
+         	<response-policy auth-source="content"/>
+         	<property name="encryption.key.alias" value="s1as"/>
+         	<property name="signature.key.alias" value="s1as"/>
+         	<property name="dynamic.username.password" value="false"/>
+         	<property name="debug" value="false"/>
+         </provider-config>
+         <provider-config class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-id="ClientProvider" provider-type="client">
+         	<request-policy auth-source="content"/>
+         	<response-policy auth-source="content"/>
+         	<property name="encryption.key.alias" value="s1as"/>
+         	<property name="signature.key.alias" value="s1as"/>
+         	<property name="dynamic.username.password" value="false"/>
+         	<property name="debug" value="false"/>
+         	<property name="security.config" value="${com.sun.aas.instanceRoot}/config/wss-server-config-1.0.xml"/>
+         </provider-config>
+         <provider-config class-name="com.sun.xml.wss.provider.ServerSecurityAuthModule" provider-id="XWS_ServerProvider" provider-type="server">
+         	<request-policy auth-source="content"/>
+         	<response-policy auth-source="content"/>
+         	<property name="encryption.key.alias" value="s1as"/>
+         	<property name="signature.key.alias" value="s1as"/>
+         	<property name="debug" value="false"/>
+         </provider-config>
+         <provider-config class-name="com.sun.xml.wss.provider.ServerSecurityAuthModule" provider-id="ServerProvider" provider-type="server">
+         	<request-policy auth-source="content"/>
+         	<response-policy auth-source="content"/>
+         	<property name="encryption.key.alias" value="s1as"/>
+         	<property name="signature.key.alias" value="s1as"/>
+         	<property name="debug" value="false"/>
+         	<property name="security.config" value="${com.sun.aas.instanceRoot}/config/wss-server-config-1.0.xml"/>
+         </provider-config>
+       </message-security-config> 
+   </security-service>
+    <monitoring-service>
+	<module-monitoring-levels thread-pool="OFF" orb="OFF" ejb-container="OFF" web-container="OFF" transaction-service="OFF" http-service="OFF" jdbc-connection-pool="OFF" connector-connection-pool="OFF" connector-service="OFF" jms-service="OFF" jvm="OFF"/>
+    </monitoring-service>
+    <diagnostic-service compute-checksum="true" verify-config="true" capture-install-log="true" capture-system-info="true" capture-hadb-info="true" capture-app-dd="true" min-log-level="INFO" max-log-entries="500"/>
+   <system-property name="beforeJavaConfig" value="true"/>
+    <java-config test="test" java-home="${com.sun.aas.javaRoot}" debug-enabled="false" debug-options="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=9009" rmic-options="-iiop -poa -alwaysgenerate -keepgenerated -g" javac-options="-g" system-classpath="${com.sun.aas.installRoot}/lib/appserv-launch.jar" classpath-suffix="" env-classpath-ignored="true">
+    <!-- various required jvm-options -->
+    <jvm-options>JVMOPTION1</jvm-options>
+    <jvm-options>JVMOPTION2</jvm-options>
+   </java-config>
+   <system-property name="afterJavaConfig" value="true"/>
+   <system-property name="test-prop" value="valueFromConfig"/>
+   <thread-pools>
+        <thread-pool thread-pool-id="thread-pool-1" min-thread-pool-size="0" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" num-work-queues="1"/>
+
+    </thread-pools>
+  </management-rules>
+  </config> <!-- config model with name "server-config" ends -->
+ </configs>
+ <property name="administrative.domain.name" value="domain1"/>
+</domainxxxx>

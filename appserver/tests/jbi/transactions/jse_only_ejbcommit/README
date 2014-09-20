@@ -1,0 +1,12 @@
+This tests the commit logic of transaction. An EJB webservice is invoked by a servlet. This webservice method uses REQUIRED TX_Attribute. It adds a row in the database table(CUSTOMER_cm) created in the servlet. 
+
+Here is the flow-
+
+1. Standalone client invokes a servlet
+2. Servlet creates table CUSTOMER_cm 
+3. Servlet starts a UserTransaction
+4. Servlet calls the EJB webservice
+5. EJB webservice adds a row in the CUSTOMER_cm table
+6. Servlet commits the transaction
+7. It is checked whether the data is correctly updated in the table.
+8. Table CUSTOMER_cm is dropped

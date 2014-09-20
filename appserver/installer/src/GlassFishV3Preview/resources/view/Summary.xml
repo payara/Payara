@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2008-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<apt:template apt:name="Summary" xmlns:apt="http://www.sun.com/jds/apoc/2004/template"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:oor="http://openoffice.org/2001/registry"
+  xsi:schemaLocation="http://www.sun.com/jds/apoc/2004/template ../../../consumables/schemas/config/apoc/policytemplate.xsd">
+  <apt:category apt:name="Summary" apt:label="Summary" >
+   <apt:page apt:name="summary_page" apt:label="Summary" >
+  <apt:section apt:name="summary" apt:label="Summary" >
+        <apt:property apt:name="SUMMARY_OF_COMPONENTS"
+         apt:dataPath=""
+         apt:type="xs:string">
+         <apt:prop-value></apt:prop-value>
+         <apt:visual>
+            <apt:htmlPanel/>
+         </apt:visual>
+        </apt:property>
+  </apt:section>
+  <apt:scriptHandler apt:scriptLanguage="beanshell" >
+  <apt:scriptCode><![CDATA[
+import org.openinstaller.bus.*;
+import org.openinstaller.core.*;
+import org.openinstaller.provider.dependency.*;
+import org.openinstaller.provider.operation.*;
+import org.openinstaller.provider.sims.*;
+import org.openinstaller.provider.task.*;
+import org.openinstaller.provider.task.TaskControl.TaskCommand;
+import org.openinstaller.util.*;
+import org.openinstaller.util.install.Common;
+import org.openinstaller.core.PROCESSING_MODE;
+import java.util.logging.Logger;
+import java.util.logging.Level;
+import java.util.List;
+import java.io.*;
+import com.sun.enterprise.registration.*;
+import com.sun.enterprise.registration.impl.*;
+
+
+/* determines whether a summary represents a configure operation */
+boolean isConfig(Summary aSum) {
+  return (aSum.getOperation() == OPTYPE.CONFIGURE ||
+          aSum.getOperation() == OPTYPE.MIGRATE ||
+          aSum.getOperation() == OPTYPE.UNCONFIGURE);
+}
+
+void run ()  {
+     File logsLocation = (File) Scripting.getInterpreter().get("gLogFile");
+
+    // Requesting the Summary object
+    theSummary = (List) Scripting.getInterpreter().get("gSummary");
+    theSummaryFile = (java.io.File) Scripting.getInterpreter().get("gSummaryFile");
+
+    // Populating the install data from the Summary object in a table
+    String theFontStart = "<font face='Sans-Serif' size='3'>";
+    StringBuilder theContent = new StringBuilder("<html>");
+    theContent.append("<body>").append(theFontStart);
+
+   /* get processing mode */
+    BusRequest modeReq = new BusRequest("ConfigRequest",
+     new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.DISPLAY_MODE));
+    BusResponse modeResp = bus.publishRequest(modeReq, "svc://general/EngineConfig");
+    String mode = (String)modeResp.getResult();
+
+    theSumURL = theSummaryFile.toURI().toURL();
+	theNextStepsURL = new URI("http://glassfish.java.net/docs/4.0/quick-start-guide.pdf").toURL();
+	theLogURL = logsLocation.toURI().toURL();
+
+  /* determine if anything failed */
+  boolean partial = false;
+  for (Summary sum : theSummary) {
+//    System.out.println(sum.getOperation());
+    if (!sum.getStatus()) {
+      partial = true;
+      break;
+    }
+  }
+
+  /* get processing mode */
+  String theMode = Common.getProcessingMode();
+      if (partial) {
+        theContent.append("<center><h3>" + Msg.get("OVERALL_STATUS", new String[] {}) + ": <font color=\"red\">" + Msg.get("INCOMPLETE", new String[] {}) + "</font></h3></center>");
+      } else {
+        theContent.append("<center><h3>" + Msg.get("OVERALL_STATUS", new String[] {}) + ": <font color=\"green\">" + Msg.get("COMPLETE", new String[] {}) + "</font></h3></center>");
+      }
+      if (theSummaryFile != null && !theMode.equals("REMOVE")) {
+        theContent.append("<em>" + Msg.get("DETAILED_REPORT", new String[] {"<a href=\"" + theSumURL+"\">", "</a>", "<a href=\"" + theNextStepsURL + "\">", "</a>"}) + "</em>");
+      }
+      if (logsLocation != null) {
+        theContent.append("<em>" + Msg.get("LOGS_REPORT", new String[] {"<a href=\"" + theLogURL + "\">", "</a>"}) + "</em>");
+      }
+	    theContent.append("<p>");
+
+      if (logsLocation != null) {
+          theContent.append("<br>");
+          if (theSummaryFile != null) {
+            theContent.append("<a href=\"" + theSumURL + "\">    " + theSummaryFile.getName()+"</a><br>");
+          }
+          theContent.append("<a href=\"" + theLogURL + "\">    " +  logsLocation.getName()+"</a>");
+      }
+
+    theContent.append("<table border='0'>");
+    theContent.append("<tr><th align='left'>" + theFontStart + Msg.get("SUMMARY_PRODUCT_NAME", new String[] {}) + "</font></th><th align='left'>" + theFontStart + Msg.get("SUMMARY_STATUS", new String[] {}) + "</font></th></tr>");
+    for (Summary sum : theSummary) {
+    theContent.append("<tr>");
+    String productDescription = "";
+    if (sum.getProductName().equals("Domain")) {
+        productDescription = "GlassFish Server";
+    }
+    if (sum.getProductName().equals("UpdateTool")) {
+        productDescription = "Update Tool Bootstrap";
+    }
+    if (sum.getProductName().equals("Engine")) {
+        productDescription = "Uninstallation Software";
+    }	
+
+      theContent.append("<td>" + theFontStart + productDescription + "</font></td>");
+      if (!sum.getStatus()) {
+        theContent.append("<td><font color=\"red\">" + theFontStart + sum.getStatusMsg() + "</font></font></td>");
+      } else {
+        theContent.append("<td>" + theFontStart + sum.getStatusMsg() + "</font></td>");
+      }
+      theContent.append("</tr>");
+    }
+    theContent.append("</table></font></body></html>");
+
+
+    // Setting the content in the HTML panel
+    summary = wizard.getComponentByName(content, "SUMMARY_OF_COMPONENTS");
+    summary.setText(theContent.toString());
+
+    // set whether to show external browser or not
+    BusRequest opsReq = new BusRequest("ConfigRequest",
+    new EngineConfigCommand(EngineConfigCommand.COMMAND.GET_CONFIG, EngineConfigItem.UI_OPTIONS));
+    BusResponse opsResp = bus.publishRequest(opsReq, "svc://general/EngineConfig");
+    String mode = (String)opsResp.getResult();
+    if (mode != null) {
+      summary.setInternalFlag(mode.toLowerCase().contains("internalbrowseronly"));
+    }
+    wizard.enableHelp(true);
+    wizard.enableExit(true);
+    summary.requestFocus();
+
+    // Take care of registration.
+   if (!theMode.equals("REMOVE")) {
+    String installHome = (String)ConfigHelper.getValue("InstallHome.directory.INSTALL_HOME");
+    String regFilePath = installHome + File.separator + "glassfish" + File.separator + "lib" +
+			File.separator + "registration" + File.separator + "servicetag-registry.xml";
+    String regPagePath = installHome + File.separator + "glassfish" + File.separator + "lib" +
+			File.separator + "registration" + File.separator + "registration.html";
+
+    // Generate registration landing html page.
+    // On windows replace "\" with "\\"
+    try {
+         if (System.getProperty("os.name").toLowerCase().startsWith("windows")) {
+           RelayService relayService = new RelayService(regFilePath.replace("\\","\\\\"));
+           relayService.generateRegistrationPage(regPagePath.replace("\\","\\\\"));
+        }
+	else {
+           RelayService relayService = new RelayService(regFilePath);
+           relayService.generateRegistrationPage(regPagePath);
+        }
+
+        } catch (Exception ex) {
+		System.out.println(ex.getMessage());
+		LOGGER.log(Level.WARNING,ex.getMessage());
+        }
+	
+    // Check if the registration page has successfully been generated, then add the shutdownhook to VM to
+
+    // launch the browser.
+    File regFile = new File(regPagePath);
+    if (regFile.exists()) {
+      BrowserLaunchShutdownHookup bLaunch = new BrowserLaunchShutdownHookup(regPagePath);
+      Runtime.getRuntime().addShutdownHook(bLaunch);
+      }
+      class BrowserLaunchShutdownHookup extends Thread {
+		private String regPagePath;
+		public BrowserLaunchShutdownHookup(String regPage) {
+			this.regPagePath = regPage;
+		}
+		public void run() {
+    		try {
+                    org.glassfish.installer.util.BrowserLauncher launchBrowser =
+                        new org.glassfish.installer.util.BrowserLauncher();
+                    URL registrationURL = new URL("file://" + regPagePath);
+                    launchBrowser.openURL(registrationURL);
+ 		    }
+ 		catch(Exception ex) {
+			LOGGER.log(Level.FINE,ex.getMessage());
+  		}
+            }
+        }
+}
+}
+return (Runnable)this;]]>
+  </apt:scriptCode>
+  </apt:scriptHandler>
+ </apt:page>
+ </apt:category>
+</apt:template>

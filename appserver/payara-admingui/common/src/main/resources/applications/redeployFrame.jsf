@@ -1,0 +1,172 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+
+<!composition template="/templates/iframe.layout"  guiTitle="$resource{i18n.redeploy.pageTitle}"
+        guiTemplateOnLoad="admingui.deploy.uploadInit('#{dirPathId}','#{dirPathId}','#{dirSelectBtnId}','#{filSelectBtnId}','#{fileuploadId}');"  >
+<!define name="content">
+    <event>
+    <!beforeCreate
+        getRequestValue(key="appName" value=>$page{appName});
+        urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+        setPageSessionAttribute(key="selfUrl" value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
+        //test the app still exists.
+        gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl}" exists="#{requestScope.exist}");
+        if (! #{requestScope.exist}){
+            gf.redirect(page="#{request.contextPath}/common/applications/applications.jsf");
+        }
+        createMap(result="#{pageSession.deployMap}")
+        mapPut(map="#{pageSession.deployMap}", key="appName", value="#{pageSession.appName}");
+        setPageSessionAttribute(key="convertToFalse" value={"precompilejsp", "verify" ,"availabilityEnabled"})
+
+        //we want to show/preserver java-web-start-enabled, and preserveAppsScopedResourcs
+
+        //if the jws prop does not exist,it is true by default. GLASSFISH-19109
+        mapPut(map="#{pageSession.deployMap}" key="$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}" value="true")
+        mapPut(map="#{pageSession.deployMap}" key="implicitCdiEnabled" value="true")
+        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+        setPageSessionAttribute(key="listOfProps" value="#{requestScope.propTable.data.extraProperties.properties}");
+        foreach(var="oneProp" list="#{pageSession.listOfProps}"){
+            if ("#{requestScope.oneProp.name}=preserveAppScopedResources"){
+                mapPut(map="#{pageSession.deployMap}" key="preserveAppScopedResources" value="#{requestScope.oneProp.value}")
+            }
+            if ("#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}"){
+                mapPut(map="#{pageSession.deployMap}" key="$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}" value="#{requestScope.oneProp.value}")
+            }
+            if ("#{requestScope.oneProp.name}=implicitCdiEnabled"){
+                mapPut(map="#{pageSession.deployMap}" key="implicitCdiEnabled" value="#{requestScope.oneProp.value}")
+            }
+        }
+        gf.checkIfEndPointExist(endpoint="#{pageSession.selfUrl}/module/#{pageSession.encodedAppName}/engine/osgi" exists="#{requestScope.osgiExist}");
+        if(#{requestScope.osgiExist}){
+            mapPut(map="#{pageSession.deployMap}", key="type", value="osgi");
+        }
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}" valueMap="#{pageSession.valueMap}");
+        setPageSessionAttribute(key="listPageLink" value="#{gf_application_list_page}");
+        setPageSessionAttribute(key="extraArgs" value="#{gf_application_extra_args}");
+        setPageSessionAttribute(key="cancelPage" value="#{gf_application_cancel_page}");
+        gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+        if ("!(#{pageSession.onlyDASExist})"){
+            mapPut(map="#{pageSession.deployMap}", key="availabilityEnabled", value="#{pageSession.valueMap['availabilityEnabled']}");
+        }
+    />
+    </event>
+<sun:form id="form" method="POST" enctype="multipart/form-data">  
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="title" title="$resource{i18n.redeploy.pageTitle}" helpText="$resource{i18n.redeploy.pageTitleHelp}">
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="uploadButton" text="$resource{i18n.button.OK}"
+                onClick="javascript:
+                    if(getTextElement('#{pageSession.radioChoosenId}').value=='client') {
+                        result = (admingui.deploy.checkFileInputRequired('#{fileuploadId}', '#{reqMsg}'));
+                    } else {
+                        result = (checkRequired('#{dirPathId}', '#{reqMsg}'));
+                    }
+                    if(result == true) {
+                            if (guiValidate('#{reqMsg}','#{reqInt}','#{reqPort}'))
+                                return submitAndDisable(this, '$resource{i18n.button.Processing}', '_self');
+                    }
+                    return false;"
+                 >
+            <!command
+                compare(obj1="#{uploadRdBtn}" obj2="client" objEqual=>$attribute{needUpload});
+                if (${needUpload}){
+                    uploadFileToTempDir(file="#{uploadedFile}" uploadedTempFile=>$attribute{filePath}, origPath=>$attribute{origPath});
+                }
+                if (! ${needUpload}){
+                    setAttribute(key="origPath", value="#{dirPath}");
+                    setAttribute(key="filePath", value="#{dirPath}");
+                }
+                gf.redeploy(filePath="$attribute{filePath}", deployMap="#{pageSession.deployMap}" convertToFalse="#{pageSession.convertToFalse}"
+                        valueMap="#{pageSession.valueMap}" );
+		gf.redirect(page="#{request.contextPath}/common/removeFrame.jsf?#{request.contextPath}/common/applications/applications.jsf&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}&bare=true");
+                />
+        </sun:button>
+        <sun:button id="cancelButton" text="$resource{i18n.button.Cancel}" primary="#{false}" immediate="true"
+            onClick="top.admingui.ajax.loadPage({url:'#{request.contextPath}/#{pageSession.cancelPage}?#{pageSession.extraArgs}'}); return false;">
+        //    <!command
+        //        println("cancel");
+        //        gf.navigate(page="{request.contextPath}/common/applications/applications.jsf");
+        //    />
+        </sun:button>
+    </sun:panelGroup>
+    </facet>
+    </sun:title>
+    <sun:propertySheet id="redeploy" >
+            
+#include "/common/applications/fileComponent.jsf"
+    "<br/><br/>
+    <sun:propertySheetSection >
+            <sun:property id="nameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.application.appName}">
+                <sun:staticText id="name" text="#{appName}"/>
+            </sun:property>
+            <sun:property>
+                <sun:staticText text="" />
+            </sun:property>
+            <sun:property id="precmplProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.precompile}" helpText="$resource{i18n.deploy.PrecompileHelp}">
+                <sun:checkbox id="precompileJSP" label="$resource{i18n.common.Enabled}" selected="#{pageSession.deployMap['precompilejsp']}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="v2" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.run}" helpText="$resource{i18n.deploy.runHelp}">
+                    <sun:checkbox id="ver2" label="$resource{i18n.common.Enabled}" selected="#{pageSession.deployMap['verify']}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
+                <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.deployMap['implicitCdiEnabled']}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="jws"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}"  label="$resource{i18n.deploy.JavaWebStart}" helpText="$resource{i18n.deploy.JavaWebStartHelp}" >
+                <sun:checkbox selected="#{pageSession.deployMap['$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}']}" selectedValue="true" label=" " />
+            </sun:property>
+            <sun:property id="availability" rendered="#{!pageSession.onlyDASExist}" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.availability}" helpText="$resource{i18n.deploy.availabilityHelp}">
+                <sun:checkbox id="availability" label="$resource{i18n.common.Enabled}" selected="#{pageSession.deployMap['availabilityEnabled']}" selectedValue="true" />
+            </sun:property>
+            <sun:property id="keepStateProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}"  label="$resource{i18n.redeploy.keepState}" helpText="$resource{i18n.redeploy.keepStateHelp}" >
+                <sun:checkbox selected="#{pageSession.deployMap['keepState']}" selectedValue="true" label=" " />
+            </sun:property>
+            <sun:property id="preserveAppScopedResourcesProp"  labelAlign="left" noWrap="#{false}" overlapLabel="#{false}"  label="$resource{i18n.redeploy.preserveAppScopedResources}" helpText="$resource{i18n.redeploy.preserveAppScopedResourcesHelp}" >
+                <sun:checkbox selected="#{pageSession.deployMap['preserveAppScopedResources']}" selectedValue="true" label=" " />
+            </sun:property>
+            </sun:propertySheetSection>
+</sun:propertySheet>
+    "<br /><br />
+    </sun:form>
+ </define>
+</composition>

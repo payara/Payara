@@ -1,0 +1,107 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- full/mailResources.jsf -->
+
+
+<!initPage
+    setResourceBundle(key="i18n" bundle="org.glassfish.admingui.core.Strings");
+    setResourceBundle(key="i18njmail" bundle="org.glassfish.full.admingui.Strings");
+    setResourceBundle(key="help_jmail" bundle="org.glassfish.full.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout"
+    guiTitle="$resource{i18njmail.javaMailSessions.pageTitle}"
+    guiTemplateOnLoad="admingui.nav.refreshTree('treeForm:tree:resources:mailResources');
+        setTimeout('admingui.table.changeThreeTableButtons(\\\\\'#{pageSession.topActionGroup}\\\\\', \\\\\'#{pageSession.tableId}\\\\\');', 0);"
+>
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setPageSessionAttribute(key="childType" value="mail-resource");
+        setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/resources/mail-resource" method="GET" result="#{requestScope.resList}");
+// FIXME: Move the following code to resourcesTable.inc and just endpoint(s?)
+// FIXME: adjust all code that calls this to do the same.
+//FIX ME: Will add a new file for getResourceRealStatus with the target Support.
+<!--setAttribute(key="listOfRows" value={});
+setAttribute(key="listOfRowsExtra" value={});
+mapEntrySet("#{requestScope.resList.data.extraProperties.childResources}" set="#{requestScope.entries}");
+foreach(var="entry" list="#{requestScope.entries}") {
+    gf.restRequest(endpoint="#{requestScope.entry.value}" method="GET" result="#{requestScope.res}");
+    listAdd(list="#{requestScope.listOfRows}" value="#{res.data.extraProperties.entity}");
+    //selectiveEncode(value="#{res.data.extraProperties.entity.jndiName}" result="#{requestScope.encName}");
+    gf.createAttributeMap(
+	keys={"selected" /*"encodedName"*/},
+	values={"$boolean{false}" /*"$attribute{encName}"*/},
+	map="#{requestScope.tmpMap}");
+    listAdd(list="#{requestScope.listOfRowsExtra}" value="#{requestScope.tmpMap}");
+}-->
+// FIXME: end
+
+	// NOTE:  The old way of doing this... this is more complicated so I
+	// NOTE:  removed it.  This pattern is done in other places, so I left
+	// NOTE:  it in as a reminder to change those other places.
+        
+        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18njmail.msg.JS.confirmDeleteCR}");
+        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/full/mailResourceNew.jsf");
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/full/mailResources.jsf");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/full/mailResourceEdit.jsf");
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18njmail.resourcesTable.sessions}");
+
+        setPageSessionAttribute(key="generalPage" value="#{request.contextPath}/full/mailResourceEdit.jsf");
+        setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf");
+        
+        setPageSessionAttribute(key="hasPool" value="#{false}" );
+        setPageSessionAttribute(key="hasResType" value="#{false}" );
+    />
+    </event>
+"    <script type="text/javascript">admingui.nav.selectTreeNodeById(admingui.nav.TREE_ID+":resources:mailResources");</script>
+            <sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+                 <sun:title id="propertyContentPage" title="$resource{i18njmail.javaMailSessions.pageTitle}"
+                 helpText="$resource{i18njmail.javaMailSessions.pageTitleHelp}" />
+		 "<br /> <br />
+#include "/full/resourcesTable.inc"     
+	<sun:hidden id="helpKey" value="$resource{help_jmail.javaMailSessions}" />
+            </sun:form>
+</define>
+</composition>

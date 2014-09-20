@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2010-2012 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="glassfish-embedded-all" default="create.distribution" basedir=".">
+    <property name="rootdir" value="target"/>
+    <property name="zipdir" value="${rootdir}/packager_zips"/>
+    <property name="jardir" value="${rootdir}/packager_jars"/>
+    <property name="gfdir" value="${jardir}/${install.dir.name}/glassfish"/>
+    <property name="modulesdir" value="${gfdir}/modules"/>
+    <property name="filedir" value="${rootdir}/packager_files"/>
+
+    <target name="get.distribution.type">
+      <condition property="full.distribution">
+	<equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.all"/>
+      </condition>
+      <condition property="web.distribution">
+	<equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.web"/>
+      </condition>
+      <condition property="nucleus.distribution">
+	<equals arg1="${bundlename}" arg2="org.glassfish.main.embedded.nucleus"/>
+      </condition>
+    </target>
+
+    <target name="create.distribution" depends="get.distribution.type">
+        <antcall target="makeJarDir"/>
+        <antcall target="removeJarsNotNeeded"/>
+	<antcall target="addDtds"/>
+   	<antcall target="addRars"/>
+	<antcall target="addEjbTimer"/>
+        <antcall target="rejar"/>
+        <attachArtifact file="${finaljar}"/>
+     </target>
+
+     <target name="makeJarDir">
+        <echo message="creating jar directory..."/>
+        <copy todir="${jardir}">
+            <fileset dir="${zipdir}">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+        
+        <!-- The packager files are zips with jars inside -->
+        <unzip dest="${jardir}">
+            <fileset dir="${zipdir}">
+                <include name="*.zip"/>
+                <exclude name="mq**.zip"/>
+            </fileset>
+        </unzip>
+
+	<mkdir dir="${rootdir}/temp"/>
+
+     </target>
+
+     <target name="removeJarsNotNeeded">
+	<delete file="${modulesdir}/javahelp.jar"/>
+	<delete file="${modulesdir}/upgrade-tool.jar"/>
+	<delete file="${modulesdir}/web-gui-plugin-common.jar"/>
+	<delete file="${modulesdir}/ant.jar" failonerror="false"/>
+	<delete verbose="true" failonerror="false">
+	  <fileset dir="${modulesdir}" includes="console-**-help.jar"/>
+	  <fileset dir="${modulesdir}" includes="console-**-plugin.jar"/>
+	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
+	  <fileset dir="${gfdir}" includes="**/appserver-domain.jar"/>
+	  <fileset dir="${gfdir}" includes="**/nucleus-domain.jar"/>
+	  <fileset dir="${gfdir}" includes="**/weld-se-core.jar"/>
+	</delete>
+	<delete file="${modulesdir}/autostart/osgi-cdi.jar" failonerror="false"/>
+     </target>
+
+
+    <target name="addDtds" unless="nucleus.distribution">
+        <echo message="adding dtds"/>
+        <jar jarfile="${jardir}/dtds.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="dtds/**/*"/>
+	<jar jarfile="${jardir}/schemas.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="schemas/**/*"/>
+    </target>
+    
+    <target name="rejar">
+        <echo message="rejarring and processing metadata..."/>
+        <taskdef name="rejar" classname="org.jvnet.maven.plugin.antrun.RejarTask" />
+
+	<defaultexcludes add="META-INF/**.RSA"/>
+	<defaultexcludes add="META-INF/**.inf"/>
+	<defaultexcludes add="META-INF/**.SF"/>
+
+        <rejar destfile="${finaljar}" duplicate="preserve" >
+           <manifest>
+                <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
+                <attribute name="Main-Class" value="com.sun.enterprise.glassfish.bootstrap.UberMain"/>
+            </manifest>
+            <zipgroupfileset dir="${jardir}" includes="**/*.jar"/>
+            <fileset dir="${rootdir}/temp" includes="*.rar, *.war"/>
+        </rejar>
+    </target>
+
+
+    <target name="addExtraRars" if="full.distribution">
+	<echo message="Adding additional rars"/>
+
+	<!-- Include property files i.e., glassfish4/mq/lib/props/broker/*.properties of mq.zip in jmsra.rar --> 
+        <unzip dest="${jardir}">
+            <fileset dir="${zipdir}">
+                <include name="mq**.zip"/>
+            </fileset>
+            <patternset>
+                <include name="**/props/broker/**"/>
+            </patternset>
+        </unzip>
+        <move file="${jardir}/${install.dir.name}/mq/lib/props" tofile="${jardir}/${install.dir.name}/glassfish/lib/install/applications/jmsra/props"/>
+        <delete dir="${jardir}/${install.dir.name}/mq"/>
+
+        <jar jarfile="${jardir}/jmsra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/jmsra/**/*"/>
+
+        <jar jarfile="${jardir}/jaxr-ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/jaxr-ra/**/*"/>
+    </target>
+
+    <target name="addRars" depends="addExtraRars" unless="nucleus.distribution">
+        <echo message="adding rars"/>
+        <jar jarfile="${jardir}/__cp_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__cp_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__ds_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__ds_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__dm_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__dm_jdbc_ra/**/*"/>
+        <jar jarfile="${jardir}/__xa_jdbc_ra.rar" basedir="${jardir}/${install.dir.name}/glassfish" includes="lib/install/applications/__xa_jdbc_ra/**/*"/>
+	<copy todir="${rootdir}/temp">
+  		<fileset dir="${jardir}">
+    			<include name="*.rar"/>
+  		</fileset>
+        </copy>
+   <!--     <jar jarfile="${finaljar}" update="true" basedir="${jardir}" includes="__cp_jdbc_ra.rar, __ds_jdbc_ra.rar, __dm_jdbc_ra.rar, __xa_jdbc_ra.rar"/>  -->
+    </target>
+
+  <target name="addEjbTimer" if="full.distribution">
+        <echo message="adding EJBTimer"/>
+	<copy file="${jardir}/${install.dir.name}/glassfish/lib/install/applications/ejb-timer-service-app.war" todir= "${rootdir}/temp"/>
+<!--
+        <jar jarfile="${finaljar}" update="true"  basedir="${jardir}/glassfish4/glassfish/lib/install/applications" includes="ejb-timer-service-app.war"/>
+-->
+   </target>
+
+
+</project>

@@ -1,0 +1,95 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- deploymentAppclient.jsf -->
+<!-- This is the default property sheet for specify app client deployment -->
+
+<sun:propertySheet id="appClient" visible="#{false}" >
+    <!beforeCreate
+        setAttribute(key="fieldMap" value="appClient");
+        createMap(result="#{pageSession.appClient}")
+        mapPut(map="#{pageSession.deployMap}", key="appClient", value="#{pageSession.appClient}");
+        mapPut(map="#{pageSession.appClient}", key="convertToFalseList", value={ "verify", "force" , "PROPERTY-implicitCdiEnabled", "PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}"} );
+        mapPut(map="#{pageSession.appClient}", key="PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}" , value="true" );
+        mapPut(map="#{pageSession.appClient}", key="PROPERTY-implicitCdiEnabled", value="true");
+     />
+    <!afterCreate
+        getClientId(component="$this{component}" clientId=>$page{appClientId});
+    />
+    <sun:propertySheetSection id="psection" >
+
+<sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
+    <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.appClient['name']}" styleClass="required" required="#{true}"
+        onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
+        <!afterCreate
+            getClientId(component="$this{component}" clientId=>$page{appNameId});
+        />
+    </sun:textField>
+</sun:property>
+
+<sun:property id="implicitCdi" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.implicitCdi}" helpText="$resource{i18n.deploy.implicitCdiHelp}">
+    <sun:checkbox id="implicitCdi" label="$resource{i18n.common.Enabled}" selected="#{pageSession.appClient['PROPERTY-implicitCdiEnabled']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="jw" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.JavaWebStart}" helpText="$resource{i18n.deploy.JavaWebStartHelp}">
+	<sun:checkbox id="jwt" label="$resource{i18n.common.Enabled}" selected="#{pageSession.appClient['PROPERTY-$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="v2" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.run}" helpText="$resource{i18n.deploy.runHelp}">
+        <sun:checkbox id="ver2" label=" " selected="#{pageSession.appClient['verify']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="force" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.forceRedeploy}" helpText="$resource{i18n.deploy.forceRedeployHelp}">
+        <sun:checkbox id="force"  label=" " selected="#{pageSession.appClient['force']}" selectedValue="true" />
+</sun:property>
+
+<sun:property id="deploymentOrder" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.deploymentOrder}" helpText="$resource{i18n.deploy.deploymentOrderHelp}" >
+	<sun:textField id="deploymentOrder" styleClass="integer" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.deploymentOrder']}" text="#{pageSession.appClient['deploymentOrder']}" />
+</sun:property>
+
+<sun:property id="descriptionProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.common.description}" helpText="$resource{i18n.deploy.descHelp}" >
+	<sun:textField id="description" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.common.description']}" text="#{pageSession.appClient['description']}" />
+</sun:property>
+
+
+    </sun:propertySheetSection>
+</sun:propertySheet>    

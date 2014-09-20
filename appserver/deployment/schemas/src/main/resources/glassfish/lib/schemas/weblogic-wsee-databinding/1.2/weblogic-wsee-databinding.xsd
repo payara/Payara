@@ -1,0 +1,463 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  XML Schema for external mapping metadata for the Databinding framework.
+  The data is used to define the attributes of a particular Java Web Service
+  endpoint.
+
+  This schema defines XML constructs of three sorts:
+
+  1. Constructs that are analogous to JAX-WS or jsr-181that override or define
+     attributes on the Service Endpoint Interface (SEI) and JAXB annotations
+     for the value types utilized in the interfaces of the SEI.
+
+  2. Additional mapping specifications not available using standard JAX-WS or
+     JAXB annotations, primarily for use with the java.util.Collections API.
+
+  3. References to external JAXB mapping metadata from a Toplink OXM
+     file.
+
+  When a construct is the direct analog of a JAX-WS, jsr-181 or JAXB
+  annotation, the comment in the schema will contain a notation such as:
+
+     Corresponding Java annotation: javax.jws.WebParam.Mode
+
+
+ -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://xmlns.oracle.com/weblogic/weblogic-wsee-databinding"
+    xmlns="http://xmlns.oracle.com/weblogic/weblogic-wsee-databinding"
+  elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.2">
+
+  <xs:element name="java-web-service-endpoint" type="java-wsdl-mapping-type">
+  <xs:annotation>
+    <xs:documentation>
+    	DEPRECATED: use java-wsdl-mapping
+    </xs:documentation>
+  </xs:annotation>
+  </xs:element>
+
+  <xs:element name="java-wsdl-mapping" type="java-wsdl-mapping-type">
+  <xs:annotation>
+    <xs:documentation>
+        The top-level element is the Web Service end-point being defined.
+
+        attributes:
+            java-type-name: the SEI class these definitions apply to
+            databinding: the databinding module to use, such as
+                "glassfish.jaxb", "toplink.jaxb", "toplink.sdo".
+    </xs:documentation>
+  </xs:annotation>
+  </xs:element>
+
+    <xs:complexType name="java-wsdl-mapping-type">
+      <xs:sequence>
+        <xs:element name="xml-schema-mapping" minOccurs="0">
+            <xs:annotation>
+                <xs:documentation>
+                    The xml-schema-mapping element points to the
+                    external JAXB annotations for the value types
+                    that occur in an SEI.  This mapping element can
+                    either be defined externally and referenced via a
+                    URI, or embedded as an XML fragment within the
+                    current instance end-point definition document.
+                </xs:documentation>
+            </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+                <xs:any minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+          <xs:group ref="class-annotation" minOccurs="0" maxOccurs="unbounded">
+              <xs:annotation>
+                  <xs:documentation>
+                      The class-annotation group defines the set of
+                      annotations applicable to the Java class
+                      declaration.
+                  </xs:documentation>
+              </xs:annotation>
+          </xs:group>
+        <xs:element name="java-methods" minOccurs="0">
+            <xs:annotation>
+                <xs:documentation>
+                    Each java method in the SEI may use the external
+                    metadata defined in this schema in addition to or
+                    in lieu of the standard JAX-WS annotations.
+                </xs:documentation>
+            </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="java-method" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name"           type="xs:string" use="optional"/>
+      <xs:attribute name="java-type-name" type="xs:string" use="optional"/>
+      <xs:attribute name="databinding"    type="xs:string" use="optional" />
+      <xs:anyAttribute namespace="##other" processContents="skip" />
+    </xs:complexType>
+
+  <xs:group name="class-annotation">
+      <xs:annotation>
+          <xs:documentation>
+            The class-annotation group defines the set of annotations
+            that may be applied to a class declaration.
+          </xs:documentation>
+      </xs:annotation>
+    <xs:choice>
+       <xs:any namespace="##other" processContents="skip"/>
+       <xs:element ref="web-service"  minOccurs="0" />
+       <xs:element ref="soap-binding" minOccurs="0" />
+       <xs:element ref="binding-type" minOccurs="0" />
+       <xs:element ref="mtom" minOccurs="0" />
+      </xs:choice>
+    </xs:group>
+
+    <xs:element name="toplink-oxm">
+        <xs:annotation>
+            <xs:documentation>
+              The toplink-oxm element is used to include external JAXB
+              annotations for the specified Java package directly in this
+              file, as opposed to in an external file (see toplink-oxm-file
+              below).  The schema model for this element is avaailable in
+              the Toplink JAXB schema.
+            </xs:documentation>
+        </xs:annotation>
+      <xs:complexType>
+      <xs:sequence>
+         <xs:any namespace="##other" processContents="skip"/>
+      </xs:sequence>
+      <xs:attribute name="java-package" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+
+    <xs:element name="toplink-oxm-file">
+        <xs:annotation>
+            <xs:documentation>
+              The toplink-oxm-file element is used to include external JAXB
+              annotations for the specified Java package, from an external
+              resource, typically a filename or a URL.  Note relative URL's
+              are supported in relation to the current schema document.
+
+              attributes:
+              java-package: the package the annotations apply to
+              file-path: where the file is located
+            </xs:documentation>
+        </xs:annotation>
+      <xs:complexType>
+      <xs:attribute name="java-package" type="xs:string" use="required" />
+      <xs:attribute name="file-path" type="xs:string" use="required" />
+    </xs:complexType>
+  </xs:element>
+
+
+  <xs:element name="java-method">
+      <xs:annotation>
+          <xs:documentation>
+              The java-method element defines a set of annotations that may
+              be applied to a method and its parameters.
+          </xs:documentation>
+      </xs:annotation>
+
+    <xs:complexType>
+      <xs:sequence>
+          <xs:group ref="method-annotation" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="java-params" minOccurs="0">
+              <xs:annotation>
+                  <xs:documentation>
+                      Each Java parameter may have the annotations
+                      defined by the java-param element.
+                  </xs:documentation>
+              </xs:annotation>
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element ref="java-param" maxOccurs="unbounded" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="name" type="xs:string" use="required">
+          <xs:annotation>
+              <xs:documentation>
+                  The name parameter corresponds to the Java name of
+                  the method to which the annotations apply.
+              </xs:documentation>
+          </xs:annotation>
+      </xs:attribute>
+            <xs:anyAttribute namespace="##other" processContents="skip" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:group name="method-annotation">
+      <xs:annotation>
+      <xs:documentation>
+          The method-annotation group defines the set of
+          annotations applicable to a defined method in the SEI.
+      </xs:documentation>
+    </xs:annotation>
+    <xs:choice>
+       <xs:any namespace="##other" processContents="skip"/>
+      <xs:element ref="web-method"   minOccurs="0" />
+      <xs:element ref="web-result"   minOccurs="0" />
+      <xs:element ref="oneway"       minOccurs="0" />
+      <xs:element ref="soap-binding" minOccurs="0" />
+      <xs:element ref="action"       minOccurs="0" />
+      </xs:choice>
+    </xs:group>
+
+  <xs:element name="java-param">
+      <xs:annotation>
+          <xs:documentation>
+            The java-param element contains the group of JAX-WS parameter
+            annotations, plus optionally binds a specific Java type
+            mapping to the parameter.  The set of applicable attributes is
+            not specifically enumerated.
+          </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+          <xs:group ref="param-annotation" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="java-type" type="xs:string" use="optional" />
+         <xs:anyAttribute namespace="##other" processContents="skip" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:group name="param-annotation">
+      <xs:annotation>
+          <xs:documentation>
+              The param-annotation defines the annotations applied to an
+              individual parameter.  Theses consist of the JAX-WS standard
+              WebParam plus others to be defined.
+          </xs:documentation>
+      </xs:annotation>
+    <xs:choice>
+       <xs:any namespace="##other" processContents="skip"/>
+            <xs:element ref="web-param" minOccurs="0" />
+      </xs:choice>
+    </xs:group>
+
+  <xs:simpleType name="web-param-mode">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.WebParam.Mode (Enum)
+        </xs:documentation>
+      </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="IN" />
+      <xs:enumeration value="OUT" />
+      <xs:enumeration value="INOUT" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:element name="web-service">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.WebService
+          @Target(value=TYPE)
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="endpoint-interface" type="xs:string" default=""/>
+      <xs:attribute name="name" type="xs:string" default=""/>
+      <xs:attribute name="port-name" type="xs:string" default=""/>
+      <xs:attribute name="service-name" type="xs:string" default=""/>
+      <xs:attribute name="target-namespace" type="xs:string" default=""/>
+      <xs:attribute name="wsdl-location" type="xs:string" default=""/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="web-param">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.WebParam
+          @Target(value={PARAMETER}
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="header" type="xs:boolean" default="false" />
+      <xs:attribute name="mode" type="web-param-mode" default="IN" />
+      <xs:attribute name="name" type="xs:string" default=""/>
+      <xs:attribute name="part-name" type="xs:string" default=""/>
+      <xs:attribute name="target-namespace" type="xs:string" default=""/>
+    </xs:complexType>
+  </xs:element>
+
+  <!--
+      The following elements may be applied to a method:
+      @Target(value={METHOD})
+   -->
+  <xs:element name="oneway">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.Oneway
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="web-method">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.WebMethod
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="action" type="xs:string" default=""/>
+      <xs:attribute name="exclude" type="xs:boolean" default="false" />
+      <xs:attribute name="operation-name" type="xs:string" default=""/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="web-result">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.WebResult
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="header" type="xs:boolean" default="false" />
+      <xs:attribute name="name" type="xs:string" default=""/>
+      <xs:attribute name="part-name" type="xs:string" default=""/>
+      <xs:attribute name="target-namespace" type="xs:string" default=""/>
+    </xs:complexType>
+  </xs:element>
+
+
+  <!--
+      The following types correspond to JAX-WS Enums
+  -->
+  <xs:simpleType name="soap-binding-style">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.soap.SOAPBinding.Style
+        </xs:documentation>
+      </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="DOCUMENT" />
+      <xs:enumeration value="RPC" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="soap-binding-use">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.soap.SOAPBinding.Use
+        </xs:documentation>
+      </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="LITERAL" />
+      <xs:enumeration value="ENCODED" />
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="soap-binding-parameter-style">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation:
+              javax.jws.soap.SOAPBinding.ParameterStyle
+        </xs:documentation>
+      </xs:annotation>
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="BARE" />
+      <xs:enumeration value="WRAPPED" />
+    </xs:restriction>
+  </xs:simpleType>
+
+    <!--
+        The following apply to types and in some cases methods.
+     -->
+  <xs:element name="soap-binding">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.jws.soap.SOAPBinding
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="style" type="soap-binding-style" default="DOCUMENT" />
+      <xs:attribute name="use" type="soap-binding-use" default="LITERAL" />
+      <xs:attribute name="parameter-style" type="soap-binding-parameter-style" default="WRAPPED" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="binding-type">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.xml.ws.BindingType
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="value" type="xs:string" default="" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="request-wrapper">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.xml.ws.RequestWrapper
+        </xs:documentation>
+      </xs:annotation>
+      <xs:complexType>
+        <xs:attribute name="local-name" type="xs:string" default="" />
+        <xs:attribute name="target-namespace" type="xs:string"
+          default="" />
+        <xs:attribute name="class-name" type="xs:string" default="" />
+      </xs:complexType>
+    </xs:element>
+
+  <xs:element name="response-wrapper">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.xml.ws.ResponseWrapper
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="local-name" type="xs:string" default="" />
+      <xs:attribute name="target-namespace" type="xs:string" default="" />
+      <xs:attribute name="class-name" type="xs:string" default="" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="action">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.xml.ws.Action
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="fault-action" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+      <xs:attribute name="input" type="xs:string" default="" />
+      <xs:attribute name="output" type="xs:string" default="" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="fault-action">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.xml.ws.FaultAction
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="className" type="xs:string" use="required"/>
+      <xs:attribute name="value" type="xs:string" default="" />
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="mtom">
+      <xs:annotation>
+        <xs:documentation>
+          Corresponding Java annotation: javax.xml.ws.soap.MTOM
+        </xs:documentation>
+      </xs:annotation>
+    <xs:complexType>
+      <xs:attribute name="enabled" type="xs:boolean" default="true" />
+      <xs:attribute name="threshold" type="xs:int" default="0" />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

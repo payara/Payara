@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<project name="common-impl" default="all" basedir=".">
+    
+    <property file="${ws.root}/build.properties"/>
+    <property environment="env"/>
+    <property name="config.dir" value="${ant.file}"/>
+    <property name="is.war.module" value="true"/>
+    <property name="is.persistence.module" value="true"/>
+    <property name="result.output" value="${ws.root}/test-output"/>
+    <property name="assemble.dir" value="${ws.root}/dist/${testsuite.name}"/>
+    <property name="class.output" value="${ws.root}/classes/${testsuite.name}/app"/>
+    <!--<property name="test.class.output" value="${ws.root}/classes/${testsuite.name}/test"/>-->
+    <property name="test.class.output" value="${ws.root}/classes/test"/>
+    <property name="dist.dir" value="${ws.root}/dist/${testsuite.name}"/>
+
+    
+    <target name="clean">
+        <delete dir="${ws.root}/classes"/>
+        <delete dir="${result.output}"/>
+        <delete dir="${ws.root}/dist"/>
+        <echo message="Deleting all WAR/EAR in local testsuite directories!!!"/>
+        <echo message="There should not be any WAR file checked in."/>
+        <delete>
+            <fileset dir="." includes="**/*.war"/>
+        </delete>
+    </target>
+    
+    <path id="run.testng.classpath">
+	    <fileset dir="${ws.root}/lib">
+            <include name="**/*.jar"/>
+        </fileset>
+        <pathelement location="${class.output}"/>
+        <pathelement location="${test.class.output}"/>
+    </path>
+    
+    <path id="class.path">
+        <fileset dir="${glassfish.home}">
+            <include name="**/*javaee*.jar"/>
+        </fileset>
+        <pathelement location="${class.output}"/>
+        <pathelement location="${test.class.output}"/>
+        <pathelement path="${plugin_classpath}"/>
+    </path>
+    
+    <!-- TestNG class fileset -->
+    
+    <path id="path2testng">
+	    <pathelement location="${ws.root}/lib/testng-5.0-jdk15.jar"/>
+    </path>
+    
+    <taskdef name="testng" classname="org.testng.TestNGAntTask">
+        <classpath>
+	    <pathelement path="${plugin_classpath}"/>
+        </classpath>
+    </taskdef>
+    
+    
+    <target name="compile-tests"
+	    description="compile the test ng example" depends="">
+	    <echo message="compiling test client to ${test.class.output}"/>
+
+        <mkdir dir="${test.class.output}"/>
+        <javac   debug="true"
+                 fork="true"
+                 source="1.5"
+                 srcdir="src/test"
+                 destdir="${test.class.output}">
+		 <classpath>
+		   <pathelement path="${plugin_classpath}"/>
+      		 </classpath>
+        </javac>
+    </target>
+    
+    
+    
+    
+    <!-- Generate the TestNG report -->
+    <target name="report">
+        <delete dir="${result.output}"/>
+        <mkdir dir="${test-report}"/>
+        <junitreport todir="${test-report}">
+            <fileset dir=".">
+                <include name="**/test-output/**/*.xml"/>
+                <exclude name="**/testng-failed.xml"/>
+            </fileset>
+            <report format="noframes" todir="test-report"/>
+        </junitreport>
+    </target>
+    
+    <target name="archive-type">
+        <echo message="archive-type is ${archive.type}"/>
+        <condition property="archive.war">
+            <equals arg1="war" arg2="${archive.type}"/>
+        </condition>
+        <!-- condition property="archive.ear">
+            <equals pattern="ear" string="${archive.type}"/>
+        </condition>
+        <condition property="archive.jar">
+            <equals pattern="jar" string="${archive.type}"/>            
+        </condition -->
+    </target>
+    
+    <target name="build-impl">
+        <antcall target="build-war"/>
+        <antcall target="build-ear"/>
+        <antcall target="build-jar"/>
+    </target>
+    
+    <target name="compile-single">
+	    <delete dir="$class.output}"/>
+	    <mkdir dir="${class.output}"/>
+        <javac   debug="true"
+                 fork="true"
+                 source="1.5"
+                 classpathref="class.path"
+                 srcdir="src"
+                 destdir="${class.output}"/>
+        
+    </target>
+    
+
+<target name="build-war" depends="archive-type" if="archive.war">  
+    <echo message="Now creating a war file ${dist.dir}/${war.file.ext}"/>
+    
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <delete file="${war.file.ext}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <echo message="Now compiling"/>
+    <javac   debug="true"
+    fork="true"
+    source="1.5"
+    classpathref="class.path"
+    srcdir="src/java"
+    destdir="${class.output}"/>
+    
+    <mkdir dir="${class.output}/META-INF"/>
+    <copy file="metadata/persistence.xml" todir="${class.output}/META-INF" failonerror="false"/> 
+    <copy file="src/java/ApplicationResource.properties" todir="${class.output}" failonerror="false"/>
+    
+    
+    <war destfile="${dist.dir}/${war.file.ext}" webxml="metadata/web.xml">
+        <fileset dir="web/html"/>
+        <fileset dir="web/jsp"/>
+        <!--<lib dir="thirdparty/libs">
+        <exclude name="jdbc1.jar"/>
+        </lib>-->
+        <classes dir="${class.output}">        
+            <include name="**/*.class"/>
+	    <include name="**/persistence.xml"/>
+	    <include name="**/*.properties"/>
+        </classes>
+        <!--<zipfileset dir="src/graphics/images/gifs"
+        prefix="images"/>-->
+        <webinf dir="metadata">                  
+            <include name="**/*.xml"/>                  
+            <exclude name="**/persistence.xml"/>
+        </webinf>        
+    </war>
+    <antcall target="update-war-struts"/>
+    <copy file="${dist.dir}/${war.file.ext}" tofile="./${war.file.ext}"/>
+    <echo message="======================================================="/>
+    <echo message="Packaged Archive at ${dist.dir}/${war.file.ext} and at ${war.file.ext}"/>
+    <echo message="======================================================="/>
+</target>
+
+<target name="update-war-struts" if="add.struts.jar">
+	<echo message="Adding struts jar to WEB-INF/lib"/>
+<war destfile="${dist.dir}/${war.file.ext}" update="true">
+	<lib dir="${ws.root}/web/lib/struts-1.2.9">
+		<include name="**/*.jar"/>
+	</lib>
+</war>
+	
+</target>
+
+<target name="build-jar" depends="archive-type" if="archive.jar">    
+    <delete dir="${class.output}"/>
+    <delete dir="${dist.dir}"/>
+    <mkdir dir="${class.output}"/>
+    <mkdir dir="${dist.dir}"/>
+    <echo message="Now compiling"/>
+    <javac   debug="true"
+    fork="true"
+    source="1.5"
+    classpathref="class.path"
+    srcdir="src/java"
+    destdir="${class.output}/app"/>
+    <echo message="Now creating a war file ${dist.dir}/${war.file.ext}"/>
+    <war destfile="${dist.dir}/${war.file.ext}" webxml="metadata/web.xml" needxmlfile="true">
+	    <fileset dir="src/java/html"/>
+        <fileset dir="src/myapp/jsp"/>
+        <!--<lib dir="thirdparty/libs">
+        <exclude name="jdbc1.jar"/>
+        </lib>-->
+        <classes dir="${class.output}/app">        
+            <include name="**/*.class"/>        
+        </classes>
+        <!--<zipfileset dir="src/graphics/images/gifs"
+        prefix="images"/>-->
+        <!--<webinf dir="metadata">                  
+            <include name="**/*.xml"/>                                        
+        </webinf>-->
+    </war>
+    <copy file="${dist.dir}/${war.file.ext}" tofile="./${war.file.ext}"/>
+    <echo message="======================================================="/>
+    <echo message="Packaged Archive at ${dist.dir}/${war.file.ext}"/>
+    <echo message="======================================================="/>
+</target>
+
+
+<target name="build-ear" depends="archive-type" if="archive.ear">    
+    <delete dir="${class.output}/app"/>
+    <delete dir="${dist.dir}"/>
+    <mkdir dir="${class.output}/app"/>
+    <mkdir dir="${dist.dir}"/>
+    <echo message="Now compiling"/>
+    <javac   debug="true"
+    fork="true"
+    source="1.5"
+    classpathref="class.path"
+    srcdir="src/myapp/java"
+    destdir="${class.output}/app"/>
+    <echo message="Now creating a war file ${dist.dir}/${war.file.ext}"/>
+    <war destfile="${dist.dir}/${war.file.ext}" webxml="metadata/web.xml" needxmlfile="true">
+        <fileset dir="src/myapp/html"/>
+        <fileset dir="src/myapp/jsp"/>
+        <!--<lib dir="thirdparty/libs">
+        <exclude name="jdbc1.jar"/>
+        </lib>-->
+        <classes dir="${class.output}/app">        
+            <include name="**/Hello.class"/>        
+        </classes>
+        <!--<zipfileset dir="src/graphics/images/gifs"
+        prefix="images"/>-->
+        <!--<webinf dir="metadata">                  
+            <include name="**/*.xml"/>                                        
+        </webinf>-->
+    </war>
+    <copy file="${dist.dir}/${war.file.ext}" tofile="./${war.file.ext}"/>
+    <echo message="======================================================="/>
+    <echo message="Packaged Archive at ${dist.dir}/${war.file.ext}"/>
+    <echo message="======================================================="/>
+</target>
+
+
+<target name="checkTestNGXML">
+<available file="testng.xml" property="testng.xml.present"/>
+</target>
+
+
+<target name="runtest-impl">
+	<antcall target="runtest-impl-class"/>
+	<antcall target="runtest-impl-xml"/>
+</target>
+
+<target name="runtest-impl-class" depends="compile-tests,checkTestNGXML" unless="testng.xml.present">
+    <echo message="=============Starting TestNG test at ${test.class.output}  ============"/>    
+    <mkdir dir="${result.output}"/>
+    <testng outputdir="${result.output}"
+    suitename="${testsuite.name}"
+    testname="${testng.test.name}"
+            classpathref="class.path">
+        <classfileset dir="${test.class.output}" includes="**/${testng.testclient}.class"/>
+        <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+        <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+    </testng>
+</target>
+
+<target name="runtest-impl-xml" depends="checkTestNGXML" if="testng.xml.present">
+    <echo message="=============Starting TestNG test at ${test.class.output} from testng.xml  ============"/>    
+    <mkdir dir="${result.output}"/>
+    <testng outputdir="${result.output}"
+    suitename="${testsuite.name}"
+    testname="${testng.test.name}"
+            classpathref="${plugin.classpath}">
+        <xmlfileset dir="." includes="testng.xml"/>
+        <jvmarg value="-Dhttp.host=${glassfish.http.host}" />
+        <jvmarg value="-Dhttp.port=${glassfish.http.port}" />
+    </testng>
+</target>
+
+</project>

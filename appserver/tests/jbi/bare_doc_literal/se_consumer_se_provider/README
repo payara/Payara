@@ -1,0 +1,11 @@
+This is a test case to test Bare Doc/Literal style operations.
+
+The test case uses:
+------------------
+
+Java EE Service Engine as the consumer.
+
+Java EE Service Engine as the provider.
+
+client <----> servlet <-----> JavaEE SE <-----NMR------> JavaEE SE <------> webservice
+

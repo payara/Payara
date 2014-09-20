@@ -1,0 +1,50 @@
+# This file contains GlassFish V2 asadmin commands that are NOT carried 
+# forward to GlassFish v3. This is a very simple file with one command name 
+# per line. Anything with a leading # '#' like this line is treated a comment.
+# An 'L' or 'R' at the end tells you if it's a Local or Remote command.
+# I know it is a maintenance headache, but this file is needed to move to a 
+# more sensible command line syntax and separation of command options
+# from asadmin program options. For details, see CLI spec for GlassFish v3.
+# Also see the companion list of commands -- supported-legacy-command-names
+install-addons L
+uninstall-addons L
+create-persistence-resource R
+delete-persistence-resource R
+list-persistence-resources R
+reconfig R
+start-appserv L
+stop-appserv L
+display-error-statistics R
+display-error-distribution R
+publish-to-registry R
+unpublish-from-registry R
+list-registry-locations R
+generate-diagnostic-report R
+start-callflow-monitoring R
+stop-callflow-monitoring R
+create-management-rule R
+delete-management-rule R
+list-management-rules R
+create-node-agent L
+delete-node-agent L
+list-node-agents L
+start-node-agent L
+stop-node-agent L
+create-node-agent-config R
+delete-node-agent-config R
+clear-status R
+list-status R
+configure-ha-cluster R
+remove-ha-cluster R
+create-ha-store R
+clear-ha-store R
+configure-ha-persistence R
+create-repository-zip R (unsupported in v2 as well)
+apply-repository-zip R (unsupported in v2 as well)
+get-hadb-info R
+set-hadb-info R
+is-hadb-installed R
+ping-hadb-agent R
+restart-hadb R
+start-hadb R
+stop-hadb R

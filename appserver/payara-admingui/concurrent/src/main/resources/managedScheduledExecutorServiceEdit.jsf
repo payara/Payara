@@ -1,0 +1,98 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!-- concurrent/managedScheduledExecutorServiceEdit.jsf -->
+<!initPage
+    setResourceBundle(key="i18ncon" bundle="org.glassfish.concurrent.admingui.Strings");
+    setResourceBundle(key="help_con" bundle="org.glassfish.concurrent.admingui.Helplinks")
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18ncon.managedScheduledExecutorService.editPageTitle}" >
+<!define name="content">
+<event>
+    <!beforeCreate
+    getRequestValue(key="name" value="#{pageSession.Name}");
+    urlencode(value="#{pageSession.Name}" encoding="UTF-8" result="#{pageSession.encodedName}");
+    setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/concurrent/managedScheduledExecutorServiceEdit.jsf?name=#{pageSession.encodedName}");
+    setPageSessionAttribute(key="parentPage" value="#{request.contextPath}/concurrent/managedScheduledExecutorServices.jsf");
+    setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/resources");
+    setPageSessionAttribute(key="childType" value="managed-scheduled-executor-service");
+    setPageSessionAttribute(key="isConcurrent" value="true");
+    //For resourceEditTabs.inc
+    setSessionAttribute(key="resEditTabs" value="general");
+    setPageSessionAttribute(key="generalPage" value="#{pageSession.selfPage}");
+    setPageSessionAttribute(key="targetPage" value="#{request.contextPath}/common/resourceNode/resourceEditTargets.jsf?name=#{pageSession.encodedName}");
+
+    gf.buildResourceUrl(base="#{pageSession.parentUrl}/#{pageSession.childType}", resourceName="#{pageSession.Name}", url="#{pageSession.selfUrl}");
+    gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+    setPageSessionAttribute(key="convertToFalseList" value={"enabled", "contextInfoEnabled", "longRunningTasks" });
+    setPageSessionAttribute(key="skipAttrsList", value={"jndiName"});
+    
+    gf.restRequest(endpoint="#{pageSession.selfUrl}/property" method="GET" result="#{requestScope.propTable}");
+    setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+    setPageSessionAttribute(key="edit" value="#{true}" );
+
+    setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
+    setPageSessionAttribute(key="showMaxPoolSize" value="#{false}");
+    setPageSessionAttribute(key="showTaskQueue" value="#{false}");
+    setPageSessionAttribute(key="listCommand" value="list-managed-scheduled-executor-services");
+    setPageSessionAttribute(key="logicalJndiMapKey" value="managedScheduledExecutorServices");
+
+    />
+</event>
+<sun:form id="propertyForm">
+#include "/common/resourceNode/resourceEditTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+    
+    <!-- Page Title -->
+    <sun:title id="propertyContentPage" title="$resource{i18ncon.managedScheduledExecutorService.editPageTitle}" helpText="$resource{i18ncon.managedScheduledExecutorService.editPageTitleHelp}" >        
+#include "/common/resourceNode/resourceEditPageButtons.inc"
+    </sun:title>
+#include "/concurrent/managedExecutorServiceAttr.inc"
+#include "/common/shared/propertyDescTable.inc"
+    
+    <sun:hidden id="helpKey" value="$resource{help_con.managedScheduledExecutorServiceEdit}" />
+</sun:form>
+            "<br/>
+//#include "/common/shared/changeButtonsJS.inc"
+</define>
+</composition>
+

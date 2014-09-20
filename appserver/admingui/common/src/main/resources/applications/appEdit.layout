@@ -1,0 +1,189 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
+    setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
+/>
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18n.enterpriseApplications.editPageTitle}"
+    guiTemplateOnLoad="admingui.help.pluginId = 'common';"
+    guiOnLoad="admingui.nav.selectTreeNodeWithURL('#{request.contextPath}/common/applications/applicationEdit.jsf?appName=#{pageSession.encodedAppName}');"
+>
+<!define name="content">
+    <event>
+    <!beforeCreate
+        setSessionAttribute(key="appGeneralTabs" value="general");
+        getRequestValue(key="appName" value="#{pageSession.appName}");
+        getRequestValue(key="appType" value="#{pageSession.appType}");
+        getRequestValue(key="listPageLink" value="#{pageSession.listPageLink}"  default="/common/applications/applications.jsf");
+        urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
+        setPageSessionAttribute(key="selfUrl" value="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}");
+        setPageSessionAttribute(key="appRefUrl" value="#{sessionScope.REST_URL}/servers/server/server/application-ref/#{pageSession.encodedAppName}");
+        gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
+        gf.appScopedResourcesExist(appName="#{pageSession.appName}" appScopedResExists="#{pageSession.appScopedResExists}");
+        gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}", valueMap="#{pageSession.valueMap}");
+        if (#{pageSession.onlyDASExist}){
+
+            gf.checkIfEndPointExist(endpoint="#{pageSession.appRefUrl}" exists="#{requestScope.exist}");
+            if (! #{requestScope.exist}){
+                convertListToArray(list={"server"} array="#{requestScope.target}" );
+                gf.changeAppTargets(appName="#{pageSession.appName}" targets="#{requestScope.target}"  status="true");
+                setPageSessionAttribute(key="status" value="true");
+            }
+            if (#{requestScope.exist}){
+                gf.getTargetEnableInfo(appName="#{pageSession.appName}" status="#{pageSession.status}")
+            }
+            gf.getEntityAttrs(endpoint="#{pageSession.appRefUrl}" valueMap="#{pageSession.valueMap2}");
+            mapPut(map="#{pageSession.valueMap2}"  key="enabled" value="#{pageSession.status}");
+            setPageSessionAttribute(key="origState" value="#{pageSession.status}");
+            setPageSessionAttribute(key="finalShowVS" value="#{pageSession.showVS}");
+            setPageSessionAttribute(key="finalShowAvail" value="#{false}");
+        }
+
+        if (!#{pageSession.onlyDASExist}){
+            gf.getTargetEnableInfo(appName="#{pageSession.appName}" status="#{pageSession.status}")
+            setPageSessionAttribute(key="finalShowVS" value="#{false}");
+            setPageSessionAttribute(key="finalShowAvail" value="#{pageSession.showAvailability}");
+        }
+
+        if (! #{pageSession.hasPageTitle}){
+            setPageSessionAttribute(key="pageTitle" value="$resource{i18n.enterpriseApplications.editPageTitle}");
+        }
+
+        if (! #{pageSession.hasPageTitleHelp}){
+            setPageSessionAttribute(key="pageTitleHelp" value="$resource{i18n.enterpriseApplications.editPageTitleHelp}");
+        }
+        setPageSessionAttribute(key="convertToFalseList2" value={"enabled"});
+        setPageSessionAttribute(key="convertToFalseList" value={"enabled", "availabilityEnabled"});
+
+        gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json" method="GET" result="#{requestScope.propTable}");
+        setPageSessionAttribute(key="tableList" value="#{requestScope.propTable.data.extraProperties.properties}");
+
+    />
+    </event>
+        <sun:form id="propertyForm">
+        
+#include "/common/applications/appGeneralTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+
+
+<!-- Page Title -->
+<sun:title id="propertyContentPage" title="#{pageTitle}" helpText="#{pageTitleHelp}" >
+    <!-- Buttons  -->
+    <!facet pageButtonsTop>
+    <sun:panelGroup id="topButtons">
+        <sun:button id="saveButton" text="$resource{i18n.button.Save}" primary="#{true}">
+            <!command
+                gf.createEntity(endpoint="#{pageSession.selfUrl}"
+                    attrs="#{pageSession.valueMap}"
+                    convertToFalse="#{pageSession.convertToFalseList}");
+
+                if (#{pageSession.onlyDASExist}){
+                    if (#{pageSession.showVS}){
+                        convertArrayToCommaString(array="#{pageSession.selectedVS}"  commaString="#{requestScope.tmp}");
+                        mapPut(map="#{pageSession.valueMap2}" key="virtualServers" value="#{requestScope.tmp}");
+                    }
+                    gf.createEntity(endpoint="#{pageSession.appRefUrl}"
+                        attrs="#{pageSession.valueMap2}"
+                        convertToFalse="#{pageSession.convertToFalseList2}");
+                }
+
+                if (#{pageSession.showJavaWebStart){
+                    if(!#{pageSession.javaWebStartEnabled}){
+                        //will be null if checkbox is unchecked.
+                        setPageSessionAttribute(key="javaWebStartEnabled" value="false");
+                    }
+                    foreach (var="oneProp" list="#{pageSession.tableList}") {
+                        if (#{requestScope.oneProp.name}=$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}){
+                            setAttribute(key="found" value="true");
+                            mapPut(map="#{requestScope.oneProp}" key="value" value="#{pageSession.javaWebStartEnabled}")
+                        }
+                    }
+                    if (!#{requestScope.found}){
+                        createMap(result="#{requestScope.jmap}");
+                        mapPut(map="#{requestScope.jmap}" key="name" value="$constant{org.glassfish.deployment.client.DFDeploymentProperties.DEPLOY_OPTION_JAVA_WEB_START_ENABLED}")
+                        mapPut(map="#{requestScope.jmap}" key="value" value="#{pageSession.javaWebStartEnabled}")
+                        listAdd(list="#{pageSession.tableList}" value="#{requestScope.jmap}");
+                    }
+                }
+
+                if(!#{pageSession.implicitCdiEnabled}){
+                    //will be null if checkbox is unchecked.
+                    setPageSessionAttribute(key="implicitCdiEnabled" value="false");
+                }
+                foreach (var="oneProp" list="#{pageSession.tableList}") {
+                    if (#{requestScope.oneProp.name}=implicitCdiEnabled){
+                        setAttribute(key="foundCdi" value="true");
+                        mapPut(map="#{requestScope.oneProp}" key="value" value="#{pageSession.implicitCdiEnabled}")
+                    }
+                }
+                if (!#{requestScope.foundCdi}){
+                    createMap(result="#{requestScope.cdimap}");
+                    mapPut(map="#{requestScope.cdimap}" key="name" value="implicitCdiEnabled")
+                    mapPut(map="#{requestScope.cdimap}" key="value" value="#{pageSession.implicitCdiEnabled}")
+                    listAdd(list="#{pageSession.tableList}" value="#{requestScope.cdimap}");
+                }
+
+                javaToJSON(obj="#{pageSession.tableList}" json="#{requestScope.tmpJSON}");
+                gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="POST", data="#{requestScope.tmpJSON}", result="#{requestScope.restResponse}");
+
+                prepareSuccessfulMsg();
+                gf.redirect(page="#{pageSession.editPage}?appName=#{pageSession.encodedAppName}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+          />
+          </sun:button>
+          <sun:button id="cancelButton" text="$resource{i18n.button.Cancel}" primary="#{false}"  immediate="#{true}">
+            <!command
+                gf.redirect(page="#{request.contextPath}#{pageSession.listPageLink}");
+            />
+        </sun:button>
+    </sun:panelGroup>
+    </facet>
+ </sun:title>
+
+<!insert name="editAppFields" />
+
+#include "/common/applications/subComponentTable.inc"
+
+	<sun:hidden id="helpKey" value="$resource{help_common.applicationEdit}" />
+        </sun:form>
+</define>
+</composition>

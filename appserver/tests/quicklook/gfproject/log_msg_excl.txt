@@ -1,0 +1,292 @@
+#
+# DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+#
+# Copyright (c) 2010-2011 Oracle and/or its affiliates. All rights reserved.
+#
+# The contents of this file are subject to the terms of either the GNU
+# General Public License Version 2 only ("GPL") or the Common Development
+# and Distribution License("CDDL") (collectively, the "License").  You
+# may not use this file except in compliance with the License.  You can
+# obtain a copy of the License at
+# https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+# or packager/legal/LICENSE.txt.  See the License for the specific
+# language governing permissions and limitations under the License.
+#
+# When distributing the software, include this License Header Notice in each
+# file and include the License file at packager/legal/LICENSE.txt.
+#
+# GPL Classpath Exception:
+# Oracle designates this particular file as subject to the "Classpath"
+# exception as provided by Oracle in the GPL Version 2 section of the License
+# file that accompanied this code.
+#
+# Modifications:
+# If applicable, add the following below the License Header, with the fields
+# enclosed by brackets [] replaced by your own identifying information:
+# "Portions Copyright [year] [name of copyright owner]"
+#
+# Contributor(s):
+# If you wish your version of this file to be governed by only the CDDL or
+# only the GPL Version 2, indicate your decision by adding "[Contributor]
+# elects to include this software in this distribution under the [CDDL or GPL
+# Version 2] license."  If you don't indicate a single choice of license, a
+# recipient has the option to distribute your version of this file under
+# either the CDDL, the GPL Version 2 or to extend the choice of license to
+# its licensees as provided above.  However, if you add GPL Version 2 code
+# and therefore, elected the GPL Version 2 license, then the option applies
+# only if the new code is made subject to such option by the copyright
+# holder.
+#
+
+# Lines in server.log that contain any of the following words
+# will be skipped.
+# When adding new messages, please add a comment with the reason.
+# Note that the messages are treated as regular expressions:
+#  Escape symbols that have special meaning in regexs ("|"s, "["s, etc.)
+
+
+# Loggers of excluded third-party libraries
+org.glassfish.grizzly.
+org.eclipse.persistence
+org.hibernate.validator
+org.jboss.weld
+# Shoal logging system overhaul is MS5 deliverable
+ShoalLogger
+
+# Grizzly start-up message
+Grizzly Framework 
+
+# GlassFish start-up messages
+# Common messages have [^\w] appended to reduce hits when used in other messages.
+Successfully launched
+JVM invocation command line
+Running GlassFish Version
+GlassFish Server Open Source Edition
+
+
+# No need to log following log level messages
+\|CONFIG\|
+\|FINE\|
+\|FINER\|
+\|FINEST\|
+
+
+# Message mistakenly picked up due to line ending in it:
+MQJMSRA_RA4001: getJMXServiceURLList:Exception:Message=No JMXServiceURL was found for connector jmxrmi.
+Address used: [^\w]
+
+
+# Exceptions
+java.lang.IllegalArgumentException: 
+java.net.SocketException
+java.net.MalformedURLException
+javax.management.InstanceAlreadyExistsException:
+
+
+# Messages that probably should have Id's but currently don't have any:
+# These are to be removed as the messages are fixed towards HCF,
+# or moved up with a comment for the reason not to give them unique Id's.
+# Some of the messages here are printed by the test applications.
+# As they have no unique logger name I cannot filter them out more efficiently.
+
+
+# Dont find in v3 source code - No need to fix this
+Initializing Mojarra 
+osgi-javaee-base.jar
+org.apache.felix.scr.jar
+org.apache.felix.fileinstall-autodeploy-bundles.cfg
+osgi-web-container.jar
+Started bundle: file:
+com.sun.jmx.interceptor.DefaultMBeanServerInterceptor.
+org.glassfish.admin.amx.impl.config.AMXConfigLoader
+amx-pref =
+Unprocessed event : UnprocessedChangeEvent
+org.apache.felix.bundlerepository.jar
+Address used:
+cannot load 
+GrizzlyNetworkManager Configuration
+BIND_INTERFACE_ADDRESS
+TCPSTARTPORT..TCPENDPORT
+MULTICAST_ADDRESS:MULTICAST_PORT:
+FAILURE_DETECT_TCP_RETRANSMIT_TIMEOUT(ms)
+ThreadPool CORE_POOLSIZE
+HIGH_WATER_MARK
+START_TIMEOUT(ms)
+MAX_WRITE_SELECTOR_POOL_SIZE
+VIRTUAL_MULTICAST_URI_LIST
+instantiated following NetworkManager
+GMS:Reporting Joined and Ready state to group
+GMS View Change Received for group
+Calling reportMyState() with READY
+Leaving GMS group
+normal termination of ViewWindow thread for group
+MessageWindow thread for group
+SignalHandler task named
+SLF4J:
+MemberId: eein
+Method init defined on class
+Dgosh.args=--nointeractive
+Dorg.glassfish.additionalOSGiBundlesToStart
+Multiple JSF Applications found on same
+Method destroy defined on
+Initiating Jersey application
+custom-resource =
+profiler =
+config =
+Registered org.glassfish.ha.store.adapter.cache.ShoalBackingStoreProxy
+Stopping com.sun.enterprise.v3.server.AppServerStartup
+Metro monitoring rootname successfully
+Exception while processing 
+Grizzly 2.0 NetworkManager
+\|stopping\|
+
+# From QL Test - No need to fix this
+In SingletonBean::init()
+sessionCtx = SingletonBean; id: 
+In SingletonBean::init
+In HelloBean::init
+In HelloBean::hello
+ says hello, world
+BeanMessage: appendMessage=
+Hello from beanLeaf: 
+resource-adapter-name=AMXConfigProxyTests.connectorConnectionPoolTest
+name=AMXConfigProxyTests.connectorConnectionPoolTest
+user-name=testUser, password=testPassword
+    \]
+description=desc.for.prop
+desc.for.AMXConfigProxyTests
+AMXConfigProxyTests.TEST_PROP
+Servlet processing do get..
+Filter.init
+Filter.doFilter
+Filter.doFilter.msg = PASS-:
+testcase=noleak
+testcase=usertx
+testcase=llinit
+testcase=llquery
+2. loading, deptName = Marketing
+testcase = initialize
+1. Persisting project....
+Prepersit m1() called for EmployeeEmployee 
+testcase = validatePersist
+2. Persisting employee with long name....
+Prepersit m1() called for EmployeeEmployee 
+Expected BV Ex
+msg=Bean Validation constraint\(s\) violated while executing Automatic Bean Validation on callback event:
+testcase = validateUpdate
+3. Updating employee with long name....
+Expected BV Ex
+msg=Bean Validation constraint(s) violated while executing Automatic Bean Validation on callback event:'preUpdate'. Please refer to embedded ConstraintViolations for details.
+testcase = validateRemove
+4. Removing employee with long name....
+ called for EmployeeEmployee 
+OK: not get BV ex for remove
+testcase = verify
+5. Verifying employee ....
+, name=emp
+In HelloBean::
+servlet init: message=PostBeanRootPostBeanLeafHelloBeanLeaf
+BeanMessage: appendMessage=PostBeanRootPostBeanLeafHelloBeanLeafHelloBeanRoot
+Persisting ....
+JpaBean id=1, name=JpaBean
+==== : com.sun.ejb.containers.EJBLocalObjectInvocationHandler@
+In HelloBean::woke up from 5second sleep
+HelloStateless
+HelloStateful
+Business method marked with @Remove called in local ejb3.0 stateful
+PRE-DESTROY callback received in local ejb3.0 stateful
+NRU-com.sun.mdb.HelloStateful: Cannot load from  BACKUPSTORE FOR Key: 
+In InterceptorB::init()
+StatelessBean = numberguess.StatelessLocal_
+In InterceptorA::init()
+statelessLocal = numberguess.StatelessLocal_
+foo = numberguess.Foo
+In StatefulBean::init()
+sessionCtx = StatefulBean; id: 
+In SingletonBean::hello()
+In StatelessBean::init()
+singleton = numberguess.__EJB31_Generated__SingletonBean__Intf____Bean__
+In StatelessBean::hello()
+In Game::reset()
+In InterceptorB::around
+In InterceptorA::around
+In StatefulBean::hello()
+Filter.destroy
+Realm file was successfully updated.
+In SingletonBean::destroy()
+In InterceptorB::destroy()
+In InterceptorA::destroy()
+In StatefulBean::destroy()
+In StatelessBean::destroy()
+In HelloBean::destroy()
+Server restart initiated
+Config Listener notification got interrupted
+Failed to restart:
+Failed to call the method
+Failed to check connection
+singleton =
+bvsize
+Hello
+# from ejb/mdb test
+Got message!!!
+Calling hello
+Successfully caught EJBException after  accessing removed SFSB
+javax.ejb.NoSuchObjectLocalException: The EJB does not exist. session-key: 
+Sending message
+message sent
+javax.management.InstanceNotFoundException: amx:pp=/J2EEDomain/J2EEServer\[eein1-with-a-very-very-very-long-name
+
+
+# From LocalStrings.properties file - No need to fix this
+was successfully deployed in
+The Admin Console is installing...
+The Admin Console is already installed, but not yet loaded.
+The Admin Console is loading...
+The Admin Console application is loaded.
+Probe is not yet registered: glassfish:ejb:
+The Admin Console is already installed, but not yet loaded.
+Server shutdown initiated
+Sun specific deployment descriptor
+The configured OSGi Telnet port
+Error transferring service tags
+Process executing stclient command failed
+The Admin Console is starting. Please wait
+Admin Console: Initializing Session Attributes...
+Shutdown procedure finished
+
+# From core/kernel AppServerStartup.java - Only logged when env. var. AS_DEBUG is set to true
+TOTAL TIME INCLUDING CLI: 
+# From flashlight/framework BtraceClientGenerator.java - Only logged when env. var. AS_DEBUG is set to true
+\*\*\*\* Generated BTRACE Client
+# From common/common/util NetUtils.java - Only logged when env. var. AS_DEBUG is set to true
+ --> FREE
+
+# Cloud related changes need to handle later on
+Interceptor called for
+
+# http://java.net/jira/browse/GLASSFISH-12251
+Portable JNDI names for EJB 
+A system exception occurred during an invocation on EJB 
+javax.ejb.NoSuchObjectLocalException: The EJB does not exist. session-key: 
+ Current thread done cleanup
+Glassfish-specific \(Non-portable\) JNDI names for EJB 
+StatefulContainerbuilder instantiated store
+StatefulContainerBuilder.buildStoreManager()
+
+# http://java.net/jira/browse/GLASSFISH-16535
+ADDRESSLIST in
+JMS Service Connection
+end point determine destionation name
+
+# http://java.net/jira/browse/GLASSFISH-16534
+null for config
+MNTG0205:Gmbal registration
+
+# http://java.net/jira/browse/GLASSFISH-16531
+JACC Policy Provider: Failed Permission Check
+
+# http://java.net/jira/browse/GLASSFISH-16583
+Listening to REST requests at context
+
+# http://java.net/jira/browse/GLASSFISH-16585
+FileBackingStore

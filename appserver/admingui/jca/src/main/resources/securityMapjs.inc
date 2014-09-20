@@ -1,0 +1,126 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<f:verbatim>
+    <script type="text/javascript">
+
+function enableSecurityMapFields(opt){
+    if(opt == 'principals') {
+ 	enableComponent('#{principalsId}', 'text');
+        getTextElement('#{userGroupsId}').value='';
+        disableComponent('#{userGroupsId}', 'text');
+	getTextElement('#{principalsId}').focus();
+        #{themeJavascript.JS_PREFIX}.radiobutton.setChecked('#{pPropId}:optB', true);
+    }else{
+        getTextElement('#{principalsId}').value='';
+	disableComponent('#{principalsId}', 'text');
+        enableComponent('#{userGroupsId}', 'text');
+        getTextElement('#{userGroupsId}').focus();
+        #{themeJavascript.JS_PREFIX}.radiobutton.setChecked('#{grpPropId}:optA', true);
+    }
+ }
+
+
+function checkClassname(){
+    //alert('in checkClassname');
+    var opt = getSelectedValueFromForm(document.forms['propertyForm'], 'usersOption');
+    //alert('opt='+opt);
+    if (opt == 'users'){
+        if(checkForSelectedValue('#{userGroupsId}')){
+	    return true;
+	}else{
+            return showAlert('$resource{i18njca.msg.JS.securityMap.enterUserGroups}')
+	}
+    }
+    if(opt == 'principals' ){
+	if(checkForSelectedValue('#{principalsId}')){
+	    return true;
+	}else{
+            return showAlert('$resource{i18njca.msg.JS.securityMap.enterPrincipals}')
+	}
+    }
+}
+
+function enableWorkSecurityMapFields(opt){
+    if(opt == 'principals') {
+        var val = getTextElement('#{eisuserGroupsId}').value;
+        disableComponent('#{eisuserGroupsId}', 'text');
+        getTextElement('#{eisuserGroupsId}').value=val;
+        enableComponent('#{eisprincipalsId}', 'text');
+        getTextElement('#{eisprincipalsId}').focus();
+        #{themeJavascript.JS_PREFIX}.radiobutton.setChecked('#{pPropId}:optB', true);
+    }else{
+        var val = getTextElement('#{eisprincipalsId}').value;
+	disableComponent('#{eisprincipalsId}', 'text');
+        getTextElement('#{eisprincipalsId}').value=val;
+        enableComponent('#{eisuserGroupsId}', 'text');
+        getTextElement('#{eisuserGroupsId}').focus();
+        #{themeJavascript.JS_PREFIX}.radiobutton.setChecked('#{grpPropId}:optA', true);
+    }
+ }
+
+function isSecurityMappingPresent(reqMsg) {
+    var isGroup = document.getElementById('#{grpPropId}:optA').checked;
+    var isPrincipal = document.getElementById('#{pPropId}:optB').checked;
+    if (isGroup) {
+        var comp = document.getElementById('#{eisuserGroupsId}');
+        var groups = comp.value;
+        if (groups == null || groups == '') {
+            comp.select();
+            comp.focus();
+            return showAlert(reqMsg + ' ' + getLabel(comp));
+        }
+    }
+    if (isPrincipal) {
+        var comp = document.getElementById('#{eisprincipalsId}');
+        var principals = comp.value;
+        if (principals == null || principals == '') {
+            comp.select();
+            comp.focus();
+            return showAlert(reqMsg + ' ' + getLabel(comp));
+        }
+    }
+    return true;
+}
+
+</script>
+</f:verbatim>
