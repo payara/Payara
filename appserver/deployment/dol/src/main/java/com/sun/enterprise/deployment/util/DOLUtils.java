@@ -425,7 +425,9 @@ public class DOLUtils {
     public static void readAlternativeRuntimeDescriptor(ReadableArchive appArchive, ReadableArchive embeddedArchive, Archivist archivist, BundleDescriptor descriptor, String altDDPath) throws IOException, SAXParseException {
         String altRuntimeDDPath = null;
         ConfigurationDeploymentDescriptorFile confDD = null;
-        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivist.getConfigurationDDFiles(), archivist.getModuleType(), embeddedArchive)) {
+        @SuppressWarnings("unchecked") 
+        List<ConfigurationDeploymentDescriptorFile> archivistConfDDFiles = archivist.getConfigurationDDFiles();
+        for (ConfigurationDeploymentDescriptorFile ddFile : sortConfigurationDDFiles(archivistConfDDFiles, archivist.getModuleType(), embeddedArchive)) {        
             String ddPath = ddFile.getDeploymentDescriptorPath();
             if (ddPath.indexOf(DescriptorConstants.WLS) != -1 && 
                 appArchive.exists(DescriptorConstants.WLS + altDDPath)) {
