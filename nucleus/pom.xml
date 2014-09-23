@@ -175,7 +175,7 @@
         <glassfishbuild.version>3.2.20</glassfishbuild.version>
         <source-annotation-processor.version>1.0</source-annotation-processor.version>
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
-        <command-security-plugin.version>1.0.6</command-security-plugin.version>
+        <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <mail.version>1.5.2</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
@@ -460,8 +460,8 @@
                         <configuration>
                             <rules>
                                 <requireJavaVersion>
-                                    <version>[${jdk.version},1.8.0)</version>
-                                    <message>You need JDK greater or equal than ${jdk.version} (JDK8 not supported yet)</message>
+                                    <version>[${jdk.version},1.8.0]</version>
+                                    <message>You need JDK7 (u9+) or JDK8</message>
                                 </requireJavaVersion>
                                 <requireMavenVersion>
                                     <version>[3.0.3,3.2.1],[3.2.3,)</version>
