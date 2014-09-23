@@ -595,9 +595,9 @@ create_version_info(){
 create_changes_info(){
     curl $JOB_URL/lastSuccessfulBuild/artifact/bundles/version-info.txt > ${WORKSPACE}/previous-version-info.txt
     PREVIOUS_SVN_REV=`cat ${WORKSPACE}/previous-version-info.txt | head -1 | awk '{print $2}'`
-    PREVIOUS_SVN_REV=$((PREVIOUS_SVN_REV+1))
     touch ${WORKSPACE}/changes.txt
     if [ "${PREVIOUS_SVN_REV}" != "${SVN_REVISION}" ] ; then
+        PREVIOUS_SVN_REV=$((PREVIOUS_SVN_REV+1))
         svn log -r ${PREVIOUS_SVN_REV}:${SVN_REVISION} ${GF_WORKSPACE_URL_SSH}/trunk/main > ${WORKSPACE}/changes.txt
         printf "\n%s\n\n" "==== CHANGELOG ===="
         cat ${WORKSPACE}/changes.txt
