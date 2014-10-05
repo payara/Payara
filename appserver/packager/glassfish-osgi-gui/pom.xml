@@ -137,7 +137,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admingui</groupId>
-            <artifactId>glassfish-osgi-console-plugin</artifactId>
+            <artifactId>payara-osgi-console-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>        
     </dependencies>
