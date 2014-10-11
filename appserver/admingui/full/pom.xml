@@ -53,7 +53,7 @@
     <packaging>glassfish-jar</packaging>
     
     <name>Admin Console Full distribution plugin</name>
-    <description>Plugin bundle for GlassFish v3 Admin Console common-full package</description>
+    <description>Plugin bundle for Payara v4 Admin Console common-full package</description>
 
     <developers>
         <!-- See parent POM -->
@@ -61,18 +61,6 @@
 
     <build>
         <plugins>
-             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>apt-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>process</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <executions>
