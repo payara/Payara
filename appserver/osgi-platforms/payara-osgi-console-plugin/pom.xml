@@ -47,7 +47,7 @@
         <version>4.1</version>
       <relativePath>../../payara-admingui/pom.xml</relativePath>
     </parent>
-    <artifactId>glassfish-osgi-console-plugin</artifactId>
+    <artifactId>payara-osgi-console-plugin</artifactId>
     <packaging>glassfish-jar</packaging>
     
     <name>Payara OSGi Console Plugin</name>
