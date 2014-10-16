@@ -1461,6 +1461,30 @@ public class RecoveryManager {
             }
         }
     }
+    
+    /**
+    *  Waits for resync to complete with timeout.
+    *
+    * @param cmtTimeout Container managed transaction timeout
+    *
+    * @return
+    *
+    * @see
+    */
+
+    public static void waitForResync(int cmtTimeOut) {
+
+        if (resyncInProgress != null) {
+            try {
+                resyncInProgress.waitTimeoutEvent(cmtTimeOut);
+            } catch (InterruptedException exc) {
+		_logger.log(Level.SEVERE,"jts.wait_for_resync_complete_interrupted");
+		 String msg = LogFormatter.getLocalizedMessage(_logger,
+			"jts.wait_for_resync_complete_interrupted");
+                 throw  new org.omg.CORBA.INTERNAL(msg);
+            }
+        }
+    }
 
     static void addToIncompleTx(CoordinatorImpl coord, boolean commit) {
         inCompleteTxMap.put(coord, commit);

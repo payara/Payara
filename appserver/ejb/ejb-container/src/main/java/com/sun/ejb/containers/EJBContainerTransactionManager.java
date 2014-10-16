@@ -87,7 +87,7 @@ public class EJBContainerTransactionManager {
     private JavaEETransactionManager transactionManager;
     private BaseContainer container;
     private EjbDescriptor ejbDescriptor;
-    private int cmtTimeoutInSeconds = 0;
+    private int cmtTimeoutInSeconds = 120;
 
     /**
      * Construct new instance and set basic references
@@ -98,7 +98,9 @@ public class EJBContainerTransactionManager {
         transactionManager = ejbContainerUtilImpl.getTransactionManager();
 
         IASEjbExtraDescriptors iased = ejbDesc.getIASEjbExtraDescriptors();
-        cmtTimeoutInSeconds = iased.getCmtTimeoutInSeconds();
+        if(iased.getCmtTimeoutInSeconds() != 0){
+		cmtTimeoutInSeconds = iased.getCmtTimeoutInSeconds();
+        }
 
     }
 

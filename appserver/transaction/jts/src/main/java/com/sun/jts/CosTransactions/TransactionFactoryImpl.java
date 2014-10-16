@@ -177,7 +177,7 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
 
         // Ensure that resync has completed.
 
-        RecoveryManager.waitForResync();
+        RecoveryManager.waitForResync(timeout);
 
         // Create a new top-level Coordinator, and initialise it
         // with the given time-out value.  If the operation fails,
