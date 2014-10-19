@@ -129,7 +129,7 @@ public class EventSemaphore {
      */
     synchronized public void waitEvent()
         throws InterruptedException {
-        while( !posted )
+        if( !posted )
             wait();
     }
     
@@ -149,10 +149,14 @@ public class EventSemaphore {
     
     synchronized public void waitTimeoutEvent(int cmtTimeout) 
     	throws InterruptedException {
-            while( !posted ){
-                wait(cmtTimeout);
-            }
-        }
+    	
+    	if( !posted){
+    		    long timeout = (System.currentTimeMillis()/1000) + cmtTimeout;
+            	while( timeout - (System.currentTimeMillis()/1000) > 0 ){
+            		wait(timeout - (System.currentTimeMillis()/1000));
+            	}
+        	}
+    	}
 
     /**Posts the event semaphore.
      * <p>
