@@ -114,9 +114,9 @@ public class SpdyAddOnProvider implements AddOn, ConfigAwareElement<Spdy> {
         
         spdyAddOn = new GlassFishSpdyAddOn(spdyMode, spdyVersions);
         
-        spdyAddOn.setInitialWindowSize(spdy.getInitialWindowSizeInBytes());
-        spdyAddOn.setMaxConcurrentStreams(spdy.getMaxConcurrentStreams());
-        spdyAddOn.setMaxFrameLength(spdy.getMaxFrameLengthInBytes());
+        spdyAddOn.setInitialWindowSize(Integer.getInteger(spdy.getInitialWindowSizeInBytes()));
+        spdyAddOn.setMaxConcurrentStreams(Integer.getInteger(spdy.getMaxConcurrentStreams()));
+        spdyAddOn.setMaxFrameLength(Integer.getInteger(spdy.getMaxFrameLengthInBytes()));
     }
 
     @Override

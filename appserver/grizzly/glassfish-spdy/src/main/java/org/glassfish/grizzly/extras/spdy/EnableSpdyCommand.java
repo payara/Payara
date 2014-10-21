@@ -176,19 +176,19 @@ public class EnableSpdyCommand implements AdminCommand {
                     if (maxStreams != null) {
                         int maxStreamsLocal = Integer.parseInt(maxStreams);
                         if (maxStreamsLocal > 0) {
-                            spdy.setMaxConcurrentStreams(maxStreamsLocal);
+                            spdy.setMaxConcurrentStreams(Integer.toString(maxStreamsLocal));
                         }
                     }
                     if (initialWindowSize != null) {
                         int initialWindowSizeLocal = Integer.parseInt(initialWindowSize);
                         if (initialWindowSizeLocal > 0) {
-                            spdy.setInitialWindowSizeInBytes(initialWindowSizeLocal);
+                            spdy.setInitialWindowSizeInBytes(Integer.toString(initialWindowSizeLocal));
                         }
                     }
                     if (maxFrameLengthInBytes != null) {
                         int maxFrameLengthInBytesLocal = Integer.parseInt(maxFrameLengthInBytes);
                         if (maxFrameLengthInBytesLocal > 0 && maxFrameLengthInBytesLocal < (1 << 24)) {
-                            spdy.setMaxFrameLengthInBytes(maxFrameLengthInBytesLocal);
+                            spdy.setMaxFrameLengthInBytes(Integer.toString(maxFrameLengthInBytesLocal));
                         }
                     }
                     if (mode != null) {
