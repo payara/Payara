@@ -62,9 +62,9 @@ public interface Spdy extends ConfigBeanProxy, PropertyBag {
      * Enables SPDY support.
      */
     @Attribute(defaultValue = "" + ENABLED, dataType = Boolean.class)
-    boolean getEnabled();
+    String getEnabled();
 
-    void setEnabled(boolean enabled);
+    void setEnabled(String enabled);
 
     /**
      * SPDY mode.
@@ -80,25 +80,25 @@ public interface Spdy extends ConfigBeanProxy, PropertyBag {
      * The default is 50.
      */
     @Attribute(defaultValue = "" + MAX_CONCURRENT_STREAMS, dataType = Integer.class)
-    int getMaxConcurrentStreams();
+    String getMaxConcurrentStreams();
 
-    void setMaxConcurrentStreams(int maxConcurrentStreams);
+    void setMaxConcurrentStreams(String maxConcurrentStreams);
 
     /**
      * Configures the initial window size in bytes.  The default is 64K.
      */
     @Attribute(defaultValue = "" + INITIAL_WINDOW_SIZE_IN_BYTES, dataType = Integer.class)
-    int getInitialWindowSizeInBytes();
+    String getInitialWindowSizeInBytes();
 
-    void setInitialWindowSizeInBytes(int initialWindowSizeInBytes);
+    void setInitialWindowSizeInBytes(String initialWindowSizeInBytes);
 
     /**
      * Configures the maximum length of SPDY frame to be accepted.  The default is 2^24.
      */
     @Attribute(defaultValue = "" + MAX_FRAME_LENGTH_IN_BYTES, dataType = Integer.class)
-    int getMaxFrameLengthInBytes();
+    String getMaxFrameLengthInBytes();
 
-    void setMaxFrameLengthInBytes(int maxFrameLengthInBytes);
+    void setMaxFrameLengthInBytes(String maxFrameLengthInBytes);
     
     /**
      * Enables SPDY support.

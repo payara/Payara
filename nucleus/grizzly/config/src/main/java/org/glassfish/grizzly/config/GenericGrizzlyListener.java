@@ -717,7 +717,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final Spdy spdyElement,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
-        if (spdyElement != null && spdyElement.getEnabled()) {
+        if (spdyElement != null && GrizzlyConfig.toBoolean(spdyElement.getEnabled())) {
 
             boolean isNpnMode = spdyElement.getMode() == null ||
                     "npn".equalsIgnoreCase(spdyElement.getMode());
