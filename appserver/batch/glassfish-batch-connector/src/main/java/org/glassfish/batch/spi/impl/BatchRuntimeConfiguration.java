@@ -59,8 +59,13 @@ public interface BatchRuntimeConfiguration
     @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService")
     String getExecutorServiceLookupName();
 
+    @Attribute(defaultValue = "APP")
+    String getSchemaName();
+
     public void setDataSourceLookupName(String value);
 
     public void setExecutorServiceLookupName(String value);
+    
+    public void setSchemaName(String value);
 
 }

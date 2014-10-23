@@ -71,6 +71,9 @@
                     />
                    </sun:dropDown>
                </sun:property>
+                <sun:property id="schemaNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.schemaName}"  helpText="$resource{i18nf.batch.configuration.schemaNameHelp}">
+                    	<sun:textField id="schemaName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['schemaName']}" />
+                </sun:property>
             </sun:propertySheetSection>
 
     <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />

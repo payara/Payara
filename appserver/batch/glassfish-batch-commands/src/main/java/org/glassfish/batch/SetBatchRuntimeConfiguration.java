@@ -99,6 +99,9 @@ public class SetBatchRuntimeConfiguration
 
     @Param(name = "executorServiceLookupName", shortName = "x", optional = true)
     private String executorServiceLookupName;
+    
+    @Param(name = "schemaName", shortName = "n", optional = true)
+    private String schemaName;
 
     @Override
     public void execute(final AdminCommandContext context) {
@@ -117,7 +120,6 @@ public class SetBatchRuntimeConfiguration
 
         try {
             Config config = targetUtil.getConfig(target);
-            System.out.println("** EXECUTING -d " + dataSourceLookupName + "  -x " + executorServiceLookupName);
 
             BatchRuntimeConfiguration batchRuntimeConfiguration = config.getExtensionByType(BatchRuntimeConfiguration.class);
             if (batchRuntimeConfiguration != null) {
@@ -149,6 +151,10 @@ public class SetBatchRuntimeConfiguration
                                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                                 throw new GlassFishBatchValidationException("No executor service bound to name = " + executorServiceLookupName);
                             }
+                        }
+                        if (schemaName != null && !encounteredError) {
+                            batchRuntimeConfigurationProxy.setSchemaName(schemaName);
+                            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         }
 
                         return null;

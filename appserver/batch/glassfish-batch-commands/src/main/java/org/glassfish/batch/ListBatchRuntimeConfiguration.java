@@ -82,6 +82,8 @@ public class ListBatchRuntimeConfiguration
     private static final String DATA_SOURCE_NAME = "dataSourceLookupName";
 
     private static final String EXECUTOR_SERVICE_NAME = "executorServiceLookupName";
+    
+    private static final String SCHEMA_NAME = "schemaName";
 
     @Inject
     protected Target targetUtil;
@@ -105,6 +107,7 @@ public class ListBatchRuntimeConfiguration
 
         map.put(DATA_SOURCE_NAME, batchRuntimeConfiguration.getDataSourceLookupName());
         map.put(EXECUTOR_SERVICE_NAME, batchRuntimeConfiguration.getExecutorServiceLookupName());
+        map.put(SCHEMA_NAME, batchRuntimeConfiguration.getSchemaName());
         extraProps.put("listBatchRuntimeConfiguration", map);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
@@ -119,6 +122,9 @@ public class ListBatchRuntimeConfiguration
                 case EXECUTOR_SERVICE_NAME:
                     data[index] = batchRuntimeConfiguration.getExecutorServiceLookupName();
                     break;
+                case SCHEMA_NAME:
+                    data[index] = batchRuntimeConfiguration.getSchemaName();
+                    break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);
             }
@@ -131,7 +137,7 @@ public class ListBatchRuntimeConfiguration
     @Override
     protected final String[] getAllHeaders() {
         return new String[] {
-                DATA_SOURCE_NAME, EXECUTOR_SERVICE_NAME
+                DATA_SOURCE_NAME, EXECUTOR_SERVICE_NAME, SCHEMA_NAME
         };
     }
 
