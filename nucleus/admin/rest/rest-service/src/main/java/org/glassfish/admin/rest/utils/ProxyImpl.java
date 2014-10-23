@@ -67,6 +67,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.SecureAdmin;
 import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.security.ssl.SSLUtils;
+import javax.ws.rs.client.Invocation.Builder;
 
 /**
  * @author Mitesh Meswani
@@ -85,7 +86,11 @@ public abstract class ProxyImpl implements Proxy {
                 URI forwardURI = forwardUriBuilder.scheme("https").host(forwardInstance.getAdminHost()).port(forwardInstance.getAdminPort()).build(); //Host and Port are replaced to that of forwardInstanceName
                 client = addAuthenticationInfo(client, forwardInstance, habitat);
                 WebTarget resourceBuilder = client.target(forwardURI);
-                Response response = resourceBuilder.request(MediaType.APPLICATION_JSON).get(Response.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
+                SecureAdmin secureAdmin = habitat.getService(SecureAdmin.class);
+                Builder builder = resourceBuilder.request(MediaType.APPLICATION_JSON).header(SecureAdmin.Util.ADMIN_INDICATOR_HEADER_NAME, secureAdmin.getSpecialAdminIndicator());
+
+                
+                Response response = builder.get(Response.class); //TODO if the target server is down, we get ClientResponseException. Need to handle it
                 Response.Status status = Response.Status.fromStatusCode(response.getStatus());
                 if (status.getFamily() == javax.ws.rs.core.Response.Status.Family.SUCCESSFUL) {
                     String jsonDoc = response.readEntity(String.class);
