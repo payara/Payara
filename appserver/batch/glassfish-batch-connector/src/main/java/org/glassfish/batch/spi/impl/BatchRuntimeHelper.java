@@ -248,7 +248,7 @@ public class BatchRuntimeHelper
     }
 
     private String getSchemaName() {
-        return "APP";
+        return batchRuntimeConfiguration.getSchemaName();
     }
 
     public String getExecutorServiceLookupName() {
