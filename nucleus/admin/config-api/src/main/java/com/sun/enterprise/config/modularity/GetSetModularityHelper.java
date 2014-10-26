@@ -152,8 +152,8 @@ public class GetSetModularityHelper {
         if (dottedName.contains("monitor")) return;
         if (
                 dottedName.contains("mdb-container")
-                || dottedName.contains("ejb-container")
-                || dottedName.contains("web-container")
+                || dottedName.contains("ejb-container.")
+                || dottedName.contains("web-container.")
                 || dottedName.contains("cdi-service")
                 || dottedName.contains("batch-runtime-configuration")
                 || dottedName.contains("managed-job-config")
