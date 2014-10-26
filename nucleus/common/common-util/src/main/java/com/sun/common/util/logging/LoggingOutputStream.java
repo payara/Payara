@@ -225,7 +225,7 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
 
             if (!(x instanceof java.lang.Throwable)) {
                 // No special processing if it is not an exception.
-                println(x.toString());
+                println(String.valueOf(x));
                 return;
             } else {
                 StackTraceObjects sTO = new StackTraceObjects((Throwable) x);
