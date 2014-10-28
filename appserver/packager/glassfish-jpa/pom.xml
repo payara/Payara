@@ -118,8 +118,25 @@
                     </plugin>
                 </plugins>
             </build>
-        </profile>
+            </profile>
+            
+	    <profile>
+	               <id>payara_eclipselinkrepo</id>
+	                   <activation>
+	                          <activeByDefault>true</activeByDefault>
+	                   </activation>
+	                  <repositories>
+	                  		<repository>
+	               			<id>payara_eclipselinkrepo-release</id>
+	               			<releases>
+	               				<enabled>true</enabled>
+	               			</releases>
+	               			<url>https://raw.github.com/Payara/eclipselinkrepo/master/releases</url>
+	                   		</repository>
+	                  </repositories>
+	    </profile>
     </profiles>
+       
 
     <dependencies>
        <dependency>
