@@ -88,7 +88,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
             try {
                 session = context.getManager().findSession(data.getSessionId());
             } catch(IOException ex) {
-                throw new IllegalStateException(ex);
+                throw new IllegalStateException("Cannot find the session: " + data.getSessionId(), ex);
             }
             if (session != null) {
               sessions.add(session);
@@ -166,7 +166,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
             oos.flush();
             return baos.toByteArray();
         } catch(Exception ex) {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException("Could not convert principal to byte array", ex);
         } finally {
           closeSilently(baos);
           closeSilently(bos);
@@ -185,7 +185,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
           ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
           return (Principal) ois.readObject();
       } catch (Exception ex) {
-          throw new IllegalStateException(ex);
+          throw new IllegalStateException("Could not parse principal from HA-SSO Metadata", ex);
       } finally {
         closeSilently(bais);
         closeSilently(bis);
