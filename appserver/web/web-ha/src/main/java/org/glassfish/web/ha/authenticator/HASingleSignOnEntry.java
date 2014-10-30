@@ -91,7 +91,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
                 throw new IllegalStateException("Cannot find the session: " + data.getSessionId(), ex);
             }
             if (session != null) {
-              sessions.add(session);
+              sessions.put(data.getSessionId(), session);
             }
         }
         logger.log(Level.FINER, "Loaded HA SSO entry from metadata. Principal: {}", this.principal);
