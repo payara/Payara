@@ -73,11 +73,11 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     @Override
     protected void deregister(String ssoId) {
 
-        //S1AS8 6155481 START        
+        //S1AS8 6155481 START
         if (logger.isLoggable(Level.FINE)) {
             logger.fine("Deregistering sso id '" + ssoId + "'");
         }
-        //S1AS8 6155481 END 
+        //S1AS8 6155481 END
         // Look up and remove the corresponding SingleSignOnEntry
         SingleSignOnEntry sso = null;
         synchronized (cache) {
@@ -104,9 +104,10 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     protected void register(String ssoId, Principal principal, String authType,
                   String username, char[] password, String realmName) {
 
-        if (debug >= 1)
-            log("Registering sso id '" + ssoId + "' for user '" +
-                principal.getName() + "' with auth type '" + authType + "'");
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("Registering sso id '" + ssoId+ "' for principal '" + principal + "' and username '" + username
+                    + "' with auth type '" + authType + "' and realmName '" + realmName + "'");
+        }
 
         HASingleSignOnEntry ssoEntry = null;
         synchronized (cache) {
@@ -178,8 +179,7 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
     protected void removeSession(String ssoId, Session session) {
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.fine("Removing session " + session.toString() 
-                        + " from sso id " + ssoId );
+            logger.fine("Removing session " + session + " from sso id " + ssoId );
         }
 
         // Get a reference to the SingleSignOn
