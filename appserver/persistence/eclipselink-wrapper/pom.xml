@@ -72,52 +72,79 @@
             </roles>
         </developer>
     </developers>
+    
+
+    <profiles>
+        <profile>
+           <id>payara_eclipselinkrepo</id>
+               <activation>
+                      <activeByDefault>true</activeByDefault>
+               </activation>
+              <repositories>
+              		<repository>
+           			<id>payara_eclipselinkrepo-release</id>
+           			<releases>
+           				<enabled>true</enabled>
+           			</releases>
+           			<url>https://raw.github.com/Payara/Payara_PatchedProjects/master/EclipseLink/2.5.2/releases</url>
+               		</repository>
+              </repositories>
+           </profile>
+    </profiles>
 
     <dependencies>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.core</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa.jpql</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa.modelgen.processor</artifactId>
-            <version>${eclipselink.version}</version>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.moxy</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.dbws</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.oracle</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.antlr</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.asm</artifactId>
+             <version>2.5.2.p1</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
