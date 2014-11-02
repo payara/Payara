@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1</version>
+        <version>4.1.151-SNAPSHOT</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-parent</artifactId>
@@ -87,7 +87,7 @@
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
         <version_prefix />
-        <version_suffix>144</version_suffix>
+        <version_suffix>151</version_suffix>
         <major_version>4</major_version>
         <minor_version>1</minor_version>
         <update_version></update_version>
