@@ -41,20 +41,25 @@
 package org.glassfish.web.ha.authenticator;
 
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
+
 import org.apache.catalina.Container;
 import org.apache.catalina.core.StandardContext;
-
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
+import org.glassfish.web.ha.session.management.HAStoreBase;
 
 import java.io.*;
 import java.security.Principal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Shing Wai Chan
  */
 public class HASingleSignOnEntry extends SingleSignOnEntry {
+    private static final Logger logger = HAStoreBase._logger;
+
     protected long maxIdleTime;
 
     protected JavaEEIOUtils ioUtils;
@@ -73,36 +78,9 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
                 m.getLastAccessTime(), m.getMaxIdleTime(), m.getVersion(),
                 ioUtils);
 
-        ByteArrayInputStream bais = null;
-        BufferedInputStream bis = null;
-        ObjectInputStream ois = null;
-        try {
-            bais = new ByteArrayInputStream(m.getPrincipalBytes());
-            bis = new BufferedInputStream(bais);
-            ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
-            this.principal = (Principal)ois.readObject();
-        } catch(Exception ex) {
-            throw new IllegalStateException(ex);
-        } finally {
-            if (bais != null) {
-                try {
-                    bais.close();
-                } catch(IOException ex) {
-                }
-            }
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch(IOException ex) {
-                }
-            }
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch(IOException ex) {
-                }
-            }
-        }
+        // GLASSFISH-21148: constructor called with null - don't forget to update metadata!
+        this.principal = parsePrincipal(m);
+        this.metadata.principalBytes = m.getPrincipalBytes() == null ? null : m.getPrincipalBytes().clone();
 
         for (HASessionData data: m.getHASessionDataSet()) {
             StandardContext context = (StandardContext)container.findChild(data.getContextPath());
@@ -110,26 +88,31 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
             try {
                 session = context.getManager().findSession(data.getSessionId());
             } catch(IOException ex) {
-                throw new IllegalStateException(ex);
+                throw new IllegalStateException("Cannot find the session: " + data.getSessionId(), ex);
             }
-            sessions.add(session);
+            if (session != null) {
+              sessions.add(session);
+            }
         }
+        logger.log(Level.FINER, "Loaded HA SSO entry from metadata. Principal: {}", this.principal);
     }
 
+    // TODO: javadoc: difference between principal.getName and userName?
     public HASingleSignOnEntry(String id, Principal principal, String authType,
             String username, String realmName,
             long lastAccessTime, long maxIdleTime, long version,
             JavaEEIOUtils ioUtils) {
-        
+
         super(id, version, principal, authType, username, realmName);
         this.lastAccessTime = lastAccessTime;
         this.maxIdleTime = maxIdleTime;
         this.ioUtils = ioUtils;
 
-        metadata = new HASingleSignOnEntryMetadata(
+        this.metadata = new HASingleSignOnEntryMetadata(
                 id, version, convertToByteArray(principal), authType,
                 username, realmName,
                 lastAccessTime, maxIdleTime);
+        logger.log(Level.FINER, "Created HA SSO entry. Principal: {}", this.principal);
     }
 
     public HASingleSignOnEntryMetadata getMetadata() {
@@ -171,39 +154,53 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
         return ver;
     }
 
-    // convert a Serializable object into byte array
-    private byte[] convertToByteArray(Object obj) {
-        ByteArrayOutputStream baos = null;
+    /** convert a principal into byte array */
+    private byte[] convertToByteArray(Principal obj) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
         BufferedOutputStream bos = null;
         ObjectOutputStream oos = null;
         try {
-            baos = new ByteArrayOutputStream();
             bos = new BufferedOutputStream(baos);
             oos = ioUtils.createObjectOutputStream(bos, true);
             oos.writeObject(obj);
+            oos.flush();
+            return baos.toByteArray();
         } catch(Exception ex) {
-            throw new IllegalStateException(ex);
+            throw new IllegalStateException("Could not convert principal to byte array", ex);
         } finally {
-            if (baos != null) {
-                try {
-                    baos.close();
-                } catch(Exception ex) {
-                }
-            }
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch(Exception ex) {
-                }
-            }
-            if (oos != null) {
-                try {
-                    oos.close();
-                } catch(Exception ex) {
-                }
-            }
+          closeSilently(baos);
+          closeSilently(bos);
+          closeSilently(oos);
         }
+    }
 
-        return baos.toByteArray();
+    /** Parse a principal from metadata */
+    private Principal parsePrincipal(HASingleSignOnEntryMetadata m) {
+      ByteArrayInputStream bais = null;
+      BufferedInputStream bis = null;
+      ObjectInputStream ois = null;
+      try {
+          bais = new ByteArrayInputStream(m.getPrincipalBytes());
+          bis = new BufferedInputStream(bais);
+          ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
+          return (Principal) ois.readObject();
+      } catch (Exception ex) {
+          throw new IllegalStateException("Could not parse principal from HA-SSO Metadata", ex);
+      } finally {
+        closeSilently(bais);
+        closeSilently(bis);
+        closeSilently(ois);
+      }
+    }
+
+    private void closeSilently(Closeable closeable) {
+      if (closeable == null) {
+        return;
+      }
+      try {
+        closeable.close();
+      } catch(Exception ex) {
+        // nothing
+      }
     }
 }
