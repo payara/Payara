@@ -58,38 +58,39 @@
 
 package org.apache.catalina.authenticator;
 
-import org.apache.catalina.Session;
-import org.apache.catalina.core.StandardServer;
-
 import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.catalina.Session;
+import org.apache.catalina.core.StandardServer;
+
 /**
- * A private class representing entries in the cache of authenticated users.
+ * A class representing entries in the cache of authenticated users.
  */
 public class SingleSignOnEntry {
 
     private static final Logger log = StandardServer.log;
 
-    protected String id = null;
+    protected final String id;
 
-    protected String authType = null;
+    protected final String authType;
 
-    protected Principal principal = null;
+    /** Reset by HASingleSignOnEntry */
+    protected Principal principal;
 
-    protected Set<Session> sessions = new HashSet<Session>();
+    protected final Map<String, Session> sessions = new HashMap<String, Session>();
 
-    protected String username = null;
+    protected final String username;
 
-    protected String realmName = null;
+    protected final String realmName;
 
     protected long lastAccessTime;
 
-    protected AtomicLong version = null;
+    protected final AtomicLong version;
 
     public SingleSignOnEntry(String id, long ver,
                              Principal principal, String authType,
@@ -107,20 +108,20 @@ public class SingleSignOnEntry {
     /**
      * Adds the given session to this SingleSignOnEntry if it does not
      * already exist.
-     * 
+     *
      * @return true if the session was added, false otherwise
      */
     public synchronized boolean addSession(SingleSignOn sso, Session session) {
-        boolean result = sessions.add(session);
-        if (result) {
+        final Session oldEntry = sessions.put(session.getId(), session);
+        if (oldEntry == null) {
             session.addSessionListener(sso);
         }
-
-        return true;
+        return oldEntry == null;
     }
 
     public synchronized void removeSession(Session session) {
-        sessions.remove(session);
+        final Session removed = sessions.remove(session.getId());
+        log.warning("session " + session.getId() + "found (and removed): " + removed);
     }
 
 
@@ -132,7 +133,7 @@ public class SingleSignOnEntry {
      * associated with it, and false otherwise
      */
     public synchronized boolean isEmpty() {
-        return (sessions.size() == 0);
+        return sessions.isEmpty();
     }
 
 
@@ -141,23 +142,16 @@ public class SingleSignOnEntry {
      *
      */
     public synchronized void expireSessions() {
-        for (Session session: sessions) {
+        for (Session session: sessions.values()) {
             if (log.isLoggable(Level.FINE)) {
-
                 log.log(Level.FINE, " Invalidating session " + session);
             }
-        
-            //6406580 START
-            /*
-            // Invalidate this session
-            session.expire();
-             */
+
             // Invalidate this session
             // if it is not already invalid(ated)
-            if( (session).getIsValid() ) {
+            if(session.getIsValid() ) {
                 session.expire();
             }
-            //6406580 END
         }
     }
 
