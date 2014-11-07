@@ -47,14 +47,19 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
+import org.glassfish.web.ha.session.management.HAStoreBase;
 
 import java.io.*;
 import java.security.Principal;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Shing Wai Chan
  */
 public class HASingleSignOnEntry extends SingleSignOnEntry {
+    private static final Logger logger = HAStoreBase._logger;
+
     protected long maxIdleTime;
 
     protected JavaEEIOUtils ioUtils;
@@ -63,7 +68,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
 
     // default constructor is required by backing store
     public HASingleSignOnEntry() {
-        this(null, null, null, null, null, 0, 0, 0, null);
+        this(null, null, null, null, null, 0, 0, 0, null, null);
     }
 
     public HASingleSignOnEntry(Container container, HASingleSignOnEntryMetadata m,
@@ -71,38 +76,7 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
         this(m.getId(), null, m.getAuthType(),
                 m.getUserName(), m.getRealmName(),
                 m.getLastAccessTime(), m.getMaxIdleTime(), m.getVersion(),
-                ioUtils);
-
-        ByteArrayInputStream bais = null;
-        BufferedInputStream bis = null;
-        ObjectInputStream ois = null;
-        try {
-            bais = new ByteArrayInputStream(m.getPrincipalBytes());
-            bis = new BufferedInputStream(bais);
-            ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
-            this.principal = (Principal)ois.readObject();
-        } catch(Exception ex) {
-            throw new IllegalStateException(ex);
-        } finally {
-            if (bais != null) {
-                try {
-                    bais.close();
-                } catch(IOException ex) {
-                }
-            }
-            if (bis != null) {
-                try {
-                    bis.close();
-                } catch(IOException ex) {
-                }
-            }
-            if (ois != null) {
-                try {
-                    ois.close();
-                } catch(IOException ex) {
-                }
-            }
-        }
+                ioUtils, m.getPrincipalBytes());
 
         for (HASessionData data: m.getHASessionDataSet()) {
             StandardContext context = (StandardContext)container.findChild(data.getContextPath());
@@ -112,7 +86,9 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
             } catch(IOException ex) {
                 throw new IllegalStateException(ex);
             }
-            sessions.add(session);
+            if (session != null) {
+                sessions.add(session);
+            }
         }
     }
 
@@ -121,15 +97,33 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
             long lastAccessTime, long maxIdleTime, long version,
             JavaEEIOUtils ioUtils) {
         
+        this(id, principal, authType, username, realmName, lastAccessTime,
+            maxIdleTime, version, ioUtils, convertToByteArray(principal, ioUtils));
+    }
+
+    private HASingleSignOnEntry(String id, Principal principal, String authType,
+            String username, String realmName,
+            long lastAccessTime, long maxIdleTime, long version,
+            JavaEEIOUtils ioUtils, byte[] principalBytes) {
+        
         super(id, version, principal, authType, username, realmName);
         this.lastAccessTime = lastAccessTime;
         this.maxIdleTime = maxIdleTime;
         this.ioUtils = ioUtils;
 
+        if (principal == null && principalBytes != null) {
+            this.principal = parse(principalBytes);
+        }
+
         metadata = new HASingleSignOnEntryMetadata(
-                id, version, convertToByteArray(principal), authType,
+                id, version, principalBytes, authType,
                 username, realmName,
                 lastAccessTime, maxIdleTime);
+
+        if (logger.isLoggable(Level.FINER)) {
+            String pName = ((principal != null)? principal.getName() : null);
+            logger.log(Level.FINER, "Loaded HA SSO entry with principal: " + pName);
+        }
     }
 
     public HASingleSignOnEntryMetadata getMetadata() {
@@ -171,8 +165,8 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
         return ver;
     }
 
-    // convert a Serializable object into byte array
-    private byte[] convertToByteArray(Object obj) {
+    // convert a Principal object into byte array
+    private static byte[] convertToByteArray(Principal obj, JavaEEIOUtils ioUtils) {
         ByteArrayOutputStream baos = null;
         BufferedOutputStream bos = null;
         ObjectOutputStream oos = null;
@@ -181,29 +175,42 @@ public class HASingleSignOnEntry extends SingleSignOnEntry {
             bos = new BufferedOutputStream(baos);
             oos = ioUtils.createObjectOutputStream(bos, true);
             oos.writeObject(obj);
+            oos.flush();
+            return baos.toByteArray();
         } catch(Exception ex) {
             throw new IllegalStateException(ex);
         } finally {
-            if (baos != null) {
-                try {
-                    baos.close();
-                } catch(Exception ex) {
-                }
-            }
-            if (bos != null) {
-                try {
-                    bos.close();
-                } catch(Exception ex) {
-                }
-            }
-            if (oos != null) {
-                try {
-                    oos.close();
-                } catch(Exception ex) {
-                }
+            closeSafely(baos);
+            closeSafely(bos);
+            closeSafely(oos);
+        }
+    }
+
+    private static void closeSafely(Closeable closeable) {
+        if (closeable != null) {
+            try {
+                closeable.close();
+            } catch(IOException ex) {
+                // ignore
             }
         }
+    }
 
-        return baos.toByteArray();
+    private Principal parse(byte[] pbytes) {
+        ByteArrayInputStream bais = null;
+        BufferedInputStream bis = null;
+        ObjectInputStream ois = null;
+        try {
+            bais = new ByteArrayInputStream(pbytes);
+            bis = new BufferedInputStream(bais);
+            ois = ioUtils.createObjectInputStream(bis, true, this.getClass().getClassLoader());
+            return (Principal)ois.readObject();
+        } catch(Exception ex) {
+            throw new IllegalStateException(ex);
+        } finally {
+            closeSafely(bais);
+            closeSafely(bis);
+            closeSafely(ois);
+        }
     }
 }

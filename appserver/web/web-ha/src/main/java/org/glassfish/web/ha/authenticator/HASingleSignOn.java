@@ -105,7 +105,8 @@ public class HASingleSignOn extends GlassFishSingleSignOn {
                   String username, char[] password, String realmName) {
 
         if (logger.isLoggable(Level.FINE)) {
-            log("Registering sso id '" + ssoId + "' for principal '" + principal + "' and username '" + username
+            String pName = ((principal != null)? principal.getName() : null);
+            log("Registering sso id '" + ssoId + "' for principal '" + pName + "' and username '" + username
                 + "' with auth type '" + authType + "' and realmName '" + realmName + "'");
         }
 
