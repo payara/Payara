@@ -22,5 +22,5 @@ Payara Server is a drop in replacement for GlassFish Server with the peace of mi
 We take GlassFish upstream. We support it, fix it, enhance it. We release it as open source Payara. 
 
 GlassFish is a trademark of Oracle Corporation.
-Payara is a trademark of C2B2 Consulting Limited
+Payara is a trademark of C2B2 Consulting Limited.
 
