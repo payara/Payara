@@ -133,7 +133,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- on Hudson and RE, this gets replaced by real build ID -->
-        <build.id>${user.name}-private</build.id>
+        <build.id>4.1.144.p0</build.id>
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
