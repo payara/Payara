@@ -92,7 +92,7 @@
                     <tasks>
                         <ant dir="." antfile="../build.xml" target="create.distribution">
                             <property name="bundlename" value="org.glassfish.main.embedded.web" />
-                            <property name="finaljar" value="${project.build.directory}/glassfish-embedded-web.jar" />
+                            <property name="finaljar" value="${project.build.directory}/payara-embedded-web.jar" />
                             <property name="install.dir.name" value="${install.dir.name}" />                            
                         </ant>
                     </tasks>
