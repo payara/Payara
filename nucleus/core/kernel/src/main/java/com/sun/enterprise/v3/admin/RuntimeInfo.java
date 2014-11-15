@@ -102,8 +102,9 @@ public class RuntimeInfo implements AdminCommand {
         report.setActionExitCode(SUCCESS);
         top = report.getTopMessagePart();
         logger = context.getLogger();
-        jpdaEnabled = Boolean.parseBoolean(ctx.getArguments().getProperty("-debug"));
+        boolean javaEnabledOnCmd = Boolean.parseBoolean(ctx.getArguments().getProperty("-debug"));
         javaConfig = config.getJavaConfig();
+        jpdaEnabled = javaEnabledOnCmd || Boolean.parseBoolean(javaConfig.getDebugEnabled());
         int debugPort = parsePort(javaConfig.getDebugOptions());
         top.addProperty("debug", Boolean.toString(jpdaEnabled));
         top.addProperty("debugPort", Integer.toString(debugPort));
