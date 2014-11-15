@@ -16,7 +16,7 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>3.2.6</version>
+            <version>3.3.3</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.payara-modules</groupId>
