@@ -45,33 +45,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>glassfish-nucleus-parent</artifactId>
         <version>4.1.151-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.ha</groupId>
-    <artifactId>ha</artifactId>
+    <groupId>org.glassfish.main.payara-modules</groupId>
+    <artifactId>payara-nucleus-modules</artifactId>
     <packaging>pom</packaging>
-    <name>GlassFish HA modules</name>
-    
-    <developers>
-        <developer>
-            <id>mk111283</id>
-            <name>Mahesh Kannan</name>
-            <url>http://forum.java.sun.com/profile.jspa?userID=487934</url>
-            <organization>Oracle, Inc.</organization>
-            <roles>
-                <role>lead</role>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-    
+    <name>Payara Nucleus Modules</name>
     <modules>
-        <module>ha-file-store</module>
-        <module>ha-shoal-cache-bootstrap</module>
-        <module>ha-shoal-store</module>
-        <module>ha-hazelcast-store</module>
-        <!--<module>ha-apt</module>-->
+	<module>hazelcast-bootstrap</module>
     </modules>
 </project>

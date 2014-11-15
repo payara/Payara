@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main.packager</groupId>
+        <artifactId>nucleus-packages</artifactId>
+        <version>4.1.151-SNAPSHOT</version>
+    </parent>
+    <artifactId>hazelcast-package</artifactId>
+    <name>Nucleus Hazelcast Package</name>
+    <packaging>distribution-fragment</packaging>
+    <description>This pom describes how to assemble the Nucleus Hazelcast package</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>3.2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>4.1.151-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+</project>
+

@@ -108,6 +108,12 @@ public final class PersistenceType {
      */
     public static final PersistenceType COHERENCE_WEB =
         new PersistenceType("coherence-web");
+    
+    /**
+     * Hazelcast
+     */
+    public static final PersistenceType HAZELCAST =
+        new PersistenceType("hazelcast");
 
     // ----------------------------------------------------------- Constructors
 
@@ -176,6 +182,8 @@ public final class PersistenceType {
                 pType = REPLICATED;    
             else if (type.equalsIgnoreCase(COHERENCE_WEB.getType()))
                 pType = COHERENCE_WEB;
+            else if (type.equalsIgnoreCase(HAZELCAST.getType()))
+                pType = HAZELCAST;
         }
         return pType;
     }    
