@@ -195,6 +195,7 @@
         <module>flashlight</module>
         <module>grizzly</module>
         <module>deployment</module>
+        <module>payara-modules</module>
         <module>packager</module>
         <module>distributions</module>
         <module>security</module>
