@@ -200,6 +200,7 @@ public abstract class ManagedExecutorServiceBaseManager implements ResourceManag
         managedExecutorService.setKeepAliveSeconds(keepAliveSeconds);
         managedExecutorService.setThreadLifetimeSeconds(threadLifetimeSeconds);
         managedExecutorService.setEnabled(enabled);
+        managedExecutorService.setLongRunningTasks(longRunningTasks);
         if (properties != null) {
             for ( Map.Entry e : properties.entrySet()) {
                 Property prop = managedExecutorService.createChild(Property.class);
