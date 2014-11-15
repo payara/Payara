@@ -105,7 +105,8 @@
         <module>nucleus-cluster-l10n</module>	
         <module>nucleus-common-l10n</module>	
         <module>nucleus-l10n</module>	
-        <module>nucleus-management-l10n</module>	
+        <module>nucleus-management-l10n</module>
+        <module>hazelcast-package</module>
     </modules>
 
     <build>
