@@ -46,6 +46,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.OperatingSystemMXBean;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.management.MBeanServerConnection;
@@ -68,6 +69,7 @@ class SummaryReporter {
             sb.append(getOSInfo(os));
             final RuntimeMXBean rt = ManagementFactory.newPlatformMXBeanProxy(mbsc,
                     ManagementFactory.RUNTIME_MXBEAN_NAME, RuntimeMXBean.class);
+            sb.append(getArguments(rt));
             sb.append(getVMInfo(rt));
             return ( sb.toString(secretProperty) );
         } catch(final Exception e) {
@@ -95,13 +97,15 @@ class SummaryReporter {
         return ( sb.toString() );
     }
     private String getProperties(final RuntimeMXBean rt) {
+
         final StringBuilderNewLineAppender sb = new StringBuilderNewLineAppender(new StringBuilder());
         final Map<String, String> unsorted = rt.getSystemProperties();
         // I decided to sort this for better readability -- 27 Feb 2006
         final TreeMap<String, String> props = new TreeMap<String, String>(unsorted);
+        sb.append("");
         sb.append(sm.getString("rt.sysprops"));
         for (Map.Entry<String, String> entry : props.entrySet()) {
-            sb.append(entry.getKey()).append(" = ").append(filterForbidden(entry.getKey(), entry.getValue()));
+            sb.append(entry.getKey()+" = "+filterForbidden(entry.getKey(), entry.getValue()));
         }
         return ( sb.toString() );
     }
@@ -127,5 +131,17 @@ class SummaryReporter {
             return "********";
         else
             return value;
+    }
+
+    private String getArguments(RuntimeMXBean rt) {
+        final StringBuilderNewLineAppender sb = new StringBuilderNewLineAppender(new StringBuilder());
+        List<String> arguments = rt.getInputArguments();
+        if ((arguments.size() > 0)) {
+            sb.append(sm.getString("rt.arguments")); 
+            for (String argument : arguments) {
+                sb.append(argument);
+            }
+        }
+        return sb.toString();
     }
 }
