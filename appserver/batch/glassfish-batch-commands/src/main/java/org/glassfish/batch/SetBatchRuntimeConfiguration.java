@@ -102,6 +102,12 @@ public class SetBatchRuntimeConfiguration
     
     @Param(name = "schemaName", shortName = "n", optional = true)
     private String schemaName;
+    
+    @Param(name = "tablePrefix", shortName = "tp", optional = true)
+    private String tablePrefix;
+    
+    @Param(name = "tableSuffix", shortName = "ts", optional = true)
+    private String tableSuffix;   
 
     @Override
     public void execute(final AdminCommandContext context) {
@@ -156,7 +162,16 @@ public class SetBatchRuntimeConfiguration
                             batchRuntimeConfigurationProxy.setSchemaName(schemaName);
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         }
-
+                        
+                        if (tablePrefix != null && !encounteredError) {
+                            batchRuntimeConfigurationProxy.setTablePrefix(tablePrefix);
+                            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        }  
+                        
+                        if (tableSuffix != null && !encounteredError) {
+                            batchRuntimeConfigurationProxy.setTableSuffix(tableSuffix);
+                            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        }
                         return null;
                     }
                 }, batchRuntimeConfiguration);

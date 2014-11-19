@@ -64,26 +64,30 @@ import java.util.*;
  * @author Mahesh Kannan
  *
  */
-@Service(name="list-batch-runtime-configuration")
+@Service(name = "list-batch-runtime-configuration")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.runtime.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
-        @RestEndpoint(configBean = Domain.class,
-                opType = RestEndpoint.OpType.GET,
-                path = "list-batch-runtime-configuration",
-                description = "List Batch Runtime Configuration")
+    @RestEndpoint(configBean = Domain.class,
+            opType = RestEndpoint.OpType.GET,
+            path = "list-batch-runtime-configuration",
+            description = "List Batch Runtime Configuration")
 })
 public class ListBatchRuntimeConfiguration
-    extends AbstractListCommand {
+        extends AbstractListCommand {
 
     private static final String DATA_SOURCE_NAME = "dataSourceLookupName";
 
     private static final String EXECUTOR_SERVICE_NAME = "executorServiceLookupName";
-    
+
     private static final String SCHEMA_NAME = "schemaName";
+
+    private static final String TABLE_PREFIX = "tablePrefix";
+
+    private static final String TABLE_SUFFIX = "tableSuffix";
 
     @Inject
     protected Target targetUtil;
@@ -108,22 +112,30 @@ public class ListBatchRuntimeConfiguration
         map.put(DATA_SOURCE_NAME, batchRuntimeConfiguration.getDataSourceLookupName());
         map.put(EXECUTOR_SERVICE_NAME, batchRuntimeConfiguration.getExecutorServiceLookupName());
         map.put(SCHEMA_NAME, batchRuntimeConfiguration.getSchemaName());
+        map.put(TABLE_PREFIX, batchRuntimeConfiguration.getTablePrefix());
+        map.put(TABLE_SUFFIX, batchRuntimeConfiguration.getTableSuffix());
         extraProps.put("listBatchRuntimeConfiguration", map);
 
         ColumnFormatter columnFormatter = new ColumnFormatter(getDisplayHeaders());
         Object[] data = new Object[getOutputHeaders().length];
-        for (int index=0; index<getOutputHeaders().length; index++) {
+        for (int index = 0; index < getOutputHeaders().length; index++) {
             switch (getOutputHeaders()[index]) {
                 case DATA_SOURCE_NAME:
                     String val = batchRuntimeConfiguration.getDataSourceLookupName();
                     data[index] = (val == null || val.trim().length() == 0)
-                        ? BatchRuntimeHelper.getDefaultDataSourceLookupNameForTarget(target) : val;
+                            ? BatchRuntimeHelper.getDefaultDataSourceLookupNameForTarget(target) : val;
                     break;
                 case EXECUTOR_SERVICE_NAME:
                     data[index] = batchRuntimeConfiguration.getExecutorServiceLookupName();
                     break;
                 case SCHEMA_NAME:
                     data[index] = batchRuntimeConfiguration.getSchemaName();
+                    break;
+                case TABLE_PREFIX:
+                    data[index] = batchRuntimeConfiguration.getTablePrefix();
+                    break;
+                case TABLE_SUFFIX:
+                    data[index] = batchRuntimeConfiguration.getTableSuffix();
                     break;
                 default:
                     throw new IllegalArgumentException("Unknown header: " + getOutputHeaders()[index]);
@@ -133,11 +145,10 @@ public class ListBatchRuntimeConfiguration
         context.getActionReport().setMessage(columnFormatter.toString());
     }
 
-
     @Override
     protected final String[] getAllHeaders() {
-        return new String[] {
-                DATA_SOURCE_NAME, EXECUTOR_SERVICE_NAME, SCHEMA_NAME
+        return new String[]{
+            DATA_SOURCE_NAME, EXECUTOR_SERVICE_NAME, SCHEMA_NAME, TABLE_PREFIX, TABLE_SUFFIX
         };
     }
 
