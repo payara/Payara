@@ -281,6 +281,37 @@ public class BatchRuntimeHelper
     public String getExecutorServiceLookupName() {
         return batchRuntimeConfiguration.getExecutorServiceLookupName();
     }
+    
+    private String determinePersistenceManagerClass() {
+        String result = "com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl";
+        try {
+            // this is the default
+            String dataSourceName = getDataSourceLookupName();
+            InitialContext ctx = new InitialContext();
+            DataSource ds = (DataSource) ctx.lookup(dataSourceName);
+            Connection conn = null;
+            try {
+                conn = ds.getConnection();
+                String database = conn.getMetaData().getDatabaseProductName();
+                if (database.contains("MySQL")) {
+                    result = "fish.payara.jbatch.MySqlPersistenceManager";
+                }
+            } catch (SQLException ex) {
+                Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
+            } finally {
+                if (conn != null) {
+                    try {
+                        conn.close();
+                    } catch (SQLException ex) {
+                        Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to close connection", ex);
+                    }
+                }
+            }
+        } catch (NamingException ex) {
+            Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
+        }
+        return result;
+    }
 
     private String determinePersistenceManagerClass() {
         String result = JBatchJDBCPersistenceManager.class.getName();
