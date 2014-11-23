@@ -283,7 +283,7 @@ public class BatchRuntimeHelper
     }
     
     private String determinePersistenceManagerClass() {
-        String result = "com.ibm.jbatch.container.services.impl.JDBCPersistenceManagerImpl";
+        String result = JBatchJDBCPersistenceManager.class.getName();
         try {
             // this is the default
             String dataSourceName = getDataSourceLookupName();
@@ -294,7 +294,7 @@ public class BatchRuntimeHelper
                 conn = ds.getConnection();
                 String database = conn.getMetaData().getDatabaseProductName();
                 if (database.contains("MySQL")) {
-                    result = "fish.payara.jbatch.MySqlPersistenceManager";
+                    result = MySqlPersistenceManager.class.getName();
                 }
             } catch (SQLException ex) {
                 Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
