@@ -71,7 +71,7 @@ public class GlassFishBatchSecurityHelper
     public String getCurrentTag() {
         ComponentInvocation compInv = invocationManager.getCurrentInvocation();
         return compInv == null
-            ? null : (config.getName() + ":" + compInv.getAppName());
+            ? null : (config.getName() + ":" + compInv.getComponentId());
     }
 
     @Override
