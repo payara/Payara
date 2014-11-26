@@ -48,13 +48,21 @@
         <protocol name="http">
             <http enable-comet-support="true"/>
         </protocol>
-        <protocol name="http-override">
+        <protocol name="http-scheme-override">
             <http enable-comet-support="true" scheme="https"/>
+        </protocol>
+        <protocol name="http-scheme-mapping-override">
+            <http enable-comet-support="true" scheme-mapping="my-scheme"/>
+        </protocol>
+        <protocol name="http-remote-user-override">
+            <http enable-comet-support="true" remote-user-mapping="my-remote-user"/>
         </protocol>
     </protocols>
     <network-listeners>
         <thread-pool name="defaultThreadPool"/>
         <network-listener name="http-listener-1" port="38082" transport="tcp" protocol="http" thread-pool="defaultThreadPool"/>
-        <network-listener name="http-listener-2" port="38083" transport="tcp" protocol="http-override" thread-pool="defaultThreadPool"/>
+        <network-listener name="http-listener-2" port="38083" transport="tcp" protocol="http-scheme-override" thread-pool="defaultThreadPool"/>
+        <network-listener name="http-listener-3" port="38084" transport="tcp" protocol="http-scheme-mapping-override" thread-pool="defaultThreadPool"/>
+        <network-listener name="http-listener-4" port="38085" transport="tcp" protocol="http-remote-user-override" thread-pool="defaultThreadPool"/>
     </network-listeners>
 </network-config>
