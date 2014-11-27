@@ -103,6 +103,7 @@
                                 org.jboss.weld.util.collections,
                                 org.jboss.weld.annotated.slim,
                                 org.jboss.weld.annotated.slim.backed,
+                                org.jboss.weld.security,
                                 org.jboss.classfilewriter,
                                 org.jboss.classfilewriter.annotations,
                                 org.jboss.classfilewriter.attributes,
