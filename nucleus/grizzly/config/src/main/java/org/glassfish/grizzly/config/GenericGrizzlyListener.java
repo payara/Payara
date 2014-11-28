@@ -83,6 +83,7 @@ import org.glassfish.grizzly.http.GZipContentEncoding;
 import org.glassfish.grizzly.http.KeepAlive;
 import org.glassfish.grizzly.http.LZMAContentEncoding;
 import org.glassfish.grizzly.http.server.AddOn;
+import org.glassfish.grizzly.http.server.BackendConfiguration;
 import org.glassfish.grizzly.http.server.CompressionEncodingFilter;
 import org.glassfish.grizzly.http.server.CompressionLevel;
 import org.glassfish.grizzly.http.server.FileCacheFilter;
@@ -933,7 +934,23 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected ServerFilterConfiguration getHttpServerFilterConfiguration(Http http) {
         final ServerFilterConfiguration serverFilterConfiguration =
                 new ServerFilterConfiguration();
-        serverFilterConfiguration.setScheme(http.getScheme());
+		
+		final String scheme = http.getScheme();
+        final String schemeMapping = http.getSchemeMapping();
+        final String remoteUserMapping = http.getRemoteUserMapping();
+		
+        if (scheme != null || schemeMapping != null || remoteUserMapping != null) {
+            final BackendConfiguration backendConfiguration = new BackendConfiguration();
+            if (schemeMapping == null) {
+                backendConfiguration.setScheme(scheme);
+            } else {
+                backendConfiguration.setSchemeMapping(schemeMapping);
+            }
+            
+            backendConfiguration.setRemoteUserMapping(remoteUserMapping);
+            serverFilterConfiguration.setBackendConfiguration(backendConfiguration);
+        }
+		
         serverFilterConfiguration.setPassTraceRequest(true);
         serverFilterConfiguration.setTraceEnabled(Boolean.valueOf(http.getTraceEnabled()));
         int maxRequestParameters;
