@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -48,10 +48,14 @@
         <artifactId>packages</artifactId>
         <version>4.1.151-SNAPSHOT</version>
     </parent>
-    <artifactId>glassfish-ha</artifactId>
-    <name>Glassfish HA Package</name>
+    <artifactId>hazelcast</artifactId>
+    <name>Hazelcast Package</name>
     <packaging>distribution-fragment</packaging>
-    <description>This pom describes how to assemble the GlassFish HA package</description>
+    <description>This pom describes how to assemble the Hazelcast package</description>
+    
+    <properties>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>       
+    </properties>    
 
     <build>
         <plugins>
@@ -121,21 +125,13 @@
     </profiles>
     
     <dependencies>
-          <dependency>
-              <groupId>org.glassfish.main.ha</groupId>
-              <artifactId>ha-shoal-cache-bootstrap</artifactId>
-              <version>${project.version}</version>
-          </dependency>
-          <dependency>
-              <groupId>org.glassfish.main.ha</groupId>
-              <artifactId>ha-shoal-cache-store</artifactId>
-              <version>${project.version}</version>
-          </dependency>
-           <dependency>
-              <groupId>org.glassfish.main.ha</groupId>
-              <artifactId>ha-hazelcast-store</artifactId>
-              <version>${project.version}</version>
-          </dependency>
+        <dependency>
+           <groupId>org.glassfish.main.packager</groupId>
+           <artifactId>hazelcast-package</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+           <optional>true</optional>
+       </dependency>      
     </dependencies>
 </project>
 
