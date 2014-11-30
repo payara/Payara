@@ -49,6 +49,8 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
 
+import javax.inject.Inject;
+
 @Service
 public class GlassFishBatchSecurityHelper
     implements BatchSecurityHelper {
@@ -82,3 +84,4 @@ public class GlassFishBatchSecurityHelper
         return tagName.startsWith(config.getName());
     }
 }
+

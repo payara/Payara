@@ -61,11 +61,20 @@ public interface BatchRuntimeConfiguration
 
     @Attribute(defaultValue = "APP")
     String getSchemaName();
+    
+    @Attribute(required = false,  defaultValue = "")
+    String getTablePrefix();
 
+    @Attribute(required = false,  defaultValue = "")
+    String getTableSuffix();   
+    
     public void setDataSourceLookupName(String value);
 
     public void setExecutorServiceLookupName(String value);
     
     public void setSchemaName(String value);
-
+    
+    public void setTablePrefix(String value);
+    
+    public void setTableSuffix(String value);
 }
