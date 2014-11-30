@@ -52,6 +52,8 @@
     <artifactId>glassfish-batch-connector</artifactId>
     <packaging>glassfish-jar</packaging>
     
+    <!--insert payara batch repo url here -->
+    
     <name>Batch Connector for Glassfish</name>
     <dependencies>
         <dependency>
@@ -60,8 +62,14 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+		<groupId>javax.batch</groupId>
+		<artifactId>javax.batch-api</artifactId>
+		<version>1.0</version>
+	</dependency>
+        <dependency>
             <groupId>com.ibm.jbatch</groupId>
-            <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+            <artifactId>com.ibm.jbatch.spi</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.persistence</groupId>
@@ -72,6 +80,18 @@
             <groupId>org.glassfish.main.concurrent</groupId>
             <artifactId>concurrent-connector</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.container</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>3.3.2</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
