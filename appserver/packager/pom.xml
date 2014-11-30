@@ -159,6 +159,7 @@
         <module>glassfish-jmx</module>
         <module>glassfish-entitybeans-container</module>
         <module>json</module>
+        <module>hazelcast</module>
     </modules>
 
     <build>

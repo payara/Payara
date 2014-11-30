@@ -16,12 +16,18 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>3.3.3</version>
+            <version>${hazelcast.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>4.1.151-SNAPSHOT</version>
+        </dependency>
+        <!-- required by spurious OSGI bundle dependency in Hazelcast -->
+        <dependency>
+            <groupId>com.eclipsesource.minimal-json</groupId>
+            <artifactId>minimal-json</artifactId>
+            <version>0.9.1</version>
         </dependency>
     </dependencies>
 </project>

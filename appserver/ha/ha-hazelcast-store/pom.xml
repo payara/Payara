@@ -61,18 +61,18 @@
         <dependency>
             <groupId>com.hazelcast</groupId>
             <artifactId>hazelcast</artifactId>
-            <version>3.3.2</version>
+            <version>${hazelcast.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>web-ha</artifactId>
-            <version>4.1</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>4.1.151-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
