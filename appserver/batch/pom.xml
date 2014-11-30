@@ -59,5 +59,6 @@
         <module>batch-database</module>
         <module>glassfish-batch-connector</module>
         <module>glassfish-batch-commands</module>
+        <module>hazelcast-jbatch-store</module>
     </modules>
 </project>
