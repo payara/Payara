@@ -66,7 +66,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -77,11 +76,41 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import javax.inject.Inject;
 
-public class FileUtils {
+import org.jvnet.hk2.config.ConfigBean;
+
+
+
+public class FileUtils  {
     final static Logger _utillogger = CULoggerInfo.getLogger();
     private final static LocalStringsImpl messages = new LocalStringsImpl(FileUtils.class);
 
+
+    public static void setFileProperties()
+    {
+    	if(System.getProperty("com.sun.appserv.winFileLockRetryLimit")!=null || System.getProperty("com.sun.appserv.winFileLockRetryLimit")!="" )
+    	{
+    		int retrycounter= Integer.parseInt(System.getProperty("com.sun.appserv.winFileLockRetryLimit"));
+
+    		if(retrycounter != 0)
+    		{
+    			FILE_OPERATION_MAX_RETRIES=retrycounter;
+
+    		}
+
+    	}
+    	if(System.getProperty("com.sun.appserv.winFileLockRetryDelay")!=null || System.getProperty("com.sun.appserv.winFileLockRetryDelay")!="")
+    	{
+    		int retryinterval=Integer.parseInt(System.getProperty("com.sun.appserv.winFileLockRetryDelay"));
+
+
+    		if(retryinterval != 0)
+    		{
+    			FILE_OPERATION_SLEEP_DELAY_MS=retryinterval;
+    		}
+    	}
+    }
     /**
      * The method, java.io.File.getParentFile() does not necessarily do what
      * you would think it does.  What it really does is to simply chop off the
@@ -725,7 +754,12 @@ public class FileUtils {
         *If the work failed and this is Windows - on which running gc may
         *unlock the locked file - then begin the retries.
         */
-        if (!work.workComplete() && OS.isWindows()) {
+        if (!work.workComplete()) {
+        	if(FILESETTERPROPTIES)
+        	{
+        		setFileProperties();
+        		FILESETTERPROPTIES=false;
+        	}
             _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.performGC);
             while (!work.workComplete() && retries++ < FILE_OPERATION_MAX_RETRIES) {
                 try {
@@ -1412,6 +1446,9 @@ public class FileUtils {
 
     ///////////////////////////////////////////////////////////////////////////
 
+
+
+
     private final static char[] ILLEGAL_FILENAME_CHARS = {'/', '\\', ':', '*', '?', '"', '<', '>', '|'};
     private final static String ILLEGAL_FILENAME_STRING = "\\/:*?\"<>|";
     private final static char REPLACEMENT_CHAR = '_';
@@ -1421,7 +1458,9 @@ public class FileUtils {
     /*
     *The following property names are private, unsupported, and unpublished.
     */
-    private static final int FILE_OPERATION_MAX_RETRIES = Integer.getInteger("com.sun.appserv.winFileLockRetryLimit", 5).intValue();
-        private static final int FILE_OPERATION_SLEEP_DELAY_MS = Integer.getInteger("com.sun.appserv.winFileLockRetryDelay", 1000).intValue();
+
+        private static int FILE_OPERATION_MAX_RETRIES=20;
+        private static int FILE_OPERATION_SLEEP_DELAY_MS=1000;
         private static final Level FILE_OPERATION_LOG_LEVEL = Level.FINE;
+        private static boolean FILESETTERPROPTIES=true;
 }
