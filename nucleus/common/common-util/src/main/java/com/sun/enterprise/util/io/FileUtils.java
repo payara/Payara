@@ -89,26 +89,13 @@ public class FileUtils  {
 
     public static void setFileProperties()
     {
-    	if(System.getProperty("com.sun.appserv.winFileLockRetryLimit")!=null || System.getProperty("com.sun.appserv.winFileLockRetryLimit")!="" )
-    	{
-    		int retrycounter= Integer.parseInt(System.getProperty("com.sun.appserv.winFileLockRetryLimit"));
-
-    		if(retrycounter != 0)
-    		{
-    			FILE_OPERATION_MAX_RETRIES=retrycounter;
-
-    		}
-
+    	Integer retryCounter = Integer.getInteger("com.sun.appserv.winFileLockRetryLimit");
+    	Integer retryInterval = Integer.getInteger("com.sun.appserv.winFileLockRetryDelay");
+    	if (retryCounter != null && retryCounter > 0) {
+    		FILE_OPERATION_MAX_RETRIES=retryCounter;
     	}
-    	if(System.getProperty("com.sun.appserv.winFileLockRetryDelay")!=null || System.getProperty("com.sun.appserv.winFileLockRetryDelay")!="")
-    	{
-    		int retryinterval=Integer.parseInt(System.getProperty("com.sun.appserv.winFileLockRetryDelay"));
-
-
-    		if(retryinterval != 0)
-    		{
-    			FILE_OPERATION_SLEEP_DELAY_MS=retryinterval;
-    		}
+    	if (retryInterval != null && retryInterval > 0) {
+    		FILE_OPERATION_SLEEP_DELAY_MS=retryInterval;
     	}
     }
     /**
