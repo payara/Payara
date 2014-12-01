@@ -1031,13 +1031,13 @@
             </dependency>            
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
-                <artifactId>com.ibm.jbatch-runtime-all</artifactId>
-                <version>${com.ibm.jbatch-runtime-all.version}</version>
+                <artifactId>com.ibm.jbatch.container</artifactId>
+                <version>${com.ibm.jbatch.container.version}</version>
             </dependency>            
             <dependency>
                 <groupId>com.ibm.jbatch</groupId>
-                <artifactId>com.ibm.jbatch-ri-spi</artifactId>
-                <version>${com.ibm.jbatch-ri-spi.version}</version>
+                <artifactId>com.ibm.jbatch.spi</artifactId>
+                <version>${com.ibm.jbatch.spi.version}</version>
             </dependency>
             <!-- 
                 only used to satisfy findbugs, 
