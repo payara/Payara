@@ -293,10 +293,19 @@ public class BatchRuntimeHelper
             if (object instanceof DataSource) {
                 Connection conn = null;
                 try {
+                    DataSource ds = DataSource.class.cast(object);
                     conn = ds.getConnection();
                     String database = conn.getMetaData().getDatabaseProductName();
-                    if (database.contains("MySQL")) {
+                    if (database.contains("Derby")) {
+                        result = JBatchJDBCPersistenceManager.class.getName();
+                    } else if (database.contains("MySQL")) {
                         result = MySqlPersistenceManager.class.getName();
+                    } else if (database.contains("Oracle")) {
+                        result = OraclePersistenceManager.class.getName();
+                    } else if (database.contains("PostgreSQL")) {
+                        result = PostgresPersistenceManager.class.getName();
+                    } else if (database.contains("DB2")) {
+                        result = DB2PersistenceManager.class.getName();
                     }
                 } catch (SQLException ex) {
                     Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
@@ -309,48 +318,8 @@ public class BatchRuntimeHelper
                         }
                     }
                 }
-            } else if (object instanceof HazelcastInstance ) {
+            } else if (object instanceof HazelcastInstance) {
                 result = "fish.payara.jbatch.persistence.hazelcast.HazelcastPersistenceService";
-            }
-        } catch (NamingException ex) {
-            Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
-        }
-        return result;
-    }
-
-    private String determinePersistenceManagerClass() {
-        String result = JBatchJDBCPersistenceManager.class.getName();
-        try {
-            // this is the default
-            String dataSourceName = getDataSourceLookupName();
-            InitialContext ctx = new InitialContext();
-            DataSource ds = (DataSource) ctx.lookup(dataSourceName);
-            Connection conn = null;
-            try {
-                conn = ds.getConnection();
-                String database = conn.getMetaData().getDatabaseProductName();
-
-                if(database.contains("Derby")) {
-				    result = JBatchJDBCPersistenceManager.class.getName();
-                }else if(database.contains("MySQL")) {
-                    result = MySqlPersistenceManager.class.getName();
-                }else if(database.contains("Oracle")) {
-					result = OraclePersistenceManager.class.getName();
-				}else if( database.contains("PostgreSQL")) {
-					result = PostgresPersistenceManager.class.getName();
-				}else if( database.contains("DB2")) {
-					result = DB2PersistenceManager.class.getName();
-				}
-            } catch (SQLException ex) {
-                Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
-            } finally {
-                if (conn != null) {
-                    try {
-                        conn.close();
-                    } catch (SQLException ex) {
-                        Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to close connection", ex);
-                    }
-                }
             }
         } catch (NamingException ex) {
             Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
