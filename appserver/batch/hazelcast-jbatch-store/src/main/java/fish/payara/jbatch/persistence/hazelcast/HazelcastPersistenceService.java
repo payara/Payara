@@ -161,7 +161,8 @@ public class HazelcastPersistenceService implements IPersistenceManagerService{
     @Override
     public JobInstance createJobInstance(String name, String apptag, String jobXml) {
         long id = jobInstanceIdGenerator.newId();
-        JobInstanceImpl result = new JobInstanceImpl(instanceId);
+        JobInstanceImpl result = new JobInstanceImpl(id);
+        return null;
     }
 
     @Override
