@@ -369,7 +369,7 @@ public class StandardPipeline
         }
         if ((basic != null) && (basic instanceof Lifecycle))
             ((Lifecycle) basic).start();
-        
+
         /** CR 6411114 (MBean registration moved to ValveBase.start())
         if( basic!=null )
             registerValve(basic);
@@ -407,7 +407,7 @@ public class StandardPipeline
         lifecycle.fireLifecycleEvent(STOP_EVENT, null);
 
         // Stop the Valves in our pipeline (including the basic), if any
-        if ((basic != null) && (basic instanceof Lifecycle)) 
+        if ((basic != null) && (basic instanceof Lifecycle))
             ((Lifecycle) basic).stop();
         /** CR 6411114 (MBean deregistration moved to ValveBase.stop())
         if( basic!=null ) {
@@ -420,7 +420,7 @@ public class StandardPipeline
             /** CR 6411114 (MBean deregistration moved to ValveBase.stop())
             unregisterValve(valves[i]);
             */
-        
+
         }
 
         // Notify our interested LifecycleListeners
@@ -535,7 +535,7 @@ public class StandardPipeline
      *  associated with a different Container
      */
     public void addValve(GlassFishValve valve) {
-    
+
         if (firstTcValve != null) {
             // Wrap GlassFish-style valve inside Tomcat-style valve
             addValve(new TomcatValveAdapter(valve));
@@ -781,6 +781,7 @@ public class StandardPipeline
                 } else {
                     log.log(Level.SEVERE, PROTOCOL_HANDLER_REQUIRED_EXCEPTION);
                 }
+                 req.setUpgrade(false);
             }
         }
     }
@@ -926,8 +927,8 @@ public class StandardPipeline
         } else {
             String msg = MessageFormat.format(rb.getString(STANDARD_PIPELINE_NULL_INFO), message);
             log.log(Level.WARNING, msg, t);// INFO set to WARNING
-        }      
-    }                                                                     
+        }
+    }
 
     // ------------------------------------------------------ Private Methods
 
