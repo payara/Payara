@@ -755,10 +755,10 @@ public class FileUtils  {
         *unlock the locked file - then begin the retries.
         */
         if (!work.workComplete()) {
-        	if(FILESETTERPROPTIES)
+        	if(cmdfilepropertieset)
         	{
         		setFileProperties();
-        		FILESETTERPROPTIES=false;
+        		cmdfilepropertieset=false;
         	}
             _utillogger.log(FILE_OPERATION_LOG_LEVEL, CULoggerInfo.performGC);
             while (!work.workComplete() && retries++ < FILE_OPERATION_MAX_RETRIES) {
@@ -1461,6 +1461,6 @@ public class FileUtils  {
 
         private static int FILE_OPERATION_MAX_RETRIES=20;
         private static int FILE_OPERATION_SLEEP_DELAY_MS=1000;
+        private static boolean cmdfilepropertieset=true;
         private static final Level FILE_OPERATION_LOG_LEVEL = Level.FINE;
-        private static boolean FILESETTERPROPTIES=true;
 }
