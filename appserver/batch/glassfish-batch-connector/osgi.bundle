@@ -38,4 +38,6 @@
 # holder.
 #
 
--exportcontents: org.glassfish.batch.spi.impl; version=${project.osgi.version}
+-exportcontents:  fish.payara.jbatch.persistence.rdbms;\
+                  org.glassfish.batch.spi.impl; version=${project.osgi.version}\
+

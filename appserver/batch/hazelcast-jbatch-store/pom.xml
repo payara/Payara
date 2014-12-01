@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2013-2014 Zenthis Limited and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main.batch</groupId>
+        <artifactId>batch</artifactId>
+        <version>4.1.151-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>hazelcast-jbatch-store</artifactId>
+    <packaging>glassfish-jar</packaging>
+    
+    <name>Hazelcast Batch Persistence Service</name>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.common</groupId>
+            <artifactId>internal-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.spi</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.persistence</groupId>
+            <artifactId>persistence-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+            <dependency>
+            <groupId>org.glassfish.main.concurrent</groupId>
+            <artifactId>concurrent-connector</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.container</artifactId>
+            <version>1.0.1-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.hazelcast</groupId>
+            <artifactId>hazelcast</artifactId>
+            <version>3.3.3</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax.batch</groupId>
+            <artifactId>javax.batch-api</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>
