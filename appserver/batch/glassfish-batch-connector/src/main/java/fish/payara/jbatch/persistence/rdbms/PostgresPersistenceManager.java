@@ -142,7 +142,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 
         Connection conn = getConnection();
         Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-        String query = "select lower(table_schema), tlower(table_name) FROM information_schema.tables where lower(table_schema)= "+ "\'" + schema + "\'" +" and lower(table_name)= " +  "\'" + tableName.toLowerCase() + "\'";
+        String query = "select lower(table_schema),lower(table_name) FROM information_schema.tables where lower(table_schema)= "+ "\'" + schema + "\'" +" and lower(table_name)= " +  "\'" + tableName.toLowerCase() + "\'";
         ResultSet rs = stmt.executeQuery(query);
         PreparedStatement ps = null;
         
