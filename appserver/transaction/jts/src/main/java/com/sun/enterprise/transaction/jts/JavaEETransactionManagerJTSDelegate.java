@@ -142,6 +142,7 @@ public class JavaEETransactionManagerJTSDelegate
         initTransactionProperties();
 
         setInstance(this);
+        setTransactionManager();
     }
 
     public boolean useLAO() {
