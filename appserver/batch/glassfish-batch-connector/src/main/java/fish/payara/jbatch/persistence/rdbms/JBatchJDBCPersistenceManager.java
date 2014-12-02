@@ -219,7 +219,7 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
      *  Check if the derby jbatch tables exist, if not create them 
      **/
     private void checkDerbyTables() throws SQLException {
-    	
+    	setCreateDerbyStringsMap(batchConfig);
     	createDerbyTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY), createDerbyStrings.get(DERBY_CREATE_TABLE_CHECKPOINTDATA));
         
     	createDerbyTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),createDerbyStrings.get(DERBY_CREATE_TABLE_JOBINSTANCEDATA) );
@@ -1653,6 +1653,7 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
             
             	statement.setString(1, name);
             	statement.setString(2, apptag);
+                statement.executeUpdate();
             
             	rs = statement.getGeneratedKeys();
             	if (rs.next()) {
