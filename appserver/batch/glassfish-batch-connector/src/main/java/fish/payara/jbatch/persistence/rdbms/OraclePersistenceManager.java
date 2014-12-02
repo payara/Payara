@@ -68,14 +68,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 	        tableNames = getTableMap(batchConfig);
 
 	        queryStrings = getQueryMap(batchConfig);
-	        
-	        
-			// put the create table strings into a hashmap
-			createTableStrings = setCreateTableMap(batchConfig);
-			        
-			// put the create index strings into a hashmap
-			createIndexStrings =setCreateIndexMap(batchConfig);
-				
+	        	
 	        
 	        logger.config("JNDI name = " + jndiName);
 
@@ -121,6 +114,11 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 	    }
 	    
 	    private void checkOracleTables() throws SQLException {
+	    	// put the create table strings into a hashmap
+	    	createTableStrings = setCreateTableMap(batchConfig);
+	    				        
+	    	// put the create index strings into a hashmap
+	    	createIndexStrings =setCreateIndexMap(batchConfig);
 	        logger.entering(CLASSNAME, "checkOracleTables");
 
 	        createOracleTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY), createTableStrings.get(CREATE_TABLE_CHECKPOINTDATA));
