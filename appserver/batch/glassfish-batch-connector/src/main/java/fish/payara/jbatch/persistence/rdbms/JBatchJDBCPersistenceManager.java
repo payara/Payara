@@ -1611,7 +1611,12 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
 
         try {
             conn = getConnection();
-            statement = conn.prepareStatement(queryStrings.get(CREATE_SUB_JOB_INSTANCE), new String[]{"JOBINSTANCEID"});
+            if(conn.getMetaData().getDatabaseProductName().contains("PostgreSQL") )
+            {
+            	statement = conn.prepareStatement(queryStrings.get(CREATE_SUB_JOB_INSTANCE),statement.RETURN_GENERATED_KEYS);
+            }else {
+            	statement = conn.prepareStatement(queryStrings.get(CREATE_SUB_JOB_INSTANCE),new String[]{"JOBINSTANCEID"});
+            }
             statement.setString(1, name);
             statement.setString(2, apptag);
             statement.executeUpdate();
@@ -1644,7 +1649,7 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
             
             if(conn.getMetaData().getDatabaseProductName().contains("PostgreSQL") )
             {
-            	statement = conn.prepareStatement(queryStrings.get(CREATE_JOB_INSTANCE));
+            	statement = conn.prepareStatement(queryStrings.get(CREATE_JOB_INSTANCE),statement.RETURN_GENERATED_KEYS);
             }else if(conn.getMetaData().getDatabaseProductName().contains("Oracle") || conn.getMetaData().getDatabaseProductName().contains("DB2")){
             	statement = conn.prepareStatement(queryStrings.get(CREATE_JOB_INSTANCE),new String[]{"JOBINSTANCEID"});
             }else if(conn.getMetaData().getDatabaseProductName().contains("Derby") || conn.getMetaData().getDatabaseProductName().contains("MySQL"))
@@ -1657,6 +1662,7 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
                 statement.executeUpdate();
             
             	rs = statement.getGeneratedKeys();
+            	
             	if (rs.next()) {
                 long jobInstanceID = rs.getLong(1);
                 jobInstance = new JobInstanceImpl(jobInstanceID, jobXml);
@@ -1692,7 +1698,7 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
         try {
             conn = getConnection();
             if(conn.getMetaData().getDatabaseProductName().contains("PostgreSQL")){
-            	statement = conn.prepareStatement(queryStrings.get(CREATE_JOB_EXECUTION_ENTRY));
+            	 statement = conn.prepareStatement(queryStrings.get(CREATE_JOB_EXECUTION_ENTRY), statement.RETURN_GENERATED_KEYS);
             }else
             {
             	statement = conn.prepareStatement(queryStrings.get(CREATE_JOB_EXECUTION_ENTRY), new String[]{"JOBEXECID"});
@@ -1796,7 +1802,12 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
 
         try {
             conn = getConnection();
-            statement = conn.prepareStatement(query, new String[]{"STEPEXECID"});
+            if(conn.getMetaData().getDatabaseProductName().contains("PostgreSQL")){
+           	 statement = conn.prepareStatement(query, statement.RETURN_GENERATED_KEYS);
+           }else
+           {
+           	statement = conn.prepareStatement(query, new String[]{"STEPEXECID"});
+           }
             statement.setLong(1, rootJobExecId);
             statement.setString(2, batchStatus);
             statement.setString(3, exitStatus);
@@ -2342,7 +2353,7 @@ public class JBatchJDBCPersistenceManager implements IPersistenceManagerService,
     	 createTableStrings.put(CREATE_JOBINSTANCEDATA_SEQ, "CREATE SEQUENCE JOBINSTANCEDATA_SEQ");
     	 createTableStrings.put(CREATE_JOBINSTANCEDATA_TRG, "CREATE OR REPLACE TRIGGER JOBINSTANCEDATA_TRG BEFORE INSERT ON "+ tableNames.get(JOB_INSTANCE_TABLE_KEY) + " FOR EACH ROW BEGIN SELECT JOBINSTANCEDATA_SEQ.nextval INTO :new.jobinstanceid FROM dual; END;");
     	 
-    	 createTableStrings.put(CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE " + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY) + "(jobexecid NUMBER(19,0) PRIMARY KEY,jobinstanceid	NUMBER(19,0),createtime	TIMESTAMP,starttime		TIMESTAMP,endtime		TIMESTAMP,updatetime	TIMESTAMP,parameters BLOB,batchstatus VARCHAR2(512),exitstatus VARCHAR2(512),CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES JOBINSTANCEDATA (jobinstanceid))");
+    	 createTableStrings.put(CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE " + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY) + "(jobexecid NUMBER(19,0) PRIMARY KEY,jobinstanceid	NUMBER(19,0),createtime	TIMESTAMP,starttime		TIMESTAMP,endtime		TIMESTAMP,updatetime	TIMESTAMP,parameters BLOB,batchstatus VARCHAR2(512),exitstatus VARCHAR2(512),CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES " + tableNames.get(JOB_INSTANCE_TABLE_KEY) + "(jobinstanceid))");
     	 createTableStrings.put(CREATE_EXECUTIONINSTANCEDATA_SEQ, "CREATE SEQUENCE EXECUTIONINSTANCEDATA_SEQ");
     	 createTableStrings.put(CREATE_EXECUTIONINSTANCEDATA_TRG, "CREATE OR REPLACE TRIGGER EXECUTIONINSTANCEDATA_TRG BEFORE INSERT ON " + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)+ " FOR EACH ROW BEGIN SELECT EXECUTIONINSTANCEDATA_SEQ.nextval INTO :new.jobexecid FROM dual;END;");
     	 

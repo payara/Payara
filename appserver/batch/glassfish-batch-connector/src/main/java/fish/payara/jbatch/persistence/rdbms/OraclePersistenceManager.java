@@ -152,7 +152,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 
 	        Connection conn = getConnection();
 	        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-	        String query = "SELECT * FROM dba_tables where owner =  "+ "\'" + schema.toUpperCase() + "\'" +" and table_name= " +  "\'" + tableName + "\'";
+	        String query = "SELECT lower(owner),lower(table_name) FROM dba_tables where lower(owner) =  "+ "\'" + schema.toLowerCase() + "\'" +" and lower(table_name)= " +  "\'" + tableName.toLowerCase() + "\'";
 	        ResultSet rs = stmt.executeQuery(query);
 	        PreparedStatement ps = null;
 	        
