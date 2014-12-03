@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -309,7 +309,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
         assertFalse(validator.isValid("${SOME_PROP", null));
         assertFalse(validator.isValid("{SOME_PROP}", null));
         assertTrue(validator.isValid("127.0.0.1", null));
-        assertFalse(validator.isValid("127.0.0.", null));
+        assertFalse(validator.isValid("1271.2.1.3", null));
         assertTrue(validator.isValid("::1", null));
         assertFalse(validator.isValid(":1", null));
     }
