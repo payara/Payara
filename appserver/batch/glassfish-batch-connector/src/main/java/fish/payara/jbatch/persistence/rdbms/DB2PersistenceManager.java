@@ -131,7 +131,7 @@ public class DB2PersistenceManager extends JBatchJDBCPersistenceManager {
 
 	        Connection conn = getConnection();
 	        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-	        String query = "select name from sysibm.systables where name="+  "\'" + tableName + "\'" + "and type = 'T'";;
+	        String query = "select name from sysibm.systables where name ="+  "\'" + tableName + "\'" + "and type = 'T'";;
 	        ResultSet rs = stmt.executeQuery(query);
 	        PreparedStatement ps = null;
 	        
