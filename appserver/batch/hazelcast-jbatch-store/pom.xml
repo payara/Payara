@@ -27,6 +27,24 @@
     <artifactId>hazelcast-jbatch-store</artifactId>
     <packaging>glassfish-jar</packaging>
     
+    <profiles>
+       <profile>
+          <id>payara_patches_repo</id>
+          <activation>
+             <activeByDefault>true</activeByDefault>
+          </activation>
+          <repositories>
+             <repository>
+                <id>payara_patches_repo-release</id>
+                <releases>
+                   <enabled>true</enabled>
+                </releases>
+                <url>https://raw.github.com/Payara/Payara_PatchedProjects/master/Jbatch/1.0/releases</url>
+             </repository>
+          </repositories>
+       </profile>
+    </profiles>
+
     <name>Hazelcast Batch Persistence Service</name>
     <dependencies>
         <dependency>
@@ -37,7 +55,7 @@
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.spi</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>${com.ibm.jbatch.spi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.persistence</groupId>
@@ -52,7 +70,7 @@
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>${com.ibm.jbatch.container.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
