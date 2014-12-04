@@ -52,7 +52,7 @@
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
-            <version>1.0.1-SNAPSHOT</version>
+            <version>${com.ibm.jbatch.container.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
