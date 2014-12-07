@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+   Portions Copyright [2014] [C2B2 Consulting Limited] 
 -->
 
 <ui:event type="initPage">
