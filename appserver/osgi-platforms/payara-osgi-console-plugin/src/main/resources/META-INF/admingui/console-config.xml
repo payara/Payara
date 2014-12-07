@@ -40,7 +40,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
 <console-config id="osgi-console">
     <integration-point
                 id="osgiConsole"

@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+   Portions Copyright [2014] [C2B2 Consulting Limited] 
 -->
 
 <sun:image url="#{request.contextPath}/resource/community-theme/images/login-product_name_open.png"

@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 package fish.payara.jbatch.persistence.rdbms;
 
 import java.io.ByteArrayInputStream;
