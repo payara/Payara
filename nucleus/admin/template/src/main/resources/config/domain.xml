@@ -203,6 +203,7 @@
             <http default-virtual-server="server" max-connections="250">
               <file-cache enabled="false"></file-cache>
             </http>
+	    <ssl ssl3-enabled="false" />
           </protocol>
           <protocol security-enabled="true" name="http-listener-2">
             <http default-virtual-server="server" max-connections="250">
@@ -348,6 +349,7 @@
                      <http default-virtual-server="server">
                          <file-cache />
                      </http>
+		     <ssl ssl3-enabled="false" />
                  </protocol>
                  <protocol security-enabled="true" name="sec-admin-listener">
                      <http default-virtual-server="__asadmin" encoded-slash-enabled="true">
