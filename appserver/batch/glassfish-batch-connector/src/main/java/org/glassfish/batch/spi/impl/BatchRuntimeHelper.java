@@ -180,6 +180,9 @@ public class BatchRuntimeHelper
 
         // uncomment when we incorporate the latest JBatch
         overrideProperties.put(ServiceTypes.PERSISTENCE_MANAGEMENT_SERVICE, determinePersistenceManagerClass());
+        overrideProperties.put(ServiceTypes.CONTAINER_ARTIFACT_FACTORY_SERVICE,"com.ibm.jbatch.container.services.impl.CDIBatchArtifactFactoryImpl" );
+        overrideProperties.put(ServiceTypes.BATCH_THREADPOOL_SERVICE, "com.ibm.jbatch.container.services.impl.SPIDelegatingThreadPoolServiceImpl");
+        overrideProperties.put("J2SE_MODE", false);
         batchSPIManager.registerBatchContainerOverrideProperties(overrideProperties);
 
         try {
