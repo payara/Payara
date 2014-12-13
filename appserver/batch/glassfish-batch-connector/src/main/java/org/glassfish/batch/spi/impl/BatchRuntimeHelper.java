@@ -74,9 +74,7 @@ import javax.inject.Named;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import java.net.URL;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -173,6 +171,7 @@ public class BatchRuntimeHelper
         BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
         batchSPIManager.registerExecutorServiceProvider(glassFishBatchExecutorServiceProvider);
         batchSPIManager.registerBatchSecurityHelper(glassFishBatchSecurityHelper);
+        batchSPIManager.registerPlatformMode(BatchSPIManager.PlatformMode.EE);
 
         Properties overrideProperties = new Properties();
         overrideProperties.put(PAYARA_TABLE_PREFIX_PROPERTY, batchRuntimeConfiguration.getTablePrefix());
@@ -182,12 +181,10 @@ public class BatchRuntimeHelper
         overrideProperties.put(ServiceTypes.PERSISTENCE_MANAGEMENT_SERVICE, determinePersistenceManagerClass());
         overrideProperties.put(ServiceTypes.CONTAINER_ARTIFACT_FACTORY_SERVICE,"com.ibm.jbatch.container.services.impl.CDIBatchArtifactFactoryImpl" );
         overrideProperties.put(ServiceTypes.BATCH_THREADPOOL_SERVICE, "com.ibm.jbatch.container.services.impl.SPIDelegatingThreadPoolServiceImpl");
-        overrideProperties.put("J2SE_MODE", false);
         batchSPIManager.registerBatchContainerOverrideProperties(overrideProperties);
 
         try {
             DatabaseConfigurationBean databaseConfigurationBean = new GlassFishDatabaseConfigurationBean();
-//            databaseConfigurationBean.setJndiName(getDataSourceLookupName());
             databaseConfigurationBean.setSchema(getSchemaName());
             batchSPIManager.registerDatabaseConfigurationBean(databaseConfigurationBean);
         } catch (DatabaseAlreadyInitializedException daiEx) {
