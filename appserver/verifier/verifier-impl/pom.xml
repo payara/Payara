@@ -91,25 +91,6 @@
             </roles>
         </developer>
     </developers>
-    
-    <profiles>
-        <profile>
-           <id>payara_eclipselinkrepo</id>
-               <activation>
-                      <activeByDefault>true</activeByDefault>
-               </activation>
-              <repositories>
-              		<repository>
-           			<id>payara_eclipselinkrepo-release</id>
-           			<releases>
-           				<enabled>true</enabled>
-           			</releases>
-           			<url>https://raw.github.com/Payara/Payara_PatchedProjects/master/EclipseLink/2.5.2/releases</url>
-               		</repository>
-              </repositories>
-           </profile>
-    </profiles>
-
     <dependencies>
         <!-- All the dependencies have been marked provided so that 
              when some module like deployment depends on verifier, they

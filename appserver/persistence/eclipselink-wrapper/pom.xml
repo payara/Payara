@@ -80,15 +80,6 @@
                <activation>
                       <activeByDefault>true</activeByDefault>
                </activation>
-              <repositories>
-              		<repository>
-           			<id>payara_eclipselinkrepo-release</id>
-           			<releases>
-           				<enabled>true</enabled>
-           			</releases>
-           			<url>https://raw.github.com/Payara/Payara_PatchedProjects/master/EclipseLink/2.5.2/releases</url>
-               		</repository>
-              </repositories>
            </profile>
     </profiles>
 
