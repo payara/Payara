@@ -118,8 +118,8 @@
         <repository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
-	   <!--<url>https://raw.github.com/Payara/Payara_PatchedProjects/</url>-->
-	   <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
+	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url>-->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
@@ -143,8 +143,8 @@
         <pluginRepository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
-	   <!--<url>https://raw.github.com/Payara/Payara_PatchedProjects/</url>-->
-	   <url>file:///opt/PayaraDev/Payara_PatchedProjects</url>
+	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
            	<releases>
            		<enabled>true</enabled>
            	</releases>
