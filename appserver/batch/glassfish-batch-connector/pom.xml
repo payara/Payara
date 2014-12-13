@@ -52,26 +52,6 @@
 
     <artifactId>glassfish-batch-connector</artifactId>
     <packaging>glassfish-jar</packaging>
-    
-    <profiles>
-            <profile>
-               <id>payara_patches_repo</id>
-                   <activation>
-                          <activeByDefault>true</activeByDefault>
-                   </activation>
-                  <repositories>
-                  		<repository>
-               			<id>payara_patches_repo-release</id>
-               			<releases>
-               				<enabled>true</enabled>
-               			</releases>
-               			<url>https://raw.github.com/Payara/Payara_PatchedProjects/master/Jbatch/1.0/releases</url>
-                   		</repository>
-                  </repositories>
-               </profile>
-        </profiles>
-
-    
     <name>Batch Connector for Glassfish</name>
     <dependencies>
         <dependency>

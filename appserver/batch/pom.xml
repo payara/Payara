@@ -61,5 +61,6 @@
         <module>glassfish-batch-connector</module>
         <module>glassfish-batch-commands</module>
         <module>hazelcast-jbatch-store</module>
+        <module>jbatch-repackaged</module>
     </modules>
 </project>

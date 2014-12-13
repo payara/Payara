@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+ -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <parent>
+        <groupId>org.glassfish.main.batch</groupId>
+        <artifactId>batch</artifactId>
+        <version>4.1.151-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>payara-jbatch</artifactId>
+    <packaging>jar</packaging>
+    <name>IBM JBatch Combined</name>
+    <description>Combining of all IBM JBatch jars</description>
+
+    <developers>
+        <developer>
+            <id>smillide</id>
+            <name>Steve Millidge</name>
+            <organization>Payara</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+    <build>       
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>consolidatedbundle-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>processhk2headers</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>hk2-generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            com.ibm.jbatch.jsl.model,
+                            com.ibm.jbatch.spi.services,
+                            com.ibm.jbatch.container.services,
+                            com.ibm.jbatch.container.servicesmanager,
+                            com.ibm.jbatch.container.context.impl,
+                            com.ibm.jbatch.container.jobinstance,
+                            com.ibm.jbatch.container.persistence,
+                            com.ibm.jbatch.container.util,
+                            com.ibm.jbatch.container.exception,
+                            com.ibm.jbatch.container.status,
+                            com.ibm.jbatch.spi
+                        </Export-Package>
+                        <Import-Package>
+                            com.ibm.websphere.asynchbeans;resolution:=optional,
+                            javax.annotation;version="[1.1,2)";resolution:=optional,
+                            javax.batch.api,
+                            javax.batch.api.chunk,
+                            javax.batch.api.chunk.listener,
+                            javax.batch.api.listener,
+                            javax.batch.api.partition,
+                            javax.batch.operations,
+                            javax.batch.runtime,
+                            javax.batch.runtime.context,
+                            javax.enterprise.context;resolution:=optional,
+                            javax.enterprise.context.spi;resolution:=optional,
+                            javax.enterprise.inject;resolution:=optional,
+                            javax.enterprise.event;version="[1.0,2)";resolution:=optional,
+                            javax.enterprise.inject.spi;resolution:=optional,
+                            javax.enterprise.util;resolution:=optional,
+                            javax.inject;version="[1.0,2)",
+                            javax.naming,
+                            javax.naming.spi,
+                            javax.sql,
+                            javax.transaction;version="1.1.0";resolution:=optional,
+                            javax.transaction.cdi;version="[4.0,5)";resolution:=optional,
+                            javax.xml.bind,
+                            javax.xml.bind.annotation,
+                            javax.xml.bind.annotation.adapters,
+                            javax.xml.namespace,
+                            javax.xml.stream,
+                            javax.xml.transform,
+                            javax.xml.transform.stream,
+                            javax.xml.validation,
+                            org.xml.sax,
+                            org.w3c.dom,
+                            org.glassfish.weld,
+                            org.jboss.weld.environment.se;resolution:=optional
+                        </Import-Package>
+                        <Private-Package>*</Private-Package>
+                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                    </instructions>
+                    
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    
+                    <unpackBundle>true</unpackBundle>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.spi</artifactId>
+            <version>${com.ibm.jbatch.spi.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.ibm.jbatch</groupId>
+            <artifactId>com.ibm.jbatch.container</artifactId>
+            <version>${com.ibm.jbatch.container.version}</version>
+        </dependency>     
+    </dependencies>
+    <profiles>
+        <profile>
+            <!-- generate empty javadoc jar -->
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-empty-javadoc-jar</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <classesDirectory>${project.build.directory}/javadoc</classesDirectory>
+                                    <classifier>javadoc</classifier>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+</project>

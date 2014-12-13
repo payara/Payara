@@ -118,21 +118,6 @@
              </plugins>
           </build>
        </profile>
-       <profile>
-          <id>payara_patches_repo</id>
-          <activation>
-             <activeByDefault>true</activeByDefault>
-          </activation>
-          <repositories>
-             <repository>
-                <id>payara_patches_repo-release</id>
-                <releases>
-                   <enabled>true</enabled>
-                </releases>
-                <url>https://raw.github.com/Payara/Payara_PatchedProjects/master/Jbatch/1.0/releases</url>
-             </repository>
-          </repositories>
-       </profile>
     </profiles>
         
     <dependencies>
@@ -194,15 +179,11 @@
             <artifactId>javax.batch-api</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.ibm.jbatch</groupId>
-            <artifactId>com.ibm.jbatch.container</artifactId>
-            <version>${com.ibm.jbatch.container.version}</version>
+            <groupId>org.glassfish.main.batch</groupId>
+            <artifactId>payara-jbatch</artifactId>
+           <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.ibm.jbatch</groupId>
-            <artifactId>com.ibm.jbatch.spi</artifactId>
-            <version>${com.ibm.jbatch.spi.version}</version>
-        </dependency>
+
 
        <!-- The following dependencies is for JSR236.  Including this in glassfish-common-full is a temporary solution.  This will be moved
             to its own package when GLASSFISH-19604 is being worked on.
