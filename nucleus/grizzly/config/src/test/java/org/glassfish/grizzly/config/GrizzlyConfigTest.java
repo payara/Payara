@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.List;
 
 import org.glassfish.grizzly.Transport;
@@ -338,10 +339,11 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
     }
     
     @Test
-    public void schemeOverride() throws IOException, InstantiationException {
+    public void backendConfig() throws IOException, InstantiationException {
         GrizzlyConfig grizzlyConfig = null;
         try {
-            grizzlyConfig = new GrizzlyConfig("grizzly-config-scheme-override.xml");
+            grizzlyConfig = new GrizzlyConfig("grizzly-backend-config.xml");
+
             grizzlyConfig.setupNetwork();
             for (GrizzlyListener listener : grizzlyConfig.getListeners()) {
                 setHttpHandler((GenericGrizzlyListener) listener, new HttpHandler() {
@@ -349,15 +351,32 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
                     @Override
                     public void service(Request request, Response response) throws Exception {
                         response.getWriter().write(request.getScheme());
+						final String remoteUser = request.getRemoteUser();
+                        if (remoteUser != null) {
+                            response.getWriter().write(request.getRemoteUser());
+                        }
+
                     }
                 });
             }
             
             final String content = getContent(new URL("http://localhost:38082").openConnection());
             final String content2 = getContent(new URL("http://localhost:38083").openConnection());
+			
+			final URLConnection c3 = new URL("http://localhost:38084").openConnection();
+            c3.addRequestProperty("my-scheme", "https");
+            final String content3 = getContent(c3);
             
+            final URLConnection c4 = new URL("http://localhost:38085").openConnection();
+            c4.addRequestProperty("my-remote-user", "glassfish");
+            final String content4 = getContent(c4);
+
+			
             Assert.assertEquals("http", content);
             Assert.assertEquals("https", content2);
+			Assert.assertEquals("https", content3);
+            Assert.assertEquals("httpglassfish", content4);
+
         } finally {
             if (grizzlyConfig != null) {
                 grizzlyConfig.shutdown();

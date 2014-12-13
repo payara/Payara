@@ -98,7 +98,7 @@
         </sun:property>
 
         <sun:property id="MaxPostSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.MaxPostSize}" helpText="$resource{i18n_web.http.MaxPostSizeHelp}" >
-            <sun:textField id="headerBLength" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.http.MaxPostSize']}" text="#{pageSession.httpMap['maxPostSizeBytes']}" />
+            <sun:textField id="headerBLength" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.http.MaxPostSize']}" text="#{pageSession.httpMap['maxPostSizeBytes']}" />
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
         </sun:property>
 
@@ -188,5 +188,14 @@
         <sun:property id="websockets"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.WebsocketsSupport}" helpText="$resource{i18n_web.http.WebsocketsSupportHelp}" >
             <sun:checkbox id="websocketsEnabled" label="$resource{i18n_web.common.enabled}" selected="#{pageSession.httpMap['websocketsSupportEnabled']}" selectedValue="true" />
         </sun:property>
+    
+        <sun:property id="SchemeMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.SchemeMapping}" helpText="$resource{i18n_web.http.SchemeMappingHelp}" >
+            <sun:textField id="SchemeMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['schemeMapping']}" />
+        </sun:property>
+    
+        <sun:property id="RemoteUserMapping"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.RemoteUserMapping}" helpText="$resource{i18n_web.http.RemoteUserMappingHelp}" >
+            <sun:textField id="RemoteUserMapping"  columns="$int{50}" maxLength="#{sessionScope.fieldLengths['maxLength.http.ForcedResponseType']}" text="#{pageSession.httpMap['remoteUserMapping']}" />
+        </sun:property>
+
 "<br /><br />
 </sun:propertySheetSection>
