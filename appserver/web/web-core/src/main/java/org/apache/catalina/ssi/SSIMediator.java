@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+//Portions Copyright 2014 C2B2 Consulting Limited
 
 package org.apache.catalina.ssi;
 
@@ -70,7 +71,6 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.grizzly.http.util.HttpUtils;
 
 /**
