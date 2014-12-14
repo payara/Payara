@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2014 C2B2 Consulting Limited
 
 package com.sun.enterprise.v3.admin;
 
@@ -100,9 +101,12 @@ public class IdmService implements PostConstruct, IdentityManagement {
                 success = setFromAsMainArguments();
             }
         }
+        
         if (!success) {
             masterPassword = "changeit".toCharArray(); //the default;
         }
+        System.setProperty("javax.net.ssl.keyStorePassword",new String(masterPassword));
+        System.setProperty("javax.net.ssl.trustStorePassword",new String(masterPassword));
     }
     
     @Override
