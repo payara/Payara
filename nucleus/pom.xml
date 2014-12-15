@@ -147,8 +147,8 @@
         <servlet-api.version>3.1.0</servlet-api.version>
         <grizzly.version>2.3.15-gfa</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.3.0</hk2.version>
-        <hk2.plugin.version>2.3.0</hk2.plugin.version>
+        <hk2.version>2.4.0-b06</hk2.version>
+        <hk2.plugin.version>2.4.0-b06</hk2.plugin.version>
         <javax.el.version>3.0.1-b03</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
@@ -156,7 +156,7 @@
         <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.13</jersey.version>
+        <jersey.version>2.14</jersey.version>
         <jackson.version>2.3.2</jackson.version>
         <jettison.version>1.3.3</jettison.version>
         <jax-rs-api.spec.version>2.0</jax-rs-api.spec.version>
@@ -753,6 +753,11 @@
                 <groupId>javax.el</groupId>
                 <artifactId>javax.el-api</artifactId>
                 <version>${javax.el-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish</groupId>
+                <artifactId>javax.el</artifactId>
+                <version>${javax.el.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.jaxrs</groupId>
