@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package org.glassfish.jdbc.pool.monitor;
 
@@ -632,52 +633,52 @@ public class JdbcConnPoolStatsProvider {
 */
     @ManagedAttribute(id="numpotentialconnleak")
     public CountStatistic getNumPotentialConnLeakCount() {
-        return numPotentialConnLeak.getStatistic();
+        return numPotentialConnLeak;
     }
 
     @ManagedAttribute(id="numconnfailedvalidation")
     public CountStatistic getNumConnFailedValidation() {
-        return numConnFailedValidation.getStatistic();
+        return numConnFailedValidation;
     }
 
     @ManagedAttribute(id="numconntimedout")
     public CountStatistic getNumConnTimedOut() {
-        return numConnTimedOut.getStatistic();
+        return numConnTimedOut;
     }
 
     @ManagedAttribute(id="numconnused")
     public RangeStatistic getNumConnUsed() {
-        return numConnUsed.getStatistic();
+        return numConnUsed;
     }
 
     @ManagedAttribute(id="numconnfree")
     public RangeStatistic getNumConnFree() {
-        return numConnFree.getStatistic();
+        return numConnFree;
     }
 
     @ManagedAttribute(id="connrequestwaittime")
     public RangeStatistic getConnRequestWaitTime() {
-        return connRequestWaitTime.getStatistic();
+        return connRequestWaitTime;
     }
 
     @ManagedAttribute(id="numconndestroyed")
     public CountStatistic getNumConnDestroyed() {
-        return numConnDestroyed.getStatistic();
+        return numConnDestroyed;
     }
 
     @ManagedAttribute(id="numconnacquired")
     public CountStatistic getNumConnAcquired() {
-        return numConnAcquired.getStatistic();
+        return numConnAcquired;
     }
 
     @ManagedAttribute(id="numconncreated")
     public CountStatistic getNumConnCreated() {
-        return numConnCreated.getStatistic();
+        return numConnCreated;
     }
 
     @ManagedAttribute(id="numconnreleased")
     public CountStatistic getNumConnReleased() {
-        return numConnReleased.getStatistic();
+        return numConnReleased;
     }
     
     @ManagedAttribute(id="numconnsuccessfullymatched")

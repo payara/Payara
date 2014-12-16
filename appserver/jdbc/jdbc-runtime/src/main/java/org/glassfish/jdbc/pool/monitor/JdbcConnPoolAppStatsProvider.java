@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package org.glassfish.jdbc.pool.monitor;
 
@@ -161,17 +162,17 @@ public class JdbcConnPoolAppStatsProvider {
 
     @ManagedAttribute(id="numconnused")
     public RangeStatistic getNumConnUsed() {
-        return numConnUsed.getStatistic();
+        return numConnUsed;
     }
 
     @ManagedAttribute(id="numconnacquired")
     public CountStatistic getNumConnAcquired() {
-        return numConnAcquired.getStatistic();
+        return numConnAcquired;
     }
 
     @ManagedAttribute(id="numconnreleased")
     public CountStatistic getNumConnReleased() {
-        return numConnReleased.getStatistic();
+        return numConnReleased;
     }
 
 }
