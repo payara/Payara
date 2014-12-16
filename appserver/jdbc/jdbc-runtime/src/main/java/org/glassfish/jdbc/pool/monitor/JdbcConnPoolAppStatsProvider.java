@@ -161,17 +161,17 @@ public class JdbcConnPoolAppStatsProvider {
 
     @ManagedAttribute(id="numconnused")
     public RangeStatistic getNumConnUsed() {
-        return numConnUsed.getStatistic();
+        return numConnUsed;
     }
 
     @ManagedAttribute(id="numconnacquired")
     public CountStatistic getNumConnAcquired() {
-        return numConnAcquired.getStatistic();
+        return numConnAcquired;
     }
 
     @ManagedAttribute(id="numconnreleased")
     public CountStatistic getNumConnReleased() {
-        return numConnReleased.getStatistic();
+        return numConnReleased;
     }
 
 }
