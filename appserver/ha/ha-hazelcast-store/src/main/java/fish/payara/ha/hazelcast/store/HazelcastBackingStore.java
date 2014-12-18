@@ -57,7 +57,7 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
 
     @Override
     public void remove(K k) throws BackingStoreException {
-        imap.remove(k);
+        imap.delete(k);
     }
 
     @Override
