@@ -51,7 +51,7 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
 
     @Override
     public String save(K k, V v, boolean bln) throws BackingStoreException {
-        imap.put(k, v);
+        imap.set(k, v);
         return getBackingStoreConfiguration().getInstanceName();
     }
 
