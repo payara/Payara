@@ -297,6 +297,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         }
         } catch ( Exception tnpe) {
             logger.info("Got Exception when scanning " + element + " for annotations " + tnpe.toString() + " ignoring Annotations");
+            logger.log(Level.FINE,"Exception caught and ignored when scanning", tnpe);
         } 
         return result;
     }
