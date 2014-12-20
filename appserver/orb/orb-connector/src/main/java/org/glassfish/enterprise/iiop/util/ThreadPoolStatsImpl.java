@@ -172,7 +172,7 @@ public class ThreadPoolStatsImpl
     public synchronized CountStatistic getNumberOfBusyThreads() {
         int numBusyThreads = threadPool.numberOfBusyThreads();
         numberOfBusyThreads.setCount(numBusyThreads);
-        return (CountStatistic) numberOfBusyThreads.getStatistic();
+        return (CountStatistic) numberOfBusyThreads;
     }
 
     @ManagedAttribute
@@ -182,7 +182,7 @@ public class ThreadPoolStatsImpl
 
         numberOfAvailableThreads.setCount(numAvailableThreads);
 
-        return (CountStatistic) numberOfAvailableThreads.getStatistic();
+        return (CountStatistic) numberOfAvailableThreads;
     }
 
     @ManagedAttribute
@@ -190,7 +190,7 @@ public class ThreadPoolStatsImpl
     public synchronized BoundedRangeStatistic getCurrentNumberOfThreads() {
         int numCurrentThreads = threadPool.currentNumberOfThreads();
         currentNumberOfThreads.setCurrent(numCurrentThreads);
-        return (BoundedRangeStatistic) currentNumberOfThreads.getStatistic();
+        return (BoundedRangeStatistic) currentNumberOfThreads;
     }
 
     @ManagedAttribute
@@ -198,7 +198,7 @@ public class ThreadPoolStatsImpl
     public synchronized RangeStatistic getAverageWorkCompletionTime() {
         long avgWorkCompletionTime = threadPool.averageWorkCompletionTime();
         averageWorkCompletionTime.setCurrent(avgWorkCompletionTime);
-        return (RangeStatistic) averageWorkCompletionTime.getStatistic();
+        return (RangeStatistic) averageWorkCompletionTime;
     }
 
     @ManagedAttribute
@@ -206,7 +206,7 @@ public class ThreadPoolStatsImpl
     public synchronized CountStatistic getTotalWorkItemsAdded() {
         long totWorkItemsAdded = workQueue.totalWorkItemsAdded();
         totalWorkItemsAdded.setCount(totWorkItemsAdded);
-        return (CountStatistic) totalWorkItemsAdded.getStatistic();
+        return (CountStatistic) totalWorkItemsAdded;
     }
 
     @ManagedAttribute
@@ -214,7 +214,7 @@ public class ThreadPoolStatsImpl
     public synchronized BoundedRangeStatistic getNumberOfWorkItemsInQueue() {
         int totWorkItemsInQueue = workQueue.workItemsInQueue();
         numberOfWorkItemsInQueue.setCurrent(totWorkItemsInQueue);
-        return (BoundedRangeStatistic) numberOfWorkItemsInQueue.getStatistic();
+        return (BoundedRangeStatistic) numberOfWorkItemsInQueue;
     }
 
     @ManagedAttribute
@@ -223,7 +223,7 @@ public class ThreadPoolStatsImpl
         long avgTimeInQueue = workQueue.averageTimeInQueue();
         averageTimeInQueue.setCurrent(avgTimeInQueue);
 
-        return (RangeStatistic) averageTimeInQueue.getStatistic();
+        return (RangeStatistic) averageTimeInQueue;
     }
 } //ThreadPoolStatsImpl{ }
 

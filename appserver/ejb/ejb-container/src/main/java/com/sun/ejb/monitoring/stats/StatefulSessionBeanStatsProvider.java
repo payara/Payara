@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package com.sun.ejb.monitoring.stats;
 
@@ -85,14 +86,14 @@ public class StatefulSessionBeanStatsProvider extends EjbMonitoringStatsProvider
     @Description( "Number of stateful session beans in MethodReady state")
     public RangeStatistic getMethodReadyCount() {
         methodReadyStat.setCurrent(methodReadyCount);
-        return methodReadyStat.getStatistic();
+        return methodReadyStat;
     }
 
     @ManagedAttribute(id="passivecount")
     @Description( "Number of stateful session beans in Passive state")
     public RangeStatistic getPassiveCount() {
         passiveCount.setCurrent(delegate.getPassiveCount());
-        return passiveCount.getStatistic();
+        return passiveCount;
     }
 
     @ProbeListener("glassfish:ejb:bean:methodReadyAddEvent")

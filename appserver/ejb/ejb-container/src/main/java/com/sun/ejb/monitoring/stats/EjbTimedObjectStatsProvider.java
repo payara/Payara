@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package com.sun.ejb.monitoring.stats;
 
@@ -121,18 +122,18 @@ public class EjbTimedObjectStatsProvider {
     @ManagedAttribute(id="numtimerscreated")
     @Description( "Number of timers created in the system")
     public CountStatistic getNumTimersCreated() {
-        return timerCreateStat.getStatistic();
+        return timerCreateStat;
     }
 
     @ManagedAttribute(id="numtimersremoved")
     @Description( "Number of timers removed from the system")
     public CountStatistic getNumTimersRemoved() {
-        return timerRemoveStat.getStatistic();
+        return timerRemoveStat;
     }
 
     @ManagedAttribute(id="numtimersdelivered")
     @Description( "Number of timers delivered by the system")
     public CountStatistic getNumTimersDelivered() {
-        return timerDeliveredStat.getStatistic();
+        return timerDeliveredStat;
     }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 package org.glassfish.web.admin.monitor;
 
 import java.util.logging.Level;
@@ -135,7 +135,7 @@ public class ServletInstanceStatsProvider {
     @ManagedAttribute(id="errorcount")
     @Description(ERROR_COUNT_DESCRIPTION)
     public CountStatistic getErrorCount() {
-        return errorCount.getStatistic();
+        return errorCount;
     }
 
     @ManagedAttribute(id="maxtime")

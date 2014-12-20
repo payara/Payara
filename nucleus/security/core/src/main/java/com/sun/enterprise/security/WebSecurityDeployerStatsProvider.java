@@ -95,13 +95,13 @@ public class WebSecurityDeployerStatsProvider {
 
     @ManagedAttribute(id="websecuritymanagercount")
     public CountStatistic getWebSMCount() {
-        return secMgrCount.getStatistic();
+        return secMgrCount;
 
     }
 
     @ManagedAttribute(id="webpolicyconfigurationcount")
     public CountStatistic getPCCount() {
-        return policyConfCount.getStatistic();
+        return policyConfCount;
     }
 /*   @ProbeListener("glassfish:core:web:webDeploymentStartedEvent")
     public void webDeploymentStartedEvent(@ProbeParam("appName")String appName){

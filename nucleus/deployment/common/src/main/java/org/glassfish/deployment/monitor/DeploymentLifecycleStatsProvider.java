@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package org.glassfish.deployment.monitor;
 
@@ -149,7 +150,7 @@ public class DeploymentLifecycleStatsProvider {
             }
         }
         appsInfoStat.setCurrent(strBuf.toString());
-        return appsInfoStat.getStatistic();
+        return appsInfoStat;
     }
 
     @ProbeListener("glassfish:deployment:lifecycle:applicationDeployedEvent")

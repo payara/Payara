@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package org.glassfish.ejb.security.application;
 
@@ -72,12 +73,12 @@ public class EjbSecurityStatsProvider {
 
     @ManagedAttribute(id="securitymanagercount")
     public CountStatistic getSecurityManagerCount() {
-        return ejbSMCount.getStatistic();
+        return ejbSMCount;
     }
 
     @ManagedAttribute(id="policyconfigurationcount")
     public CountStatistic getPolicyConfigurationCount() {
-        return ejbPCCount.getStatistic();
+        return ejbPCCount;
     }
 
 

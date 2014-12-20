@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package org.glassfish.persistence.ejb.entitybean.container.stats;
 
@@ -88,13 +89,13 @@ public class EntityBeanStatsProvider extends EjbMonitoringStatsProvider {
     @Description( "Number of entity beans in pooled state")
     public RangeStatistic getPooledCount() {
         pooledCount.setCurrent(delegate.getPooledCount());
-        return pooledCount.getStatistic();
+        return pooledCount;
     }
 
     @ManagedAttribute(id="readycount")
     @Description( "Number of entity beans in ready state")
     public RangeStatistic getReadyCount() {
         readyCount.setCurrent(delegate.getReadyCount());
-        return readyCount.getStatistic();
+        return readyCount;
     }
 }
