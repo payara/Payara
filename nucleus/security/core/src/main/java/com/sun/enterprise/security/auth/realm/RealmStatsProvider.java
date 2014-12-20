@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.security.auth.realm;
 
@@ -66,7 +67,7 @@ public class RealmStatsProvider {
     @ManagedAttribute
     @Description( "Security Realm Count" )
     public CountStatistic getRealmCount() {
-        return realmCount.getStatistic();
+        return realmCount;
     }
     
     @ProbeListener("glassfish:security:realm:realmAddedEvent")

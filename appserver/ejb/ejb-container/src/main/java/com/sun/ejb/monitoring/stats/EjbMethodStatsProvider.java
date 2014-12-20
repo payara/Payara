@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package com.sun.ejb.monitoring.stats;
 
@@ -104,7 +105,7 @@ public class EjbMethodStatsProvider {
     @ManagedAttribute(id="methodstatistic")
     @Description("Number of times the operation is called; total time spent during invocation, and so on.")
     public TimeStatistic getMethodStatistic() {
-        return methodStat.getStatistic();
+        return methodStat;
     }
 
     @ManagedAttribute(id="totalnumerrors")

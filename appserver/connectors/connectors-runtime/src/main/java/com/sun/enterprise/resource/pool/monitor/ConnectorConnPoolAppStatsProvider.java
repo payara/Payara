@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.resource.pool.monitor;
 
@@ -164,17 +165,17 @@ public class ConnectorConnPoolAppStatsProvider {
 
     @ManagedAttribute(id="numconnused")
     public RangeStatistic getNumConnUsed() {
-        return numConnUsed.getStatistic();
+        return numConnUsed;
     }
 
     @ManagedAttribute(id="numconnacquired")
     public CountStatistic getNumConnAcquired() {
-        return numConnAcquired.getStatistic();
+        return numConnAcquired;
     }
 
     @ManagedAttribute(id="numconnreleased")
     public CountStatistic getNumConnReleased() {
-        return numConnReleased.getStatistic();
+        return numConnReleased;
     }
 
 }
