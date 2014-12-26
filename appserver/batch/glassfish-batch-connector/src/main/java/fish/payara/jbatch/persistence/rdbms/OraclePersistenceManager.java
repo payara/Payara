@@ -232,7 +232,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 			conn = getConnection();
 			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
 					ResultSet.CONCUR_READ_ONLY);
-			String query = "SELECT lower(owner),lower(table_name) FROM dba_tables where lower(owner) =  "
+			String query = "SELECT lower(owner),lower(table_name) FROM all_tables where lower(owner) =  "
 					+ "\'"
 					+ schema.toLowerCase()
 					+ "\'"
