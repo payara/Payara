@@ -109,6 +109,8 @@ public class JBatchJDBCPersistenceManager implements
 	// db2 create table strings
 	protected Map<String, String> createDB2Strings;
 
+	// mysql create table strings
+	protected Map<String, String> createMySQLStrings;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -185,6 +187,14 @@ public class JBatchJDBCPersistenceManager implements
 			DatabaseMetaData dbmd = null;
 			dbmd = connection.getMetaData();
 			schema = dbmd.getUserName();
+			//mysql schema has username@servername
+			if(dbmd.getDatabaseProductName().toLowerCase().contains("mysql"))
+			{
+				int index = schema.indexOf('@');
+				schema = schema.substring(0, index);
+				queryStrings.put(Q_SET_SCHEMA, "USE test");
+			//	System.out.println("schema is " + schema);
+			}
 
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
@@ -3094,6 +3104,93 @@ public class JBatchJDBCPersistenceManager implements
 
 		return createDerbyStrings;
 
+	}
+	
+	/**
+	 * Method invoked to insert the MySql create table strings into a hashmap
+	 **/
+
+	protected Map<String, String> setCreateMySQLStringsMap (IBatchConfig batchConfig) {
+		createMySQLStrings = new HashMap<>();
+		
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
+				+ tableNames.get(CHECKPOINT_TABLE_KEY)
+				+ " (id VARCHAR(512),obj BLOB)");
+		
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBINSTANCEDATA,"CREATE TABLE "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ " (jobinstanceid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(512), apptag VARCHAR(512))");
+		
+		
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE "
+						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+						+ "("
+						+ "jobexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "jobinstanceid BIGINT,"
+						+ "createtime TIMESTAMP,"
+						+ "starttime TIMESTAMP,"
+						+ "endtime TIMESTAMP,"
+						+ "updatetime TIMESTAMP,"
+						+ "parameters BLOB,"
+						+ "batchstatus VARCHAR(512),"
+						+ "exitstatus VARCHAR(512),"
+						+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES "
+						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+						+ "(jobinstanceid))");
+
+		createMySQLStrings
+		.put(MYSQL_CREATE_TABLE_STEPINSTANCEDATA,
+				"CREATE TABLE "
+						+ tableNames
+								.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ "("
+						+ "stepexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "jobexecid BIGINT,"
+						+ "batchstatus VARCHAR(512),"
+						+ "exitstatus VARCHAR(512),"
+						+ "stepname VARCHAR(512),"
+						+ "readcount INT,"
+						+ "writecount INT,"
+						+ "commitcount INT,"
+						+ "rollbackcount INT,"
+						+ "readskipcount INT,"
+						+ "processskipcount INT,"
+						+ "filtercount INT,"
+						+ "writeskipcount INT,"
+						+ "startTime TIMESTAMP,"
+						+ "endTime TIMESTAMP,"
+						+ "persistentData BLOB,"
+						+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
+						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(jobexecid))");
+		
+		 
+
+
+		createMySQLStrings
+			.put(MYSQL_CREATE_TABLE_JOBSTATUS,
+				"CREATE TABLE "
+						+ tableNames.get(JOB_STATUS_TABLE_KEY)
+						+ "("
+						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "obj BLOB,"
+						+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES "
+						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+						+ " (jobinstanceid) ON DELETE CASCADE)");
+
+		createMySQLStrings
+			.put(MYSQL_CREATE_TABLE_STEPSTATUS,
+				"CREATE TABLE "
+						+ tableNames.get(STEP_STATUS_TABLE_KEY)
+						+ "("
+						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "obj BLOB,"
+						+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
+						+ tableNames
+								.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(stepexecid) ON DELETE CASCADE)");
+
+		return createMySQLStrings;
 	}
 
 }
