@@ -1,8 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ 
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ 
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  */
+
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
@@ -141,24 +151,24 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 		logger.entering(CLASSNAME, "checkMySQLTables");
 
 		createMySQLTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_CHECKPOINTDATA));
+				createMySQLStrings.get(MYSQL_CREATE_TABLE_CHECKPOINTDATA));
 
 
 		createMySQLTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_JOBINSTANCEDATA));
+				createMySQLStrings.get(MYSQL_CREATE_TABLE_JOBINSTANCEDATA));
 		
 		createMySQLTableNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_EXECUTIONINSTANCEDATA));
+				createMySQLStrings.get(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA));
 		
 		createMySQLTableNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_STEPINSTANCEDATA));
+				createMySQLStrings.get(MYSQL_CREATE_TABLE_STEPINSTANCEDATA));
 		
 		createMySQLTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_JOBSTATUS));
+				createMySQLStrings.get(MYSQL_CREATE_TABLE_JOBSTATUS));
 		createMySQLTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_STEPSTATUS));
+				createMySQLStrings.get(MYSQL_CREATE_TABLE_STEPSTATUS));
 
 		logger.exiting(CLASSNAME, "checkMySQLTables");
 	}

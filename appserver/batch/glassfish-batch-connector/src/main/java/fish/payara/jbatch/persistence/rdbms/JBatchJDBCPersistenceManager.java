@@ -1,19 +1,19 @@
 /*
- * Copyright 2012 International Business Machines Corp.
+ * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ 
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ 
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  * 
- * See the NOTICE file distributed with this work for additional information
- * regarding copyright ownership. Licensed under the Apache License, 
- * Version 2.0 (the "License"); you may not use this file except in compliance
- * with the License. You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
+
 package fish.payara.jbatch.persistence.rdbms;
 
 import java.io.ByteArrayInputStream;
@@ -187,13 +187,9 @@ public class JBatchJDBCPersistenceManager implements
 			DatabaseMetaData dbmd = null;
 			dbmd = connection.getMetaData();
 			schema = dbmd.getUserName();
-			//mysql schema has username@servername
 			if(dbmd.getDatabaseProductName().toLowerCase().contains("mysql"))
 			{
-				int index = schema.indexOf('@');
-				schema = schema.substring(0, index);
-				queryStrings.put(Q_SET_SCHEMA, "USE test");
-			//	System.out.println("schema is " + schema);
+				schema = "test";
 			}
 
 		} catch (SQLException e) {
@@ -3138,11 +3134,8 @@ public class JBatchJDBCPersistenceManager implements
 						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
 						+ "(jobinstanceid))");
 
-		createMySQLStrings
-		.put(MYSQL_CREATE_TABLE_STEPINSTANCEDATA,
-				"CREATE TABLE "
-						+ tableNames
-								.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_STEPINSTANCEDATA,"CREATE TABLE "
+						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
 						+ "("
 						+ "stepexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
 						+ "jobexecid BIGINT,"
@@ -3167,9 +3160,7 @@ public class JBatchJDBCPersistenceManager implements
 		 
 
 
-		createMySQLStrings
-			.put(MYSQL_CREATE_TABLE_JOBSTATUS,
-				"CREATE TABLE "
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBSTATUS,"CREATE TABLE "
 						+ tableNames.get(JOB_STATUS_TABLE_KEY)
 						+ "("
 						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
@@ -3178,16 +3169,13 @@ public class JBatchJDBCPersistenceManager implements
 						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
 						+ " (jobinstanceid) ON DELETE CASCADE)");
 
-		createMySQLStrings
-			.put(MYSQL_CREATE_TABLE_STEPSTATUS,
-				"CREATE TABLE "
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_STEPSTATUS,"CREATE TABLE "
 						+ tableNames.get(STEP_STATUS_TABLE_KEY)
 						+ "("
 						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
 						+ "obj BLOB,"
 						+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
-						+ tableNames
-								.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
 						+ "(stepexecid) ON DELETE CASCADE)");
 
 		return createMySQLStrings;

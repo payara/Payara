@@ -1,8 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ 
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ 
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  */
+
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
@@ -42,7 +52,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 	@Override
 	protected Map<String, String> getQueryMap(IBatchConfig batchConfig) {
 		Map<String, String> result = super.getQueryMap(batchConfig);
-		if (schema != null && schema.length() != 0) {
+	//	if (schema != null && schema.length() != 0) {
 			result.put(
 					MOST_RECENT_STEPS_FOR_JOB,
 					"select A.* from "
@@ -66,9 +76,9 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 							+ " B ON A.jobinstanceid = B.jobinstanceid where A.jobinstanceid = ?");
 			result.put(GET_JOB_STATUS_FROM_EXECUTIONS, "select A.obj from "
 					+ tableNames.get(JOB_STATUS_TABLE_KEY) + " A inner join "
-					+ "" + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+				    + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
 					+ " B on A.id = B.jobinstanceid where B.jobexecid = ?");
-		}
+	//	}
 		return result;
 	}
 
