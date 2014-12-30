@@ -37,132 +37,186 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-
 /**
-*
-* DB2 Persistence Manager
-*/
+ * 
+ * DB2 Persistence Manager
+ */
 
 public class DB2PersistenceManager extends JBatchJDBCPersistenceManager {
-	
-	private static final String CLASSNAME = JBatchJDBCPersistenceManager.class.getName();
+
+	private static final String CLASSNAME = JBatchJDBCPersistenceManager.class
+			.getName();
 
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
-	
+
 	private IBatchConfig batchConfig = null;
-	
-	 @Override
-    public void init(IBatchConfig batchConfig) throws BatchContainerServiceException {
-        logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 
-        this.batchConfig = batchConfig;
+	@Override
+	public void init(IBatchConfig batchConfig)
+			throws BatchContainerServiceException {
+		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 
-        schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+		this.batchConfig = batchConfig;
 
-        jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
+		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
-        // Load the table names and queries shared between different database types
-        
-        tableNames = getTableMap(batchConfig);
+		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
 
-        queryStrings = getQueryMap(batchConfig);
-        
-        
+		// Load the table names and queries shared between different database
+		// types
+
+		tableNames = getTableMap(batchConfig);
+
+		queryStrings = getQueryMap(batchConfig);
+
 		// put the create table strings into a hashmap
 		createTableStrings = setCreateTableMap(batchConfig);
-		
+
 		createDB2Strings = setCreateDB2StringsMap(batchConfig);
-		
-        
-        logger.config("JNDI name = " + jndiName);
 
-        if (jndiName == null || jndiName.equals("")) {
-            throw new BatchContainerServiceException("JNDI name is not defined.");
-        }
+		logger.config("JNDI name = " + jndiName);
 
-        try {
-            Context ctx = new InitialContext();
-            dataSource = (DataSource) ctx.lookup(jndiName);
+		if (jndiName == null || jndiName.equals("")) {
+			throw new BatchContainerServiceException(
+					"JNDI name is not defined.");
+		}
 
-        } catch (NamingException e) {
-            logger.severe("Lookup failed for JNDI name: " + jndiName
-                    + ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
-            throw new BatchContainerServiceException(e);
-        }
+		try {
+			Context ctx = new InitialContext();
+			dataSource = (DataSource) ctx.lookup(jndiName);
 
-        
-        try{
-        	if (isDB2()) {
-        		if (!isSchemaValid()) {
-        			createSchema();
-        		}
-            checkDB2Tables();
-        	}
-        }catch (SQLException e) {
-        	logger.severe(e.getLocalizedMessage());
-        	throw new BatchContainerServiceException(e);
-        }
+		} catch (NamingException e) {
+			logger.severe("Lookup failed for JNDI name: "
+					+ jndiName
+					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
+			throw new BatchContainerServiceException(e);
+		}
 
-        logger.config("Exiting CLASSNAME.init()");
-    }
-	
-	 private boolean isDB2() throws SQLException {
-	        logger.entering(CLASSNAME, "isDB2");
-	        Connection conn = getConnectionToDefaultSchema();
-	        DatabaseMetaData dbmd = conn.getMetaData();
-	        String prodname= dbmd.getDatabaseProductName();
-	        boolean db2 = prodname.toLowerCase().contains("db2");
-	        logger.exiting(CLASSNAME, "isDB2",db2 );
-	        return db2;
+		try {
+			if (!isDB2SchemaValid()) {
+				setDefaultSchema();
+			}
+			checkDB2Tables();
+
+		} catch (SQLException e) {
+			logger.severe(e.getLocalizedMessage());
+			throw new BatchContainerServiceException(e);
+		}
+
+		logger.config("Exiting CLASSNAME.init()");
 	}
-	 
-	 private void checkDB2Tables() throws SQLException {
-		 
-	        logger.entering(CLASSNAME, "checkDB2Tables");
+    
+	/**
+	 * Check the schema exists
+	 * @return
+	 * @throws SQLException
+	 */
+	private boolean isDB2SchemaValid() throws SQLException {
 
-	        createDB2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY), createDB2Strings.get(DB2_CREATE_TABLE_CHECKPOINTDATA));
-	        
-	        
-	        createDB2TableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY), createDB2Strings.get(DB2_CREATE_TABLE_JOBINSTANCEDATA));
-	        
+		boolean result = false;
+		Connection conn = null;
+		DatabaseMetaData dbmd = null;
+		ResultSet rs = null;
 
-	        createDB2TableNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),createDB2Strings.get(DB2_CREATE_TABLE_EXECUTIONINSTANCEDATA));
-	       
-	        
-	        createDB2TableNotExists(tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),createDB2Strings.get(DB2_CREATE_TABLE_STEPINSTANCEDATA));
-	       
-	        createDB2TableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY), createDB2Strings.get(DB2_CREATE_TABLE_JOBSTATUS));
-	        
-	        createDB2TableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY), createDB2Strings.get(DB2_CREATE_TABLE_STEPSTATUS) );
+		logger.entering(CLASSNAME, "isDB2SchemaValid");
+		try {
+			conn = getConnectionToDefaultSchema();
+			dbmd = conn.getMetaData();
+			rs = dbmd.getSchemas();
 
-	        logger.exiting(CLASSNAME, "checkDB2Tables");
+			while (rs.next()) {
+
+				String schemaname = rs.getString("TABLE_SCHEM");
+				if (schema.equalsIgnoreCase(schemaname)) {
+					logger.exiting(CLASSNAME, "isSchemaValid", true);
+					return true;
+				}
+			}
+		} catch (SQLException e) {
+			logger.severe(e.getLocalizedMessage());
+			throw e;
+		} finally {
+			cleanupConnection(conn, rs, null);
+		}
+		logger.exiting(CLASSNAME, "isDB2SchemaValid", false);
+
+		return result;
+
 	}
-	 
-	 protected void createDB2TableNotExists(String tableName, String createTableStatement) throws SQLException {
-	        logger.entering(CLASSNAME, "createDB2TableNotExists", new Object[]{tableName, createTableStatement});
+    
+	/**
+	 * Check the relevant db2 tables exist in the relevant schema
+	 * @throws SQLException
+	 */
+	private void checkDB2Tables() throws SQLException {
 
-	        Connection conn = getConnection();
-	        Statement stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY);
-	        String query = "select name from sysibm.systables where name ="+  "\'" + tableName + "\'" + "and type = 'T'";;
-	        ResultSet rs = stmt.executeQuery(query);
-	        PreparedStatement ps = null;
-	        
-	        int rowcount = getTableRowCount(rs);
-	       
-	        // Create table if it does not exist
-	        if(rowcount == 0){
-	        	if (!rs.next()) {
-	        		logger.log(Level.INFO, tableName + " table does not exists. Trying to create it.");
-	        		ps = conn.prepareStatement(createTableStatement);
-	        		ps.executeUpdate();
-	        	}
-	        }
+		logger.entering(CLASSNAME, "checkDB2Tables");
 
-	        cleanupConnection(conn, rs, ps);
-	        logger.exiting(CLASSNAME, "createDB2TableNotExists");
+		createDB2TableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
+				createDB2Strings.get(DB2_CREATE_TABLE_CHECKPOINTDATA));
+
+		createDB2TableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
+				createDB2Strings.get(DB2_CREATE_TABLE_JOBINSTANCEDATA));
+
+		createDB2TableNotExists(tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
+				createDB2Strings.get(DB2_CREATE_TABLE_EXECUTIONINSTANCEDATA));
+
+		createDB2TableNotExists(
+				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
+				createDB2Strings.get(DB2_CREATE_TABLE_STEPINSTANCEDATA));
+
+		createDB2TableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
+				createDB2Strings.get(DB2_CREATE_TABLE_JOBSTATUS));
+
+		createDB2TableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
+				createDB2Strings.get(DB2_CREATE_TABLE_STEPSTATUS));
+
+		logger.exiting(CLASSNAME, "checkDB2Tables");
 	}
 
+	/**
+	 * Create the jbatch tables if they do not exist
+	 * @param tableName
+	 * @param createTableStatement
+	 * @throws SQLException
+	 */
+	protected void createDB2TableNotExists(String tableName,
+			String createTableStatement) throws SQLException {
+		logger.entering(CLASSNAME, "createDB2TableNotExists", new Object[] {
+				tableName, createTableStatement });
+		Connection conn = null;
+		Statement stmt = null;
+		ResultSet rs = null;
+		PreparedStatement ps = null;
 
-	 
+		try {
+			conn = getConnection();
+			stmt = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
+					ResultSet.CONCUR_READ_ONLY);
+			String query = "select name from sysibm.systables where name ="
+					+ "\'" + tableName + "\'" + "and type = 'T'";
+			;
+			rs = stmt.executeQuery(query);
+
+			int rowcount = getTableRowCount(rs);
+
+			// Create table if it does not exist
+			if (rowcount == 0) {
+				if (!rs.next()) {
+					logger.log(Level.INFO, tableName
+							+ " table does not exists. Trying to create it.");
+					ps = conn.prepareStatement(createTableStatement);
+					ps.executeUpdate();
+				}
+			}
+		} catch (SQLException e) {
+			logger.severe(e.getLocalizedMessage());
+			throw e;
+		} finally {
+			cleanupConnection(conn, rs, ps);
+		}
+
+		logger.exiting(CLASSNAME, "createDB2TableNotExists");
+	}
 
 }
