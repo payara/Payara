@@ -37,7 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+
+/* 
+ * Portions Copyright [2014] [C2B2 Consulting Limited] 
+ */
 package com.sun.enterprise.util.io;
 
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
@@ -210,21 +213,34 @@ public class FileUtils  {
         if (safeIsDirectory(f) == false)
             return false;
 
-        // these 2 values while be different for symbolic links
-        String canonical = safeGetCanonicalPath(f);
-        String absolute = f.getAbsolutePath();
-
-        if (canonical.equals(absolute))
-            return true;
+      String canonical =null;
+      String absolute=null;
+      
+      try {
+    	  canonical = safeGetCanonicalPath(f);
+    	  absolute = f.getParentFile().getCanonicalPath() + File.separator + f.getName();
+    	  
+    	  _utillogger.log(Level.FINE,"Canonical path and abolute path values are " + canonical + " " + absolute);
+     
+    	  if(canonical == absolute){
+    		  _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
+		        return true;
+		  }
+      } catch (IOException ioe) {
+    	  _utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ioe);
+      }
 
         /* Bug 4715043 -- WHOA -- Bug Obscura!!
            * In Windows, if you create the File object with, say, "d:/foo", then the
            * absolute path will be "d:\foo" and the canonical path will be "D:\foo"
            * and they won't match!!!
            **/
-        if (OS.isWindows() && canonical.equalsIgnoreCase(absolute))
+        if (OS.isWindows() && canonical.equalsIgnoreCase(absolute)){
+        	 _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
             return true;
+        }
 
+  	   _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link true");
         return false;
     }
 
