@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
+        <version>4.1.151-SNAPSHOT</version>
+    </parent>
+    <groupId>fish.payara.appserver</groupId>
+    <artifactId>jsr107-repackaged</artifactId>
+    <packaging>jar</packaging>
+    <name>Repackaged JSR 107</name>
+    <description>Repackages JSR 107 jar to expose more packages into the OSGI module</description>
+    <developers>
+        <developer>
+            <id>smillide</id>
+            <name>Steve Millidge</name>
+            <organization>Payara</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <build>       
+        <plugins>
+            <plugin>
+                <groupId>org.glassfish.hk2</groupId>
+                <artifactId>consolidatedbundle-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>processhk2headers</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>hk2-generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+
+                <configuration>
+                    <instructions>
+                        <Export-Package>
+                            javax.cache.processor,
+                            javax.cache.management,
+                            javax.cache.event,
+                            javax.cache.expiry,
+                            javax.cache,
+                            javax.cache.configuration,
+                            javax.cache.spi,
+                            javax.cache.annotation,
+                            javax.cache.integration
+                        </Export-Package>
+                        <Import-Package>
+                            javax.management,
+                            javax.enterprise.util
+                        </Import-Package>
+                        <Private-Package>*</Private-Package>
+                        <Include-Resource>META-INF/hk2-locator/=target/classes/META-INF/hk2-locator/</Include-Resource>
+                    </instructions>
+                    
+                    <supportedProjectTypes>
+                        <supportedProjectType>jar</supportedProjectType>
+                    </supportedProjectTypes>
+                    
+                    <unpackBundle>true</unpackBundle>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>bundle</id>
+                        <goals>
+                            <goal>bundle</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>javax.cache</groupId>
+            <artifactId>cache-api</artifactId>
+            <version>1.0.0</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+    <profiles>
+        <profile>
+            <!-- generate empty javadoc jar -->
+            <id>release-phase2</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>create-empty-javadoc-jar</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <classesDirectory>${project.build.directory}/javadoc</classesDirectory>
+                                    <classifier>javadoc</classifier>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+
+</project>

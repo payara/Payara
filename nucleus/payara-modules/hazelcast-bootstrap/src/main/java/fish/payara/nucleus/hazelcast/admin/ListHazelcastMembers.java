@@ -72,11 +72,6 @@ public class ListHazelcastMembers implements AdminCommand {
     public void execute(AdminCommandContext context) {
 
         final ActionReport actionReport = context.getActionReport();
-        Properties extraProperties = actionReport.getExtraProperties();
-        if (extraProperties == null) {
-            extraProperties = new Properties();
-            actionReport.setExtraProperties(extraProperties);
-        }
 
         if (hazelcast.isEnabled()) {
             HazelcastInstance instance = hazelcast.getInstance();
@@ -96,8 +91,21 @@ public class ListHazelcastMembers implements AdminCommand {
                 }
                 builder.append('}');
                 actionReport.setMessage(builder.toString());
+                
+                // build extra message
+                Properties extraProps = new Properties();
+                StringBuilder extraBuilder = new StringBuilder(actionReport.getMessage());
+                extraBuilder.append("<br/>");
+                for (ActionReport subReport : actionReport.getSubActionsReport()) {
+                    extraBuilder.append(subReport.getMessage()).append("<br/>");
+                }
+                extraProps.put("Members", extraBuilder.toString());
+                actionReport.setExtraProperties(extraProps);
             }
         } else {
+            Properties extraProps = new Properties();
+            extraProps.put("Members", "Hazelcast is not enabled");
+            actionReport.setExtraProperties(extraProps);
             actionReport.setMessage("Hazelcast is not enabled");
         }
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

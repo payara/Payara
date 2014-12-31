@@ -53,4 +53,12 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "payara/Hazelcast")
     String getJNDIName();
     public void setJNDIName(String value);
+    
+    @Attribute(defaultValue = "payara/CacheManager")
+    String getCacheManagerJNDIName();
+    public void setCacheManagerJNDIName(String value);
+    
+    @Attribute(defaultValue = "payara/CachingProvider")
+    String getCachingProviderJNDIName();
+    public void setCachingProviderJNDIName(String value);
 }

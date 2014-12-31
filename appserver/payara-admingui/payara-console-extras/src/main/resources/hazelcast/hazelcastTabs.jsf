@@ -1,0 +1,41 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+ -->
+<sun:tab id="serverHazelcast" immediate="true" text="Hazelcast" toolTip="$resource{i18nhc.hazelcast.hazelcastTabs}">
+    <!beforeCreate
+        setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
+        setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    />
+    <!command
+        setSessionAttribute(key="serverInstTabs" value="hazelcastMembers");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationServer.jsf?target=server&tabSetName=serverInstTabs");
+    />
+            
+    <sun:tab id="hazelcastMembers" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.membersTab}" toolTip="$resource{i18nhc.hazelcast.membersTabTip}" >
+        <!command
+        setSessionAttribute(key="serverInstTabs" value="hazelcastMembers");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastMembers.jsf?target=server&tabSetName=serverInstTabs");
+        />
+    </sun:tab>
+
+    <sun:tab id="hazelcastConfig" immediate="$boolean{true}" text="$resource{i18nhc.hazelcast.configuration}" toolTip="$resource{i18nhc.hazelcast.configurationTip}" >
+        <!command
+        setSessionAttribute(key="serverInstTabs" value="hazelcastConfig");
+        gf.redirect(page="#{request.contextPath}/payaraExtras/hazelcast/hazelcastConfigurationServer.jsf?target=server&tabSetName=serverInstTabs");
+        />
+    </sun:tab>
+</sun:tab>
