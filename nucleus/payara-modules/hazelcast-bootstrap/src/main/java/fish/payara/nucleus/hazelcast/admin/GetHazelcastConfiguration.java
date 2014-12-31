@@ -21,6 +21,9 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -80,6 +83,19 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[4] = runtimeConfiguration.getMulticastPort();
         values[5] = runtimeConfiguration.getJNDIName();
         columnFormatter.addRow(values);
+        
+        Map<String, Object> map = new HashMap<String,Object>();
+        Properties extraProps = new Properties();
+        map.put("hazelcastConfigurationFile", values[0]);
+        map.put("enabled", values[1]);
+        map.put("startPort", values[2]);
+        map.put("multicastGroup", values[3]);
+        map.put("multicastPort", values[4]);
+        map.put("jndiName", values[5]);
+        extraProps.put("getHazelcastConfiguration",map);
+                
+        actionReport.setExtraProperties(extraProps);
+        
         actionReport.setMessage(columnFormatter.toString());
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

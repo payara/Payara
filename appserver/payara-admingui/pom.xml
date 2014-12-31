@@ -139,6 +139,7 @@
         <module>concurrent-l10n</module>
         <module>webui-jsf-plugin-l10n</module>
         <module>webui-jsf-suntheme-plugin-l10n</module>
+        <module>payara-console-extras</module>
     </modules>
     <build>
         <plugins>

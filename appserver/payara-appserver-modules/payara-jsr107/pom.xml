@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
+        <version>4.1.151-SNAPSHOT</version>
+    </parent>
+    <groupId>fish.payara.appserver</groupId>
+    <artifactId>payara-jsr107</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>Payara JSR107</name>
+    <description>Payara JSR107 Integrationnnnn Module</description>
+    <developers>
+        <developer>
+            <id>smillidge</id>
+            <name>Steve Millidge</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>4.1.151-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>

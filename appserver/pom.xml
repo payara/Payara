@@ -171,6 +171,7 @@
         <module>verifier/verifier-scripts</module>
         <module>verifier/verifier-jdk-extension-bundle</module>
         <module>ant-tasks</module>
+        <module>payara-appserver-modules</module>
     </modules>
     
     <build>

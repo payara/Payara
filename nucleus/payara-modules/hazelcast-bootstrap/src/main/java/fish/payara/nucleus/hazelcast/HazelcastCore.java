@@ -17,6 +17,7 @@
  */
 package fish.payara.nucleus.hazelcast;
 
+import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.MulticastConfig;
@@ -29,6 +30,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
+import javax.cache.spi.CachingProvider;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.InitialContext;
@@ -51,8 +53,11 @@ import org.jvnet.hk2.annotations.Service;
 public class HazelcastCore implements EventListener {
     
     public final static String INSTANCE_ATTRIBUTE="GLASSFISH-INSTANCE";
+    private static HazelcastCore theCore;
 
     private HazelcastInstance theInstance;
+    
+    private CachingProvider hazelcastCachingProvider;
 
     @Inject
     Events events;
@@ -68,6 +73,7 @@ public class HazelcastCore implements EventListener {
 
     @PostConstruct
     public void postConstruct() {
+        theCore = this;
         enabled = configuration.getEnabled();
         events.register(this);
         if ((configuration.getEnabled())) {
@@ -78,9 +84,17 @@ public class HazelcastCore implements EventListener {
     public HazelcastInstance getInstance() {
         return theInstance;
     }
+    
+    public CachingProvider getCachingProvider() {
+        return hazelcastCachingProvider;
+    }
 
     public boolean isEnabled() {
         return enabled;
+    }
+    
+    public static HazelcastCore getCore() {
+        return theCore;
     }
 
     @Override
@@ -112,6 +126,7 @@ public class HazelcastCore implements EventListener {
                     config = new Config();
                 }
             } else {
+                config.setProperty("hazelcast.jmx", "true");
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 mcConfig.setEnabled(true);
                 mcConfig.setMulticastGroup(configuration.getMulticastGroup());
@@ -131,7 +146,7 @@ public class HazelcastCore implements EventListener {
     }
 
     public void setEnabled(Boolean enabled) {
-        if (this.enabled && enabled || !this.enabled && !enabled) {
+        if (!this.enabled && !enabled) {
             // do nothing
         } else if (this.enabled && !enabled) {
             this.enabled = false;
@@ -140,12 +155,19 @@ public class HazelcastCore implements EventListener {
             this.enabled = true;
             bootstrapHazelcast();
             bindToJNDI();
+        } else if (this.enabled && enabled) {
+            // we need to reboot
+            shutdownHazelcast();
+            bootstrapHazelcast();
+            bindToJNDI();
         }
     }
 
     private void shutdownHazelcast() {
         if (theInstance != null) {
             unbindFromJNDI();
+            hazelcastCachingProvider.getCacheManager().close();
+            hazelcastCachingProvider.close();
             theInstance.shutdown();
             theInstance = null;
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Shutdown Hazelcast");
@@ -159,6 +181,7 @@ public class HazelcastCore implements EventListener {
         Thread.currentThread().setContextClassLoader(Hazelcast.class.getClassLoader());
         theInstance = Hazelcast.newHazelcastInstance(config);
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, context.getInstanceName());
+        hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
         Thread.currentThread().setContextClassLoader(tccl);
     }
 
@@ -167,7 +190,11 @@ public class HazelcastCore implements EventListener {
             InitialContext ctx;
             ctx = new InitialContext();
             ctx.bind(configuration.getJNDIName(), theInstance);
+            ctx.bind(configuration.getCachingProviderJNDIName(),hazelcastCachingProvider);
+            ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at " + configuration.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at " + configuration.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at " + configuration.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -178,7 +205,11 @@ public class HazelcastCore implements EventListener {
             InitialContext ctx;
             ctx = new InitialContext();
             ctx.unbind(configuration.getJNDIName());
+            ctx.unbind(configuration.getCacheManagerJNDIName());
+            ctx.unbind(configuration.getCachingProviderJNDIName());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at " + configuration.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at " + configuration.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at " + configuration.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }

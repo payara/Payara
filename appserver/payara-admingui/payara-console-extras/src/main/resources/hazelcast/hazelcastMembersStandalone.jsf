@@ -1,0 +1,70 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="Hazelcast Configuration"  >
+
+<!define name="content">
+
+<event>
+    <!beforeCreate
+        getRequestValue(key="target" value="#{pageSession.target}");
+        urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
+        getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
+        getRequestValue(key="tabSetName" value="#{pageSession.tabSetName}");
+        urlencode(value="#{pageSession.tabSetName}" encoding="UTF-8" result="#{pageSession.encodedTabSetName}");
+
+        if(#{pageSession.isCluster}=true){
+        setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
+        setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
+        }
+        if(#{pageSession.isCluster}=false){
+        setPageSessionAttribute(key="isCluster", value="false");
+        setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
+        setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
+        }
+        setSessionAttribute(key="#{pageSession.tabSetName}" value="hazelcastMembers");
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-hazelcast-members?target=#{pageSession.encodedTarget}"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="members", value="#{requestScope.resp.data.message}");
+        />
+</event>
+
+<sun:form id="propertyForm">
+
+#include "/cluster/standalone/standaloneInstanceTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+
+    <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}" helpText="$resource{i18nhc.hazelcast.membersTitleHelp}" >
+    </sun:title>
+#include "/common/shared/nameSection.inc"
+<sun:propertySheetSection >
+    <sun:property id="members" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.members.members}"  helpText="$resource{i18nhc.hazelcast.members.membersHelp}">
+        <sun:staticText id="members" text="#{pageSession.members}" />
+    </sun:property>
+</sun:propertySheetSection>
+
+<sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
+</sun:form>
+</define>
+</composition>
