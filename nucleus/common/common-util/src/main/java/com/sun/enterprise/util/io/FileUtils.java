@@ -219,10 +219,10 @@ public class FileUtils  {
       try {
     	  canonical = safeGetCanonicalPath(f);
     	  absolute = f.getParentFile().getCanonicalPath() + File.separator + f.getName();
-    	  
+    	   
     	  _utillogger.log(Level.FINE,"Canonical path and abolute path values are " + canonical + " " + absolute);
      
-    	  if(canonical == absolute){
+    	  if(canonical.equals(absolute)){
     		  _utillogger.log(Level.FINE,"The directory  " + absolute + " is a symbolic link false");
 		        return true;
 		  }
