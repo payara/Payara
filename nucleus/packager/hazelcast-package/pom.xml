@@ -39,12 +39,6 @@
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>4.1.151-SNAPSHOT</version>
         </dependency>
-        <!-- required by spurious OSGI bundle dependency in Hazelcast -->
-        <dependency>
-            <groupId>com.eclipsesource.minimal-json</groupId>
-            <artifactId>minimal-json</artifactId>
-            <version>0.9.1</version>
-        </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
