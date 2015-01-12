@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [Zenthis Limited]
 
 package com.sun.enterprise.admin.servermgmt.cli;
 
@@ -117,6 +117,13 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
                     strings.get("new.mp.again"), true);
             if (nmp == null)
                 throw new CommandException(strings.get("no.console"));
+            
+            // if password is less than 6 characters then the domain can become corrupt
+            // FIXES GLASSFISH-21017
+            if (nmp.length() < 6) {
+                throw new CommandException(strings.get("password.too.short"));
+            }
+            
             domainConfig.put(DomainConfig.K_MASTER_PASSWORD, mp);
             domainConfig.put(DomainConfig.K_NEW_MASTER_PASSWORD, nmp);
             domainConfig.put(DomainConfig.K_SAVE_MASTER_PASSWORD, savemp);
