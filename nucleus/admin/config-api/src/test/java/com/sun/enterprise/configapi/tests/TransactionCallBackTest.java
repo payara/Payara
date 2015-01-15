@@ -53,6 +53,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import org.jvnet.hk2.config.TransactionCallBack;
 
 /**
  * User: Jerome Dochez
@@ -89,7 +90,7 @@ public class TransactionCallBackTest extends ConfigPersistence {
         configChanges.put("name", "funky-listener");
 
         ConfigSupport.createAndSet(serviceBean, NetworkListener.class, configChanges,
-                new ConfigSupport.TransactionCallBack<WriteableView>() {
+                new TransactionCallBack<WriteableView>() {
                     @SuppressWarnings({"unchecked"})
                     public void performOn(WriteableView param) throws TransactionFailure {
                         // if you know the type...
