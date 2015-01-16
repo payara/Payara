@@ -180,11 +180,11 @@
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
-            <artifactId>com.ibm.jbatch-runtime-all</artifactId>
+            <artifactId>com.ibm.jbatch.container</artifactId>
         </dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>
-            <artifactId>com.ibm.jbatch-ri-spi</artifactId>
+            <artifactId>com.ibm.jbatch.spi</artifactId>
         </dependency>
 
        <!-- The following dependencies is for JSR236.  Including this in glassfish-common-full is a temporary solution.  This will be moved
