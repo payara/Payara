@@ -219,7 +219,7 @@ public class RecoveryManager {
             try {
                 recoveryInProgress.post(); // BUGFIX (Ram Jeyaraman)
                 resyncComplete(false, false);
-            } catch (Throwable exc) {}
+            } catch (Throwable exc) {exc.printStackTrace();}
         }
     }
 
@@ -1138,6 +1138,7 @@ public class RecoveryManager {
         if (Thread.currentThread().getName().equals("JTS Resync Thread"/*#Frozen*/)) {
             if (uniqueRMSetReady != null) {
                 try {
+                	_logger.fine("dbXArecovery()");
                     uniqueRMSetReady.waitEvent();
                     xaResources = RecoveryManager.uniqueRMSet;
                 } catch (InterruptedException exc) {
@@ -1439,6 +1440,29 @@ public class RecoveryManager {
         }
     }
 
+    /**
+     * Waits for resync to complete with timeout.
+     *
+     * @param cmtTimeout Container managed transaction timeout
+     *
+     * @return
+     *
+     * @see
+     */
+    public static void waitForResync(int cmtTimeOut) {
+
+        if (resyncInProgress != null) {
+            try {
+                resyncInProgress.waitTimeoutEvent(cmtTimeOut);
+            } catch (InterruptedException exc) {
+		_logger.log(Level.SEVERE,"jts.wait_for_resync_complete_interrupted");
+		 String msg = LogFormatter.getLocalizedMessage(_logger,
+			"jts.wait_for_resync_complete_interrupted");
+                 throw  new org.omg.CORBA.INTERNAL(msg);
+            }
+        }
+    }
+    
     /**
      * Waits for resync to complete.
      *

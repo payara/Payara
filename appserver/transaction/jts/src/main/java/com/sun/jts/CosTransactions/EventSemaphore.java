@@ -74,7 +74,7 @@ package com.sun.jts.CosTransactions;
  * @author Simon Holdsworth, IBM Corporation
  *
  * @see
-*/
+ */
 //----------------------------------------------------------------------------
 // CHANGE HISTORY
 //
@@ -128,9 +128,34 @@ public class EventSemaphore {
      * @see
      */
     synchronized public void waitEvent()
-        throws InterruptedException {
+            throws InterruptedException {
         if( !posted )
             wait();
+    }
+
+   /*Waits for the event to be posted. Release the thread waiting after the CMT
+     * Timeout period if no event has been posted during this timeout interval.
+     * <p>
+     * If the event has already been posted, then the operation returns immediately.
+     *
+     * @param cmtTimeout - container managed transaction timeout
+     *
+     * @return
+     *
+     * @exception InterruptedException  The wait was interrupted.
+     *
+     * @see
+     */
+
+    synchronized public void waitTimeoutEvent(int cmtTimeout)
+            throws InterruptedException {
+
+        if (!posted) {
+            long timeout = (System.currentTimeMillis() / 1000) + cmtTimeout;
+            while (!posted && timeout - (System.currentTimeMillis() / 1000) > 0) {
+                wait(timeout - (System.currentTimeMillis() / 1000));
+            }
+        }
     }
 
     /**Posts the event semaphore.
