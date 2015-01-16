@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -63,7 +63,7 @@
         <jms-api.version>2.0</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
         <jsp-impl.version>2.3.3-b02</jsp-impl.version>
-        <jstl-impl.version>1.2.3</jstl-impl.version>
+        <jstl-impl.version>1.2.4</jstl-impl.version>
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.7</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
@@ -119,7 +119,7 @@
         <weld.version>2.2.7.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
-        <tyrus.version>1.8.3</tyrus.version>
+        <tyrus.version>1.9</tyrus.version>
         <jsonp-api.version>1.0</jsonp-api.version>
         <jsonp-ri.version>1.0.4</jsonp-ri.version>
         <jsonp-jaxrs.version>1.0</jsonp-jaxrs.version>
