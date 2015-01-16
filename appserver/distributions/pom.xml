@@ -83,10 +83,11 @@
     </properties>
 
     <modules>
-        <module>minnow</module>
-        <module>web</module>
-        <module>glassfish</module>
+<!--        <module>minnow</module> -->
+<!--        <module>web</module> -->
+<!--        <module>glassfish</module> -->
         <module>payara</module>
+        <module>payara-web</module>
         <!-- disable appclient distribution build since we're not using it yet -->
         <!-- 	<module>appclient</module> -->
     </modules>

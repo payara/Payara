@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -48,79 +48,92 @@
         <artifactId>featuresets</artifactId>
         <version>4.1.151-SNAPSHOT</version>
     </parent>
-    <artifactId>payara</artifactId>
-    <name>Payara Featureset</name>
+    <artifactId>payara-web</artifactId>
+    <name>Payara Web Featureset</name>
     <packaging>pom</packaging>
-    <description>This pom defines the set of packages for Payara distribution</description>
+    <description>This pom defines the set of packages for Payara Web distribution</description>
 
     <dependencies>
-        <!-- pull web packages -->
+        <!-- pull minnow packages -->
         <dependency>
             <groupId>org.glassfish.main.featuresets</groupId>
-            <artifactId>payara-web</artifactId>
+            <artifactId>minnow</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
         </dependency>
-        <!-- commons full package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-common-full</artifactId>
+            <artifactId>glassfish-registration</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- ejb full package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-ejb</artifactId>
+            <artifactId>glassfish-jpa</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- CMP package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-cmp</artifactId>
+            <artifactId>glassfish-jts</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- EntityBeans Container package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-entitybeans-container</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>     
-        <!-- corba package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-corba</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>    
-        <!-- metro package -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>metro</artifactId>
+            <artifactId>glassfish-ejb-lite</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- appclient package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-appclient</artifactId>
+            <artifactId>glassfish-jsf</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- jms package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-jms</artifactId>
+            <artifactId>glassfish-osgi-http</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <!-- mq package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>mq</artifactId>
+            <artifactId>glassfish-osgi</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jcdi</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- json package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>json</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- admin ui package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-gui</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- javadb package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>javadb</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>        
+	<!-- hazelcast package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>hazelcast</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
