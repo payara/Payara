@@ -74,7 +74,7 @@ package com.sun.jts.CosTransactions;
  * @author Simon Holdsworth, IBM Corporation
  *
  * @see
-*/
+ */
 //----------------------------------------------------------------------------
 // CHANGE HISTORY
 //
@@ -128,7 +128,7 @@ public class EventSemaphore {
      * @see
      */
     synchronized public void waitEvent()
-        throws InterruptedException {
+            throws InterruptedException {
         if( !posted )
             wait();
     }
