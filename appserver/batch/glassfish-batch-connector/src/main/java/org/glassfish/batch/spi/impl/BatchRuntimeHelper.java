@@ -172,13 +172,11 @@ public class BatchRuntimeHelper
         batchSPIManager.registerExecutorServiceProvider(glassFishBatchExecutorServiceProvider);
         batchSPIManager.registerBatchSecurityHelper(glassFishBatchSecurityHelper);
         // setting this puts JBatch into SE mode which is a JBatch bug.
-       // batchSPIManager.registerPlatformMode(BatchSPIManager.PlatformMode.EE);
+        batchSPIManager.registerPlatformMode(BatchSPIManager.PlatformMode.EE);
 
         Properties overrideProperties = new Properties();
         overrideProperties.put(PAYARA_TABLE_PREFIX_PROPERTY, batchRuntimeConfiguration.getTablePrefix());
         overrideProperties.put(PAYARA_TABLE_SUFFIX_PROPERTY, batchRuntimeConfiguration.getTableSuffix());
-
-        // uncomment when we incorporate the latest JBatch
         overrideProperties.put(ServiceTypes.PERSISTENCE_MANAGEMENT_SERVICE, determinePersistenceManagerClass());
         overrideProperties.put(ServiceTypes.CONTAINER_ARTIFACT_FACTORY_SERVICE,"com.ibm.jbatch.container.services.impl.CDIBatchArtifactFactoryImpl" );
         overrideProperties.put(ServiceTypes.BATCH_THREADPOOL_SERVICE, "com.ibm.jbatch.container.services.impl.SPIDelegatingThreadPoolServiceImpl");
