@@ -116,21 +116,21 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 		Connection conn = null;
 		DatabaseMetaData dbmd = null;
 		ResultSet rs = null;
-
+                PreparedStatement ps = null;
 		try {
 			conn = getConnectionToDefaultSchema();
-                        PreparedStatement stmt = conn.prepareStatement("SHOW DATABASES like ?");
-                        stmt.setString(1, schema);
-			rs = stmt.executeQuery();
+                        ps = conn.prepareStatement("SHOW DATABASES like ?");
+                        ps.setString(1, schema);
+			rs = ps.executeQuery();
 
-			while (rs.next()) {
+			if (rs.next()) {
                             result = true;
 			}
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
 		} finally {
-			cleanupConnection(conn, rs, null);
+			cleanupConnection(conn, rs, ps);
 		}
 		logger.exiting(CLASSNAME, "isMySQLSchemaValid", false);
 
