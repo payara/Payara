@@ -119,16 +119,12 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 
 		try {
 			conn = getConnectionToDefaultSchema();
-			dbmd = conn.getMetaData();
-			rs = dbmd.getSchemas();
+                        PreparedStatement stmt = conn.prepareStatement("SHOW DATABASES like ?");
+                        stmt.setString(1, schema);
+			rs = stmt.executeQuery();
 
 			while (rs.next()) {
-
-				String schemaname = rs.getString("TABLE_SCHEM");
-				if (schema.equalsIgnoreCase(schemaname)) {
-					logger.exiting(CLASSNAME, "isMySQLSchemaValid", true);
-					return true;
-				}
+                            result = true;
 			}
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
