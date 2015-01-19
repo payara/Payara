@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.jvnet.hk2.config.AttributeChanges;
 
 /**
  * User: Jerome Dochez
@@ -120,7 +121,7 @@ public class DirectCreationTest extends ConfigPersistence {
 
         support.createAndSet(serviceBean, DasConfig.class, (List) null);
 
-        List<ConfigSupport.AttributeChanges> profilerChanges = new ArrayList<ConfigSupport.AttributeChanges>();
+        List<AttributeChanges> profilerChanges = new ArrayList<AttributeChanges>();
         String[] values = { "-Xmx512m", "-RFtrq", "-Xmw24" };
         ConfigSupport.MultipleAttributeChanges multipleChanges = new ConfigSupport.MultipleAttributeChanges("jvm-options", values );
         String[] values1 = { "profile" };
