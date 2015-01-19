@@ -71,6 +71,8 @@
         <module>payara-web</module>
         <module>glassfish</module>
         <module>payara</module>
+	<module>minnow-ml</module>
+	<module>payara-web-ml</module>
 	<module>payara-ml</module>
     </modules>
 </project>
