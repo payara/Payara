@@ -88,13 +88,13 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Param(name = "hazelcastConfigurationFile", shortName = "f", optional = true)
     private String configFile;
 
-    @Param(name = "startPort", shortName = "p", optional = true)
+    @Param(name = "startPort", optional = true)
     private String startPort;
 
     @Param(name = "multicastGroup", shortName = "g", optional = true)
     private String multiCastGroup;
 
-    @Param(name = "multicastPort", shortName = "mp", optional = true)
+    @Param(name = "multicastPort", optional = true)
     private String multicastPort;
 
     @Param(name = "jndiName", shortName = "j", optional = true)
