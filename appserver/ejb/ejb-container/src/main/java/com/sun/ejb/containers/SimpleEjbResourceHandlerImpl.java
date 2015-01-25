@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.ejb.containers;
 
 import org.glassfish.api.invocation.ResourceHandler;
@@ -49,16 +50,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import javax.transaction.Status;
 
 /*
-//This class was originally an inner class of AbstractSingletonContainer. I have moved this to a top level
-//  class as it is now used by EjbInvocation.clone() method also.
-*/
+ //This class was originally an inner class of AbstractSingletonContainer. I have moved this to a top level
+ //  class as it is now used by EjbInvocation.clone() method also.
+ */
 public class SimpleEjbResourceHandlerImpl
         implements ResourceHandler, Synchronization {
 
-    private static Map<Transaction, SimpleEjbResourceHandlerImpl> _resourceHandlers =
-            new ConcurrentHashMap<Transaction, SimpleEjbResourceHandlerImpl>();
+    private static Map<Transaction, SimpleEjbResourceHandlerImpl> _resourceHandlers
+            = new ConcurrentHashMap<Transaction, SimpleEjbResourceHandlerImpl>();
 
     private List l = null;
     private Transaction tx = null;
@@ -96,7 +98,7 @@ public class SimpleEjbResourceHandlerImpl
             checkTransaction();
         }
 
-        if( l == null ) {
+        if (l == null) {
             l = new ArrayList();
         }
         return l;
@@ -117,8 +119,14 @@ public class SimpleEjbResourceHandlerImpl
         try {
             tx = tm.getTransaction();
             if (tx != null) {
-                tx.registerSynchronization(this);
-                _resourceHandlers.put(tx, this);
+                // check whether the transaction is in a suitable state to register for synchronisation
+                if (tx.getStatus() == Status.STATUS_ACTIVE || tx.getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                    tx.registerSynchronization(this);
+                    _resourceHandlers.put(tx, this);
+                } else {
+
+                    tx = null;
+                }
             }
         } catch (Exception e) {
             tx = null;
