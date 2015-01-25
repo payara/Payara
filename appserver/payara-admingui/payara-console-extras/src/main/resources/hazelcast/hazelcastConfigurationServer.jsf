@@ -71,7 +71,8 @@
                     mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-hazelcast-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}" );
+
                     />
             </sun:button>
         </sun:panelGroup>
@@ -89,10 +90,10 @@
         <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
     </sun:property>
     <sun:property id="startPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.startPort}"  helpText="$resource{i18nhc.hazelcast.configuration.startPortHelp}">
-        <sun:textField id="startPort" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
+        <sun:textField id="startPort" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
     </sun:property>
     <sun:property id="multicastPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastPort}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastPortHelp}">
-        <sun:textField id="multicastPort" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastPort']}" />
+        <sun:textField id="multicastPort"  styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastPort']}" />
     </sun:property>
     <sun:property id="multicastGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastGroup}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastGroupHelp}">
         <sun:textField id="multicastGroup" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastGroup']}" />
