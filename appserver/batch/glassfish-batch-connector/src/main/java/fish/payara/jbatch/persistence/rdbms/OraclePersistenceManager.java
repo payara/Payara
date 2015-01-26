@@ -16,9 +16,9 @@
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.exception.PersistenceException;
+import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
-
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.Q_SET_SCHEMA;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -26,10 +26,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -40,7 +42,7 @@ import javax.sql.DataSource;
  * Oracle Persistence Manager
  */
 
-public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
+public class OraclePersistenceManager extends JBatchJDBCPersistenceManager implements OracleJDBCConstants{
 
 	private static final String CLASSNAME = OraclePersistenceManager.class
 			.getName();
@@ -48,10 +50,14 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
+	
+	// oracle create table strings
+	protected Map<String, String> createOracleTableStrings;
+	protected Map<String, String> createOracleIndexStrings;
 
 	@Override
-	protected Map<String, String> getQueryMap(IBatchConfig batchConfig) {
-		Map<String, String> result = super.getQueryMap(batchConfig);
+	protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
+		Map<String, String> result = super.getSharedQueryMap(batchConfig);
 	//	if (schema != null && schema.length() != 0) {
 			result.put(
 					MOST_RECENT_STEPS_FOR_JOB,
@@ -92,15 +98,7 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
-		// Load the table names and queries shared between different database
-		// types
-
-		tableNames = getTableMap(batchConfig);
-
-		queryStrings = getQueryMap(batchConfig);
-
-		logger.config("JNDI name = " + jndiName);
+		
 
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
@@ -117,6 +115,21 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 			throw new BatchContainerServiceException(e);
 		}
+
+		// Load the table names and queries shared between different database
+		// types
+
+		tableNames = getSharedTableMap(batchConfig);
+
+		try {
+			queryStrings = getSharedQueryMap(batchConfig);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			throw new BatchContainerServiceException(e1);
+		}
+		
+		logger.config("JNDI name = " + jndiName);
+
 
 		try {
 			if (!isOracleSchemaValid()) {
@@ -177,48 +190,48 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 	 */
 	private void checkOracleTables() throws SQLException {
 		// put the create table strings into a hashmap
-		createTableStrings = setCreateTableMap(batchConfig);
+		createOracleTableStrings = setOracleTableMap(batchConfig);
 
 		// put the create index strings into a hashmap
-		createIndexStrings = setCreateIndexMap(batchConfig);
+		createOracleIndexStrings = setOracleIndexMap(batchConfig);
 		logger.entering(CLASSNAME, "checkOracleTables");
 
 		createOracleTableNotExists(tableNames.get(CHECKPOINT_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_CHECKPOINTDATA));
+				createOracleTableStrings.get(CREATE_TABLE_CHECKPOINTDATA));
 
 		// do same check for indexes, triggers and sequences
 		if (!checkOracleIndexExists(CREATE_CHECKPOINTDATA_INDEX_KEY)) {
-			executeStatement(createIndexStrings
+			executeStatement(createOracleIndexStrings
 					.get(CREATE_CHECKPOINTDATA_INDEX));
 		}
 
 		createOracleTableNotExists(tableNames.get(JOB_INSTANCE_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_JOBINSTANCEDATA));
+				createOracleTableStrings.get(CREATE_TABLE_JOBINSTANCEDATA));
 		createOracleSequenceNotExists(JOBINSTANCEDATA_SEQ_KEY,
-				createTableStrings.get(CREATE_JOBINSTANCEDATA_SEQ));
+				createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_SEQ));
 		createOracleTriggerNotExists(JOBINSTANCEDATA_TRG_KEY,
-				createTableStrings.get(CREATE_JOBINSTANCEDATA_TRG));
+				createOracleTableStrings.get(CREATE_JOBINSTANCEDATA_TRG));
 
 		createOracleTableNotExists(
 				tableNames.get(EXECUTION_INSTANCE_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_EXECUTIONINSTANCEDATA));
+				createOracleTableStrings.get(CREATE_TABLE_EXECUTIONINSTANCEDATA));
 		createOracleSequenceNotExists(EXECUTIONINSTANCEDATA_SEQ_KEY,
-				createTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_SEQ));
+				createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_SEQ));
 		createOracleTriggerNotExists(EXECUTIONINSTANCEDATA_TRG_KEY,
-				createTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_TRG));
+				createOracleTableStrings.get(CREATE_EXECUTIONINSTANCEDATA_TRG));
 
 		createOracleTableNotExists(
 				tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_STEPINSTANCEDATA));
+				createOracleTableStrings.get(CREATE_TABLE_STEPINSTANCEDATA));
 		createOracleSequenceNotExists(STEPINSTANCEDATA_SEQ_KEY,
-				createTableStrings.get(CREATE_STEPINSTANCEDATA_SEQ));
+				createOracleTableStrings.get(CREATE_STEPINSTANCEDATA_SEQ));
 		createOracleTriggerNotExists(STEPINSTANCEDATA_TRG_KEY,
-				createTableStrings.get(CREATE_STEPINSTANCEDATA_TRG));
+				createOracleTableStrings.get(CREATE_STEPINSTANCEDATA_TRG));
 
 		createOracleTableNotExists(tableNames.get(JOB_STATUS_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_JOBSTATUS));
+				createOracleTableStrings.get(CREATE_TABLE_JOBSTATUS));
 		createOracleTableNotExists(tableNames.get(STEP_STATUS_TABLE_KEY),
-				createTableStrings.get(CREATE_TABLE_STEPSTATUS));
+				createOracleTableStrings.get(CREATE_TABLE_STEPSTATUS));
 
 		logger.exiting(CLASSNAME, "checkOracleTables");
 	}
@@ -398,5 +411,98 @@ public class OraclePersistenceManager extends JBatchJDBCPersistenceManager {
 		logger.exiting(CLASSNAME, "createOracleIndexNotExists");
 		return indexexists;
 	}
+	
+	/**
+	 * Method invoked to insert the Oracle create table, trigger and sequence
+	 * strings into a hashmap
+	 **/
+
+	protected Map<String, String> setOracleTableMap(IBatchConfig batchConfig) {
+		createOracleTableStrings = new HashMap<>();
+		createOracleTableStrings.put(CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
+				+ tableNames.get(CHECKPOINT_TABLE_KEY)
+				+ "(id VARCHAR(512),obj BLOB)");
+
+		createOracleTableStrings
+				.put(CREATE_TABLE_JOBINSTANCEDATA,
+						"CREATE TABLE "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ "(jobinstanceid NUMBER(19,0) PRIMARY KEY,name VARCHAR2(512), apptag VARCHAR(512))");
+		createOracleTableStrings.put(CREATE_JOBINSTANCEDATA_SEQ,
+				"CREATE SEQUENCE JOBINSTANCEDATA_SEQ");
+		createOracleTableStrings
+				.put(CREATE_JOBINSTANCEDATA_TRG,
+						"CREATE OR REPLACE TRIGGER JOBINSTANCEDATA_TRG BEFORE INSERT ON "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ " FOR EACH ROW BEGIN SELECT JOBINSTANCEDATA_SEQ.nextval INTO :new.jobinstanceid FROM dual; END;");
+
+		createOracleTableStrings
+				.put(CREATE_TABLE_EXECUTIONINSTANCEDATA,
+						"CREATE TABLE "
+								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+								+ "(jobexecid NUMBER(19,0) PRIMARY KEY,jobinstanceid	NUMBER(19,0),createtime	TIMESTAMP,starttime		TIMESTAMP,endtime		TIMESTAMP,updatetime	TIMESTAMP,parameters BLOB,batchstatus VARCHAR2(512),exitstatus VARCHAR2(512),CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ "(jobinstanceid))");
+		createOracleTableStrings.put(CREATE_EXECUTIONINSTANCEDATA_SEQ,
+				"CREATE SEQUENCE EXECUTIONINSTANCEDATA_SEQ");
+		createOracleTableStrings
+				.put(CREATE_EXECUTIONINSTANCEDATA_TRG,
+						"CREATE OR REPLACE TRIGGER EXECUTIONINSTANCEDATA_TRG BEFORE INSERT ON "
+								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+								+ " FOR EACH ROW BEGIN SELECT EXECUTIONINSTANCEDATA_SEQ.nextval INTO :new.jobexecid FROM dual;END;");
+
+		createOracleTableStrings
+				.put(CREATE_TABLE_STEPINSTANCEDATA,
+						"CREATE TABLE "
+								+ tableNames
+										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+								+ "(stepexecid NUMBER(19,0) PRIMARY KEY, jobexecid NUMBER(19,0),batchstatus VARCHAR2(512),exitstatus VARCHAR2(512),stepname VARCHAR(512),readcount NUMBER(11, 0),writecount NUMBER(11, 0),commitcount NUMBER(11, 0),rollbackcount NUMBER(11, 0),readskipcount NUMBER(11, 0),processskipcount NUMBER(11, 0),filtercount NUMBER(11, 0),writeskipcount NUMBER(11, 0),startTime TIMESTAMP,endTime TIMESTAMP, persistentData BLOB, CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
+								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+								+ "(jobexecid))");
+		createOracleTableStrings.put(CREATE_STEPINSTANCEDATA_SEQ,
+				"CREATE SEQUENCE STEPEXECUTIONINSTANCEDATA_SEQ");
+		createOracleTableStrings
+				.put(CREATE_STEPINSTANCEDATA_TRG,
+						"CREATE OR REPLACE TRIGGER STEPEXECUTIONINSTANCEDATA_TRG BEFORE INSERT ON "
+								+ tableNames
+										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+								+ " FOR EACH ROW BEGIN SELECT STEPEXECUTIONINSTANCEDATA_SEQ.nextval INTO :new.stepexecid FROM dual;END;");
+
+		createOracleTableStrings
+				.put(CREATE_TABLE_JOBSTATUS,
+						"CREATE TABLE "
+								+ tableNames.get(JOB_STATUS_TABLE_KEY)
+								+ "(id NUMBER(19,0) PRIMARY KEY,"
+								+ "obj BLOB,"
+								+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ " (jobinstanceid) ON DELETE CASCADE)");
+
+		createOracleTableStrings
+				.put(CREATE_TABLE_STEPSTATUS,
+						"CREATE TABLE "
+								+ tableNames.get(STEP_STATUS_TABLE_KEY)
+								+ "(id NUMBER(19,0) PRIMARY KEY,"
+								+ "obj BLOB,"
+								+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
+								+ tableNames
+										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+								+ " (stepexecid) ON DELETE CASCADE)");
+		return createOracleTableStrings;
+	}
+
+	/**
+	 * Method invoked to insert the Oracle create index strings into a hashmap
+	 **/
+
+	protected Map<String, String> setOracleIndexMap(IBatchConfig batchConfig) {
+		createOracleIndexStrings = new HashMap<>();
+		createOracleIndexStrings.put(
+				CREATE_CHECKPOINTDATA_INDEX,
+				"create index chk_index on "
+						+ tableNames.get(CHECKPOINT_TABLE_KEY) + "(id)");
+		return createOracleIndexStrings;
+	}
+	
 
 }

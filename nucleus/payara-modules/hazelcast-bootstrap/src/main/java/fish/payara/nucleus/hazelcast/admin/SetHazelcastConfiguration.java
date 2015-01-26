@@ -22,6 +22,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -38,7 +40,6 @@ import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.TargetBasedExecutor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
@@ -81,20 +82,20 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
-    
+
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
     @Param(name = "hazelcastConfigurationFile", shortName = "f", optional = true)
     private String configFile;
 
-    @Param(name = "startPort", shortName = "p", optional = true)
+    @Param(name = "startPort", optional = true)
     private String startPort;
 
     @Param(name = "multicastGroup", shortName = "g", optional = true)
     private String multiCastGroup;
 
-    @Param(name = "multicastPort", shortName = "mp", optional = true)
+    @Param(name = "multicastPort", optional = true)
     private String multicastPort;
 
     @Param(name = "jndiName", shortName = "j", optional = true)
@@ -112,6 +113,10 @@ public class SetHazelcastConfiguration implements AdminCommand {
         if (extraProperties == null) {
             extraProperties = new Properties();
             actionReport.setExtraProperties(extraProperties);
+        }
+
+        if (!validate(actionReport)) {
+            return;
         }
 
         Config config = targetUtil.getConfig(target);
@@ -150,7 +155,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
-            
+
             if (dynamic) {
                 enableOnTarget(actionReport, theContext, enabled);
             }
@@ -173,5 +178,50 @@ public class SetHazelcastConfiguration implements AdminCommand {
             subReport.setMessage("");
         }
 
+    }
+
+    private boolean validate(ActionReport actionReport) {
+        boolean result = false;
+        if (startPort != null) {
+            try {
+                int port = Integer.parseInt(startPort);
+                if (port < 0 || port > Short.MAX_VALUE * 2) {
+                    actionReport.failure(logger, "start port must be greater than zero or less than " + Short.MAX_VALUE*2+1);
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {
+                actionReport.failure(logger, "startPort is not a valid integer", nfe);
+                return result;
+            }
+        }
+
+        if (multicastPort != null) {
+            try {
+                int port = Integer.parseInt(multicastPort);
+                if (port < 0 || port > Short.MAX_VALUE * 2) {
+                    actionReport.failure(logger, "multicast port must be greater than zero or less than " + Short.MAX_VALUE*2+1);
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {
+                actionReport.failure(logger, "multicast is not a valid integer", nfe);
+                return result;
+            }
+        }
+        if ((multiCastGroup != null)) {
+            InetAddress address;
+            try {
+                address = InetAddress.getByName(multiCastGroup);
+                if (!address.isMulticastAddress()) {
+                    actionReport.failure(logger, multiCastGroup + " is not a valid multicast address ");
+                    return result;
+                }
+            } catch (UnknownHostException ex) {
+                actionReport.failure(logger, multiCastGroup+" is not a valid multicast address ", ex);
+                return result;
+            }
+
+        }
+
+        return true;
     }
 }

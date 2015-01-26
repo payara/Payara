@@ -62,7 +62,7 @@
         <dependency>
 		<groupId>javax.batch</groupId>
 		<artifactId>javax.batch-api</artifactId>
-		<version>1.0</version>
+		<version>${javax.batch-api.version}</version>
 	</dependency>
         <dependency>
             <groupId>com.ibm.jbatch</groupId>

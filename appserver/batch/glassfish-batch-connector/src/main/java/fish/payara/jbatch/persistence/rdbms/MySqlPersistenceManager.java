@@ -18,14 +18,13 @@ package fish.payara.jbatch.persistence.rdbms;
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.Q_SET_SCHEMA;
-
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +39,7 @@ import javax.sql.DataSource;
  * MySQL Persistence Manager
  */
 
-public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
+public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager implements MySQLJDBCConstants{
 
 	private static final String CLASSNAME = MySqlPersistenceManager.class
 			.getName();
@@ -48,6 +47,9 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 	private final static Logger logger = Logger.getLogger(CLASSNAME);
 
 	private IBatchConfig batchConfig = null;
+	
+	// mysql create table strings
+	protected Map<String, String> createMySQLStrings;
 	
 	@Override
 	public void init(IBatchConfig batchConfig)
@@ -59,21 +61,7 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
-		// Load the table names and queries shared between different database
-		// types
-
-		tableNames = getTableMap(batchConfig);
-
-		queryStrings = getQueryMap(batchConfig);
-
-		// put the create table strings into a hashmap
-		createTableStrings = setCreateTableMap(batchConfig);
 		
-		createMySQLStrings = setCreateMySQLStringsMap(batchConfig);
-
-		logger.config("JNDI name = " + jndiName);
-
 		if (jndiName == null || jndiName.equals("")) {
 			throw new BatchContainerServiceException(
 					"JNDI name is not defined.");
@@ -89,6 +77,26 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 			throw new BatchContainerServiceException(e);
 		}
+
+		// Load the table names and queries shared between different database
+		// types
+
+		tableNames = getSharedTableMap(batchConfig);
+
+		try {
+			queryStrings = getSharedQueryMap(batchConfig);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			throw new BatchContainerServiceException(e1);
+		}
+		// put the create table strings into a hashmap
+		//createTableStrings = setCreateTableMap(batchConfig);
+		
+		createMySQLStrings = setCreateMySQLStringsMap(batchConfig);
+
+		logger.config("JNDI name = " + jndiName);
+
+
 
 		try {
 			if (!isMySQLSchemaValid()) {
@@ -116,25 +124,21 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 		Connection conn = null;
 		DatabaseMetaData dbmd = null;
 		ResultSet rs = null;
-
+                PreparedStatement ps = null;
 		try {
 			conn = getConnectionToDefaultSchema();
-			dbmd = conn.getMetaData();
-			rs = dbmd.getSchemas();
+                        ps = conn.prepareStatement("SHOW DATABASES like ?");
+                        ps.setString(1, schema);
+			rs = ps.executeQuery();
 
-			while (rs.next()) {
-
-				String schemaname = rs.getString("TABLE_SCHEM");
-				if (schema.equalsIgnoreCase(schemaname)) {
-					logger.exiting(CLASSNAME, "isMySQLSchemaValid", true);
-					return true;
-				}
+			if (rs.next()) {
+                            result = true;
 			}
 		} catch (SQLException e) {
 			logger.severe(e.getLocalizedMessage());
 			throw e;
 		} finally {
-			cleanupConnection(conn, rs, null);
+			cleanupConnection(conn, rs, ps);
 		}
 		logger.exiting(CLASSNAME, "isMySQLSchemaValid", false);
 
@@ -226,11 +230,15 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
 
 	
 	@Override
-    protected Map<String, String> getQueryMap(IBatchConfig batchConfig) {
-        Map<String, String> result = super.getQueryMap(batchConfig);
-        if (schema != null && schema.length() != 0) {
-            result.put(Q_SET_SCHEMA, "USE " + schema);
+    protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
+        Map<String, String> result = super.getSharedQueryMap(batchConfig);
+        if(schema.equals("") || schema.length() == 0)
+        {
+        	schema = setDefaultSchema();
         }
+       
+        result.put(Q_SET_SCHEMA, "USE " + schema);
+        
         return result;
     }
 
@@ -242,8 +250,84 @@ public class MySqlPersistenceManager extends JBatchJDBCPersistenceManager {
             ps.close();
     }
     
-    //TODO create methods to check if MySQ tables exist on start up and if not create them.
-    
+    /**
+	 * Method invoked to insert the MySql create table strings into a hashmap
+	 **/
+
+	protected Map<String, String> setCreateMySQLStringsMap (IBatchConfig batchConfig) {
+		createMySQLStrings = new HashMap<>();
+		
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
+				+ tableNames.get(CHECKPOINT_TABLE_KEY)
+				+ " (id VARCHAR(512),obj BLOB)");
+		
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBINSTANCEDATA,"CREATE TABLE "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ " (jobinstanceid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(512), apptag VARCHAR(512))");
+		
+		
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE "
+						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+						+ "("
+						+ "jobexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "jobinstanceid BIGINT,"
+						+ "createtime TIMESTAMP,"
+						+ "starttime TIMESTAMP,"
+						+ "endtime TIMESTAMP,"
+						+ "updatetime TIMESTAMP,"
+						+ "parameters BLOB,"
+						+ "batchstatus VARCHAR(512),"
+						+ "exitstatus VARCHAR(512),"
+						+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES "
+						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+						+ "(jobinstanceid))");
+
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_STEPINSTANCEDATA,"CREATE TABLE "
+						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ "("
+						+ "stepexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "jobexecid BIGINT,"
+						+ "batchstatus VARCHAR(512),"
+						+ "exitstatus VARCHAR(512),"
+						+ "stepname VARCHAR(512),"
+						+ "readcount INT,"
+						+ "writecount INT,"
+						+ "commitcount INT,"
+						+ "rollbackcount INT,"
+						+ "readskipcount INT,"
+						+ "processskipcount INT,"
+						+ "filtercount INT,"
+						+ "writeskipcount INT,"
+						+ "startTime TIMESTAMP,"
+						+ "endTime TIMESTAMP,"
+						+ "persistentData BLOB,"
+						+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
+						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(jobexecid))");
+		
+		 
+
+
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBSTATUS,"CREATE TABLE "
+						+ tableNames.get(JOB_STATUS_TABLE_KEY)
+						+ "("
+						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "obj BLOB,"
+						+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES "
+						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+						+ " (jobinstanceid) ON DELETE CASCADE)");
+
+		createMySQLStrings.put(MYSQL_CREATE_TABLE_STEPSTATUS,"CREATE TABLE "
+						+ tableNames.get(STEP_STATUS_TABLE_KEY)
+						+ "("
+						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
+						+ "obj BLOB,"
+						+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
+						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(stepexecid) ON DELETE CASCADE)");
+
+		return createMySQLStrings;
+	}
     
 
 }
