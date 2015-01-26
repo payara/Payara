@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,38 +41,42 @@
 
 -->
 <!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
-    </parent>
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.featuresets</groupId>
-    <artifactId>featuresets</artifactId>
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-    <name>Glassfish featuresets</name>
+    <id>stage-distribution</id>
+    <formats>
+        <format>dir</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
 
-    <developers>
-        <developer>
-            <id>romain_grecourt</id>
-            <name>Romain Grecourt</name>
-            <organization>Oracle, Inc</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <modules>
-        <module>minnow</module>
-        <module>web</module>
-        <module>payara-web</module>
-        <module>glassfish</module>
-        <module>payara</module>
-	<module>minnow-ml</module>
-	<module>payara-web-ml</module>
-	<module>payara-ml</module>
-    </modules>
-</project>
+    <fileSets>
+        <fileSet>
+            <directory>${temp.dir}/${install.dir.name}</directory>
+            <excludes>
+                <exclude>domains/domain1/**</exclude>
+                <exclude>bin/*</exclude>
+                <exclude>glassfish/bin/*</exclude>
+                <exclude>glassfish/lib/nadmin*</exclude>
+            </excludes>
+            <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/glassfish</directory>
+            <outputDirectory>${install.dir.name}/glassfish</outputDirectory>
+            <excludes>
+                <exclude>legal/3RD-PARTY-LICENSE-WEB-PROFILE.txt</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${temp.dir}/${install.dir.name}</directory>
+            <fileMode>755</fileMode>
+            <includes>
+                <include>bin/*</include>
+                <include>glassfish/bin/*</include>
+                <include>glassfish/lib/nadmin*</include>
+            </includes>
+            <outputDirectory>${install.dir.name}</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

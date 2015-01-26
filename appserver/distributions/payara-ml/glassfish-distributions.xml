@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="iso-8859-1"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,38 +41,35 @@
 
 -->
 <!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
-    </parent>
-    <packaging>pom</packaging>
-    <groupId>org.glassfish.main.featuresets</groupId>
-    <artifactId>featuresets</artifactId>
+<project name="Payara l10n IPS distribution" default="create-glassfish-distributions" basedir=".">
+    <import file="../distributions.xml" />
+    <property name="source.distribution.name" value="Payara Open Source Edition 4.1"/>
 
-    <name>Glassfish featuresets</name>
+    <target name="install-packages">
+        <install.package name="glassfish-common-full"/>
+        <install.package name="glassfish-ejb"/>
+        <install.package name="glassfish-corba"/>
+        <install.package name="glassfish-cmp"/>
+        <install.package name="glassfish-entitybeans-container"/>
+        <install.package name="metro"/>
+        <install.package name="glassfish-appclient"/>
+        <install.package name="mq-core"/>
+        <install.package name="mq-server"/>
+        <install.package name="mq-bin-sh"/>
+        <install.package name="mq-bin-exe"/>
+        <install.package name="mq-config-gf"/>
+        <install.package name="glassfish-jms"/>
+        <install.package name="glassfish-full-incorporation"/>
+        <install.package name="glassfish-full-profile"/>
+    </target>
 
-    <developers>
-        <developer>
-            <id>romain_grecourt</id>
-            <name>Romain Grecourt</name>
-            <organization>Oracle, Inc</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
-
-    <modules>
-        <module>minnow</module>
-        <module>web</module>
-        <module>payara-web</module>
-        <module>glassfish</module>
-        <module>payara</module>
-	<module>minnow-ml</module>
-	<module>payara-web-ml</module>
-	<module>payara-ml</module>
-    </modules>
+    <target name="install-l10n-packages">
+        <install.package name="glassfish-appclient-l10n"/>
+        <install.package name="glassfish-common-full-l10n"/>
+        <install.package name="glassfish-ejb-l10n"/>
+        <install.package name="glassfish-cmp-l10n"/>
+        <install.package name="glassfish-jms-l10n"/>
+        <install.package name="metro-l10n"/>
+        <install.package name="mq-locale"/>
+    </target>
 </project>

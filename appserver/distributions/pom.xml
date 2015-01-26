@@ -87,7 +87,9 @@
 <!--        <module>web</module> -->
 <!--        <module>glassfish</module> -->
         <module>payara</module>
+	<module>payara-ml</module>
         <module>payara-web</module>
+	<module>payara-web-ml</module>
         <!-- disable appclient distribution build since we're not using it yet -->
         <!-- 	<module>appclient</module> -->
     </modules>
