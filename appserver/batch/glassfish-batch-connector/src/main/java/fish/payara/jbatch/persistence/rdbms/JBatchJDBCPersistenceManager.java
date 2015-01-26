@@ -77,7 +77,7 @@ import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
  */
 
 public class JBatchJDBCPersistenceManager implements
-		IPersistenceManagerService, JDBCQueryConstants {
+		IPersistenceManagerService, JDBCQueryConstants, OracleJDBCConstants {
 
 	private static final String CLASSNAME = JBatchJDBCPersistenceManager.class
 			.getName();
@@ -99,18 +99,6 @@ public class JBatchJDBCPersistenceManager implements
 	// derby create table strings
 	protected Map<String, String> createDerbyStrings;
 
-	// oracle create table strings
-	protected Map<String, String> createTableStrings;
-	protected Map<String, String> createIndexStrings;
-
-	// postgres create table strings
-	protected Map<String, String> createPostgresStrings;
-
-	// db2 create table strings
-	protected Map<String, String> createDB2Strings;
-
-	// mysql create table strings
-	protected Map<String, String> createMySQLStrings;
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -128,23 +116,7 @@ public class JBatchJDBCPersistenceManager implements
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
-		// Load the table names and queries shared between different database
-		// types
-
-		tableNames = getTableMap(batchConfig);
-
-		queryStrings = getQueryMap(batchConfig);
-
-		// put the create table strings into a hashmap
-		createTableStrings = setCreateTableMap(batchConfig);
-
-		logger.config("JNDI name = " + jndiName);
-
-		if (jndiName == null || jndiName.equals("")) {
-			throw new BatchContainerServiceException(
-					"JNDI name is not defined.");
-		}
+		
 		Context ctx = null;
 		try {
 			ctx = new InitialContext();
@@ -155,6 +127,28 @@ public class JBatchJDBCPersistenceManager implements
 					+ jndiName
 					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 			throw new BatchContainerServiceException(e);
+		}
+
+
+		// Load the table names and queries shared between different datstabase
+		// types
+
+		tableNames = getSharedTableMap(batchConfig);
+
+		try {
+			queryStrings = getSharedQueryMap(batchConfig);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			throw new BatchContainerServiceException(e1);
+		}
+		// put the create table strings into a hashmap
+		// createTableStrings = setCreateTableMap(batchConfig);
+
+		logger.config("JNDI name = " + jndiName);
+
+		if (jndiName == null || jndiName.equals("")) {
+			throw new BatchContainerServiceException(
+					"JNDI name is not defined.");
 		}
 
 		try {
@@ -176,7 +170,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * on the datasource
 	 * */
 
-	public void setDefaultSchema() throws SQLException {
+	public String setDefaultSchema() throws SQLException {
 		logger.finest("Entering setDefaultSchema");
 		Connection connection = null;
 
@@ -187,8 +181,7 @@ public class JBatchJDBCPersistenceManager implements
 			DatabaseMetaData dbmd = null;
 			dbmd = connection.getMetaData();
 			schema = dbmd.getUserName();
-			if(dbmd.getDatabaseProductName().toLowerCase().contains("mysql"))
-			{
+			if (dbmd.getDatabaseProductName().toLowerCase().contains("mysql")) {
 				schema = "test";
 			}
 
@@ -200,12 +193,13 @@ public class JBatchJDBCPersistenceManager implements
 		}
 
 		logger.finest("Exiting setDefaultSchema");
+		return schema;
 
 	}
 
 	/**
-	 * Checks if the schema exists in the database. If not connect to the default
-	 * schema
+	 * Checks if the schema exists in the database. If not connect to the
+	 * default schema
 	 * 
 	 * @return true if the schema exists, false otherwise.
 	 * @throws SQLException
@@ -296,8 +290,8 @@ public class JBatchJDBCPersistenceManager implements
 	}
 
 	/**
-	 * Retrieve the number of rows in the resultset. This method is used to check
-	 * if a table exists in a given schema
+	 * Retrieve the number of rows in the resultset. This method is used to
+	 * check if a table exists in a given schema
 	 **/
 
 	public int getTableRowCount(ResultSet rs) throws SQLException {
@@ -402,6 +396,7 @@ public class JBatchJDBCPersistenceManager implements
 
 	/**
 	 * Get a connection from the datasource
+	 * 
 	 * @return the database connection and sets the schema
 	 * 
 	 * @throws SQLException
@@ -422,8 +417,8 @@ public class JBatchJDBCPersistenceManager implements
 	}
 
 	/**
-	 * @return the database connection. The schema is set to whatever default
-	 *         is used by the datasource.
+	 * @return the database connection. The schema is set to whatever default is
+	 *         used by the datasource.
 	 * @throws SQLException
 	 */
 	protected Connection getConnectionToDefaultSchema() throws SQLException {
@@ -454,7 +449,9 @@ public class JBatchJDBCPersistenceManager implements
 	}
 
 	/**
-	 * Set the schema to the default schema or the schema defined at batch configuration time
+	 * Set the schema to the default schema or the schema defined at batch
+	 * configuration time
+	 * 
 	 * @param connection
 	 * @throws SQLException
 	 */
@@ -1758,16 +1755,11 @@ public class JBatchJDBCPersistenceManager implements
 
 		try {
 			conn = getConnection();
-			if (conn.getMetaData().getDatabaseProductName()
-					.contains("PostgreSQL")) {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_SUB_JOB_INSTANCE),
-						statement.RETURN_GENERATED_KEYS);
-			} else {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_SUB_JOB_INSTANCE),
-						new String[] { "JOBINSTANCEID" });
-			}
+
+			statement = conn.prepareStatement(
+					queryStrings.get(CREATE_SUB_JOB_INSTANCE),
+					new String[] { "JOBINSTANCEID" });
+
 			statement.setString(1, name);
 			statement.setString(2, apptag);
 			statement.executeUpdate();
@@ -1803,26 +1795,9 @@ public class JBatchJDBCPersistenceManager implements
 		try {
 			conn = getConnection();
 
-			if (conn.getMetaData().getDatabaseProductName()
-					.contains("PostgreSQL")) {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_JOB_INSTANCE),
-						statement.RETURN_GENERATED_KEYS);
-			} else if (conn.getMetaData().getDatabaseProductName()
-					.contains("Oracle")
-					|| conn.getMetaData().getDatabaseProductName()
-							.contains("DB2")) {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_JOB_INSTANCE),
-						new String[] { "JOBINSTANCEID" });
-			} else if (conn.getMetaData().getDatabaseProductName()
-					.contains("Derby")
-					|| conn.getMetaData().getDatabaseProductName()
-							.contains("MySQL")) {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_JOB_INSTANCE),
-						new String[] { "JOBINSTANCEID" });
-			}
+			statement = conn.prepareStatement(
+					queryStrings.get(CREATE_JOB_INSTANCE),
+					new String[] { "JOBINSTANCEID" });
 
 			statement.setString(1, name);
 			statement.setString(2, apptag);
@@ -1874,16 +1849,11 @@ public class JBatchJDBCPersistenceManager implements
 		long newJobExecutionId = 0L;
 		try {
 			conn = getConnection();
-			if (conn.getMetaData().getDatabaseProductName()
-					.contains("PostgreSQL")) {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_JOB_EXECUTION_ENTRY),
-						statement.RETURN_GENERATED_KEYS);
-			} else {
-				statement = conn.prepareStatement(
-						queryStrings.get(CREATE_JOB_EXECUTION_ENTRY),
-						new String[] { "JOBEXECID" });
-			}
+
+			statement = conn.prepareStatement(
+					queryStrings.get(CREATE_JOB_EXECUTION_ENTRY),
+					new String[] { "JOBEXECID" });
+
 			statement.setLong(1, jobInstance.getInstanceId());
 			statement.setTimestamp(2, timestamp);
 			statement.setTimestamp(3, timestamp);
@@ -2009,14 +1979,10 @@ public class JBatchJDBCPersistenceManager implements
 
 		try {
 			conn = getConnection();
-			if (conn.getMetaData().getDatabaseProductName()
-					.contains("PostgreSQL")) {
-				statement = conn.prepareStatement(query,
-						statement.RETURN_GENERATED_KEYS);
-			} else {
-				statement = conn.prepareStatement(query,
-						new String[] { "STEPEXECID" });
-			}
+
+			statement = conn.prepareStatement(query,
+					new String[] { "STEPEXECID" });
+
 			statement.setLong(1, rootJobExecId);
 			statement.setString(2, batchStatus);
 			statement.setString(3, exitStatus);
@@ -2530,7 +2496,7 @@ public class JBatchJDBCPersistenceManager implements
 	 * the prefix and suffix to the table names
 	 **/
 
-	protected Map<String, String> getTableMap(IBatchConfig batchConfig) {
+	protected Map<String, String> getSharedTableMap(IBatchConfig batchConfig) {
 		String prefix = batchConfig.getConfigProperties().getProperty(
 				BatchRuntimeHelper.PAYARA_TABLE_PREFIX_PROPERTY, "");
 		String suffix = batchConfig.getConfigProperties().getProperty(
@@ -2550,9 +2516,10 @@ public class JBatchJDBCPersistenceManager implements
 	/**
 	 * Method invoked to insert the query strings used by all database types
 	 * into a hashmap
+	 * @throws SQLException 
 	 **/
 
-	protected Map<String, String> getQueryMap(IBatchConfig batchConfig) {
+	protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
 		queryStrings = new HashMap<>();
 		queryStrings.put(Q_SET_SCHEMA, "SET SCHEMA ?");
 		queryStrings.put(SELECT_CHECKPOINTDATA, "select id, obj from "
@@ -2773,247 +2740,6 @@ public class JBatchJDBCPersistenceManager implements
 	}
 
 	/**
-	 * Method invoked to insert the Oracle create table, trigger and sequence
-	 * strings into a hashmap
-	 **/
-
-	protected Map<String, String> setCreateTableMap(IBatchConfig batchConfig) {
-		createTableStrings = new HashMap<>();
-		createTableStrings.put(CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
-				+ tableNames.get(CHECKPOINT_TABLE_KEY)
-				+ "(id VARCHAR(512),obj BLOB)");
-
-		createTableStrings
-				.put(CREATE_TABLE_JOBINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ "(jobinstanceid NUMBER(19,0) PRIMARY KEY,name VARCHAR2(512), apptag VARCHAR(512))");
-		createTableStrings.put(CREATE_JOBINSTANCEDATA_SEQ,
-				"CREATE SEQUENCE JOBINSTANCEDATA_SEQ");
-		createTableStrings
-				.put(CREATE_JOBINSTANCEDATA_TRG,
-						"CREATE OR REPLACE TRIGGER JOBINSTANCEDATA_TRG BEFORE INSERT ON "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " FOR EACH ROW BEGIN SELECT JOBINSTANCEDATA_SEQ.nextval INTO :new.jobinstanceid FROM dual; END;");
-
-		createTableStrings
-				.put(CREATE_TABLE_EXECUTIONINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-								+ "(jobexecid NUMBER(19,0) PRIMARY KEY,jobinstanceid	NUMBER(19,0),createtime	TIMESTAMP,starttime		TIMESTAMP,endtime		TIMESTAMP,updatetime	TIMESTAMP,parameters BLOB,batchstatus VARCHAR2(512),exitstatus VARCHAR2(512),CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ "(jobinstanceid))");
-		createTableStrings.put(CREATE_EXECUTIONINSTANCEDATA_SEQ,
-				"CREATE SEQUENCE EXECUTIONINSTANCEDATA_SEQ");
-		createTableStrings
-				.put(CREATE_EXECUTIONINSTANCEDATA_TRG,
-						"CREATE OR REPLACE TRIGGER EXECUTIONINSTANCEDATA_TRG BEFORE INSERT ON "
-								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-								+ " FOR EACH ROW BEGIN SELECT EXECUTIONINSTANCEDATA_SEQ.nextval INTO :new.jobexecid FROM dual;END;");
-
-		createTableStrings
-				.put(CREATE_TABLE_STEPINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames
-										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-								+ "(stepexecid NUMBER(19,0) PRIMARY KEY, jobexecid NUMBER(19,0),batchstatus VARCHAR2(512),exitstatus VARCHAR2(512),stepname VARCHAR(512),readcount NUMBER(11, 0),writecount NUMBER(11, 0),commitcount NUMBER(11, 0),rollbackcount NUMBER(11, 0),readskipcount NUMBER(11, 0),processskipcount NUMBER(11, 0),filtercount NUMBER(11, 0),writeskipcount NUMBER(11, 0),startTime TIMESTAMP,endTime TIMESTAMP, persistentData BLOB, CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
-								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-								+ "(jobexecid))");
-		createTableStrings.put(CREATE_STEPINSTANCEDATA_SEQ,
-				"CREATE SEQUENCE STEPEXECUTIONINSTANCEDATA_SEQ");
-		createTableStrings
-				.put(CREATE_STEPINSTANCEDATA_TRG,
-						"CREATE OR REPLACE TRIGGER STEPEXECUTIONINSTANCEDATA_TRG BEFORE INSERT ON "
-								+ tableNames
-										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-								+ " FOR EACH ROW BEGIN SELECT STEPEXECUTIONINSTANCEDATA_SEQ.nextval INTO :new.stepexecid FROM dual;END;");
-
-		createTableStrings
-				.put(CREATE_TABLE_JOBSTATUS,
-						"CREATE TABLE "
-								+ tableNames.get(JOB_STATUS_TABLE_KEY)
-								+ "(id NUMBER(19,0) PRIMARY KEY,"
-								+ "obj BLOB,"
-								+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid) ON DELETE CASCADE)");
-
-		createTableStrings
-				.put(CREATE_TABLE_STEPSTATUS,
-						"CREATE TABLE "
-								+ tableNames.get(STEP_STATUS_TABLE_KEY)
-								+ "(id NUMBER(19,0) PRIMARY KEY,"
-								+ "obj BLOB,"
-								+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
-								+ tableNames
-										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-								+ " (stepexecid) ON DELETE CASCADE)");
-		return createTableStrings;
-	}
-
-	/**
-	 * Method invoked to insert the Oracle create index strings into a hashmap
-	 **/
-
-	protected Map<String, String> setCreateIndexMap(IBatchConfig batchConfig) {
-		createIndexStrings = new HashMap<>();
-		createIndexStrings.put(
-				CREATE_CHECKPOINTDATA_INDEX,
-				"create index chk_index on "
-						+ tableNames.get(CHECKPOINT_TABLE_KEY) + "(id)");
-		return createIndexStrings;
-	}
-
-	/**
-	 * Method invoked to insert the Postgres create table strings into a hashmap
-	 **/
-
-	protected Map<String, String> setCreatePostgresStringsMap(
-			IBatchConfig batchConfig) {
-		createPostgresStrings = new HashMap<>();
-		createPostgresStrings.put(POSTGRES_CREATE_TABLE_CHECKPOINTDATA,
-				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)
-						+ "(id character varying (512),obj bytea)");
-
-		createPostgresStrings
-				.put(POSTGRES_CREATE_TABLE_JOBINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ "(jobinstanceid serial not null PRIMARY KEY,name character varying (512),apptag VARCHAR(512))");
-
-		createPostgresStrings.put(POSTGRES_CREATE_TABLE_EXECUTIONINSTANCEDATA,
-				"CREATE TABLE " + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-						+ "(jobexecid serial not null PRIMARY KEY,"
-						+ "jobinstanceid bigint not null REFERENCES "
-						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-						+ "(jobinstanceid)," + "createtime timestamp,"
-						+ "starttime timestamp," + "endtime	timestamp,"
-						+ "updatetime timestamp," + "parameters bytea,"
-						+ "batchstatus character varying (512),"
-						+ "exitstatus character varying (512))");
-
-		createPostgresStrings.put(
-				POSTGRES_CREATE_TABLE_STEPINSTANCEDATA,
-				"CREATE TABLE "
-						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-						+ "(stepexecid	serial not null PRIMARY KEY,"
-						+ "jobexecid	bigint not null REFERENCES "
-						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-						+ "(jobexecid),"
-						+ "batchstatus character varying (512),"
-						+ "exitstatus	character varying (512),"
-						+ "stepname	character varying (512),"
-						+ "readcount	integer," + "writecount	integer,"
-						+ "commitcount integer," + "rollbackcount integer,"
-						+ "readskipcount integer,"
-						+ "processskipcount integer," + "filtercount integer,"
-						+ "writeskipcount integer," + "startTime timestamp,"
-						+ "endTime timestamp," + "persistentData	bytea)");
-
-		createPostgresStrings.put(
-				POSTGRES_CREATE_TABLE_JOBSTATUS,
-				"CREATE TABLE " + tableNames.get(JOB_STATUS_TABLE_KEY)
-						+ "(id	bigint not null REFERENCES "
-						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-						+ " (jobinstanceid),obj	bytea)");
-
-		createPostgresStrings.put(
-				POSTGRES_CREATE_TABLE_STEPSTATUS,
-				"CREATE TABLE " + tableNames.get(STEP_STATUS_TABLE_KEY)
-						+ "(id	bigint not null REFERENCES "
-						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-						+ " (stepexecid), " + "obj bytea)");
-
-		return createPostgresStrings;
-	}
-
-	/**
-	 * Method invoked to insert the DB2 create table strings into a hashmap
-	 **/
-
-	protected Map<String, String> setCreateDB2StringsMap(
-			IBatchConfig batchConfig) {
-		createDB2Strings = new HashMap<>();
-		createDB2Strings.put(DB2_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
-				+ tableNames.get(CHECKPOINT_TABLE_KEY)
-				+ " (id VARCHAR(512),obj BLOB)");
-		createDB2Strings
-				.put(DB2_CREATE_TABLE_JOBINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBINSTANCE_PK PRIMARY KEY,name VARCHAR(512), apptag VARCHAR(512))");
-
-		createDB2Strings
-				.put(DB2_CREATE_TABLE_EXECUTIONINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-								+ " (jobexecid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT JOBEXECUTION_PK PRIMARY KEY,"
-								+ "jobinstanceid BIGINT,"
-								+ "createtime	TIMESTAMP,"
-								+ "starttime	TIMESTAMP,"
-								+ "endtime	TIMESTAMP,"
-								+ "updatetime	TIMESTAMP,"
-								+ "parameters	BLOB,"
-								+ "batchstatus VARCHAR(512),"
-								+ "exitstatus		VARCHAR(512),"
-								+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid))");
-
-		createDB2Strings
-				.put(DB2_CREATE_TABLE_STEPINSTANCEDATA,
-						"CREATE TABLE "
-								+ tableNames
-										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-								+ " (stepexecid BIGINT NOT NULL GENERATED ALWAYS AS IDENTITY (START WITH 1, INCREMENT BY 1) CONSTRAINT STEPEXECUTION_PK PRIMARY KEY,"
-								+ "jobexecid	BIGINT,"
-								+ "batchstatus VARCHAR(512),"
-								+ "exitstatus	VARCHAR(512),"
-								+ "stepname	VARCHAR(512),"
-								+ "readcount	INTEGER,"
-								+ "writecount	INTEGER,"
-								+ "commitcount INTEGER,"
-								+ "rollbackcount INTEGER,"
-								+ "readskipcount	INTEGER,"
-								+ "processskipcount INTEGER,"
-								+ "filtercount INTEGER,"
-								+ "writeskipcount	INTEGER,"
-								+ "startTime TIMESTAMP,"
-								+ "endTime TIMESTAMP,"
-								+ "persistentData	BLOB,"
-								+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
-								+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-								+ " (jobexecid))");
-
-		createDB2Strings
-				.put(DB2_CREATE_TABLE_JOBSTATUS,
-						"CREATE TABLE "
-								+ tableNames.get(JOB_STATUS_TABLE_KEY)
-								+ " (id BIGINT CONSTRAINT JOBSTATUS_PK PRIMARY KEY NOT NULL,obj BLOB,"
-								+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid) ON DELETE CASCADE)");
-
-		createDB2Strings
-				.put(DB2_CREATE_TABLE_STEPSTATUS,
-						"CREATE TABLE "
-								+ tableNames.get(STEP_STATUS_TABLE_KEY)
-								+ "(id BIGINT CONSTRAINT STEPSTATUS_PK PRIMARY KEY NOT NULL,"
-								+ "obj BLOB,"
-								+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
-								+ tableNames
-										.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-								+ " (stepexecid) ON DELETE CASCADE)");
-
-		createDB2Strings.put(
-				CREATE_DB2_CHECKPOINTDATA_INDEX_KEY,
-				"CREATE INDEX CHK_INDEX ON "
-						+ tableNames.get(CHECKPOINT_TABLE_KEY) + "(id)");
-
-		return createDB2Strings;
-	}
-
-	/**
 	 * Method invoked to insert the Derby create table strings into a hashmap
 	 **/
 
@@ -3100,85 +2826,6 @@ public class JBatchJDBCPersistenceManager implements
 
 		return createDerbyStrings;
 
-	}
-	
-	/**
-	 * Method invoked to insert the MySql create table strings into a hashmap
-	 **/
-
-	protected Map<String, String> setCreateMySQLStringsMap (IBatchConfig batchConfig) {
-		createMySQLStrings = new HashMap<>();
-		
-		createMySQLStrings.put(MYSQL_CREATE_TABLE_CHECKPOINTDATA, "CREATE TABLE "
-				+ tableNames.get(CHECKPOINT_TABLE_KEY)
-				+ " (id VARCHAR(512),obj BLOB)");
-		
-		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBINSTANCEDATA,"CREATE TABLE "
-								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-								+ " (jobinstanceid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,name VARCHAR(512), apptag VARCHAR(512))");
-		
-		
-		createMySQLStrings.put(MYSQL_CREATE_TABLE_EXECUTIONINSTANCEDATA,"CREATE TABLE "
-						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-						+ "("
-						+ "jobexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
-						+ "jobinstanceid BIGINT,"
-						+ "createtime TIMESTAMP,"
-						+ "starttime TIMESTAMP,"
-						+ "endtime TIMESTAMP,"
-						+ "updatetime TIMESTAMP,"
-						+ "parameters BLOB,"
-						+ "batchstatus VARCHAR(512),"
-						+ "exitstatus VARCHAR(512),"
-						+ "CONSTRAINT JOBINST_JOBEXEC_FK FOREIGN KEY (jobinstanceid) REFERENCES "
-						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-						+ "(jobinstanceid))");
-
-		createMySQLStrings.put(MYSQL_CREATE_TABLE_STEPINSTANCEDATA,"CREATE TABLE "
-						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-						+ "("
-						+ "stepexecid BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
-						+ "jobexecid BIGINT,"
-						+ "batchstatus VARCHAR(512),"
-						+ "exitstatus VARCHAR(512),"
-						+ "stepname VARCHAR(512),"
-						+ "readcount INT,"
-						+ "writecount INT,"
-						+ "commitcount INT,"
-						+ "rollbackcount INT,"
-						+ "readskipcount INT,"
-						+ "processskipcount INT,"
-						+ "filtercount INT,"
-						+ "writeskipcount INT,"
-						+ "startTime TIMESTAMP,"
-						+ "endTime TIMESTAMP,"
-						+ "persistentData BLOB,"
-						+ "CONSTRAINT JOBEXEC_STEPEXEC_FK FOREIGN KEY (jobexecid) REFERENCES "
-						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
-						+ "(jobexecid))");
-		
-		 
-
-
-		createMySQLStrings.put(MYSQL_CREATE_TABLE_JOBSTATUS,"CREATE TABLE "
-						+ tableNames.get(JOB_STATUS_TABLE_KEY)
-						+ "("
-						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
-						+ "obj BLOB,"
-						+ "CONSTRAINT JOBSTATUS_JOBINST_FK FOREIGN KEY (id) REFERENCES "
-						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
-						+ " (jobinstanceid) ON DELETE CASCADE)");
-
-		createMySQLStrings.put(MYSQL_CREATE_TABLE_STEPSTATUS,"CREATE TABLE "
-						+ tableNames.get(STEP_STATUS_TABLE_KEY)
-						+ "("
-						+ "id BIGINT NOT NULL PRIMARY KEY AUTO_INCREMENT,"
-						+ "obj BLOB,"
-						+ "CONSTRAINT STEPSTATUS_STEPEXEC_FK FOREIGN KEY (id) REFERENCES "
-						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
-						+ "(stepexecid) ON DELETE CASCADE)");
-
-		return createMySQLStrings;
 	}
 
 }
