@@ -16,31 +16,39 @@
 package fish.payara.jbatch.persistence.rdbms;
 
 import com.ibm.jbatch.container.exception.BatchContainerServiceException;
+import com.ibm.jbatch.container.exception.PersistenceException;
+import com.ibm.jbatch.container.jobinstance.JobInstanceImpl;
+import com.ibm.jbatch.container.jobinstance.StepExecutionImpl;
 import com.ibm.jbatch.spi.services.IBatchConfig;
 
-import static fish.payara.jbatch.persistence.rdbms.JDBCQueryConstants.Q_SET_SCHEMA;
-
+import java.io.IOException;
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.batch.runtime.BatchStatus;
+import javax.batch.runtime.JobInstance;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
- * 
  * PostgreSQL Persistence Manager
  */
 
-public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
+public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager
+		implements PostgresJDBCConstants {
 
 	private static final String CLASSNAME = PostgresPersistenceManager.class
 			.getName();
@@ -49,23 +57,29 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 
 	private IBatchConfig batchConfig = null;
 
-	@Override
-	protected Map<String, String> getQueryMap(IBatchConfig batchConfig) {
-		Map<String, String> result = super.getQueryMap(batchConfig);
-		if (schema != null && schema.length() != 0) {
-			result.put(Q_SET_SCHEMA, "set search_path to " + schema);
-		}
-		return result;
-	}
+	// postgres create table strings
+	protected Map<String, String> createPostgresStrings;
 
 	@Override
-	protected void setSchemaOnConnection(Connection connection)
-			throws SQLException {
-		PreparedStatement ps = null;
-		ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
-		ps.executeUpdate();
-		ps.close();
+	protected Map<String, String> getSharedQueryMap(IBatchConfig batchConfig) throws SQLException {
+		Map<String, String> result = super.getSharedQueryMap(batchConfig);
+		if(schema.equals("") || schema.length() == 0){
+			schema = setDefaultSchema();
+		}
+	
+	    result.put(Q_SET_SCHEMA, "set search_path to " + schema);
+	
+		return result;
 	}
+	
+    @Override
+    protected void setSchemaOnConnection(Connection connection) throws SQLException {
+            PreparedStatement ps = null;
+            ps = connection.prepareStatement(queryStrings.get(Q_SET_SCHEMA));
+            ps.executeUpdate();
+            ps.close();
+    }
+
 
 	@Override
 	public void init(IBatchConfig batchConfig)
@@ -77,26 +91,7 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
 		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-
-		// Load the table names and queries shared between different database
-		// types
-
-		tableNames = getTableMap(batchConfig);
-
-		queryStrings = getQueryMap(batchConfig);
-
-		// put the create table strings into a hashmap
-		createTableStrings = setCreateTableMap(batchConfig);
-
-		createPostgresStrings = setCreatePostgresStringsMap(batchConfig);
-
-		logger.config("JNDI name = " + jndiName);
-
-		if (jndiName == null || jndiName.equals("")) {
-			throw new BatchContainerServiceException(
-					"JNDI name is not defined.");
-		}
-
+		
 		try {
 			Context ctx = new InitialContext();
 			dataSource = (DataSource) ctx.lookup(jndiName);
@@ -107,6 +102,31 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
 			throw new BatchContainerServiceException(e);
 		}
+
+		// Load the table names and queries shared between different database
+		// types
+
+		tableNames = getSharedTableMap(batchConfig);
+
+		try {
+			queryStrings = getSharedQueryMap(batchConfig);
+		} catch (SQLException e1) {
+			// TODO Auto-generated catch block
+			throw new BatchContainerServiceException(e1);
+		}
+		// put the create table strings into a hashmap
+		// createTableStrings = setCreateTableMap(batchConfig);
+
+		createPostgresStrings = setCreatePostgresStringsMap(batchConfig);
+
+		logger.config("JNDI name = " + jndiName);
+
+		if (jndiName == null || jndiName.equals("")) {
+			throw new BatchContainerServiceException(
+					"JNDI name is not defined.");
+		}
+
+
 
 		try {
 			if (!isPostgresSchemaValid()) {
@@ -121,11 +141,13 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 
 		logger.config("Exiting CLASSNAME.init()");
 	}
-    /**
-     * Check if the schema is valid. If not use the default schema
-     * @return
-     * @throws SQLException
-     */
+
+	/**
+	 * Check if the schema is valid. If not use the default schema
+	 * 
+	 * @return
+	 * @throws SQLException
+	 */
 	private boolean isPostgresSchemaValid() throws SQLException {
 
 		boolean result = false;
@@ -159,9 +181,10 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 		return result;
 
 	}
-    
+
 	/**
 	 * Check the JBatch Tables exist in the relevant schema
+	 * 
 	 * @throws SQLException
 	 */
 	private void checkPostgresTables() throws SQLException {
@@ -191,9 +214,10 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 
 		logger.exiting(CLASSNAME, "checkAllTables Postgres");
 	}
-    
+
 	/**
 	 * Create Postgres tables if they do not exist
+	 * 
 	 * @param tableName
 	 * @param createTableStatement
 	 * @throws SQLException
@@ -240,6 +264,241 @@ public class PostgresPersistenceManager extends JBatchJDBCPersistenceManager {
 		}
 
 		logger.exiting(CLASSNAME, "createPostgresTableNotExists");
+	}
+
+	/**
+	 * Method invoked to insert the Postgres create table strings into a hashmap
+	 **/
+
+	protected Map<String, String> setCreatePostgresStringsMap(
+			IBatchConfig batchConfig) {
+		createPostgresStrings = new HashMap<>();
+		createPostgresStrings.put(POSTGRES_CREATE_TABLE_CHECKPOINTDATA,
+				"CREATE TABLE " + tableNames.get(CHECKPOINT_TABLE_KEY)
+						+ "(id character varying (512),obj bytea)");
+
+		createPostgresStrings
+				.put(POSTGRES_CREATE_TABLE_JOBINSTANCEDATA,
+						"CREATE TABLE "
+								+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+								+ "(jobinstanceid serial not null PRIMARY KEY,name character varying (512),apptag VARCHAR(512))");
+
+		createPostgresStrings.put(POSTGRES_CREATE_TABLE_EXECUTIONINSTANCEDATA,
+				"CREATE TABLE " + tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(jobexecid serial not null PRIMARY KEY,"
+						+ "jobinstanceid bigint not null REFERENCES "
+						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+						+ "(jobinstanceid)," + "createtime timestamp,"
+						+ "starttime timestamp," + "endtime	timestamp,"
+						+ "updatetime timestamp," + "parameters bytea,"
+						+ "batchstatus character varying (512),"
+						+ "exitstatus character varying (512))");
+
+		createPostgresStrings.put(
+				POSTGRES_CREATE_TABLE_STEPINSTANCEDATA,
+				"CREATE TABLE "
+						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(stepexecid	serial not null PRIMARY KEY,"
+						+ "jobexecid	bigint not null REFERENCES "
+						+ tableNames.get(EXECUTION_INSTANCE_TABLE_KEY)
+						+ "(jobexecid),"
+						+ "batchstatus character varying (512),"
+						+ "exitstatus	character varying (512),"
+						+ "stepname	character varying (512),"
+						+ "readcount	integer," + "writecount	integer,"
+						+ "commitcount integer," + "rollbackcount integer,"
+						+ "readskipcount integer,"
+						+ "processskipcount integer," + "filtercount integer,"
+						+ "writeskipcount integer," + "startTime timestamp,"
+						+ "endTime timestamp," + "persistentData	bytea)");
+
+		createPostgresStrings.put(
+				POSTGRES_CREATE_TABLE_JOBSTATUS,
+				"CREATE TABLE " + tableNames.get(JOB_STATUS_TABLE_KEY)
+						+ "(id	bigint not null REFERENCES "
+						+ tableNames.get(JOB_INSTANCE_TABLE_KEY)
+						+ " (jobinstanceid),obj	bytea)");
+
+		createPostgresStrings.put(
+				POSTGRES_CREATE_TABLE_STEPSTATUS,
+				"CREATE TABLE " + tableNames.get(STEP_STATUS_TABLE_KEY)
+						+ "(id	bigint not null REFERENCES "
+						+ tableNames.get(STEP_EXECUTION_INSTANCE_TABLE_KEY)
+						+ " (stepexecid), " + "obj bytea)");
+
+		return createPostgresStrings;
+	}
+
+	@Override
+	public JobInstance createSubJobInstance(String name, String apptag) {
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		JobInstanceImpl jobInstance = null;
+
+		try {
+			conn = getConnection();
+
+			statement = conn.prepareStatement(
+					queryStrings.get(CREATE_SUB_JOB_INSTANCE),
+					statement.RETURN_GENERATED_KEYS);
+
+			statement.setString(1, name);
+			statement.setString(2, apptag);
+			statement.executeUpdate();
+			rs = statement.getGeneratedKeys();
+			if (rs.next()) {
+				long jobInstanceID = rs.getLong(1);
+				jobInstance = new JobInstanceImpl(jobInstanceID);
+				jobInstance.setJobName(name);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		return jobInstance;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.ibm.jbatch.container.services.IPersistenceManagerService#
+	 * createJobInstance(java.lang.String, java.lang.String, java.lang.String,
+	 * java.util.Properties)
+	 */
+	@Override
+	public JobInstance createJobInstance(String name, String apptag,
+			String jobXml) {
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		JobInstanceImpl jobInstance = null;
+
+		try {
+			conn = getConnection();
+
+			statement = conn.prepareStatement(
+					queryStrings.get(CREATE_JOB_INSTANCE),
+					statement.RETURN_GENERATED_KEYS);
+
+			statement.setString(1, name);
+			statement.setString(2, apptag);
+			statement.executeUpdate();
+
+			rs = statement.getGeneratedKeys();
+
+			if (rs.next()) {
+				long jobInstanceID = rs.getLong(1);
+				jobInstance = new JobInstanceImpl(jobInstanceID, jobXml);
+				jobInstance.setJobName(name);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		return jobInstance;
+	}
+
+	@Override
+	protected long createRuntimeJobExecutionEntry(JobInstance jobInstance,
+			Properties jobParameters, BatchStatus batchStatus,
+			Timestamp timestamp) {
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		long newJobExecutionId = 0L;
+		try {
+			conn = getConnection();
+
+			statement = conn.prepareStatement(
+					queryStrings.get(CREATE_JOB_EXECUTION_ENTRY),
+					statement.RETURN_GENERATED_KEYS);
+
+			statement.setLong(1, jobInstance.getInstanceId());
+			statement.setTimestamp(2, timestamp);
+			statement.setTimestamp(3, timestamp);
+			statement.setString(4, batchStatus.name());
+			statement.setObject(5, serializeObject(jobParameters));
+			statement.executeUpdate();
+			rs = statement.getGeneratedKeys();
+			if (rs.next()) {
+				newJobExecutionId = rs.getLong(1);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} catch (IOException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, rs, statement);
+		}
+		return newJobExecutionId;
+	}
+
+	@Override
+	protected StepExecutionImpl createStepExecution(long rootJobExecId,
+		String batchStatus, String exitStatus, String stepName,
+		long readCount, long writeCount, long commitCount,
+		long rollbackCount, long readSkipCount, long processSkipCount,
+		long filterCount, long writeSkipCount, Timestamp startTime,
+		Timestamp endTime, Serializable persistentData) {
+
+		logger.entering(CLASSNAME, "createStepExecution", new Object[] {
+				rootJobExecId, batchStatus,
+				exitStatus == null ? "<null>" : exitStatus, stepName,
+				readCount, writeCount, commitCount, rollbackCount,
+				readSkipCount, processSkipCount, filterCount, writeSkipCount,
+				startTime == null ? "<null>" : startTime,
+				endTime == null ? "<null>" : endTime,
+				persistentData == null ? "<null>" : persistentData });
+
+		Connection conn = null;
+		PreparedStatement statement = null;
+		ResultSet rs = null;
+		StepExecutionImpl stepExecution = null;
+		String query = queryStrings.get(CREATE_STEP_EXECUTION);
+
+		try {
+			conn = getConnection();
+
+			statement = conn.prepareStatement(query,
+					statement.RETURN_GENERATED_KEYS);
+
+			statement.setLong(1, rootJobExecId);
+			statement.setString(2, batchStatus);
+			statement.setString(3, exitStatus);
+			statement.setString(4, stepName);
+			statement.setLong(5, readCount);
+			statement.setLong(6, writeCount);
+			statement.setLong(7, commitCount);
+			statement.setLong(8, rollbackCount);
+			statement.setLong(9, readSkipCount);
+			statement.setLong(10, processSkipCount);
+			statement.setLong(11, filterCount);
+			statement.setLong(12, writeSkipCount);
+			statement.setTimestamp(13, startTime);
+			statement.setTimestamp(14, endTime);
+			statement.setObject(15, serializeObject(persistentData));
+
+			statement.executeUpdate();
+			rs = statement.getGeneratedKeys();
+			if (rs.next()) {
+				long stepExecutionId = rs.getLong(1);
+				stepExecution = new StepExecutionImpl(rootJobExecId,
+						stepExecutionId);
+				stepExecution.setStepName(stepName);
+			}
+		} catch (SQLException e) {
+			throw new PersistenceException(e);
+		} catch (IOException e) {
+			throw new PersistenceException(e);
+		} finally {
+			cleanupConnection(conn, null, statement);
+		}
+		logger.exiting(CLASSNAME, "createStepExecution");
+
+		return stepExecution;
 	}
 
 }
