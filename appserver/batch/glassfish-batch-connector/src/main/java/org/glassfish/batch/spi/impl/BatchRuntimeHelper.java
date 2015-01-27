@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,26 +122,6 @@ public class BatchRuntimeHelper
             synchronized (this) {
                 if (!initialized.get()) {
                     initialized.set(true);
-//                    try {
-//                        //Temporary fix till batch_{db_vendor}.sql is part of the distribution
-//                        File sqlFile = new File(ddlDir, "batch_derby.sql");
-//                        if (sqlFile.exists()) {
-//                            java2DBProcessorHelper.executeDDLStatement(ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, getDataSourceLookupName());
-////                            java2DBProcessorHelper.executeDDLStatement(sqlFile, getDataSourceLookupName());
-//                        } else {
-//                            logger.log(Level.WARNING, sqlFile.getAbsolutePath() + " does NOT exist");
-//                        }
-
-//                        Java2DBProcessorHelper java2DBProcessorHelper = new Java2DBProcessorHelper(this.getClass().getSimpleName());
-//                        File ddlDir = new File(serverContext.getInstallRoot(), "/lib/install/databases/");
-//                        logger.log(Level.INFO, "**[1]Executing DDL for: " + ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME);
-//                        java2DBProcessorHelper.executeDDLStatement(
-//                                ddlDir.getCanonicalPath() + CREATE_TABLE_DDL_NAME, getDataSourceLookupName());
-//                        initialized.set(true);
-//
-//                    } catch (Exception ex) {
-//                        logger.log(Level.FINE, "Exception during table creation ", ex);
-//                    }
                 }
             }
         }
@@ -157,8 +137,6 @@ public class BatchRuntimeHelper
 
         try {
             DatabaseConfigurationBean databaseConfigurationBean = new GlassFishDatabaseConfigurationBean();
-//            databaseConfigurationBean.setJndiName(getDataSourceLookupName());
-            databaseConfigurationBean.setSchema(getSchemaName());
             batchSPIManager.registerDatabaseConfigurationBean(databaseConfigurationBean);
         } catch (DatabaseAlreadyInitializedException daiEx) {
             daiEx.printStackTrace();
@@ -248,7 +226,8 @@ public class BatchRuntimeHelper
     }
 
     private String getSchemaName() {
-        return "APP";
+        String schemaName = batchRuntimeConfiguration.getJobRepositoryDatabaseSchemaName();
+        return schemaName != null && schemaName.trim().length() > 0 ? schemaName : "APP";
     }
 
     public String getExecutorServiceLookupName() {
@@ -257,10 +236,17 @@ public class BatchRuntimeHelper
 
     private class GlassFishDatabaseConfigurationBean
         extends DatabaseConfigurationBean {
+
         @Override
         public String getJndiName() {
             checkAndInitializeBatchRuntime();
             return getDataSourceLookupName();
+        }
+
+        @Override
+        public String getSchema() {
+            checkAndInitializeBatchRuntime();
+            return getSchemaName();
         }
     }
 
