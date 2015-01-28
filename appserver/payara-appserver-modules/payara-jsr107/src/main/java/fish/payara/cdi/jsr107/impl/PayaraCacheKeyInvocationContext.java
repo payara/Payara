@@ -20,6 +20,7 @@ package fish.payara.cdi.jsr107.impl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -219,7 +220,7 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
     @Override
     public CacheInvocationParameter[] getKeyParameters() {
         CacheInvocationParameter allParams[] = getAllParameters();
-        HashSet<CacheInvocationParameter> result = new HashSet<>();
+        LinkedList<CacheInvocationParameter> result = new LinkedList<>();
 
         // add only CacheKey elements
         for (CacheInvocationParameter result1 : allParams) {
