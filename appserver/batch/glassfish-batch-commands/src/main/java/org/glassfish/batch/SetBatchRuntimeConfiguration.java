@@ -104,10 +104,10 @@ public class SetBatchRuntimeConfiguration
     @Param(name = "schemaName", shortName = "n", optional = true)
     private String schemaName;
     
-    @Param(name = "tablePrefix", shortName = "tp", optional = true)
+    @Param(name = "tablePrefix", optional = true)
     private String tablePrefix;
     
-    @Param(name = "tableSuffix", shortName = "ts", optional = true)
+    @Param(name = "tableSuffix", optional = true)
     private String tableSuffix;   
 
     @Override
