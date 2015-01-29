@@ -65,7 +65,7 @@ felix_version="4.0.2,0-0"
 corba_version="4.0.0,0-4"
 jsf_version="2.2.7,0-0"
 grizzly_version="2.3.15,0-1"
-metro_version="2.3.1,0-419"
+metro_version="2.3.2,0-608"
 javahelp_version="2.0.2,0-1"
 shoal_version="1.6.18,0-0"
 

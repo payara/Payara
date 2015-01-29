@@ -219,7 +219,7 @@ public class RecoveryManager {
             try {
                 recoveryInProgress.post(); // BUGFIX (Ram Jeyaraman)
                 resyncComplete(false, false);
-            } catch (Throwable exc) {}
+            } catch (Throwable exc) {exc.printStackTrace();}
         }
     }
 
@@ -1138,6 +1138,7 @@ public class RecoveryManager {
         if (Thread.currentThread().getName().equals("JTS Resync Thread"/*#Frozen*/)) {
             if (uniqueRMSetReady != null) {
                 try {
+                	_logger.fine("dbXArecovery()");
                     uniqueRMSetReady.waitEvent();
                     xaResources = RecoveryManager.uniqueRMSet;
                 } catch (InterruptedException exc) {
