@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.distributions</groupId>
         <artifactId>distributions</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
+        <version>4.1.152-SNAPSHOT</version>
     </parent>
     <artifactId>minnow</artifactId>
     <name>Glassfish Minnow Distribution</name>
