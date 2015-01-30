@@ -51,8 +51,9 @@
     <name>GlassFish Project</name>
     
     <scm>
-        <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main</connection>
-        <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main</developerConnection>
+        <connection>scm:git:git@github.com:payara/payara.git</connection>
+	<url>scm:git:git@github.com:payara/payara.git</url>
+        <developerConnection>scm:git:git@github.com:payara/payara.git</developerConnection>
     </scm>
     
     <profiles>
@@ -128,6 +129,11 @@
                         <skip>true</skip>
                     </configuration>
                 </plugin>
+		<plugin>
+		    <groupId>org.apache.maven.plugins</groupId>
+		    <artifactId>maven-release-plugin</artifactId>
+		    <version>2.5.1</version>
+		</plugin>
             </plugins>
         </pluginManagement>
     </build>
