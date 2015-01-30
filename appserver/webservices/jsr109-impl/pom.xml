@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.webservices</groupId>
         <artifactId>webservices</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
+        <version>4.1.152-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>jsr109-impl</artifactId>

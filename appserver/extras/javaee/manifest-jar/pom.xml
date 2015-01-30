@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.extras</groupId>
         <artifactId>javaee-pom</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
+        <version>4.1.152-SNAPSHOT</version>
     </parent>
 
     <name>GlassFish javaee.jar </name>

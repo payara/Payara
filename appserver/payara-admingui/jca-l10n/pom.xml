@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.admingui</groupId>
         <artifactId>payara-admingui</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
+        <version>4.1.152-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>console-jca-plugin-l10n</artifactId>

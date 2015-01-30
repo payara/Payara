@@ -41,12 +41,12 @@
 
 -->
 <!--"Portions Copyright [2014] [C2B2 Consulting Limited]" -->
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main.admingui</groupId>
         <artifactId>payara-admingui</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
+        <version>4.1.152-SNAPSHOT</version>
     </parent>
 
     <artifactId>dist-fragment</artifactId>
@@ -74,8 +74,8 @@
                         <configuration>
                             <tasks>
                                 <!-- extract admin gui war file into the final location -->
-                                <resolveArtifact artifactId="war" property="war"/>
-                                <unzip src="${war}" dest="target/classes/glassfish/lib/install/applications/__admingui"/>
+                                <resolveArtifact artifactId="war" property="war" />
+                                <unzip src="${war}" dest="target/classes/glassfish/lib/install/applications/__admingui" />
                             </tasks>
                         </configuration>
                         <goals>
