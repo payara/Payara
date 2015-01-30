@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.151-SNAPSHOT</version>
+        <version>4.1.151</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-parent</artifactId>
@@ -57,7 +57,8 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-    </scm>
+      <tag>payara-server-4.1.151</tag>
+  </scm>
     
     <properties>
         <jms-api.version>2.0</jms-api.version>
@@ -90,7 +91,7 @@
         <version_suffix>151</version_suffix>
         <major_version>4</major_version>
         <minor_version>1</minor_version>
-        <update_version></update_version>
+        <update_version />
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
         
         <javaee.major_version>7</javaee.major_version>
