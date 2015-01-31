@@ -51,7 +51,7 @@
     <artifactId>payara-minimal</artifactId>
     <name>Payara Minimal Distribution</name>
     <packaging>glassfish-distribution</packaging>
-    <description>This pom describes how to assemble the Payara Minimal (single server) Distribution</description>
+    <description>This pom describes how to assemble the Payara Minimal Distribution</description>
 
     <build>
         <plugins>
@@ -157,6 +157,13 @@
             <optional>true</optional>
         </dependency>
 	<dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>nucleus-cluster</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>hazelcast-package</artifactId>
             <version>${project.version}</version>

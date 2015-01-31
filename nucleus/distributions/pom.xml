@@ -81,12 +81,15 @@
         <stage.dir>${project.build.directory}/${stage.dir.name}</stage.dir>
         <temp.dir>${project.build.directory}/dependency</temp.dir>
         <include.group.ids>org.glassfish.main.packager</include.group.ids>
-        <create-domain.args>--user admin create-domain --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-domain.args>
+        <create-domain.args>--user admin create-domain --nopassword --savelogin=true --checkports=false --portbase=5000 --keytooloptions CN=localhost domain1</create-domain.args>
     </properties>
 
     <modules>
+<!--
+        Forget the other distributions
 	<module>atomic</module>
         <module>nucleus</module>
+-->        
         <module>payara-minimal</module>
     </modules>
 
