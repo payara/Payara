@@ -241,7 +241,11 @@ public class ReplicationWebEventPersistentManager<T extends Storeable> extends R
         if (isDisableJreplica()) {
             return null;
         }
-        HACookieInfo cookieInfo = predictor.makeCookie(gmsAdapterService.getGMSAdapter().getClusterName(), sessionId, oldJreplicaValue);
+        String gmsClusterName = "";
+        if (gmsAdapterService.isGmsEnabled()) {
+            gmsClusterName = gmsAdapterService.getGMSAdapter().getClusterName();
+        }
+        HACookieInfo cookieInfo = predictor.makeCookie(gmsClusterName, sessionId, oldJreplicaValue);
         HACookieManager.setCurrrent(cookieInfo);
         return cookieInfo.getNewReplicaCookie();
     }
