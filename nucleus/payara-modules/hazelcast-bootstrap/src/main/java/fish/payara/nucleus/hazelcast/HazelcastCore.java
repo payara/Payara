@@ -176,13 +176,9 @@ public class HazelcastCore implements EventListener {
 
     private void bootstrapHazelcast() {
         Config config = buildConfiguration();
-        // hack to prevent Hazelcast barfing on multiple classloaders for portable hooks during boot
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        Thread.currentThread().setContextClassLoader(Hazelcast.class.getClassLoader());
         theInstance = Hazelcast.newHazelcastInstance(config);
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, context.getInstanceName());
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
-        Thread.currentThread().setContextClassLoader(tccl);
     }
 
     private void bindToJNDI() {
