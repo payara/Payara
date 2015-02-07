@@ -417,12 +417,12 @@ public class AMXConfigImpl extends AMXImplBase
         /**
             Convert incoming attributes to HK2 requirements.
          */
-            List<ConfigSupport.AttributeChanges>
+            List<AttributeChanges>
         toAttributeChanges(final Map<String, Object> values)
         {
             if ( values == null ) return null;
             
-            final List<ConfigSupport.AttributeChanges> changes = ListUtil.newList();
+            final List<AttributeChanges> changes = ListUtil.newList();
             for (final String xmlName : mAttrs.keySet() )
             {
                 final Object value = mAttrs.get(xmlName);
@@ -728,7 +728,7 @@ public class AMXConfigImpl extends AMXImplBase
     /**
     Callback to create sub-elements (recursively) on a newly created child element.
      */
-    private final class SubElementsCallback implements ConfigSupport.TransactionCallBack<WriteableView>
+    private final class SubElementsCallback implements TransactionCallBack<WriteableView>
     {
         private final List<CreateParams> mSubs;
 

@@ -49,6 +49,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.jvnet.hk2.config.AttributeChanges;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -120,7 +121,7 @@ public class DirectCreationTest extends ConfigPersistence {
 
         support.createAndSet(serviceBean, DasConfig.class, (List) null);
 
-        List<ConfigSupport.AttributeChanges> profilerChanges = new ArrayList<ConfigSupport.AttributeChanges>();
+        List<AttributeChanges> profilerChanges = new ArrayList<AttributeChanges>();
         String[] values = { "-Xmx512m", "-RFtrq", "-Xmw24" };
         ConfigSupport.MultipleAttributeChanges multipleChanges = new ConfigSupport.MultipleAttributeChanges("jvm-options", values );
         String[] values1 = { "profile" };
