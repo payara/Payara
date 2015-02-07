@@ -49,6 +49,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import static org.junit.Assert.*;
 import org.junit.Test;
+import org.jvnet.hk2.config.AttributeChanges;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.ConfigSupport;

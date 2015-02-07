@@ -46,6 +46,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.TransactionCallBack;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.WriteableView;
 
