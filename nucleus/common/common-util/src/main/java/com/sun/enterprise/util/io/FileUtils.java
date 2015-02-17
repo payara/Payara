@@ -158,7 +158,7 @@ public class FileUtils  {
             return files;
         }
         catch(Exception e) {
-            // fall through
+        	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
 
         return new File[0];
@@ -172,7 +172,7 @@ public class FileUtils  {
             return files;
         }
         catch(Exception e) {
-            // fall through
+        	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
 
         return new File[0];
@@ -186,7 +186,7 @@ public class FileUtils  {
             return files;
         }
         catch(Exception e) {
-            // fall through
+        	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
         }
 
         return new File[0];
@@ -769,6 +769,7 @@ public class FileUtils  {
                 try {
                     Thread.sleep(FILE_OPERATION_SLEEP_DELAY_MS);
                 } catch (InterruptedException ex) {
+                	_utillogger.log(Level.SEVERE, "Thread Interrupted Exception", ex);
                 }
                 System.gc();
                 work.run();
@@ -1147,7 +1148,9 @@ public class FileUtils  {
                 if (file != null)
                     file.close();
             }
-            catch(Exception e){}
+            catch(Exception e){
+            	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
+            }
         }
     }
     public static void appendText(String fileName, StringBuffer buffer)
@@ -1187,7 +1190,10 @@ public class FileUtils  {
             try {
                 bf.close();
             }
-            catch (Exception e) {}
+            catch (Exception e) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);}
+            finally{
+            	 bf.close();
+            }
         }
         return ( sb.toString() );
     }
@@ -1228,17 +1234,24 @@ public class FileUtils  {
             if (os != null)
                 try {
                     os.close();
-                } catch (IOException ex) {}
-
+                } catch (IOException ex) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
+                finally{
+                	os.close();
+                }
             if (bis != null)
                 try {
                     bis.close();
-                } catch (IOException ex) {}
-
+                } catch (IOException ex) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
+                finally{
+                	bis.close();
+                }
             if (is != null)
                 try {
                     is.close();
-                } catch (IOException ex) {}
+                } catch (IOException ex) {_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);}
+            finally{
+            		is.close();
+            }
         }
     }
 
@@ -1263,7 +1276,7 @@ public class FileUtils  {
                     writer.close();
                 }
                 catch(Exception e) {
-                    //ignore
+                	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, e);
                 }
                 f.setReadable(true);
                 f.setWritable(true);
@@ -1289,7 +1302,7 @@ public class FileUtils  {
                 return matches;
         }
         catch (Exception e) {
-            // fall through
+        	_utillogger.log(Level.SEVERE,"Exception while matching regular expression", e);
         }
         return new File[0];
     }
@@ -1336,7 +1349,13 @@ public class FileUtils  {
                     is.close();
                 }
                 catch (Exception ex) {
-                    // ignore...
+                	_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, ex);
+                }finally{
+                	   try {
+						is.close();
+					} catch (IOException io) {
+						_utillogger.log(Level.SEVERE, CULoggerInfo.exceptionIO, io);
+					}
                 }
             return null;
         }
