@@ -40,13 +40,22 @@
 // Portions Copyright [2014] [C2B2 Consulting Limited] 
 package org.glassfish.batch;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+
+import fish.payara.jbatch.persistence.rdbms.DB2PersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.JBatchJDBCPersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.MySqlPersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.OraclePersistenceManager;
+import fish.payara.jbatch.persistence.rdbms.PostgresPersistenceManager;
+
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
+import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.batch.spi.impl.GlassFishBatchValidationException;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -59,7 +68,13 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
+
 import java.beans.PropertyVetoException;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -109,6 +124,8 @@ public class SetBatchRuntimeConfiguration
     
     @Param(name = "tableSuffix", optional = true)
     private String tableSuffix;   
+    
+    public static final int MAX_TABLE_LENGTH=26;
 
     @Override
     public void execute(final AdminCommandContext context) {
@@ -135,6 +152,8 @@ public class SetBatchRuntimeConfiguration
                     public Object run(final BatchRuntimeConfiguration batchRuntimeConfigurationProxy)
                             throws PropertyVetoException, TransactionFailure {
                         boolean encounteredError = false;
+                        int tableprefixlength=0;
+                        int tablesuffixlength=0;
                         if (dataSourceLookupName != null) {
                             try {
                                 validateDataSourceLookupName(context, target, dataSourceLookupName);
@@ -164,14 +183,25 @@ public class SetBatchRuntimeConfiguration
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         }
                         
+                        
                         if (tablePrefix != null && !encounteredError) {
+                        	tableprefixlength= tablePrefix.length();
                             batchRuntimeConfigurationProxy.setTablePrefix(tablePrefix);
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         }  
                         
                         if (tableSuffix != null && !encounteredError) {
+                        	tablesuffixlength= tableSuffix.length();
                             batchRuntimeConfigurationProxy.setTableSuffix(tableSuffix);
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        }
+                        if(getDataSourceType(dataSourceLookupName)){
+                        	if(tablesuffixlength + tableprefixlength + MAX_TABLE_LENGTH > 30 ){
+                        		actionReport.setMessage("The table name cannot be greater than 30 characters in Oracle, please amend the table prefix or suffix size "); 
+                        		actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                        		throw new GlassFishBatchValidationException("The table name cannot be greater than 30 characters in Oracle, please amend the table prefix or suffix size ");
+                  
+                        	}
                         }
                         return null;
                     }
@@ -244,5 +274,42 @@ public class SetBatchRuntimeConfiguration
             throw new GlassFishBatchValidationException("Exception during validation: ", ex);
         }
     }
+    
+    private boolean getDataSourceType(String datasource){
+    	boolean result=false;
+    	try{
+    		InitialContext ctx = new InitialContext();
+    		Object object = ctx.lookup(datasource);
+    		
+        
 
+    		if (object instanceof DataSource) {
+    			Connection conn = null;
+    			try {
+    				DataSource ds = DataSource.class.cast(object);
+    				conn = ds.getConnection();
+    				String database = conn.getMetaData().getDatabaseProductName();
+                
+    					if (database.contains("Oracle")) {
+    						result = true;
+    					} 
+    			} catch (SQLException ex) {
+    					throw new GlassFishBatchValidationException("Exception during validation: ", ex);
+    			}finally {
+    				if (conn != null) {
+    						try {
+    							conn.close();
+    						} catch (SQLException ex) {
+    							throw new GlassFishBatchValidationException("Failed to close connection: ", ex);
+    						}
+    				}
+    			}
+    		}
+        }catch (NamingException ex) {
+       	 	throw new GlassFishBatchValidationException("Exception during validation: ", ex);
+        } 
+        
+        return result;
+       
+    }
 }
