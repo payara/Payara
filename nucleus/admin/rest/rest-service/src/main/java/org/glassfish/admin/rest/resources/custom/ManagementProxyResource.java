@@ -62,7 +62,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 /**
  * @author Mitesh Meswani
  */
-@Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
 @Path("domain/proxy/{path:.*}")
 public class ManagementProxyResource {
     @Context
@@ -87,7 +87,7 @@ public class ManagementProxyResource {
 
     private static class ManagementProxyImpl extends ProxyImpl {
         private static int TARGET_INSTANCE_NAME_PATH_INDEX = 2; //pathSegments == { "domain", "proxy", "instanceName", ....}
-        
+
         @Override
         public UriBuilder constructTargetURLPath(UriInfo sourceUriInfo, URL responseURLReceivedFromTarget) {
             return sourceUriInfo.getBaseUriBuilder().replacePath(responseURLReceivedFromTarget.getFile());
@@ -99,7 +99,7 @@ public class ManagementProxyResource {
             // The forwardURI constructed is of the form /mangement/domain/forwardSegment1/forwardSegment2/....
             List<PathSegment> sourcePathSegments = sourceUriInfo.getPathSegments();
             List<PathSegment> forwardPathSegmentsHead =  sourcePathSegments.subList(0, TARGET_INSTANCE_NAME_PATH_INDEX - 1); //path that precedes proxy/<instancenName>
-            List<PathSegment> forwardPathSegmentsTail =  sourcePathSegments.subList(TARGET_INSTANCE_NAME_PATH_INDEX + 1, sourcePathSegments.size()); //path that follows <instanceName>   
+            List<PathSegment> forwardPathSegmentsTail =  sourcePathSegments.subList(TARGET_INSTANCE_NAME_PATH_INDEX + 1, sourcePathSegments.size()); //path that follows <instanceName>
             UriBuilder forwardUriBuilder = sourceUriInfo.getBaseUriBuilder(); // Gives /management/domain
             for (PathSegment pathSegment : forwardPathSegmentsHead) { //append domain
                 forwardUriBuilder.segment(pathSegment.getPath());

@@ -67,22 +67,22 @@ public class TemplateCommandGetResource extends TemplateExecCommand {
 
     @GET
     @Produces({
-        "text/html;qs=2",
-        MediaType.APPLICATION_JSON,
-        MediaType.APPLICATION_XML,
-        MediaType.APPLICATION_FORM_URLENCODED})
+        "text/html",
+        MediaType.APPLICATION_JSON+";qs=0.5",
+        MediaType.APPLICATION_XML+";qs=0.5",
+        MediaType.APPLICATION_FORM_URLENCODED+";qs=0.5"})
     public Response processGetLegacyFormat() {
         return executeCommandLegacyFormat(prepareParameters());
     }
 
     @GET
-    @Produces(Constants.MEDIA_TYPE_JSON)
+    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
     public CommandResult processGet() {
         return executeCommand(prepareParameters());
     }
 
     @GET
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
     public Response processSseGet() {
         return executeCommandAsSse(prepareParameters());
     }

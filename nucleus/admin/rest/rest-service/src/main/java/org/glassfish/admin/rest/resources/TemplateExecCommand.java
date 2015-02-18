@@ -116,9 +116,9 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
 
     @OPTIONS
     @Produces({
-            MediaType.APPLICATION_JSON,
-            "text/html;qs=2",
-            MediaType.APPLICATION_XML})
+            MediaType.APPLICATION_JSON+";qs=0.5",
+            "text/html",
+            MediaType.APPLICATION_XML+";qs=0.5"})
     public ActionReportResult optionsLegacyFormat() {
         RestActionReporter ar = new RestActionReporter();
         ar.setExtraProperties(new Properties());
@@ -139,7 +139,7 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
     }
 
     @OPTIONS
-    @Produces(Constants.MEDIA_TYPE_JSON)
+    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
     public String options() throws JSONException {
         try {
             return new RestResourceMetadata(this).toJson().toString(Util.getFormattingIndentLevel());

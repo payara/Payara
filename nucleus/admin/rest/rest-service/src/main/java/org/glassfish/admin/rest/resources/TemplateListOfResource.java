@@ -93,16 +93,16 @@ public abstract class TemplateListOfResource extends AbstractResource {
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateListOfResource.class);
 
     @GET
-    @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
     public Response get(@QueryParam("expandLevel") @DefaultValue("1") int expandLevel) {
         return Response.ok().entity(buildActionReportResult()).build();
     }
 
     @POST
     //create
-    @Produces({"text/html;qs=2",
-        MediaType.APPLICATION_JSON,
-        MediaType.APPLICATION_XML})
+    @Produces({"text/html",
+        MediaType.APPLICATION_JSON+";qs=0.5",
+        MediaType.APPLICATION_XML+";qs=0.5"})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
     public Response createResource(HashMap<String, String> data) {
@@ -165,7 +165,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
     }
 
     @OPTIONS
-    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_XML})
+    @Produces({MediaType.APPLICATION_JSON+";qs=0.5", MediaType.TEXT_HTML+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
     public Response options() {
         return Response.ok().entity(buildActionReportResult()).build();
     }

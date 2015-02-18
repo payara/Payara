@@ -82,7 +82,7 @@ import static org.glassfish.admin.rest.provider.ProviderUtil.*;
  * @author Mitesh Meswani
  */
 @Path("/")
-@Produces({"text/html;qs=2",MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
+@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5", MediaType.APPLICATION_FORM_URLENCODED+";qs=0.5"})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 public class MonitoringResource {
 
@@ -94,7 +94,7 @@ public class MonitoringResource {
 
     @GET
     @Path("domain{path:.*}")
-    @Produces({MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML,"text/html;qs=2"})
+    @Produces({MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5", "text/html"})
     public Response getChildNodes(@PathParam("path")List<PathSegment> pathSegments) {
         Response.ResponseBuilder responseBuilder = Response.status(OK);
         RestActionReporter ar = new RestActionReporter();
@@ -128,7 +128,7 @@ public class MonitoringResource {
                         pathInMonitoringRegistry.append(pathSegment.getPath().replaceAll("\\.", "\\\\.")); // Need to escape '.' before passing it to monitoring code
                 }
 
-                TreeNode resultNode = pathInMonitoringRegistry.length() > 0 && rootNode != null ? 
+                TreeNode resultNode = pathInMonitoringRegistry.length() > 0 && rootNode != null ?
                         rootNode.getNode(pathInMonitoringRegistry.toString()) : rootNode;
                 if (resultNode != null) {
                     List<TreeNode> list = new ArrayList<TreeNode>();
