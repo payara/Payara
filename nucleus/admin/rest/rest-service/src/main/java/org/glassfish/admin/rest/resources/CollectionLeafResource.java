@@ -79,7 +79,7 @@ import static org.glassfish.admin.rest.utils.Util.upperCaseFirstLetter;
 /**
  * @author Rajeshwar Patil
  */
-@Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
+@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5", MediaType.APPLICATION_FORM_URLENCODED+";qs=0.5"})
 public abstract class CollectionLeafResource extends AbstractResource {
     protected List<String> entity;
     protected Dom parent;
@@ -196,7 +196,7 @@ public abstract class CollectionLeafResource extends AbstractResource {
     }
 
     @OPTIONS
-    @Produces({MediaType.APPLICATION_JSON, "text/html;qs=2", MediaType.APPLICATION_XML})
+    @Produces({MediaType.APPLICATION_JSON+";qs=0.5", "text/html", MediaType.APPLICATION_XML+";qs=0.5"})
     public Response options() {
         return Response.ok(buildActionReportResult()).build();
     }
@@ -374,10 +374,10 @@ public abstract class CollectionLeafResource extends AbstractResource {
             }
         }
 
-        runCommand(getDeleteCommand(), processData(existing), 
-                "rest.resource.delete.message", 
-                "\"{0}\" deleted successfully.", 
-                "rest.resource.delete.forbidden", 
+        runCommand(getDeleteCommand(), processData(existing),
+                "rest.resource.delete.message",
+                "\"{0}\" deleted successfully.",
+                "rest.resource.delete.forbidden",
                 "DELETE on \"{0}\" is forbidden.");
     }
 

@@ -75,7 +75,7 @@ import static org.glassfish.admin.rest.resources.TemplateExecCommand.localString
  * that contains the logic for mapped commands RS Resources
  *
  */
-@Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
 public class TemplateCommandPostResource extends TemplateExecCommand {
 
     public TemplateCommandPostResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName, boolean isLinkedToParent) {
@@ -99,7 +99,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(Constants.MEDIA_TYPE_JSON)
-    @Produces(Constants.MEDIA_TYPE_JSON)
+    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
     public CommandResult processPost(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -136,7 +136,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
     public Response processSsePost(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -150,13 +150,13 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
     public Response ssePost(FormDataMultiPart formData) {
         return processSsePost(createDataBasedOnForm(formData));
     }
 
     @POST
-    @Produces(SseFeature.SERVER_SENT_EVENTS)
+    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
     public Response processSsePost() {
         try {
             return processSsePost(new ParameterMap());
@@ -173,7 +173,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     }
 
     @GET
-    @Produces(Constants.MEDIA_TYPE_JSON)
+    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
     public String get() {
         try {
             return options();

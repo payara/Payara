@@ -92,7 +92,7 @@ public class PropertiesBagResource extends AbstractResource {
     }
 
     @GET
-    @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
     public Object get() {
         List<Dom> entities = getEntity();
         if (entities == null) {
@@ -125,21 +125,21 @@ public class PropertiesBagResource extends AbstractResource {
 
     @POST  // create
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
     public ActionReportResult createProperties(List<Map<String, String>> data) {
         return clearThenSaveProperties(data);
     }
 
     @PUT  // create
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({"text/html;qs=2", MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
     public ActionReportResult replaceProperties(List<Map<String, String>> data) {
         return clearThenSaveProperties(data);
     }
 
     @DELETE
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED, MediaType.APPLICATION_OCTET_STREAM})
-    @Produces({"text/html;qs=2",MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    @Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
     public Response delete() {
         try {
             Map<String, Property> existing = getExistingProperties();
