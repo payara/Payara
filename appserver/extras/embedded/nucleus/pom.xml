@@ -51,6 +51,8 @@
         <version>4.1.152-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
+
+    <groupId>fish.payara.extras</groupId>
     <artifactId>payara-embedded-nucleus</artifactId>
     <name>Embedded Payara Nucleus</name>
 
