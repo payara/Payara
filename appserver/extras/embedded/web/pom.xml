@@ -51,9 +51,9 @@
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>glassfish-embedded-web</artifactId>
+  <artifactId>payara-embedded-web</artifactId>
   <version>4.1.152-SNAPSHOT</version>
-  <name>Embedded GlassFish Web</name>
+  <name>Embedded Payara Web</name>
       <packaging>jar</packaging>
 
   <build>
