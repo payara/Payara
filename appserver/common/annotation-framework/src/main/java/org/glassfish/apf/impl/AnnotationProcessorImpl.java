@@ -284,21 +284,23 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
         HandlerProcessingResultImpl result= new HandlerProcessingResultImpl();
 
         try {
-        for (Annotation annotation : element.getAnnotations()) {
-            // initialize the result...
-            AnnotationInfo subElement = new AnnotationInfo(ctx, element, annotation, getTopElementType());
-            if (!result.processedAnnotations().containsKey(annotation.annotationType())) {
-                process(ctx, subElement, result);
-            } else {
-                if (AnnotationUtils.shouldLog("annotation")) { 
-                    logger.finer("Annotation " + annotation.annotationType() + " already processed");
-                }
-            }       
-        }
-        } catch ( Exception tnpe) {
-            logger.info("Got Exception when scanning " + element + " for annotations " + tnpe.toString() + " ignoring Annotations");
-            logger.log(Level.FINE,"Exception caught and ignored when scanning", tnpe);
-        } 
+            for (Annotation annotation : element.getAnnotations()) {
+                // initialize the result...
+                AnnotationInfo subElement = new AnnotationInfo(ctx, element, annotation, getTopElementType());
+                if (!result.processedAnnotations().containsKey(annotation.annotationType())) {
+                    process(ctx, subElement, result);
+                } else {
+                    if (AnnotationUtils.shouldLog("annotation")) { 
+                        logger.finer("Annotation " + annotation.annotationType() + " already processed");
+                    }
+                }       
+            }
+	} catch (ArrayStoreException e) {
+	    logger.info("Exception " + e.toString()
+		    + " encountered while processing annotaton for element "
+		    + element + ". Message is: " + e.getMessage()
+		    + ". Ignoring annotations and proceeding.");
+	}
         return result;
     }
     
