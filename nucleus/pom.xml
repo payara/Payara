@@ -106,6 +106,17 @@
 
     <repositories>
         <repository>
+            <id>jvnet-nexus-releases</id>
+            <name>Java.net Releases Repositories</name>
+            <url>https://maven.java.net/content/repositories/releases/</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <id>jvnet-nexus-promoted</id>
             <name>Java.net Promoted Repositories</name>
             <url>https://maven.java.net/content/repositories/promoted/</url>
