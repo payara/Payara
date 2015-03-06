@@ -281,7 +281,7 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
     {
     
         HandlerProcessingResultImpl result= new HandlerProcessingResultImpl();
-        
+        try{
         for (Annotation annotation : element.getAnnotations()) {
             // initialize the result...
             AnnotationInfo subElement = new AnnotationInfo(ctx, element, annotation, getTopElementType());
@@ -292,7 +292,13 @@ public class AnnotationProcessorImpl implements AnnotationProcessor {
                     logger.finer("Annotation " + annotation.annotationType() + " already processed");
                 }
             }       
-        }
+        } 
+	} catch (ArrayStoreException e) {
+	    logger.info("Exception " + e.toString()
+		    + " encountered while processing annotaton for element "
+		    + element + ". Message is: " + e.getMessage()
+		    + ". Ignoring annotations and proceeding.");
+	}
         return result;
     }
     
