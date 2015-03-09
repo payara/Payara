@@ -132,69 +132,78 @@ public class InstalledLibrariesResolver {
         initializeInstalledLibRegistryForApplibs(libDir);
     }
 
-    private static void initializeInstalledLibRegistryForExtDirs() {
-        String ext_dirStr = System.getProperty("java.ext.dirs");
-        deplLogger.fine("ext-Dir-Str : " + ext_dirStr);
+	private static void initializeInstalledLibRegistryForExtDirs() {
+		String ext_dirStr = System.getProperty("java.ext.dirs");
+		// GLASSFISH-21317 bug fix.Null checking as JDK 9 will not have system prop java.ext.dirs
+		if (ext_dirStr != null) {
+			deplLogger.fine("ext-Dir-Str : " + ext_dirStr);
 
-        Vector extDirs = new Vector();
-        StringTokenizer st = new StringTokenizer(ext_dirStr, File.pathSeparator);
-        while (st.hasMoreTokens()) {
-            String next = st.nextToken();
-            deplLogger.log(Level.FINE,"string tokens..." + next);
-            extDirs.addElement(next);
-        }
+			Vector extDirs = new Vector();
+			StringTokenizer st = new StringTokenizer(ext_dirStr,
+					File.pathSeparator);
+			while (st.hasMoreTokens()) {
+				String next = st.nextToken();
+				deplLogger.log(Level.FINE, "string tokens..." + next);
+				extDirs.addElement(next);
+			}
 
-        for (int v = 0; v < extDirs.size(); v++) {
+			for (int v = 0; v < extDirs.size(); v++) {
 
-            File extDir = new File((String)extDirs.elementAt(v));
+				File extDir = new File((String) extDirs.elementAt(v));
 
-            if (deplLogger.isLoggable(Level.FINE)) {
-                deplLogger.log(Level.FINE,"extension dir..." + extDir);
-            }
+				if (deplLogger.isLoggable(Level.FINE)) {
+					deplLogger.log(Level.FINE, "extension dir..." + extDir);
+				}
 
-            /*
-            *Records the files that are legitimate JARs.
-            */
-            ArrayList<File> validExtDirLibFiles = new ArrayList<File>();
+				/*
+				 * Records the files that are legitimate JARs.
+				 */
+				ArrayList<File> validExtDirLibFiles = new ArrayList<File>();
 
-            File[] installedLibraries = extDir.listFiles();
-            if (installedLibraries != null) {
-                try {
-                    Map<Extension, String> installedLibrariesList =
-                            getInstalledLibraries(extDir.getAbsolutePath(), extDirJars, validExtDirLibFiles);
-                    extDirsLibsStore.putAll(installedLibrariesList);
+				File[] installedLibraries = extDir.listFiles();
+				if (installedLibraries != null) {
+					try {
+						Map<Extension, String> installedLibrariesList = getInstalledLibraries(
+								extDir.getAbsolutePath(), extDirJars,
+								validExtDirLibFiles);
+						extDirsLibsStore.putAll(installedLibrariesList);
 
-                    for (File file : validExtDirLibFiles) {
-                        JarFile jarFile = null;
-                        try {
-                            jarFile = new JarFile(file);
-                            Manifest m = jarFile.getManifest();
-                            if (m!=null) {
-                                try{
-                                    getInstalledLibraries(file.getAbsolutePath(), m, true, extDirsLibsStore);
-                                }catch(MissingResourceException e){
-                                    deplLogger.log(Level.WARNING,
-                                                   PACKAGE_NOT_FOUND,
-                                                   new Object[] {e.getClass(), file.getAbsolutePath()});
-                                }
-                            }
-                        } catch (IOException ioe) {
-                            deplLogger.log(Level.WARNING,
-                                           INVALID_ZIP,
-                                           new Object[] {file.getAbsolutePath(), ioe.getMessage()});
-                        }finally {
-                            if (jarFile!=null)
-                                jarFile.close();
-                        }
-                    }
-                } catch (IOException e) {
-                    deplLogger.log(Level.WARNING,
-                                   EXCEPTION_OCCURRED,
-                                   new Object[] {e.getMessage()});
-                }
-            }
-        }
-    }
+						for (File file : validExtDirLibFiles) {
+							JarFile jarFile = null;
+							try {
+								jarFile = new JarFile(file);
+								Manifest m = jarFile.getManifest();
+								if (m != null) {
+									try {
+										getInstalledLibraries(
+												file.getAbsolutePath(), m,
+												true, extDirsLibsStore);
+									} catch (MissingResourceException e) {
+										deplLogger
+												.log(Level.WARNING,
+														PACKAGE_NOT_FOUND,
+														new Object[] {
+																e.getClass(),
+																file.getAbsolutePath() });
+									}
+								}
+							} catch (IOException ioe) {
+								deplLogger.log(Level.WARNING, INVALID_ZIP,
+										new Object[] { file.getAbsolutePath(),
+												ioe.getMessage() });
+							} finally {
+								if (jarFile != null)
+									jarFile.close();
+							}
+						}
+					} catch (IOException e) {
+						deplLogger.log(Level.WARNING, EXCEPTION_OCCURRED,
+								new Object[] { e.getMessage() });
+					}
+				}
+			}
+		}
+	}
 
     /**
      * Adds all the jar files in all of the ext dirs into a single string
