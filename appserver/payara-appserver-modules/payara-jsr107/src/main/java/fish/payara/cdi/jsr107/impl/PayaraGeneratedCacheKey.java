@@ -28,6 +28,8 @@ import javax.cache.annotation.GeneratedCacheKey;
  */
 public class PayaraGeneratedCacheKey implements GeneratedCacheKey, Serializable {
     
+    private static final long serialVersionUID = -3982698381435289430L;
+    
     private final int hashCode;
     private final Object values[];
     

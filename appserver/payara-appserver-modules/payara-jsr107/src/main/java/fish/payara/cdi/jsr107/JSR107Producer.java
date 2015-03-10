@@ -41,12 +41,14 @@ public class JSR107Producer {
     @Dependent
     @Produces
     CachingProvider getCachingProvider() {
+        // TBD look for scoped Caching Providers in JNDI
         return hazelcastCore.getCachingProvider();
     }
     
     @Dependent
     @Produces
     CacheManager getCacheManager(InjectionPoint point) {
+        // TBD look for scoped caching providers in JNDI
         return hazelcastCore.getCachingProvider().getCacheManager();
     }
     
