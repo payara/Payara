@@ -19,7 +19,10 @@ package fish.payara.cdi.jsr107.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
@@ -27,11 +30,15 @@ import java.io.Serializable;
  * Packages up an object into a Serializable value
  * @author steve
  */
-public class PayaraValueHolder implements Serializable {
+public class PayaraValueHolder implements Externalizable {
    
     private static final long serialVersionUID = -4600378937394648370L;
     
     private byte data[];
+    
+    public PayaraValueHolder() {
+        
+    }
     
     public PayaraValueHolder(Object value) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -50,5 +57,20 @@ public class PayaraValueHolder implements Serializable {
         bais.close();
         return result;
     }
+
+    @Override
+    public void writeExternal(ObjectOutput out) throws IOException {
+        out.writeInt(data.length);
+        out.write(data,0,data.length);
+    }
+
+    @Override
+    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
+        int length = in.readInt();
+        data = new byte[length];
+        in.read(data, 0, length);
+    }
+    
+    
     
 }
