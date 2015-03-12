@@ -18,6 +18,7 @@
 package fish.payara.cdi.jsr107;
 
 import fish.payara.cdi.jsr107.impl.PayaraCacheKeyInvocationContext;
+import fish.payara.cdi.jsr107.impl.PayaraValueHolder;
 import javax.annotation.Priority;
 import javax.cache.Cache;
 import javax.cache.annotation.CacheKeyGenerator;
@@ -66,14 +67,14 @@ public class CachePutInterceptor extends AbstractJSR107Interceptor {
         return result;
     }
 
-    private void doPut(PayaraCacheKeyInvocationContext<CachePut> pctx) {
+    private void doPut(PayaraCacheKeyInvocationContext<CachePut> pctx) throws Throwable{
         CacheKeyGenerator generator = pctx.getGenerator();
         CacheResolverFactory resolverF = pctx.getFactory();
         CacheResolver cacheResolver = resolverF.getCacheResolver(pctx);
         Cache cache = cacheResolver.resolveCache(pctx);
         GeneratedCacheKey key = generator.generateCacheKey(pctx);
         Object value = pctx.getValueParameter().getValue();
-        cache.put(key, value);
+        cache.put(key, new PayaraValueHolder(value));
     }
 
 }

@@ -37,6 +37,7 @@ public class PayaraCacheResolverFactory implements CacheResolverFactory, CacheRe
     private CacheManager cacheManager;
 
     public PayaraCacheResolverFactory() {
+        // TBD resolve scoped Caching Providers via JNDI eg. java:comp and java:app
         cacheManager = HazelcastCore.getCore().getCachingProvider().getCacheManager();
     }
     
