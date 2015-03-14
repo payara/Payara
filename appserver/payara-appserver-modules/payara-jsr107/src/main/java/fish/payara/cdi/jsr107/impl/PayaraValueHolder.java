@@ -68,7 +68,7 @@ public class PayaraValueHolder implements Externalizable {
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         int length = in.readInt();
         data = new byte[length];
-        in.read(data, 0, length);
+        in.readFully(data, 0, length);
     }
     
     
