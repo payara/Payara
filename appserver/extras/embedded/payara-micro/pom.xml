@@ -138,6 +138,13 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>glassfish-jmx</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -151,7 +158,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
--->
+
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-management</artifactId>
@@ -159,6 +166,7 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+-->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common-web</artifactId>

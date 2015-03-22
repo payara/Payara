@@ -20,6 +20,7 @@ package fish.payara.micro;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -35,6 +36,7 @@ import org.glassfish.embeddable.GlassFishRuntime;
  */
 public class PayaraMicro {
     
+    private static Logger logger = Logger.getLogger(PayaraMicro.class.getName());
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
     private int httpPort = Integer.MIN_VALUE;
@@ -52,15 +54,17 @@ public class PayaraMicro {
     }
     
     public PayaraMicro() {
-        
+        addShutdownHook();        
     }
     
     public PayaraMicro(List<File> deployments) {
         this.deployments = deployments;
+        addShutdownHook();  
     }
 
     public PayaraMicro(String args[]) {
-       scanArgs(args);
+        scanArgs(args);
+        addShutdownHook();  
     }
 
     public String getClusterMulticastGroup() {
@@ -260,7 +264,22 @@ public class PayaraMicro {
                 }
             }
         }
-        System.out.println("Deployed " + deploymentCount + " wars");
+        logger.info("Deployed " + deploymentCount + " wars");
+    }
+    
+    private void addShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(
+                "GlassFish Shutdown Hook") {
+            public void run() {
+                try {
+                    if (gf != null) {
+                        gf.stop();
+                        gf.dispose();
+                    }
+                } catch (Exception ex) {
+                }
+            }
+        });
     }
     
 }
