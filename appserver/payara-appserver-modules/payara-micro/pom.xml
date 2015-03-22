@@ -7,10 +7,10 @@
         <version>4.1.152-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
-    <artifactId>payara-jsr107</artifactId>
+    <artifactId>payara-micro-core</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>Payara JSR107</name>
-    <description>Payara JSR107 Integration Module</description>
+    <name>Payara Micro Edition Core</name>
+    <description>Payara Micro Edition Modules</description>
     <developers>
         <developer>
             <id>smillidge</id>
@@ -25,15 +25,9 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.payara-modules</groupId>
-            <artifactId>hazelcast-bootstrap</artifactId>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>glassfish</artifactId>
             <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>
