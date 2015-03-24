@@ -264,79 +264,79 @@ public class HttpServiceStatsProvider implements PostConstruct {
     @ManagedAttribute(id="count200")
     @Description(COUNT_200_DESCRIPTION)
     public CountStatistic getCount200() {
-        return count200.getStatistic();
+        return count200;
     }
     
     @ManagedAttribute(id="count2xx")
     @Description(COUNT_2xx_DESCRIPTION)
     public CountStatistic getCount2xx() {
-        return count2xx.getStatistic();
+        return count2xx;
     }
     
     @ManagedAttribute(id="count302")
     @Description(COUNT_302_DESCRIPTION)
     public CountStatistic getCount302() {
-        return count302.getStatistic();
+        return count302;
     }
     
     @ManagedAttribute(id="count304")
     @Description(COUNT_304_DESCRIPTION)
     public CountStatistic getCount304() {
-        return count304.getStatistic();
+        return count304;
     }
 
     @ManagedAttribute(id="count3xx")
     @Description(COUNT_3xx_DESCRIPTION) 
     public CountStatistic getCount3xxt() {
-        return count3xx.getStatistic();
+        return count3xx;
     }
 
     @ManagedAttribute(id="count400")
     @Description(COUNT_400_DESCRIPTION)
     public CountStatistic getCount400() {
-        return count400.getStatistic();
+        return count400;
     }
 
     @ManagedAttribute(id="count401")
     @Description(COUNT_401_DESCRIPTION)
     public CountStatistic getCount401() {
-        return count401.getStatistic();
+        return count401;
     }
 
     @ManagedAttribute(id="count403")
     @Description(COUNT_403_DESCRIPTION)
     public CountStatistic getCount403() {
-        return count403.getStatistic();
+        return count403;
     }
 
     @ManagedAttribute(id="count404")
     @Description(COUNT_404_DESCRIPTION)
     public CountStatistic getCount404() {
-        return count404.getStatistic();
+        return count404;
     }
 
     @ManagedAttribute(id="count4xx")
     @Description(COUNT_4xx_DESCRIPTION)
     public CountStatistic getCount4xx() {
-        return count4xx.getStatistic();
+        return count4xx;
     }
 
     @ManagedAttribute(id="count503")
     @Description(COUNT_503_DESCRIPTION)
     public CountStatistic getCount503() {
-        return count503.getStatistic();
+        return count503;
     }
 
     @ManagedAttribute(id="count5xx")
     @Description(COUNT_5xx_DESCRIPTION)
     public CountStatistic getCount5xx() {
-        return this.count5xx.getStatistic();
+        return this.count5xx;
     }
 
     @ManagedAttribute(id="countother")
     @Description(COUNT_OTHER_DESCRIPTION)
     public CountStatistic getCountOther() {
-        return this.countOther.getStatistic();
+        return this.countOther;
     }
 
     @ProbeListener("glassfish:web:http-service:dataReceivedEvent")

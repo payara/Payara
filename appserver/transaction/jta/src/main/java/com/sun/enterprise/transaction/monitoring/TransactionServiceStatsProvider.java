@@ -100,26 +100,26 @@ public class TransactionServiceStatsProvider {
     @ManagedAttribute(id="activecount")
     @Description( "Provides the number of transactions that are currently active." )
     public CountStatistic getActiveCount() {
-        return activeCount.getStatistic();
+        return activeCount;
     }
 
     @ManagedAttribute(id="committedcount")
     @Description( "Provides the number of transactions that have been committed." )
     public CountStatistic getCommittedCount() {
-        return committedCount.getStatistic();
+        return committedCount;
     }
 
     @ManagedAttribute(id="rolledbackcount")
     @Description( "Provides the number of transactions that have been rolled back." )
     public CountStatistic getRolledbackCount() {
-        return rolledbackCount.getStatistic();
+        return rolledbackCount;
     }
     
     @ManagedAttribute(id="state")
     @Description( "Indicates if the transaction service has been frozen." )
     public StringStatistic getState() {
         state.setCurrent((isFrozen)? "True": "False");
-        return state.getStatistic();
+        return state;
     }
     
     @ManagedAttribute(id="activeids")
@@ -129,7 +129,7 @@ public class TransactionServiceStatsProvider {
         if (txMgr == null) {
             _logger.warning("transaction.monitor.tm_null");
             inflightTransactions.setCurrent("");
-            return inflightTransactions.getStatistic();
+            return inflightTransactions;
         }
 
         List aList = txMgr.getActiveTransactions();
@@ -183,7 +183,7 @@ public class TransactionServiceStatsProvider {
         _logger.fine("Prepared inflightTransactions text: \n" + strBuf);
 
         inflightTransactions.setCurrent(strBuf.toString());
-        return inflightTransactions.getStatistic();
+        return inflightTransactions;
     }
     
     @ProbeListener("glassfish:transaction:transaction-service:activated")

@@ -213,13 +213,13 @@ public abstract class EjbMonitoringStatsProvider {
     @ManagedAttribute(id="createcount")
     @Description( "Number of times EJB create method is called")
     public CountStatistic getCreateCount() {
-        return createStat.getStatistic();
+        return createStat;
     }
 
     @ManagedAttribute(id="removecount")
     @Description( "Number of times EJB remove method is called")
     public CountStatistic getRemoveCount() {
-        return removeStat.getStatistic();
+        return removeStat;
     }
 
     protected void log(String mname, String provider) {

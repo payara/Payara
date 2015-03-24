@@ -66,7 +66,7 @@ public class RealmStatsProvider {
     @ManagedAttribute
     @Description( "Security Realm Count" )
     public CountStatistic getRealmCount() {
-        return realmCount.getStatistic();
+        return realmCount;
     }
     
     @ProbeListener("glassfish:security:realm:realmAddedEvent")

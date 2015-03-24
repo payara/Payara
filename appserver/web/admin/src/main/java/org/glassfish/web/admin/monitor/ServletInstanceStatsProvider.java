@@ -135,7 +135,7 @@ public class ServletInstanceStatsProvider {
     @ManagedAttribute(id="errorcount")
     @Description(ERROR_COUNT_DESCRIPTION)
     public CountStatistic getErrorCount() {
-        return errorCount.getStatistic();
+        return errorCount;
     }
 
     @ManagedAttribute(id="maxtime")

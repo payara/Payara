@@ -66,7 +66,7 @@ public class MessageDrivenBeanStatsProvider extends EjbMonitoringStatsProvider {
     @ManagedAttribute(id="messagecount")
     @Description( "Number of messages received for a message-driven bean")
     public CountStatistic getCreateCount() {
-        return messageCount.getStatistic();
+        return messageCount;
     }
 
     @ProbeListener("glassfish:ejb:bean:messageDeliveredEvent")

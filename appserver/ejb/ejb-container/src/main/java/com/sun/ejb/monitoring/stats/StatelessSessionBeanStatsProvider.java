@@ -82,7 +82,7 @@ public class StatelessSessionBeanStatsProvider extends EjbMonitoringStatsProvide
     @Description( "Number of stateless session beans in MethodReady state")
     public RangeStatistic getMethodReadyCount() {
         methodReadyCount.setCurrent(delegate.getMethodReadyCount());
-        return methodReadyCount.getStatistic();
+        return methodReadyCount;
     }
 
 }
