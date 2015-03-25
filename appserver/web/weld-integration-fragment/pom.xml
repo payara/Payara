@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -86,6 +86,9 @@
                                 org.jboss.weld.util.collections,
                                 org.jboss.weld.annotated.slim
                                 org.jboss.weld.annotated.slim.backed
+
+                       added for weld 2.2.9.Final:
+                                org.jboss.weld.security
                        -->
                             <Export-Package>
                                 org.jboss.weld.proxy.util,
@@ -108,7 +111,8 @@
                                 org.jboss.classfilewriter.attributes,
                                 org.jboss.classfilewriter.code,
                                 org.jboss.classfilewriter.constpool,
-                                org.jboss.classfilewriter.util
+                                org.jboss.classfilewriter.util,
+                                org.jboss.weld.security
                             </Export-Package>
                             <Import-Package>org.glassfish.weld</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
