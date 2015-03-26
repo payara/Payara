@@ -17,9 +17,14 @@
  */
 package fish.payara.micro;
 
+import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
@@ -28,43 +33,43 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 
-
-
 /**
  * Main class for Bootstrapping Payara Micro Edition
+ *
  * @author steve
  */
 public class PayaraMicro {
-    
+
     private static Logger logger = Logger.getLogger(PayaraMicro.class.getName());
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
     private String instanceName;
+    private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
     private List<File> deployments;
     private GlassFish gf;
     private boolean noCluster = false;
-    
-    public static void main(String args[]) throws GlassFishException{
+
+    public static void main(String args[]) throws GlassFishException {
         PayaraMicro main = new PayaraMicro(args);
         main.bootStrap();
     }
-    
+
     public PayaraMicro() {
-        addShutdownHook();        
+        addShutdownHook();
     }
-    
+
     public PayaraMicro(List<File> deployments) {
         this.deployments = deployments;
-        addShutdownHook();  
+        addShutdownHook();
     }
 
     public PayaraMicro(String args[]) {
         scanArgs(args);
-        addShutdownHook();  
+        addShutdownHook();
     }
 
     public String getClusterMulticastGroup() {
@@ -135,53 +140,60 @@ public class PayaraMicro {
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
             if ("--port".equals(arg)) {
-                String httpPortS = args[i+1];
+                String httpPortS = args[i + 1];
                 try {
-                httpPort = Integer.parseInt(httpPortS);
+                    httpPort = Integer.parseInt(httpPortS);
                     if (httpPort < 1 || httpPort > 65535) {
                         throw new NumberFormatException("Not a valid tcp port");
                     }
-                }catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     System.err.println(httpPortS + " is not a valid http port number and will be ignored");
                 }
                 i++;
             } else if ("--sslPort".equals(arg)) {
-                String httpPortS = args[i+1];
+                String httpPortS = args[i + 1];
                 try {
-                sslPort = Integer.parseInt(httpPortS);
+                    sslPort = Integer.parseInt(httpPortS);
                     if (sslPort < 1 || sslPort > 65535) {
                         throw new NumberFormatException("Not a valid tcp port");
                     }
-                }catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     System.err.println(httpPortS + " is not a valid ssl port number and will be ignored");
                 }
-                i++;                
+                i++;
             } else if ("--mcAddress".equals(arg)) {
-                hzMulticastGroup = args[i+1];
+                hzMulticastGroup = args[i + 1];
                 i++;
             } else if ("--mcPort".equals(arg)) {
-                String httpPortS = args[i+1];
+                String httpPortS = args[i + 1];
                 try {
-                hzPort = Integer.parseInt(httpPortS);
+                    hzPort = Integer.parseInt(httpPortS);
                     if (hzPort < 1 || hzPort > 65535) {
                         throw new NumberFormatException("Not a valid tcp port");
                     }
-                }catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     System.err.println(httpPortS + " is not a valid multicast port number and will be ignored");
                 }
-                i++;                   
+                i++;
             } else if ("--name".equals(arg)) {
-                instanceName = args[i+1];
+                instanceName = args[i + 1];
                 i++;
             } else if (("--deploymentDir".equals(arg))) {
-                deploymentRoot = new File(args[i+1]);
+                deploymentRoot = new File(args[i + 1]);
                 if (!deploymentRoot.exists() || !deploymentRoot.isDirectory()) {
-                    System.err.println(args[i+1] + " is not a valid deployment directory and will be ignored");
+                    System.err.println(args[i + 1] + " is not a valid deployment directory and will be ignored");
                     deploymentRoot = null;
                 }
                 i++;
+            } else if (("--rootDir".equals(arg))) {
+                rootDir = new File(args[i + 1]);
+                if (!rootDir.exists() || !rootDir.isDirectory()) {
+                    System.err.println(args[i + 1] + " is not a valid root directory and will be ignored");
+                    rootDir = null;
+                }
+                i++;
             } else if ("--deploy".equals(arg)) {
-                File deployment = new File(args[i+1]);
+                File deployment = new File(args[i + 1]);
                 if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || !deployment.getAbsolutePath().endsWith(".war")) {
                     System.err.println(deployment.getAbsolutePath() + " is not a valid deployment path and will be ignored");
                 } else {
@@ -192,9 +204,9 @@ public class PayaraMicro {
                 }
                 i++;
             } else if ("--domainConfig".equals(arg)) {
-                alternateDomainXML = new File(args[i]+1);
+                alternateDomainXML = new File(args[i] + 1);
                 if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
-                    System.err.println(alternateDomainXML.getAbsolutePath() + " is not a valid path to an xml file and will be ignored");  
+                    System.err.println(alternateDomainXML.getAbsolutePath() + " is not a valid path to an xml file and will be ignored");
                     alternateDomainXML = null;
                 }
                 i++;
@@ -207,6 +219,7 @@ public class PayaraMicro {
                         + "--mcAddress sets the cluster multicast group\n"
                         + "--mcPort sets the cluster multicast port\n"
                         + "--name sets the instance name\n"
+                        + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
                         + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
                         + "--deploy specifies a war file to deploy\n"
                         + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
@@ -221,26 +234,39 @@ public class PayaraMicro {
         GlassFishRuntime runtime = GlassFishRuntime.bootstrap();
         GlassFishProperties gfproperties = new GlassFishProperties();
         if (httpPort != Integer.MIN_VALUE) {
-            gfproperties.setPort("http-listener", httpPort);            
+            gfproperties.setPort("http-listener", httpPort);
         }
-        
+
         if (sslPort != Integer.MIN_VALUE) {
-            gfproperties.setPort("https-listener", sslPort);            
-            
+            gfproperties.setPort("https-listener", sslPort);
+
         }
-        
+
         if (alternateDomainXML != null) {
-            gfproperties.setConfigFileURI("file://" + alternateDomainXML.getAbsolutePath());            
+            gfproperties.setConfigFileURI("file://" + alternateDomainXML.getAbsolutePath());
         } else {
             if (noCluster) {
                 gfproperties.setConfigFileURI(ClassLoader.getSystemResource("microdomain-nocluster.xml").toExternalForm());
-                
+
             } else {
                 gfproperties.setConfigFileURI(ClassLoader.getSystemResource("microdomain.xml").toExternalForm());
             }
         }
+
+        if (rootDir != null) {
+            gfproperties.setInstanceRoot(rootDir.getAbsolutePath());
+            File configFile = new File(rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
+            if (!configFile.exists()) {
+                System.out.println("install as " + configFile.getAbsolutePath() + " DOES NOT EXIST");
+                installFiles(gfproperties);
+            } else {
+                gfproperties.setConfigFileURI("file://" +rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");            
+            }
+
+        }
+
         gf = runtime.newGlassFish(gfproperties);
-        gf.start(); 
+        gf.start();
         deployAll();
     }
 
@@ -252,9 +278,9 @@ public class PayaraMicro {
             for (File war : deployments) {
                 deployer.deploy(war, "--availabilityenabled=true");
                 deploymentCount++;
-            }            
+            }
         }
-        
+
         // deploy from deployment director
         if (deploymentRoot != null) {
             for (File war : deploymentRoot.listFiles()) {
@@ -266,20 +292,64 @@ public class PayaraMicro {
         }
         logger.info("Deployed " + deploymentCount + " wars");
     }
-    
+
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(
                 "GlassFish Shutdown Hook") {
-            public void run() {
-                try {
-                    if (gf != null) {
-                        gf.stop();
-                        gf.dispose();
+                    public void run() {
+                        try {
+                            if (gf != null) {
+                                gf.stop();
+                                gf.dispose();
+                            }
+                        } catch (Exception ex) {
+                        }
                     }
-                } catch (Exception ex) {
-                }
-            }
-        });
+                });
     }
-    
+
+    private void installFiles(GlassFishProperties gfproperties) {
+        // make directories
+        File configDir = new File(rootDir.getAbsolutePath(), "config");
+        new File(rootDir.getAbsolutePath(), "docroot").mkdirs();
+        configDir.mkdirs();
+        String[] configFiles = new String[]{"config/keyfile",
+            "config/server.policy",
+            "config/cacerts.jks",
+            "config/keystore.jks",
+            "config/login.conf",
+            "config/logging.properties",
+            "config/admin-keyfile",
+            "org/glassfish/web/embed/default-web.xml",
+            "org/glassfish/embed/domain.xml"
+        };
+
+        /**
+         * Copy all the config files from uber jar to the instanceConfigDir
+         */
+        ClassLoader cl = getClass().getClassLoader();
+        for (String configFile : configFiles) {
+            URL url = cl.getResource(configFile);
+            if (url != null) {
+                copy(url, new File(configDir.getAbsoluteFile(),
+                        configFile.substring(configFile.lastIndexOf('/') + 1)), false);
+            }
+        }
+
+        // copy branding file if available
+        URL brandingUrl = cl.getResource("config/branding/glassfish-version.properties");
+        if (brandingUrl != null) {
+            copy(brandingUrl, new File(configDir.getAbsolutePath(), "branding/glassfish-version.properties"), false);
+        }
+
+        //Copy in the relevant domain.xml
+        String configFileURI = gfproperties.getConfigFileURI();
+        try {
+            copy(URI.create(configFileURI).toURL(),
+                    new File(configDir.getAbsolutePath(), "domain.xml"), true);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }

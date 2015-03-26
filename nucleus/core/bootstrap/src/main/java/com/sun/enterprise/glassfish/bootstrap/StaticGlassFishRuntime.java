@@ -250,7 +250,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
             // copy branding file if available
             URL brandingUrl = cl.getResource("config/branding/glassfish-version.properties");
             if (brandingUrl != null) {
-                copy(brandingUrl, new File(instanceConfigDir,"branding/glassfish-version.properties"),false);
+                copy(brandingUrl, new File(instanceConfigDir,"branding" + File.separator + "glassfish-version.properties"),false);
             }
                     
             /**

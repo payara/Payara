@@ -68,6 +68,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
         <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
 	<virtual-server id="server" network-listeners="http-listener, https-listener" />
       </http-service>
+     
       <admin-service type="das-and-server" system-jmx-connector-name="system">
         <jmx-connector enabled="false" auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="8686" name="system" />
         <das-config autodeploy-enabled="false" dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" />
@@ -75,6 +76,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
         <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
         <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
       </admin-service>
+      
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
       <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
