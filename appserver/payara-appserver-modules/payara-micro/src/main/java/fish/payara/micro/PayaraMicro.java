@@ -264,7 +264,15 @@ public class PayaraMicro {
             }
 
         }
-
+        
+        if (this.hzPort != Integer.MIN_VALUE) {
+            gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastPort", Integer.toString(hzPort));
+        }
+        
+        if (this.hzMulticastGroup != null) {
+            gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastGroup", hzMulticastGroup);
+        }
+                
         gf = runtime.newGlassFish(gfproperties);
         gf.start();
         deployAll();
