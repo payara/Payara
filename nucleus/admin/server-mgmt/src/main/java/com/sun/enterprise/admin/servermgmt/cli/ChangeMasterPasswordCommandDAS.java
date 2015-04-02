@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -117,6 +117,8 @@ public class ChangeMasterPasswordCommandDAS extends LocalDomainCommand {
                     strings.get("new.mp.again"), true);
             if (nmp == null)
                 throw new CommandException(strings.get("no.console"));
+            if(nmp.trim().length() < 6)
+                throw new CommandException(strings.get("incorrect.password.length"));
             domainConfig.put(DomainConfig.K_MASTER_PASSWORD, mp);
             domainConfig.put(DomainConfig.K_NEW_MASTER_PASSWORD, nmp);
             domainConfig.put(DomainConfig.K_SAVE_MASTER_PASSWORD, savemp);
