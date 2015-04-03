@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -5529,6 +5529,34 @@ public class StandardContext
     }
 
     /**
+     * Merge the context initialization parameters specified in the application
+     * deployment descriptor with the application parameters described in the
+     * server configuration, respecting the <code>override</code> property of
+     * the application parameters appropriately.
+     */
+    private void mergeParameters() {
+        Map<String,String> mergedParams = new HashMap<>();
+
+        for (String name : findParameters()) {
+            mergedParams.put(name, findParameter(name));
+        }
+
+        for (ApplicationParameter param : findApplicationParameters()) {
+            if (param.getOverride()) {
+                if (mergedParams.get(param.getName()) == null)
+                    mergedParams.put(param.getName(), param.getValue());
+            } else {
+                mergedParams.put(param.getName(), param.getValue());
+            }
+        }
+
+        ServletContext sc = getServletContext();
+        for (Map.Entry<String,String> entry : mergedParams.entrySet()) {
+            sc.setInitParameter(entry.getKey(), entry.getValue());
+        }
+    }
+    
+    /**
      * Allocate resources, including proxy.
      * Return <code>true</code> if initialization was successfull,
      * or <code>false</code> otherwise.
@@ -5921,6 +5949,9 @@ public class StandardContext
         oldCCL = bindThread();
 
         try {
+            // Set up the context init params
+            mergeParameters();
+
             // Notify our interested LifecycleListeners
             lifecycle.fireLifecycleEvent(AFTER_START_EVENT, null);
 
