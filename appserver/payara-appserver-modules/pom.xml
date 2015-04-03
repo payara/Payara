@@ -30,6 +30,5 @@
     <modules>
         <module>payara-jsr107</module>
         <module>jsr107-repackaged</module>
-        <module>payara-micro</module>
     </modules>
 </project>

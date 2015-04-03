@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.embeddable.BootstrapProperties;
@@ -43,31 +44,41 @@ public class PayaraMicro {
     private static Logger logger = Logger.getLogger(PayaraMicro.class.getName());
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
+    private int hzStartPort = Integer.MIN_VALUE;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
-    private String instanceName;
+    private String instanceName = UUID.randomUUID().toString();
     private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
     private List<File> deployments;
     private GlassFish gf;
     private boolean noCluster = false;
+    private static PayaraMicro instance;
 
     public static void main(String args[]) throws GlassFishException {
-        PayaraMicro main = new PayaraMicro(args);
+        PayaraMicro main = getInstance();
+        main.scanArgs(args);
         main.bootStrap();
     }
+    
+    public static PayaraMicro getInstance() {
+        return getInstance(true);
+    }
+    
+    public static PayaraMicro getInstance(boolean create) {
+        if (instance == null) {
+            instance = new PayaraMicro();
+        }
+        return instance;
+    }
 
-    public PayaraMicro() {
+    private PayaraMicro() {
         addShutdownHook();
     }
 
-    public PayaraMicro(List<File> deployments) {
-        this.deployments = deployments;
-        addShutdownHook();
-    }
 
-    public PayaraMicro(String args[]) {
+    private PayaraMicro(String args[]) {
         scanArgs(args);
         addShutdownHook();
     }
@@ -76,64 +87,95 @@ public class PayaraMicro {
         return hzMulticastGroup;
     }
 
-    public void setClusterMulticastGroup(String hzMulticastGroup) {
+    public PayaraMicro setClusterMulticastGroup(String hzMulticastGroup) {
         this.hzMulticastGroup = hzMulticastGroup;
+        return this;
     }
 
     public int getClusterPort() {
         return hzPort;
     }
 
-    public void setClusterPort(int hzPort) {
+    public PayaraMicro setClusterPort(int hzPort) {
         this.hzPort = hzPort;
+        return this;
     }
 
+    public int getClusterStartPort() {
+        return hzStartPort;
+    }
+
+    public PayaraMicro setClusterStartPort(int hzStartPort) {
+        this.hzStartPort = hzStartPort;
+        return this;
+    }    
+    
     public int getHttpPort() {
         return httpPort;
     }
 
-    public void setHttpPort(int httpPort) {
+    public PayaraMicro setHttpPort(int httpPort) {
         this.httpPort = httpPort;
+        return this;
     }
 
     public int getSslPort() {
         return sslPort;
     }
 
-    public void setSslPort(int sslPort) {
+    public PayaraMicro setSslPort(int sslPort) {
         this.sslPort = sslPort;
+        return this;
     }
 
     public String getInstanceName() {
         return instanceName;
     }
 
-    public void setInstanceName(String instanceName) {
+    public PayaraMicro setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+        return this;
     }
 
     public File getDeploymentDir() {
         return deploymentRoot;
     }
 
-    public void setDeploymentDir(File deploymentRoot) {
+    public PayaraMicro setDeploymentDir(File deploymentRoot) {
         this.deploymentRoot = deploymentRoot;
+        return this;
     }
 
     public File getAlternateDomainXML() {
         return alternateDomainXML;
     }
 
-    public void setAlternateDomainXML(File alternateDomainXML) {
+    public PayaraMicro setAlternateDomainXML(File alternateDomainXML) {
         this.alternateDomainXML = alternateDomainXML;
+        return this;
+    }
+    
+    public PayaraMicro addDeployment(String pathToWar) {
+        File file = new File(pathToWar);
+        return addDeploymentFile(file);
+    }
+    
+    public PayaraMicro addDeploymentFile(File file) {
+        
+        if (deployments == null) {
+            deployments = new LinkedList<>();
+        }
+        deployments.add(file);
+        return this;
     }
 
     public boolean isNoCluster() {
         return noCluster;
     }
 
-    public void setNoCluster(boolean noCluster) {
+    public PayaraMicro setNoCluster(boolean noCluster) {
         this.noCluster = noCluster;
+        return this;
     }
 
     private void scanArgs(String[] args) {
@@ -148,6 +190,7 @@ public class PayaraMicro {
                     }
                 } catch (NumberFormatException nfe) {
                     System.err.println(httpPortS + " is not a valid http port number and will be ignored");
+                    httpPort = Integer.MIN_VALUE;
                 }
                 i++;
             } else if ("--sslPort".equals(arg)) {
@@ -159,6 +202,7 @@ public class PayaraMicro {
                     }
                 } catch (NumberFormatException nfe) {
                     System.err.println(httpPortS + " is not a valid ssl port number and will be ignored");
+                    sslPort = Integer.MIN_VALUE;
                 }
                 i++;
             } else if ("--mcAddress".equals(arg)) {
@@ -173,6 +217,19 @@ public class PayaraMicro {
                     }
                 } catch (NumberFormatException nfe) {
                     System.err.println(httpPortS + " is not a valid multicast port number and will be ignored");
+                    hzPort = Integer.MIN_VALUE;
+                }
+                i++;
+            }else if ("--startPort".equals(arg)) {
+                String startPort = args[i + 1];
+                try {
+                    hzStartPort = Integer.parseInt(startPort);
+                    if (hzStartPort < 1 || hzStartPort > 65535) {
+                        throw new NumberFormatException("Not a valid tcp port");
+                    }
+                } catch (NumberFormatException nfe) {
+                    System.err.println(startPort + " is not a valid port number and will be ignored");
+                    hzStartPort = Integer.MIN_VALUE;
                 }
                 i++;
             } else if ("--name".equals(arg)) {
@@ -218,6 +275,7 @@ public class PayaraMicro {
                         + "--sslPort sets the https port number\n"
                         + "--mcAddress sets the cluster multicast group\n"
                         + "--mcPort sets the cluster multicast port\n"
+                        + "--startPort sets the cluster start port number\n"
                         + "--name sets the instance name\n"
                         + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
                         + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
@@ -284,8 +342,12 @@ public class PayaraMicro {
         Deployer deployer = gf.getDeployer();
         if (deployments != null) {
             for (File war : deployments) {
-                deployer.deploy(war, "--availabilityenabled=true");
-                deploymentCount++;
+                if (war.exists() && war.isFile() && war.canRead()) {
+                    deployer.deploy(war, "--availabilityenabled=true");
+                    deploymentCount++;                   
+                } else {
+                 logger.warning(war.getAbsolutePath() + " is not a valid deployment");
+                }
             }
         }
 
