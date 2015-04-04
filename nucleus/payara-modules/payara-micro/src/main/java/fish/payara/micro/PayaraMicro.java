@@ -47,6 +47,8 @@ public class PayaraMicro {
     private int hzStartPort = Integer.MIN_VALUE;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
+    private int maxHttpThreads = Integer.MIN_VALUE;
+    private int minHttpThreads = Integer.MIN_VALUE;
     private String instanceName = UUID.randomUUID().toString();
     private File rootDir;
     private File deploymentRoot;
@@ -56,16 +58,16 @@ public class PayaraMicro {
     private boolean noCluster = false;
     private static PayaraMicro instance;
 
-    public static void main(String args[]) throws GlassFishException {
+    public static void main(String args[]) throws BootstrapException {
         PayaraMicro main = getInstance();
         main.scanArgs(args);
         main.bootStrap();
     }
-    
+
     public static PayaraMicro getInstance() {
         return getInstance(true);
     }
-    
+
     public static PayaraMicro getInstance(boolean create) {
         if (instance == null) {
             instance = new PayaraMicro();
@@ -76,7 +78,6 @@ public class PayaraMicro {
     private PayaraMicro() {
         addShutdownHook();
     }
-
 
     private PayaraMicro(String args[]) {
         scanArgs(args);
@@ -108,8 +109,8 @@ public class PayaraMicro {
     public PayaraMicro setClusterStartPort(int hzStartPort) {
         this.hzStartPort = hzStartPort;
         return this;
-    }    
-    
+    }
+
     public int getHttpPort() {
         return httpPort;
     }
@@ -154,14 +155,14 @@ public class PayaraMicro {
         this.alternateDomainXML = alternateDomainXML;
         return this;
     }
-    
+
     public PayaraMicro addDeployment(String pathToWar) {
         File file = new File(pathToWar);
         return addDeploymentFile(file);
     }
-    
+
     public PayaraMicro addDeploymentFile(File file) {
-        
+
         if (deployments == null) {
             deployments = new LinkedList<>();
         }
@@ -175,6 +176,24 @@ public class PayaraMicro {
 
     public PayaraMicro setNoCluster(boolean noCluster) {
         this.noCluster = noCluster;
+        return this;
+    }
+
+    public int getMaxHttpThreads() {
+        return maxHttpThreads;
+    }
+
+    public PayaraMicro setMaxHttpThreads(int maxHttpThreads) {
+        this.maxHttpThreads = maxHttpThreads;
+        return this;
+    }
+
+    public int getMinHttpThreads() {
+        return minHttpThreads;
+    }
+
+    public PayaraMicro setMinHttpThreads(int minHttpThreads) {
+        this.minHttpThreads = minHttpThreads;
         return this;
     }
 
@@ -205,6 +224,30 @@ public class PayaraMicro {
                     sslPort = Integer.MIN_VALUE;
                 }
                 i++;
+            } else if ("--maxHttpThreads".equals(arg)) {
+                String threads = args[i + 1];
+                try {
+                    maxHttpThreads = Integer.parseInt(threads);
+                    if (maxHttpThreads < 2) {
+                        throw new NumberFormatException("Maximum Threads must be 2 or greater");
+                    }
+                } catch (NumberFormatException nfe) {
+                    System.err.println(threads + " is not a valid maximum threads number and will be ignored");
+                    maxHttpThreads = Integer.MIN_VALUE;
+                }
+                i++;
+            } else if ("--minHttpThreads".equals(arg)) {
+                String threads = args[i + 1];
+                try {
+                    minHttpThreads = Integer.parseInt(threads);
+                    if (minHttpThreads < 0) {
+                        throw new NumberFormatException("Minimum Threads must be zero or greater");
+                    }
+                } catch (NumberFormatException nfe) {
+                    System.err.println(threads + " is not a valid minimum threads number and will be ignored");
+                    minHttpThreads = Integer.MIN_VALUE;
+                }
+                i++;
             } else if ("--mcAddress".equals(arg)) {
                 hzMulticastGroup = args[i + 1];
                 i++;
@@ -220,7 +263,7 @@ public class PayaraMicro {
                     hzPort = Integer.MIN_VALUE;
                 }
                 i++;
-            }else if ("--startPort".equals(arg)) {
+            } else if ("--startPort".equals(arg)) {
                 String startPort = args[i + 1];
                 try {
                     hzStartPort = Integer.parseInt(startPort);
@@ -281,59 +324,75 @@ public class PayaraMicro {
                         + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
                         + "--deploy specifies a war file to deploy\n"
                         + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
+                        + "--minHttpThreads the minimum number of threads in the HTTP thread pool"
+                        + "--maxHttpThreads the maximum number of threads in the HTTP thread pool"
                         + "--help Shows this message and exits\n");
                 System.exit(-1);
             }
         }
     }
 
-    public void bootStrap() throws GlassFishException {
+    public void bootStrap() throws BootstrapException {
         BootstrapProperties bprops = new BootstrapProperties();
-        GlassFishRuntime runtime = GlassFishRuntime.bootstrap();
-        GlassFishProperties gfproperties = new GlassFishProperties();
-        if (httpPort != Integer.MIN_VALUE) {
-            gfproperties.setPort("http-listener", httpPort);
-        }
-
-        if (sslPort != Integer.MIN_VALUE) {
-            gfproperties.setPort("https-listener", sslPort);
-
-        }
-
-        if (alternateDomainXML != null) {
-            gfproperties.setConfigFileURI("file://" + alternateDomainXML.getAbsolutePath());
-        } else {
-            if (noCluster) {
-                gfproperties.setConfigFileURI(ClassLoader.getSystemResource("microdomain-nocluster.xml").toExternalForm());
-
-            } else {
-                gfproperties.setConfigFileURI(ClassLoader.getSystemResource("microdomain.xml").toExternalForm());
-            }
-        }
-
-        if (rootDir != null) {
-            gfproperties.setInstanceRoot(rootDir.getAbsolutePath());
-            File configFile = new File(rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
-            if (!configFile.exists()) {
-                System.out.println("install as " + configFile.getAbsolutePath() + " DOES NOT EXIST");
-                installFiles(gfproperties);
-            } else {
-                gfproperties.setConfigFileURI("file://" +rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");            
+        GlassFishRuntime runtime;
+        try {
+            runtime = GlassFishRuntime.bootstrap();
+            GlassFishProperties gfproperties = new GlassFishProperties();
+            if (httpPort != Integer.MIN_VALUE) {
+                gfproperties.setPort("http-listener", httpPort);
             }
 
+            if (sslPort != Integer.MIN_VALUE) {
+                gfproperties.setPort("https-listener", sslPort);
+
+            }
+
+            if (alternateDomainXML != null) {
+                gfproperties.setConfigFileURI("file://" + alternateDomainXML.getAbsolutePath());
+            } else {
+                if (noCluster) {
+                    gfproperties.setConfigFileURI(ClassLoader.getSystemResource("microdomain-nocluster.xml").toExternalForm());
+
+                } else {
+                    gfproperties.setConfigFileURI(ClassLoader.getSystemResource("microdomain.xml").toExternalForm());
+                }
+            }
+
+            if (rootDir != null) {
+                gfproperties.setInstanceRoot(rootDir.getAbsolutePath());
+                File configFile = new File(rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
+                if (!configFile.exists()) {
+                    System.out.println("install as " + configFile.getAbsolutePath() + " DOES NOT EXIST");
+                    installFiles(gfproperties);
+                } else {
+                    gfproperties.setConfigFileURI("file://" + rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
+                }
+
+            }
+
+            if (this.hzPort != Integer.MIN_VALUE) {
+                gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastPort", Integer.toString(hzPort));
+            }
+
+            if (this.hzMulticastGroup != null) {
+                gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastGroup", hzMulticastGroup);
+            }
+            
+            if (this.maxHttpThreads != Integer.MIN_VALUE) {
+                gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size", Integer.toString(maxHttpThreads));
+            } 
+            
+            if (this.minHttpThreads != Integer.MIN_VALUE) {
+                gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.min-thread-pool-size", Integer.toString(minHttpThreads));
+            }   
+            
+
+            gf = runtime.newGlassFish(gfproperties);
+            gf.start();
+            deployAll();
+        } catch (GlassFishException ex) {
+            throw new BootstrapException(ex.getMessage(), ex);
         }
-        
-        if (this.hzPort != Integer.MIN_VALUE) {
-            gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastPort", Integer.toString(hzPort));
-        }
-        
-        if (this.hzMulticastGroup != null) {
-            gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastGroup", hzMulticastGroup);
-        }
-                
-        gf = runtime.newGlassFish(gfproperties);
-        gf.start();
-        deployAll();
     }
 
     private void deployAll() throws GlassFishException {
@@ -344,9 +403,9 @@ public class PayaraMicro {
             for (File war : deployments) {
                 if (war.exists() && war.isFile() && war.canRead()) {
                     deployer.deploy(war, "--availabilityenabled=true");
-                    deploymentCount++;                   
+                    deploymentCount++;
                 } else {
-                 logger.warning(war.getAbsolutePath() + " is not a valid deployment");
+                    logger.warning(war.getAbsolutePath() + " is not a valid deployment");
                 }
             }
         }

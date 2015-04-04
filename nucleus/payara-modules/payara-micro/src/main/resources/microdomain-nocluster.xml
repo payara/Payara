@@ -153,12 +153,12 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
             <network-config>
                 <protocols>
                     <protocol name="http-listener">
-                        <http default-virtual-server="server" max-connections="250">
+                        <http default-virtual-server="server" xpowered-by="false" max-connections="250"  comet-support-enabled="true">
                             <file-cache enabled="false"></file-cache>
-                        </http>
+                        </http>       
                     </protocol>
                     <protocol security-enabled="true" name="https-listener">
-                        <http default-virtual-server="server" max-connections="250">
+                        <http default-virtual-server="server" xpowered-by="false" comet-support-enabled="true" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
                         <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>
@@ -169,11 +169,11 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
                     <network-listener port="0" protocol="https-listener" transport="tcp" name="https-listener" thread-pool="http-thread-pool" enabled="false" />
                 </network-listeners>
                 <transports>
-                    <transport name="tcp"></transport>
+                    <transport byte-buffer-type="HEAP" name="tcp" acceptor-threads="-1"></transport>
                 </transports>
             </network-config>
             <thread-pools>
-                <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
+                <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" max-thread-pool-size="200"/>
             </thread-pools>
         </config> 
