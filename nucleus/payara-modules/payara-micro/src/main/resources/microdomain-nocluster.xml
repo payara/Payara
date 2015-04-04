@@ -64,7 +64,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
     </servers>
     <configs>
         <config name="server-config">
-            <http-service sso-enabled="true">
+            <http-service >
                 <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
                 <virtual-server id="server" network-listeners="http-listener-1, http-listener-2">
                     <property name="default-web-xml" value="${com.sun.aas.instanceRoot}/config/default-web.xml"></property>
