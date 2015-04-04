@@ -64,16 +64,20 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
     </servers>
     <configs>
         <config name="server-config">
-            <http-service>
+            <http-service sso-enabled="true">
                 <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
-                <virtual-server id="server" network-listeners="http-listener, https-listener" />
+                <virtual-server id="server" network-listeners="http-listener-1, http-listener-2">
+                    <property name="default-web-xml" value="${com.sun.aas.instanceRoot}/config/default-web.xml"></property>
+                </virtual-server>
             </http-service>
-            <admin-service type="das-and-server" system-jmx-connector-name="system">
-                <jmx-connector enabled="false" auth-realm-name="admin-realm" security-enabled="false" address="0.0.0.0" port="8686" name="system" />
-                <das-config autodeploy-enabled="false" dynamic-reload-enabled="true" deploy-xml-validation="full" autodeploy-dir="${com.sun.aas.instanceRoot}/autodeploy" />
-                <property value="/admin" name="adminConsoleContextRoot" />
-                <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
-                <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
+            <iiop-service>
+                <orb use-thread-pool-ids="thread-pool-1"></orb>
+                <iiop-listener id="orb-listener-1" enabled="false" address="0.0.0.0"></iiop-listener>
+            </iiop-service>
+     
+            <admin-service system-jmx-connector-name="system">
+                <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" enabled="false"></jmx-connector>
+                <das-config></das-config>
             </admin-service>
             <connector-service shutdown-timeout-in-seconds="30">
             </connector-service>
@@ -174,7 +178,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
             </network-config>
             <thread-pools>
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
-                <thread-pool name="thread-pool-1" max-thread-pool-size="200"/>
+                <thread-pool name="thread-pool-1"  min-thread-pool-size="1" max-thread-pool-size="200"/>
             </thread-pools>
         </config> 
     </configs>

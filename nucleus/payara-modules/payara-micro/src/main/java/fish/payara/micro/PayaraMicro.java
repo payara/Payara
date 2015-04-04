@@ -362,7 +362,6 @@ public class PayaraMicro {
                 gfproperties.setInstanceRoot(rootDir.getAbsolutePath());
                 File configFile = new File(rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
                 if (!configFile.exists()) {
-                    System.out.println("install as " + configFile.getAbsolutePath() + " DOES NOT EXIST");
                     installFiles(gfproperties);
                 } else {
                     gfproperties.setConfigFileURI("file://" + rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
@@ -449,7 +448,7 @@ public class PayaraMicro {
             "config/login.conf",
             "config/logging.properties",
             "config/admin-keyfile",
-            "org/glassfish/web/embed/default-web.xml",
+            "config/default-web.xml",
             "org/glassfish/embed/domain.xml"
         };
 
