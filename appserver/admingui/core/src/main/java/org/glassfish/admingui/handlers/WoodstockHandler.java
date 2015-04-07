@@ -53,10 +53,8 @@ import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 
-
 import com.sun.webui.jsf.component.Calendar;
 import com.sun.webui.jsf.model.UploadedFile;
-import com.sun.webui.jsf.component.Field;
 import com.sun.webui.jsf.component.Hyperlink;
 
 import javax.faces.context.ExternalContext;
@@ -66,9 +64,11 @@ import com.sun.webui.jsf.model.Option;
 import com.sun.webui.jsf.model.OptionGroup;
 import com.sun.webui.jsf.component.DropDown;
 
-
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Random;
 import java.util.List;
@@ -87,26 +87,66 @@ import org.glassfish.admingui.util.SunOptionUtil;
 
 public class WoodstockHandler {
 
-    /** Creates a new instance of CommonHandlers */
+    /**
+     * Creates a new instance of CommonHandlers
+     */
     public WoodstockHandler() {
     }
 
     /**
-     *	<p> This method uploads a file temp directory</p>
-     *	<p> Input value: "file" -- Type: <code>com.sun.webui.jsf.model.UploadedFile</code></p>
-     *	<p> Output value: "uploadDir" -- Type: <code>java.lang.String</code></p>
-     *	@param	handlerCtx	The HandlerContext.
+     * * <>
+     * @param handlerCtx
+     * @throws IOException 
+     */
+    @Handler(id = "deleteFileFromTempDir",
+            input = {
+                @HandlerInput(name = "deleteTempFile", type = String.class)})
+    public static void deleteFileFromTempDir(HandlerContext handlerCtx) throws IOException {
+        Logger logger = GuiUtil.getLogger();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(GuiUtil.getCommonMessage("log.indeleteFileFromTempDir"));
+        }
+
+        String deleteTempFile = (String) handlerCtx.getInputValue("deleteTempFile");
+        if (deleteTempFile == null) {
+            return;
+        }
+        Path pathToFile = Paths.get(deleteTempFile);
+        if (Files.exists(pathToFile)) {
+            try {
+                Files.delete(pathToFile);
+
+            } catch (IOException x) {
+                logger.log(Level.WARNING, GuiUtil.getCommonMessage("log.fileCouldntFound", new Object[]{"" + deleteTempFile}));
+
+            } catch (SecurityException e) {
+
+            }
+        }
+    }
+
+
+    /**
+     * <p>
+     * This method uploads a file temp directory</p>
+     * <p>
+     * Input value: "file" -- Type:
+     * <code>com.sun.webui.jsf.model.UploadedFile</code></p>
+     * <p>
+     * Output value: "uploadDir" -- Type: <code>java.lang.String</code></p>
+     *
+     * @param	handlerCtx	The HandlerContext.
      */
     @Handler(id = "uploadFileToTempDir",
-        input = {
-            @HandlerInput(name = "file", type = UploadedFile.class)},
-        output = {
-            @HandlerOutput(name = "origPath", type = String.class),
-            @HandlerOutput(name = "uploadedTempFile", type = String.class)
-        })
+            input = {
+                @HandlerInput(name = "file", type = UploadedFile.class)},
+            output = {
+                @HandlerOutput(name = "origPath", type = String.class),
+                @HandlerOutput(name = "uploadedTempFile", type = String.class)
+            })
     public static void uploadFileToTempDir(HandlerContext handlerCtx) {
         Logger logger = GuiUtil.getLogger();
-        if (logger.isLoggable(Level.FINE)){
+        if (logger.isLoggable(Level.FINE)) {
             logger.fine(GuiUtil.getCommonMessage("log.inUploadFileToTmpDir"));
         }
         UploadedFile uploadedFile = (UploadedFile) handlerCtx.getInputValue("file");
@@ -115,7 +155,7 @@ public class WoodstockHandler {
         if (uploadedFile != null) {
 
             String name = uploadedFile.getOriginalName();
-            logger.info("uploadFileName="+name);
+            logger.info("uploadFileName=" + name);
             //see bug# 6498910, for IE, getOriginalName() returns the full path, including the drive.
             //for any other browser, it just returns the file name.
             int lastIndex = name.lastIndexOf("\\");
@@ -124,7 +164,7 @@ public class WoodstockHandler {
             }
             int index = name.indexOf(".");
             if (index <= 0) {
-                logger.info("name="+name + ",index="+index);
+                logger.info("name=" + name + ",index=" + index);
                 String mesg = GuiUtil.getMessage("msg.deploy.nullArchiveError");
                 GuiUtil.handleError(handlerCtx, mesg);
                 return;
@@ -139,17 +179,17 @@ public class WoodstockHandler {
                 }
                 tmpFile = File.createTempFile(prefix, suffix);
                 tmpFile.deleteOnExit();
-		if (logger.isLoggable(Level.FINE)){
+                if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.writeToTmpFile"));
-		}
+                }
                 uploadedFile.write(tmpFile);
-		if (logger.isLoggable(Level.FINE)){
+                if (logger.isLoggable(Level.FINE)) {
                     logger.fine(GuiUtil.getCommonMessage("log.afterWriteToTmpFile"));
-		}
+                }
                 uploadTmpFile = tmpFile.getCanonicalPath();
             } catch (IOException ioex) {
                 try {
-                    if (tmpFile != null){
+                    if (tmpFile != null) {
                         uploadTmpFile = tmpFile.getAbsolutePath();
                     }
                 } catch (Exception ex) {
@@ -159,20 +199,22 @@ public class WoodstockHandler {
                 GuiUtil.handleException(handlerCtx, ex);
             }
         }
-	if (logger.isLoggable(Level.FINE)){
-        	logger.fine(GuiUtil.getCommonMessage("log.successfullyUploadedTmp") +uploadTmpFile);
-	}
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine(GuiUtil.getCommonMessage("log.successfullyUploadedTmp") + uploadTmpFile);
+        }
         handlerCtx.setOutputValue("uploadedTempFile", uploadTmpFile);
     }
 
     /**
-     *	<p> This handler enable or disable the table text field according to the method value.
+     * <p>
+     * This handler enable or disable the table text field according to the
+     * method value.
      */
     @Handler(id = "setDisableConnectionPoolTableField",
-        input = {
-            @HandlerInput(name = "tableDD", type = com.sun.webui.jsf.component.DropDown.class),
-            @HandlerInput(name = "validationField", type = com.sun.webui.jsf.component.DropDown.class),
-            @HandlerInput(name = "methodValue", type = String.class)})
+            input = {
+                @HandlerInput(name = "tableDD", type = com.sun.webui.jsf.component.DropDown.class),
+                @HandlerInput(name = "validationField", type = com.sun.webui.jsf.component.DropDown.class),
+                @HandlerInput(name = "methodValue", type = String.class)})
     public static void setDisableConnectionPoolTableField(HandlerContext handlerCtx) {
         String methodValue = (String) handlerCtx.getInputValue("methodValue");
         DropDown tableDD = (DropDown) handlerCtx.getInputValue("tableDD");
@@ -191,9 +233,9 @@ public class WoodstockHandler {
     }
 
     @Handler(id = "createHyperlinkArray",
-        output = {
-            @HandlerOutput(name = "links", type = Hyperlink[].class)
-        })
+            output = {
+                @HandlerOutput(name = "links", type = Hyperlink[].class)
+            })
     public static void createHyperlinkArray(HandlerContext handlerCtx) {
         FacesContext ctx = handlerCtx.getFacesContext();
         ExternalContext extCtx = ctx.getExternalContext();
@@ -227,9 +269,9 @@ public class WoodstockHandler {
     }
 
     @Handler(id = "dummyHyperlinkArray",
-        output = {
-            @HandlerOutput(name = "links", type = Hyperlink[].class)
-        })
+            output = {
+                @HandlerOutput(name = "links", type = Hyperlink[].class)
+            })
     public static void dummyHyperlinkArray(HandlerContext handlerCtx) {
         Hyperlink arr[] = new Hyperlink[1];
         arr[0] = new Hyperlink();
@@ -238,10 +280,10 @@ public class WoodstockHandler {
     }
 
     @Handler(id = "gf.stringArrayToSelectItemArray",
-        input = {
-            @HandlerInput(name = "stringArray", type = String[].class, required = true)},
-        output = {
-            @HandlerOutput(name = "item", type = SelectItem[].class)})
+            input = {
+                @HandlerInput(name = "stringArray", type = String[].class, required = true)},
+            output = {
+                @HandlerOutput(name = "item", type = SelectItem[].class)})
     public static void stringArrayToSelectItemArray(HandlerContext handlerCtx) {
 
         String[] stringArray = (String[]) handlerCtx.getInputValue("stringArray");
@@ -249,12 +291,11 @@ public class WoodstockHandler {
 
     }
 
-
     @Handler(id = "selectItemArrayToStrArray",
-        input = {
-            @HandlerInput(name = "item", type = SelectItem[].class, required = true)},
-        output = {
-            @HandlerOutput(name = "strAry", type = String[].class)})
+            input = {
+                @HandlerInput(name = "item", type = SelectItem[].class, required = true)},
+            output = {
+                @HandlerOutput(name = "strAry", type = String[].class)})
     public static void selectItemArrayToStrArray(HandlerContext handlerCtx) {
 
         SelectItem[] item = (SelectItem[]) handlerCtx.getInputValue("item");
@@ -269,12 +310,11 @@ public class WoodstockHandler {
         handlerCtx.setOutputValue("strAry", strAry);
     }
 
-
     @Handler(id = "gf.convertListToOptionArray",
-        input = {
-            @HandlerInput(name = "list", type = List.class, required = true)},
-        output = {
-            @HandlerOutput(name = "optionArray", type = Option[].class)})
+            input = {
+                @HandlerInput(name = "list", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "optionArray", type = Option[].class)})
     public static void convertListToOptionArray(HandlerContext handlerCtx) {
 
         List<String> list = (List) handlerCtx.getInputValue("list");
@@ -282,20 +322,19 @@ public class WoodstockHandler {
             handlerCtx.setOutputValue("optionArray", new Option[0]);
             return;
         }
-        handlerCtx.setOutputValue("optionArray", SunOptionUtil.getOptionsArray( list.toArray(new String[list.size()])));
+        handlerCtx.setOutputValue("optionArray", SunOptionUtil.getOptionsArray(list.toArray(new String[list.size()])));
     }
 
-
-
     /**
-     *  <p> Returns the date pattern for this calendar component.
+     * <p>
+     * Returns the date pattern for this calendar component.
      *
      */
     @Handler(id = "getDatePattern",
-        input = {
-            @HandlerInput(name = "calendarComponent", type = com.sun.webui.jsf.component.Calendar.class, required = true)},
-        output = {
-            @HandlerOutput(name = "pattern", type = String.class)})
+            input = {
+                @HandlerInput(name = "calendarComponent", type = com.sun.webui.jsf.component.Calendar.class, required = true)},
+            output = {
+                @HandlerOutput(name = "pattern", type = String.class)})
     public static void getDatePattern(HandlerContext handlerCtx) {
         Calendar calendar = (Calendar) handlerCtx.getInputValue("calendarComponent");
         String pattern = calendar.getDateFormatPattern();
@@ -310,18 +349,19 @@ public class WoodstockHandler {
         handlerCtx.setOutputValue("pattern", pattern);
     }
 
-  /**
-     *  <p> Returns the list of monitorable server components</p>
+    /**
+     * <p>
+     * Returns the list of monitorable server components</p>
      *
      */
-  @Handler(id="populateServerMonitorDropDown",
-        input={
-            @HandlerInput(name="VSList", type=List.class, required=true),
-            @HandlerInput(name="GCList", type=List.class, required=true),
-            @HandlerInput(name="NLList", type=List.class, required=true),
-            @HandlerInput(name="ThreadSystemList", type=List.class, required=true)},
-        output={
-            @HandlerOutput(name="MonitorList", type=Option[].class)})
+    @Handler(id = "populateServerMonitorDropDown",
+            input = {
+                @HandlerInput(name = "VSList", type = List.class, required = true),
+                @HandlerInput(name = "GCList", type = List.class, required = true),
+                @HandlerInput(name = "NLList", type = List.class, required = true),
+                @HandlerInput(name = "ThreadSystemList", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "MonitorList", type = Option[].class)})
     public void populateServerMonitorDropDown(HandlerContext handlerCtx) {
         List vsList = (List) handlerCtx.getInputValue("VSList");
         List threadList = (List) handlerCtx.getInputValue("ThreadSystemList");
@@ -331,52 +371,52 @@ public class WoodstockHandler {
         menuList.add(new Option("", ""));
         // Menu for Virtual Servers
         OptionGroup vsMenuOptions = getMenuOptions(vsList, "virtual-server", "", false);
-        if(vsMenuOptions != null){
+        if (vsMenuOptions != null) {
             menuList.add(vsMenuOptions);
         }
 
         // Menu for Listeners
         OptionGroup nlMenuOptions = getMenuOptions(nlList, "http-listener", "", false);
-        if(nlMenuOptions != null){
+        if (nlMenuOptions != null) {
             menuList.add(nlMenuOptions);
         }
 
-
-         // Menu for Garbage Collectors
+        // Menu for Garbage Collectors
         OptionGroup gcMenuOptions = getMenuOptions(gcList, "garbage-collector", "", false);
-        if(gcMenuOptions != null){
-             menuList.add(gcMenuOptions);
+        if (gcMenuOptions != null) {
+            menuList.add(gcMenuOptions);
         }
 
         // Menu for Thread System
         OptionGroup tsMenuOptions = getMenuOptions(threadList, "thread-system", "", false);
         if (tsMenuOptions != null) {
-          menuList.add(tsMenuOptions);
-      }
-       // Add Menu Options.
-         jumpMenuOptions = (Option[])menuList.toArray(new Option[menuList.size()]);
-         //Arrays.sort(jumpMenuOptions);
+            menuList.add(tsMenuOptions);
+        }
+        // Add Menu Options.
+        jumpMenuOptions = (Option[]) menuList.toArray(new Option[menuList.size()]);
+        //Arrays.sort(jumpMenuOptions);
         handlerCtx.setOutputValue("MonitorList", jumpMenuOptions);
     }
 
-   /**
-     *  <p> Returns the list of monitorable resource components</p>
+    /**
+     * <p>
+     * Returns the list of monitorable resource components</p>
      *
      */
-  @Handler(id="populateResourceMonitorDropDown",
-        input={
-            @HandlerInput(name="ResourceList", type=List.class, required=true)},
-        output={
-            @HandlerOutput(name="MonitorList", type=Option[].class),
-            @HandlerOutput(name="FirstItem", type=String.class)})
+    @Handler(id = "populateResourceMonitorDropDown",
+            input = {
+                @HandlerInput(name = "ResourceList", type = List.class, required = true)},
+            output = {
+                @HandlerOutput(name = "MonitorList", type = Option[].class),
+                @HandlerOutput(name = "FirstItem", type = String.class)})
     public void populateResourceMonitorDropDown(HandlerContext handlerCtx) {
         List rList = (List) handlerCtx.getInputValue("ResourceList");
-         ArrayList menuList = new ArrayList();
+        ArrayList menuList = new ArrayList();
         // Menu for Resources
         ArrayList resList = new ArrayList();
         String firstItem = null;
         if (rList != null) {
-        ListIterator rl = rList.listIterator();
+            ListIterator rl = rList.listIterator();
             while (rl.hasNext()) {
                 String name = (String) rl.next();
                 resList.add(new Option(name, name));
@@ -391,7 +431,6 @@ public class WoodstockHandler {
         jumpGroup1.setOptions(groupedOptions1);
         menuList.add(jumpGroup1);
 
-
         // Add Menu Options.
         jumpMenuOptions = (Option[]) menuList.toArray(new Option[menuList.size()]);
 
@@ -399,17 +438,18 @@ public class WoodstockHandler {
         handlerCtx.setOutputValue("FirstItem", firstItem);
     }
 
-   /**
-     *  <p> Returns the list of monitorable application components</p>
+    /**
+     * <p>
+     * Returns the list of monitorable application components</p>
      *
      */
-  @Handler(id="populateApplicationsMonitorDropDown",
-        input={
-            @HandlerInput(name="AppsList", type=List.class, required=true),
-            @HandlerInput(name="monitorURL", type=String.class, required=true)},
-        output={
-            @HandlerOutput(name="MonitorList", type=Option[].class),
-            @HandlerOutput(name="FirstItem", type=String.class)})
+    @Handler(id = "populateApplicationsMonitorDropDown",
+            input = {
+                @HandlerInput(name = "AppsList", type = List.class, required = true),
+                @HandlerInput(name = "monitorURL", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "MonitorList", type = Option[].class),
+                @HandlerOutput(name = "FirstItem", type = String.class)})
     public void populateApplicationsMonitorDropDown(HandlerContext handlerCtx) {
         List aList = (List) handlerCtx.getInputValue("AppsList");
         String monitorURL = (String) handlerCtx.getInputValue("monitorURL");
@@ -422,7 +462,7 @@ public class WoodstockHandler {
                 ArrayList moduleList = new ArrayList();
                 String appName = (String) al.next();
                 //Add the application name link in the dropdown if there are any app scoped resources.
-                if (MonitoringHandlers.doesMonitoringDataExist(monitorURL+"/applications/"+appName+"/resources")) {
+                if (MonitoringHandlers.doesMonitoringDataExist(monitorURL + "/applications/" + appName + "/resources")) {
                     moduleList.add(appName);
                 }
                 Set<String> modules = new HashSet<String>();
@@ -437,8 +477,8 @@ public class WoodstockHandler {
                             moduleList.add(moduleName);
                         }
                     }
-                }                
-               if (moduleList.isEmpty()) {
+                }
+                if (moduleList.isEmpty()) {
                     menuList.add(new Option(appName, appName));
                     if (firstItem == null) {
                         firstItem = appName;
@@ -446,11 +486,11 @@ public class WoodstockHandler {
                 } else {
                     OptionGroup menuOptions = getMenuOptions(moduleList, appName, "", false);
                     menuList.add(menuOptions);
-                    if (firstItem == null){
-                        firstItem = (String)moduleList.get(0);
+                    if (firstItem == null) {
+                        firstItem = (String) moduleList.get(0);
                     }
                 }
-          }
+            }
         }
 
         // Add Menu Options.
@@ -460,18 +500,19 @@ public class WoodstockHandler {
         handlerCtx.setOutputValue("FirstItem", firstItem);
     }
 
-  /**
-     *  <p> Returns the list of monitorable components of an application</p>
+    /**
+     * <p>
+     * Returns the list of monitorable components of an application</p>
      *
      */
     @Handler(id = "populateComponentDropDown",
-    input = {
-        @HandlerInput(name = "ModuleName", type = String.class, required = true),
-        @HandlerInput(name = "VSList", type = List.class, required = true),
-        @HandlerInput(name = "MonitorURL", type = String.class, required = true),
-        @HandlerInput(name = "AppName", type = String.class, required = true)},
-    output = {
-        @HandlerOutput(name = "ComponentList", type = Option[].class)})
+            input = {
+                @HandlerInput(name = "ModuleName", type = String.class, required = true),
+                @HandlerInput(name = "VSList", type = List.class, required = true),
+                @HandlerInput(name = "MonitorURL", type = String.class, required = true),
+                @HandlerInput(name = "AppName", type = String.class, required = true)},
+            output = {
+                @HandlerOutput(name = "ComponentList", type = Option[].class)})
     public void populateComponentDropDown(HandlerContext handlerCtx) {
         String moduleName = (String) handlerCtx.getInputValue("ModuleName");
         String appname = (String) handlerCtx.getInputValue("AppName");
@@ -500,7 +541,7 @@ public class WoodstockHandler {
             if (resMenuOptions.size() > 0) {
                 menuList.addAll(resMenuOptions);
             }
-        }        
+        }
         // Add Menu Options.
         jumpMenuOptions = (Option[]) menuList.toArray(new Option[menuList.size()]);
         handlerCtx.setOutputValue("ComponentList", jumpMenuOptions);
@@ -519,23 +560,23 @@ public class WoodstockHandler {
         } catch (Exception ex) {
             GuiUtil.getLogger().severe("Error in getEJBComponentMenuOptions ; \nendpoint = " + endpoint + "method=GET");
         }
-        if (compChildSet != null){
-          for (String child : compChildSet) {
-            Set<String> subCompChildSet = null;
-            try {
-                subCompChildSet = RestUtil.getChildMap(endpoint + "/" + child).keySet();
-            } catch (Exception ex) {
-                GuiUtil.getLogger().severe("Error in getEJBComponentMenuOptions ; \nendpoint = " + endpoint + "/" + child + "method=GET");
+        if (compChildSet != null) {
+            for (String child : compChildSet) {
+                Set<String> subCompChildSet = null;
+                try {
+                    subCompChildSet = RestUtil.getChildMap(endpoint + "/" + child).keySet();
+                } catch (Exception ex) {
+                    GuiUtil.getLogger().severe("Error in getEJBComponentMenuOptions ; \nendpoint = " + endpoint + "/" + child + "method=GET");
+                }
+                if ((subCompChildSet != null) && subCompChildSet.size() > 0) {
+                    //For ex: bean-methods
+                    OptionGroup childCompMenuOptions = getMenuOptions(new ArrayList(subCompChildSet), child, compName, true);
+                    menuList.add(childCompMenuOptions);
+                } else {
+                    //For ex: bean-cache and bean-
+                    compMenuList.add(child);
+                }
             }
-            if ( (subCompChildSet!= null) && subCompChildSet.size() > 0) {
-                //For ex: bean-methods
-                OptionGroup childCompMenuOptions = getMenuOptions(new ArrayList(subCompChildSet), child, compName, true);
-                menuList.add(childCompMenuOptions);
-            } else {
-                //For ex: bean-cache and bean-
-                compMenuList.add(child);
-            }
-          }
         }
         compMenuList.add(0, compName);
         OptionGroup compMenuOptions = getMenuOptions(compMenuList, compName, "", true);
@@ -555,7 +596,7 @@ public class WoodstockHandler {
         } catch (Exception ex) {
             GuiUtil.getLogger().severe("Error in getAppScopedResourcesMenuOptions ; \nendpoint = " + endpoint + "method=GET");
         }
-        if (resChildSet != null && resChildSet.size() > 0){
+        if (resChildSet != null && resChildSet.size() > 0) {
             OptionGroup childResMenuOptions = getMenuOptions(new ArrayList(resChildSet), "resources", "", true);
             menuList.add(childResMenuOptions);
         }
@@ -589,34 +630,35 @@ public class WoodstockHandler {
     }
 
     private static OptionGroup getMenuOptions(List values, String label, String label2, boolean addLabel) {
-	if (values == null) {
-	    return null;
-	}
+        if (values == null) {
+            return null;
+        }
         ArrayList nList = new ArrayList();
         Collections.sort(values);
         ListIterator nl = values.listIterator();
-	while (nl.hasNext()) {
-	    String name = (String) nl.next();
-	    if (addLabel && label2.equals("")) {
-		if(!label.equals(name)){
-		    nList.add(new Option(label+"/" + name, name));
-		} else {
-		    nList.add(new Option(name, name));
-		}
+        while (nl.hasNext()) {
+            String name = (String) nl.next();
+            if (addLabel && label2.equals("")) {
+                if (!label.equals(name)) {
+                    nList.add(new Option(label + "/" + name, name));
+                } else {
+                    nList.add(new Option(name, name));
+                }
 
-	    } else if(addLabel && !label2.equals("")) {
-		nList.add(new Option(label2+"/"+label+"/" + name, name));
-	    } else {
-		nList.add(new Option(name, name));
-	    }
-	}
-	Option[] groupedOptions3 = (Option[]) nList.toArray(new Option[nList.size()]);
-	OptionGroup jumpGroup3 = new OptionGroup();
-	jumpGroup3.setLabel(label);
-	jumpGroup3.setOptions(groupedOptions3);
-	return jumpGroup3;
+            } else if (addLabel && !label2.equals("")) {
+                nList.add(new Option(label2 + "/" + label + "/" + name, name));
+            } else {
+                nList.add(new Option(name, name));
+            }
+        }
+        Option[] groupedOptions3 = (Option[]) nList.toArray(new Option[nList.size()]);
+        OptionGroup jumpGroup3 = new OptionGroup();
+        jumpGroup3.setLabel(label);
+        jumpGroup3.setOptions(groupedOptions3);
+        return jumpGroup3;
     }
 
     private Option[] jumpMenuOptions = null;
 
 }
+
