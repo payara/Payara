@@ -81,6 +81,7 @@
               propertyList="$attribute{newList}"
               targets = "#{pageSession.selectedTargets}"
         );
+	deleteFileFromTempDir(deleteTempFile="$attribute{filePath}");
         gf.redirect(page="#{request.contextPath}/common/removeFrame.jsf?#{pageSession.listPageLink}&#{extraArgs}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}&bare=true");
     />
 </sun:button>
