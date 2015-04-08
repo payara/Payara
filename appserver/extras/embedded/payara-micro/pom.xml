@@ -159,14 +159,14 @@
             <optional>true</optional>
         </dependency>
 
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-management</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
--->
+                <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>glassfish-management</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                    <optional>true</optional>
+                </dependency>
+        -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common-web</artifactId>
@@ -194,22 +194,22 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-      </dependency>
-      <dependency>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-jts</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-       </dependency>
-       <dependency>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-corba-base</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-       </dependency>
-      <dependency>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ejb-lite</artifactId>
             <version>${project.version}</version>
@@ -265,22 +265,22 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-<!--        <dependency>
+        <!--        <dependency>
+                    <groupId>org.glassfish.main.packager</groupId>
+                    <artifactId>shoal</artifactId>
+                    <version>${project.version}</version>
+                    <type>zip</type>
+                    <optional>true</optional>
+                </dependency>
+        -->
+        <!-- hazelcast package -->
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>shoal</artifactId>
+            <artifactId>hazelcast</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>
--->
-	<!-- hazelcast package -->
-	<dependency>
-	    <groupId>org.glassfish.main.packager</groupId>
-	    <artifactId>hazelcast</artifactId>
-	    <version>${project.version}</version>
-	    <type>zip</type>
-	    <optional>true</optional>
-	</dependency>     
+        </dependency>     
         <!-- ha package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -288,15 +288,58 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-         </dependency>
-            <dependency>
-                  <groupId>fish.payara.appserver</groupId>
-                  <artifactId>payara-micro-core</artifactId>
-                  <version>${project.version}</version>
-                  <type>jar</type>
-            </dependency>
+        </dependency>
+        <!-- Add Payara Micro Core -->
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>payara-micro-core</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <!-- Add JBatch -->
+        <dependency>
+            <groupId>org.glassfish.main.batch</groupId>
+            <artifactId>glassfish-batch-connector</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.batch</groupId>
+            <artifactId>glassfish-batch-commands</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.batch</groupId>
+            <artifactId>payara-jbatch</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <!-- Add Concurrency -->
+        <dependency>
+            <groupId>javax.enterprise.concurrent</groupId>
+            <artifactId>javax.enterprise.concurrent-api</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.enterprise.concurrent</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.concurrent</groupId>
+            <artifactId>concurrent-connector</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.main.concurrent</groupId>
+            <artifactId>concurrent-impl</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency> 
       </dependencies>
-
     <profiles>
         <profile>
             <!-- generate empty javadoc jar -->

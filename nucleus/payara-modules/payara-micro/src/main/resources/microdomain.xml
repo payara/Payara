@@ -56,6 +56,12 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
             <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
             <property name="connectionAttributes" value=";create=true" />
         </jdbc-connection-pool>
+        <connector-connection-pool max-pool-size="250" steady-pool-size="1" name="jms/__defaultConnectionFactory-Connection-Pool" resource-adapter-name="jmsra" connection-definition-name="javax.jms.ConnectionFactory"></connector-connection-pool>
+        <connector-resource pool-name="jms/__defaultConnectionFactory-Connection-Pool" jndi-name="jms/__defaultConnectionFactory" object-type="system-all-req"></connector-resource>
+        <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
+        <managed-executor-service maximum-pool-size="200" core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
+        <managed-scheduled-executor-service core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all"></managed-scheduled-executor-service>
+        <managed-thread-factory description="thread factory" jndi-name="concurrent/__defaultManagedThreadFactory" object-type="system-all"></managed-thread-factory>
     </resources>
     <servers>
         <server name="server" config-ref="server-config">
@@ -66,7 +72,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
         <config name="server-config">
             <http-service>
                 <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
-                <virtual-server id="server" network-listeners="http-listener-1, http-listener-2">
+                <virtual-server id="server" network-listeners="http-listener, https-listener">
                     <property name="default-web-xml" value="${com.sun.aas.instanceRoot}/config/default-web.xml"></property>
                 </virtual-server>
             </http-service>
@@ -145,6 +151,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
+            <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
             <java-config>
                 <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
                 <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
@@ -179,6 +186,9 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" min-thread-pool-size="1" max-thread-pool-size="200"/>
             </thread-pools>
+            <monitoring-service>
+                <module-monitoring-levels ejb-container="HIGH" transaction-service="HIGH" web-services-container="HIGH" jersey="HIGH" jpa="HIGH" jvm="HIGH" thread-pool="HIGH" security="HIGH" web-container="HIGH" jdbc-connection-pool="HIGH" orb="HIGH" http-service="HIGH" jms-service="HIGH" connector-connection-pool="HIGH" connector-service="HIGH" deployment="HIGH"></module-monitoring-levels>
+            </monitoring-service>
         </config> 
     </configs>
     <property name="administrative.domain.name" value="domain1"/>
