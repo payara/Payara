@@ -145,7 +145,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
-        <grizzly.version>2.3.15-gfa</grizzly.version>
+        <grizzly.version>2.3.19</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
         <hk2.version>2.4.0-b12</hk2.version>
         <hk2.plugin.version>2.4.0-b12</hk2.plugin.version>
