@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -46,6 +46,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.tests.utils.Utils;
 import org.jvnet.hk2.config.ConfigBean;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.TransactionCallBack;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.WriteableView;
 

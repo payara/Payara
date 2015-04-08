@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -188,14 +188,14 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                 DeploymentImpl deploymentImpl = appInfo.getTransientAppMetaData(
                         WELD_DEPLOYMENT, DeploymentImpl.class);
 
+                deploymentImpl.buildDeploymentGraph();
+
                 List<BeanDeploymentArchive> archives = deploymentImpl.getBeanDeploymentArchives();
                 for (BeanDeploymentArchive archive : archives) {
                     ResourceLoaderImpl loader = new ResourceLoaderImpl(
-                            ((BeanDeploymentArchiveImpl) archive).getModuleClassLoaderForBDA());
+                      ((BeanDeploymentArchiveImpl) archive).getModuleClassLoaderForBDA());
                     archive.getServices().add(ResourceLoader.class, loader);
                 }
-
-                deploymentImpl.buildDeploymentGraph();
 
                 addCdiServicesToNonModuleBdas(deploymentImpl.getLibJarRootBdas(),
                                               services.getService(InjectionManager.class));

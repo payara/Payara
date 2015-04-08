@@ -2,7 +2,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -98,7 +98,7 @@
         </sun:property>
 
         <sun:property id="MaxPostSize"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.http.MaxPostSize}" helpText="$resource{i18n_web.http.MaxPostSizeHelp}" >
-            <sun:textField id="headerBLength" styleClass="integer" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.http.MaxPostSize']}" text="#{pageSession.httpMap['maxPostSizeBytes']}" />
+            <sun:textField id="headerBLength" styleClass="intAllowMinusOne" columns="$int{20}" maxLength="#{sessionScope.fieldLengths['maxLength.http.MaxPostSize']}" text="#{pageSession.httpMap['maxPostSizeBytes']}" />
             <sun:staticText id="byte" style="padding: 8pt" text="$resource{i18n.common.Bytes}"/>
         </sun:property>
 

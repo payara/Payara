@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,7 +71,7 @@ public class JmxServiceUrlsResource {
     }
 
     @GET
-    @Produces({"text/html;qs=2",MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML})
+    @Produces({"text/html",MediaType.APPLICATION_JSON+";qs=0.5",MediaType.APPLICATION_XML+";qs=0.5"})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     public ActionReportResult getJmxServiceUrl() {
         try {
