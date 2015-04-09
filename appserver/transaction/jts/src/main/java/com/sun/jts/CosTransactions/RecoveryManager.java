@@ -81,7 +81,6 @@ import java.util.logging.Level;
 import com.sun.logging.LogDomains;
 import com.sun.jts.utils.LogFormatter;
 import com.sun.enterprise.transaction.jts.api.TransactionRecoveryFence;
-import static com.sun.jts.CosTransactions.TransactionFactoryImpl._logger;
 /**
  * This class manages information required for recovery, and also general
  * state regarding transactions in a process.
