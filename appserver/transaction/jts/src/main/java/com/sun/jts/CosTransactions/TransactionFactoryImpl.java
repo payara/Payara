@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2015] [C2B2 Consulting Limited] 
 //----------------------------------------------------------------------------
 //
 // Module:      TransactionFactoryImpl.java
@@ -177,7 +177,7 @@ class TransactionFactoryImpl extends TransactionFactoryPOA implements Transactio
 
         // Ensure that resync has completed.
 
-        RecoveryManager.waitForResync(timeOut);
+        RecoveryManager.waitForResync();
 
         // Create a new top-level Coordinator, and initialise it
         // with the given time-out value.  If the operation fails,

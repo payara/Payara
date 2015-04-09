@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2015] [C2B2 Consulting Limited] 
 //----------------------------------------------------------------------------
 //
 // Module:      RecoveryManager.java
@@ -81,6 +81,7 @@ import java.util.logging.Level;
 import com.sun.logging.LogDomains;
 import com.sun.jts.utils.LogFormatter;
 import com.sun.enterprise.transaction.jts.api.TransactionRecoveryFence;
+import static com.sun.jts.CosTransactions.TransactionFactoryImpl._logger;
 /**
  * This class manages information required for recovery, and also general
  * state regarding transactions in a process.
@@ -160,6 +161,7 @@ public class RecoveryManager {
     private static TransactionRecoveryFence txRecoveryFence = new TransactionRecoveryFenceSimple();
 
     
+    private static int recoveryResynchTimeout = 120;
     
     /**
      * This is intented to be used as a lock object.
@@ -181,6 +183,15 @@ public class RecoveryManager {
     static void initialise() {
 
         // If already initialised, return immediately.
+        
+        String recoveryResynchTimeoutS = System.getProperty("fish.payara.jts.RecoveryResynchTimeout");
+        if (recoveryResynchTimeoutS != null) {
+            try {
+            recoveryResynchTimeout = Integer.parseInt(recoveryResynchTimeoutS);
+            } catch (NumberFormatException nfe) {
+                _logger.warning(recoveryResynchTimeoutS + " is not a valid setting for fish.payara.jts.RecoveryResynchTimeout as it is not a valid integer value");
+            }
+        }
 
         if (initialised) {
             return;
@@ -1453,7 +1464,13 @@ public class RecoveryManager {
 
         if (resyncInProgress != null) {
             try {
-                resyncInProgress.waitEvent();
+                
+                //
+                if (recoveryResynchTimeout == 0) {
+                    resyncInProgress.waitEvent();                    
+                } else {
+                    resyncInProgress.waitTimeoutEvent(recoveryResynchTimeout);
+                }
             } catch (InterruptedException exc) {
 		_logger.log(Level.SEVERE,"jts.wait_for_resync_complete_interrupted");
 		 String msg = LogFormatter.getLocalizedMessage(_logger,
