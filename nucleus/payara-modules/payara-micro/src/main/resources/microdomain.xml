@@ -145,9 +145,6 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
                 </message-security-config>
                 <property value="SHA-256" name="default-digest-algorithm" />
             </security-service>
-            <monitoring-service>
-                <module-monitoring-levels />
-            </monitoring-service>      
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
