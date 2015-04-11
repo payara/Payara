@@ -182,21 +182,13 @@ public class RecoveryManager {
     static void initialise() {
 
         // If already initialised, return immediately.
-        
-        String recoveryResynchTimeoutS = System.getProperty("fish.payara.jts.RecoveryResynchTimeout");
-        if (recoveryResynchTimeoutS != null) {
-            try {
-            recoveryResynchTimeout = Integer.parseInt(recoveryResynchTimeoutS);
-            } catch (NumberFormatException nfe) {
-                _logger.warning(recoveryResynchTimeoutS + " is not a valid setting for fish.payara.jts.RecoveryResynchTimeout as it is not a valid integer value");
-            }
-        }
-
         if (initialised) {
             return;
         }
-
         initialised = true;
+
+        // read the resynch timeout system property
+        recoveryResynchTimeout = Integer.getInteger("fish.payara.jts.RecoveryResynchTimeout", recoveryResynchTimeout);
 
         // Perform recovery/resync if necessary.
 
