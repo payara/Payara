@@ -19,6 +19,7 @@ package fish.payara.micro;
 
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -26,6 +27,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
@@ -386,7 +388,7 @@ public class PayaraMicro {
         BootstrapProperties bprops = new BootstrapProperties();
         GlassFishRuntime runtime;
         try {
-            runtime = GlassFishRuntime.bootstrap();
+            runtime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
             if (httpPort != Integer.MIN_VALUE) {
                 gfproperties.setPort("http-listener", httpPort);
@@ -436,11 +438,27 @@ public class PayaraMicro {
             }
 
             gf = runtime.newGlassFish(gfproperties);
+            
+            // reset logger.
+        
+            // reset the Log Manager
+            File configDir = new File(System.getProperty("com.sun.aas.instanceRoot"),"config");
+            File loggingProperties = new File(configDir.getAbsolutePath(), "logging.properties");
+            if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
+                System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                try {
+                    LogManager.getLogManager().readConfiguration();
+                } catch (IOException ex) {
+                    Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (SecurityException ex) {
+                    Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
             gf.start();
             deployAll();
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
-        }
+        } 
     }
     
     /**
@@ -683,6 +701,8 @@ public class PayaraMicro {
         } catch (MalformedURLException ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+
     }
 
 }
