@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2015] [C2B2 Consulting Limited] 
 //----------------------------------------------------------------------------
 //
 // Module:      RecoveryManager.java
@@ -160,6 +160,7 @@ public class RecoveryManager {
     private static TransactionRecoveryFence txRecoveryFence = new TransactionRecoveryFenceSimple();
 
     
+    private static int recoveryResynchTimeout = 120;
     
     /**
      * This is intented to be used as a lock object.
@@ -181,12 +182,13 @@ public class RecoveryManager {
     static void initialise() {
 
         // If already initialised, return immediately.
-
         if (initialised) {
             return;
         }
-
         initialised = true;
+
+        // read the resynch timeout system property
+        recoveryResynchTimeout = Integer.getInteger("fish.payara.jts.RecoveryResynchTimeout", recoveryResynchTimeout);
 
         // Perform recovery/resync if necessary.
 
@@ -1453,7 +1455,13 @@ public class RecoveryManager {
 
         if (resyncInProgress != null) {
             try {
-                resyncInProgress.waitEvent();
+                
+                //
+                if (recoveryResynchTimeout == 0) {
+                    resyncInProgress.waitEvent();                    
+                } else {
+                    resyncInProgress.waitTimeoutEvent(recoveryResynchTimeout);
+                }
             } catch (InterruptedException exc) {
 		_logger.log(Level.SEVERE,"jts.wait_for_resync_complete_interrupted");
 		 String msg = LogFormatter.getLocalizedMessage(_logger,
