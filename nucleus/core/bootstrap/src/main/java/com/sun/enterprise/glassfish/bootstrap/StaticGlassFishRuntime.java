@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright 2015 [C2B2 Consulting Limited]
 package com.sun.enterprise.glassfish.bootstrap;
 
 import java.io.File;
@@ -220,6 +221,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                     "config/cacerts.jks",
                     "config/keystore.jks",
                     "config/login.conf",
+                    "config/logging.properties",
                     "config/admin-keyfile",
                     "org/glassfish/web/embed/default-web.xml",
                     "org/glassfish/embed/domain.xml"
@@ -238,9 +240,19 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
              */
             ClassLoader cl = getClass().getClassLoader();
             for (String configFile : configFiles) {
-                copy(cl.getResource(configFile), new File(instanceConfigDir,
-                        configFile.substring(configFile.lastIndexOf('/') + 1)), false);
+                URL url = cl.getResource(configFile);
+                if (url != null) {
+                    copy(url, new File(instanceConfigDir,
+                            configFile.substring(configFile.lastIndexOf('/') + 1)), false);                    
+                }
             }
+            
+            // copy branding file if available
+            URL brandingUrl = cl.getResource("config/branding/glassfish-version.properties");
+            if (brandingUrl != null) {
+                copy(brandingUrl, new File(instanceConfigDir,"branding" + File.separator + "glassfish-version.properties"),false);
+            }
+                    
             /**
              * If the user has specified a custom domain.xml then copy it.
              */

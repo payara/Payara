@@ -23,6 +23,7 @@ import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import fish.payara.micro.PayaraMicro;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -51,12 +52,12 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name = "hazelcast-core")
 @RunLevel(StartupRunLevel.VAL)
 public class HazelcastCore implements EventListener {
-    
-    public final static String INSTANCE_ATTRIBUTE="GLASSFISH-INSTANCE";
+
+    public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     private static HazelcastCore theCore;
 
     private HazelcastInstance theInstance;
-    
+
     private CachingProvider hazelcastCachingProvider;
 
     @Inject
@@ -76,6 +77,7 @@ public class HazelcastCore implements EventListener {
         theCore = this;
         enabled = configuration.getEnabled();
         events.register(this);
+
         if ((configuration.getEnabled())) {
             bootstrapHazelcast();
         }
@@ -84,7 +86,7 @@ public class HazelcastCore implements EventListener {
     public HazelcastInstance getInstance() {
         return theInstance;
     }
-    
+
     public CachingProvider getCachingProvider() {
         return hazelcastCachingProvider;
     }
@@ -92,7 +94,7 @@ public class HazelcastCore implements EventListener {
     public boolean isEnabled() {
         return enabled;
     }
-    
+
     public static HazelcastCore getCore() {
         return theCore;
     }
@@ -126,13 +128,37 @@ public class HazelcastCore implements EventListener {
                     config = new Config();
                 }
             } else {
+
+                // check Payara Micro is configured and if so read configuration from there
+                String multicastGroup = configuration.getMulticastGroup();
+                int multicastPort = Integer.parseInt(configuration.getMulticastPort());
+                int startPort = Integer.parseInt(configuration.getStartPort());
+                
+                // check Payara micro overrides
+                PayaraMicro micro = PayaraMicro.getInstance(false);
+                if (micro != null) {
+                    if (micro.getClusterMulticastGroup() != null) {
+                        multicastGroup = micro.getClusterMulticastGroup();
+                    }
+
+                    if (micro.getClusterPort() != Integer.MIN_VALUE) {
+                        multicastPort = micro.getClusterPort();
+                    }
+
+                    if (micro.getClusterStartPort() != Integer.MIN_VALUE) {
+                        startPort = micro.getClusterStartPort();
+                    }
+
+                }
+                
+                // build the configuration
                 config.setProperty("hazelcast.jmx", "true");
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 mcConfig.setEnabled(true);
-                mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-                mcConfig.setMulticastPort(Integer.parseInt(configuration.getMulticastPort()));
+                mcConfig.setMulticastGroup(multicastGroup);
+                mcConfig.setMulticastPort(multicastPort);
                 config.getNetworkConfig().setPortAutoIncrement(true);
-                config.getNetworkConfig().setPort(Integer.parseInt(configuration.getStartPort()));
+                config.getNetworkConfig().setPort(startPort);
             }
         } catch (MalformedURLException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Unable to parse server config URL", ex);
@@ -186,7 +212,7 @@ public class HazelcastCore implements EventListener {
             InitialContext ctx;
             ctx = new InitialContext();
             ctx.bind(configuration.getJNDIName(), theInstance);
-            ctx.bind(configuration.getCachingProviderJNDIName(),hazelcastCachingProvider);
+            ctx.bind(configuration.getCachingProviderJNDIName(), hazelcastCachingProvider);
             ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at " + configuration.getJNDIName());
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at " + configuration.getCachingProviderJNDIName());
@@ -195,7 +221,7 @@ public class HazelcastCore implements EventListener {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     private void unbindFromJNDI() {
         try {
             InitialContext ctx;
@@ -209,7 +235,7 @@ public class HazelcastCore implements EventListener {
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
 
 }

@@ -19,17 +19,22 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-nucleus-parent</artifactId>
+        <groupId>org.glassfish.main.packager</groupId>
+        <artifactId>nucleus-packages</artifactId>
         <version>4.1.152-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.payara-modules</groupId>
-    <artifactId>payara-nucleus-modules</artifactId>
-    <packaging>pom</packaging>
-    <name>Payara Nucleus Modules</name>
-    <modules>
-	<module>hazelcast-bootstrap</module>
-        <module>payara-micro</module>
-    </modules>
+    <groupId>org.glassfish.main.packager</groupId>
+    <artifactId>payara-nucleus-package</artifactId>
+    <name>Payara Nucleus Package</name>
+    <packaging>distribution-fragment</packaging>
+    <description>This pom describes how to assemble the Nucleus Payara package</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>payara-micro-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>
+

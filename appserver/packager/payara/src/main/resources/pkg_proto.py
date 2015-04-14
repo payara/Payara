@@ -1,6 +1,9 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2008-2012 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -35,32 +38,23 @@
 # and therefore, elected the GPL Version 2 license, then the option applies
 # only if the new code is made subject to such option by the copyright
 # holder.
-# Portions Copyright [2015] [C2B2 Consulting Limited]
+#
+# Portions Copyright [2014] [C2B2 Consulting Limited]  
+import imp
 
-javax.enterprise.resource.corba.level=INFO
-javax.enterprise.resource.jta.level=INFO
-javax.enterprise.system.webservices.saaj.level=INFO
-javax.enterprise.system.container.ejb.level=INFO
-javax.enterprise.system.container.ejb.mdb.level=INFO
-javax.enterprise.resource.javamail.level=INFO
-javax.enterprise.system.webservices.rpc.level=INFO
-javax.enterprise.system.container.web.level=INFO
-javax.enterprise.resource.jms.level=INFO
-javax.enterprise.system.webservices.registry.level=INFO
-javax.enterprise.resource.webcontainer.jsf.application.level=INFO
-javax.enterprise.resource.webcontainer.jsf.resource.level=INFO
-javax.enterprise.resource.webcontainer.jsf.config.level=INFO
-javax.enterprise.resource.webcontainer.jsf.context.level=INFO
-javax.enterprise.resource.webcontainer.jsf.facelets.level=INFO
-javax.enterprise.resource.webcontainer.jsf.lifecycle.level=INFO
-javax.enterprise.resource.webcontainer.jsf.managedbean.level=INFO
-javax.enterprise.resource.webcontainer.jsf.renderkit.level=INFO
-javax.enterprise.resource.webcontainer.jsf.taglib.level=INFO
-javax.enterprise.resource.webcontainer.jsf.timing.level=INFO
-javax.org.glassfish.persistence.level=INFO
-javax.enterprise.system.tools.backup.level=INFO
-org.glassfish.admingui.level=INFO
-org.glassfish.naming.level=INFO
-org.eclipse.persistence.session.level=INFO
-javax.enterprise.system.tools.deployment.dol.level=WARNING
-javax.enterprise.system.tools.deployment.common.level=WARNING
+conf = imp.load_source("pkg_conf", "../pkg_conf.py")
+
+pkg = {
+    "name"          : "payara",
+    "version"       : conf.payara_version,
+    "attributes"    : {
+                        "pkg.summary" : "Payara Modules",
+                        "pkg.description" : "Payara modules",
+                        "info.classification" : "OSGi Service Platform Release 4",
+                      },
+    "dirtrees"      : { "glassfish/modules" : {},
+                      },
+    "licenses"      : {
+                        "../../../../ApacheLicense.txt" : {"license" : "ApacheV2"},
+                      }
+ }
