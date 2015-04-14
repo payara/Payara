@@ -87,6 +87,7 @@
         <abbrev_product_name>Payara</abbrev_product_name>
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
+        <payara_domain_template>payara-domain.jar</payara_domain_template>
         <version_prefix />
         <version_suffix>152</version_suffix>
         <major_version>4</major_version>
@@ -1104,6 +1105,6 @@
             <modules>
                 <module>javaee-api</module>
             </modules>
-        </profile>       
-    </profiles>
+        </profile>   
+      </profiles>
 </project>
