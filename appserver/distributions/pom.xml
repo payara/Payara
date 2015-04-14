@@ -79,7 +79,9 @@
         <temp.dir>${project.build.directory}/dependency</temp.dir>
         <include.group.ids>org.glassfish.main.packager,org.glassfish.main.registration</include.group.ids>
         <template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/appserver-domain.jar</template.jar>
-        <create-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-domain.args>
+        <payara.template.jar>${stage.dir}/${install.dir.name}/glassfish/common/templates/gf/payara-domain.jar</payara.template.jar>
+        <create-gf-domain.args>--user admin create-domain --template=${template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost domain1</create-gf-domain.args>
+        <create-domain.payara.args>--user admin create-domain --template=${payara.template.jar} --nopassword --savelogin=true --checkports=false --adminport 4848 --instanceport 8080 --keytooloptions CN=localhost payaradomain</create-domain.payara.args>
     </properties>
 
     <modules>
@@ -153,13 +155,22 @@
                             </configuration>
                         </execution>
                         <execution>
-                            <id>create-domain</id>
+                            <id>create-glassfish-domain</id>
                             <phase>process-resources</phase>
                             <configuration>
                                 <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
-                                <commandlineArgs>${create-domain.args}</commandlineArgs>
+                                <commandlineArgs>${create-gf-domain.args}</commandlineArgs>
                             </configuration>
                         </execution>
+                        <execution>
+                            <id>create-payara-domain</id>
+                            <phase>process-resources</phase>
+                            <configuration>
+                                <executable>${stage.dir}/${install.dir.name}/bin/asadmin</executable>
+                                <commandlineArgs>${create-domain.payara.args}</commandlineArgs>
+                            </configuration>
+                        </execution>
+
                     </executions>
                 </plugin>
                 <plugin>
