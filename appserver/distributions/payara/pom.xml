@@ -69,11 +69,18 @@
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>create-domain</id>
+                        <id>create-payara-domain</id>
                         <goals>
                             <goal>exec</goal>
                         </goals>
                     </execution>
+                    <execution>
+                        <id>create-glassfish-domain</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+
                 </executions>
             </plugin>
         </plugins>
