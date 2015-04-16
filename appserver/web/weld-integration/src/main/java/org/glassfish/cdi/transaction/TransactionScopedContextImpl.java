@@ -118,9 +118,9 @@ public class TransactionScopedContextImpl implements Context {
      */
     public boolean isActive() {
         try {
-            if (getTransactionSynchronizationRegistry() != null) {
-                return true;
-            }
+            //Just calling it but not checking for != null on return value as its already done inside method
+            getTransactionSynchronizationRegistry();
+            return true;
         } catch (ContextNotActiveException ignore) {
         }
         return false;

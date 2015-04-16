@@ -107,6 +107,7 @@
         <module>nucleus-l10n</module>	
         <module>nucleus-management-l10n</module>
         <module>hazelcast-package</module>
+        <module>payara-nucleus</module>
     </modules>
 
     <build>

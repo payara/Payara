@@ -53,7 +53,7 @@ public class HazelcastBackingStoreFactory implements BackingStoreFactory {
             throw new BackingStoreException("Hazelcast is NOT Enabled please enable Hazelcast");
         }
         IMap<K, V> storeMap = hazelcast.getMap(bsc.getStoreName());
-        return new HazelcastBackingStore<K, V>(storeMap, this);
+        return new HazelcastBackingStore<K, V>(storeMap, this, hazelcast.getLocalEndpoint().getUuid());
     }
 
     @Override

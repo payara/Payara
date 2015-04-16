@@ -61,7 +61,7 @@
   </scm>
     
     <properties>
-        <jms-api.version>2.0</jms-api.version>
+        <jms-api.version>2.0.1</jms-api.version>
         <jsp-api.version>2.3.2-b01</jsp-api.version>
         <jsp-impl.version>2.3.3-b02</jsp-impl.version>
         <jstl-impl.version>1.2.4</jstl-impl.version>
@@ -115,13 +115,13 @@
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
-        <mq.version>5.1-b09</mq.version>
+        <mq.version>5.1.1-b02</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <weld.version>2.2.7.Final</weld.version>
+        <weld.version>2.2.10.Final</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
-        <tyrus.version>1.9</tyrus.version>
+        <tyrus.version>1.10</tyrus.version>
         <jsonp-api.version>1.0</jsonp-api.version>
         <jsonp-ri.version>1.0.4</jsonp-ri.version>
         <jsonp-jaxrs.version>1.0</jsonp-jaxrs.version>

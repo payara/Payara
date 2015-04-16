@@ -32,11 +32,12 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
 
     BackingStoreFactory factory;
     IMap<K, V> imap;
+    String instanceName;
 
-    public HazelcastBackingStore(IMap storeMap, BackingStoreFactory factory) {
+    public HazelcastBackingStore(IMap storeMap, BackingStoreFactory factory, String instanceName) {
         this.factory = factory;
         imap = storeMap;
-
+        this.instanceName = instanceName;
     }
 
     @Override
@@ -52,7 +53,8 @@ public class HazelcastBackingStore<K extends Serializable, V extends Serializabl
     @Override
     public String save(K k, V v, boolean bln) throws BackingStoreException {
         imap.set(k, v);
-        return getBackingStoreConfiguration().getInstanceName();
+        
+        return instanceName;
     }
 
     @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.ejb.containers;
 
 import java.util.Map;
@@ -87,7 +87,7 @@ public class EJBContainerTransactionManager {
     private JavaEETransactionManager transactionManager;
     private BaseContainer container;
     private EjbDescriptor ejbDescriptor;
-    private int cmtTimeoutInSeconds = 120;
+    private int cmtTimeoutInSeconds = 0;
 
     /**
      * Construct new instance and set basic references

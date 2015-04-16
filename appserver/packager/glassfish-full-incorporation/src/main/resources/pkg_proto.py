@@ -3,7 +3,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -61,11 +61,11 @@ pkg = {
 			"pkg:/metro@" + conf.metro_version : {"type" : "incorporate" },
 			"pkg:/glassfish-appclient@" + conf.glassfish_version : {"type" : "incorporate" },
 			"pkg:/glassfish-jms@" + conf.glassfish_version: {"type" : "incorporate" },
-			"pkg:/mq-server@5.1" : {"type" : "incorporate" },
-			"pkg:/mq-bin-sh@5.1" : {"type" : "incorporate" },
-			"pkg:/mq-bin-exe@5.1" : {"type" : "incorporate" },
-                        "pkg:/mq-config-gf@5.1" : {"type" : "incorporate" },
-			"pkg:/mq-locale@5.1" : {"type" : "incorporate" },
+			"pkg:/mq-server@5.1.1" : {"type" : "incorporate" },
+			"pkg:/mq-bin-sh@5.1.1" : {"type" : "incorporate" },
+			"pkg:/mq-bin-exe@5.1.1" : {"type" : "incorporate" },
+                        "pkg:/mq-config-gf@5.1.1" : {"type" : "incorporate" },
+			"pkg:/mq-locale@5.1.1" : {"type" : "incorporate" },
                       },
     "licenses"      : {
                         "../../../../CDDL+GPL.txt" : {"license" : "CDDL and GPL v2 with classpath exception"},

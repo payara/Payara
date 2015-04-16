@@ -37,13 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright 2015 C2B2 Consulting Limited
 package com.sun.gjc.spi.jdbc30;
 
 import com.sun.gjc.spi.ManagedConnectionImpl;
 import com.sun.gjc.spi.base.ConnectionWrapper;
 import com.sun.gjc.util.SQLTraceDelegator;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.sql.CallableStatement;
@@ -455,7 +456,16 @@ public class ProfiledConnectionWrapper30 extends ConnectionHolder30 implements C
                 record.setThreadID(Thread.currentThread().getId());
                 record.setTimeStamp(System.currentTimeMillis());
                 sqlTraceDelegator.sqlTrace(record);
-                return method.invoke(actualObject, args);
+                try {
+                    return method.invoke(actualObject, args);
+                } catch (InvocationTargetException ex) {
+                    Throwable cause = ex.getCause();
+                    if (cause != null) {
+                        throw cause;
+                    } else {
+                        throw ex;
+                    }
+                }
             }
         };
         result = (T) Proxy.newProxyInstance(actualObject.getClass().getClassLoader(), ifaces, ih);

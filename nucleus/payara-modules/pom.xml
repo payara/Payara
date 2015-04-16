@@ -30,5 +30,6 @@
     <name>Payara Nucleus Modules</name>
     <modules>
 	<module>hazelcast-bootstrap</module>
+        <module>payara-micro</module>
     </modules>
 </project>

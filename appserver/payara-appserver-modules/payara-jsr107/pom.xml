@@ -10,7 +10,7 @@
     <artifactId>payara-jsr107</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara JSR107</name>
-    <description>Payara JSR107 Integrationnnnn Module</description>
+    <description>Payara JSR107 Integration Module</description>
     <developers>
         <developer>
             <id>smillidge</id>
@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.glassfish.main.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>4.1.152-SNAPSHOT</version>
+            <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>

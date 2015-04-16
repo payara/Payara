@@ -136,7 +136,7 @@
            		<enabled>true</enabled>
            	</releases>
             	<snapshots>
-                	<enabled>true</enabled>
+                	<enabled>false</enabled>
             	</snapshots>
         </repository>
     </repositories>
@@ -177,14 +177,14 @@
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
-        <glassfish-corba.version>4.0.0-b008</glassfish-corba.version>
+        <glassfish-corba.version>4.0.1</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
         <grizzly.version>2.3.19</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
-        <hk2.version>2.4.0-b08</hk2.version>
-	<hk2.plugin.version>2.4.0-b08</hk2.plugin.version>
+        <hk2.version>2.4.0-b12</hk2.version>
+        <hk2.plugin.version>2.4.0-b12</hk2.plugin.version>
         <javax.el.version>3.0.1-b03</javax.el.version>
         <javax.el-api.version>3.0.1-b03</javax.el-api.version>
         <trilead-ssh2.version>build212-hudson-6</trilead-ssh2.version>
@@ -192,7 +192,7 @@
         <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.15</jersey.version>
+        <jersey.version>2.17</jersey.version>
         <jackson.version>2.5.0</jackson.version>
         <jettison.version>1.3.7</jettison.version>
         <jax-rs-api.spec.version>2.0</jax-rs-api.spec.version>
@@ -214,7 +214,7 @@
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <mail.version>1.5.2</mail.version>
-        <hazelcast.version>3.4</hazelcast.version>
+        <hazelcast.version>3.4.2</hazelcast.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>

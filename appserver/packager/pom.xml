@@ -160,6 +160,7 @@
         <module>glassfish-entitybeans-container</module>
         <module>json</module>
         <module>hazelcast</module>
+        <module>payara</module>
     </modules>
 
     <build>
