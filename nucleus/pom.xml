@@ -177,7 +177,7 @@
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
-        <mail.version>1.5.2</mail.version>
+        <mail.version>1.5.3</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>
