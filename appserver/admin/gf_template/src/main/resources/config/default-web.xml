@@ -305,7 +305,7 @@
     <servlet-class>org.apache.jasper.servlet.JspServlet</servlet-class>
     <init-param>
       <param-name>xpoweredBy</param-name>
-      <param-value>true</param-value>
+      <param-value>false</param-value>
     </init-param>
     <init-param>
       <param-name>httpMethods</param-name>
