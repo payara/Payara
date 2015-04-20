@@ -197,6 +197,8 @@
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
+        <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
+        <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -372,6 +374,7 @@
         <jvm-options>-Dcom.sun.enterprise.config.config_environment_factory_class=com.sun.enterprise.config.serverbeans.AppserverConfigEnvironmentFactory</jvm-options>
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Xmx1024m</jvm-options>
+        <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
       </java-config>
       <availability-service>
         <web-container-availability></web-container-availability>
