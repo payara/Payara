@@ -444,9 +444,8 @@ public abstract class GFLauncher {
             // In MacOS 10.10 they removed StartupItemContext
             // so call launchctl directly doing what StartupItemContext did
             // See GLASSFISH-21113
-            cmds.add("launchctl");
-            cmds.add("bsexec");
-            cmds.add("/");
+            // remove bsexec as from 10.10.3 bsexec requires sudo
+	    cmds.add("nohup");
             cmds.addAll(getCommandLine());
         }
         else {
