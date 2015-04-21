@@ -43,7 +43,7 @@
 <!-- appServer/domainTabs.jsf -->
 
 <sun:tabSet id="domainTabs" immediate="true" selected="#{sessionScope.domainTabs}">
-    <sun:tab id="domainAttrs" immediate="true" text="$resource{i18n.headings.DomainAttributesTab}" toolTip="$resource{i18n.headings.DomainAttributesTab}">
+    <sun:tab id="domainAttrs" immediate="true" text="$resource{i18n.headings.DomainAttributes}" toolTip="$resource{i18n.headings.DomainAttributesTab}">
         <!command
             setSessionAttribute(key="domainTabs" value="domainAttrs");
             gf.redirect(page="#{request.contextPath}/common/appServer/serverInstDomainAttrs.jsf");
