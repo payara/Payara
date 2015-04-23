@@ -436,7 +436,12 @@ public abstract class GFLauncher {
         }
 
         List<String> cmds = null;
-        if ((OS.isDarwin() && (!getInfo().isVerboseOrWatchdog()))) {
+	// Use launchctl bsexec on MacOS versions before 10.10
+	// otherwise use regular startup.
+ 	// (No longer using StartupItemContext).
+	// See GLASSFISH-21343
+        if (OS.isDarwin() && useLaunchCtl(System.getProperty("os.version")) && 
+	    (!getInfo().isVerboseOrWatchdog())) {
             // On MacOS we need to start long running process with
             // StartupItemContext. See IT 12942
             cmds = new ArrayList<String>();
@@ -492,6 +497,36 @@ public abstract class GFLauncher {
         //if verbose, hang around until the domain stops
         if (getInfo().isVerboseOrWatchdog())
             wait(process);
+    }
+
+    /**
+     * Checks whether to use launchctl for start up by checking if mac os version < 10.10
+     *
+     * @return  True if osversion < 10.10 
+     */
+    private static boolean useLaunchCtl(String osversion) {
+
+        int major = 0;
+        int minor = 0;
+
+	if (osversion == null || osversion.equals(""))
+	    return false;
+
+        String[] split = osversion.split("[\\._\\-]+");
+
+	try {
+            if (split.length > 0  && split[0].length() > 0) {
+                major = Integer.parseInt(split[0]);
+            }
+            if (split.length > 1 && split[1].length() > 0) {
+                minor = Integer.parseInt(split[1]);
+            }
+	    return ((major <= 9) || (major <= 10 && minor < 10));
+	}
+	catch (NumberFormatException e) {
+	    // Assume version is 10.10 or later.
+	    return false;
+	}
     }
 
     private void writeSecurityTokens(Process sp) throws GFLauncherException, IOException {
