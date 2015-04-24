@@ -509,7 +509,7 @@ public abstract class GFLauncher {
         int major = 0;
         int minor = 0;
 
-	if (osversion == null || osversion.equals(""))
+	if (osversion == null || osversion.isEmpty())
 	    return false;
 
         String[] split = osversion.split("[\\._\\-]+");
