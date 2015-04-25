@@ -216,9 +216,9 @@ public class EJBTimerService {
 
     private static synchronized void initEJBTimerService(String target, boolean force) {
         if (_timerService == null) {
-            PersistentTimerService persistentTS = 
-                    EjbContainerUtilImpl.getInstance().getServices().getService(PersistentTimerService.class);
-            if (persistentTS == null) {
+            List<PersistentTimerService> persistentTSList = 
+                    EjbContainerUtilImpl.getInstance().getServices().getAllServices(PersistentTimerService.class);
+            if (persistentTSList.isEmpty()) {
                 try {
                     _timerService = new EJBTimerService();
                     _timerServiceVerified = true;
@@ -227,6 +227,16 @@ public class EJBTimerService {
                 }
             } else {
                 synchronized (lock) {
+                    // choose service based on the configuration setting
+                    EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEJBTimerService();
+                    PersistentTimerService persistentTS = null;
+                    for (PersistentTimerService pts : persistentTSList) {
+                        if (pts.getClass().getSimpleName().startsWith(serviceType)) {
+                            persistentTS = pts;
+                            break;
+                        }
+                    }
                     persistentTS.initPersistentTimerService(target);
                     _timerServiceVerified = true;
                 }
