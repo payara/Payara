@@ -25,6 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -385,11 +386,13 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public void bootStrap() throws BootstrapException {
+        setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
         GlassFishRuntime runtime;
         try {
             runtime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
+
             if (httpPort != Integer.MIN_VALUE) {
                 gfproperties.setPort("http-listener", httpPort);
             }
@@ -400,6 +403,7 @@ public class PayaraMicro {
             }
 
             if (alternateDomainXML != null) {
+                gfproperties.setConfigFileReadOnly(false);
                 gfproperties.setConfigFileURI("file://" + alternateDomainXML.getAbsolutePath());
             } else {
                 if (noCluster) {
@@ -417,6 +421,7 @@ public class PayaraMicro {
                     installFiles(gfproperties);
                 } else {
                     gfproperties.setConfigFileURI("file://" + rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
+                    gfproperties.setConfigFileReadOnly(false);
                 }
 
             }
@@ -448,9 +453,7 @@ public class PayaraMicro {
                 System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
                 try {
                     LogManager.getLogManager().readConfiguration();
-                } catch (IOException ex) {
-                    Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (SecurityException ex) {
+                } catch (IOException | SecurityException ex) {
                     Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -702,6 +705,22 @@ public class PayaraMicro {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+
+    }
+
+    private void setSystemProperties() {
+        try {
+            Properties embeddedBootProperties = new Properties();
+            embeddedBootProperties.load(ClassLoader.getSystemResourceAsStream("payara-boot.properties"));
+            for (Object key : embeddedBootProperties.keySet()) {
+                String keyStr = (String)key;
+                if (System.getProperty(keyStr) == null) {
+                    System.setProperty(keyStr, embeddedBootProperties.getProperty(keyStr));
+                }
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
     }
 

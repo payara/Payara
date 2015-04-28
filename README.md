@@ -1,4 +1,4 @@
-![alt tag](https://pbs.twimg.com/profile_images/497774211687936000/QNIEK7fM_200x200.png)
+![alt tag](https://avatars3.githubusercontent.com/u/7817189?v=3&s=100)
 
 #Payara Server
 

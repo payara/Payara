@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -71,6 +71,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -186,10 +187,8 @@ public class ApplicationContext implements ServletContext {
     /**
      * The merged context initialization parameters for this Context.
      */
-    private Map<String, String> parameters =
+    private ConcurrentMap<String, String> parameters =
         new ConcurrentHashMap<String, String>();
-
-    private volatile boolean parametersMerged = false;
 
     private boolean isRestricted;
 
@@ -275,7 +274,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public String getInitParameter(final String name) {
-        mergeParameters();
         return parameters.get(name);
     }
 
@@ -285,7 +283,6 @@ public class ApplicationContext implements ServletContext {
      */
     @Override
     public Enumeration<String> getInitParameterNames() {
-        mergeParameters();
         return (new Enumerator<String>(parameters.keySet()));
     }
 
@@ -301,16 +298,8 @@ public class ApplicationContext implements ServletContext {
             throw new UnsupportedOperationException(
                     rb.getString(UNSUPPORTED_OPERATION_EXCEPTION));
         }
-        try {
-            context.addParameter(name, value);
-            if (parametersMerged) {
-                // Avoid call to mergeParameters
-                parameters.put(name, value);
-            }
-            return true;
-        } catch (IllegalArgumentException iae) {
-            return false;
-        }
+
+        return parameters.putIfAbsent(name, value) == null;
     }
 
     /**
@@ -1059,46 +1048,6 @@ public class ApplicationContext implements ServletContext {
 
     void setRestricted(boolean isRestricted) {
         this.isRestricted = isRestricted;
-    }
-
-
-    // -------------------------------------------------------- Private Methods
-
-    /**
-     * Merge the context initialization parameters specified in the application
-     * deployment descriptor with the application parameters described in the
-     * server configuration, respecting the <code>override</code> property of
-     * the application parameters appropriately.
-     */
-    private synchronized void mergeParameters() {
-        if (parametersMerged) {
-            return;
-        }
-
-        synchronized(this) {
-            if (parametersMerged) {
-                return;
-            }
-
-            for (String name : context.findParameters()) {
-                parameters.put(name, context.findParameter(name));
-            }
-            List<ApplicationParameter> params =
-                context.findApplicationParameters();
-            synchronized(params) {
-                Iterator<ApplicationParameter> i = params.iterator(); 
-                while (i.hasNext()) {
-                    ApplicationParameter param = i.next();
-                    if (param.getOverride()) {
-                        if (parameters.get(param.getName()) == null)
-                            parameters.put(param.getName(), param.getValue());
-                    } else {
-                        parameters.put(param.getName(), param.getValue());
-                    }
-                }
-            }
-            parametersMerged = true;
-        }
     }
 
 }

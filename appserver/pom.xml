@@ -102,7 +102,7 @@
         <jsftemplating.version>2.1.1</jsftemplating.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <webservices.version>2.3.1</webservices.version>
+        <webservices.version>2.3.1-b419</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.2.0</woodstox.version>
         <jaxb-api.version>2.2.12-b140109.1041</jaxb-api.version>
@@ -118,7 +118,7 @@
         <mq.version>5.1.1-b02</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <weld.version>2.2.10.Final</weld.version>
+        <weld.version>2.2.10.SP1</weld.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.10</tyrus.version>
