@@ -60,6 +60,7 @@ package org.apache.catalina.connector;
 
 import java.lang.reflect.Constructor;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.*;
@@ -1156,8 +1157,16 @@ public class Connector
      */
     @Override
     public void setURIEncoding(String uriEncoding) {
+    	if (Charset.isSupported(uriEncoding)) {
         this.uriEncoding = uriEncoding;
         setProperty("uRIEncoding", uriEncoding);
+    	} else {
+			if (log.isLoggable(Level.WARNING)) {
+				log.log(Level.WARNING, uriEncoding
+						+ "is not supported .Setting default URLEncoding as "
+						+ this.uriEncoding);
+			}
+		}
     }
 
     /**
