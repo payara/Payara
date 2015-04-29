@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -3370,10 +3370,16 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                         newListenerNames[listenerNames.length] = connector.getName();
                         vs.setNetworkListenerNames(newListenerNames);
                     }
-
-                    // Check if virtual server has default-web-module configured,
-                    // and if so, configure the http listener's mapper with this
-                    // information
+                }
+            }
+            connector.start();
+            // GLASSFISH-20932
+            // Check if virtual server has default-web-module configured,
+            // and if so, configure the http listener's mapper with this
+            // information
+            if (virtualServers != null) {
+                Mapper mapper = connector.getMapper();
+                for (VirtualServer vs : virtualServers) {
                     String defaultWebModulePath = vs.getDefaultContextPath(
                             domain, appRegistry);
                     if (defaultWebModulePath != null) {
@@ -3387,11 +3393,8 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
                     }
                 }
             }
-
-            connector.start();
         }
     }
-
     /**
      * Method gets called, when GrizzlyService changes HTTP Mapper, associated
      * with specific port.
