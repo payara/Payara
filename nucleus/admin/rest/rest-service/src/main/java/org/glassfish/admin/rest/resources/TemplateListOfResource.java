@@ -165,7 +165,7 @@ public abstract class TemplateListOfResource extends AbstractResource {
     }
 
     @OPTIONS
-    @Produces({MediaType.APPLICATION_JSON+";qs=0.5", MediaType.TEXT_HTML+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
+    @Produces({MediaType.APPLICATION_JSON, MediaType.TEXT_HTML, MediaType.APPLICATION_XML})
     public Response options() {
         return Response.ok().entity(buildActionReportResult()).build();
     }
