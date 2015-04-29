@@ -72,7 +72,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.X500Name;
 
 import org.apache.catalina.Authenticator;
 import org.apache.catalina.Container;

@@ -60,7 +60,7 @@ import javax.security.auth.callback.Callback;
 
 
 import org.jvnet.hk2.annotations.Service;
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.X500Name;
 
 
 /**
