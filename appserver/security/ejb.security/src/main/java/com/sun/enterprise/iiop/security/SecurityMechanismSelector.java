@@ -78,7 +78,7 @@ import com.sun.corba.ee.spi.transport.SocketInfo;
 import com.sun.corba.ee.org.omg.CSIIOP.*;
 import org.ietf.jgss.Oid;
 import java.util.Enumeration;
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.X500Name;
 import com.sun.enterprise.security.SecurityServicesUtil;
 import com.sun.enterprise.security.auth.login.LoginContextDriver;
 import com.sun.enterprise.security.auth.login.common.LoginException;

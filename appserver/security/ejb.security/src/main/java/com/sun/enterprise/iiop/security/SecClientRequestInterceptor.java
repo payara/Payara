@@ -64,9 +64,9 @@ import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.omg.CORBA.*;
 import org.omg.PortableInterceptor.*;
 import org.omg.IOP.*;
-import sun.security.util.DerOutputStream;
-import sun.security.util.DerValue;
-import sun.security.x509.X500Name;
+import com.ibm.security.util.DerOutputStream;
+import com.ibm.security.util.DerValue;
+import com.ibm.security.x509.X500Name;
 
 /**
  * This class implements a client side security request interceptor for CSIV2.

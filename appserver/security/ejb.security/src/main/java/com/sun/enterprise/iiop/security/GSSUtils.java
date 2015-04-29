@@ -42,9 +42,9 @@ package com.sun.enterprise.iiop.security;
 
 import java.io.IOException;
 import java.io.InputStream;
-import sun.security.util.ObjectIdentifier;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerOutputStream;
+import com.ibm.security.util.ObjectIdentifier;
+import com.ibm.security.util.DerInputStream;
+import com.ibm.security.util.DerOutputStream;
 
 import com.sun.corba.ee.org.omg.GSSUP.GSSUPMechOID;
 import com.sun.corba.ee.org.omg.CSI.GSS_NT_Export_Name_OID;

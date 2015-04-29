@@ -62,11 +62,11 @@ import com.sun.corba.ee.spi.legacy.connection.Connection;
 import com.sun.corba.ee.spi.legacy.interceptor.RequestInfoExt;
 import com.sun.enterprise.common.iiop.security.AnonCredential;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
-import sun.security.util.DerInputStream;
-import sun.security.util.DerValue;
+import com.ibm.security.util.DerInputStream;
+import com.ibm.security.util.DerValue;
 
-import sun.security.x509.X509CertImpl;
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.X509CertImpl;
+import com.ibm.security.x509.X500Name;
 import javax.security.auth.*;  
 
 import com.sun.enterprise.security.auth.login.common.PasswordCredential;
