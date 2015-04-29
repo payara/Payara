@@ -203,5 +203,11 @@
             <artifactId>javahelp</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.bcel</groupId>
+            <artifactId>bcel</artifactId>
+            <version>5.2</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
