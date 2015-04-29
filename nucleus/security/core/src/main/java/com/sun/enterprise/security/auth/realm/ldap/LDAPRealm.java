@@ -36,6 +36,7 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * Portions Copyright [2015] [C2B2 Consulting Limited]
  */
 
 package com.sun.enterprise.security.auth.realm.ldap;
@@ -67,7 +68,7 @@ import java.lang.StringBuffer;
 import java.util.regex.Matcher;
 import org.glassfish.internal.api.RelativePathResolver;
 import org.jvnet.hk2.annotations.Service;
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.X500Name;
 
 
 /**

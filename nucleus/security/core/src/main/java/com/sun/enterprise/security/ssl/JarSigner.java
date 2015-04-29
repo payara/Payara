@@ -71,8 +71,8 @@ import java.util.zip.ZipOutputStream;
 import sun.security.pkcs.ContentInfo;
 import sun.security.pkcs.PKCS7;
 import sun.security.pkcs.SignerInfo;
-import sun.security.x509.AlgorithmId;
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.AlgorithmId;
+import com.ibm.security.x509.X500Name;
 
 /**
  * A utility class to sign jar files.
