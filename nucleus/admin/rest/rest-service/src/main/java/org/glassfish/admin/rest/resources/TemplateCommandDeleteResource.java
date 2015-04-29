@@ -93,7 +93,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
     }
 
     @DELETE
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public CommandResult processDelete(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -111,7 +111,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
         MediaType.APPLICATION_JSON,
         MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response processDeleteSse(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -169,7 +169,7 @@ public class TemplateCommandDeleteResource extends TemplateExecCommand {
     }
 
     @GET
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public String get() throws JSONException {
         return options();
     }

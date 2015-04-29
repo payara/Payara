@@ -134,7 +134,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @GET
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public Map<String,String> getEntity(@QueryParam("expandLevel") @DefaultValue("1") int expandLevel) {
         if (childModel == null) {//wrong entity name at this point
             throw new WebApplicationException(Response.Status.NOT_FOUND);
@@ -153,7 +153,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @POST
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public Response createOrUpdateEntity(HashMap<String, String> data) {
         doCreateOrUpdate(data);
         return Response.status(Status.CREATED).build();
@@ -175,7 +175,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public Object post(FormDataMultiPart formData) {
         return createOrUpdateEntity(createDataBasedOnForm(formData)); //execute the deploy command with a copy of the file locally
     }
@@ -196,7 +196,7 @@ public class TemplateRestResource extends AbstractResource implements OptionsCap
     }
 
     @OPTIONS
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public RestResourceMetadata options() {
         return new RestResourceMetadata(this);
     }

@@ -99,7 +99,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(Constants.MEDIA_TYPE_JSON)
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public CommandResult processPost(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -136,7 +136,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response processSsePost(ParameterMap data) {
         if (data == null) {
             data = new ParameterMap();
@@ -150,13 +150,13 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
 
     @POST
     @Consumes(MediaType.MULTIPART_FORM_DATA)
-    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response ssePost(FormDataMultiPart formData) {
         return processSsePost(createDataBasedOnForm(formData));
     }
 
     @POST
-    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response processSsePost() {
         try {
             return processSsePost(new ParameterMap());
@@ -173,7 +173,7 @@ public class TemplateCommandPostResource extends TemplateExecCommand {
     }
 
     @GET
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public String get() {
         try {
             return options();

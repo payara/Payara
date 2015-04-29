@@ -76,13 +76,13 @@ public class TemplateCommandGetResource extends TemplateExecCommand {
     }
 
     @GET
-    @Produces(Constants.MEDIA_TYPE_JSON+";qs=0.5")
+    @Produces(Constants.MEDIA_TYPE_JSON)
     public CommandResult processGet() {
         return executeCommand(prepareParameters());
     }
 
     @GET
-    @Produces(SseFeature.SERVER_SENT_EVENTS+";qs=0.5")
+    @Produces(SseFeature.SERVER_SENT_EVENTS)
     public Response processSseGet() {
         return executeCommandAsSse(prepareParameters());
     }
