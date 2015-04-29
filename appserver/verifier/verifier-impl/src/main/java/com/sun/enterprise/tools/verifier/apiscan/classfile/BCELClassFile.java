@@ -58,13 +58,13 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.sun.org.apache.bcel.internal.classfile.ClassParser;
-import com.sun.org.apache.bcel.internal.classfile.ConstantClass;
-import com.sun.org.apache.bcel.internal.classfile.DescendingVisitor;
-import com.sun.org.apache.bcel.internal.classfile.EmptyVisitor;
-import com.sun.org.apache.bcel.internal.classfile.Field;
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
-import com.sun.org.apache.bcel.internal.classfile.Method;
+import org.apache.bcel.classfile.ClassParser;
+import org.apache.bcel.classfile.ConstantClass;
+import org.apache.bcel.classfile.DescendingVisitor;
+import org.apache.bcel.classfile.EmptyVisitor;
+import org.apache.bcel.classfile.Field;
+import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.Method;
 
 /**
  * This is an implementation of {@link ClassFile} interface. It uses Apache's
