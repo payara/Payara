@@ -49,7 +49,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.152</version>
+        <version>4.1.153-SNAPSHOT</version>
     </parent>
 
     <developers>
