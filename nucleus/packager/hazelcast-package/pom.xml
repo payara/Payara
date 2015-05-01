@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.152-SNAPSHOT</version>
+        <version>4.1.152</version>
     </parent>
     <artifactId>hazelcast-package</artifactId>
     <name>Nucleus Hazelcast Package</name>
@@ -37,7 +37,7 @@
         <dependency>
             <groupId>org.glassfish.main.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>4.1.152-SNAPSHOT</version>
+            <version>4.1.152</version>
         </dependency>
         <dependency>
             <groupId>javax.cache</groupId>
