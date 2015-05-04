@@ -3353,7 +3353,6 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             List<VirtualServer> virtualServers =
                     getVirtualServersForHttpListenerId(httpService, networkListener.getName());
             if (virtualServers != null) {
-                Mapper mapper = connector.getMapper();
                 for (VirtualServer vs : virtualServers) {
                     boolean found = false;
                     String[] listenerNames = vs.getNetworkListenerNames();
