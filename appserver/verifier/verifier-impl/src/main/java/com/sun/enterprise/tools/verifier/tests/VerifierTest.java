@@ -62,13 +62,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.DocumentType;
-import org.apache.xpath.XPathAPI;
-import org.apache.xpath.NodeSet;
-import org.apache.xml.utils.PrefixResolver;
+import com.sun.org.apache.xpath.internal.XPathAPI;
+import com.sun.org.apache.xpath.internal.NodeSet;
+import com.sun.org.apache.xml.internal.utils.PrefixResolver;
 import com.sun.enterprise.tools.verifier.XpathPrefixResolver;
 import com.sun.enterprise.tools.verifier.util.LogDomains;
 import com.sun.enterprise.deploy.shared.FileArchive;
-import org.apache.xpath.objects.XObject;
+import com.sun.org.apache.xpath.internal.objects.XObject;
 
 /**
  * Superclass for all tests developped for the Verifier Harness
