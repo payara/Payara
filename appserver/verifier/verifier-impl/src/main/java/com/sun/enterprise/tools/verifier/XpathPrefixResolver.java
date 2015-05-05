@@ -42,7 +42,7 @@ package com.sun.enterprise.tools.verifier;
 
 import org.w3c.dom.Node;
 
-import org.apache.xml.utils.PrefixResolverDefault;
+import com.sun.org.apache.xml.internal.utils.PrefixResolverDefault;
 
 public class XpathPrefixResolver extends PrefixResolverDefault {
 
