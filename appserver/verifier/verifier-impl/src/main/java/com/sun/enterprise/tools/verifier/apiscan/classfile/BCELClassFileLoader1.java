@@ -50,7 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.logging.Logger;
 
-import org.apache.bcel.util.ClassPath;
+import com.sun.org.apache.bcel.internal.util.ClassPath;
 
 /**
  * Yet another factory for {@link BCELClassFile}. This is not a public class, as
