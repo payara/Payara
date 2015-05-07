@@ -75,7 +75,7 @@ import static org.glassfish.admin.rest.resources.TemplateExecCommand.localString
  * that contains the logic for mapped commands RS Resources
  *
  */
-@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
+@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 public class TemplateCommandPostResource extends TemplateExecCommand {
 
     public TemplateCommandPostResource(String resourceName, String commandName, String commandMethod, String commandAction, String commandDisplayName, boolean isLinkedToParent) {
