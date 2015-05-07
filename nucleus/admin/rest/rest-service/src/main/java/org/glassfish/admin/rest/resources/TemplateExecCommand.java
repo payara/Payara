@@ -116,9 +116,9 @@ public class TemplateExecCommand extends AbstractResource implements OptionsCapa
 
     @OPTIONS
     @Produces({
-            MediaType.APPLICATION_JSON+";qs=0.5",
-            "text/html",
-            MediaType.APPLICATION_XML+";qs=0.5"})
+            MediaType.TEXT_HTML,
+            MediaType.APPLICATION_JSON,
+            MediaType.APPLICATION_XML})
     public ActionReportResult optionsLegacyFormat() {
         RestActionReporter ar = new RestActionReporter();
         ar.setExtraProperties(new Properties());
