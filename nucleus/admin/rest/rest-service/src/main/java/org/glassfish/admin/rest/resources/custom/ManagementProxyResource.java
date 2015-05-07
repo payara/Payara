@@ -62,7 +62,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 /**
  * @author Mitesh Meswani
  */
-@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
+@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
 @Path("domain/proxy/{path:.*}")
 public class ManagementProxyResource {
     @Context

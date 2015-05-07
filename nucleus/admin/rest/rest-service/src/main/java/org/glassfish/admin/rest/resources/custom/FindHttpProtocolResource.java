@@ -79,7 +79,7 @@ public class FindHttpProtocolResource {
     }
 
     @GET
-    @Produces({"text/html",MediaType.APPLICATION_JSON+";qs=0.5",MediaType.APPLICATION_XML+";qs=0.5", MediaType.APPLICATION_FORM_URLENCODED+";qs=0.5"})
+    @Produces({MediaType.TEXT_HTML,MediaType.APPLICATION_JSON,MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
     public ActionReportResult get() {
         Dom dom = getEntity();
