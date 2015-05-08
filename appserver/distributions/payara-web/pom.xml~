@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2015] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -48,12 +48,14 @@
         <artifactId>distributions</artifactId>
         <version>4.1.153-SNAPSHOT</version>
     </parent>
-    <artifactId>payara</artifactId>
-    <name>Payara Distribution</name>
+    <artifactId>payara-web</artifactId>
+    <name>Payara Web Distribution</name>
     <packaging>glassfish-distribution</packaging>
-    <description>This pom describes how to assemble the Payara Distribution</description>
+    <description>This pom describes how to assemble the Payara Web Distribution</description>
 
     <build>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <testOutputDirectory>target/test-classes/WEB-INF/classes</testOutputDirectory>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -67,7 +69,7 @@
             <plugin>
                 <groupId>org.glassfish.build</groupId>
                 <artifactId>glassfishbuild-maven-plugin</artifactId>
-                <executions>
+               <executions>
                     <execution>
                         <id>create-payara-domain</id>
                         <goals>
@@ -111,9 +113,17 @@
     </profiles>
 
     <dependencies>
+        <!-- following dependencies are needed to run tests... -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+        <!-- pull minnow packages -->
         <dependency>
             <groupId>org.glassfish.main.featuresets</groupId>
-            <artifactId>payara</artifactId>
+            <artifactId>payara-web</artifactId>
             <version>${project.version}</version>
             <type>pom</type>
             <optional>true</optional>
