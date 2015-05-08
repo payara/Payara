@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -13,15 +13,14 @@
  *
  * When distributing the software, include this License Header Notice in each
  * file and include the License file at packager/legal/LICENSE.txt.
-
--->
+ -->
 
 
 <!--
- This server side config file pairs with wss-client-config-2.0.xml on the client 
+ This server side config file pairs with wss-client-config-1.0.xml on the client
  and supports the following UseCases:
- Usecase 2: Encrypted UsernameToken
- Usecase 3: Encrypted UsernameToken and MessageBody 
+ Usecase 1: Authentication using Protected UsernameToken
+ Usecase 3: Encrypted UsernameToken and MessageBody
  Usecase 4: Response Encryption Key Learnt from Incoming Message
 
  Certificate Alias Information :
@@ -59,41 +58,12 @@
       by default.
 
 -->
+
 <xwss:SecurityConfiguration xmlns:xwss="http://java.sun.com/xml/ns/xwss/config" 
                             dumpMessages="false">
     <xwss:Timestamp/>
-    <xwss:Encrypt>
-        <xwss:X509Token certificateAlias="s1as"/>
-        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
-    </xwss:Encrypt>    
-    <xwss:Encrypt>
-        <xwss:X509Token certificateAlias="s1as"/>
-        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
-        <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
-    </xwss:Encrypt>
-    <xwss:Encrypt>
-        <xwss:X509Token certificateAlias="s1as"/>
-        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
-        <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
-        <xwss:Target type="qname">SOAP-BODY</xwss:Target>
-    </xwss:Encrypt>
-    <xwss:Encrypt>
-        <xwss:X509Token certificateAlias="s1as"/>
-        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
-        <xwss:Target type="qname">SOAP-BODY</xwss:Target>
-        <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
-    </xwss:Encrypt>
-    <xwss:Sign>
-        <xwss:X509Token certificateAlias="s1as"/>
-    </xwss:Sign>
-    <xwss:UsernameToken digestPassword="false" useNonce="true"/>
-
-    <xwss:RequireUsernameToken nonceRequired="true" passwordDigestRequired="false"/>      
     <xwss:RequireEncryption>
         <xwss:Target type="qname">SOAP-BODY</xwss:Target>
-    </xwss:RequireEncryption>
-    <xwss:RequireEncryption>
-        <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
     </xwss:RequireEncryption>
     <xwss:RequireEncryption>
         <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
@@ -106,4 +76,25 @@
     <xwss:RequireSignature>
         <xwss:Target type="qname">SOAP-BODY</xwss:Target>
     </xwss:RequireSignature>     
+    <xwss:RequireUsernameToken nonceRequired="false" passwordDigestRequired="false"/>      
+    <xwss:Encrypt>
+        <xwss:X509Token certificateAlias="s1as"/>
+        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
+    </xwss:Encrypt>    
+    <xwss:Encrypt>
+        <xwss:X509Token certificateAlias="s1as"/>
+        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
+        <xwss:Target type="qname">SOAP-BODY</xwss:Target>
+        <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
+    </xwss:Encrypt>
+    <xwss:Encrypt>
+        <xwss:X509Token certificateAlias="s1as"/>
+        <xwss:KeyEncryptionMethod algorithm="http://www.w3.org/2001/04/xmlenc#rsa-1_5"/>
+        <xwss:Target type="qname">{http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd}UsernameToken</xwss:Target>
+        <xwss:Target type="qname">SOAP-BODY</xwss:Target>
+    </xwss:Encrypt>
+    <xwss:Sign>
+        <xwss:X509Token certificateAlias="s1as"/>
+    </xwss:Sign>
+    <xwss:UsernameToken digestPassword="false" useNonce="false"/>
 </xwss:SecurityConfiguration>
