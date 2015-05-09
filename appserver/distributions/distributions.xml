@@ -102,7 +102,7 @@
             target="${glassfish.image.dir}" />
         <create.images type="web" name="Web"/>
         <antcall target="create-glassfish-domain" />
-        <antcall target="create-payara--domain" />
+        <antcall target="create-payara-domain" />
         <!--<antcall target="create-domain-ml" />-->
     </target>
     <target name="create-glassfish-images">
