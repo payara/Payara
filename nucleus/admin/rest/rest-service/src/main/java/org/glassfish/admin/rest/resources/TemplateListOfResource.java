@@ -93,16 +93,16 @@ public abstract class TemplateListOfResource extends AbstractResource {
     public final static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(TemplateListOfResource.class);
 
     @GET
-    @Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5"})
+    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response get(@QueryParam("expandLevel") @DefaultValue("1") int expandLevel) {
         return Response.ok().entity(buildActionReportResult()).build();
     }
 
     @POST
     //create
-    @Produces({"text/html",
-        MediaType.APPLICATION_JSON+";qs=0.5",
-        MediaType.APPLICATION_XML+";qs=0.5"})
+    @Produces({MediaType.TEXT_HTML,
+        MediaType.APPLICATION_JSON,
+        MediaType.APPLICATION_XML})
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML,
         MediaType.APPLICATION_FORM_URLENCODED})
     public Response createResource(HashMap<String, String> data) {
