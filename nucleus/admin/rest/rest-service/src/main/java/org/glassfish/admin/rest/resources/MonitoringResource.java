@@ -82,7 +82,7 @@ import static org.glassfish.admin.rest.provider.ProviderUtil.*;
  * @author Mitesh Meswani
  */
 @Path("/")
-@Produces({"text/html", MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5", MediaType.APPLICATION_FORM_URLENCODED+";qs=0.5"})
+@Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML, MediaType.APPLICATION_FORM_URLENCODED})
 public class MonitoringResource {
 
@@ -94,7 +94,7 @@ public class MonitoringResource {
 
     @GET
     @Path("domain{path:.*}")
-    @Produces({MediaType.APPLICATION_JSON+";qs=0.5", MediaType.APPLICATION_XML+";qs=0.5", "text/html"})
+    @Produces({MediaType.TEXT_HTML, MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
     public Response getChildNodes(@PathParam("path")List<PathSegment> pathSegments) {
         Response.ResponseBuilder responseBuilder = Response.status(OK);
         RestActionReporter ar = new RestActionReporter();
