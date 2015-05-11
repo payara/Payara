@@ -118,7 +118,9 @@ public class RuntimeInfo implements AdminCommand {
 
         // getTotalPhysicalMemorySize is from com.sun.management.OperatingSystemMXBean and cannot easily access it via OSGi
         // also if we are not on a sun jdk, we will not return this attribute.
-        if ( !OS.isAix()) {
+        String javaVendor = System.getProperty("java.vendor");
+        boolean isIBMJDK = javaVendor.contains("IBM");
+        if ( !OS.isAix() && !isIBMJDK) {
             try {
                 final Method jm = osBean.getClass().getMethod("getTotalPhysicalMemorySize");
                 AccessController.doPrivileged(
