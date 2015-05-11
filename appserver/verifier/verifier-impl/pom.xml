@@ -213,6 +213,7 @@
             <groupId>org.glassfish.main.external</groupId>
             <artifactId>aixporting-repackaged</artifactId>
             <version>3.1.2.2-p1</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 </project>
