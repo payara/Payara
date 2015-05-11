@@ -51,12 +51,12 @@ public class BCELMethod implements Method{
 
     private SoftReference<ClassFile> owningClass;
 
-    private org.apache.bcel.classfile.Method method;
+    private com.sun.org.apache.bcel.internal.classfile.Method method;
 
     private static Logger logger = Logger.getLogger("apiscan.classfile"); // NOI18N
 
     public BCELMethod(ClassFile owningClass,
-                      org.apache.bcel.classfile.Method method) {
+                      com.sun.org.apache.bcel.internal.classfile.Method method) {
         logger.entering("BCELMethod", "BCELMethod", // NOI18N
                 new Object[]{owningClass.getName(), method.getName()});
         this.owningClass = new SoftReference<ClassFile>(owningClass);
