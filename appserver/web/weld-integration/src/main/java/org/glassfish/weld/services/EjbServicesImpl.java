@@ -276,34 +276,38 @@ public class EjbServicesImpl implements EjbServices {
             EjbInterceptor ejbInt = makeEjbInterceptor(next, ejbDesc.getEjbBundleDescriptor());
             Class interceptorClass = next.getBeanClass();
             while ( interceptorClass != null && ! interceptorClass.equals( Object.class ) ) {
-                LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
+                String methodName = getInterceptorMethod( interceptorClass,
+                                                          getInterceptorAnnotationType(interceptionType));
+                if ( methodName != null ) {
+                    LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
 
-                lifecycleDesc.setLifecycleCallbackClass( interceptorClass.getName());
-                lifecycleDesc.setLifecycleCallbackMethod( getInterceptorMethod( interceptorClass,
-                                                                                getInterceptorAnnotationType(interceptionType)));
-                switch(interceptionType) {
-                    case POST_CONSTRUCT :
-                        ejbInt.addPostConstructDescriptor(lifecycleDesc);
-                        break;
-                    case PRE_DESTROY :
-                        ejbInt.addPreDestroyDescriptor(lifecycleDesc);
-                        break;
-                    case PRE_PASSIVATE :
-                        ejbInt.addPrePassivateDescriptor(lifecycleDesc);
-                        break;
-                    case POST_ACTIVATE :
-                        ejbInt.addPostActivateDescriptor(lifecycleDesc);
-                        break;
-                    case AROUND_INVOKE :
-                        ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
-                        break;
-                    case AROUND_TIMEOUT :
-                        ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
-                        break;
-                    default :
-                        throw new IllegalArgumentException("Invalid lifecycle interception type " +
-                                                           interceptionType);
+                    lifecycleDesc.setLifecycleCallbackClass( interceptorClass.getName());
+                    lifecycleDesc.setLifecycleCallbackMethod( methodName );
+                    switch(interceptionType) {
+                        case POST_CONSTRUCT :
+                            ejbInt.addPostConstructDescriptor(lifecycleDesc);
+                            break;
+                        case PRE_DESTROY :
+                            ejbInt.addPreDestroyDescriptor(lifecycleDesc);
+                            break;
+                        case PRE_PASSIVATE :
+                            ejbInt.addPrePassivateDescriptor(lifecycleDesc);
+                            break;
+                        case POST_ACTIVATE :
+                            ejbInt.addPostActivateDescriptor(lifecycleDesc);
+                            break;
+                        case AROUND_INVOKE :
+                            ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
+                            break;
+                        case AROUND_TIMEOUT :
+                            ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
+                            break;
+                        default :
+                            throw new IllegalArgumentException("Invalid lifecycle interception type " +
+                                                               interceptionType);
+                    }
                 }
+
                 interceptorClass = interceptorClass.getSuperclass();
             }
 
@@ -343,9 +347,7 @@ public class EjbServicesImpl implements EjbServices {
             }
         }
 
-        throw new IllegalStateException("Interceptor Class " + interceptorClass + " has no method annotated with " +
-            annotation);
-
+        return null;
     }
 
     private EjbInterceptor makeEjbInterceptor(Interceptor<?> interceptor, EjbBundleDescriptor bundle) {
