@@ -169,7 +169,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- on Hudson and RE, this gets replaced by real build ID -->
-        <build.id>#badassfish-b${build.number}</build.id>
+        <build.id>${build.number}</build.id>
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>

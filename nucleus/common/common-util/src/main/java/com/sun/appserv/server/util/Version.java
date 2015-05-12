@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2015] [C2B2 Consulting Limited]
+
 package com.sun.appserv.server.util;
 
 import java.io.File;
@@ -66,6 +69,8 @@ public class Version {
     private static final String MAJOR_VERSION_KEY = "major_version";
     private static final String MINOR_VERSION_KEY = "minor_version";
     private static final String UPDATE_VERSION_KEY = "update_version";
+    private static final String PAYARA_VERSION_KEY = "payara_version";
+    private static final String PAYARA_UPDATE_VERSION_KEY = "payara_update_version";
     private static final String BUILD_ID_KEY = "build_id";
     private static final String VERSION_PREFIX_KEY = "version_prefix";
     private static final String VERSION_SUFFIX_KEY = "version_suffix";
@@ -150,6 +155,7 @@ public class Version {
         StringBuilder sb = new StringBuilder(getProductName());
         sb.append(" ").append(getVersionPrefix());
         sb.append(" ").append(getVersionNumber());
+        sb.append(".").append(getPayaraVersionNumber());
         sb.append(" ").append(getVersionSuffix());
         return sb.toString();
     }
@@ -183,6 +189,40 @@ public class Version {
         return v;
     }
 
+    /**
+     * Constructs and returns the full Payara version number 
+     * @return The full Payara version number
+     */
+    public static String getPayaraVersionNumber()
+    {
+        // Construct Version Number
+        String payaraVersion = getPayaraVersion();
+        String payaraUpdateVersion = getPayaraUpdateVersion();
+        String fullPayaraVersionNumber;
+        
+        try
+        {
+            if (payaraUpdateVersion != null && payaraUpdateVersion.length() > 0
+                    && Integer.parseInt(payaraUpdateVersion) >= 0)
+            {
+                fullPayaraVersionNumber = payaraVersion + "."
+                        + payaraUpdateVersion;
+            }
+            
+            else
+            {
+                fullPayaraVersionNumber = payaraVersion;
+            }
+        }
+        
+        catch (NumberFormatException nfe)
+        {
+            fullPayaraVersionNumber = payaraVersion;
+        }
+        
+        return fullPayaraVersionNumber;
+    }
+    
     /**
      * Returns full version including build id
      */
@@ -219,6 +259,24 @@ public class Version {
     }
 
     /**
+     * Gets the Payara version from the properties file
+     * @return The Payara version number
+     */
+    public static String getPayaraVersion()
+    {
+        return getProperty(PAYARA_VERSION_KEY, "0");
+    }
+    
+    /**
+     * Gets the Payara update version from the properties file
+     * @return The Payara update number
+     */
+    public static String getPayaraUpdateVersion()
+    {
+        return getProperty(PAYARA_UPDATE_VERSION_KEY, "0");
+    }
+    
+    /**
      * Returns Build version
      */
     public static String getBuildVersion() {
@@ -238,7 +296,7 @@ public class Version {
     public static String getVersionSuffix() {
         return getProperty(VERSION_SUFFIX_KEY, "");
     }
-
+    
     /**
      * Returns Proper Product Name
      */
