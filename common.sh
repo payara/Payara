@@ -171,6 +171,11 @@ promote_nightly(){
     SVN_REVISION=`head -1 ${VERSION_INFO} | awk '{print $2}'`
     #record_svn_rev ${SVN_REVISION}
     purge_old_nightlies
+    # hook for the docker image of the nightly
+    curl -H "Content-Type: application/json" \
+        --data '{"build": true}' \
+        -X POST \
+        https://registry.hub.docker.com/u/glassfish/nightly/trigger/945d55fc-1d4c-4043-8221-74185d9a4d53/
     promote_finalize
 }
 
