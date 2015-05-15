@@ -175,6 +175,7 @@ promote_nightly(){
     curl -H "Content-Type: application/json" \
         --data '{"build": true}' \
         -X POST \
+        -k \
         https://registry.hub.docker.com/u/glassfish/nightly/trigger/945d55fc-1d4c-4043-8221-74185d9a4d53/
     promote_finalize
 }
