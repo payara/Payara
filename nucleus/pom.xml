@@ -52,7 +52,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.1.152</version>
+    <version>4.1.152.1</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -60,7 +60,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</url>
-      <tag>payara-server-4.1.152</tag>
+      <tag>payara-server-4.1.152.1</tag>
   </scm>
 
     <issueManagement>
@@ -169,7 +169,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <!-- on Hudson and RE, this gets replaced by real build ID -->
-        <build.id>#badassfish-b${build.number}</build.id>
+        <build.id>${build.number}</build.id>
         <findbugs.skip>false</findbugs.skip>
         <findbugs.threshold>High</findbugs.threshold>
         <findbugs.common>exclude-common.xml</findbugs.common>
