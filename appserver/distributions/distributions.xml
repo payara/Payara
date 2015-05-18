@@ -40,6 +40,8 @@
     holder.
 
 -->
+<!-- Portions Copyright [2015] [C2B2 Consulting Limited] -->
+
 
 <project name="GlassFish Distributions (IPS) Creation" basedir=".">
     <property name="image.root" value="target/local_image"/>
@@ -100,7 +102,7 @@
             target="${glassfish.image.dir}" />
         <create.images type="web" name="Web"/>
         <antcall target="create-glassfish-domain" />
-        <antcall target="create-payara--domain" />
+        <antcall target="create-payara-domain" />
         <!--<antcall target="create-domain-ml" />-->
     </target>
     <target name="create-glassfish-images">
