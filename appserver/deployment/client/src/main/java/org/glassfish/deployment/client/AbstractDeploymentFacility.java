@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -154,6 +155,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
+        if(commandName.equals("enable"))
+            po.setCommand(CommandType.START,null);
+        else if(commandName.equals("disable"))
+            po.setCommand(CommandType.STOP,null);
+
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
         try {
@@ -383,6 +389,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
+        if(deploymentOptions.get(DFDeploymentProperties.DEFAULT_REDEPLOY)=="true")
+            po.setCommand(CommandType.REDEPLOY,null);
+        else
+            po.setCommand(CommandType.DISTRIBUTE,null);
+
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
 
@@ -1052,6 +1063,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
+        po.setCommand(CommandType.UNDEPLOY,null);
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
         try {
