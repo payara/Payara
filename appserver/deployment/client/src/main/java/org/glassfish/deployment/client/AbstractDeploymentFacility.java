@@ -389,7 +389,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
-        if(deploymentOptions.get(DFDeploymentProperties.DEFAULT_REDEPLOY)=="true")
+        if(deploymentOptions.get(DFDeploymentProperties.DEFAULT_REDEPLOY).equals("true"))
             po.setCommand(CommandType.REDEPLOY,null);
         else
             po.setCommand(CommandType.DISTRIBUTE,null);
