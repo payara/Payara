@@ -296,6 +296,13 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
+        <!-- Add Payara Micro Services -->
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>payara-micro-service</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
         <!-- Add JBatch -->
         <dependency>
             <groupId>org.glassfish.main.batch</groupId>

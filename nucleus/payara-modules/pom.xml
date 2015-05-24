@@ -31,5 +31,6 @@
     <modules>
 	<module>hazelcast-bootstrap</module>
         <module>payara-micro</module>
+        <module>payara-micro-service</module>
     </modules>
 </project>
