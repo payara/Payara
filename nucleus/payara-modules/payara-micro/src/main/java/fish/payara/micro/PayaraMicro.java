@@ -592,7 +592,7 @@ public class PayaraMicro {
                 }
                 i++;
             } else if ("--domainConfig".equals(arg)) {
-                alternateDomainXML = new File(args[i] + 1);
+                alternateDomainXML = new File(args[i + 1]);
                 if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
                     System.err.println(alternateDomainXML.getAbsolutePath() + " is not a valid path to an xml file and will be ignored");
                     alternateDomainXML = null;
