@@ -183,9 +183,6 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
                 <thread-pool name="thread-pool-1" min-thread-pool-size="1" max-thread-pool-size="200"/>
             </thread-pools>
-            <monitoring-service>
-                <module-monitoring-levels ejb-container="HIGH" transaction-service="HIGH" web-services-container="HIGH" jersey="HIGH" jpa="HIGH" jvm="HIGH" thread-pool="HIGH" security="HIGH" web-container="HIGH" jdbc-connection-pool="HIGH" orb="HIGH" http-service="HIGH" jms-service="HIGH" connector-connection-pool="HIGH" connector-service="HIGH" deployment="HIGH"></module-monitoring-levels>
-            </monitoring-service>
         </config> 
     </configs>
     <property name="administrative.domain.name" value="domain1"/>
