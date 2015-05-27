@@ -164,7 +164,7 @@
                                 <attachSources>true</attachSources>
                                 <excludeArtifactIds>tools-jar,servlet-api,javax.faces</excludeArtifactIds>
                                 <excludes>javax/help/**,${extra.excludes}</excludes>
-                                <includes>javax/**</includes>
+                                <includes>javax/**, resources/**</includes>
                                 <excludeTransitive>true</excludeTransitive>
                             </configuration>
                         </execution>
