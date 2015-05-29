@@ -561,6 +561,7 @@ public final class LDAPRealm extends IASRealm
      */
     private String userSearch(DirContext ctx, String baseDN, String filter)
     {
+	filter = RFC2254Encode(filter);
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINE, "search: baseDN: "+ baseDN +
                            "  filter: " + filter);
@@ -746,5 +747,26 @@ public final class LDAPRealm extends IASRealm
             i = sb.indexOf(target);
         }
     }
-    
+    /**
+     * Escape special chars in search filter, according to RFC2254
+     * @param inName
+     * @return
+     */
+    private String RFC2254Encode(String inName) {
+
+        int len = inName.length();
+        StringBuffer buf = new StringBuffer(len);
+        for (int i = 0; i < len; i++) {
+            char ch = inName.charAt(i);
+            switch (ch) {
+            case '*' : buf.append("\\2a"); break;
+            case '(' : buf.append("\\28"); break;
+            case ')' : buf.append("\\29"); break;
+            case '\\' : buf.append("\\5c"); break;
+            case 0 : buf.append("\\00"); break;
+            default : buf.append(ch);
+            }
+        }
+        return buf.toString();
+    } 
 }
