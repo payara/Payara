@@ -26,6 +26,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
+    <groupId>fish.payara.ha</groupId>
     <artifactId>ha-hazelcast-store</artifactId>
     <packaging>glassfish-jar</packaging>
     
@@ -70,7 +71,7 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.payara-modules</groupId>
+            <groupId>fish.payara.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

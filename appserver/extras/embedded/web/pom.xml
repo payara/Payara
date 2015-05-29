@@ -265,7 +265,7 @@
         </dependency>
 	<!-- hazelcast package -->
 	<dependency>
-	    <groupId>org.glassfish.main.packager</groupId>
+	    <groupId>fish.payara.packager</groupId>
 	    <artifactId>hazelcast</artifactId>
 	    <version>${project.version}</version>
 	    <type>zip</type>

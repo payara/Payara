@@ -23,6 +23,7 @@
         <artifactId>nucleus-packages</artifactId>
         <version>4.1.153-SNAPSHOT</version>
     </parent>
+    <groupId>fish.payara.packager</groupId>
     <artifactId>hazelcast-package</artifactId>
     <name>Nucleus Hazelcast Package</name>
     <packaging>distribution-fragment</packaging>

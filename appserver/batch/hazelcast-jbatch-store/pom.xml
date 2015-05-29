@@ -24,6 +24,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+    <groupId>fish.payara.batch</groupId>
     <artifactId>hazelcast-jbatch-store</artifactId>
     <packaging>glassfish-jar</packaging>
 
