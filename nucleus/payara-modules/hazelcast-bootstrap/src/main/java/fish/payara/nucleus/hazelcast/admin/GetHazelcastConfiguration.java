@@ -84,7 +84,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[5] = runtimeConfiguration.getJNDIName();
         columnFormatter.addRow(values);
         
-        Map<String, Object> map = new HashMap<String,Object>();
+        Map<String, Object> map = new HashMap<String,Object>(6);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", values[0]);
         map.put("enabled", values[1]);

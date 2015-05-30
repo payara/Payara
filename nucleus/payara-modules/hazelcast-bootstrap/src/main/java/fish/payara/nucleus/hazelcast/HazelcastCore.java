@@ -23,7 +23,6 @@ import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
-import fish.payara.micro.PayaraMicro;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -55,10 +54,14 @@ public class HazelcastCore implements EventListener {
 
     public final static String INSTANCE_ATTRIBUTE = "GLASSFISH-INSTANCE";
     private static HazelcastCore theCore;
+    
+    private static MulticastConfiguration overrideConfiguration;
 
+    
     private HazelcastInstance theInstance;
 
     private CachingProvider hazelcastCachingProvider;
+    private boolean enabled;
 
     @Inject
     Events events;
@@ -70,7 +73,14 @@ public class HazelcastCore implements EventListener {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastRuntimeConfiguration configuration;
 
-    private boolean enabled;
+
+    public static HazelcastCore getCore() {
+        return theCore;
+    }
+    
+    public static void setMulticastOverride(MulticastConfiguration config){
+        overrideConfiguration = config;
+    }
 
     @PostConstruct
     public void postConstruct() {
@@ -95,10 +105,6 @@ public class HazelcastCore implements EventListener {
         return enabled;
     }
 
-    public static HazelcastCore getCore() {
-        return theCore;
-    }
-
     @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN)) {
@@ -107,68 +113,8 @@ public class HazelcastCore implements EventListener {
             if (enabled) {
                 bindToJNDI();
             }
-
+            
         }
-    }
-
-    private Config buildConfiguration() {
-        Config config = new Config();
-
-        String hazelcastFilePath = "";
-        URL serverConfigURL;
-        try {
-            serverConfigURL = new URL(context.getServerConfigURL());
-            File serverConfigFile = new File(serverConfigURL.getPath());
-            hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
-            File file = new File(hazelcastFilePath);
-            if (file.exists()) {
-                config = ConfigLoader.load(hazelcastFilePath);
-                if (config == null) {
-                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file " + hazelcastFilePath + " using default configuration");
-                    config = new Config();
-                }
-            } else {
-
-                // check Payara Micro is configured and if so read configuration from there
-                String multicastGroup = configuration.getMulticastGroup();
-                int multicastPort = Integer.parseInt(configuration.getMulticastPort());
-                int startPort = Integer.parseInt(configuration.getStartPort());
-                
-                // check Payara micro overrides
-                PayaraMicro micro = PayaraMicro.getInstance(false);
-                if (micro != null) {
-                    if (micro.getClusterMulticastGroup() != null) {
-                        multicastGroup = micro.getClusterMulticastGroup();
-                    }
-
-                    if (micro.getClusterPort() != Integer.MIN_VALUE) {
-                        multicastPort = micro.getClusterPort();
-                    }
-
-                    if (micro.getClusterStartPort() != Integer.MIN_VALUE) {
-                        startPort = micro.getClusterStartPort();
-                    }
-
-                }
-                
-                // build the configuration
-                config.setProperty("hazelcast.jmx", "true");
-                MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
-                mcConfig.setEnabled(true);
-                mcConfig.setMulticastGroup(multicastGroup);
-                mcConfig.setMulticastPort(multicastPort);
-                config.getNetworkConfig().setPortAutoIncrement(true);
-                config.getNetworkConfig().setPort(startPort);
-            }
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Unable to parse server config URL", ex);
-        } catch (IOException ex) {
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not load configuration file " + hazelcastFilePath + " using default configuration", ex);
-        }
-
-        String instanceName = context.getDefaultDomainName() + "." + context.getInstanceName();
-        config.setInstanceName(instanceName);
-        return config;
     }
 
     public void setEnabled(Boolean enabled) {
@@ -189,6 +135,56 @@ public class HazelcastCore implements EventListener {
         }
     }
 
+    private Config buildConfiguration() {
+        Config config = new Config();
+
+        String hazelcastFilePath = "";
+        URL serverConfigURL;
+        try {
+            serverConfigURL = new URL(context.getServerConfigURL());
+            File serverConfigFile = new File(serverConfigURL.getPath());
+            hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
+            File file = new File(hazelcastFilePath);
+            if (file.exists()) {
+                config = ConfigLoader.load(hazelcastFilePath);
+                if (config == null) {
+                    Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
+                    config = new Config();
+                }
+            } else {
+                
+                MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
+                config.getNetworkConfig().setPortAutoIncrement(true);
+                mcConfig.setEnabled(true);                // check Payara micro overrides
+                if (overrideConfiguration != null) {
+                    mcConfig.setMulticastGroup(overrideConfiguration.getMulticastGroup());
+                    mcConfig.setMulticastPort(overrideConfiguration.getMulticastPort());
+                    config.getNetworkConfig().setPort(overrideConfiguration.getStartPort());
+                    if (overrideConfiguration.getMemberName() != null) {
+                        config.setInstanceName(overrideConfiguration.getMemberName());
+                    }
+                } else {
+                   mcConfig.setMulticastGroup(configuration.getMulticastGroup());
+                   mcConfig.setMulticastPort(Integer.getInteger(configuration.getMulticastPort()));
+                   config.getNetworkConfig().setPort(Integer.getInteger(configuration.getStartPort()));
+                   config.setInstanceName(configuration.getMemberName());
+                }
+
+                // build the configuration
+                config.setProperty("hazelcast.jmx", "true");
+
+            }
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Unable to parse server config URL", ex);
+        } catch (IOException ex) {
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not load configuration file " + hazelcastFilePath + " using default configuration", ex);
+        }
+
+        String instanceName = context.getDefaultDomainName() + "." + context.getInstanceName();
+        config.setInstanceName(instanceName);
+        return config;
+    }
+
     private void shutdownHazelcast() {
         if (theInstance != null) {
             unbindFromJNDI();
@@ -200,7 +196,7 @@ public class HazelcastCore implements EventListener {
         }
     }
 
-    private void bootstrapHazelcast() {
+    private void bootstrapHazelcast() { 
         Config config = buildConfiguration();
         theInstance = Hazelcast.newHazelcastInstance(config);
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, context.getInstanceName());
@@ -214,9 +210,9 @@ public class HazelcastCore implements EventListener {
             ctx.bind(configuration.getJNDIName(), theInstance);
             ctx.bind(configuration.getCachingProviderJNDIName(), hazelcastCachingProvider);
             ctx.bind(configuration.getCacheManagerJNDIName(), hazelcastCachingProvider.getCacheManager());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at " + configuration.getJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at " + configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at " + configuration.getCacheManagerJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Bound to JNDI at {0}", configuration.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Bound to JNDI at {0}", configuration.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Default Cache Manager Bound to JNDI at {0}", configuration.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -229,13 +225,13 @@ public class HazelcastCore implements EventListener {
             ctx.unbind(configuration.getJNDIName());
             ctx.unbind(configuration.getCacheManagerJNDIName());
             ctx.unbind(configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at " + configuration.getJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at " + configuration.getCachingProviderJNDIName());
-            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at " + configuration.getCacheManagerJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Hazelcast Instance Unbound from JNDI at {0}", configuration.getJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Caching Provider Unbound from JNDI at {0}", configuration.getCachingProviderJNDIName());
+            Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "JSR107 Cache Manager Unbound from JNDI at {0}", configuration.getCacheManagerJNDIName());
         } catch (NamingException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
+
 
 }

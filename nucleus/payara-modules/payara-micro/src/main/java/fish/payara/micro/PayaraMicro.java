@@ -18,6 +18,8 @@
 package fish.payara.micro;
 
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
+import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -39,13 +41,15 @@ import org.glassfish.embeddable.GlassFishRuntime;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
- * applications to creare a full JavaEE runtime environment and deploywar files.
+ * applications to create a full JavaEE runtime environment and deploy war files.
  *
  * @author steve
  */
 public class PayaraMicro {
 
-    private static Logger logger = Logger.getLogger(PayaraMicro.class.getName());
+    private static final Logger logger = Logger.getLogger("PayaraMicro");
+    private static PayaraMicro instance;
+
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
     private int hzStartPort = Integer.MIN_VALUE;
@@ -60,7 +64,6 @@ public class PayaraMicro {
     private List<File> deployments;
     private GlassFish gf;
     private boolean noCluster = false;
-    private static PayaraMicro instance;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -117,6 +120,15 @@ public class PayaraMicro {
         return instance;
     }
 
+    private PayaraMicro() {
+        addShutdownHook();
+    }
+
+    private PayaraMicro(String args[]) {
+        scanArgs(args);
+        addShutdownHook();
+    }
+
     /**
      * Gets the cluster group
      * @return The Multicast Group that will beused for the Hazelcast clustering 
@@ -129,7 +141,7 @@ public class PayaraMicro {
      * Sets the cluster group used for Payara Micro clustering
      * used for cluster communications and discovery. Each Payara Micro cluster should
      * have different values for the MulticastGroup
-     * @param hzMulticastGroup String representation of the multicast group 
+     * @param hzMulticastGroup String representation of the multicast group
      * @return 
      */
     public PayaraMicro setClusterMulticastGroup(String hzMulticastGroup) {
@@ -287,7 +299,7 @@ public class PayaraMicro {
      * Adds an archive to the list of archives to be deployed at boot. These archives are not 
      * monitored for changes during running so are not redeployed without restarting the server
      * @param file File path to the deployment archive
-     * @return 
+     * @return
      */    
     public PayaraMicro addDeploymentFile(File file) {
 
@@ -300,7 +312,7 @@ public class PayaraMicro {
 
     /**
      * Indicated whether clustering is enabled
-     * @return 
+     * @return
      */
     public boolean isNoCluster() {
         return noCluster;
@@ -359,6 +371,7 @@ public class PayaraMicro {
         return this;
     }
 
+    
     /**
      * The File path to a directory that PayaraMicro should use for storing its
      * configuration files
@@ -374,18 +387,37 @@ public class PayaraMicro {
      * stored in the directory and persist across server restarts. If this is not set the
      * configuration files are created in a temporary location and not persisted across server restarts.
      * @param rootDir Path to a valid directory
+     * @return Returns the PayaraMicro instance
      */
     public PayaraMicro setRootDir(File rootDir) {
         this.rootDir = rootDir;
         return this;
     }
-    
 
     /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      * @throws BootstrapException 
      */
     public void bootStrap() throws BootstrapException {
+        
+        // check hazelcast cluster overrides
+        if (!noCluster) { // ie we are clustering
+            MulticastConfiguration mc = new MulticastConfiguration();
+            mc.setMemberName(instanceName);
+            if (hzPort > Integer.MIN_VALUE) {
+                mc.setMulticastPort(hzPort);
+            }
+
+            if (hzStartPort > Integer.MIN_VALUE) {
+                mc.setStartPort(hzStartPort);
+            }
+
+            if (hzMulticastGroup != null) {
+                mc.setMulticastGroup(hzMulticastGroup);
+            }
+            HazelcastCore.setMulticastOverride(mc);
+        }
+        
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
         GlassFishRuntime runtime;
@@ -454,7 +486,7 @@ public class PayaraMicro {
                 try {
                     LogManager.getLogManager().readConfiguration();
                 } catch (IOException | SecurityException ex) {
-                    Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
             gf.start();
@@ -476,146 +508,146 @@ public class PayaraMicro {
         }
     }
 
-    private PayaraMicro() {
-        addShutdownHook();
-    }
-
-    private PayaraMicro(String args[]) {
-        scanArgs(args);
-        addShutdownHook();
-    }
-
     private void scanArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
             String arg = args[i];
-            if ("--port".equals(arg)) {
-                String httpPortS = args[i + 1];
-                try {
-                    httpPort = Integer.parseInt(httpPortS);
-                    if (httpPort < 1 || httpPort > 65535) {
-                        throw new NumberFormatException("Not a valid tcp port");
-                    }
-                } catch (NumberFormatException nfe) {
-                    System.err.println(httpPortS + " is not a valid http port number and will be ignored");
-                    httpPort = Integer.MIN_VALUE;
+            if (null != arg) switch (arg) {
+                case "--port":{
+                    String httpPortS = args[i + 1];
+                    try {
+                        httpPort = Integer.parseInt(httpPortS);
+                        if (httpPort < 1 || httpPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        logger.log(Level.SEVERE, "{0} is not a valid http port number", httpPortS);
+                        System.exit(-1);
+                    }       i++;
+                    break;
                 }
-                i++;
-            } else if ("--sslPort".equals(arg)) {
-                String httpPortS = args[i + 1];
-                try {
-                    sslPort = Integer.parseInt(httpPortS);
-                    if (sslPort < 1 || sslPort > 65535) {
-                        throw new NumberFormatException("Not a valid tcp port");
-                    }
-                } catch (NumberFormatException nfe) {
-                    System.err.println(httpPortS + " is not a valid ssl port number and will be ignored");
-                    sslPort = Integer.MIN_VALUE;
+                case "--sslPort":{
+                    String httpPortS = args[i + 1];
+                    try {
+                        sslPort = Integer.parseInt(httpPortS);
+                        if (sslPort < 1 || sslPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        System.err.println(httpPortS + " is not a valid ssl port number and will be ignored");
+                        sslPort = Integer.MIN_VALUE;
+                    }       i++;
+                    break;
                 }
-                i++;
-            } else if ("--maxHttpThreads".equals(arg)) {
-                String threads = args[i + 1];
-                try {
-                    maxHttpThreads = Integer.parseInt(threads);
-                    if (maxHttpThreads < 2) {
-                        throw new NumberFormatException("Maximum Threads must be 2 or greater");
-                    }
-                } catch (NumberFormatException nfe) {
-                    System.err.println(threads + " is not a valid maximum threads number and will be ignored");
-                    maxHttpThreads = Integer.MIN_VALUE;
+                case "--maxHttpThreads":{
+                    String threads = args[i + 1];
+                    try {
+                        maxHttpThreads = Integer.parseInt(threads);
+                        if (maxHttpThreads < 2) {
+                            throw new NumberFormatException("Maximum Threads must be 2 or greater");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        System.err.println(threads + " is not a valid maximum threads number and will be ignored");
+                        maxHttpThreads = Integer.MIN_VALUE;
+                    }       i++;
+                    break;
                 }
-                i++;
-            } else if ("--minHttpThreads".equals(arg)) {
-                String threads = args[i + 1];
-                try {
-                    minHttpThreads = Integer.parseInt(threads);
-                    if (minHttpThreads < 0) {
-                        throw new NumberFormatException("Minimum Threads must be zero or greater");
-                    }
-                } catch (NumberFormatException nfe) {
-                    System.err.println(threads + " is not a valid minimum threads number and will be ignored");
-                    minHttpThreads = Integer.MIN_VALUE;
+                case "--minHttpThreads":{
+                    String threads = args[i + 1];
+                    try {
+                        minHttpThreads = Integer.parseInt(threads);
+                        if (minHttpThreads < 0) {
+                            throw new NumberFormatException("Minimum Threads must be zero or greater");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        System.err.println(threads + " is not a valid minimum threads number and will be ignored");
+                        minHttpThreads = Integer.MIN_VALUE;
+                    }       i++;
+                    break;
                 }
-                i++;
-            } else if ("--mcAddress".equals(arg)) {
-                hzMulticastGroup = args[i + 1];
-                i++;
-            } else if ("--mcPort".equals(arg)) {
-                String httpPortS = args[i + 1];
-                try {
-                    hzPort = Integer.parseInt(httpPortS);
-                    if (hzPort < 1 || hzPort > 65535) {
-                        throw new NumberFormatException("Not a valid tcp port");
-                    }
-                } catch (NumberFormatException nfe) {
-                    System.err.println(httpPortS + " is not a valid multicast port number and will be ignored");
-                    hzPort = Integer.MIN_VALUE;
+                case "--mcAddress":
+                    hzMulticastGroup = args[i + 1];
+                    i++;
+                    break;
+                case "--mcPort":{
+                    String httpPortS = args[i + 1];
+                    try {
+                        hzPort = Integer.parseInt(httpPortS);
+                        if (hzPort < 1 || hzPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        System.err.println(httpPortS + " is not a valid multicast port number and will be ignored");
+                        hzPort = Integer.MIN_VALUE;
+                    }       i++;
+                    break;
                 }
-                i++;
-            } else if ("--startPort".equals(arg)) {
-                String startPort = args[i + 1];
-                try {
-                    hzStartPort = Integer.parseInt(startPort);
-                    if (hzStartPort < 1 || hzStartPort > 65535) {
-                        throw new NumberFormatException("Not a valid tcp port");
-                    }
-                } catch (NumberFormatException nfe) {
-                    System.err.println(startPort + " is not a valid port number and will be ignored");
-                    hzStartPort = Integer.MIN_VALUE;
-                }
-                i++;
-            } else if ("--name".equals(arg)) {
-                instanceName = args[i + 1];
-                i++;
-            } else if (("--deploymentDir".equals(arg))) {
-                deploymentRoot = new File(args[i + 1]);
-                if (!deploymentRoot.exists() || !deploymentRoot.isDirectory()) {
-                    System.err.println(args[i + 1] + " is not a valid deployment directory and will be ignored");
-                    deploymentRoot = null;
-                }
-                i++;
-            } else if (("--rootDir".equals(arg))) {
-                rootDir = new File(args[i + 1]);
-                if (!rootDir.exists() || !rootDir.isDirectory()) {
-                    System.err.println(args[i + 1] + " is not a valid root directory and will be ignored");
-                    rootDir = null;
-                }
-                i++;
-            } else if ("--deploy".equals(arg)) {
-                File deployment = new File(args[i + 1]);
-                if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || !deployment.getAbsolutePath().endsWith(".war")) {
-                    System.err.println(deployment.getAbsolutePath() + " is not a valid deployment path and will be ignored");
-                } else {
-                    if (deployments == null) {
-                        deployments = new LinkedList<>();
-                    }
-                    deployments.add(deployment);
-                }
-                i++;
-            } else if ("--domainConfig".equals(arg)) {
-                alternateDomainXML = new File(args[i + 1]);
-                if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
-                    System.err.println(alternateDomainXML.getAbsolutePath() + " is not a valid path to an xml file and will be ignored");
-                    alternateDomainXML = null;
-                }
-                i++;
-            } else if ("--noCluster".equals(arg)) {
-                noCluster = true;
-            } else if ("--help".equals(arg)) {
-                System.err.println("Usage: --noCluster  Disables clustering\n"
-                        + "--port sets the http port\n"
-                        + "--sslPort sets the https port number\n"
-                        + "--mcAddress sets the cluster multicast group\n"
-                        + "--mcPort sets the cluster multicast port\n"
-                        + "--startPort sets the cluster start port number\n"
-                        + "--name sets the instance name\n"
-                        + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
-                        + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
-                        + "--deploy specifies a war file to deploy\n"
-                        + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
-                        + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
-                        + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
-                        + "--help Shows this message and exits\n");
-                System.exit(-1);
+                case "--startPort":
+                    String startPort = args[i + 1];
+                    try {
+                        hzStartPort = Integer.parseInt(startPort);
+                        if (hzStartPort < 1 || hzStartPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        System.err.println(startPort + " is not a valid port number and will be ignored");
+                        hzStartPort = Integer.MIN_VALUE;
+                    }   i++;
+                    break;
+                case "--name":
+                    instanceName = args[i + 1];
+                    i++;
+                    break;
+                case "--deploymentDir":
+                    deploymentRoot = new File(args[i + 1]);
+                    if (!deploymentRoot.exists() || !deploymentRoot.isDirectory()) {
+                        System.err.println(args[i + 1] + " is not a valid deployment directory and will be ignored");
+                        deploymentRoot = null;
+                    }   i++;
+                    break;
+                case "--rootDir":
+                    rootDir = new File(args[i + 1]);
+                    if (!rootDir.exists() || !rootDir.isDirectory()) {
+                        System.err.println(args[i + 1] + " is not a valid root directory and will be ignored");
+                        rootDir = null;
+                    }   i++;
+                    break;
+                case "--deploy":
+                    File deployment = new File(args[i + 1]);
+                    if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || !deployment.getAbsolutePath().endsWith(".war")) {
+                        System.err.println(deployment.getAbsolutePath() + " is not a valid deployment path and will be ignored");
+                    } else {
+                        if (deployments == null) {
+                            deployments = new LinkedList<>();
+                        }
+                        deployments.add(deployment);
+                    }   i++;
+                    break;
+                case "--domainConfig":
+                    alternateDomainXML = new File(args[i + 1]);
+                    if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
+                        System.err.println(alternateDomainXML.getAbsolutePath() + " is not a valid path to an xml file and will be ignored");
+                        alternateDomainXML = null;
+                    }   i++;
+                    break;
+                case "--noCluster":
+                    noCluster = true;
+                    break;
+                case "--help":
+                    System.err.println("Usage: --noCluster  Disables clustering\n"
+                            + "--port sets the http port\n"
+                            + "--sslPort sets the https port number\n"
+                            + "--mcAddress sets the cluster multicast group\n"
+                            + "--mcPort sets the cluster multicast port\n"
+                            + "--startPort sets the cluster start port number\n"
+                            + "--name sets the instance name\n"
+                            + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
+                            + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
+                            + "--deploy specifies a war file to deploy\n"
+                            + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
+                            + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
+                            + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
+                            + "--help Shows this message and exits\n");
+                    System.exit(-1);
             }
         }
     }
@@ -630,7 +662,7 @@ public class PayaraMicro {
                     deployer.deploy(war, "--availabilityenabled=true");
                     deploymentCount++;
                 } else {
-                    logger.warning(war.getAbsolutePath() + " is not a valid deployment");
+                    logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
                 }
             }
         }
@@ -638,22 +670,24 @@ public class PayaraMicro {
         // deploy from deployment director
         if (deploymentRoot != null) {
             for (File war : deploymentRoot.listFiles()) {
-                if (war.isFile() && war.canRead() && war.getAbsolutePath().endsWith(".war")) {
+                String warPath = war.getAbsolutePath();
+                if (war.isFile() && war.canRead() && ( warPath.endsWith(".war") ||  warPath.endsWith(".ear") || warPath.endsWith(".jar") || warPath.endsWith(".rar"))) {
                     deployer.deploy(war, "--availabilityenabled=true");
                     deploymentCount++;
                 }
             }
         }
-        logger.info("Deployed " + deploymentCount + " wars");
+        logger.log(Level.INFO, "Deployed {0} wars", deploymentCount);
     }
 
     private void addShutdownHook() {
         Runtime.getRuntime().addShutdownHook(new Thread(
                 "GlassFish Shutdown Hook") {
+                    @Override
                     public void run() {
                         try {
                             if (gf != null) {
-                                gf.stop();
+                                gf.stop();  
                                 gf.dispose();
                             }
                         } catch (Exception ex) {
@@ -704,8 +738,6 @@ public class PayaraMicro {
         } catch (MalformedURLException ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-
     }
 
     private void setSystemProperties() {
@@ -721,7 +753,7 @@ public class PayaraMicro {
         } catch (IOException ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
+
 
 }

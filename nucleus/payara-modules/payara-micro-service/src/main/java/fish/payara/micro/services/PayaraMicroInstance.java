@@ -17,11 +17,18 @@
  */
 package fish.payara.micro.services;
 
+import com.hazelcast.core.IMap;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventListener;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.deployment.Deployment;
+import org.jboss.logging.Logger;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -30,15 +37,40 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-micro-instance")
 @RunLevel(StartupRunLevel.VAL)
-public class PayaraMicroInstance {
+public class PayaraMicroInstance implements EventListener {
+    
+    private static final Logger logger = Logger.getLogger(PayaraMicroInstance.class);
     
     @Inject
     HazelcastCore hazelcast;
     
+    IMap payaraMicroMap;
+    
     @PostConstruct
     public void postConstruct() {
-        System.out.println("Payara Micro Instance " + hazelcast.isEnabled());
+        if (hazelcast.isEnabled()) {
+            payaraMicroMap = hazelcast.getInstance().getMap("PayaraMicro");
+        }
         
+    }
+
+    /**
+     *
+     * @param event
+     */
+    @Override
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            
+        } else if (event.is(Deployment.APPLICATION_LOADED)) {
+            if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
+                    ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+            }            
+        } else if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
+             if (event.hook() != null && event.hook() instanceof DeploymentContextImpl) {
+                    DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
+            }
+        }
     }
     
 }

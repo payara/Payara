@@ -29,7 +29,6 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
-import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
@@ -79,7 +78,7 @@ public class ListHazelcastMembers implements AdminCommand {
                 StringBuilder builder = new StringBuilder();
                 builder.append("{ ");
                 for (Member member : instance.getCluster().getMembers()) {
-                    String memberName = member.getStringAttribute(hazelcast.INSTANCE_ATTRIBUTE);
+                    String memberName = member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
                     if (memberName != null) {
                         builder.append(memberName).append("-");
                     }

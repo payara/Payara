@@ -30,5 +30,11 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>4.1.153-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
