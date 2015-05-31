@@ -58,7 +58,7 @@ public class PayaraMicro {
     private File deploymentRoot;
     private File alternateDomainXML;
     private List<File> deployments;
-    private GlassFish gf;
+    private transient GlassFish gf;
     private boolean noCluster = false;
     private static PayaraMicro instance;
 
