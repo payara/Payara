@@ -18,6 +18,7 @@
 package fish.payara.micro;
 
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
+import fish.payara.micro.services.PayaraMicroInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
@@ -64,6 +65,7 @@ public class PayaraMicro {
     private List<File> deployments;
     private GlassFish gf;
     private boolean noCluster = false;
+    private PayaraMicroInstance instanceService;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -491,6 +493,10 @@ public class PayaraMicro {
             }
             gf.start();
             deployAll();
+            
+            instanceService = gf.getService(PayaraMicroInstance.class,"payara-micro-instance");
+            logger.info(instanceService.getClusteredPayaras().toString());
+            
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
         } 

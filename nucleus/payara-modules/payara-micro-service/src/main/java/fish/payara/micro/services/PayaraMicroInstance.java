@@ -17,15 +17,25 @@
  */
 package fish.payara.micro.services;
 
+import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
+import com.hazelcast.core.Member;
+import fish.payara.micro.services.data.InstanceDescriptor;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
-import org.glassfish.deployment.common.DeploymentContextImpl;
+import org.glassfish.api.event.Events;
+import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.deployment.Deployment;
 import org.jboss.logging.Logger;
@@ -44,12 +54,53 @@ public class PayaraMicroInstance implements EventListener {
     @Inject
     HazelcastCore hazelcast;
     
-    IMap payaraMicroMap;
+    @Inject
+    ServerContext context;
+        
+    @Inject
+    Events events; 
+    
+    IMap<String,InstanceDescriptor> payaraMicroMap;
+    
+    String myCurrentID;
     
     @PostConstruct
     public void postConstruct() {
+        events.register(this);
+        
+        HazelcastInstance instance = hazelcast.getInstance();
         if (hazelcast.isEnabled()) {
-            payaraMicroMap = hazelcast.getInstance().getMap("PayaraMicro");
+            try {
+                payaraMicroMap = instance.getMap("PayaraMicro");
+                
+                // generate unique key for this instance in the Map
+                myCurrentID = instance.getLocalEndpoint().getUuid();
+                
+                // determine https Port
+                NetworkListener httpListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
+                int port = Integer.parseInt(httpListener.getPort());
+                boolean httpPortEnabled = Boolean.parseBoolean(httpListener.getEnabled());
+                NetworkListener httpsListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("https-listener");
+                int sslPort = Integer.parseInt(httpsListener.getPort());
+                boolean httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
+                
+                
+                InstanceDescriptor id = new InstanceDescriptor();
+                if (httpPortEnabled) {
+                    id.setHttpPort(port);
+                }
+                
+                if (httpsPortEnabled) {
+                    id.setHttpsPort(sslPort);
+                }
+                
+                id.setMemberUUID(myCurrentID);
+                
+                payaraMicroMap.put(myCurrentID, id);
+
+            } catch (UnknownHostException ex) {
+                java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, "Could not find local hostname", ex);
+            }
         }
         
     }
@@ -59,18 +110,41 @@ public class PayaraMicroInstance implements EventListener {
      * @param event
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             
         } else if (event.is(Deployment.APPLICATION_LOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                     ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+                    // get my instance ID
+                    InstanceDescriptor descriptor = payaraMicroMap.get(myCurrentID);
+                    descriptor.addApplication(applicationInfo);
+                    payaraMicroMap.set(myCurrentID, descriptor);
             }            
-        } else if (event.is(Deployment.UNDEPLOYMENT_SUCCESS)) {
-             if (event.hook() != null && event.hook() instanceof DeploymentContextImpl) {
-                    DeploymentContextImpl deploymentContext = (DeploymentContextImpl) event.hook();
+        } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
+             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
+                     ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+                    // get my instance ID
+                    InstanceDescriptor descriptor = payaraMicroMap.get(myCurrentID);
+                    descriptor.removeApplication(applicationInfo);
+                    payaraMicroMap.set(myCurrentID, descriptor);
+           }
+        }
+    }
+    
+    public List<InstanceDescriptor> getClusteredPayaras() {
+        HazelcastInstance instance = hazelcast.getInstance();
+        Set<Member> members = instance.getCluster().getMembers();
+        List<InstanceDescriptor> result = new ArrayList<>(members.size());
+        for (Member member : members) {
+            String key = member.getUuid();
+            InstanceDescriptor descriptor = payaraMicroMap.get(key);
+            if (descriptor != null) {
+                result.add(descriptor);
             }
         }
+        return result;
     }
     
 }
