@@ -48,7 +48,7 @@
         <artifactId>packages</artifactId>
         <version>4.1.153-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.packager</groupId>
+    <groupId>org.glassfish.main.packager</groupId>
     <artifactId>hazelcast</artifactId>
     <name>Hazelcast Package</name>
     <packaging>distribution-fragment</packaging>
