@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.security.web.integration;
 
@@ -145,5 +146,9 @@ public class WebPrincipal extends PrincipalImpl implements SecurityContextProxy 
 	return customPrincipal.toString();
     }
 
+    public Principal getCustomPrincipal() {
+        return customPrincipal;
+    }
+    
 }
 

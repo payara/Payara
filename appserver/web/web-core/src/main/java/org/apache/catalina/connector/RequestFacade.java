@@ -55,9 +55,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.apache.catalina.connector;
 
+import com.sun.enterprise.security.web.integration.WebPrincipal;
 import org.apache.catalina.Globals;
 import org.apache.catalina.core.RequestFacadeHelper;
 import org.apache.catalina.core.StandardServer;
@@ -71,6 +73,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.security.AccessControlException;
 import java.security.AccessController;
+import java.security.Principal;
 import java.security.PrivilegedAction;
 import java.security.SecurityPermission;
 import java.util.*;
@@ -851,7 +854,16 @@ public class RequestFacade
             throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
         }
 
-        return request.getUserPrincipal();
+        // Fix for GLASSFISH-16587
+        Principal p = request.getUserPrincipal();
+        if (p instanceof WebPrincipal) {
+            WebPrincipal wp = (WebPrincipal)p;
+            if (wp.getCustomPrincipal() != null) {
+                p = wp.getCustomPrincipal();
+            }
+        }
+        
+        return p;
     }
 
 
