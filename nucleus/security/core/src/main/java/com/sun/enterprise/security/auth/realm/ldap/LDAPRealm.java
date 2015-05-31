@@ -480,6 +480,7 @@ public final class LDAPRealm extends IASRealm
         throws LoginException
     {
         // do search for user, substituting %s for username
+	_username = RFC2254Encode(_username);
         StringBuffer sb = new StringBuffer(getProperty(PARAM_SEARCH_FILTER));
         substitute(sb, SUBST_SUBJECT_NAME, _username);
         String userid = sb.toString();
@@ -561,7 +562,6 @@ public final class LDAPRealm extends IASRealm
      */
     private String userSearch(DirContext ctx, String baseDN, String filter)
     {
-	filter = RFC2254Encode(filter);
         if (_logger.isLoggable(Level.FINEST)) {
             _logger.log(Level.FINE, "search: baseDN: "+ baseDN +
                            "  filter: " + filter);
