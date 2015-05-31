@@ -24,7 +24,7 @@
         <version>4.1.153-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.payara-modules</groupId>
+    <groupId>fish.payara.payara-modules</groupId>
     <artifactId>payara-nucleus-modules</artifactId>
     <packaging>pom</packaging>
     <name>Payara Nucleus Modules</name>
