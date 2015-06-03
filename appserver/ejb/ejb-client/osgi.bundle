@@ -1,7 +1,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2015 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -38,33 +38,12 @@
 # holder.
 #
 
+# See issue 8474 for com.sun.ejb.portable: this is needed so that the ORB can unmarshal
+# HandleImpl.
 -exportcontents: \
                         com.sun.ejb; \
-                        com.sun.ejb.codegen; \
-                        com.sun.ejb.containers; \
-                        com.sun.ejb.containers.util; \
-                        com.sun.ejb.containers.util.cache; \
-                        com.sun.ejb.containers.util.pool; \
-                        com.sun.ejb.monitoring.stats; \
-                        com.sun.ejb.monitoring.probes; \
-                        com.sun.ejb.spi.io; \
-                        com.sun.ejb.spi.container; \
-                        org.glassfish.ejb.deployment.annotation.handlers; \
-                        org.glassfish.ejb.deployment.descriptor; \
-                        org.glassfish.ejb.deployment.descriptor.runtime; version=${project.osgi.version}
+                        com.sun.ejb.portable; version=${project.osgi.version}
 
-# See issue #10545 to know why we have explicitly added org.glassfish.apf.context
-# in Import-Package
-Import-Package: \
-                        javax.xml.soap;resolution:=optional, \
-                        javax.xml.ws;resolution:=optional, \
-                        javax.xml.ws.handler;resolution:=optional, \
-                        javax.jws;resolution:=optional, \
-                        org.glassfish.apf.context, \
-                        org.glassfish.ejb.deployment.archive, \
-                        *
+Import-Package: *
 
-Bundle-SymbolicName: \
-                        ${project.groupId}.${project.artifactId}
-# dependent flashlight package resolved at runtime
-DynamicImport-Package: org.glassfish.flashlight.provider
+Bundle-SymbolicName: ${project.groupId}.${project.artifactId}
