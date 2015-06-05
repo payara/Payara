@@ -741,20 +741,21 @@ aggregated_tests_summary(){
     fi
 
     for i in `${AWK} 'BEGIN{RS="<tr><td class=\"pane"} \
-         { if (NR > 2) print $2" "$3" "$8" "$11 }' \
+         { if (NR > 2) print $2" "$8" "$11 }' \
          tests.html | sed \
           -e s@'"'@@g \
-	  -e s@'href=/hudson/job/'@@g \
-          -e s@'/testReport/><img alt='@'#'@g \
-          -e s@'/aggregatedTestReport/><img alt='@'#'@g \
+          -e s@'href=/hudson/job/'@@g \
+          -e s@'/testReport/><img style=text-align:right>'@'#'@g \
+          -e s@'/aggregatedTestReport/><img style=text-align:right>'@'#'@g \
           -e s@' style=text-align:right>'@'#'@g \
-	  -e s@'/'@'#'@g`
+          -e s@'/'@'#'@g`
     do
         jobname=`cut -d '#' -f1 <<< $i`
         buildnumber=`cut -d '#' -f2 <<< $i`
-        failednumber=`cut -d '#' -f4 <<< $i`
-        passednumber=`cut -d '#' -f5 <<< $i`
-	printf "%s%s%s%s\n" \
+        failednumber=`cut -d '#' -f3 <<< $i`
+        totalnumber=`cut -d '#' -f4 <<< $i`
+        passednumber=$((totalnumber-failed))
+    printf "%s%s%s%s\n" \
             `align_column 55 "." "$jobname (#${buildnumber})"` \
             `align_column 15 "." "PASSED(${passednumber})"` \
             "FAILED(${failednumber})"
