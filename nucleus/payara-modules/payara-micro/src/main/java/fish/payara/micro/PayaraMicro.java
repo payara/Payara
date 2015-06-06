@@ -523,7 +523,7 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public void shutdown() throws BootstrapException {
-        getRuntime().shutdown();
+        runtime.shutdown();
     }
 
     private void scanArgs(String[] args) {

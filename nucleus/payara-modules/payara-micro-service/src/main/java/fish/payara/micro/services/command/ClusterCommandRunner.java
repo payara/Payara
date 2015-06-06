@@ -20,8 +20,10 @@ package fish.payara.micro.services.command;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.Member;
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.glassfish.embeddable.CommandResult;
 
@@ -38,6 +40,18 @@ public class ClusterCommandRunner {
     public ClusterCommandRunner(HazelcastInstance instance, Set<Member> members) {
        this.instance = instance;
        this.members = members;
+    }
+    
+    /**
+     *
+     * @param <T>
+     * @param members
+     * @param callable
+     * @return
+     */
+    public <T extends Serializable> Map<Member, Future<T>> run (Callable<T> callable) {
+        IExecutorService executorService = instance.getExecutorService("PayaraMicro");
+        return executorService.submitToMembers(callable, members);        
     }
 
     public Map<Member, Future<CommandResult>> run(String command, String... args) {

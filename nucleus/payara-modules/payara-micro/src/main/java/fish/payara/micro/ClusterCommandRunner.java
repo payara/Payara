@@ -20,9 +20,11 @@ package fish.payara.micro;
 import com.hazelcast.core.Member;
 import fish.payara.micro.services.PayaraMicroInstance;
 import fish.payara.micro.services.data.InstanceDescriptor;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
@@ -41,6 +43,29 @@ public class ClusterCommandRunner implements CommandRunner {
         this.localRunner = commandRunner;
         this.instanceService = instanceService;
     }
+    
+    /**
+     *  Submits a Callable to the specified Payara Micro instances and returns the results.
+     * @param <T> The type of the Callable Result
+     * @param members The set of Payara Micro instances to run the callable on
+     * @param callable The Callable to execute
+     * @return A Map of result futures for the callables
+     */
+    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Collection<InstanceDescriptor> members, Callable<T> callable) {
+        Map<Member, Future<T>> callResults = instanceService.getClusterCommandRunner(members).run(callable);
+        Map<InstanceDescriptor,Future<T>> result = new HashMap<>(callResults.size());
+        for (Member member : callResults.keySet()) {
+            for (InstanceDescriptor id : members) {
+                if (id.getMemberUUID().equals(member.getUuid())) {
+                        result.put(id, callResults.get(member));
+                }
+            }
+        }
+        return result;
+        
+    }
+    
+    
     
     /**
      * Runs an asadmin command on the specified members of a Payara Micro Cluster
