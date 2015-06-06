@@ -36,6 +36,7 @@ import java.util.logging.Logger;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
+import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
@@ -43,6 +44,8 @@ import org.glassfish.embeddable.GlassFishRuntime;
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
  * applications to create a full JavaEE runtime environment and deploy war files.
+ * 
+ * This class is used to configure and bootstrap a Payara Micro Runtime. 
  *
  * @author steve
  */
@@ -64,6 +67,7 @@ public class PayaraMicro {
     private File alternateDomainXML;
     private List<File> deployments;
     private GlassFish gf;
+    private PayaraMicroRuntime runtime;
     private boolean noCluster = false;
     private PayaraMicroInstance instanceService;
 
@@ -398,9 +402,10 @@ public class PayaraMicro {
 
     /**
      * Boots the Payara Micro Server. All parameters are checked at this point
+     * @return An instance of PayaraMicroRuntime that can be used to access the running server
      * @throws BootstrapException 
      */
-    public void bootStrap() throws BootstrapException {
+    public PayaraMicroRuntime bootStrap() throws BootstrapException {
         
         // check hazelcast cluster overrides
         if (!noCluster) { // ie we are clustering
@@ -422,9 +427,9 @@ public class PayaraMicro {
         
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
-        GlassFishRuntime runtime;
+        GlassFishRuntime gfruntime;
         try {
-            runtime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
+            gfruntime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
 
             if (httpPort != Integer.MIN_VALUE) {
@@ -476,7 +481,7 @@ public class PayaraMicro {
                 gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.min-thread-pool-size", Integer.toString(minHttpThreads));
             }
 
-            gf = runtime.newGlassFish(gfproperties);
+            gf = gfruntime.newGlassFish(gfproperties);
             
             // reset logger.
         
@@ -493,25 +498,32 @@ public class PayaraMicro {
             }
             gf.start();
             deployAll();
-            
-            instanceService = gf.getService(PayaraMicroInstance.class,"payara-micro-instance");
-            logger.info(instanceService.getClusteredPayaras().toString());
-            
+            this.runtime = new PayaraMicroRuntime(instanceName, gf);
+            return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
         } 
     }
     
     /**
+     * Get a handle on the running Payara instance to manipulate the server
+     * once running
+     * @return
+     * @throws IllegalStateException 
+     */
+    public PayaraMicroRuntime getRuntime() throws IllegalStateException {
+        if (!isRunning()) {
+            throw new IllegalStateException("Payara Micro is not running");
+        }
+        return runtime;
+    }
+   
+    /**
      * Stops and then shutsdown the Payara Micro Server
      * @throws BootstrapException 
      */
     public void shutdown() throws BootstrapException {
-        try {
-            this.gf.dispose();
-        } catch (GlassFishException ex) {
-            throw new BootstrapException("Unable to stop Payara Micro", ex);
-        }
+        getRuntime().shutdown();
     }
 
     private void scanArgs(String[] args) {
@@ -527,7 +539,7 @@ public class PayaraMicro {
                         }
                     } catch (NumberFormatException nfe) {
                         logger.log(Level.SEVERE, "{0} is not a valid http port number", httpPortS);
-                        System.exit(-1);
+                        throw new IllegalArgumentException();
                     }       i++;
                     break;
                 }
@@ -539,8 +551,8 @@ public class PayaraMicro {
                             throw new NumberFormatException("Not a valid tcp port");
                         }
                     } catch (NumberFormatException nfe) {
-                        System.err.println(httpPortS + " is not a valid ssl port number and will be ignored");
-                        sslPort = Integer.MIN_VALUE;
+                        logger.log(Level.SEVERE, "{0} is not a valid ssl port number and will be ignored", httpPortS);
+                        throw new IllegalArgumentException();
                     }       i++;
                     break;
                 }
@@ -552,8 +564,8 @@ public class PayaraMicro {
                             throw new NumberFormatException("Maximum Threads must be 2 or greater");
                         }
                     } catch (NumberFormatException nfe) {
-                        System.err.println(threads + " is not a valid maximum threads number and will be ignored");
-                        maxHttpThreads = Integer.MIN_VALUE;
+                        logger.log(Level.SEVERE, "{0} is not a valid maximum threads number and will be ignored", threads);
+                        throw new IllegalArgumentException();
                     }       i++;
                     break;
                 }
@@ -565,8 +577,8 @@ public class PayaraMicro {
                             throw new NumberFormatException("Minimum Threads must be zero or greater");
                         }
                     } catch (NumberFormatException nfe) {
-                        System.err.println(threads + " is not a valid minimum threads number and will be ignored");
-                        minHttpThreads = Integer.MIN_VALUE;
+                        logger.log(Level.SEVERE, "{0} is not a valid minimum threads number and will be ignored", threads);
+                        throw new IllegalArgumentException();
                     }       i++;
                     break;
                 }
@@ -582,8 +594,8 @@ public class PayaraMicro {
                             throw new NumberFormatException("Not a valid tcp port");
                         }
                     } catch (NumberFormatException nfe) {
-                        System.err.println(httpPortS + " is not a valid multicast port number and will be ignored");
-                        hzPort = Integer.MIN_VALUE;
+                        logger.log(Level.SEVERE, "{0} is not a valid multicast port number and will be ignored", httpPortS);
+                        throw new IllegalArgumentException();
                     }       i++;
                     break;
                 }
@@ -595,8 +607,8 @@ public class PayaraMicro {
                             throw new NumberFormatException("Not a valid tcp port");
                         }
                     } catch (NumberFormatException nfe) {
-                        System.err.println(startPort + " is not a valid port number and will be ignored");
-                        hzStartPort = Integer.MIN_VALUE;
+                        logger.log(Level.SEVERE, "{0} is not a valid port number and will be ignored", startPort);
+                        throw new IllegalArgumentException();
                     }   i++;
                     break;
                 case "--name":
@@ -606,21 +618,21 @@ public class PayaraMicro {
                 case "--deploymentDir":
                     deploymentRoot = new File(args[i + 1]);
                     if (!deploymentRoot.exists() || !deploymentRoot.isDirectory()) {
-                        System.err.println(args[i + 1] + " is not a valid deployment directory and will be ignored");
-                        deploymentRoot = null;
+                        logger.log(Level.SEVERE, "{0} is not a valid deployment directory and will be ignored", args[i + 1]);
+                        throw new IllegalArgumentException();
                     }   i++;
                     break;
                 case "--rootDir":
                     rootDir = new File(args[i + 1]);
                     if (!rootDir.exists() || !rootDir.isDirectory()) {
-                        System.err.println(args[i + 1] + " is not a valid root directory and will be ignored");
-                        rootDir = null;
+                        logger.log(Level.SEVERE, "{0} is not a valid root directory and will be ignored", args[i + 1]);
+                        throw new IllegalArgumentException();
                     }   i++;
                     break;
                 case "--deploy":
                     File deployment = new File(args[i + 1]);
                     if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || !deployment.getAbsolutePath().endsWith(".war")) {
-                        System.err.println(deployment.getAbsolutePath() + " is not a valid deployment path and will be ignored");
+                        logger.log(Level.SEVERE, "{0} is not a valid deployment path and will be ignored", deployment.getAbsolutePath());
                     } else {
                         if (deployments == null) {
                             deployments = new LinkedList<>();
@@ -631,8 +643,8 @@ public class PayaraMicro {
                 case "--domainConfig":
                     alternateDomainXML = new File(args[i + 1]);
                     if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
-                        System.err.println(alternateDomainXML.getAbsolutePath() + " is not a valid path to an xml file and will be ignored");
-                        alternateDomainXML = null;
+                        logger.log(Level.SEVERE, "{0} is not a valid path to an xml file and will be ignored", alternateDomainXML.getAbsolutePath());
+                        throw new IllegalArgumentException();
                     }   i++;
                     break;
                 case "--noCluster":
@@ -653,7 +665,7 @@ public class PayaraMicro {
                             + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
                             + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
                             + "--help Shows this message and exits\n");
-                    System.exit(-1);
+                    System.exit(1);
             }
         }
     }
@@ -758,6 +770,18 @@ public class PayaraMicro {
             }
         } catch (IOException ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Determines whether the server is running i.e. bootstrap has been called
+     * @return true of the server is running
+     */
+    boolean isRunning() {
+        try {
+            return (gf!= null && gf.getStatus() == Status.STARTED);
+        } catch (GlassFishException ex) {
+            return false;
         }
     }
 

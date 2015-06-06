@@ -20,10 +20,13 @@ package fish.payara.micro.services;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IMap;
 import com.hazelcast.core.Member;
+import fish.payara.micro.services.command.ClusterCommandRunner;
 import fish.payara.micro.services.data.InstanceDescriptor;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -33,6 +36,7 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.internal.api.ServerContext;
@@ -58,11 +62,51 @@ public class PayaraMicroInstance implements EventListener {
     ServerContext context;
         
     @Inject
-    Events events; 
+    Events events;
+
+    
+    @Inject
+    CommandRunner commandRunner;
     
     IMap<String,InstanceDescriptor> payaraMicroMap;
     
     String myCurrentID;
+    
+    String instanceName;
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
+    
+    
+    public ClusterCommandRunner getClusterCommandRunner(Collection<InstanceDescriptor> members) {
+        HazelcastInstance instance;
+        instance = hazelcast.getInstance();
+        Set<Member> allMembers = instance.getCluster().getMembers();
+        Set<Member> hzMembers = new HashSet<>(members.size());
+        for (InstanceDescriptor allMember : members) {
+            for (Member hzMember : instance.getCluster().getMembers()) {
+                if (allMember.getMemberUUID().equals(hzMember.getUuid())) {
+                    hzMembers.add(hzMember);
+                    continue;
+                }
+            }
+        }
+        ClusterCommandRunner result = new ClusterCommandRunner(instance, hzMembers);
+        return result;
+    }
+    
+    /**
+     *
+     * @return
+     */
+    public CommandRunner getCommandRunner() {
+        return commandRunner;
+    }
     
     @PostConstruct
     public void postConstruct() {
@@ -85,7 +129,7 @@ public class PayaraMicroInstance implements EventListener {
                 boolean httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
                 
                 
-                InstanceDescriptor id = new InstanceDescriptor();
+                InstanceDescriptor id = new InstanceDescriptor(myCurrentID);
                 if (httpPortEnabled) {
                     id.setHttpPort(port);
                 }
@@ -93,8 +137,8 @@ public class PayaraMicroInstance implements EventListener {
                 if (httpsPortEnabled) {
                     id.setHttpsPort(sslPort);
                 }
-                
-                id.setMemberUUID(myCurrentID);
+
+                id.setInstanceName(instanceName);
                 
                 payaraMicroMap.put(myCurrentID, id);
 

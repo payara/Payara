@@ -32,14 +32,16 @@ import org.glassfish.internal.data.ApplicationInfo;
 public class InstanceDescriptor implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    private String memberUUID;
+    private final String memberUUID;
+    private String instanceName;
     private int httpPort;
     private int httpsPort;
     private InetAddress hostName;
     private Map<String, ApplicationDescriptor> deployedApplications;
 
-    public InstanceDescriptor() throws UnknownHostException {
+    public InstanceDescriptor(String UUID) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
+        memberUUID = UUID;
     }
 
     public void addApplication(ApplicationInfo info) {
@@ -50,19 +52,20 @@ public class InstanceDescriptor implements Serializable {
         ApplicationDescriptor ad = new ApplicationDescriptor(info);
         deployedApplications.put(ad.getName(), ad);
     }
+
+    public String getInstanceName() {
+        return instanceName;
+    }
+
+    public void setInstanceName(String instanceName) {
+        this.instanceName = instanceName;
+    }
     
     /**
      * @return the memberUUID
      */
     public String getMemberUUID() {
         return memberUUID;
-    }
-
-    /**
-     * @param memberUUID the memberUUID to set
-     */
-    public void setMemberUUID(String memberUUID) {
-        this.memberUUID = memberUUID;
     }
 
     /**
@@ -126,5 +129,31 @@ public class InstanceDescriptor implements Serializable {
 
         deployedApplications.remove(applicationInfo.getName());
     }
+
+    /**
+     * Overrides equals purely based on the UUID value
+     * @param obj
+     * @return 
+     */
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = false;
+        if (InstanceDescriptor.class.isInstance(obj)) {
+            InstanceDescriptor descriptor = (InstanceDescriptor)obj;
+            result = this.memberUUID.equals(descriptor.memberUUID);
+        }
+        return result;
+    }
+
+    /**
+     * Overrides hashcode based purely on the UUID hashcode
+     * @return 
+     */
+    @Override
+    public int hashCode() {
+        return memberUUID.hashCode();
+    }
+    
+    
     
 }
