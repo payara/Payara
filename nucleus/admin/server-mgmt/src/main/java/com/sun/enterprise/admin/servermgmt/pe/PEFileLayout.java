@@ -771,7 +771,7 @@ public class PEFileLayout
     public static final String MASTERPASSWORD_FILE = "master-password";
     public File getMasterPasswordFile()
     {
-        return new File(getRepositoryDir(), MASTERPASSWORD_FILE);
+        return new File(getConfigRoot(), MASTERPASSWORD_FILE);
     }
 
     public static final String PASSWORD_ALIAS_KEYSTORE = PasswordAdapter.PASSWORD_ALIAS_KEYSTORE;
