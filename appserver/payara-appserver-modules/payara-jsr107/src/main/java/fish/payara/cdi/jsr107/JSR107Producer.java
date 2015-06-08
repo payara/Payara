@@ -19,7 +19,11 @@ package fish.payara.cdi.jsr107;
 
 import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import java.lang.annotation.Annotation;
+import java.util.Set;
+import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
@@ -48,7 +52,13 @@ public class JSR107Producer {
     @Dependent
     @Produces
     CacheManager getCacheManager(InjectionPoint point) {
-        // TBD look for scoped caching providers in JNDI
+        CacheManager result = null;
+        Set<Annotation> qualifiers = point.getQualifiers();
+        for (Annotation qualifier : qualifiers) {
+            if (qualifier instanceof TCCLCacheManager) {
+                return hazelcastCore.getCachingProvider().getCacheManager(hazelcastCore.getCachingProvider().getDefaultURI(), Thread.currentThread().getContextClassLoader());
+            }
+        }
         return hazelcastCore.getCachingProvider().getCacheManager();
     }
     
@@ -56,6 +66,32 @@ public class JSR107Producer {
     @Produces
     HazelcastInstance getHazelcast() {
         return hazelcastCore.getInstance();
+    }
+    
+    @Produces
+    @NamedCache
+    public Cache<Object,Object> createCache(InjectionPoint ip) {
+        Cache<Object,Object> result = null;
+        Set<Annotation> qualifiers = ip.getQualifiers();
+        NamedCache ncqualifier = null;
+        for (Annotation qualifier : qualifiers) {
+            if (qualifier instanceof NamedCache) {
+                ncqualifier = NamedCache.class.cast(qualifier);
+            }
+        }
+        if (ncqualifier != null) {
+            String cacheName = ncqualifier.name();
+            Class keyClass = ncqualifier.keyClass();
+            Class valueClass = ncqualifier.valueClass();
+            
+            MutableConfiguration<Object,Object> config = new MutableConfiguration<>();
+            config.setTypes(keyClass, valueClass);
+            config.setManagementEnabled(ncqualifier.managementEnabled());
+            config.setStatisticsEnabled(ncqualifier.statisticsEnabled());
+            CacheManager manager = getCacheManager(ip);
+            result = manager.createCache(cacheName, config);
+        }
+        return result;
     }
 
     
