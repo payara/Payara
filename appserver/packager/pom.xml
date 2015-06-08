@@ -117,7 +117,6 @@
         <module>glassfish-ejb</module>
         <module>glassfish-cmp</module>
         <module>metro</module>
-        <module>glassfish-verifier</module>	
         <module>glassfish-appclient</module>
         <module>javadb</module>
         <module>jersey</module>
@@ -149,7 +148,6 @@
         <module>glassfish-jta-l10n</module>
         <module>glassfish-jts-l10n</module>
         <module>glassfish-nucleus-l10n</module>
-        <module>glassfish-verifier-l10n</module>
         <module>glassfish-web-l10n</module>
         <module>metro-l10n</module>
         <module>glassfish-management-l10n</module>
