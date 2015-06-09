@@ -49,6 +49,7 @@ import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.universal.xml.MiniXmlParser;
 import com.sun.enterprise.universal.xml.MiniXmlParserException;
 import com.sun.enterprise.util.HostAndPort;
+import com.sun.enterprise.util.OS;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 
@@ -57,6 +58,7 @@ import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -179,11 +181,26 @@ public  class ChangeNodeMasterPasswordCommand extends LocalInstanceCommand {
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(),
                 MASTER_PASSWORD_ALIAS.toCharArray());
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, newPassword.getBytes());
-            pwdFile.setReadable(true);
-            pwdFile.setWritable(true);
+            chmod("600", pwdFile);
         } catch (Exception ex) {
             throw new CommandException(strings.get("masterPasswordFileNotCreated", pwdFile),
                 ex);
+        }
+    }
+
+
+    protected void chmod(String args, File file) throws IOException {
+        if (OS.isUNIX()) {
+            if (!file.exists()) throw new IOException(Strings.get("fileNotFound", file.getAbsolutePath()));
+
+            // " +" regular expression for 1 or more spaces
+            final String[] argsString = args.split(" +");
+            List<String> cmdList = new ArrayList<String>();
+            cmdList.add("/bin/chmod");
+            for (String arg : argsString)
+                cmdList.add(arg);
+            cmdList.add(file.getAbsolutePath());
+            new ProcessBuilder(cmdList).start();
         }
     }
 
