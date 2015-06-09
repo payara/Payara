@@ -113,7 +113,7 @@ promote_init(){
     fi
 
     export PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
-    rm $PROMOTION_SUMMARY
+    rm -f $PROMOTION_SUMMARY
     export JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/dlc/${ARCHIVE_PATH}
     export JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
     export ARCHIVE_STORAGE_BUNDLES=/java/re/${ARCHIVE_MASTER_BUNDLES}
