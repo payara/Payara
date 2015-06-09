@@ -41,6 +41,8 @@
 
 -->
 
+<!-- "Portions Copyright [2014-2015] [C2B2 Consulting Limited]" -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -121,7 +123,7 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-jts-plugin-l10n</artifactId>
             <version>${project.version}</version>
         </dependency>

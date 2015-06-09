@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited] 
 package com.sun.enterprise.registration.glassfish;
 
 import java.util.Collections;
@@ -174,21 +174,21 @@ public class ModuleMap {
                 put("org.glassfish.main.admin.rest-service", 116);
                 put("org.glassfish.main.admin.server-mgmt", 117);
                 put("org.glassfish.main.admin.util", 118);
-                put("org.glassfish.main.admingui.console-cluster-plugin", 119);
-                put("org.glassfish.main.admingui.console-common", 120);
-                put("org.glassfish.main.admingui.console-common-full-plugin", 121);
-                put("org.glassfish.main.admingui.console-payara-branding-plugin", 122);
-                put("org.glassfish.main.admingui.console-corba-plugin", 123);
-                put("org.glassfish.main.admingui.console-ejb-lite-plugin", 124);
-                put("org.glassfish.main.admingui.console-ejb-plugin", 125);
-                put("org.glassfish.main.admingui.console-jca-plugin", 126);
-                put("org.glassfish.main.admingui.console-jdbc-plugin", 127);
-                put("org.glassfish.main.admingui.console-jms-plugin", 128);
-                put("org.glassfish.main.admingui.console-jts-plugin", 129);
-                put("org.glassfish.main.admingui.console-plugin-service", 130);
-                put("org.glassfish.main.admingui.console-updatecenter-plugin", 131);
-                put("org.glassfish.main.admingui.console-web-plugin", 132);
-                put("org.glassfish.main.admingui.dataprovider", 133);
+                put("fish.payara.admingui.console-cluster-plugin", 119);
+                put("fish.payara.admingui.console-common", 120);
+                put("fish.payara.admingui.console-common-full-plugin", 121);
+                put("fish.payara.admingui.console-payara-branding-plugin", 122);
+                put("fish.payara.admingui.console-corba-plugin", 123);
+                put("fish.payara.admingui.console-ejb-lite-plugin", 124);
+                put("fish.payara.admingui.console-ejb-plugin", 125);
+                put("fish.payara.admingui.console-jca-plugin", 126);
+                put("fish.payara.admingui.console-jdbc-plugin", 127);
+                put("fish.payara.admingui.console-jms-plugin", 128);
+                put("fish.payara.admingui.console-jts-plugin", 129);
+                put("fish.payara.admingui.console-plugin-service", 130);
+                put("fish.payara.admingui.console-updatecenter-plugin", 131);
+                put("fish.payara.admingui.console-web-plugin", 132);
+                put("fish.payara.admingui.dataprovider", 133);
                 put("org.glassfish.main.appclient.client.acc-config", 134);
                 put("org.glassfish.main.appclient.client.gf-client-module", 135);
                 put("org.glassfish.main.appclient.server.appclient-connector", 136);
