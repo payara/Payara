@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,19 +40,20 @@
     holder.
 
 -->
+<!--"Portions Copyright [2014-2015] [C2B2 Consulting Limited]" -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1</version>
+        <version>4.1.153-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.admingui</groupId>
+    <groupId>fish.payara.admingui</groupId>
     <artifactId>admingui</artifactId>
     <packaging>pom</packaging>
-    <name>Admin Console Packages</name>
+    <name>Payara Admin Console Packages</name>
 
     <developers>
         <developer>
@@ -107,7 +108,7 @@
         <module>core</module>
         <module>concurrent</module>
         <module>cluster</module>
-        <module>community-theme</module>
+        <module>payara-theme</module>
         <module>web</module>
 	<module>gf-admingui-connector</module>
         <module>jts</module>
@@ -126,7 +127,7 @@
         <module>common-l10n</module>
         <module>corba-l10n</module>
         <module>jts-l10n</module>
-        <module>community-theme-l10n</module>
+        <module>payara-theme-l10n</module>
         <module>web-l10n</module>
         <module>jms-plugin-l10n</module>
         <module>jdbc-l10n</module>
@@ -138,6 +139,7 @@
         <module>concurrent-l10n</module>
         <module>webui-jsf-plugin-l10n</module>
         <module>webui-jsf-suntheme-plugin-l10n</module>
+        <module>payara-console-extras</module>
     </modules>
     <build>
         <plugins>

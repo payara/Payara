@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--   Portions Copyright [2014] [C2B2 Consulting Limited]  -->
+<!--   Portions Copyright [2014-2015] [C2B2 Consulting Limited]  -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -122,12 +122,12 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-plugin-service</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>dataprovider</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -136,22 +136,22 @@
             <artifactId>jsftemplating</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-common</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-updatecenter-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-payara-branding-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>        
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>dist-fragment</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
@@ -159,27 +159,27 @@
         <!-- TODO: move cluster plugin jars back to glassfish-cluster package
         once nucleus distro assembly moves to its own workspace -->
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-cluster-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-web-plugin</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-jdbc-plugin</artifactId>
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>console-jca-plugin</artifactId>
             <version>${project.version}</version>
         </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.admingui.connector</groupId>
+            <groupId>fish.payara.admingui.connector</groupId>
             <artifactId>gf-admingui-connector</artifactId>
             <version>${project.version}</version>
         </dependency>

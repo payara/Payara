@@ -39,7 +39,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
@@ -55,7 +55,7 @@
         setSessionAttribute(key="#{pageSession.tabSetName}" value="batchConfig");
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration"  method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration?target=#{pageSession.target}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedTarget}");
     />

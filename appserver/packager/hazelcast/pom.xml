@@ -134,7 +134,7 @@
            <optional>true</optional>
        </dependency> 
         <dependency>
-            <groupId>org.glassfish.main.admingui</groupId>
+            <groupId>fish.payara.admingui</groupId>
             <artifactId>payara-console-extras</artifactId>
             <version>${project.version}</version>
         </dependency>

@@ -60,7 +60,6 @@
 <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">
     <sun:textField id="appName" columns="$int{40}" maxLength="#{sessionScope.fieldLengths['maxLength.deploy.ApplicationName']}" text="#{pageSession.ejb['name']}" styleClass="required" required="#{true}"
         onChange="javascript: admingui.deploy.setAppName('#{appNameId}', this.value, window, '#{sessionScope.appTypeString}')">
-
         <!afterCreate
             getClientId(component="$this{component}" clientId=>$page{appNameId});
         />
