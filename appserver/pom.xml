@@ -107,7 +107,7 @@
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
-        <eclipselink.version>2.5.2-RC1</eclipselink.version>
+        <eclipselink.version>2.6.1-RC1</eclipselink.version>
         <javax-persistence-api.version>2.1.0</javax-persistence-api.version> 
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
