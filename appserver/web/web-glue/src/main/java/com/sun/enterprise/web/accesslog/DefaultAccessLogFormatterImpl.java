@@ -386,7 +386,8 @@ public class DefaultAccessLogFormatterImpl extends AccessLogFormatter {
                     && !component.startsWith(HEADER_BY_NAME_PREFIX)
                     && !component.startsWith(HEADERS_BY_NAME_PREFIX)
                     && !component.startsWith(RESPONSE_HEADER_BY_NAME_PREFIX)
-                    && !component.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)) {
+                    && !component.startsWith(RESPONSE_HEADERS_BY_NAME_PREFIX)
+                    && !component.startsWith(SESSION_ATTRIBUTE_BY_NAME_PREFIX)) {
                 _logger.log(
                     Level.SEVERE,
                     INVALID_ACCESS_LOG_PATTERN_COMPONENT,
