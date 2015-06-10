@@ -39,7 +39,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
 <sun:tab id="standaloneBatch" immediate="true" text="$resource{i18nf.batch.batchTabs}" toolTip="$resource{i18nf.batch.batchTabs}">
     <!beforeCreate
         setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
@@ -48,7 +48,7 @@
     />
     <!command
         setSessionAttribute(key="standaloneInstanceTabs" value="batchJobs");
-        gf.redirect(page="#{request.contextPath}/full/batch/batchJobsStandalone.jsf?target=#{pageSession.encodedInstanceName}&tabSetName=standaloneInstanceTabs");
+        gf.redirect(page="#{request.contextPath}/full/batch/batchConfigurationStandalone.jsf?target=#{pageSession.encodedInstanceName}&tabSetName=standaloneInstanceTabs");
     />
     <sun:tab id="batchJobs" immediate="$boolean{true}" text="$resource{i18nf.batch.jobListingTab}" toolTip="$resource{i18nf.batch.jobListingTabTip}" >
         <!command

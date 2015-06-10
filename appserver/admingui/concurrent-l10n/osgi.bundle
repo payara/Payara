@@ -38,4 +38,6 @@
 # holder.
 #
 
-Fragment-Host: org.glassfish.main.admingui.console-concurrent-plugin; bundle-version=${project.osgi.version}
+# "Portions Copyright [2014-2015] [C2B2 Consulting Limited]"
+
+Fragment-Host: fish.payara.admingui.console-concurrent-plugin; bundle-version=${project.osgi.version}

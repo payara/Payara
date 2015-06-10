@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -40,16 +40,16 @@
     holder.
 
 -->
-
+<!--"Portions Copyright [2014-2015] [C2B2 Consulting Limited]" -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1</version>
+        <version>4.1.153-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
-    <groupId>org.glassfish.main.admingui</groupId>
+    <groupId>fish.payara.admingui</groupId>
     <artifactId>war</artifactId>
     <packaging>war</packaging>
     <name>Admin Console WAR</name>
@@ -71,7 +71,7 @@
                             <archive>
                                 <manifestEntries>
                                     <Glassfish-require-services>org.glassfish.api.admingui.ConsoleProvider</Glassfish-require-services>
-                                    <HK2-Import-Bundles>org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
+                                    <HK2-Import-Bundles>fish.payara.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.admingui.dataprovider, com.sun.pkg.client  </HK2-Import-Bundles>
                                 </manifestEntries>
                             </archive>
                         </configuration>
@@ -98,7 +98,7 @@
                                <jar jarfile="target/admingui.war" basedir="target/temp">
                                     <manifest>
                                       <attribute name="Glassfish-require-services" value="org.glassfish.api.admingui.ConsoleProvider" />
-                                      <attribute name="HK2-Import-Bundles" value="org.glassfish.main.admingui.console-common,org.glassfish.hk2.hk2,org.glassfish.main.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, org.glassfish.main.admingui.dataprovider, com.sun.pkg.client " />
+                                      <attribute name="HK2-Import-Bundles" value="fish.payara.admingui.console-common,org.glassfish.hk2.hk2,fish.payara.admingui.console-plugin-service, org.glassfish.main.deployment.deployment-client,org.glassfish.main.registration.registration-api,org.glassfish.main.registration.registration-impl, javax.servlet-api, javax.servlet.jsp-api, com.sun.el.javax.el, com.sun.jsftemplating, fish.payara.admingui.dataprovider, com.sun.pkg.client " />
                                     </manifest>
                                 </jar>
                                 <delete dir="target/temp" />
