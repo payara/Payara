@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.deploy.shared.CommandType;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
@@ -154,6 +155,11 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
+	if(commandName.equals("enable")) {
+            po.setCommand(CommandType.START, null);
+        } else if(commandName.equals("disable")) {
+            po.setCommand(CommandType.STOP, null);
+        }
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
         try {
@@ -383,6 +389,10 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
+ 	if(((DFDeploymentProperties) deploymentOptions).getRedeploy())
+            po.setCommand(CommandType.REDEPLOY,null);
+        else
+            po.setCommand(CommandType.DISTRIBUTE,null);
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
 
@@ -1052,6 +1062,7 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
+        po.setCommand(CommandType.UNDEPLOY,null);
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
         try {
