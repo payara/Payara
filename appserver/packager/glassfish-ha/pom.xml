@@ -132,7 +132,7 @@
               <version>${project.version}</version>
           </dependency>
            <dependency>
-              <groupId>org.glassfish.main.ha</groupId>
+              <groupId>fish.payara.ha</groupId>
               <artifactId>ha-hazelcast-store</artifactId>
               <version>${project.version}</version>
           </dependency>
