@@ -389,10 +389,12 @@ public abstract class AbstractDeploymentFacility implements DeploymentFacility, 
         ensureConnected();
         targets = prepareTargets(targets);
         ProgressObjectImpl po = new ProgressObjectImpl(targets);
- 	if(((DFDeploymentProperties) deploymentOptions).getRedeploy())
-            po.setCommand(CommandType.REDEPLOY,null);
-        else
-            po.setCommand(CommandType.DISTRIBUTE,null);
+        if(deploymentOptions instanceof DFDeploymentProperties) {
+            if (((DFDeploymentProperties) deploymentOptions).getRedeploy())
+                po.setCommand(CommandType.REDEPLOY, null);
+            else
+                po.setCommand(CommandType.DISTRIBUTE, null);
+        }
         List<TargetModuleIDImpl> targetModuleIDList =
             new ArrayList<TargetModuleIDImpl>();
 
