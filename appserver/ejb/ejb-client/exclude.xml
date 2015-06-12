@@ -1,9 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -41,27 +40,51 @@
 
 -->
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
-        <version>4.1.153-SNAPSHOT</version>
-    </parent>
-    <groupId>org.glassfish.main.ejb</groupId>
-    <artifactId>ejb</artifactId>
-    <packaging>pom</packaging>
-    <name>GlassFish EJB container related modules</name>  
-    <modules>
-        <module>ejb-all</module>
-        <module>ejb-connector</module>
-        <module>ejb-internal-api</module>
-        <module>ejb-container</module>
-	<module>ejb-client</module>
-        <module>ejb-full-container</module>
-        <module>ejb-timer-databases</module>
-        <module>ejb-timer-service-app</module>
-        <module>ejb-connector-l10n</module>
-        <module>ejb-container-l10n</module>
-    </modules>
-</project>
+<FindBugsFilter>
+    <!--
+         Request: Mahesh
+         Approval: Bill
+     -->
+    <Match>
+        <Class name="com.sun.ejb.containers.CMCSingletonContainer"/>
+        <Bug pattern="UL_UNRELEASED_LOCK"/>
+        <Priority value="1"/>
+    </Match>
+
+    <!-- lower priority bugs below here -->
+
+    <!--
+        Tasks wait for only one condition, and any task that's woken up can
+        handle the condition, so notifyAll is unnecessary.
+    -->
+    <Match>
+        <Class name="com.sun.ejb.containers.MessageBeanContainer$ASyncClientShutdownTask"/>
+        <Method name="run"/>
+        <Bug pattern="NO_NOTIFY_NOT_NOTIFYALL"/>
+    </Match>
+
+    <!--
+        These public fields are set and read in other modules.
+    -->
+    <Match>
+        <Class name="com.sun.ejb.InvocationInfo"/>
+        <Field name="startsWithRemove"/>
+        <Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.ejb.InvocationInfo"/>
+        <Field name="targetMethod2"/>
+        <Bug pattern="UWF_NULL_FIELD"/>
+    </Match>
+    <Match>
+        <Class name="com.sun.ejb.InvocationInfo"/>
+        <Field name="isHomeFinder"/>
+        <Bug pattern="UWF_UNWRITTEN_PUBLIC_OR_PROTECTED_FIELD"/>
+    </Match>
+    
+    <Match>
+        <Class name="org.glassfish.ejb.deployment.descriptor.IASEjbCMPEntityDescriptor"/>
+        <Field name="finders"/>
+        <Bug pattern="SE_TRANSIENT_FIELD_NOT_RESTORED"/>
+    </Match>
+</FindBugsFilter>

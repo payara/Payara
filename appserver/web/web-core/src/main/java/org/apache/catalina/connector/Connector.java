@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -60,6 +60,7 @@ package org.apache.catalina.connector;
 
 import java.lang.reflect.Constructor;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.security.cert.X509Certificate;
 import java.text.MessageFormat;
 import java.util.*;
@@ -1156,8 +1157,16 @@ public class Connector
      */
     @Override
     public void setURIEncoding(String uriEncoding) {
+    	if (Charset.isSupported(uriEncoding)) {
         this.uriEncoding = uriEncoding;
         setProperty("uRIEncoding", uriEncoding);
+    	} else {
+			if (log.isLoggable(Level.WARNING)) {
+				log.log(Level.WARNING, uriEncoding
+						+ "is not supported .Setting default URLEncoding as "
+						+ this.uriEncoding);
+			}
+		}
     }
 
     /**

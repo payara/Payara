@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2007-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2007-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -57,9 +57,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
-
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.config.dom.Http;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -936,10 +936,10 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         final ServerFilterConfiguration serverFilterConfiguration =
                 new ServerFilterConfiguration();
 		
-		final String scheme = http.getScheme();
+        final String scheme = http.getScheme();
         final String schemeMapping = http.getSchemeMapping();
         final String remoteUserMapping = http.getRemoteUserMapping();
-		
+        
         if (scheme != null || schemeMapping != null || remoteUserMapping != null) {
             final BackendConfiguration backendConfiguration = new BackendConfiguration();
             if (schemeMapping == null) {
@@ -951,7 +951,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             backendConfiguration.setRemoteUserMapping(remoteUserMapping);
             serverFilterConfiguration.setBackendConfiguration(backendConfiguration);
         }
-		
+
         serverFilterConfiguration.setPassTraceRequest(true);
         serverFilterConfiguration.setTraceEnabled(Boolean.valueOf(http.getTraceEnabled()));
         int maxRequestParameters;
