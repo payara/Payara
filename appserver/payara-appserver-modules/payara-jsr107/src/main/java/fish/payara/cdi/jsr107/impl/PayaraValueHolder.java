@@ -24,13 +24,12 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 
 /**
  * Packages up an object into a Serializable value
  * @author steve
  */
-public class PayaraValueHolder implements Externalizable {
+public class PayaraValueHolder<T> implements Externalizable {
    
     private static final long serialVersionUID = -4600378937394648370L;
     
@@ -40,7 +39,7 @@ public class PayaraValueHolder implements Externalizable {
         
     }
     
-    public PayaraValueHolder(Object value) throws IOException {
+    public PayaraValueHolder(T value) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos  = new ObjectOutputStream(baos);
         oos.writeObject(value);
@@ -49,13 +48,14 @@ public class PayaraValueHolder implements Externalizable {
         baos.close();
     }
     
-    public Object getValue() throws IOException, ClassNotFoundException {
+    @SuppressWarnings("unchecked")
+    public T getValue() throws IOException, ClassNotFoundException {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         PayaraTCCLObjectInputStream ois = new PayaraTCCLObjectInputStream(bais);
         Object result = ois.readObject();
         ois.close();
         bais.close();
-        return result;
+        return (T)result;
     }
 
     @Override
