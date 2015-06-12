@@ -18,7 +18,6 @@
 package fish.payara.micro;
 
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
-import fish.payara.micro.services.PayaraMicroInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
@@ -69,7 +68,6 @@ public class PayaraMicro {
     private GlassFish gf;
     private PayaraMicroRuntime runtime;
     private boolean noCluster = false;
-    private PayaraMicroInstance instanceService;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -111,6 +109,15 @@ public class PayaraMicro {
     public static PayaraMicro getInstance() {
         return getInstance(true);
     }
+    
+    /**
+     * Bootstraps the PayaraMicroRuntime with all defaults and no additional configuration.
+     * Functionally equivalent to PayaraMicro.getInstance().bootstrap();
+     * @return 
+     */
+    public static PayaraMicroRuntime bootstrap() throws BootstrapException {
+        return getInstance().bootStrap();
+    }
 
     /**
      *
@@ -120,7 +127,7 @@ public class PayaraMicro {
      * the singleton instance
      */
     public static PayaraMicro getInstance(boolean create) {
-        if (instance == null) {
+        if (instance == null && create) {
             instance = new PayaraMicro();
         }
         return instance;
@@ -148,9 +155,12 @@ public class PayaraMicro {
      * used for cluster communications and discovery. Each Payara Micro cluster should
      * have different values for the MulticastGroup
      * @param hzMulticastGroup String representation of the multicast group
-     * @return 
+     * @return
      */
     public PayaraMicro setClusterMulticastGroup(String hzMulticastGroup) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.hzMulticastGroup = hzMulticastGroup;
         return this;
     }
@@ -171,6 +181,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setClusterPort(int hzPort) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.hzPort = hzPort;
         return this;
     }
@@ -192,6 +205,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setClusterStartPort(int hzStartPort) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.hzStartPort = hzStartPort;
         return this;
     }
@@ -210,6 +226,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setHttpPort(int httpPort) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.httpPort = httpPort;
         return this;
     }
@@ -229,6 +248,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setSslPort(int sslPort) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.sslPort = sslPort;
         return this;
     }
@@ -248,6 +270,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setInstanceName(String instanceName) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.instanceName = instanceName;
         return this;
     }
@@ -267,6 +292,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setDeploymentDir(File deploymentRoot) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.deploymentRoot = deploymentRoot;
         return this;
     }
@@ -286,6 +314,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setAlternateDomainXML(File alternateDomainXML) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.alternateDomainXML = alternateDomainXML;
         return this;
     }
@@ -297,6 +328,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro addDeployment(String pathToWar) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         File file = new File(pathToWar);
         return addDeploymentFile(file);
     }
@@ -308,7 +342,9 @@ public class PayaraMicro {
      * @return
      */    
     public PayaraMicro addDeploymentFile(File file) {
-
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         if (deployments == null) {
             deployments = new LinkedList<>();
         }
@@ -330,6 +366,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setNoCluster(boolean noCluster) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.noCluster = noCluster;
         return this;
     }
@@ -353,6 +392,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setMaxHttpThreads(int maxHttpThreads) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.maxHttpThreads = maxHttpThreads;
         return this;
     }
@@ -373,6 +415,9 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setMinHttpThreads(int minHttpThreads) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.minHttpThreads = minHttpThreads;
         return this;
     }
@@ -396,6 +441,9 @@ public class PayaraMicro {
      * @return Returns the PayaraMicro instance
      */
     public PayaraMicro setRootDir(File rootDir) {
+        if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
         this.rootDir = rootDir;
         return this;
     }
@@ -406,7 +454,9 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public PayaraMicroRuntime bootStrap() throws BootstrapException {
-        
+         if (runtime != null) {
+            throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
+        }       
         // check hazelcast cluster overrides
         if (!noCluster) { // ie we are clustering
             MulticastConfiguration mc = new MulticastConfiguration();
@@ -523,6 +573,9 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public void shutdown() throws BootstrapException {
+        if (!isRunning()) {
+            throw new IllegalStateException("Payara Micro is not running");
+        }
         runtime.shutdown();
     }
 

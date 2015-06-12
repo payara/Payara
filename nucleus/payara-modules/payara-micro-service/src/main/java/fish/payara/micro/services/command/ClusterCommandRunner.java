@@ -21,6 +21,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.IExecutorService;
 import com.hazelcast.core.Member;
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -41,6 +42,11 @@ public class ClusterCommandRunner {
        this.instance = instance;
        this.members = members;
     }
+
+    public ClusterCommandRunner() {
+        this.instance = null;
+        this.members = null;  
+    }
     
     /**
      *
@@ -50,11 +56,21 @@ public class ClusterCommandRunner {
      * @return
      */
     public <T extends Serializable> Map<Member, Future<T>> run (Callable<T> callable) {
+        
+        if (instance == null) { // we have no cluster do nothing
+            return new HashMap<>(0);
+        }
+        
         IExecutorService executorService = instance.getExecutorService("PayaraMicro");
         return executorService.submitToMembers(callable, members);        
     }
 
     public Map<Member, Future<CommandResult>> run(String command, String... args) {
+        
+        if (instance == null) {
+            return new HashMap<>(0);
+        }
+        
         IExecutorService executorService = instance.getExecutorService("PayaraMicro");
         AsAdminCallable callable = new AsAdminCallable(command, args);
         return executorService.submitToMembers(callable, members);

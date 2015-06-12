@@ -87,6 +87,17 @@ public class ClusterCommandRunner implements CommandRunner {
         }
         return result;
     }
+    
+    /**
+     * Runs a Callable locally. Interface for completeness
+     * @param <T>
+     * @param callable
+     * @return
+     * @throws Exception 
+     */
+    public <T extends Serializable> T run( Callable<T> callable) throws Exception {
+        return callable.call();
+    }
 
     /**
      * Runs an asadmin command on the local Payara Micro

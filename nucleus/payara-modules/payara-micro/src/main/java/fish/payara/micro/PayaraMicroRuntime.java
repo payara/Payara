@@ -17,13 +17,20 @@
  */
 package fish.payara.micro;
 
+import fish.payara.micro.services.PayaraClusterListener;
 import fish.payara.micro.services.PayaraMicroInstance;
 import fish.payara.micro.services.data.InstanceDescriptor;
 import java.io.File;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
@@ -37,19 +44,22 @@ import org.glassfish.embeddable.GlassFishException;
  *
  * @author steve
  */
-public class PayaraMicroRuntime {
+public class PayaraMicroRuntime  implements PayaraClusterListener {
     private static final Logger logger = Logger.getLogger(PayaraMicroRuntime.class.getCanonicalName());
 
     private final GlassFish runtime;
     private final PayaraMicroInstance instanceService;
     private final String instanceName;
+    private final HashSet<PayaraClusterListener> listeners;
 
     PayaraMicroRuntime(String instanceName, GlassFish runtime) {
         this.runtime = runtime;
         this.instanceName = instanceName;
+        this.listeners = new HashSet<>(10);
         try {
             instanceService = runtime.getService(PayaraMicroInstance.class, "payara-micro-instance");
             instanceService.setInstanceName(instanceName);
+            instanceService.addBootstrapListener(this);
         } catch (GlassFishException ex) {
             throw new IllegalStateException("Unable to retrieve the embedded Payara Micro HK2 service. Something bad has happened", ex);
         }
@@ -69,6 +79,10 @@ public class PayaraMicroRuntime {
         }
     }
     
+    /**
+     * Returns a collection if instance descriptors for all the Payara Micros in the cluster
+     * @return 
+     */
     public Collection<InstanceDescriptor> getClusteredPayaras() {
         return instanceService.getClusteredPayaras();
     }
@@ -87,6 +101,35 @@ public class PayaraMicroRuntime {
         }
     }
     
+    /**
+     * Runs an asadmin command on all members of the Payara Micro Cluster
+     * Functionally equivalent to the run method of the ClusterCommandRunner passing in
+     * all cluster members obtained from getClusteredPayaras()
+     * @param command The name of the asadmin command to run
+     * @param args The parameters to the command
+     * @return 
+     */
+    public Map<InstanceDescriptor, Future<CommandResult>> run (String command, String... args ) {
+        return getCommandRunner().run(getClusteredPayaras(), command, args);
+    }
+    
+    /**
+     * Runs a Callable object on all members of the Payara Micro Cluster
+     * Functionally equivalent to the run method on ClusterCommandRunner passing in
+     * all cluster members obtained from getClusteredPayaras() 
+     * @param <T> The Type of the Callable
+     * @param callable The Callable object to run
+     * @return 
+     */
+    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> runOnAll (Callable<T> callable) {
+        return getCommandRunner().run(getClusteredPayaras(), callable);
+    }
+    
+    /**
+     * Obtains a clustered command runner which can be used to run asadmin commands
+     * or generic Callable objects across the Payara Micro Grid
+     * @return 
+     */
     public ClusterCommandRunner getCommandRunner() {
         checkState();
         try {
@@ -133,6 +176,29 @@ public class PayaraMicroRuntime {
             logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
         }
         return result;
+    }
+    
+    public void removeClusterListenr(PayaraClusterListener listener) {
+        listeners.remove(listener);
+    }
+    
+    
+    public void addClusterListener(PayaraClusterListener listener) {
+        listeners.add(listener);
+    }
+
+    @Override
+    public void memberAdded(InstanceDescriptor id) {
+        for (PayaraClusterListener listener : listeners) {
+         listener.memberAdded(id);
+        }
+    }
+
+    @Override
+    public void memberRemoved(InstanceDescriptor id) {
+        for (PayaraClusterListener listener : listeners) {
+            listener.memberRemoved(id);
+        }
     }
 
     private void checkState() {
