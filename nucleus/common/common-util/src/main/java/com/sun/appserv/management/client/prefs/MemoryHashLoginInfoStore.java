@@ -102,6 +102,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             }
             catch(final Exception ee) {} //ignore
         }
+        protect();
     }
 
     @Override
