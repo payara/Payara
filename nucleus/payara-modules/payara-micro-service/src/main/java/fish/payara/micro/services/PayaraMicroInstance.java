@@ -200,11 +200,13 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
                 // get my instance ID
                 if (payaraMicroMap != null) {
                     InstanceDescriptor descriptor = payaraMicroMap.get(myCurrentID);
-                    descriptor.removeApplication(applicationInfo);
-                    payaraMicroMap.set(myCurrentID, descriptor);
-                }
+                    if (descriptor != null) {
+                        descriptor.removeApplication(applicationInfo);
+                        payaraMicroMap.set(myCurrentID, descriptor);    
+                    }
+               }
             }
-        } else if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
             if (payaraMicroMap != null) {
                 payaraInternalBus.publish(new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, payaraMicroMap.get(myCurrentID)));
                 payaraMicroMap.remove(myCurrentID);
@@ -260,7 +262,7 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
                 break;
                 case REMOVED:
                 for (PayaraClusterListener myListener : myListeners) {
-                    myListener.memberAdded(pie.getId());
+                    myListener.memberRemoved(pie.getId());
                 }
                 break;                    
             }
