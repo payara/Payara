@@ -28,6 +28,7 @@ public class PayaraClusteredCDIEvent implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private InstanceDescriptor id;
+    private boolean loopBack = false;
 
     public PayaraClusteredCDIEvent() {
         id = null;
@@ -44,4 +45,22 @@ public class PayaraClusteredCDIEvent implements Serializable {
     void setInstanceDescriptor(InstanceDescriptor localDescriptor) {
         id = localDescriptor;
     }
+
+    public InstanceDescriptor getId() {
+        return id;
+    }
+
+    public void setId(InstanceDescriptor id) {
+        this.id = id;
+    }
+
+    public boolean isLoopBack() {
+        return loopBack;
+    }
+
+    public void setLoopBack(boolean loopBack) {
+        this.loopBack = loopBack;
+    }
+    
+    
 }

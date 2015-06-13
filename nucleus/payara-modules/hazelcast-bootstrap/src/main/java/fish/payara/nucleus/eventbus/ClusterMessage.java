@@ -15,31 +15,26 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.micro;
+package fish.payara.nucleus.eventbus;
 
-import fish.payara.micro.services.CDIEventListener;
-import fish.payara.micro.services.PayaraClusteredCDIEvent;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import java.io.Serializable;
 
 /**
  *
  * @author steve
+ * @param <T> The type of the message payload
  */
-@Singleton
-public class InboundEventPublisher implements CDIEventListener {
+public class ClusterMessage<T extends Serializable> implements Serializable {
+    private static final long serialVersionUID = 1L;
     
-    @Inject
-    @Inbound
-    Event<PayaraClusteredCDIEvent> clusterEvent;
-
-    @Override
-    public void eventReceived(PayaraClusteredCDIEvent event) {
-        clusterEvent.fire(event);
+    private T body;
+    
+    public ClusterMessage(T payload) {
+        body = payload;
     }
     
-    
-            
+    public T getPayload() {
+        return body;
+    }
     
 }

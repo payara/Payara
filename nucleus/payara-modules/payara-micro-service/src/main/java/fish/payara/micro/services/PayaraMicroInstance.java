@@ -17,24 +17,20 @@
  */
 package fish.payara.micro.services;
 
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.IMap;
-import com.hazelcast.core.ITopic;
-import com.hazelcast.core.Member;
-import com.hazelcast.core.MemberAttributeEvent;
-import com.hazelcast.core.MembershipEvent;
-import com.hazelcast.core.MembershipListener;
-import com.hazelcast.core.Message;
-import com.hazelcast.core.MessageListener;
-import fish.payara.micro.services.command.ClusterCommandRunner;
+import fish.payara.micro.services.command.AsAdminCallable;
+import fish.payara.micro.services.command.ClusterCommandResult;
 import fish.payara.micro.services.data.InstanceDescriptor;
-import fish.payara.nucleus.hazelcast.HazelcastCore;
+import fish.payara.nucleus.cluster.PayaraCluster;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.MessageReceiver;
+import java.io.Serializable;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -58,12 +54,18 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-micro-instance")
 @RunLevel(StartupRunLevel.VAL)
-public class PayaraMicroInstance implements EventListener, MembershipListener, MessageListener {
+public class PayaraMicroInstance implements EventListener, MessageReceiver {
+
+    public static final String INSTANCE_STORE_NAME = "payara.instance.store";
+
+    public static final String INTERNAL_EVENTS_NAME = "payara.micro.cluster.event";
+    
+    public static final String CDI_EVENTS_NAME = "payara.micro.cdi.event";
 
     private static final Logger logger = Logger.getLogger(PayaraMicroInstance.class);
 
     @Inject
-    private HazelcastCore hazelcast;
+    private PayaraCluster cluster;
 
     @Inject
     private ServerContext context;
@@ -74,21 +76,15 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
     @Inject
     private CommandRunner commandRunner;
 
-    private IMap<String, InstanceDescriptor> payaraMicroMap;
-    
     private HashSet<PayaraClusterListener> myListeners;
-    
+
     private HashSet<CDIEventListener> myCDIListeners;
-
-    private ITopic payaraCDIBus;
-    private String cdiBusRegistration;
-
-    private ITopic payaraInternalBus;
-    private String internalBusRegistration;
 
     private String myCurrentID;
 
     private String instanceName;
+
+    private InstanceDescriptor me;
 
     public String getInstanceName() {
         return instanceName;
@@ -97,55 +93,76 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
+    
+    public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
+        return cluster.getExecService().runCallable(memberUUIDS, callable);
+    }
 
-    public ClusterCommandRunner getClusterCommandRunner(Collection<InstanceDescriptor> members) {
+    public <T extends Serializable> Map<String, Future<T>> runCallable(Callable<T> callable) {
+        return cluster.getExecService().runCallable(callable);
+    }
 
-        if (!hazelcast.isEnabled()) {
-            return new ClusterCommandRunner();
-        }
-
-        HazelcastInstance instance;
-        instance = hazelcast.getInstance();
-        Set<Member> allMembers = instance.getCluster().getMembers();
-        Set<Member> hzMembers = new HashSet<>(members.size());
-        for (InstanceDescriptor allMember : members) {
-            for (Member hzMember : instance.getCluster().getMembers()) {
-                if (allMember.getMemberUUID().equals(hzMember.getUuid())) {
-                    hzMembers.add(hzMember);
-                    continue;
-                }
-            }
-        }
-        ClusterCommandRunner result = new ClusterCommandRunner(instance, hzMembers);
+    public ClusterCommandResult executeLocalAsAdmin(String command, String... parameters) {
+        return new ClusterCommandResult(commandRunner.run(command, parameters));
+    }
+    
+    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
+        AsAdminCallable callable = new AsAdminCallable(command, parameters);
+        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(callable);
         return result;
     }
 
-    /**
-     *
-     * @return
-     */
-    public CommandRunner getCommandRunner() {
-        return commandRunner;
+
+    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
+        AsAdminCallable callable = new AsAdminCallable(command, parameters);
+        Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
+        return result;
+    }
+
+    @Override
+    public void receiveMessage(ClusterMessage msg) {
+        if (msg.getPayload() instanceof PayaraInternalEvent) {
+            PayaraInternalEvent pie = PayaraInternalEvent.class.cast(msg.getPayload());
+            switch (pie.getMessageType()) {
+                case ADDED:
+                    for (PayaraClusterListener myListener : myListeners) {
+                        myListener.memberAdded(pie.getId());
+                    }
+                    break;
+                case REMOVED:
+                    for (PayaraClusterListener myListener : myListeners) {
+                        myListener.memberRemoved(pie.getId());
+                    }
+                    break;
+            }
+
+        } else if (msg.getPayload() instanceof PayaraClusteredCDIEvent) {
+            PayaraClusteredCDIEvent cast = PayaraClusteredCDIEvent.class
+                    .cast(msg.getPayload());
+            for (CDIEventListener myListener : myCDIListeners) {
+                if (!cast.isLoopBack() && cast.getInstanceDescriptor().getMemberUUID().equals(myCurrentID)) {
+                    // ignore this message as it is a loopback
+                } else {
+                    myListener.eventReceived(cast);
+                }
+            }
+        }
     }
 
     @PostConstruct
     @SuppressWarnings("unchecked")
-    public void postConstruct() {
+    void postConstruct() {
         events.register(this);
         myListeners = new HashSet<>(1);
         myCDIListeners = new HashSet<>(1);
 
-        if (hazelcast.isEnabled()) {
+        if (cluster.isEnabled()) {
+            cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
+            cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
             try {
-                HazelcastInstance instance = hazelcast.getInstance();
-                payaraMicroMap = instance.getMap("PayaraMicro");
-                payaraCDIBus = instance.getTopic("PayaraMicroCDIBus");
-                payaraCDIBus.addMessageListener(this);
-                payaraInternalBus = instance.getTopic("PayaraMicroInternalBus");
-                payaraInternalBus.addMessageListener(this);
 
                 // generate unique key for this instance in the Map
-                myCurrentID = instance.getLocalEndpoint().getUuid();
+                myCurrentID = cluster.getLocalUUID();
 
                 // determine https Port
                 NetworkListener httpListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
@@ -155,18 +172,18 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
                 int sslPort = Integer.parseInt(httpsListener.getPort());
                 boolean httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
 
-                InstanceDescriptor id = new InstanceDescriptor(myCurrentID);
+                me = new InstanceDescriptor(myCurrentID);
                 if (httpPortEnabled) {
-                    id.setHttpPort(port);
+                    me.setHttpPort(port);
                 }
 
                 if (httpsPortEnabled) {
-                    id.setHttpsPort(sslPort);
+                    me.setHttpsPort(sslPort);
                 }
 
-                id.setInstanceName(instanceName);
+                me.setInstanceName(instanceName);
 
-                payaraMicroMap.put(myCurrentID, id);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
 
             } catch (UnknownHostException ex) {
                 java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, "Could not find local hostname", ex);
@@ -183,130 +200,75 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
     @SuppressWarnings({"unchecked"})
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
-            if (payaraInternalBus != null) {
-                payaraInternalBus.publish(new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, payaraMicroMap.get(myCurrentID)));
-            }
+            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.ADDED, me);
+            ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
+            this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
+
         } else if (event.is(Deployment.APPLICATION_LOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                // get my instance ID
-                if (payaraMicroMap != null) {
-                    InstanceDescriptor descriptor = payaraMicroMap.get(myCurrentID);
-                    descriptor.addApplication(applicationInfo);
-                    payaraMicroMap.set(myCurrentID, descriptor);
-                }
-
+                me.addApplication(applicationInfo);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
+
         } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                // get my instance ID
-                if (payaraMicroMap != null) {
-                    InstanceDescriptor descriptor = payaraMicroMap.get(myCurrentID);
-                    if (descriptor != null) {
-                        descriptor.removeApplication(applicationInfo);
-                        payaraMicroMap.set(myCurrentID, descriptor);    
-                    }
-               }
+                me.removeApplication(applicationInfo);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
         } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
-            if (payaraMicroMap != null) {
-                payaraInternalBus.publish(new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, payaraMicroMap.get(myCurrentID)));
-                payaraMicroMap.remove(myCurrentID);
-                payaraCDIBus.removeMessageListener(cdiBusRegistration);
-                payaraInternalBus.removeMessageListener(internalBusRegistration);
-            }
+            PayaraInternalEvent pie = new PayaraInternalEvent(PayaraInternalEvent.MESSAGE.REMOVED, me);
+            ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
+            this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
+            this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
         }
     }
 
-    public List<InstanceDescriptor> getClusteredPayaras() {
-
-        if (!hazelcast.isEnabled()) {
-            return new ArrayList<>(0);
-        }
-        HazelcastInstance instance = hazelcast.getInstance();
-        Set<Member> members = instance.getCluster().getMembers();
-        List<InstanceDescriptor> result = new ArrayList<>(members.size());
-        for (Member member : members) {
-            String key = member.getUuid();
-            InstanceDescriptor descriptor = payaraMicroMap.get(key);
-            if (descriptor != null) {
-                result.add(descriptor);
+    public Set<InstanceDescriptor> getClusteredPayaras() {       
+        Set<String> members = cluster.getClusterMembers();
+        HashSet<InstanceDescriptor> result = new HashSet<>(members.size());
+        for (String member : members) {
+            InstanceDescriptor id = (InstanceDescriptor) cluster.getClusteredStore().get(INSTANCE_STORE_NAME, member);
+            if (id != null) {
+                result.add(id);
             }
         }
         return result;
     }
 
-    @Override
-    public void memberAdded(MembershipEvent me) {
-        // currently do nothing
-    }
-
-    @Override
-    public void memberRemoved(MembershipEvent me) {
-        // remove the member from the map if it is present
-        payaraMicroMap.removeAsync(me.getMember().getUuid());
-    }
-
-    @Override
-    public void memberAttributeChanged(MemberAttributeEvent mae) {
-
-    }
-
-    @Override
-    public void onMessage(Message msg) {
-        if (msg.getMessageObject() instanceof PayaraInternalEvent) {
-            PayaraInternalEvent pie = PayaraInternalEvent.class.cast(msg.getMessageObject());
-            switch (pie.getMessageType()) {
-                case ADDED:
-                for (PayaraClusterListener myListener : myListeners) {
-                    myListener.memberAdded(pie.getId());
-                }
-                break;
-                case REMOVED:
-                for (PayaraClusterListener myListener : myListeners) {
-                    myListener.memberRemoved(pie.getId());
-                }
-                break;                    
-            }
-
-        } else if (msg.getMessageObject() instanceof PayaraClusteredCDIEvent) {
-            PayaraClusteredCDIEvent cast = PayaraClusteredCDIEvent.class.cast(msg.getMessageObject());
-            for (CDIEventListener myListener : myCDIListeners) {
-                myListener.eventReceived(cast);
-            }
-        }
-    }
-    
     public void pubishCDIEvent(PayaraClusteredCDIEvent event) {
-        if (payaraCDIBus != null) {
-            event.setInstanceDescriptor(getLocalDescriptor());
-            payaraCDIBus.publish(event);
+        if (event.getInstanceDescriptor() == null) {
+            event.setInstanceDescriptor(me);
         }
+        ClusterMessage<PayaraClusteredCDIEvent> message = new ClusterMessage<>(event);
+        cluster.getEventBus().publish(CDI_EVENTS_NAME, message);
     }
-    
+
     public void removeBootstrapListenr(PayaraClusterListener listener) {
         myListeners.remove(listener);
     }
-    
-    
+
     public void addBootstrapListener(PayaraClusterListener listener) {
         myListeners.add(listener);
     }
-    
+
     public void removeCDIListenr(CDIEventListener listener) {
         myCDIListeners.remove(listener);
     }
-    
-    
+
     public void addCDIListener(CDIEventListener listener) {
         myCDIListeners.add(listener);
     }
-    
+
     public InstanceDescriptor getLocalDescriptor() {
+        return me;
+    }
+    
+    public InstanceDescriptor getDescriptor(String member) {
         InstanceDescriptor result = null;
-        if (payaraMicroMap != null) {
-            result = payaraMicroMap.get(myCurrentID);
+        if (cluster.isEnabled()) {
+            result = (InstanceDescriptor) cluster.getClusteredStore().get(INSTANCE_STORE_NAME, member);
         }
         return result;
     }

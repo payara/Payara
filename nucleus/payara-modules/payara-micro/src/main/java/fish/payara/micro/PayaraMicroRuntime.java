@@ -21,18 +21,19 @@ import fish.payara.micro.services.CDIEventListener;
 import fish.payara.micro.services.PayaraClusterListener;
 import fish.payara.micro.services.PayaraClusteredCDIEvent;
 import fish.payara.micro.services.PayaraMicroInstance;
+import fish.payara.micro.services.command.ClusterCommandResult;
 import fish.payara.micro.services.data.InstanceDescriptor;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
@@ -111,11 +112,46 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
      * @param args The parameters to the command
      * @return 
      */
-    public Map<InstanceDescriptor, Future<CommandResult>> run (String command, String... args ) {
-        return getCommandRunner().run(getClusteredPayaras(), command, args);
+    public Map<InstanceDescriptor, Future<ClusterCommandResult>> run (String command, String... args ) {
+        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
+        Map<InstanceDescriptor, Future<ClusterCommandResult>> result = new HashMap<>(commandResult.size());
+        for (String uuid : commandResult.keySet()) {
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
+            if (id != null) {
+                result.put(id, commandResult.get(uuid));
+            }
+        }
+        return result;
     }
     
-    /**
+   
+     /**
+     * Runs an asadmin command on specified  members of the Payara Micro Cluster
+     * Functionally equivalent to the run method of the ClusterCommandRunner passing in
+     * all cluster members obtained from getClusteredPayaras()
+     * @param command The name of the asadmin command to run
+     * @param args The parameters to the command
+     * @return 
+     */
+    public Map<InstanceDescriptor, Future<ClusterCommandResult>> run (Collection<InstanceDescriptor> members, String command, String... args ) {
+        
+        HashSet<String> memberUUIDs = new HashSet<>(members.size());
+        for (InstanceDescriptor member : members) {
+            memberUUIDs.add(member.getMemberUUID());
+        }
+        
+        Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(memberUUIDs,command, args);
+        Map<InstanceDescriptor, Future<ClusterCommandResult>> result = new HashMap<>(commandResult.size());
+        for (String uuid : commandResult.keySet()) {
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
+            if (id != null) {
+                result.put(id, commandResult.get(uuid));
+            }
+        }
+        return result;
+    }
+    
+        /**
      * Runs a Callable object on all members of the Payara Micro Cluster
      * Functionally equivalent to the run method on ClusterCommandRunner passing in
      * all cluster members obtained from getClusteredPayaras() 
@@ -123,24 +159,45 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
      * @param callable The Callable object to run
      * @return 
      */
-    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> runOnAll (Callable<T> callable) {
-        return getCommandRunner().run(getClusteredPayaras(), callable);
+    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Callable<T> callable) {
+        Map<String, Future<T>> runCallable = instanceService.runCallable(callable);
+        Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
+        for (String uuid : runCallable.keySet()) {
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
+            if (id != null) {
+                result.put(id, runCallable.get(uuid));
+            }
+        }
+        return result;
     }
     
     /**
-     * Obtains a clustered command runner which can be used to run asadmin commands
-     * or generic Callable objects across the Payara Micro Grid
+     * Runs a Callable object on specified members of the Payara Micro Cluster
+     * Functionally equivalent to the run method on ClusterCommandRunner passing in
+     * all cluster members obtained from getClusteredPayaras() 
+     * @param <T> The Type of the Callable
+     * @param members The collection of members to run the callable on
+     * @param callable The Callable object to run
      * @return 
      */
-    public ClusterCommandRunner getCommandRunner() {
-        checkState();
-        try {
-            return new ClusterCommandRunner(runtime.getCommandRunner(), instanceService);
-        } catch (GlassFishException ex) {
-            throw new IllegalStateException(ex);
+    public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Collection<InstanceDescriptor> members, Callable<T> callable) {
+        
+        HashSet<String> memberUUIDs = new HashSet<>(members.size());
+        for (InstanceDescriptor member : members) {
+            memberUUIDs.add(member.getMemberUUID());
+        }    
+        
+        Map<String, Future<T>> runCallable = instanceService.runCallable(memberUUIDs,callable);
+        Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
+        for (String uuid : runCallable.keySet()) {
+            InstanceDescriptor id = instanceService.getDescriptor(uuid);
+            if (id != null) {
+                result.put(id, runCallable.get(uuid));
+            }
         }
+        return result;
     }
-    
+       
     /**
      * Deploy from an InputStream which can load the Java EE archive
      * @param name The name of the deployment

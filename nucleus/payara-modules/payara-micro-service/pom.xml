@@ -37,9 +37,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.payara-modules</groupId>
+            <groupId>fish.payara.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
+            <version>4.1.153-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
     </dependencies>
