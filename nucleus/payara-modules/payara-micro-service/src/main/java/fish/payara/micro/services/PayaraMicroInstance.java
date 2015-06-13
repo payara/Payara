@@ -77,6 +77,8 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
     private IMap<String, InstanceDescriptor> payaraMicroMap;
     
     private HashSet<PayaraClusterListener> myListeners;
+    
+    private HashSet<CDIEventListener> myCDIListeners;
 
     private ITopic payaraCDIBus;
     private String cdiBusRegistration;
@@ -130,7 +132,8 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
     @SuppressWarnings("unchecked")
     public void postConstruct() {
         events.register(this);
-        myListeners = new HashSet<>(10);
+        myListeners = new HashSet<>(1);
+        myCDIListeners = new HashSet<>(1);
 
         if (hazelcast.isEnabled()) {
             try {
@@ -268,7 +271,17 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
             }
 
         } else if (msg.getMessageObject() instanceof PayaraClusteredCDIEvent) {
-
+            PayaraClusteredCDIEvent cast = PayaraClusteredCDIEvent.class.cast(msg.getMessageObject());
+            for (CDIEventListener myListener : myCDIListeners) {
+                myListener.eventReceived(cast);
+            }
+        }
+    }
+    
+    public void pubishCDIEvent(PayaraClusteredCDIEvent event) {
+        if (payaraCDIBus != null) {
+            event.setInstanceDescriptor(getLocalDescriptor());
+            payaraCDIBus.publish(event);
         }
     }
     
@@ -279,6 +292,23 @@ public class PayaraMicroInstance implements EventListener, MembershipListener, M
     
     public void addBootstrapListener(PayaraClusterListener listener) {
         myListeners.add(listener);
+    }
+    
+    public void removeCDIListenr(CDIEventListener listener) {
+        myCDIListeners.remove(listener);
+    }
+    
+    
+    public void addCDIListener(CDIEventListener listener) {
+        myCDIListeners.add(listener);
+    }
+    
+    public InstanceDescriptor getLocalDescriptor() {
+        InstanceDescriptor result = null;
+        if (payaraMicroMap != null) {
+            result = payaraMicroMap.get(myCurrentID);
+        }
+        return result;
     }
 
 }

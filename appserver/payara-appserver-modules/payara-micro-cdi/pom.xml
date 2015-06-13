@@ -2,15 +2,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.payara-modules</groupId>
-        <artifactId>payara-nucleus-modules</artifactId>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
         <version>4.1.153-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
-    <artifactId>payara-micro-service</artifactId>
+    <artifactId>payara-micro-cdi</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>Payara Micro Edition Services</name>
-    <description>Services for Payara Micro Edition</description>
+    <name>Payara Micro CDI</name>
+    <description>Payara Micro CDI Extension</description>
     <developers>
         <developer>
             <id>smillidge</id>
@@ -25,21 +25,15 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.core</groupId>
-            <artifactId>glassfish</artifactId>
-            <version>${project.version}</version>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>payara-micro-core</artifactId>
+            <version>4.1.153-SNAPSHOT</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.payara-modules</groupId>
-            <artifactId>hazelcast-bootstrap</artifactId>
-            <version>${project.version}</version>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
             <type>jar</type>
         </dependency>
     </dependencies>

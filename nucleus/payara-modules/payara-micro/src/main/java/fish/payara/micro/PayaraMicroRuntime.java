@@ -17,7 +17,9 @@
  */
 package fish.payara.micro;
 
+import fish.payara.micro.services.CDIEventListener;
 import fish.payara.micro.services.PayaraClusterListener;
+import fish.payara.micro.services.PayaraClusteredCDIEvent;
 import fish.payara.micro.services.PayaraMicroInstance;
 import fish.payara.micro.services.data.InstanceDescriptor;
 import java.io.File;
@@ -199,6 +201,18 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
         for (PayaraClusterListener listener : listeners) {
             listener.memberRemoved(id);
         }
+    }
+    
+    public void publishCDIEvent(PayaraClusteredCDIEvent event ) {
+        this.instanceService.pubishCDIEvent(event);
+    }
+    
+    public void addCDIEventListener(CDIEventListener listener) {
+        this.instanceService.addCDIListener(listener);
+    }
+    
+    public InstanceDescriptor getLocalDescriptor() {
+        return instanceService.getLocalDescriptor();
     }
 
     private void checkState() {

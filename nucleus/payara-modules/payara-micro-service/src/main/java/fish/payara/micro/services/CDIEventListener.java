@@ -17,31 +17,12 @@
  */
 package fish.payara.micro.services;
 
-import fish.payara.micro.services.data.InstanceDescriptor;
-import java.io.Serializable;
-
 /**
  *
  * @author steve
  */
-public class PayaraClusteredCDIEvent implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    private InstanceDescriptor id;
-
-    public PayaraClusteredCDIEvent() {
-        id = null;
-    }
-
-    public PayaraClusteredCDIEvent(InstanceDescriptor id) {
-        this.id = id;
-    }
-
-    public InstanceDescriptor getInstanceDescriptor() {
-        return id;
-    }
-
-    void setInstanceDescriptor(InstanceDescriptor localDescriptor) {
-        id = localDescriptor;
-    }
+public interface CDIEventListener {
+    
+    public void eventReceived(PayaraClusteredCDIEvent event);
+    
 }

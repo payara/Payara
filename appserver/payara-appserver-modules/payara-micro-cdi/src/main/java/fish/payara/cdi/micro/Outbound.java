@@ -15,33 +15,23 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro.services;
+package fish.payara.cdi.micro;
 
-import fish.payara.micro.services.data.InstanceDescriptor;
-import java.io.Serializable;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
 /**
- *
+ * Annotation to be applied to a Cache @Inject point to define the cache configuration
+ * for the Producer to configure the cache
  * @author steve
  */
-public class PayaraClusteredCDIEvent implements Serializable {
-
-    private static final long serialVersionUID = 1L;
-    private InstanceDescriptor id;
-
-    public PayaraClusteredCDIEvent() {
-        id = null;
-    }
-
-    public PayaraClusteredCDIEvent(InstanceDescriptor id) {
-        this.id = id;
-    }
-
-    public InstanceDescriptor getInstanceDescriptor() {
-        return id;
-    }
-
-    void setInstanceDescriptor(InstanceDescriptor localDescriptor) {
-        id = localDescriptor;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+@Target({METHOD, FIELD, PARAMETER})
+public @interface Outbound {
 }
