@@ -47,7 +47,7 @@ import org.glassfish.embeddable.GlassFishException;
  *
  * @author steve
  */
-public class PayaraMicroRuntime  implements PayaraClusterListener {
+public class PayaraMicroRuntime  {
     private static final Logger logger = Logger.getLogger(PayaraMicroRuntime.class.getCanonicalName());
 
     private final GlassFish runtime;
@@ -62,10 +62,18 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
         try {
             instanceService = runtime.getService(PayaraMicroInstance.class, "payara-micro-instance");
             instanceService.setInstanceName(instanceName);
-            instanceService.addBootstrapListener(this);
+            instanceService.addBootstrapListener(new BootstrapListener(this));
         } catch (GlassFishException ex) {
             throw new IllegalStateException("Unable to retrieve the embedded Payara Micro HK2 service. Something bad has happened", ex);
         }
+    }
+
+    /**
+     * Returns the instance name
+     * @return 
+     */
+    public String getInstanceName() {
+        return instanceName;
     }
 
     /**
@@ -113,6 +121,9 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
      * @return 
      */
     public Map<InstanceDescriptor, Future<ClusterCommandResult>> run (String command, String... args ) {
+        
+        // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
+        
         Map<String,Future<ClusterCommandResult>> commandResult = instanceService.executeClusteredASAdmin(command, args);
         Map<InstanceDescriptor, Future<ClusterCommandResult>> result = new HashMap<>(commandResult.size());
         for (String uuid : commandResult.keySet()) {
@@ -160,6 +171,9 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
      * @return 
      */
     public <T extends Serializable> Map<InstanceDescriptor, Future<T>> run (Callable<T> callable) {
+        
+        // NEEDS TO HANDLE THE CASE FOR LOCAL RUNNING IF NO CLUSTER ENABLED
+        
         Map<String, Future<T>> runCallable = instanceService.runCallable(callable);
         Map<InstanceDescriptor, Future<T>> result = new HashMap<>(runCallable.size());
         for (String uuid : runCallable.keySet()) {
@@ -237,7 +251,7 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
         return result;
     }
     
-    public void removeClusterListenr(PayaraClusterListener listener) {
+    public void removeClusterListener(PayaraClusterListener listener) {
         listeners.remove(listener);
     }
     
@@ -246,21 +260,7 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
         listeners.add(listener);
     }
 
-    @Override
-    public void memberAdded(InstanceDescriptor id) {
-        for (PayaraClusterListener listener : listeners) {
-         listener.memberAdded(id);
-        }
-    }
-
-    @Override
-    public void memberRemoved(InstanceDescriptor id) {
-        for (PayaraClusterListener listener : listeners) {
-            listener.memberRemoved(id);
-        }
-    }
-    
-    public void publishCDIEvent(PayaraClusteredCDIEvent event ) {
+    public void publishCDIEvent(PayaraClusteredCDIEvent event) {
         this.instanceService.pubishCDIEvent(event);
     }
     
@@ -268,7 +268,7 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
         this.instanceService.addCDIListener(listener);
     }
     
-    public InstanceDescriptor getLocalDescriptor() {
+    public InstanceDescriptor getLocalDescriptor( ) {
         return instanceService.getLocalDescriptor();
     }
 
@@ -279,6 +279,18 @@ public class PayaraMicroRuntime  implements PayaraClusterListener {
             }
         } catch (GlassFishException ex) {
             throw new IllegalStateException("Payara Micro is not Running");
+        }
+    }
+    
+    void memberAdded(InstanceDescriptor id) {
+        for (PayaraClusterListener listener : listeners) {
+            listener.memberAdded(id);
+        }
+    }
+
+    void memberRemoved(InstanceDescriptor id) {
+        for (PayaraClusterListener listener : listeners) {
+            listener.memberRemoved(id);
         }
     }
 
