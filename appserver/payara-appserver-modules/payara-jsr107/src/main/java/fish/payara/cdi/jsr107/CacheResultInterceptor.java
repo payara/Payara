@@ -18,7 +18,6 @@
 package fish.payara.cdi.jsr107;
 
 import fish.payara.cdi.jsr107.impl.PayaraCacheKeyInvocationContext;
-import fish.payara.cdi.jsr107.impl.PayaraValueHolder;
 import javax.annotation.Priority;
 import javax.cache.Cache;
 import javax.cache.annotation.CacheKeyGenerator;
@@ -40,6 +39,7 @@ import javax.interceptor.InvocationContext;
 public class CacheResultInterceptor extends AbstractJSR107Interceptor {
     
     @AroundInvoke
+    @SuppressWarnings("unchecked")
     public Object cacheResult(InvocationContext ctx) throws Throwable {
         
         // get my annotation
@@ -53,16 +53,16 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
         CacheKeyGenerator generator = pctx.getGenerator();
         GeneratedCacheKey key = generator.generateCacheKey(pctx);
         if (!annotation.skipGet()) {
-            PayaraValueHolder holder = (PayaraValueHolder) cache.get(key);
-            if (holder != null) {
-                return holder.getValue();
+            Object cacheResult = cache.get(key);
+            if (cacheResult != null) {
+                return cacheResult;
             } else {
                 // check exception cache
                 if (cacheExceptions) {
                     Cache exceptionCache = resolverF.getExceptionCacheResolver(pctx).resolveCache(pctx);
-                    PayaraValueHolder exHolder = (PayaraValueHolder) exceptionCache.get(key);
-                    if (exHolder != null) {
-                        throw (Throwable)exHolder.getValue();
+                    Exception e = (Exception) exceptionCache.get(key);
+                    if (e != null) {
+                        throw e;
                     }
                 }
             }
@@ -72,13 +72,13 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
                 Object result = null;
         try {
             result = ctx.proceed();
-            cache.put(key, new PayaraValueHolder(result));
+            cache.put(key, result);
         } catch (Throwable e) {
             boolean cacheException = false;
             if (cacheExceptions) {
                 Cache exceptionCache = resolverF.getExceptionCacheResolver(pctx).resolveCache(pctx);
                 if (shouldICache(annotation.cachedExceptions(), annotation.nonCachedExceptions(), e, true)) {
-                    exceptionCache.put(key, new PayaraValueHolder(e));
+                    exceptionCache.put(key, e);
                 }
             }
             throw e;
