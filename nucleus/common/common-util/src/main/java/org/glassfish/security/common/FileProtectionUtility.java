@@ -1,3 +1,5 @@
+// Portions Copyright [2015] [C2B2 Consulting Limited]
+
 package org.glassfish.security.common;
 
 
