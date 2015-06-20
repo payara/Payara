@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2015] [C2B2 Consulting Limited]
+
 /*
  * RepositoryManager.java
  *
@@ -50,6 +52,8 @@ import com.sun.enterprise.admin.servermgmt.pe.PEFileLayout;
 import com.sun.enterprise.security.store.PasswordAdapter;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.util.io.FileUtils;
+import org.glassfish.security.common.FileProtectionUtility;
+
 import java.io.File;
 
 
@@ -111,7 +115,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), 
                 getMasterPasswordPassword());
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
-            chmod("600", pwdFile);
+            FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {                        
             throw new RepositoryException(_strMgr.getString("masterPasswordFileNotCreated", pwdFile),
                 ex);
@@ -175,7 +179,7 @@ public class MasterPasswordFileManager extends KeystoreManager {
                  PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(), 
                      getMasterPasswordPassword());
                  p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, newPassword.getBytes());
-                 chmod("600", pwdFile);
+                 FileProtectionUtility.chmod0600(pwdFile);
              } catch (Exception ex) {                        
                  throw new RepositoryException(_strMgr.getString("masterPasswordFileNotCreated", pwdFile),
                      ex);

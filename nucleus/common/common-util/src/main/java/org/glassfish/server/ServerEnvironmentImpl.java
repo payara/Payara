@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2015] [C2B2 Consulting Limited]
+
 package org.glassfish.server;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;

@@ -43,6 +43,8 @@ package com.sun.appserv.management.client.prefs;
 import com.sun.enterprise.security.store.AsadminSecurityUtil;
 import com.sun.enterprise.universal.GFBase64Decoder;
 import com.sun.enterprise.universal.GFBase64Encoder;
+import org.glassfish.security.common.FileProtectionUtility;
+
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -100,6 +102,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             }
             catch(final Exception ee) {} //ignore
         }
+        protect();
     }
 
     @Override
@@ -202,8 +205,7 @@ public class MemoryHashLoginInfoStore implements LoginInfoStore {
             if(store == null || !store.exists())
                 return;
 
-            ProcessBuilder pb = new ProcessBuilder("chmod", "0600", store.getAbsolutePath());
-            pb.start();
+            FileProtectionUtility.chmod0600(store);
         }
         catch(Exception e)
         {
