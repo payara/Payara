@@ -20,7 +20,6 @@ package fish.payara.cdi.jsr107;
 import fish.payara.cdi.jsr107.impl.PayaraCacheKeyInvocationContext;
 import javax.annotation.Priority;
 import javax.cache.Cache;
-import javax.cache.annotation.CacheRemove;
 import javax.cache.annotation.CacheRemoveAll;
 import javax.cache.annotation.CacheResolver;
 import javax.cache.annotation.CacheResolverFactory;
