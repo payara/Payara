@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -634,10 +634,7 @@ public class Request
     private boolean isAsyncSupported = true;
     private AtomicBoolean asyncStarted = new AtomicBoolean();
     private AsyncContextImpl asyncContext;
-    // Has AsyncContext.complete been called?
-    private boolean isAsyncComplete;
     private Thread asyncStartedThread;
-    private volatile boolean delayAsyncDispatchAndComplete = true;
 
     /**
      * Multi-Part support
@@ -824,8 +821,6 @@ public class Request
         }
         isAsyncSupported = true;
         asyncStarted.set(false);
-        isAsyncComplete = false;
-        delayAsyncDispatchAndComplete = true;
         asyncStartedThread = null;
     }
 
@@ -4263,7 +4258,7 @@ public class Request
             if (isAsyncStarted()) {
                 throw new IllegalStateException(rb.getString(START_ASYNC_CALLED_AGAIN_EXCEPTION));
             }
-            if (isAsyncComplete) {
+            if (asyncContextLocal.isAsyncComplete()) {
                 throw new IllegalStateException(rb.getString(ASYNC_ALREADY_COMPLETE_EXCEPTION));
             }
             if (!asyncContextLocal.isStartAsyncInScope()) {
@@ -4360,30 +4355,11 @@ public class Request
         return asyncContext;
     }
 
-    boolean isDelayAsyncDispatchAndComplete() {
-        return delayAsyncDispatchAndComplete;
-    }
-
-    void setDelayAsyncDispatchAndComplete(boolean delayAsync) {
-        delayAsyncDispatchAndComplete = delayAsync;
-    }
-
     /*
      * Invokes any registered AsyncListener instances at their
      * <tt>onComplete</tt> method
      */
     void asyncComplete() {
-        if (isAsyncComplete) {
-            throw new IllegalStateException(rb.getString(REQUEST_ALREADY_RELEASED_EXCEPTION));
-        }
-        isAsyncComplete = true;
-
-        if (!delayAsyncDispatchAndComplete) {
-            processAsyncComplete();
-        }
-    }
-
-    void processAsyncComplete() {
         asyncStarted.set(false);
         
         if (asyncStartedThread != Thread.currentThread() ||
@@ -4391,16 +4367,15 @@ public class Request
             // it's not safe to just mark response as resumed
             coyoteRequest.getResponse().resume();
         } else {
+            // This code is called if we startAsync and complete in the service() thread.
+            // So instead of resuming the suspendedContext (which will finish the response processing),
+            // we just have to mark the context as resumed like it has never been suspended.
             final SuspendedContextImpl suspendContext =
                     (SuspendedContextImpl) coyoteRequest.getResponse().getSuspendContext();
 
             suspendContext.markResumed();
             suspendContext.getSuspendStatus().reset();
         }
-    }
-
-    boolean isAsyncComplete() {
-        return isAsyncComplete;
     }
 
     /*
@@ -4427,17 +4402,18 @@ public class Request
      * during which ServletRequest#startAsync was called is about to
      * return to the container
      */
-    void onAfterService() {
-        if (asyncContext != null) {
-            asyncContext.setOkToConfigure(false);
+    void onExitService() {
+        final AsyncContextImpl ac = asyncContext;
+        
+        if (ac != null) {
+            ac.setOkToConfigure(false);
 
             if (asyncStarted.get()) {
                 coyoteRequest.getResponse().getSuspendContext().setTimeout(
-                        asyncContext.getTimeout(), TimeUnit.MILLISECONDS);
+                        ac.getTimeout(), TimeUnit.MILLISECONDS);
             }
 
-            delayAsyncDispatchAndComplete = false;
-            processAsyncOperations();
+            ac.onExitService();
         }
         afterService = true;
         if (resume) {
@@ -4451,14 +4427,6 @@ public class Request
             coyoteRequest.getResponse().resume();
         } else {
             resume = true;
-        }
-    }
-
-    void processAsyncOperations() {
-        if (asyncContext.isDispatchInScope()) {
-            asyncContext.invokeDelayDispatch();
-        } else if (isAsyncComplete) {
-            processAsyncComplete();
         }
     }
 
@@ -4481,9 +4449,10 @@ public class Request
          * methods (in which case asyncStarted would have been set to false),
          * perform an error dispatch with a status code equal to 500.
          */
-        if (asyncContext != null
-                && !asyncContext.isDispatchInScope()
-                && !isAsyncComplete) {
+        final AsyncContextImpl ac = asyncContext;
+        if (ac != null
+                && !ac.isDispatchInScope()
+                && !ac.isAsyncComplete()) {
             ((HttpServletResponse) response).setStatus(
                 HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.setError();
@@ -4502,9 +4471,7 @@ public class Request
                  * did not call AsyncContext#complete or any of the
                  * AsyncContext#dispatch methods, call AsyncContext#complete
                  */
-                if (!isAsyncComplete) {
-                    asyncComplete();
-                }
+                ac.tryComplete(false);
             }
         }
     }

@@ -17,14 +17,18 @@
  */
 package fish.payara.cdi.jsr107;
 
+import fish.payara.cdi.jsr107.impl.NamedCache;
 import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
+import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.configuration.Factory;
+import javax.cache.configuration.FactoryBuilder;
+import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.InjectionPoint;
-
 
 /**
  *
@@ -48,7 +52,7 @@ public class JSR107Producer {
     @Dependent
     @Produces
     CacheManager getCacheManager(InjectionPoint point) {
-        // TBD look for scoped caching providers in JNDI
+        CacheManager result = null;
         return hazelcastCore.getCachingProvider().getCacheManager();
     }
     
@@ -57,6 +61,77 @@ public class JSR107Producer {
     HazelcastInstance getHazelcast() {
         return hazelcastCore.getInstance();
     }
+    
+    
+    /**
+     * Produces a Cache for injection. If the @NamedCache annotation is present the
+     * cache will be created based on the values of the annotation field
+     * 
+     * Otherwise the cache will be created with the cache name being equal
+     * to the fully qualified name of the class into which it is injected
+     * @param ip
+     * @return 
+     */
+    @Produces
+    @SuppressWarnings("unchecked")
+    public Cache createCache(InjectionPoint ip) {
+        Cache result = null;
 
+        //determine the cache name first start with the default name
+        String cacheName = ip.getMember().getDeclaringClass().getCanonicalName();
+        NamedCache ncqualifier = ip.getAnnotated().getAnnotation(NamedCache.class);      
+        CacheManager manager = getCacheManager(ip);
+        
+        
+        if (ncqualifier != null) {  // configure the cache based on the annotation
+            String qualifierName = ncqualifier.cacheName();
+            if (!"".equals(cacheName)) {
+                cacheName = qualifierName;
+            }
+            Class keyClass = ncqualifier.keyClass();
+            Class valueClass = ncqualifier.valueClass();           
+            result = manager.getCache(cacheName, keyClass, valueClass);
+            if (result == null) {
+                MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+                config.setTypes(keyClass, valueClass);
+                
+                // determine the expiry policy
+                Class expiryPolicyFactoryClass = ncqualifier.expiryPolicyFactoryClass();
+                if (!"Object".equals(expiryPolicyFactoryClass.getSimpleName())) {
+                    Factory factory = FactoryBuilder.factoryOf(expiryPolicyFactoryClass);
+                    config.setExpiryPolicyFactory(factory);
+                }
+                
+                // determine the cache writer if any
+                Class writerFactoryClass = ncqualifier.cacheWriterFactoryClass();
+                if (!"Object".equals(writerFactoryClass.getSimpleName())) {
+                    Factory factory = FactoryBuilder.factoryOf(writerFactoryClass);
+                    config.setCacheWriterFactory(factory);
+                }  
+                config.setWriteThrough(ncqualifier.writeThrough());
+                
+                // determine the cache loader if any
+                Class loaderFactoryClass = ncqualifier.cacheLoaderFactoryClass();
+                if (!"Object".equals(loaderFactoryClass.getSimpleName())) {
+                    Factory factory = FactoryBuilder.factoryOf(loaderFactoryClass);
+                    config.setCacheLoaderFactory(factory);
+                } 
+                config.setReadThrough(ncqualifier.readThrough());
+                
+                config.setManagementEnabled(ncqualifier.managementEnabled());
+                config.setStatisticsEnabled(ncqualifier.statisticsEnabled());                
+                result = manager.createCache(cacheName, config);                
+            }
+        } else {  // configure a "raw" cache
+            result = manager.getCache(cacheName);
+            if (result == null) {
+                MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+                config.setManagementEnabled(true);
+                config.setStatisticsEnabled(true);
+                result = manager.createCache(cacheName, config);
+            }
+        }
+        return result;
+    }
     
 }

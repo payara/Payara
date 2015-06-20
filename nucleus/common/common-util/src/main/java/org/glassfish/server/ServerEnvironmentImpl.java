@@ -369,7 +369,7 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
 
     @Override
     public File getMasterPasswordFile() {
-        return new File (getInstanceRoot(), "master-password");
+        return new File (getConfigDirPath(), "master-password");
     }
 
     @Override

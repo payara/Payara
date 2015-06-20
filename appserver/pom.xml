@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!--"Portions Copyright [2014] [C2B2 Consulting Limited]" -->
+<!--"Portions Copyright [2014-2015] [C2B2 Consulting Limited]" -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -110,8 +110,8 @@
         <jaxb-api.version>2.2.12-b140109.1041</jaxb-api.version>
         <jaxb.version>2.2.10-b140802.1033</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
-        <javax.xml.registry-api.version>1.0.5</javax.xml.registry-api.version>
         <eclipselink.version>2.6.0.payara-p1</eclipselink.version>
+        <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax-persistence-api.version>2.1.0</javax-persistence-api.version> 
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
@@ -130,8 +130,8 @@
         <concurrent-api.version>1.0</concurrent-api.version>
         <concurrent.version>1.0</concurrent.version>
         <javax.batch-api.version>1.0.1-b01</javax.batch-api.version>
-        <com.ibm.jbatch.container.version>1.0.1-b04</com.ibm.jbatch.container.version>
-        <com.ibm.jbatch.spi.version>1.0.1-b04</com.ibm.jbatch.spi.version>
+        <com.ibm.jbatch.container.version>1.0.1-b08</com.ibm.jbatch.container.version>
+        <com.ibm.jbatch.spi.version>1.0.1-b08</com.ibm.jbatch.spi.version>
         <javax.xml.soap-api.version>1.3.7</javax.xml.soap-api.version>
 	<javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <jboss.logging.version>3.1.3.GA</jboss.logging.version>
@@ -156,7 +156,7 @@
         <module>concurrent</module>
         <module>batch</module>
         <module>extras</module>
-        <module>payara-admingui</module>
+        <module>admingui</module>
         <module>extras/embedded/shell</module>
         <module>packager</module>
         <module>featuresets</module>
@@ -170,10 +170,6 @@
         <module>webservices</module>
         <module>orb</module>
         <module>appclient</module>
-        <module>verifier/verifier-impl</module>
-        <module>verifier/verifier-impl-l10n</module>
-        <module>verifier/verifier-scripts</module>
-        <module>verifier/verifier-jdk-extension-bundle</module>
         <module>ant-tasks</module>
         <module>payara-appserver-modules</module>
     </modules>

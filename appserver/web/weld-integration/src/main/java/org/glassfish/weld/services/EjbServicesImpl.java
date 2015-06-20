@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -270,39 +270,40 @@ public class EjbServicesImpl implements EjbServices {
         for (Interceptor<?> next : lifecycleList) {
             EjbInterceptor ejbInt = makeEjbInterceptor(next, ejbDesc.getEjbBundleDescriptor());
             Class interceptorClass = next.getBeanClass();
-            while (interceptorClass != null && !interceptorClass.equals(Object.class)) {
-                try {
+
+            while ( interceptorClass != null && ! interceptorClass.equals( Object.class ) ) {
+                String methodName = getInterceptorMethod( interceptorClass,
+                                                          getInterceptorAnnotationType(interceptionType));
+                if ( methodName != null ) {
                     LifecycleCallbackDescriptor lifecycleDesc = new LifecycleCallbackDescriptor();
 
-                    lifecycleDesc.setLifecycleCallbackClass(interceptorClass.getName());
-                    lifecycleDesc.setLifecycleCallbackMethod(getInterceptorMethod(interceptorClass,
-                            getInterceptorAnnotationType(interceptionType)));
-                    switch (interceptionType) {
-                        case POST_CONSTRUCT:
+                    lifecycleDesc.setLifecycleCallbackClass( interceptorClass.getName());
+                    lifecycleDesc.setLifecycleCallbackMethod( methodName );
+                    switch(interceptionType) {
+                        case POST_CONSTRUCT :
                             ejbInt.addPostConstructDescriptor(lifecycleDesc);
                             break;
-                        case PRE_DESTROY:
+                        case PRE_DESTROY :
                             ejbInt.addPreDestroyDescriptor(lifecycleDesc);
                             break;
-                        case PRE_PASSIVATE:
+                        case PRE_PASSIVATE :
                             ejbInt.addPrePassivateDescriptor(lifecycleDesc);
                             break;
-                        case POST_ACTIVATE:
+                        case POST_ACTIVATE :
                             ejbInt.addPostActivateDescriptor(lifecycleDesc);
                             break;
-                        case AROUND_INVOKE:
+                        case AROUND_INVOKE :
                             ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
                             break;
-                        case AROUND_TIMEOUT:
+                        case AROUND_TIMEOUT :
                             ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
                             break;
-                        default:
-                            throw new IllegalArgumentException("Invalid lifecycle interception type "
-                                    + interceptionType);
+                        default :
+                            throw new IllegalArgumentException("Invalid lifecycle interception type " +
+                                                               interceptionType);
                     }
-                } catch (IllegalStateException iae) {
-                    // this is expected for base classes with not annotations
                 }
+
                 interceptorClass = interceptorClass.getSuperclass();
             }
 
@@ -342,9 +343,7 @@ public class EjbServicesImpl implements EjbServices {
             }
         }
 
-        throw new IllegalStateException("Interceptor Class " + interceptorClass + " has no method annotated with "
-                + annotation);
-
+        return null;
     }
 
     private EjbInterceptor makeEjbInterceptor(Interceptor<?> interceptor, EjbBundleDescriptor bundle) {

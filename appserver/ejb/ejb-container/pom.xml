@@ -135,6 +135,12 @@
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.ejb</groupId>
+            <artifactId>ejb-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
         <!-- these 2 dependencies are for compilation only  -->
         <dependency>
             <groupId>javax.xml.soap</groupId>

@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2013-2015 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -113,7 +113,8 @@ promote_init(){
     fi
 
     export PROMOTION_SUMMARY=${WORKSPACE_BUNDLES}/${BUILD_KIND}-promotion-summary.txt
-    export JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/export/nfs/dlc/${ARCHIVE_PATH}
+    rm $PROMOTION_SUMMARY
+    export JNET_DIR=${JNET_USER}@${JNET_STORAGE_HOST}:/dlc/${ARCHIVE_PATH}
     export JNET_DIR_HTTP=http://download.java.net/${ARCHIVE_PATH}
     export ARCHIVE_STORAGE_BUNDLES=/onestop/${ARCHIVE_MASTER_BUNDLES}
     export SSH_MASTER=${RE_USER}@${HUDSON_MASTER_HOST}
@@ -171,6 +172,12 @@ promote_nightly(){
     SVN_REVISION=`head -1 ${VERSION_INFO} | awk '{print $2}'`
     #record_svn_rev ${SVN_REVISION}
     purge_old_nightlies
+    # hook for the docker image of the nightly
+    curl -H "Content-Type: application/json" \
+        --data '{"build": true}' \
+        -X POST \
+        -k \
+        https://registry.hub.docker.com/u/glassfish/nightly/trigger/945d55fc-1d4c-4043-8221-74185d9a4d53/
     promote_finalize
 }
 
@@ -721,20 +728,21 @@ aggregated_tests_summary(){
     fi
 
     for i in `${AWK} 'BEGIN{RS="<tr><td class=\"pane"} \
-         { if (NR > 2) print $2" "$3" "$8" "$11 }' \
+         { if (NR > 2) print $2" "$8" "$11 }' \
          tests.html | sed \
           -e s@'"'@@g \
-	  -e s@'href=/hudson/job/'@@g \
-          -e s@'/testReport/><img alt='@'#'@g \
-          -e s@'/aggregatedTestReport/><img alt='@'#'@g \
+          -e s@'href=/hudson/job/'@@g \
+          -e s@'/testReport/><img style=text-align:right>'@'#'@g \
+          -e s@'/aggregatedTestReport/><img style=text-align:right>'@'#'@g \
           -e s@' style=text-align:right>'@'#'@g \
-	  -e s@'/'@'#'@g`
+          -e s@'/'@'#'@g`
     do
         jobname=`cut -d '#' -f1 <<< $i`
         buildnumber=`cut -d '#' -f2 <<< $i`
-        failednumber=`cut -d '#' -f4 <<< $i`
-        passednumber=`cut -d '#' -f5 <<< $i`
-	printf "%s%s%s%s\n" \
+        failednumber=`cut -d '#' -f3 <<< $i`
+        totalnumber=`cut -d '#' -f4 <<< $i`
+        passednumber=$((totalnumber-failed))
+    printf "%s%s%s%s\n" \
             `align_column 55 "." "$jobname (#${buildnumber})"` \
             `align_column 15 "." "PASSED(${passednumber})"` \
             "FAILED(${failednumber})"

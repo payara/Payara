@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2006-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2006-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -42,14 +42,17 @@ package com.sun.enterprise.deploy.shared;
 
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.util.io.FileUtils;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.glassfish.api.deployment.archive.Archive;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.api.deployment.archive.WritableArchive;
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
 
+import javax.inject.Inject;
+
+import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 import java.io.*;
@@ -57,6 +60,7 @@ import java.util.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.net.URI;
+import java.nio.file.Files;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -579,7 +583,12 @@ public class FileArchive extends AbstractReadableArchive implements WritableArch
         *Do not recursively delete the contents if the current directory
         *is a symbolic link.
         */
-        if (FileUtils.safeIsRealDirectory(directory)) {
+        
+        /*
+         * Fix for bug Glassfish-21261 , method safeIsRealDirectory(File) might return false in case if the currently directory 
+         * has a symbolic link in its hierarchy and the currently directory itself might not be a symbolic link.
+         */
+        if (!Files.isSymbolicLink(directory.toPath())) {
             File[] entries = directory.listFiles();
             for (int i=0;i<entries.length;i++) {
                 if (entries[i].isDirectory()) {

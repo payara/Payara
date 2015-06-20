@@ -2,7 +2,7 @@
 #
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 #
-# Copyright (c) 2010-2014 Oracle and/or its affiliates. All rights reserved.
+# Copyright (c) 2010-2015 Oracle and/or its affiliates. All rights reserved.
 #
 # The contents of this file are subject to the terms of either the GNU
 # General Public License Version 2 only ("GPL") or the Common Development
@@ -142,6 +142,7 @@ done
 shift `expr $OPTIND - 1`
 
 MAVEN_OPTS=${MAVEN_OPTS:='-Xmx1024m -Xms256m -XX:MaxPermSize=512m'} 
+export MAVEN_OPTS
 if [ "$maven_repo" != "" ]; then
     if [ -d "$maven_repo" ]; then
         echo "$maven_repo exists.  Continue with build."
@@ -162,8 +163,8 @@ then
     eval "$build_arg1"
 else
     if [ "$maven_repo" = "" ]; then
-        mvn $mvn_env $update "$build_args" | tee gfbuild.log
+        mvn $mvn_env $update $build_args | tee gfbuild.log
     else
-        mvn -Dmaven.repo.local=$maven_repo $mvn_env $update "$build_args" | tee gfbuild.log
+        mvn -Dmaven.repo.local=$maven_repo $mvn_env $update $build_args | tee gfbuild.log
     fi
 fi

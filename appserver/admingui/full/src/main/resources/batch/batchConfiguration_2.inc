@@ -39,7 +39,7 @@
     holder.
 
 -->
-
+<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
 #include "/common/shared/alertMsg_1.inc"
     <sun:title id="propertyContentPage" title="$resource{i18nf.batch.configurationTitle}" helpText="$resource{i18nf.batch.configurationTitleHelp}" >
     <!facet pageButtonsTop>
@@ -71,6 +71,17 @@
                     />
                    </sun:dropDown>
                </sun:property>
+                <!-- Payara Modifications -->
+                <sun:property id="schemaNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.schemaName}"  helpText="$resource{i18nf.batch.configuration.schemaNameHelp}">
+                    	<sun:textField id="schemaName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['schemaName']}" />
+                </sun:property>
+                <sun:property id="tablePrefixProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.tablePrefix}"  helpText="$resource{i18nf.batch.configuration.tablePrefixHelp}">
+                    	<sun:textField id="tablePrefix" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['tablePrefix']}" />
+                </sun:property>
+                <sun:property id="tableSuffixProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.tableSuffix}"  helpText="$resource{i18nf.batch.configuration.tableSuffixHelp}">
+                    	<sun:textField id="tableSuffix" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['tableSuffix']}" />
+                </sun:property>
+                <!-- End Payara Modifications -->
             </sun:propertySheetSection>
 
     <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
