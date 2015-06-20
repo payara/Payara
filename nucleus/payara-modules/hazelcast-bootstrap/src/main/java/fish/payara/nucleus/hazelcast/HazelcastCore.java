@@ -141,6 +141,10 @@ public class HazelcastCore implements EventListener {
         String hazelcastFilePath = "";
         URL serverConfigURL;
         try {
+            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null && overrideConfiguration.getAlternateConfigFile().exists()) {
+                config = ConfigLoader.load(overrideConfiguration.getAlternateConfigFile().getAbsolutePath());
+                return config;
+            }
             serverConfigURL = new URL(context.getServerConfigURL());
             File serverConfigFile = new File(serverConfigURL.getPath());
             hazelcastFilePath = serverConfigFile.getParentFile().getAbsolutePath() + File.separator + configuration.getHazelcastConfigurationFile();
@@ -153,6 +157,8 @@ public class HazelcastCore implements EventListener {
                 }
             } else {
                 
+                String instanceName = context.getDefaultDomainName() + "." + context.getInstanceName();
+                config.setInstanceName(instanceName);
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
@@ -179,9 +185,6 @@ public class HazelcastCore implements EventListener {
         } catch (IOException ex) {
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not load configuration file " + hazelcastFilePath + " using default configuration", ex);
         }
-
-        String instanceName = context.getDefaultDomainName() + "." + context.getInstanceName();
-        config.setInstanceName(instanceName);
         return config;
     }
 

@@ -64,6 +64,7 @@ public class PayaraMicro {
     private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
+    private File alternateHZConfigFile;
     private List<File> deployments;
     private GlassFish gf;
     private PayaraMicroRuntime runtime;
@@ -472,6 +473,10 @@ public class PayaraMicro {
             if (hzMulticastGroup != null) {
                 mc.setMulticastGroup(hzMulticastGroup);
             }
+            
+            if (alternateHZConfigFile != null) {
+                mc.setAlternateConfiguration(alternateHZConfigFile);
+            }
             HazelcastCore.setMulticastOverride(mc);
         }
         
@@ -703,6 +708,13 @@ public class PayaraMicro {
                 case "--noCluster":
                     noCluster = true;
                     break;
+                case "--hzConfigFile":
+                    alternateHZConfigFile = new File(args[i+1]);
+                    if (!alternateHZConfigFile.exists() || !alternateHZConfigFile.isFile() || !alternateHZConfigFile.canRead() || !alternateHZConfigFile.getAbsolutePath().endsWith(".xml")) {
+                        logger.log(Level.SEVERE, "{0} is not a valid path to an xml file and will be ignored", alternateHZConfigFile.getAbsolutePath());
+                        throw new IllegalArgumentException();
+                    }   i++;                    
+                    break;
                 case "--help":
                     System.err.println("Usage: --noCluster  Disables clustering\n"
                             + "--port sets the http port\n"
@@ -717,6 +729,7 @@ public class PayaraMicro {
                             + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
                             + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
                             + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
+                            + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
             }
