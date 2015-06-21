@@ -15,31 +15,23 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.micro;
+package fish.payara.micro.cdi;
 
-import fish.payara.micro.services.CDIEventListener;
-import fish.payara.micro.services.PayaraClusteredCDIEvent;
-import javax.enterprise.event.Event;
-import javax.inject.Inject;
-import javax.inject.Singleton;
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
 /**
- *
+ * Annotation to be applied to a Cache @Inject point to define the cache configuration
+ * for the Producer to configure the cache
  * @author steve
  */
-@Singleton
-public class InboundEventPublisher implements CDIEventListener {
-    
-    @Inject
-    @Inbound
-    Event<PayaraClusteredCDIEvent> clusterEvent;
-
-    @Override
-    public void eventReceived(PayaraClusteredCDIEvent event) {
-        clusterEvent.fire(event);
-    }
-    
-    
-            
-    
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+@Target({METHOD, FIELD, PARAMETER})
+public @interface Outbound {
 }

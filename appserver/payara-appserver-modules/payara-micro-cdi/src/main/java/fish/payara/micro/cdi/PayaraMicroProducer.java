@@ -15,24 +15,17 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.micro;
+package fish.payara.micro.cdi;
 
 import fish.payara.micro.PayaraMicro;
 import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.services.PayaraClusteredCDIEvent;
-import javax.annotation.PostConstruct;
-import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Produces;
-import javax.inject.Inject;
 
 /**
  *
  * @author steve
  */
 public class PayaraMicroProducer {
-    
-    @Inject
-    private InboundEventPublisher publisher;
     
     private final PayaraMicroRuntime runtime;
     
@@ -44,13 +37,4 @@ public class PayaraMicroProducer {
     PayaraMicroRuntime getRuntime() {
         return runtime;
     }
-    
-    public void onClusteredMessage(@Observes @Outbound PayaraClusteredCDIEvent event) {
-        runtime.publishCDIEvent(event);
-    }
-    
-    @PostConstruct void postcontstruct() {
-        runtime.addCDIEventListener(publisher);
-    }
-    
 }

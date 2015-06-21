@@ -17,7 +17,9 @@
  */
 package fish.payara.micro.services;
 
+import fish.payara.cdi.jsr107.impl.PayaraValueHolder;
 import fish.payara.micro.services.data.InstanceDescriptor;
+import java.io.IOException;
 import java.io.Serializable;
 
 /**
@@ -29,9 +31,11 @@ public class PayaraClusteredCDIEvent implements Serializable {
     private static final long serialVersionUID = 1L;
     private InstanceDescriptor id;
     private boolean loopBack = false;
+    private PayaraValueHolder payload;
 
-    public PayaraClusteredCDIEvent() {
-        id = null;
+    public PayaraClusteredCDIEvent(InstanceDescriptor id, Serializable payload) throws IOException {
+        this.id = id;
+        this.payload = new PayaraValueHolder(payload);
     }
 
     public PayaraClusteredCDIEvent(InstanceDescriptor id) {
@@ -52,6 +56,13 @@ public class PayaraClusteredCDIEvent implements Serializable {
 
     public void setId(InstanceDescriptor id) {
         this.id = id;
+    }
+    
+    public Serializable getPayload() throws IOException, ClassNotFoundException {
+        if (payload != null) {
+            return (Serializable) payload.getValue();
+        }
+        return null;
     }
 
     public boolean isLoopBack() {

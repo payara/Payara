@@ -15,9 +15,8 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.cdi.micro;
+package fish.payara.micro.cdi;
 
-import fish.payara.cdi.micro.PayaraMicroProducer;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
@@ -26,20 +25,19 @@ import javax.enterprise.inject.spi.Extension;
 
 /**
  * A CDI Extension for integrating with Payara Micro
+ *
  * @author steve
  */
 public class PayaraMicroCDIExtension implements Extension {
-    
-    
-        void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
-            
-        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
-        bbd.addAnnotatedType(at);    
 
-        AnnotatedType<InboundEventPublisher> at2 = bm.createAnnotatedType(InboundEventPublisher.class);
-        bbd.addAnnotatedType(at2);    
+    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
+
+        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
+        bbd.addAnnotatedType(at);
+        
+        AnnotatedType<ClusteredCDIEventBus> at3 = bm.createAnnotatedType(ClusteredCDIEventBus.class);
+        bbd.addAnnotatedType(at3);
 
     }
-    
-    
+
 }

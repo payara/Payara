@@ -272,6 +272,10 @@ public class PayaraMicroRuntime  {
         return instanceService.getLocalDescriptor();
     }
 
+    public void removeCDIEventListener(CDIEventListener listener) {
+        this.instanceService.removeCDIListenr(listener);
+    }
+
     private void checkState() {
         try {
             if (!(runtime.getStatus().equals(Status.STARTED))) {
