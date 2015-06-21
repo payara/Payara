@@ -38,6 +38,9 @@
  * holder.
  */
 
+// Portions Copyright [2015] [C2B2 Consulting Limited]
+
+
 package com.sun.enterprise.admin.cli.cluster;
 
 import com.sun.enterprise.admin.cli.CLIConstants;
@@ -56,15 +59,14 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.CommandException;
 import org.glassfish.api.admin.CommandValidationException;
 
+import org.glassfish.security.common.FileProtectionUtility;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 
 
@@ -314,27 +316,13 @@ public final class CreateLocalInstanceCommand extends CreateLocalInstanceFilesys
             PasswordAdapter p = new PasswordAdapter(pwdFile.getAbsolutePath(),
                 MASTER_PASSWORD_ALIAS.toCharArray());
             p.setPasswordForAlias(MASTER_PASSWORD_ALIAS, masterPassword.getBytes());
-            chmod("600", pwdFile);
+            FileProtectionUtility.chmod0600(pwdFile);
         } catch (Exception ex) {
             throw new CommandException(Strings.get("masterPasswordFileNotCreated", pwdFile),
                 ex);
         }
     }
 
-    protected void chmod(String args, File file) throws IOException {
-        if (OS.isUNIX()) {
-            if (!file.exists()) throw new IOException(Strings.get("fileNotFound", file.getAbsolutePath()));
-
-            // " +" regular expression for 1 or more spaces
-            final String[] argsString = args.split(" +");
-            List<String> cmdList = new ArrayList<String>();
-            cmdList.add("/bin/chmod");
-            for (String arg : argsString)
-                cmdList.add(arg);
-            cmdList.add(file.getAbsolutePath());
-            new ProcessBuilder(cmdList).start();
-        }
-    }
 
     private boolean rendezvousWithDAS() {
         try {
