@@ -59,7 +59,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     public static final String INSTANCE_STORE_NAME = "payara.instance.store";
 
     public static final String INTERNAL_EVENTS_NAME = "payara.micro.cluster.event";
-    
+
     public static final String CDI_EVENTS_NAME = "payara.micro.cdi.event";
 
     private static final Logger logger = Logger.getLogger(PayaraMicroInstance.class);
@@ -93,7 +93,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
     }
-    
+
     public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
         return cluster.getExecService().runCallable(memberUUIDS, callable);
     }
@@ -105,13 +105,12 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     public ClusterCommandResult executeLocalAsAdmin(String command, String... parameters) {
         return new ClusterCommandResult(commandRunner.run(command, parameters));
     }
-    
+
     public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
         Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(callable);
         return result;
     }
-
 
     public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
@@ -155,23 +154,20 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
         events.register(this);
         myListeners = new HashSet<>(1);
         myCDIListeners = new HashSet<>(1);
+        // determine https Port
+        NetworkListener httpListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
+        int port = Integer.parseInt(httpListener.getPort());
+        boolean httpPortEnabled = Boolean.parseBoolean(httpListener.getEnabled());
+        NetworkListener httpsListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("https-listener");
+        int sslPort = Integer.parseInt(httpsListener.getPort());
+        boolean httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
 
         if (cluster.isEnabled()) {
             cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
             cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
             try {
-
                 // generate unique key for this instance in the Map
                 myCurrentID = cluster.getLocalUUID();
-
-                // determine https Port
-                NetworkListener httpListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
-                int port = Integer.parseInt(httpListener.getPort());
-                boolean httpPortEnabled = Boolean.parseBoolean(httpListener.getEnabled());
-                NetworkListener httpsListener = context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("https-listener");
-                int sslPort = Integer.parseInt(httpsListener.getPort());
-                boolean httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
-
                 me = new InstanceDescriptor(myCurrentID);
                 if (httpPortEnabled) {
                     me.setHttpPort(port);
@@ -182,11 +178,25 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
                 }
 
                 me.setInstanceName(instanceName);
-
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
 
             } catch (UnknownHostException ex) {
                 java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, "Could not find local hostname", ex);
+            }
+        } else {
+            try {
+                me = new InstanceDescriptor(instanceName);
+                if (httpPortEnabled) {
+                    me.setHttpPort(port);
+                }
+
+                if (httpsPortEnabled) {
+                    me.setHttpsPort(sslPort);
+                }
+
+                me.setInstanceName(instanceName);
+            } catch (UnknownHostException ex) {
+                java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
 
@@ -225,7 +235,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
         }
     }
 
-    public Set<InstanceDescriptor> getClusteredPayaras() {       
+    public Set<InstanceDescriptor> getClusteredPayaras() {
         Set<String> members = cluster.getClusterMembers();
         HashSet<InstanceDescriptor> result = new HashSet<>(members.size());
         for (String member : members) {
@@ -264,7 +274,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     public InstanceDescriptor getLocalDescriptor() {
         return me;
     }
-    
+
     public InstanceDescriptor getDescriptor(String member) {
         InstanceDescriptor result = null;
         if (cluster.isEnabled()) {
