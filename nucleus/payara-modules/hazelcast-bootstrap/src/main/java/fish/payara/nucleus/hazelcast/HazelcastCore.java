@@ -171,8 +171,8 @@ public class HazelcastCore implements EventListener {
                     }
                 } else {
                    mcConfig.setMulticastGroup(configuration.getMulticastGroup());
-                   mcConfig.setMulticastPort(Integer.getInteger(configuration.getMulticastPort()));
-                   config.getNetworkConfig().setPort(Integer.getInteger(configuration.getStartPort()));
+                   mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
+                   config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
                    config.setInstanceName(configuration.getMemberName());
                 }
 
