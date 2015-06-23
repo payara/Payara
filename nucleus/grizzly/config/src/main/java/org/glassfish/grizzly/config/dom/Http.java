@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -69,6 +69,8 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean UPLOAD_TIMEOUT_ENABLED = true;
     boolean WEBSOCKET_SUPPORT_ENABLED = true;
     boolean XPOWERED_BY = true;
+    boolean ALLOW_PAYLOAD_FOR_UNDEFINED_HTTP_METHODS = false;
+    
     int COMPRESSION_MIN_SIZE = 2048;
     int CONNECTION_UPLOAD_TIMEOUT = 300000;
     int HEADER_BUFFER_LENGTH = 8192;
@@ -181,6 +183,11 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     Spdy getSpdy();
 
     void setSpdy(Spdy value);
+
+    @Element
+    Http2 getHttp2();
+
+    void setHttp2(Http2 value);
 
     /**
      * The response type to be forced if the content served cannot be matched by any of the MIME mappings for
@@ -425,6 +432,17 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
 
     void setXpoweredBy(String xpoweredBy);
 
+    /**
+     * @return <tt>true</tt>, if payload will be allowed for HTTP methods, for
+     * which spec doesn't state explicitly if payload allowed or not.
+     *
+     * @since 4.2
+     */
+    @Attribute(defaultValue = "" + ALLOW_PAYLOAD_FOR_UNDEFINED_HTTP_METHODS, dataType = Boolean.class)
+    String getAllowPayloadForUndefinedHttpMethods();
+    
+    void setAllowPayloadForUndefinedHttpMethods(String allowPayloadForUndefinedHttpMethods);
+    
     @DuckTyped
     Protocol getParent();
 

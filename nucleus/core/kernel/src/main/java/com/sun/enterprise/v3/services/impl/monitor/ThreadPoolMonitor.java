@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -114,6 +114,15 @@ public class ThreadPoolMonitor implements ThreadPoolProbe {
                 monitoringId, task.getClass().getName());
     }
 
+    @Override
+    public void onTaskCancelEvent(AbstractThreadPool threadPool, Runnable task) {
+        // when dequeued task is cancelled - we have to "return" the thread, that
+        // we marked as dispatched from the pool
+        grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(
+                monitoringId, threadPool.getConfig().getPoolName(),
+                Thread.currentThread().getId());
+    }
+    
     @Override
     public void onTaskCompleteEvent(AbstractThreadPool threadPool, Runnable task) {
         grizzlyMonitoring.getThreadPoolProbeProvider().threadReturnedToPoolEvent(

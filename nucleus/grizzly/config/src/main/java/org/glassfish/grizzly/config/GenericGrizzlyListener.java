@@ -61,6 +61,7 @@ import org.glassfish.grizzly.Grizzly;
 import org.glassfish.grizzly.IOStrategy;
 import org.glassfish.grizzly.SocketBinder;
 import org.glassfish.grizzly.config.dom.Http;
+import org.glassfish.grizzly.config.dom.Http2;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.PortUnification;
 import org.glassfish.grizzly.config.dom.Protocol;
@@ -143,6 +144,8 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     protected volatile boolean isAjpEnabled;
     // spdy enabled flag
     protected volatile boolean isSpdyEnabled;
+    // spdy enabled flag
+    protected volatile boolean isHttp2Enabled;
     // websocket enabled flag
     protected volatile boolean isWebSocketEnabled;
     // comet enabled flag
@@ -222,7 +225,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     /**
-     * Returns <tt>true</tt> if AJP (or JK) is enabled for this listener, or
+     * @return <tt>true</tt> if AJP (or JK) is enabled for this listener, or
      * <tt>false</tt> otherwise.
      */
     public boolean isAjpEnabled() {
@@ -230,7 +233,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     /**
-     * Returns <tt>true</tt> if SPDY is enabled for this listener, or
+     * @return <tt>true</tt> if SPDY is enabled for this listener, or
      * <tt>false</tt> otherwise.
      */
     public boolean isSpdyEnabled() {
@@ -238,7 +241,15 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     /**
-     * Returns <tt>true</tt> if WebSocket is enabled for this listener, or
+     * @return <tt>true</tt> if HTTP2 is enabled for this listener, or
+     * <tt>false</tt> otherwise.
+     */
+    public boolean isHttp2Enabled() {
+        return isHttp2Enabled;
+    }
+
+    /**
+     * @return <tt>true</tt> if WebSocket is enabled for this listener, or
      * <tt>false</tt> otherwise.
      */
     public boolean isWebSocketEnabled() {
@@ -246,7 +257,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
     }
 
     /**
-     * Returns <tt>true</tt> if Comet is enabled for this listener, or
+     * @return <tt>true</tt> if Comet is enabled for this listener, or
      * <tt>false</tt> otherwise.
      */
     public boolean isCometEnabled() {
@@ -704,6 +715,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         filterChainBuilder.add(webServerFilter);
 
         configureSpdySupport(habitat, networkListener, http.getSpdy(), filterChainBuilder, secure);
+        configureHttp2Support(habitat, networkListener, http.getHttp2(), filterChainBuilder, secure);
 
         // TODO: evaluate comet/websocket support over SPDY.
         configureCometSupport(habitat, networkListener, http, filterChainBuilder);
@@ -761,13 +773,45 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                 // only provide the information necessary for the addon to operate.
                 // It will be important to keep this mock in sync with the details the
                 // addon requires.
-                spdyAddon.setup(createMockListener(), builder);
+                spdyAddon.setup(createMockListener(secure), builder);
                 isSpdyEnabled = true;
             }
         }
     }
 
-    protected org.glassfish.grizzly.http.server.NetworkListener createMockListener() {
+    protected void configureHttp2Support(final ServiceLocator locator,
+                                        final NetworkListener listener,
+                                        final Http2 http2Element,
+                                        final FilterChainBuilder builder,
+                                        final boolean secure) {
+        if (http2Element == null || http2Element.getEnabled()) {
+
+            // first try to lookup a service appropriate for the mode
+            // that has been configured.
+            AddOn http2Addon = locator.getService(AddOn.class, "http2");
+
+            // if no service was found, attempt to load via reflection.
+            if (http2Addon == null) {
+                http2Addon = loadAddOn("org.glassfish.grizzly.http2.Http2AddOn", new Class[]{});
+            }
+
+            if (http2Addon != null) {
+                // Configure SpdyAddOn
+                configureElement(locator, listener, http2Element, http2Addon);
+                
+                // Spdy requires access to more information compared to the other addons
+                // that are currently leveraged.  As such, we'll need to mock out a
+                // Grizzly NetworkListener to pass to the addon.  This mock object will
+                // only provide the information necessary for the addon to operate.
+                // It will be important to keep this mock in sync with the details the
+                // addon requires.
+                http2Addon.setup(createMockListener(secure), builder);
+                isHttp2Enabled = true;
+            }
+        }
+    }
+    
+    protected org.glassfish.grizzly.http.server.NetworkListener createMockListener(final boolean isSecure) {
         final TCPNIOTransport transportLocal = (TCPNIOTransport) transport;
         return new org.glassfish.grizzly.http.server.NetworkListener("mock") {
             @Override
@@ -777,7 +821,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
 
             @Override
             public boolean isSecure() {
-                return true;
+                return isSecure;
             }
         };
     }
@@ -926,6 +970,9 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         if (http != null) { // could be null for HTTP redirect
             httpCodecFilter.setMaxPayloadRemainderToSkip(
                     Integer.parseInt(http.getMaxSwallowingInputBytes()));
+            
+            httpCodecFilter.setAllowPayloadForUndefinedHttpMethods(
+                    Boolean.parseBoolean(http.getAllowPayloadForUndefinedHttpMethods()));
         }
         
         return httpCodecFilter;
