@@ -19,6 +19,7 @@
 package fish.payara.micro;
 
 import java.io.IOException;
+import java.net.BindException;
 import java.net.ServerSocket;
 
 /**
@@ -29,13 +30,16 @@ public class PortBinder
 {
     
     
-    public int findAvailablePort(int port)
+    public int findAvailablePort(int port) throws BindException
     {
         // Set the number of times to try and bind to new ports
-        final int PORT_COUNT = 10;
+        final int PORT_COUNT = 2;
 
         // Initialise a return variable equal to parameter passed in
         int returnPort = port;
+        
+        // Initialise a flag for throwing a custom error if no available ports within range
+        boolean foundAvailablePort = false;
         
         /**
          * Loop through, incrementing the port to bind to by 1 for each failure, until PORT_COUNT is reached
@@ -45,8 +49,9 @@ public class PortBinder
             // Try to bind to the port                     
             try (ServerSocket serverSocket = new ServerSocket(port);)
             {
-                // If no exception thrown, set returnPort to the open port and break out of loop
+                // If no exception thrown, set returnPort to the open port, set the "found" flag to true, and break out of loop
                 returnPort = port;
+                foundAvailablePort = true;
                 break;
             }
 
@@ -57,7 +62,14 @@ public class PortBinder
             }
         }
         
-        // Return either the found port, or the original port passed in if no open port found
+        // Check if an available port has been found
+        if (foundAvailablePort == false)
+        {
+            // If a port hasn't been found, throw a BindException
+            throw new BindException();
+        }
+        
+        // Return the available port, or the original port passed in if no available port found
         return returnPort;
     }
 }

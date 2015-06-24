@@ -22,6 +22,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -489,21 +490,44 @@ public class PayaraMicro {
             gfruntime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
 
-            if (httpPort != Integer.MIN_VALUE) {
-                gfproperties.setPort("http-listener", 
-                        portBinder.findAvailablePort(httpPort));
+            if (httpPort != Integer.MIN_VALUE) 
+            {   
+                try
+                {
+                    gfproperties.setPort("http-listener",
+                            portBinder.findAvailablePort(httpPort));
+                }
+                
+                catch (BindException ex)
+                {
+                    Logger.getLogger(PayaraMicro.class.getName())
+                            .log(Level.SEVERE, 
+                                    "No available port found in range: "
+                                            + httpPort + " - " 
+                                            + (httpPort + 10), ex);
+                    
+                    throw new GlassFishException("Could not bind http port");
+                }
             }
-            
-            else
+
+            if (sslPort != Integer.MIN_VALUE) 
             {
-                gfproperties.setPort("http-listener", 
-                        portBinder.findAvailablePort(gfproperties
-                                .getPort("http-listener")));
-            }
-
-            if (sslPort != Integer.MIN_VALUE) {
-                gfproperties.setPort("https-listener", sslPort);
-
+                try
+                {
+                    gfproperties.setPort("https-listener",
+                            portBinder.findAvailablePort(sslPort));
+                }
+                
+                catch (BindException ex)
+                {
+                    Logger.getLogger(PayaraMicro.class.getName())
+                            .log(Level.SEVERE, 
+                                    "No available port found in range: "
+                                            + sslPort + " - " 
+                                            + (sslPort + 10), ex);
+                    
+                    throw new GlassFishException("Could not bind SSL port");
+                }
             }
 
             if (alternateDomainXML != null) {
