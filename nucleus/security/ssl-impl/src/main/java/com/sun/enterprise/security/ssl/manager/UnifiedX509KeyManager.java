@@ -136,7 +136,7 @@ public class UnifiedX509KeyManager implements X509KeyManager /* extends X509Exte
     public String[] getServerAliases(String keyType, Principal[] issuers) {
         ArrayList serverAliases = new ArrayList();
         for (int i = 0; i < mgrs.length; i++) {
-            String[] serAliases = mgrs[i].getClientAliases(keyType, issuers);
+            String[] serAliases = mgrs[i].getServerAliases(keyType, issuers);
             if (serAliases != null && serAliases.length > 0) {
                 for (int j = 0; j < serAliases.length; j++) {
                     serverAliases.add(serAliases[j]);
