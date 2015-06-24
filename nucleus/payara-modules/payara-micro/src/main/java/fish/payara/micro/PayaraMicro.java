@@ -483,12 +483,22 @@ public class PayaraMicro {
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
         GlassFishRuntime gfruntime;
+        PortBinder portBinder = new PortBinder();
+        
         try {
             gfruntime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
 
             if (httpPort != Integer.MIN_VALUE) {
-                gfproperties.setPort("http-listener", httpPort);
+                gfproperties.setPort("http-listener", 
+                        portBinder.findAvailablePort(httpPort));
+            }
+            
+            else
+            {
+                gfproperties.setPort("http-listener", 
+                        portBinder.findAvailablePort(gfproperties
+                                .getPort("http-listener")));
             }
 
             if (sslPort != Integer.MIN_VALUE) {

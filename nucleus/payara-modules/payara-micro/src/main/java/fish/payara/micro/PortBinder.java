@@ -19,13 +19,7 @@
 package fish.payara.micro;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.nio.channels.ServerSocketChannel;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -35,52 +29,35 @@ public class PortBinder
 {
     
     
-    public void findAvailablePort(int port)
+    public int findAvailablePort(int port)
     {
-        if (port == Integer.MIN_VALUE)
-        {
-            
-        }
+        // Set the number of times to try and bind to new ports
+        final int PORT_COUNT = 10;
+
+        // Initialise a return variable equal to parameter passed in
+        int returnPort = port;
         
-        try
-        {
-            final int PORT_COUNT = 10;
-            ServerSocket serverSocket = null;
-            ServerSocketChannel serverSocketChannel = null;
-            InetSocketAddress inetSocketAddress;
-
-
-            for (int i = 0; i < PORT_COUNT; i++)
+        /**
+         * Loop through, incrementing the port to bind to by 1 for each failure, until PORT_COUNT is reached
+         */
+        for (int i = 0; i < PORT_COUNT; i++)
+        {        
+            // Try to bind to the port                     
+            try (ServerSocket serverSocket = new ServerSocket(port);)
             {
-                serverSocketChannel = ServerSocketChannel.open();
-                serverSocket = serverSocketChannel.socket();
-                serverSocket.setSoTimeout(1000);
-                
-                try
-                {
-                    inetSocketAddress = new InetSocketAddress(port);
-                    
-                    serverSocket.bind(inetSocketAddress, 100);
-                    
-                    break;
-                }
-                
-                catch (final Exception e) 
-                {
-                    serverSocket.close();
-                    serverSocketChannel.close();
-                    
-                    port++;
-                }  
+                // If no exception thrown, set returnPort to the open port and break out of loop
+                returnPort = port;
+                break;
             }
-            
-            serverSocketChannel.configureBlocking(false);
-        }
-          
-        catch (IOException ex)
-        {
-            Logger.getLogger(PortBinder.class.getName()).log(Level.SEVERE, null, ex);
+
+            catch (IOException ex)
+            {
+                // Increment port to try again on next port
+                port++;
+            }
         }
         
+        // Return either the found port, or the original port passed in if no open port found
+        return returnPort;
     }
 }
