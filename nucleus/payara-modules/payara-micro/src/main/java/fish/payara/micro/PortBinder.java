@@ -39,7 +39,7 @@ public class PortBinder
         /**
          * Loop through, incrementing the port to bind to by 1 for each failure, until PORT_COUNT is reached
          */
-        for (int i = 0; i < autoBindRange; i++)
+        for (int i = 0; i <= autoBindRange; i++)
         {        
             // Try to bind to the port                     
             try (ServerSocket serverSocket = new ServerSocket(port);)
