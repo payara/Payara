@@ -15,17 +15,39 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.micro.services;
+
+import fish.payara.micro.services.data.InstanceDescriptor;
+import java.io.Serializable;
 
 /**
  *
  * @author steve
  */
-public class BootstrapException extends Exception {
+public class PayaraInternalEvent implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
+    
+    private final MESSAGE messageType;
+    private final InstanceDescriptor id;
+
+    
+    public PayaraInternalEvent(MESSAGE message, InstanceDescriptor id) {
+        this.messageType = message;
+        this.id = id;
+    }
+
+    public MESSAGE getMessageType() {
+        return messageType;
+    }
+    
+    public InstanceDescriptor getId() {
+        return id;
+    }
+
+    public enum MESSAGE {
+
+        ADDED, REMOVED
     }
     
 }

@@ -15,17 +15,26 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.nucleus.eventbus;
+
+import java.io.Serializable;
 
 /**
  *
  * @author steve
+ * @param <T> The type of the message payload
  */
-public class BootstrapException extends Exception {
+public class ClusterMessage<T extends Serializable> implements Serializable {
     private static final long serialVersionUID = 1L;
     
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
+    private T body;
+    
+    public ClusterMessage(T payload) {
+        body = payload;
+    }
+    
+    public T getPayload() {
+        return body;
     }
     
 }

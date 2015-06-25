@@ -15,17 +15,14 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.micro.services;
 
 /**
  *
  * @author steve
  */
-public class BootstrapException extends Exception {
-    private static final long serialVersionUID = 1L;
+public interface CDIEventListener {
     
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
-    }
+    public void eventReceived(PayaraClusteredCDIEvent event);
     
 }

@@ -15,17 +15,15 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.nucleus.cluster;
 
 /**
  *
  * @author steve
  */
-public class BootstrapException extends Exception {
-    private static final long serialVersionUID = 1L;
+public interface ClusterListener {
     
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
-    }
+    public void memberAdded(String guid);
+    public void memberRemoved(String guid);
     
 }

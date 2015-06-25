@@ -15,17 +15,29 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.micro.cdi;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Extension;
 
 /**
+ * A CDI Extension for integrating with Payara Micro
  *
  * @author steve
  */
-public class BootstrapException extends Exception {
-    private static final long serialVersionUID = 1L;
-    
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
+public class PayaraMicroCDIExtension implements Extension {
+
+    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
+
+        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
+        bbd.addAnnotatedType(at);
+        
+        AnnotatedType<ClusteredCDIEventBus> at3 = bm.createAnnotatedType(ClusteredCDIEventBus.class);
+        bbd.addAnnotatedType(at3);
+
     }
-    
+
 }

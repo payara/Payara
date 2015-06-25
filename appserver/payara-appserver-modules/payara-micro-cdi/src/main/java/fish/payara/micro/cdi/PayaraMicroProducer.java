@@ -15,17 +15,26 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.micro.cdi;
+
+import fish.payara.micro.PayaraMicro;
+import fish.payara.micro.PayaraMicroRuntime;
+import javax.enterprise.inject.Produces;
 
 /**
  *
  * @author steve
  */
-public class BootstrapException extends Exception {
-    private static final long serialVersionUID = 1L;
+public class PayaraMicroProducer {
     
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
+    private final PayaraMicroRuntime runtime;
+    
+    PayaraMicroProducer() {
+        runtime = PayaraMicro.getInstance(false).getRuntime();
     }
     
+    @Produces
+    PayaraMicroRuntime getRuntime() {
+        return runtime;
+    }
 }

@@ -17,15 +17,32 @@
  */
 package fish.payara.micro;
 
+import fish.payara.micro.services.PayaraClusterListener;
+import fish.payara.micro.services.data.InstanceDescriptor;
+
 /**
- *
+ * Package level class that adapts the PayaraMicroRuntime so that callback methods
+ * are not publically cisible
  * @author steve
  */
-public class BootstrapException extends Exception {
-    private static final long serialVersionUID = 1L;
+class BootstrapListener implements PayaraClusterListener {
+
+    private final PayaraMicroRuntime runtime;
     
-    public BootstrapException(String message, Throwable t) {
-        super(message,t);
+    public BootstrapListener(PayaraMicroRuntime runtime) {
+        this.runtime = runtime;
+    }
+    
+    
+
+    @Override
+    public void memberAdded(InstanceDescriptor id) {
+        runtime.memberAdded(id);
+    }
+
+    @Override
+    public void memberRemoved(InstanceDescriptor id) {
+        runtime.memberRemoved(id);
     }
     
 }

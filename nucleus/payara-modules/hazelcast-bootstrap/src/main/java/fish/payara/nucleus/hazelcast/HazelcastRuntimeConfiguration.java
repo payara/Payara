@@ -46,6 +46,10 @@ public interface HazelcastRuntimeConfiguration
     String getMulticastGroup();
     public void setMulticastGroup(String value);
     
+    @Attribute(defaultValue = "payara")
+    String getMemberName();
+    public void setMemberName(String value);
+    
     @Attribute(defaultValue = "54327")
     String getMulticastPort();
     public void setMulticastPort(String value);
