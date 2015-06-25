@@ -140,6 +140,7 @@
         <module>webui-jsf-plugin-l10n</module>
         <module>webui-jsf-suntheme-plugin-l10n</module>
         <module>payara-console-extras</module>
+        <module>payara-console-extras-l10n</module>
     </modules>
     <build>
         <plugins>
