@@ -28,13 +28,8 @@ import java.net.ServerSocket;
  */
 public class PortBinder
 {
-    
-    
-    public int findAvailablePort(int port) throws BindException
+    public int findAvailablePort(int port, int autoBindRange) throws BindException
     {
-        // Set the number of times to try and bind to new ports
-        final int PORT_COUNT = 2;
-
         // Initialise a return variable equal to parameter passed in
         int returnPort = port;
         
@@ -44,7 +39,7 @@ public class PortBinder
         /**
          * Loop through, incrementing the port to bind to by 1 for each failure, until PORT_COUNT is reached
          */
-        for (int i = 0; i < PORT_COUNT; i++)
+        for (int i = 0; i < autoBindRange; i++)
         {        
             // Try to bind to the port                     
             try (ServerSocket serverSocket = new ServerSocket(port);)
