@@ -6,7 +6,7 @@ Payara Server is a patched, ehannced and supported version of GlassFish Server O
 
 We take GlassFish upstream. We support it, fix it, enhance it. We release it as open source Payara Server.
 
-See the wiki for full Payara Server and Payara Micro documentation https://github.com/payara/Payara/wiki 
+**See the wiki for full Payara Server and Payara Micro documentation:** https://github.com/payara/Payara/wiki 
 
 Payara Server is a drop in replacement for GlassFish Server with the peace of mind of quarterly releases containing enhancements, bug fixes and patches to upstream GlassFish Server and dependent libraries including Tyrus, Eclipse Link, Jersey and others. Our vision is to optimise Payara Server and make it the best server for production Java EE applications with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry.
 
