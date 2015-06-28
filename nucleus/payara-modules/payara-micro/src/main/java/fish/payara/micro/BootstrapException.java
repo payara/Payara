@@ -22,6 +22,7 @@ package fish.payara.micro;
  * @author steve
  */
 public class BootstrapException extends Exception {
+    private static final long serialVersionUID = 1L;
     
     public BootstrapException(String message, Throwable t) {
         super(message,t);

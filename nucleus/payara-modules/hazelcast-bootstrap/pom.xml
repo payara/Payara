@@ -72,24 +72,5 @@
             <version>1.0.0</version>
             <type>jar</type>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>payara-micro-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
-    
-    <build>
-        <!-- needed to build with JDK 1.5 or higher -->
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>
