@@ -70,8 +70,8 @@ public class PayaraMicro {
     private GlassFish gf;
     private PayaraMicroRuntime runtime;
     private boolean noCluster = false;
-    private boolean httpAutoBind = false;
-    private boolean sslAutoBind = false;
+    private boolean autoBindHttp = false;
+    private boolean autoBindSsl = false;
     private int autoBindRange = 5;
 
     /**
@@ -459,7 +459,7 @@ public class PayaraMicro {
      */
     public boolean getHttpAutoBind()
     {
-        return httpAutoBind;
+        return autoBindHttp;
     }
 
     /**
@@ -469,7 +469,7 @@ public class PayaraMicro {
      */
     public PayaraMicro setHttpAutoBind(boolean httpAutoBind)
     {
-        this.httpAutoBind = httpAutoBind;
+        this.autoBindHttp = httpAutoBind;
         return this;
     }
     
@@ -479,7 +479,7 @@ public class PayaraMicro {
      */
     public boolean getSslAutoBind()
     {
-        return sslAutoBind;
+        return autoBindSsl;
     }
     
     /**
@@ -489,7 +489,7 @@ public class PayaraMicro {
      */
     public PayaraMicro setSslAutoBind(boolean sslAutoBind)
     {
-        this.sslAutoBind = sslAutoBind;
+        this.autoBindSsl = sslAutoBind;
         return this;
     }
     
@@ -556,7 +556,7 @@ public class PayaraMicro {
             if (httpPort != Integer.MIN_VALUE) 
             {   
                 // If httpAutoBind is set to true
-                if (httpAutoBind == true)
+                if (autoBindHttp == true)
                 {
                     // Search for an available port and set it as the http port
                     try
@@ -587,11 +587,39 @@ public class PayaraMicro {
                 }
                 
             }
+            
+            // If the port has not been set
+            else
+            {
+                // If httpAutoBind is set to true
+                if (autoBindHttp == true)
+                {
+                    // Search for an available port and set it as the http port
+                    try
+                    {
+                        gfproperties.setPort("http-listener",
+                                portBinder.findAvailablePort(8080, 
+                                        autoBindRange));
+                    }
+
+                    // If no available port is found, log an exception and throw a GlassFish Exception to fail the bootstrap
+                    catch (BindException ex)
+                    {
+                        Logger.getLogger(PayaraMicro.class.getName())
+                                .log(Level.SEVERE, 
+                                        "No available port found in range: "
+                                                + 8080 + " - " 
+                                                + (8080 + autoBindRange), ex);
+
+                        throw new GlassFishException("Could not bind http port");
+                    }
+                }
+            }
 
             if (sslPort != Integer.MIN_VALUE) 
             {
                 // If sslAutoBind is set to true
-                if (sslAutoBind == true)
+                if (autoBindSsl == true)
                 {     
                     // Search for an available port and set it as the ssl port
                     try
@@ -840,11 +868,11 @@ public class PayaraMicro {
                         throw new IllegalArgumentException();
                     }   i++;                    
                     break;
-                case "--httpAutoBind":
-                    httpAutoBind = true;
+                case "--autoBindHttp":
+                    autoBindHttp = true;
                     break;
-                case "--sslAutoBind":
-                    sslAutoBind = true;
+                case "--autoBindSsl":
+                    autoBindSsl = true;
                     break;
                 case "--autoBindRange":
                     String autoBindRangeString = args[i + 1];
@@ -874,8 +902,8 @@ public class PayaraMicro {
                             + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
                             + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
                             + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration"
-                            + "--httpAutoBind sets autobinding of the http port to a non-bound port\n"
-                            + "--sslAutoBind sets autobinding of the https port to a non-bound port\n"
+                            + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
+                            + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
                             + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
