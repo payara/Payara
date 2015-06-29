@@ -575,7 +575,7 @@ public class PayaraMicro {
                                                 + httpPort + " - " 
                                                 + (httpPort + autoBindRange), ex);
 
-                        throw new GlassFishException("Could not bind http port");
+                        throw new GlassFishException("Could not bind HTTP port");
                     }
                 }
                 
@@ -611,7 +611,7 @@ public class PayaraMicro {
                                                 + 8080 + " - " 
                                                 + (8080 + autoBindRange), ex);
 
-                        throw new GlassFishException("Could not bind http port");
+                        throw new GlassFishException("Could not bind HTTP port");
                     }
                 }
             }
