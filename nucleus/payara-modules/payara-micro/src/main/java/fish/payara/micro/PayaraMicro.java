@@ -882,9 +882,10 @@ public class PayaraMicro {
                             throw new NumberFormatException("Not a valid auto bind range");
                         }
                     } catch (NumberFormatException nfe) {
-                        System.err.println(autoBindRangeString
-                                + " is not a valid auto bind range number and will be ignored. Defaulting to 5");
-                        autoBindRange = 5;
+                        logger.log(Level.SEVERE, 
+                                "{0} is not a valid auto bind range number", 
+                                autoBindRangeString);
+                        throw new IllegalArgumentException();
                     }   i++;
                     break;
                 case "--help":
