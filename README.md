@@ -4,7 +4,7 @@
 
 Payara Server is a patched, ehannced and supported version of GlassFish Server Open Source Edition 4.x. http://www.payara.co
 
-We take GlassFish upstream. We support it, fix it, enhance it. We release it as open source Payara Server.
+We take GlassFish upstream. We support it,  fix it, enhance it. We release it as open source Payara Server.
 
 **See the wiki for full Payara Server and Payara Micro documentation:** https://github.com/payara/Payara/wiki 
 
