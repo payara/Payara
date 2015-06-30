@@ -127,6 +127,7 @@ promote_init(){
 
 promote_finalize(){
     create_symlinks
+    create_index
     send_notification
 }
 
@@ -892,3 +893,256 @@ Thanks,
 RE
 MESSAGE
 }
+
+#
+# Create index files on JNET_STORAGE_HOST for PRODUCT_GF.
+#
+create_index(){
+
+    # cp this script to master.
+    scp `dirname $0`/common.sh ${SSH_MASTER}:/tmp
+
+    # cp script from ssh_master to JNET_STORAGE_HOST.
+    ssh ${SSH_MASTER} \
+        "scp /tmp/common.sh ${JNET_USER}@${JNET_STORAGE_HOST}:/dlc/${PRODUCT_GF}"
+   
+    # Run the script to create the index files on JNET_STORAGE_HOST.
+    ssh ${SSH_MASTER} \
+        "ssh ${JNET_USER}@${JNET_STORAGE_HOST} 'cd /dlc/${PRODUCT_GF}; bash -c \"source common.sh; generate_index_html ./ | tee /tmp/gen.out 2>&1\"'"
+}
+
+# 
+# Generate index files for dlc
+# 
+# Usage: 
+#   source this file
+#   generate_index_html ./       // $1 is relative path to TOPLEVELURL
+#
+# Known issues:
+# * Doesn't work for filenames with spaces.
+#
+TOPLEVELURL=http://download.oracle.com/glassfish
+INDEX_FILENAME=index.html
+OS=`uname`
+
+#
+# Some OS's have leading "./" in find/ls cmds.
+# This is a sanity check to remove leading "./", if exists.
+#
+trim_dot_slash() {
+  # If FILE starts with with "./" then remove it.
+  if [[ $1 == ./* ]]; then
+    FILE=`echo $1 | cut -c 3-`
+  fi
+}
+
+#
+# $1 - Current dir
+# names with spaces will be skipped
+# hidden directories and hidden files will be skipped
+# files named $INDEX_FILENAME | index.html will be skipped
+#
+generate_index_html() {
+
+    echo "\n### generate_index_html called with arg1 = $1"
+
+cat > $1/$INDEX_FILENAME << EOF
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>Index of $TOPLEVELURL</title>
+    <link rel="stylesheet" href="$TOPLEVELURL/listing_themes/apaxy/style.css" type="text/css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  </head>
+  <body>
+    <div class="wrapper">
+    <table>
+      <tbody>
+        <tr> 
+          <th>
+            <img src="$TOPLEVELURL/listing_themes/apaxy/blank.png" alt="[ICO]">
+          </th>
+          <th>
+            Name
+          </th>
+          <th>
+            Last modified
+          </th>
+          <th>
+          Size
+    </th>
+        </tr>
+EOF
+
+    if [ "$1" != "$TOPLEVELDIR" ]
+    then
+      printf "\fsub directory \'$1\'\n"
+cat >> $1/$INDEX_FILENAME << EOF
+        <tr class="parent">
+          <td valign="top">
+            <a href="$TOPLEVELURL/$INDEX_FILENAME"><img src="$TOPLEVELURL/listing_themes/apaxy/folder-home.png" alt="[DIR]"></a>
+          </td>
+          <td>
+            <a href="$TOPLEVELURL/`echo $1 | cut -c 3-`/../$INDEX_FILENAME">Parent Directory</a></td><td>&nbsp;
+          </td>
+          <td align="right">  - </td>
+        </tr>
+EOF
+    else
+      printf "\nTop level directory \'$1\'\n"
+    fi
+
+  # recurse into sub directories.  
+  # Specify maxdepth before type for Linux.
+  # No maxdepth on SunOS.
+  if [ "$OS" = "SunOS" ]
+  then
+    FIND_CMD="find ${1} ! -name . -prune -type d"
+
+  else
+    FIND_CMD="find ${1%/} -maxdepth 1 -type d"
+  fi
+
+  for SUB_DIR in `$FIND_CMD | sort`
+  do
+    # skip . and current dir to prevent infinite loop
+    # skip if the directory does not exist, i.e it has a space in its name
+    # skip if the basename starts with a dot, i.e it's hidden
+    SUB_DIR_BASENAME=`basename "$SUB_DIR"`
+    if [ "$SUB_DIR" != "." ] && [ "$SUB_DIR" != "$1" ] && [ -d "$SUB_DIR" ] && [[ $SUB_DIR_BASENAME != .* ]] && [ "$SUB_DIR_BASENAME" != "listing_themes" ]
+    then
+      # TODO additional exclusion
+
+      printf "\nFound subdir: $SUB_DIR\n"
+      printf "Subdir basename: $SUB_DIR_BASENAME\n"
+
+      LAST_MODIFIED=`ls -ld $SUB_DIR | awk '{ print $6, $7, $8 }'`
+
+      # So that we don't have "//" in links - check if the cut is ""
+      if [ "`echo $1 | cut -c 3-`" = "" ]
+      then
+        HREF="$TOPLEVELURL/$SUB_DIR_BASENAME/$INDEX_FILENAME"
+      else
+        HREF="$TOPLEVELURL/`echo $1 | cut -c 3-`/$SUB_DIR_BASENAME/$INDEX_FILENAME"
+      fi 
+
+cat >> $1/$INDEX_FILENAME << EOF
+        <tr>
+          <td valign="top">
+            <a href="$HREF"><img src="$TOPLEVELURL/listing_themes/apaxy/folder.png" alt="[DIR]"></a>
+          </td>
+          <td>
+            <a href="$HREF">$SUB_DIR_BASENAME/</a>
+          </td>
+          <td align="right">
+            $LAST_MODIFIED 
+          </td>
+          <td align="right">  - </td>
+        </tr>
+EOF
+      generate_index_html $SUB_DIR 
+    fi
+  done
+
+  # Generate file list named latest* first.
+  if [ "$OS" = "SunOS" ]
+  then
+    FINDFILES=`find $1 -name . -o -type d -prune -o -name 'latest*' -print`
+  else
+    FINDFILES=`find ${1%/} -maxdepth 1 -type f -name latest\*`
+  fi
+  FILELIST1=`echo $FINDFILES | xargs ls -t`
+
+  # Now get all files that do not start with latest*.
+  if [ "$OS" = "SunOS" ]
+  then
+    FINDFILES=`find ${1} -name . -o -type d -prune -o ! -name 'latest*' -print`
+  else
+    FINDFILES=`find ${1%/} -maxdepth 1 -type f -not -name latest\*`
+  fi
+  FILELIST2=`echo $FINDFILES | xargs ls -t`
+
+  # Concat latest* files + !latest files.
+  FILELIST="$FILELIST1 $FILELIST2"
+  
+  echo "\n### Processing files from ${1}..."
+  for FILE in $FILELIST
+  do
+    # Remove leading "./" from $FILE, if exists
+    trim_dot_slash "$FILE"
+
+    # skip if the file does not exist, i.e it has a space in its name
+    # skip if the basename starts with a dot, i.e it's hidden
+    FILENAME=`basename "$FILE"`
+    if [ -f $FILE ] && [[ $FILENAME != .* ]] && [ "$FILENAME" != "index.html" ] && \
+       [ "$FILENAME" != "$INDEX_FILENAME" ] && [ "$FILENAME" != "genIndex.sh" ] && \
+       [ "$FILENAME" != "index-test.html" ] && [ "$FILENAME" != "genIndex.sh.sav" ] && \
+       [ "$FILENAME" != "common.sh" ]
+    then
+      # TODO additional exclusion
+
+      printf "Found file: $FILENAME\n"
+
+      # Set a default icon in case nothing found.
+      ICON="default.png"
+
+      # XXX Do we want to follow links with -L here?
+      # Get time last modified and file size.  Output may OS dependent.
+      LAST_MODIFIED=`ls -l $FILE | awk '{ print $6, $7, $8 }'`
+      HUMAN_READABLE_SIZE=`ls -lh $FILE | awk '{ print $5 }'`
+
+      EXT="${FILENAME##*.}"
+      case "$EXT" in
+        "BASH" | "bash" | "sh" | "SH" | "BAT" | "bat") ICON="script.png";;
+        "bin" | "BIN") ICON="bin.png";;
+        "c" | "C" | "c" | "CPP" | "cpp" | "txt" | "TXT" | "java" | "JAVA" | "conf" | "CONF" | "css" | "CSS" | "html" | "HMTL") ICON="text.png";;
+        "exe" | "EXE") ICON="exe.png";;
+        "gif" | "GIF" | "png" | "PNG" | "jpg" | "JPG" | "tiff" | "TIFF" | "jpeg" | "JPEG" | "bmp" | "BMP") ICON="image.png";;
+        "jar" | "JAR") ICON="java.png";;
+        "py" | "PY") ICON="py.png";;
+        "rar" | "RAR") ICON="rar.png";;
+        "tar" | "TAR" | "gz" | "GZ" | "bz2" | "BZ2") ICON="archive.png";;
+        "zip" | "ZIP") ICON="zip.png";;
+        "xml" | "XML") ICON="xml.png";;
+        "md" | "MD") ICON="markdown.png";;
+        "rpm" | "RPM") ICON="rpm.png";;
+        "pdf" | "PDF") ICON="pdf.png";;
+        "*") ICON="default.png";;
+      esac
+
+      # Catch files with no extensions.
+      if [ "$FILENAME" = "README"  -o "$FILENAME" = "readme" ]; 
+      then
+        ICON="readme.png"
+      fi
+
+cat >> $1/$INDEX_FILENAME << EOF
+        <tr>
+          <td valign="top">
+            <a href="$TOPLEVELURL/$FILE"><img src="$TOPLEVELURL/listing_themes/apaxy/$ICON" alt="[   ]"></a>
+          </td>
+          <td>
+            <a href="$TOPLEVELURL/$FILE">$FILENAME</a>
+          </td>
+          <td align="right">$LAST_MODIFIED  </td> 
+          <td align="right">$HUMAN_READABLE_SIZE</td>
+        </tr>
+EOF
+    fi
+  done
+
+cat >> $1/$INDEX_FILENAME << EOF
+      </tbody>
+    </table>
+    </div>
+    <script type="text/javascript">
+      // grab the 2nd child and add the parent class. tr:nth-child(2)
+      document.getElementsByTagName('tr')[1].className = 'parent';
+    </script>
+  </body>
+</html>
+EOF
+}
+
+
