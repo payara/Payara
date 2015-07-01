@@ -922,6 +922,7 @@ create_index(){
 # * Doesn't work for filenames with spaces.
 #
 TOPLEVELURL=http://download.oracle.com/glassfish
+TOPLEVELDIR=./
 INDEX_FILENAME=index.html
 OS=`uname`
 
@@ -944,7 +945,8 @@ trim_dot_slash() {
 #
 generate_index_html() {
 
-    echo "\n### generate_index_html called with arg1 = $1"
+    echo ""
+    echo "### generate_index_html called with arg1 = $1"
 
 cat > $1/$INDEX_FILENAME << EOF
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -977,7 +979,7 @@ EOF
 
     if [ "$1" != "$TOPLEVELDIR" ]
     then
-      printf "\fsub directory \'$1\'\n"
+      printf "sub directory \'$1\'\n"
 cat >> $1/$INDEX_FILENAME << EOF
         <tr class="parent">
           <td valign="top">
@@ -1066,7 +1068,8 @@ EOF
   # Concat latest* files + !latest files.
   FILELIST="$FILELIST1 $FILELIST2"
   
-  echo "\n### Processing files from ${1}..."
+  echo ""
+  echo "### Processing files from ${1}..."
   for FILE in $FILELIST
   do
     # Remove leading "./" from $FILE, if exists
