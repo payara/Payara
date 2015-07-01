@@ -37,16 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.server.logging.commands;
 
+import com.sun.common.util.logging.LoggingConfigImpl;
+import com.sun.enterprise.config.serverbeans.Clusters;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.server.logging.GFFileHandler;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.inject.Inject;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -61,17 +67,6 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-
-import com.sun.common.util.logging.LoggingConfigImpl;
-import com.sun.enterprise.config.serverbeans.Cluster;
-import com.sun.enterprise.config.serverbeans.Clusters;
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Servers;
-import com.sun.enterprise.server.logging.GFFileHandler;
-import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 
 
 /**
@@ -114,6 +109,9 @@ public class SetLogAttributes implements AdminCommand {
 
     @Param(optional = true)
     String target = SystemPropertyConstants.DAS_SERVER_NAME;
+    
+    @Param(optional = true, defaultValue = "true")
+    boolean validate;
 
     @Inject
     LoggingConfigImpl loggingConfig;
@@ -165,28 +163,36 @@ public class SetLogAttributes implements AdminCommand {
                 final String att_name = (String) key;
                 final String att_value = (String) properties.get(att_name);
                 // that is is a valid level
-                boolean vlAttribute = false;
-                for (String attrName : validAttributes) {
-                    if (attrName.equals(att_name)) {
-                        try {
-                            validateAttributeValue(att_name, att_value);
-                        } catch (Exception e) {
-                            break;
+                if (validate) {
+                    boolean vlAttribute = false;
+                    for (String attrName : validAttributes) {
+                        if (attrName.equals(att_name)) {
+                            try {
+                                validateAttributeValue(att_name, att_value);
+                            } catch (Exception e) {
+                                break;
+                            }
+                            m.put(att_name, att_value);
+                            vlAttribute = true;
+                            sbfSuccessMsg.append(localStrings.getLocalString(
+                                    "set.log.attribute.properties", 
+                                    "{0} logging attribute set with value {1}.", 
+                                    att_name, att_value)).append(LINE_SEP);
                         }
-                        m.put(att_name, att_value);
-                        vlAttribute = true;
-                        sbfSuccessMsg.append(localStrings.getLocalString(
-                                "set.log.attribute.properties", 
-                                "{0} logging attribute set with value {1}.", 
-                                att_name, att_value)).append(LINE_SEP);
                     }
-                }
 
-                if (!vlAttribute) {
-                    report.setMessage(localStrings.getLocalString("set.log.attribute.invalid",
-                            "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
-                    invalidAttribute = true;
-                    break;
+                    if (!vlAttribute) {
+                        report.setMessage(localStrings.getLocalString("set.log.attribute.invalid",
+                                "Invalid logging attribute name {0} or value {1}.", att_name, att_value));
+                        invalidAttribute = true;
+                        break;
+                    }
+                } else {
+                    m.put(att_name, att_value);
+                    sbfSuccessMsg.append(localStrings.getLocalString(
+                            "set.log.attribute.properties",
+                            "{0} logging attribute set with value {1}.",
+                            att_name, att_value)).append(LINE_SEP);
                 }
             }
 
