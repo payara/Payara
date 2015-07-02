@@ -607,6 +607,17 @@ create_changes_info(){
     if [ "${PREVIOUS_SVN_REV}" != "${SVN_REVISION}" ] ; then
         PREVIOUS_SVN_REV=$((PREVIOUS_SVN_REV+1))
         svn log -r ${PREVIOUS_SVN_REV}:${SVN_REVISION} ${GF_WORKSPACE_URL_SSH}/trunk/main > ${WORKSPACE}/changes.txt
+	# Use nawk on Solaris
+    	if [ `uname | grep -i sunos | wc -l` -eq 1 ]
+    	then
+            AWK="nawk"
+    	else
+            AWK="awk"
+     	fi
+
+        # Remove all changes marked with 'setting clean revision'.
+        awk '{a[i++]=$0}END{for(j=i-1;j>=0;j--)print a[j];}' ${WORKSPACE}/changes.txt | ${AWK} '/setting clean revision/ {c=5} c && c-- {next}1' | awk '{a[i++]=$0}END{for(j=i-1;j>=0;j--)print a[j];}' | tee ${WORKSPACE}/changes.txt
+        
         printf "\n%s\n\n" "==== CHANGELOG ===="
         cat ${WORKSPACE}/changes.txt
     fi
