@@ -22,6 +22,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -69,6 +70,9 @@ public class PayaraMicro {
     private GlassFish gf;
     private PayaraMicroRuntime runtime;
     private boolean noCluster = false;
+    private boolean autoBindHttp = false;
+    private boolean autoBindSsl = false;
+    private int autoBindRange = 5;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -448,6 +452,66 @@ public class PayaraMicro {
         this.rootDir = rootDir;
         return this;
     }
+    
+    /**
+     * Indicates whether autobinding of the HTTP port is enabled
+     * @return
+     */
+    public boolean getHttpAutoBind()
+    {
+        return autoBindHttp;
+    }
+
+    /**
+     * Enables or disables autobinding of the HTTP port
+     * @param httpAutoBind The true or false value to enable or disable HTTP autobinding
+     * @return 
+     */
+    public PayaraMicro setHttpAutoBind(boolean httpAutoBind)
+    {
+        this.autoBindHttp = httpAutoBind;
+        return this;
+    }
+    
+    /**
+     * Indicates whether autobinding of the HTTPS port is enabled
+     * @return 
+     */
+    public boolean getSslAutoBind()
+    {
+        return autoBindSsl;
+    }
+    
+    /**
+     * Enables or disables autobinding of the HTTPS port
+     * @param sslAutoBind The true or false value to enable or disable HTTPS autobinding
+     * @return
+     */
+    public PayaraMicro setSslAutoBind(boolean sslAutoBind)
+    {
+        this.autoBindSsl = sslAutoBind;
+        return this;
+    }
+    
+    /**
+     * Gets the maximum number of ports to check if free for autobinding purposes
+     * @return The number of ports to check if free
+     */
+    public int getAutoBindRange()
+    {
+        return autoBindRange;
+    }
+    
+    /**
+     * Sets the maximum number of ports to check if free for autobinding purposes
+     * @param autoBindRange The maximum number of ports to increment the port value by
+     * @return
+     */
+    public PayaraMicro setAutoBindRange(int autoBindRange)
+    {
+        this.autoBindRange = autoBindRange;
+        return this;
+    }   
 
     /**
      * Boots the Payara Micro Server. All parameters are checked at this point
@@ -483,17 +547,106 @@ public class PayaraMicro {
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
         GlassFishRuntime gfruntime;
+        PortBinder portBinder = new PortBinder();
+        
         try {
             gfruntime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
 
-            if (httpPort != Integer.MIN_VALUE) {
-                gfproperties.setPort("http-listener", httpPort);
+            if (httpPort != Integer.MIN_VALUE) 
+            {   
+                // If httpAutoBind is set to true
+                if (autoBindHttp == true)
+                {
+                    // Search for an available port and set it as the http port
+                    try
+                    {
+                        gfproperties.setPort("http-listener",
+                                portBinder.findAvailablePort(httpPort, 
+                                        autoBindRange));
+                    }
+
+                    // If no available port is found, log an exception and throw a GlassFish Exception to fail the bootstrap
+                    catch (BindException ex)
+                    {
+                        Logger.getLogger(PayaraMicro.class.getName())
+                                .log(Level.SEVERE, 
+                                        "No available port found in range: "
+                                                + httpPort + " - " 
+                                                + (httpPort + autoBindRange), ex);
+
+                        throw new GlassFishException("Could not bind HTTP port");
+                    }
+                }
+                
+                // If httpAutoBind is not set to true...
+                else
+                {
+                    // Set the port as normal
+                    gfproperties.setPort("http-listener", httpPort);
+                }
+                
+            }
+            
+            // If the port has not been set
+            else
+            {
+                // If httpAutoBind is set to true
+                if (autoBindHttp == true)
+                {
+                    // Search for an available port and set it as the http port
+                    try
+                    {
+                        gfproperties.setPort("http-listener",
+                                portBinder.findAvailablePort(8080, 
+                                        autoBindRange));
+                    }
+
+                    // If no available port is found, log an exception and throw a GlassFish Exception to fail the bootstrap
+                    catch (BindException ex)
+                    {
+                        Logger.getLogger(PayaraMicro.class.getName())
+                                .log(Level.SEVERE, 
+                                        "No available port found in range: "
+                                                + 8080 + " - " 
+                                                + (8080 + autoBindRange), ex);
+
+                        throw new GlassFishException("Could not bind HTTP port");
+                    }
+                }
             }
 
-            if (sslPort != Integer.MIN_VALUE) {
-                gfproperties.setPort("https-listener", sslPort);
+            if (sslPort != Integer.MIN_VALUE) 
+            {
+                // If sslAutoBind is set to true
+                if (autoBindSsl == true)
+                {     
+                    // Search for an available port and set it as the ssl port
+                    try
+                    {
+                        gfproperties.setPort("https-listener",
+                                portBinder.findAvailablePort(sslPort, 
+                                        autoBindRange));
+                    }
 
+                    catch (BindException ex)
+                    {
+                        Logger.getLogger(PayaraMicro.class.getName())
+                                .log(Level.SEVERE, 
+                                        "No available port found in range: "
+                                                + sslPort + " - " 
+                                                + (sslPort + autoBindRange), ex);
+
+                        throw new GlassFishException("Could not bind SSL port");
+                    }
+                }
+                
+                // If sslAutoBind is not set to true...
+                else
+                {
+                    // Set the port as normal
+                    gfproperties.setPort("https-listener", sslPort);
+                }
             }
 
             if (alternateDomainXML != null) {
@@ -715,6 +868,26 @@ public class PayaraMicro {
                         throw new IllegalArgumentException();
                     }   i++;                    
                     break;
+                case "--autoBindHttp":
+                    autoBindHttp = true;
+                    break;
+                case "--autoBindSsl":
+                    autoBindSsl = true;
+                    break;
+                case "--autoBindRange":
+                    String autoBindRangeString = args[i + 1];
+                    try {
+                        autoBindRange = Integer.parseInt(autoBindRangeString);
+                        if (autoBindRange < 1) {
+                            throw new NumberFormatException("Not a valid auto bind range");
+                        }
+                    } catch (NumberFormatException nfe) {
+                        logger.log(Level.SEVERE, 
+                                "{0} is not a valid auto bind range number", 
+                                autoBindRangeString);
+                        throw new IllegalArgumentException();
+                    }   i++;
+                    break;
                 case "--help":
                     System.err.println("Usage: --noCluster  Disables clustering\n"
                             + "--port sets the http port\n"
@@ -730,6 +903,9 @@ public class PayaraMicro {
                             + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
                             + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
                             + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration"
+                            + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
+                            + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
+                            + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
             }
