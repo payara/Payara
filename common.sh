@@ -617,6 +617,12 @@ create_changes_info(){
 
         # Remove all changes marked with 'setting clean revision'.
         awk '{a[i++]=$0}END{for(j=i-1;j>=0;j--)print a[j];}' ${WORKSPACE}/changes.txt | ${AWK} '/setting clean revision/ {c=5} c && c-- {next}1' | awk '{a[i++]=$0}END{for(j=i-1;j>=0;j--)print a[j];}' | tee ${WORKSPACE}/changes.txt
+
+	# Clear out change log if empty (contains only a single line && starts with ---)
+        if [ `cat ${WORKSPACE}/changes.txt | wc -l` -eq 1 ] && [[ `cat ${WORKSPACE}/changes.txt` == -----* ]]
+	then
+            echo "" > ${WORKSPACE}/changes.txt
+	fi
         
         printf "\n%s\n\n" "==== CHANGELOG ===="
         cat ${WORKSPACE}/changes.txt
