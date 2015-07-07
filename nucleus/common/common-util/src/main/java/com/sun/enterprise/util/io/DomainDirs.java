@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.util.io;
 
@@ -46,7 +47,7 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
-import java.util.*;
+import java.util.Map;
 
 /**
  * A class for keeping track of the directories that a domain lives in and under.
@@ -174,20 +175,29 @@ public final class DomainDirs {
 
         if (files == null || files.length == 0)
             throw new IOException(strings.get("Domain.noDomainDirs", parent));
+        
+        File result = files[0];
 
         if(files.length > 1) {
+            // ok we have more than 1 domain in the domains dir and no domain is specified
+            // so first see if one is called domain1
+            boolean foundDomain1 = false;
             StringBuilder names = new StringBuilder();
-            
             for(int i = 0 ; i < files.length; i++) {
+                if (files[i].getName().equals("domain1")) {
+                    foundDomain1 = true;
+                    result = files[i];
+                }
                 if(i > 0)
                     names.append(", ");
                 names.append(files[i].getName());
             }
             
-            throw new IOException(strings.get("Domain.tooManyDomainDirs", parent, names.toString()));
+            if (!foundDomain1)
+                throw new IOException(strings.get("Domain.tooManyDomainDirs", parent, names.toString()));
         }
 
-        return files[0];
+        return result;
     }
 
     private final ServerDirs dirs;

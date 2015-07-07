@@ -181,7 +181,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
-        <grizzly.version>2.3.19</grizzly.version>
+        <grizzly.version>2.3.21</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
         <hk2.version>2.4.0-b12</hk2.version>
         <hk2.plugin.version>2.4.0-b12</hk2.plugin.version>
@@ -192,8 +192,8 @@
         <gmbal.version>4.0.0-b001</gmbal.version>
         <woodstox.version>4.1.2</woodstox.version>
         <antlr.version>2.7.6</antlr.version>
-        <jersey.version>2.17</jersey.version>
-        <jackson.version>2.5.0</jackson.version>
+        <jersey.version>2.19</jersey.version>
+        <jackson.version>2.5.1</jackson.version>
         <jettison.version>1.3.7</jettison.version>
         <jax-rs-api.spec.version>2.0</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.0.1</jax-rs-api.impl.version>
@@ -214,7 +214,7 @@
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
         <hazelcast.version>3.5</hazelcast.version>
-        <mail.version>1.5.3</mail.version>
+        <mail.version>1.5.4</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>

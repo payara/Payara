@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -38,62 +38,51 @@
  * holder.
  */
 
-package com.sun.ejb.portable;
+package org.glassfish.grizzly.config.dom;
 
-import java.io.*;
-import java.rmi.RemoteException;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.types.PropertyBag;
 
-import javax.ejb.*;
-import javax.ejb.spi.HandleDelegate;
-import javax.naming.NamingException;
+@Configured
+public interface Http2 extends ConfigBeanProxy, PropertyBag {
 
+    final int MAX_CONCURRENT_STREAMS = 100;
+    final int INITIAL_WINDOW_SIZE_IN_BYTES = 64 * 1024 - 1;
+    int MAX_FRAME_PAYLOAD_SIZE_IN_BYTES = (1 << 24) - 1;
+    final boolean ENABLED = true;
+    
+    /**
+     * Enables HTTP2 support.
+     */
+    @Attribute(defaultValue = "" + ENABLED, dataType = Boolean.class)
+    boolean getEnabled();
 
-/**
- * A portable implementation of Handle using the 
- * HandleDelegate SPI.
- * This class can potentially be instantiated in another vendor's container
- * so it must not refer to any non-portable RI-specific classes.
- *
- * @author Kenneth Saks
- */
+    void setEnabled(boolean enabled);
+    
+    /**
+     * Configures the number of concurrent streams allowed per HTTP2 connection.
+     * The default is 100.
+     */
+    @Attribute(defaultValue = "" + MAX_CONCURRENT_STREAMS, dataType = Integer.class)
+    int getMaxConcurrentStreams();
 
-public final class HandleImpl implements Handle, Serializable
-{
-    private EJBObject ejbObject;
+    void setMaxConcurrentStreams(int maxConcurrentStreams);
 
-    // This constructor will only be used by the EJB container in the RI.
-    public HandleImpl(EJBObject ejbObject)
-    {
-	this.ejbObject = ejbObject;
-    }
+    /**
+     * Configures the initial window size in bytes.  The default is 64K - 1.
+     */
+    @Attribute(defaultValue = "" + INITIAL_WINDOW_SIZE_IN_BYTES, dataType = Integer.class)
+    int getInitialWindowSizeInBytes();
 
-    // This is the public API from javax.ejb.Handle
-    public EJBObject getEJBObject() throws RemoteException
-    {
-	return ejbObject;
-    }
+    void setInitialWindowSizeInBytes(int initialWindowSizeInBytes);
 
-    private void writeObject(ObjectOutputStream ostream)
-	throws IOException
-    {
-	HandleDelegate handleDelegate;
-	try {	    
-	    handleDelegate = HandleDelegateUtil.getHandleDelegate();           
-        } catch ( NamingException ne ) {                            
-            throw new EJBException("Unable to lookup HandleDelegate", ne);
-        }      
-        handleDelegate.writeEJBObject(ejbObject, ostream);
-    }
+    /**
+     * Configures the maximum size of the HTTP2 frame payload to be accepted.  The default is 2^24 - 1.
+     */
+    @Attribute(defaultValue = "" + MAX_FRAME_PAYLOAD_SIZE_IN_BYTES, dataType = Integer.class)
+    int getMaxFramePayloadSizeInBytes();
 
-    private void readObject(ObjectInputStream istream)
-	throws IOException, ClassNotFoundException
-    {
-	HandleDelegate handleDelegate;
-	try {	   
-	    handleDelegate = HandleDelegateUtil.getHandleDelegate();           
-	} catch ( NamingException ne ) {
-            throw new EJBException("Unable to lookup HandleDelegate", ne);
-        }
-        ejbObject = handleDelegate.readEJBObject(istream);
-    }
+    void setMaxFramePayloadSizeInBytes(int maxFramePayloadSizeInBytes);
 }
