@@ -87,7 +87,7 @@
         <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
     </sun:property>
     <sun:property id="configFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configFile}"  helpText="$resource{i18nhc.hazelcast.configuration.configFileHelp}">
-        <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
+        <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
     </sun:property>
     <sun:property id="startPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.startPort}"  helpText="$resource{i18nhc.hazelcast.configuration.startPortHelp}">
         <sun:textField id="startPort" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
