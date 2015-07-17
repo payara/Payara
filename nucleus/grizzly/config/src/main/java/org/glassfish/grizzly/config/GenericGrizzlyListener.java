@@ -685,8 +685,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
             boolean secure) {
         transactionTimeoutMillis = Long.parseLong(http.getRequestTimeoutSeconds()) * 1000;
         filterChainBuilder.add(new IdleTimeoutFilter(obtainDelayedExecutor(),
-                Integer.parseInt(http.getTimeoutSeconds()),
-            TimeUnit.SECONDS));
+               getTimeoutSeconds(http), TimeUnit.SECONDS));
         final org.glassfish.grizzly.http.HttpServerFilter httpServerFilter =
             createHttpServerCodecFilter(http);
         final Set<ContentEncoding> contentEncodings =
@@ -723,6 +722,12 @@ public class GenericGrizzlyListener implements GrizzlyListener {
         configureWebSocketSupport(habitat, networkListener, http, filterChainBuilder);
 
         configureAjpSupport(habitat, networkListener, http, filterChainBuilder);
+    }
+
+   private int getTimeoutSeconds(final Http http) {
+        // fix for Glassfish-21009
+        int timeoutSeconds = Integer.parseInt(http.getTimeoutSeconds());
+        return timeoutSeconds == 0 ? -1 : timeoutSeconds;
     }
 
     protected void configureSpdySupport(final ServiceLocator locator,
