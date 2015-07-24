@@ -1068,7 +1068,7 @@ EOF
   then
     FINDFILES=`gfind $1 -maxdepth 1 -type f -name latest\*`
   else
-    FINDFILES=`
+    FINDFILES=`find ${1%/} -maxdepth 1 -type f -name latest\*`
   fi
   if [ "$FINDFILES" != "" ]; then
     FILELIST1=`echo $FINDFILES | xargs ls -t`
