@@ -1058,6 +1058,8 @@ EOF
   fi
   if [ "$FINDFILES" != "" ]; then
     FILELIST1=`echo $FINDFILES | xargs ls -t`
+  else
+    FILELIST1=""
   fi
 
   # Now get all files that do not start with latest*.
@@ -1071,6 +1073,8 @@ EOF
   fi
   if [ "$FINDFILES" != "" -o "$FINDLINKS" != "" ]; then
     FILELIST2=`echo $FINDFILES $FINDLINKS | xargs ls -t`
+  else
+    FILELIST2=""
   fi
 
   # Concat latest* files + !latest files.
