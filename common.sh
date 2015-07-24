@@ -1035,7 +1035,9 @@ EOF
       printf "\nFound subdir: $SUB_DIR\n"
       printf "Subdir basename: $SUB_DIR_BASENAME\n"
 
-      LAST_MODIFIED=`ls -ld $SUB_DIR | awk '{ print $6, $7, $8 }'`
+      # Rather than showing the date/time for the dir, we will show the most recent time of the
+      # files within the dir so that users can see files have been updated in the directory.
+      LAST_MODIFIED=`find $SUB_DIR -type f | grep -v index.html | xargs ls -lt 2> /dev/null | awk '{ print $6, $7, $8}' | head -1`
 
       # So that we don't have "//" in links - check if the cut is ""
       if [ "`echo $1 | cut -c 3-`" = "" ]
