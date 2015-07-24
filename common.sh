@@ -1017,8 +1017,7 @@ EOF
   # No maxdepth on SunOS.
   if [ "$OS" = "SunOS" ]
   then
-    FIND_CMD="find ${1} ! -name . -prune -type d"
-
+    FIND_CMD="gfind ${1} -maxdepth 1 -type d"
   else
     FIND_CMD="find ${1%/} -maxdepth 1 -type d"
   fi
@@ -1067,20 +1066,26 @@ EOF
   # Generate file list named latest* first.
   if [ "$OS" = "SunOS" ]
   then
-    FINDFILES=`find $1 -name . -o -type d -prune -o -name 'latest*' -print`
+    FINDFILES=`gfind $1 -maxdepth 1 -type f -name latest\*`
   else
-    FINDFILES=`find ${1%/} -maxdepth 1 -type f -name latest\*`
+    FINDFILES=`
   fi
-  FILELIST1=`echo $FINDFILES | xargs ls -t`
+  if [ "$FINDFILES" != "" ]; then
+    FILELIST1=`echo $FINDFILES | xargs ls -t`
+  fi
 
   # Now get all files that do not start with latest*.
   if [ "$OS" = "SunOS" ]
   then
-    FINDFILES=`find ${1} -name . -o -type d -prune -o ! -name 'latest*' -print`
+    FINDFILES=`gfind $1 -maxdepth 1 -type f -not -name latest\*`
+    FINDLINKS=`gfind $1 -maxdepth 1 -type l -not -name latest\*`    
   else
     FINDFILES=`find ${1%/} -maxdepth 1 -type f -not -name latest\*`
+    FINDLINKS=`find ${1%/} -maxdepth 1 -type l -not -name latest\*`
   fi
-  FILELIST2=`echo $FINDFILES | xargs ls -t`
+  if [ "$FINDFILES" != "" -o "$FINDLINKS" != "" ]; then
+    FILELIST2=`echo $FINDFILES $FINDLINKS | xargs ls -t`
+  fi
 
   # Concat latest* files + !latest files.
   FILELIST="$FILELIST1 $FILELIST2"
