@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.admin.cli.embeddable;
 
@@ -159,10 +160,10 @@ public class DeployerImpl implements Deployer {
         CommandExecutorImpl executer = habitat.getService(CommandExecutorImpl.class);
         try {
             ActionReport actionReport = executer.executeCommand("undeploy", newParams);
-            actionReport.writeReport(System.out);
+            if (actionReport.hasSuccesses()) {
+                logger.log(Level.INFO, "{0} was successfully undeployed", appName);
+            }
         } catch (CommandException e) {
-            throw new GlassFishException(e);
-        } catch (IOException e) {
             throw new GlassFishException(e);
         }
     }
