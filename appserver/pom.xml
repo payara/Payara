@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.153-SNAPSHOT</version>
+        <version>4.1.153</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-parent</artifactId>
@@ -57,7 +57,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-      <tag>payara-server-4.1.153-SNAPSHOT</tag>
+      <tag>payara-server-4.1.153</tag>
   </scm>
     
     <properties>
@@ -82,7 +82,7 @@
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
         <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
         
-        <product.name>Payara Server Open Source Edition</product.name>
+        <product.name>Payara Server</product.name>
         <brief_product_name>Payara Server</brief_product_name>
         <abbrev_product_name>Payara</abbrev_product_name>
         <admin_client_command_name>asadmin</admin_client_command_name>
@@ -93,7 +93,7 @@
         <major_version>4</major_version>
         <minor_version>1</minor_version>
         <update_version />
-        <payara_version>153-SNAPSHOT</payara_version>
+        <payara_version>153</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
         
