@@ -46,13 +46,17 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.153-SNAPSHOT</version>
+        <version>4.1.153</version>
     </parent>
     <groupId>org.glassfish.main.packager</groupId>
     <artifactId>hazelcast-l10n</artifactId>
     <name>Hazelcast Localization Package</name>
     <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the Hazelcast localization package</description>
+    
+    <properties>
+        <temp.dir>${project.build.directory}/dependency</temp.dir>       
+    </properties>    
 
     <build>
         <plugins>

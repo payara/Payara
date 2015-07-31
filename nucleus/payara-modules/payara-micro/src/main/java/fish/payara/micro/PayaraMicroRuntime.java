@@ -211,10 +211,29 @@ public class PayaraMicroRuntime  {
         }
         return result;
     }
+    
+        /**
+     * Deploy from an InputStream which can load the Java EE archive
+     * @param name The name of the deployment
+     * @param contextRoot The context root to deploy the application to
+     * @param is InputStream to load the war through
+     * @return true if deployment was successful
+     */
+    public boolean deploy(String name, String contextRoot, InputStream is) {
+        checkState();
+        boolean result = false;
+        try{
+            runtime.getDeployer().deploy(is,"--availabilityenabled=true","--name",name, "--contextroot", contextRoot);
+            result = true;
+        }catch (GlassFishException gfe) {
+                logger.log(Level.WARNING, "Failed to deploy archive ", gfe);            
+        }
+        return result;
+    }
        
     /**
      * Deploy from an InputStream which can load the Java EE archive
-     * @param name The name of the deployment
+     * @param name The name of the deployment and the context root of the deployment if a war file
      * @param is InputStream to load the war through
      * @return true if deployment was successful
      */
@@ -222,7 +241,7 @@ public class PayaraMicroRuntime  {
         checkState();
         boolean result = false;
         try{
-            runtime.getDeployer().deploy(is,"--availabilityenabled=true","--name",name);
+            runtime.getDeployer().deploy(is,"--availabilityenabled=true","--name",name, "--contextroot", name);
             result = true;
         }catch (GlassFishException gfe) {
                 logger.log(Level.WARNING, "Failed to deploy archive ", gfe);            
@@ -249,6 +268,18 @@ public class PayaraMicroRuntime  {
             logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
         }
         return result;
+    }
+    
+    /**
+     * Undeploys the named application 
+     * @param name Name of the application to undeploy
+     */
+    public void undeploy(String name) {
+        try {
+            runtime.getDeployer().undeploy(name);
+        } catch (GlassFishException ex) {
+            logger.log(Level.WARNING, "Failed to undeploy application {0}", name);
+        }
     }
     
     public void removeClusterListener(PayaraClusterListener listener) {

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.concurrent.runtime;
 
@@ -206,12 +207,21 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
     }
 
     private boolean isApplicationEnabled(String appId) {
+        boolean result = false;
         if (appId != null) {
             Application app = applications.getApplication(appId);
-            if (app != null)
-                return deployment.isAppEnabled(app);
+            if (app != null) {
+                result = deployment.isAppEnabled(app);
+            } else { 
+                // if app is null then it is likely that appId is still deploying
+                // and its enabled status has not been written to the domain.xml yet
+                // this can happen for example with a Startup EJB submitting something
+                // it its startup method. Reference Payara GitHub issue 204              
+                logger.info("Job submitted for " + appId + " likely during deployment. Continuing...");
+                result = true;
+            }
         }
-        return false;
+        return result;
     }
 
     private ComponentInvocation createComponentInvocation(ComponentInvocation currInv) {
