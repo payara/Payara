@@ -374,6 +374,7 @@ public class Request
             return f;
         }
     };
+
     protected SimpleDateFormat formats[];
     // END OF SJSAS 6231069    
     /**
@@ -589,6 +590,11 @@ public class Request
     private boolean isDefaultContext = false;
     // END GlassFish 1024
     private String requestURI = null;
+    
+    
+    // FIX GLASSFISH-21007
+    private boolean handlerInitialised = false;
+    
     /**
      * Coyote request.
      */
@@ -3169,6 +3175,14 @@ public class Request
         httpUpgradeHandler = handler;
         coyoteRequest.getResponse().suspend();
         return handler;
+    }
+    
+    public void initialiseHttpUpgradeHandler(WebConnection wc) {
+        // ensure the handler is only initialised once
+        if (!handlerInitialised && httpUpgradeHandler != null) {
+            httpUpgradeHandler.init(wc);
+            handlerInitialised = true;
+        }
     }
 
     public WebConnection getWebConnection() {
