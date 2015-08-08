@@ -630,6 +630,10 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             logger.log(Level.FINE," Attempting to create upload directory {0} was reported as failed; attempting to continue",
                     new Object[] {finalUploadDir.getAbsolutePath()});
         }
+        if ( ! finalAltDDDir.mkdirs()) {
+            logger.log(Level.FINE," Attempting to create altdd directory {0} was reported as failed; attempting to continue",
+                    new Object[] {finalAltDDDir.getAbsolutePath()});
+        }
         safeCopyOfApp = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, originalPathValue, logger, env);
         safeCopyOfDeploymentPlan = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, deploymentplan, logger, env);
         safeCopyOfAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalAltDDDir, altdd, logger, env);
