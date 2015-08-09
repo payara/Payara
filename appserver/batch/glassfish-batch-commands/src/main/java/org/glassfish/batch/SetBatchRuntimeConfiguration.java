@@ -37,25 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2015] [C2B2 Consulting Limited] 
 package org.glassfish.batch;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 
-import fish.payara.jbatch.persistence.rdbms.DB2PersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.JBatchJDBCPersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.MySqlPersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.OraclePersistenceManager;
-import fish.payara.jbatch.persistence.rdbms.PostgresPersistenceManager;
 
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.batch.spi.impl.BatchRuntimeConfiguration;
-import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 import org.glassfish.batch.spi.impl.GlassFishBatchValidationException;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -154,7 +147,7 @@ public class SetBatchRuntimeConfiguration
                         boolean encounteredError = false;
                         int tableprefixlength=0;
                         int tablesuffixlength=0;
-                        if (dataSourceLookupName != null) {
+                        if (dataSourceLookupName != null ) {
                             try {
                                 validateDataSourceLookupName(context, target, dataSourceLookupName);
                                 batchRuntimeConfigurationProxy.setDataSourceLookupName(dataSourceLookupName);
@@ -195,7 +188,7 @@ public class SetBatchRuntimeConfiguration
                             batchRuntimeConfigurationProxy.setTableSuffix(tableSuffix);
                             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         }
-                        if(getDataSourceType(dataSourceLookupName)){
+                        if(targetUtil.isThisDAS() && isOracle(dataSourceLookupName)){
                         	if(tablesuffixlength + tableprefixlength + MAX_TABLE_LENGTH > 30 ){
                         		actionReport.setMessage("The table name cannot be greater than 30 characters in Oracle, please amend the table prefix or suffix size "); 
                         		actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -275,39 +268,38 @@ public class SetBatchRuntimeConfiguration
         }
     }
     
-    private boolean getDataSourceType(String datasource){
+    private boolean isOracle(String datasource){
     	boolean result=false;
+        // this only works when targeting the DAS otherwise it is not run locally
     	try{
-    		InitialContext ctx = new InitialContext();
-    		Object object = ctx.lookup(datasource);
-    		
-        
+            InitialContext ctx = new InitialContext();
+            Object object = ctx.lookup(datasource);
 
-    		if (object instanceof DataSource) {
-    			Connection conn = null;
-    			try {
-    				DataSource ds = DataSource.class.cast(object);
-    				conn = ds.getConnection();
-    				String database = conn.getMetaData().getDatabaseProductName();
-                
-    					if (database.contains("Oracle")) {
-    						result = true;
-    					} 
-    			} catch (SQLException ex) {
-    					throw new GlassFishBatchValidationException("Exception during validation: ", ex);
-    			}finally {
-    				if (conn != null) {
-    						try {
-    							conn.close();
-    						} catch (SQLException ex) {
-    							throw new GlassFishBatchValidationException("Failed to close connection: ", ex);
-    						}
-    				}
-    			}
-    		}
-        }catch (NamingException ex) {
-       	 	throw new GlassFishBatchValidationException("Exception during validation: ", ex);
-        } 
+            if (object instanceof DataSource) {
+                Connection conn = null;
+                try {
+                    DataSource ds = DataSource.class.cast(object);
+                    conn = ds.getConnection();
+                    String database = conn.getMetaData().getDatabaseProductName();
+
+                    if (database.contains("Oracle")) {
+                        result = true;
+                    }
+                } catch (SQLException ex) {
+                    // ignore this
+                } finally {
+                    if (conn != null) {
+                        try {
+                            conn.close();
+                        } catch (SQLException ex) {
+                            // ignore this
+                        }
+                    }
+                }
+            }
+        } catch (NamingException ex) {
+            // ignore this naming exception as this has already been checked
+        }
         
         return result;
        
