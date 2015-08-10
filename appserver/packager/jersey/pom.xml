@@ -149,10 +149,6 @@
             <artifactId>jersey-cdi1x-transaction</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.ext.cdi</groupId>
-            <artifactId>jersey-cdi1x-validation</artifactId>
-        </dependency>
-         <dependency>
             <groupId>org.glassfish.jersey.containers.glassfish</groupId>
             <artifactId>jersey-gf-ejb</artifactId>
         </dependency>
