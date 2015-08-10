@@ -40,6 +40,12 @@
 
 package org.glassfish.config.support;
 
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.SecureAdmin;
+import com.sun.enterprise.config.serverbeans.SecureAdmin.Util;
+import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
+import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -60,6 +66,7 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import javax.inject.Inject;
 import javax.security.auth.Subject;
 
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
@@ -85,6 +92,13 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
     Create create;
     
     private ConfigBeanProxy parentBean;
+    
+    @Inject
+    Config config;
+    
+    @Inject
+    Domain domain;
+    
     
     @Override
     public void postConstruct() {
@@ -220,6 +234,15 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                         // invoke the decorator
                         decorator.decorate(context, childBean);
                     }
+                    
+                   
+                    SecureAdmin admin = domain.getSecureAdmin();
+          
+                    List<SecureAdminPrincipal> list = Util.secureAdminPrincipals(admin, habitat);
+                    
+                    // to do next: search for secure admin principal in list of secure-admin principals and if found
+                    // do not write to domain.xml etc
+                    
 
                     return childBean;
                 }
