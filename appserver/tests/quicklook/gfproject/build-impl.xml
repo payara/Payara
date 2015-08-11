@@ -230,15 +230,15 @@
 	    <include name="**/persistence.xml"/>
 	    <include name="**/*.properties"/>
         </classes>
-        <!--<zipfileset dir="src/graphics/images/gifs"
-        prefix="images"/>-->
+       <!--<zipfileset dir="src/graphics/images/gifs"
+        prefix="images"/> -->
         <webinf dir="metadata">                  
             <include name="**/*.xml"/>                  
             <exclude name="**/persistence.xml"/>
         </webinf>        
     </war>
-    <!-- antcall target="update-war-struts"/ -->
-    <!-- copy file="${dist.dir}/${app.file.ext}" tofile="./${app.file.ext}"/ -->
+     <!--antcall target="update-war-struts"/ -->
+     <!--copy file="${dist.dir}/${app.file.ext}" tofile="./${app.file.ext}"/-->
 </target>
 
 <target name="update-war-struts" if="add.struts.jar">
