@@ -57,7 +57,7 @@
         <antcall target="build-cluster"/>
         <antcall target="runtest">
             <param name="testng.xml" value="testng/testng_cluster.xml"/>
-        </antcall>
+        </antcall> 
         <antcall target="stop-server"/>
         <antcall target="testng-summary"/>
         <record name="${basedir}/allrun.output" action="stop"/>
@@ -74,7 +74,7 @@
 
     <target name="build-cluster">
         <ant dir="cluster/clustersetup" target="build"/>
-        <ant dir="cluster/helloworld" target="build"/>
+        <!--<ant dir="cluster/helloworld" target="build"/>-->
         <ant dir="cluster/clusterteardown" target="build"/>
     </target>
 
@@ -104,7 +104,7 @@
         <property name="env.security_manager" value="ON"/>
 
         <antcall target="start_server_with_security_manager_enabled" />
-
+	
 	<antcall target="build-deploy"/>
         <antcall target="runtest">
             <param name="testng.xml" value="testng/testng_wd.xml"/> </antcall>
@@ -222,7 +222,7 @@
         <antcall target="runtest">
         <param name="testng.xml" value="testng/testng_debug.xml"/> </antcall>
         <antcall target="undeploy"/>
-        <antcall target="stop-derby"/>
+       <!-- <antcall target="stop-derby"/> -->
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
         <record name="${basedir}/allrun.output" action="stop"/>
@@ -239,17 +239,17 @@
         <ant dir="osgitest/basicosgi" target="build"/>
         <ant dir="web/helloworld" target="build-deploy"/>
         <ant dir="web/jsfastrologer" target="build-deploy"/>
-        <ant dir="web/jsfinjection" target="build-deploy"/>
+        <!--<ant dir="web/jsfinjection" target="build-deploy"/> -->
         <ant dir="jdbc/jdbcusertx" target="build-deploy"/>
         <ant dir="persistence/jpainjectemf" target="build-deploy"/>
         <ant dir="persistence/jpavalidation" target="build-deploy"/>
         <ant dir="security/helloworld" target="build-deploy"/>
-        <ant dir="security/basicauth" target="build-deploy"/>
+        <!--<ant dir="security/basicauth" target="build-deploy"/>-->
         <ant dir="ejb/slsbnicmt" target="build-deploy"/>
         <ant dir="ejb/sfulnoi" target="build-deploy"/>
         <ant dir="bean-validator/simple-bv-servlet" target="build-deploy"/>
-        <ant dir="weld/numberguess" target="build-deploy"/>
-        <ant dir="weld/osgiweld" target="build-deploy"/>
+        <!--<ant dir="weld/numberguess" target="build-deploy"/>-->
+        <!--<ant dir="weld/osgiweld" target="build-deploy"/>-->
         <ant dir="weld/extensions" target="build-deploy"/>
         <record name="${basedir}/build.output" action="stop"/>
     </target>
@@ -265,8 +265,8 @@
              for the test to pass. We are waiting for RE to release a newer version.
         <ant dir="web/jruby" target="build-deploy"/>
         -->
-        <ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>
-        <ant dir="wsit/jsr109tester" target="build-deploy"/>
+        <!--<ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>-->
+        <!--<ant dir="wsit/jsr109tester" target="build-deploy"/> -->
         <ant dir="wsit/jaxbosgi" target="build-deploy"/>
         <ant dir="security/appperms" target="build-deploy"/>
     </target>
@@ -275,17 +275,17 @@
         <record name="${basedir}/undeploy.output" action="start"/>
         <ant dir="web/helloworld" target="undeploy"/>
         <ant dir="web/jsfastrologer" target="undeploy"/>
-        <ant dir="web/jsfinjection" target="undeploy"/>
+        <!--<ant dir="web/jsfinjection" target="undeploy"/>-->
         <ant dir="jdbc/jdbcusertx" target="undeploy"/>
         <ant dir="persistence/jpainjectemf" target="undeploy"/>
         <ant dir="persistence/jpavalidation" target="undeploy"/>
         <ant dir="security/helloworld" target="undeploy"/>
-        <ant dir="security/basicauth" target="undeploy"/>
+        <!--<ant dir="security/basicauth" target="undeploy"/>-->
         <ant dir="ejb/slsbnicmt" target="undeploy"/>
         <ant dir="ejb/sfulnoi" target="undeploy"/>
         <ant dir="bean-validator/simple-bv-servlet" target="undeploy"/>
-        <ant dir="weld/numberguess" target="undeploy"/>
-        <ant dir="weld/osgiweld" target="undeploy"/>
+        <!--<ant dir="weld/numberguess" target="undeploy"/>-->
+        <!--<ant dir="weld/osgiweld" target="undeploy"/>-->
         <ant dir="weld/extensions" target="undeploy"/>
         <ant dir="jms/injection" target="undeploy"/>
         <record name="${basedir}/undeploy.output" action="stop"/>
@@ -299,8 +299,8 @@
              for the test to pass. We are waiting for RE to release a newer version.
 	<ant dir="web/jruby" target="undeploy"/>
         -->
-        <ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>
-        <ant dir="wsit/jsr109tester" target="undeploy"/>
+        <!--<ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>-->
+        <!--<ant dir="wsit/jsr109tester" target="undeploy"/>-->
         <ant dir="wsit/jaxbosgi" target="undeploy"/>
         <ant dir="security/appperms" target="undeploy"/>
     </target>

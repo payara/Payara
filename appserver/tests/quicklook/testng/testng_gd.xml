@@ -91,11 +91,11 @@
        <class name="test.jsf.astrologer.JSFWebTestNG" />
     </classes>
   </test>
-  <test name="jsf_injection">
+  <!--<test name="jsf_injection">
     <classes>
        <class name="test.web.jsfinjection.JSFInjectionTestNG" />
     </classes>
-  </test>
+  </test>-->
   <test name="jdbc_user_tx">
     <classes>
        <class name="test.jdbc.jdbcusertx.JdbcUserTxTestNG" />
@@ -116,11 +116,11 @@
        <class name="test.security.hellojsp.HelloSecurityTestNG" />
     </classes>
   </test>
-  <test name="security_hello_basicauth">
+  <!--<test name="security_hello_basicauth">
     <classes>
        <class name="test.security.basicauth.BasicAuthTestNG" />
     </classes>
-  </test>
+  </test>-->
   <test name="security_app_permissions">
     <classes>
        <class name="test.security.appperms.ApppermsTestNG" />
@@ -168,13 +168,13 @@
         <class name="test.bv.servlet.simple.SimpleBVServletTestNG" />
     </classes>
   </test>
-  <test name="weld_tests">
+  <!--<test name="weld_tests">
     <classes>
         <class name="test.web.numberguess.NumberGuessTestNG" />
         <class name="test.weld.osgi.OsgiWeldTestNG" />
 	<class name="test.web.extensions.ExtensionsTestNG" />
     </classes>
-  </test>
+  </test>-->
   <test name="asadmin_tests">
     <classes>
       <class name="test.admin.JvmOptionTests"/>
@@ -193,22 +193,22 @@
       <class name="jaxbosgi.JaxbOsgiTestNG"/>
     </classes>
   </test>
-  <test name="wsit_jaxws_tests">
+  <!--<test name="wsit_jaxws_tests">
     <classes>
       <class name="jaxwsfromwsdl.client.JaxwsFromWsdlTestNG"/>
       <class name="fromjava.client.CheckTesterUITestNG"/>
     </classes>
-  </test>
+  </test> -->
   <test name="cluster_setup">
     <classes>
         <class name="test.clustersetup.ClusterSetupTest"/>
     </classes>
   </test>
-  <test name="cluster_helloworld">
+  <!--<test name="cluster_helloworld">
     <classes>
         <class name="test.hellocluster.ClusterHelloworldTest"/>
     </classes>
-  </test>
+  </test>-->
   <test name="cluster_teardown">
     <classes>
         <class name="test.clusterteardown.ClusterTeardownTest"/>
