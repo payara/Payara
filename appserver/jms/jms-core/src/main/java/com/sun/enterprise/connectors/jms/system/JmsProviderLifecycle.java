@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.enterprise.connectors.jms.system;
 
 //import org.glassfish.api.monitoring.MonitoringItem;
@@ -61,13 +61,14 @@ import org.glassfish.internal.api.PostStartupRunLevel;
 import com.sun.enterprise.config.serverbeans.Config;
 
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 
 import org.glassfish.api.admin.ServerEnvironment;
-//import com.sun.enterprise.config.serverbeans.MonitoringService;
 
 //import java.beans.PropertyVetoException;
 //import java.util.logging.Level;
@@ -96,8 +97,9 @@ public class JmsProviderLifecycle implements PostConstruct{
 
     @Inject
     private ActiveJmsResourceAdapter activeJmsResourceAdapter;
+    
 
-    public void postConstruct()
+    public void postConstruct() 
     {
        final JmsService jmsService = config.getExtensionByType(JmsService.class);
        if (eagerStartupRequired())
@@ -110,7 +112,12 @@ public class JmsProviderLifecycle implements PostConstruct{
                    e.printStackTrace();
                }
        }
-       activeJmsResourceAdapter.initializeLazyListener(jmsService);
+        try {
+            activeJmsResourceAdapter.initializeLazyListener(jmsService);
+        } catch (JmsInitialisationException ex) {
+            Logger.getLogger(JmsProviderLifecycle.class.getName()).log(Level.SEVERE, null, ex);
+            throw new IllegalStateException(ex);
+        }
        configureConfigListener();
        //createMonitoringConfig();
 

@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.connectors.jms.system;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
@@ -75,7 +75,6 @@ import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Clusters;
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
@@ -102,10 +101,14 @@ import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import java.text.MessageFormat;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.glassfish.admin.mbeanserver.JMXStartupService;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -446,7 +449,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * Start Grizzly based JMS lazy listener, which is going to initialize
      * JMS container on first request.
      */  
-    public void initializeLazyListener(JmsService jmsService) {
+    public void initializeLazyListener(JmsService jmsService) throws JmsInitialisationException {
         if (jmsService != null) {
             if (EMBEDDED.equalsIgnoreCase(jmsService.getType()) && !grizzlyListenerInit) {
                 GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
@@ -469,7 +472,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                             String name = GRIZZLY_PROXY_PREFIX + oneHost.getName();
                             dummy.setName(name);
                             synchronized (grizzlyListeners) {
-                                grizzlyService.createNetworkProxy(dummy);
+                                Future<Result<Thread>> createNetworkProxy = grizzlyService.createNetworkProxy(dummy);
+                                try {
+                                    Result<Thread> result = createNetworkProxy.get();
+                                    if (result.exception() != null) {
+                                        throw new JmsInitialisationException(MessageFormat.format("Cannot initialise JMS broker listener on {0}:{1}", oneHost.getHost(), oneHost.getPort()), result.exception());
+                                    }
+                                } catch (InterruptedException | ExecutionException ex) {
+                                    Logger.getLogger(ActiveJmsResourceAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                                 grizzlyListeners.add(name);
                             }
                             grizzlyListenerInit = true;
@@ -488,7 +499,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 ServerContext serverContext = Globals.get(ServerContext.class);
                 Server server = domain.getServerNamed(serverContext.getInstanceName());
                 JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
-                initializeLazyListener(jmsService);
+                try {
+                    initializeLazyListener(jmsService);
+                } catch (Throwable ex) {
+                    Logger.getLogger(ActiveJmsResourceAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new ResourceAdapterInternalException(ex);
+                }
             }
 		//System.setProperty("imq.jmsra.direct.clustered", "true");
                 AccessController.doPrivileged
