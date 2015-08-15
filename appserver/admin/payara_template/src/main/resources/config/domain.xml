@@ -155,7 +155,7 @@
         </message-security-config>
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
-      <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
+      <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
         <jvm-options>-XX:MaxPermSize=512m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
