@@ -266,9 +266,9 @@ public class ProviderUtil {
         }
 
         if (result.length() > 0) {
-            return "<div><form action=\"" + uriInfo.getAbsolutePath().toString() +
+            return "<div><form id=\"ajaxFormUpdate\"  action=\"" + uriInfo.getAbsolutePath().toString() +
                     "\" method=\"post\"><dl>" + result.toString() +
-                    "<dt class=\"button\"></dt><dd class=\"button\"><input value=\"Update\" type=\"submit\"></dd>" +
+                    "<dt class=\"button\"></dt><dd class=\"button\"><input onclick=\"ajaxSubmit(ajaxFormUpdate);\" value=\"Update\" type=\"submit\"></dd>" +
                     "</dl></form></div>";
         } else {
             return "";
@@ -309,7 +309,7 @@ public class ProviderUtil {
             //set encType if file upload operation
             String encType = methodMetaData.isFileUploadOperation() ?
                 " enctype=\"multipart/form-data\"" : "" ;
-            result = new StringBuilder("<div><form action=\"")
+            result = new StringBuilder("<div><form id=\"ajaxForm\"  action=\"")
                     .append(uriInfo.getAbsolutePath().toString())
                     .append("\" method=\"")
                     .append(webMethod)
@@ -328,7 +328,7 @@ public class ProviderUtil {
             //add hidden field
             result.append("<dd><input name=\"__remove_empty_entries__\" value=\"true\" type=\"hidden\"></dd>");
 
-            result.append("<dt class=\"button\"></dt><dd class=\"button\"><input value=\"")
+            result.append("<dt class=\"button\"></dt><dd class=\"button\"><input onclick=\"ajaxSubmit(ajaxForm);\" value=\"")
                     .append(commandDisplayName)
                     .append("\" type=\"submit\"></dd>");
             result.append("</dl></form></div>");
