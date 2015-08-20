@@ -187,7 +187,7 @@
                             <phase>verify</phase>
                             <configuration>
                                 <pomFile>${project.build.directory}/pom.xml</pomFile>
-                            </configuration> 
+                            </configuration>
                         </execution>
                     </executions>
                 </plugin>
@@ -241,7 +241,7 @@
         <profile>
             <id>javadoc-jdk8+</id>
             <activation>
-                <jdk>[1.8</jdk>
+                <jdk>[1.8,)</jdk>
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
