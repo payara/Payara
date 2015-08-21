@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -565,4 +565,10 @@ public final class LogUtils {
             comment = "{0} - parser class name, {1} - feature ID",
             level = "FINE")
     public static final String PARSER_UNSUPPORTED_FEATURE = LOGMSG_PREFIX + "-00122";
+
+    @LogMessageInfo(
+            message = "Going to fetch ServletAdapter holding wsdl content for web service {0} based on url: {1}",
+            level = "INFO")
+    public static final String SERVLET_ADAPTER_BASED_ON_WSDL_URL = LOGMSG_PREFIX + "-00123";
+
 }
