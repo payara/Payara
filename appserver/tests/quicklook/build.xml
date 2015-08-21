@@ -90,8 +90,8 @@
         <param name="testng.xml" value="testng/testng_wd.xml"/> </antcall>
         <antcall target="undeploy"/>
         <antcall target="quicklook-summary"/>
-        <antcall target="stop-server"/>
-        <antcall target="stop-derby"/>
+        <!--<antcall target="stop-server"/>-->
+        <!--<antcall target="stop-derby"/>-->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-WP-report.html"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
@@ -154,8 +154,8 @@
         <antcall target="undeploy"/>
         <antcall target="undeploy-gd"/>
         <antcall target="quicklook-summary"/>
-        <antcall target="stop-server"/>
-        <antcall target="stop-derby"/>
+        <!--<antcall target="stop-server"/> -->
+       <!--<antcall target="stop-derby"/> -->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
@@ -176,8 +176,8 @@
         <antcall target="undeploy"/>
         <antcall target="undeploy-gd"/>
         <antcall target="quicklook-summary"/>
-        <antcall target="stop-server"/>
-        <antcall target="stop-derby"/>
+        <!--<antcall target="stop-server"/>-->
+        <!--<antcall target="stop-derby"/>-->
 		<copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
@@ -205,8 +205,8 @@
         <antcall target="quicklook-summary"/>
         <antcall target="remove-quicklook-policy-grants" />
         <antcall target="disable-security-manager"/>
-        <antcall target="stop-server"/>
-        <antcall target="stop-derby"/>
+        <!--<antcall target="stop-server"/>-->
+        <!--<antcall target="stop-derby"/>-->
         <copy file="test-output/emailable-report.html" tofile="test-output/QL-GP-report.html" failonerror="false"/>
 		<antcall target="check-logged-messages"/>
         <antcall target="testng-summary"/>
@@ -582,6 +582,7 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-domain"/>
+	
     </exec>
 </target>
     
@@ -615,17 +616,17 @@
         <arg value="/c"/>
         <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="start-domain"/>
-        <arg value="domain1"/>
+	<arg value="domain2"/>
     </exec>
     <waitfor maxwait="30" maxwaitunit="second" checkevery="500">
-        <http url="http://localhost:4848/"/>
+        <http url="http://localhost:5048/"/>
     </waitfor> 
 </target>
 
 <target name="start-server-felix-unix" if="isUnix">
     <exec executable="${glassfish.home}/bin/asadmin">
         <arg value="start-domain"/>
-        <arg value="domain1"/>
+	<arg value="domain2"/>
     </exec>
 </target>
 
