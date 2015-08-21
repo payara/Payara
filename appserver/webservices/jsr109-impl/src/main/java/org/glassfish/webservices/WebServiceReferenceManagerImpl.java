@@ -558,7 +558,7 @@ public class WebServiceReferenceManagerImpl implements WebServiceReferenceManage
         if (!(contextRootAndPath.length() > 0))
             return null;
         String[] contextRootAndPathArray = contextRootAndPath.split("/"); // {test, Translator}
-        if (contextRootAndPathArray == null || contextRootAndPathArray.length != 2)
+        if (contextRootAndPathArray.length != 2)
             return null;
         if (contextRootAndPathArray[0] == null)
             return null;
