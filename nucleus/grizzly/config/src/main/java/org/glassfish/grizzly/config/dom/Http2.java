@@ -51,7 +51,7 @@ public interface Http2 extends ConfigBeanProxy, PropertyBag {
     final int MAX_CONCURRENT_STREAMS = 100;
     final int INITIAL_WINDOW_SIZE_IN_BYTES = 64 * 1024 - 1;
     int MAX_FRAME_PAYLOAD_SIZE_IN_BYTES = (1 << 24) - 1;
-    final boolean ENABLED = true;
+    final boolean ENABLED = false;
     
     /**
      * Enables HTTP2 support.
