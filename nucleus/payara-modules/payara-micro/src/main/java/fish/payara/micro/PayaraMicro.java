@@ -651,7 +651,7 @@ public class PayaraMicro {
 
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
-                gfproperties.setConfigFileURI("file://" + alternateDomainXML.getAbsolutePath());
+                gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
             } else {
                 if (noCluster) {
                     gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain-nocluster.xml").toExternalForm());
@@ -667,7 +667,9 @@ public class PayaraMicro {
                 if (!configFile.exists()) {
                     installFiles(gfproperties);
                 } else {
-                    gfproperties.setConfigFileURI("file://" + rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
+                    String absolutePath = rootDir.getAbsolutePath();
+                    absolutePath = absolutePath.replace('\\', '/');
+                    gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
                     gfproperties.setConfigFileReadOnly(false);
                 }
 
@@ -902,7 +904,7 @@ public class PayaraMicro {
                             + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
                             + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
                             + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
-                            + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration"
+                            + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
                             + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
                             + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
                             + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"

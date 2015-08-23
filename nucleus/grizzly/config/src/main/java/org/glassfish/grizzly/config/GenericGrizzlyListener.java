@@ -785,7 +785,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final Http2 http2Element,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
-        if (http2Element == null || http2Element.getEnabled()) {
+        if (http2Element != null && http2Element.getEnabled()) {
 
             // first try to lookup a service appropriate for the mode
             // that has been configured.
