@@ -593,6 +593,23 @@ create_changes_info(){
     if [ "${PREVIOUS_SVN_REV}" != "${SVN_REVISION}" ] ; then
         PREVIOUS_SVN_REV=$((PREVIOUS_SVN_REV+1))
         svn log -r ${PREVIOUS_SVN_REV}:${SVN_REVISION} ${GF_WORKSPACE_URL_SSH}/trunk/main > ${WORKSPACE}/changes.txt
+	# Use nawk on Solaris
+    	if [ `uname | grep -i sunos | wc -l` -eq 1 ]
+    	then
+            AWK="nawk"
+    	else
+            AWK="awk"
+     	fi
+
+        # Remove all changes marked with 'setting clean revision'.
+        awk '{a[i++]=$0}END{for(j=i-1;j>=0;j--)print a[j];}' ${WORKSPACE}/changes.txt | ${AWK} '/setting clean revision/ {c=5} c && c-- {next}1' | awk '{a[i++]=$0}END{for(j=i-1;j>=0;j--)print a[j];}' | tee ${WORKSPACE}/changes.txt
+
+	# Clear out change log if empty (contains only a single line && starts with ---)
+        if [ `cat ${WORKSPACE}/changes.txt | wc -l` -eq 1 ] && [[ `cat ${WORKSPACE}/changes.txt` == -----* ]]
+	then
+            echo "" > ${WORKSPACE}/changes.txt
+	fi
+        
         printf "\n%s\n\n" "==== CHANGELOG ===="
         cat ${WORKSPACE}/changes.txt
     fi
@@ -908,6 +925,7 @@ create_index(){
 # * Doesn't work for filenames with spaces.
 #
 TOPLEVELURL=http://download.oracle.com/glassfish
+TOPLEVELDIR=./
 INDEX_FILENAME=index.html
 OS=`uname`
 
@@ -930,7 +948,8 @@ trim_dot_slash() {
 #
 generate_index_html() {
 
-    echo "\n### generate_index_html called with arg1 = $1"
+    echo ""
+    echo "### generate_index_html called with arg1 = $1"
 
 cat > $1/$INDEX_FILENAME << EOF
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -963,7 +982,7 @@ EOF
 
     if [ "$1" != "$TOPLEVELDIR" ]
     then
-      printf "\fsub directory \'$1\'\n"
+      printf "sub directory \'$1\'\n"
 cat >> $1/$INDEX_FILENAME << EOF
         <tr class="parent">
           <td valign="top">
@@ -984,8 +1003,7 @@ EOF
   # No maxdepth on SunOS.
   if [ "$OS" = "SunOS" ]
   then
-    FIND_CMD="find ${1} ! -name . -prune -type d"
-
+    FIND_CMD="gfind ${1} -maxdepth 1 -type d"
   else
     FIND_CMD="find ${1%/} -maxdepth 1 -type d"
   fi
@@ -1003,7 +1021,9 @@ EOF
       printf "\nFound subdir: $SUB_DIR\n"
       printf "Subdir basename: $SUB_DIR_BASENAME\n"
 
-      LAST_MODIFIED=`ls -ld $SUB_DIR | awk '{ print $6, $7, $8 }'`
+      # Rather than showing the date/time for the dir, we will show the most recent time of the
+      # files within the dir so that users can see files have been updated in the directory.
+      LAST_MODIFIED=`find $SUB_DIR -type f | grep -v index.html | xargs ls -lt 2> /dev/null | awk '{ print $6, $7, $8}' | head -1`
 
       # So that we don't have "//" in links - check if the cut is ""
       if [ "`echo $1 | cut -c 3-`" = "" ]
@@ -1034,25 +1054,36 @@ EOF
   # Generate file list named latest* first.
   if [ "$OS" = "SunOS" ]
   then
-    FINDFILES=`find $1 -name . -o -type d -prune -o -name 'latest*' -print`
+    FINDFILES=`gfind $1 -maxdepth 1 -type f -name latest\*`
   else
     FINDFILES=`find ${1%/} -maxdepth 1 -type f -name latest\*`
   fi
-  FILELIST1=`echo $FINDFILES | xargs ls -t`
+  if [ "$FINDFILES" != "" ]; then
+    FILELIST1=`echo $FINDFILES | xargs ls -t`
+  else
+    FILELIST1=""
+  fi
 
   # Now get all files that do not start with latest*.
   if [ "$OS" = "SunOS" ]
   then
-    FINDFILES=`find ${1} -name . -o -type d -prune -o ! -name 'latest*' -print`
+    FINDFILES=`gfind $1 -maxdepth 1 -type f -not -name latest\*`
+    FINDLINKS=`gfind $1 -maxdepth 1 -type l -not -name latest\*`    
   else
     FINDFILES=`find ${1%/} -maxdepth 1 -type f -not -name latest\*`
+    FINDLINKS=`find ${1%/} -maxdepth 1 -type l -not -name latest\*`
   fi
-  FILELIST2=`echo $FINDFILES | xargs ls -t`
+  if [ "$FINDFILES" != "" -o "$FINDLINKS" != "" ]; then
+    FILELIST2=`echo $FINDFILES $FINDLINKS | xargs ls -t`
+  else
+    FILELIST2=""
+  fi
 
   # Concat latest* files + !latest files.
   FILELIST="$FILELIST1 $FILELIST2"
   
-  echo "\n### Processing files from ${1}..."
+  echo ""
+  echo "### Processing files from ${1}..."
   for FILE in $FILELIST
   do
     # Remove leading "./" from $FILE, if exists

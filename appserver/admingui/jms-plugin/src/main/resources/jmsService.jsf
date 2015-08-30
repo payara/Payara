@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+Portions Copyright [2015] [C2B2 Consulting Limited]
 -->
 
 <!initPage
@@ -128,7 +129,7 @@
                             foreach (var="server" list="#{pageSession.serverList}") {
                                 gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}", method="GET", result="#{requestScope.serverDetails}");
                                 if ("#{pageSession.configName} = #{requestScope.serverDetails.data.extraProperties.entity.configRef}") {
-                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}/jms-ping", method="get", result="#{requestScope.pingResults}");
+                                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/servers/server/#{server}/jms-ping?target=#{server}", method="get", result="#{requestScope.pingResults}");
                                     if ("(#{requestScope.pingResults.responseCode} = 200)") {
                                         prepareAlertMsg(type="success", summary="$resource{i18nc.msg.PingSucceed}");
                                     }
