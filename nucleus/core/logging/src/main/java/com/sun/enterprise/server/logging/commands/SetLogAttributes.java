@@ -238,7 +238,7 @@ public class SetLogAttributes implements AdminCommand {
     private void validateAttributeValue(String attr_name, String attr_value) {
         if (attr_name.equals(ROTATION_LIMIT_IN_BYTES)) {
             int rotationSizeLimit = Integer.parseInt(attr_value);
-            if (rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
+            if (rotationSizeLimit != GFFileHandler.DISABLE_LOG_FILE_ROTATION_VALUE && rotationSizeLimit < GFFileHandler.MINIMUM_ROTATION_LIMIT_VALUE) {
                 throw new IllegalArgumentException();
             }
         } else if (attr_name.equals(ROTATION_TIMELIMIT_IN_MINUTES)) {
