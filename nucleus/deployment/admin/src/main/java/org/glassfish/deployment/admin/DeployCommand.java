@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.deployment.admin;
 
 import java.net.URI;
@@ -81,7 +81,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.glassfish.api.ActionReport.ExitCode;
-import org.glassfish.api.admin.AccessRequired;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandSecurity;
 import org.glassfish.api.admin.ParameterMap;
@@ -626,10 +625,18 @@ public class DeployCommand extends DeployCommandParameters implements AdminComma
             final Logger logger) throws IOException {
         final File finalUploadDir = deploymentContext.getAppInternalDir();
         final File finalAltDDDir = deploymentContext.getAppAltDDDir();
+        
         if ( ! finalUploadDir.mkdirs()) {
             logger.log(Level.FINE," Attempting to create upload directory {0} was reported as failed; attempting to continue",
                     new Object[] {finalUploadDir.getAbsolutePath()});
         }
+        
+        // PAYAYRA-444 GLASSFISH-21371
+        if ( ! finalAltDDDir.mkdirs()) {
+            logger.log(Level.FINE," Attempting to create altdd directory {0} was reported as failed; attempting to continue",
+                    new Object[] {finalAltDDDir.getAbsolutePath()});
+        }
+        
         safeCopyOfApp = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, originalPathValue, logger, env);
         safeCopyOfDeploymentPlan = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalUploadDir, deploymentplan, logger, env);
         safeCopyOfAltDD = DeploymentCommandUtils.renameUploadedFileOrCopyInPlaceFile( finalAltDDDir, altdd, logger, env);
