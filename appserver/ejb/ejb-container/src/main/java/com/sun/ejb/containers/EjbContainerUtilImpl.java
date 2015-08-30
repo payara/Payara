@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.ejb.containers;
 
 import com.sun.ejb.base.io.EJBObjectInputStreamHandler;
@@ -488,6 +488,27 @@ public class EjbContainerUtilImpl
                 ? new LinkedBlockingQueue<Runnable>(queueCapacity)
                 : new SynchronousQueue(true);
 
+        // PAYARA-405 validates attributes of the thread pool to ensure no problems      
+        if (corePoolSize < 0) {
+            _logger.log(Level.WARNING, "Core Pool Size configured to be less than 0. Resetting to 0");
+            corePoolSize = 0;
+        }
+        
+        if (maxPoolSize < 1) {
+            _logger.log(Level.WARNING, "Max Pool Size configured to be less than 1. Resetting to 1");
+            maxPoolSize = 1;
+        }
+                
+        if (corePoolSize > maxPoolSize) {
+            _logger.log(Level.WARNING, "Core Pool Size configured to be greater than maxPoolSize. Resetting to maxPoolSize {0}", maxPoolSize);
+            corePoolSize = maxPoolSize;
+        }
+        
+        if (keepAliveSeconds < 0) {
+            _logger.log(Level.WARNING, "Keep Alive Seconds configured to be less than 0. Resetting to 0");
+            keepAliveSeconds = 0;            
+        }
+        
         result = new EjbThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveSeconds, workQueue, poolName);
 
         if(allowCoreThreadTimeout) {
