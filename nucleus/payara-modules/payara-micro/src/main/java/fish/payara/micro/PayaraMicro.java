@@ -707,8 +707,8 @@ public class PayaraMicro {
                 }
             }
             gf.start();
-            deployAll();
             this.runtime = new PayaraMicroRuntime(instanceName, gf);
+            deployAll();
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
