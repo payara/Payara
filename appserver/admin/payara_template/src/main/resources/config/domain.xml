@@ -45,13 +45,9 @@
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
       <property value=";create=true" name="connectionAttributes" />
     </jdbc-connection-pool>
-    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.ClientDataSource" res-type="javax.sql.DataSource">
-      <property value="1527" name="PortNumber" />
-      <property value="APP" name="Password" />
-      <property value="APP" name="User" />
-      <property value="localhost" name="serverName" />
-      <property value="sun-appserv-samples" name="DatabaseName" />
-      <property value=";create=true" name="connectionAttributes" />
+    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" res-type="javax.sql.DataSource">
+      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
+      <property name="connectionAttributes" value=";create=true" />
     </jdbc-connection-pool>
   </resources>
   <servers>

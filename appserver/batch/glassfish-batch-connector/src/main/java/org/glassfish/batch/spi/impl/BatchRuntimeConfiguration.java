@@ -54,7 +54,7 @@ import org.jvnet.hk2.config.Element;
 public interface BatchRuntimeConfiguration
     extends ConfigBeanProxy, ConfigExtension {
 
-    @Attribute
+    @Attribute(defaultValue = "jdbc/__default")
     String getDataSourceLookupName();
 
     @Attribute(defaultValue = "concurrent/__defaultManagedExecutorService")
