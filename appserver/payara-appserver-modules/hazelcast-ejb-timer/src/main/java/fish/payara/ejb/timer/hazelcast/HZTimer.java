@@ -30,14 +30,15 @@ import javax.ejb.TimerConfig;
 public class HZTimer implements Serializable {
 
     private final TimerPrimaryKey key;
-    private final String serverName;
+    private String serverName;
     private final long containerId;
-    private final long applicationId;
+    private long applicationId;
     private final Serializable timedObjectPk;
     private final Date initialExpiration;
     private final long intervalDuration;
     private final EJBTimerSchedule schedule;
     private final Serializable info;
+    private Date lastExpiration;
 
     public HZTimer(TimerPrimaryKey timerId, long containerId, long applicationId, Object timedObjectPrimaryKey, String server_name, Date initialExpiration, long intervalDuration, EJBTimerSchedule schedule, TimerConfig timerConfig) {
         this.key = timerId;
@@ -61,6 +62,10 @@ public class HZTimer implements Serializable {
         }
     }
 
+    public void setServerName(String serverName) {
+        this.serverName = serverName;
+    }
+
     public TimerPrimaryKey getKey() {
         return key;
     }
@@ -75,6 +80,10 @@ public class HZTimer implements Serializable {
 
     public long getApplicationId() {
         return applicationId;
+    }
+
+    void setApplicationId(long applicationId) {
+        this.applicationId = applicationId;
     }
 
     public Object getTimedObjectPk() {
@@ -95,6 +104,14 @@ public class HZTimer implements Serializable {
 
     public TimerConfig getTimerConfig() {
         return new TimerConfig(info, true);
+    }
+
+    Date getLastExpiration() {
+        return lastExpiration;
+    }
+
+    void setLastExpiration(Date now) {
+        lastExpiration = now;
     }
     
     
