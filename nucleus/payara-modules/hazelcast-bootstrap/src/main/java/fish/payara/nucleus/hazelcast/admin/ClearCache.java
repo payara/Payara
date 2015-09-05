@@ -98,8 +98,14 @@ public class ClearCache implements AdminCommand {
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                 }
 
+            } else {
+                actionReport.setMessage("Hazelcast is not enabled");
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
 
+        } else {
+            actionReport.setMessage("Hazelcast is not enabled");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
 

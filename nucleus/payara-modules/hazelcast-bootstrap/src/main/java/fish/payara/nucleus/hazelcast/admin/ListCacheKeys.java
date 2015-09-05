@@ -107,12 +107,19 @@ public class ListCacheKeys implements AdminCommand {
                 }
                 extraProps.put("Cache", extraBuilder.toString());
                 actionReport.setExtraProperties(extraProps);
+            } else {
+                Properties extraProps = new Properties();
+                extraProps.put("Caches", "Hazelcast is not enabled");
+                actionReport.setExtraProperties(extraProps);
+                actionReport.setMessage("Hazelcast is not enabled");
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         } else {
             Properties extraProps = new Properties();
             extraProps.put("Caches", "Hazelcast is not enabled");
             actionReport.setExtraProperties(extraProps);
             actionReport.setMessage("Hazelcast is not enabled");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }

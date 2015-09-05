@@ -89,11 +89,11 @@ public class ListCaches implements AdminCommand {
                         builder.append("\n");
                     }
                 }
-                
-                for (String  cacheName : hazelcast.getCachingProvider().getCacheManager().getCacheNames()) {
-                        if (cacheName != null) {
-                            builder.append("JCache ").append(cacheName).append(" \n");
-                        } 
+
+                for (String cacheName : hazelcast.getCachingProvider().getCacheManager().getCacheNames()) {
+                    if (cacheName != null) {
+                        builder.append("JCache ").append(cacheName).append(" \n");
+                    }
                 }
 
                 builder.append("}\n");
@@ -108,12 +108,19 @@ public class ListCaches implements AdminCommand {
                 }
                 extraProps.put("Cache", extraBuilder.toString());
                 actionReport.setExtraProperties(extraProps);
+            } else {
+                Properties extraProps = new Properties();
+                extraProps.put("Caches", "Hazelcast is not enabled");
+                actionReport.setExtraProperties(extraProps);
+                actionReport.setMessage("Hazelcast is not enabled");
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             }
         } else {
             Properties extraProps = new Properties();
             extraProps.put("Caches", "Hazelcast is not enabled");
             actionReport.setExtraProperties(extraProps);
             actionReport.setMessage("Hazelcast is not enabled");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
