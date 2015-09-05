@@ -175,6 +175,7 @@
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Xmx1024m</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+        <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -329,6 +330,7 @@
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Xmx1024m</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+        <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
       </java-config>
          <availability-service>
              <web-container-availability/>
