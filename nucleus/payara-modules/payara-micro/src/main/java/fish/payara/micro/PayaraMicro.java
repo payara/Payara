@@ -1005,7 +1005,8 @@ public class PayaraMicro {
     private void setSystemProperties() {
         try {
             Properties embeddedBootProperties = new Properties();
-            embeddedBootProperties.load(ClassLoader.getSystemResourceAsStream("payara-boot.properties"));
+            ClassLoader loader = getClass().getClassLoader();
+            embeddedBootProperties.load(loader.getResourceAsStream("payara-boot.properties"));
             for (Object key : embeddedBootProperties.keySet()) {
                 String keyStr = (String)key;
                 if (System.getProperty(keyStr) == null) {
