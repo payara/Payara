@@ -92,6 +92,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
 
     public void setInstanceName(String instanceName) {
         this.instanceName = instanceName;
+        me.setInstanceName(instanceName);
     }
 
     public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
