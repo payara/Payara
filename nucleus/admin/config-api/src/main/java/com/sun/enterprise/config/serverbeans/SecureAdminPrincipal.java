@@ -42,10 +42,6 @@ package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import java.beans.PropertyVetoException;
-import java.io.IOException;
-import java.security.KeyStoreException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.config.Named;

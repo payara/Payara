@@ -40,12 +40,6 @@
 
 package org.glassfish.config.support;
 
-import com.sun.enterprise.config.serverbeans.Config;
-import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.SecureAdmin;
-import com.sun.enterprise.config.serverbeans.SecureAdmin.Util;
-import com.sun.enterprise.config.serverbeans.SecureAdminPrincipal;
-import com.sun.enterprise.config.serverbeans.SystemProperty;
 import com.sun.enterprise.config.util.ConfigApiLoggerInfo;
 import com.sun.enterprise.util.AnnotationUtil;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -58,7 +52,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
 import java.util.List;
@@ -66,8 +59,6 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.inject.Inject;
-import javax.security.auth.Subject;
 
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandContext;
