@@ -92,14 +92,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
     Create create;
     
     private ConfigBeanProxy parentBean;
-    
-    @Inject
-    Config config;
-    
-    @Inject
-    Domain domain;
-    
-    
+      
     @Override
     public void postConstruct() {
 
@@ -234,15 +227,6 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
                         // invoke the decorator
                         decorator.decorate(context, childBean);
                     }
-                    
-                   
-                    SecureAdmin admin = domain.getSecureAdmin();
-          
-                    List<SecureAdminPrincipal> list = Util.secureAdminPrincipals(admin, habitat);
-                    
-                    // to do next: search for secure admin principal in list of secure-admin principals and if found
-                    // do not write to domain.xml etc
-                    
 
                     return childBean;
                 }
