@@ -143,7 +143,7 @@ public class AMXTestBase
         mHost = System.getProperty("http.host");
 
         mDebug = debug;
-        mPort = 5086;
+        mPort = port;
 
         try
         {
@@ -311,7 +311,7 @@ public class AMXTestBase
         // CHANGE to RMI once it's working
         //
         // final String urlStr = "service:jmx:jmxmp://" + mHost + ":" + mPort;
-        final String urlStr = "service:jmx:rmi:///jndi/rmi://" + "127.0.0.1:5086" + "/jmxrmi";
+        final String urlStr = "service:jmx:rmi:///jndi/rmi://" + "127.0.0.1:" + port + "/jmxrmi";
         
         final long start = System.currentTimeMillis();
 

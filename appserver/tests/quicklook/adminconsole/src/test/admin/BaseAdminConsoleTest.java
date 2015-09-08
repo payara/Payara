@@ -113,7 +113,7 @@ public class BaseAdminConsoleTest {
     @Parameters({"admin.console.url", "amx.rmiport"})
     public void loginBeforeTest(String url, int port) throws Exception {
         this.adminUrl = url;
-        setUpEnvironment(5086);
+        setUpEnvironment(port);
         client = new HttpClient();
 
         boolean formFound = false;
@@ -254,7 +254,7 @@ public class BaseAdminConsoleTest {
         // CHANGE to RMI once it's working
         //
         // final String urlStr = "service:jmx:jmxmp://" + mHost + ":" + mPort;
-        final String urlStr = "service:jmx:rmi:///jndi/rmi://" +  "127.0.0.1:5086"  + "/jmxrmi";
+        final String urlStr = "service:jmx:rmi:///jndi/rmi://" +  "127.0.0.1:" + port  + "/jmxrmi";
 
         final JMXServiceURL url = new JMXServiceURL(urlStr);
 
