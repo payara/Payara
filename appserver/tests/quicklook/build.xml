@@ -144,8 +144,8 @@
         <record name="${basedir}/allrun.output" action="start"/>
         <property name="env.security_manager" value="OFF"/>
         <antcall target="verify-xml"/>
-        <antcall target="start-derby"/>
-        <antcall target="start-server-felix"/>
+        <!--<antcall target="start-derby"/>-->
+        <!--<antcall target="start-server-felix"/>-->
         <antcall target="build-deploy"/>
         <antcall target="build-deploy-gd"/>
         <antcall target="build-cluster"/>
