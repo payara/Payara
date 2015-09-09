@@ -163,11 +163,11 @@
     </classes>
   </test>
   -->
-  <test name="bv_servlet_simple">
+  <!--<test name="bv_servlet_simple">
     <classes>
         <class name="test.bv.servlet.simple.SimpleBVServletTestNG" />
     </classes>
-  </test>
+  </test>-->
   <!--<test name="weld_tests">
     <classes>
         <class name="test.web.numberguess.NumberGuessTestNG" />
