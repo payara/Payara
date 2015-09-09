@@ -188,11 +188,11 @@
         <class name="test.osgi.hello.HelloOSGITestNG" />
     </classes>
   </test>
-  <test name="wsit_jaxb_tests">
+  <!--<test name="wsit_jaxb_tests">
     <classes>
       <class name="jaxbosgi.JaxbOsgiTestNG"/>
     </classes>
-  </test>
+  </test>-->
   <!--<test name="wsit_jaxws_tests">
     <classes>
       <class name="jaxwsfromwsdl.client.JaxwsFromWsdlTestNG"/>
