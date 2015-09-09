@@ -72,14 +72,14 @@ public class MDBTests {
         Assert.assertEquals(execReturn, true, "Deploy the mdb app failed ... ");
     }
 
-    @Parameters({ "MDB_APP_DIR" })
-    @Test(dependsOnMethods = { "deployJMSAppTest" })
-    public void runJMSAppTest(String mdbAppDir) throws Exception {
-        cmd = APPCLIENT+" -client "+ cwd + File.separator +mdbAppDir+mdbApp+"Client.jar ";
-//           + "-name ejb-ejb30-hello-mdbClient " ;
-        execReturn = RtExec.execute(cmd);
-        Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");
-    }
+//    @Parameters({ "MDB_APP_DIR" })
+//    @Test(dependsOnMethods = { "deployJMSAppTest" })
+//    public void runJMSAppTest(String mdbAppDir) throws Exception {
+//        cmd = APPCLIENT+" -client "+ cwd + File.separator +mdbAppDir+mdbApp+"Client.jar ";
+////           + "-name ejb-ejb30-hello-mdbClient " ;
+//        execReturn = RtExec.execute(cmd);
+//        Assert.assertEquals(execReturn, true, "Run appclient against JMS APP failed ...");
+//    }
 
     @Test(dependsOnMethods = { "deployJMSAppTest" }) 
     public void undeployJMSAppTest() throws Exception {
