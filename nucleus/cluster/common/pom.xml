@@ -77,7 +77,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
