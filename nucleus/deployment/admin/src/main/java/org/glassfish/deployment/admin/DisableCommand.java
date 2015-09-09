@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.deployment.admin;
 
@@ -372,12 +373,18 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
         ApplicationInfo appInfo = deployment.get(appName);
         
         try {
+            
+
             Application app = applications.getApplication(appName);
             this.name = appName;
 
-            final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);
-            
-            suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);
+            // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE DISABLING 
+            String serverName = server.getName();
+            if (serverName.equals(target)) {
+                final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);           
+                suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
+            }
+
 
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error during disabling: ", e);
