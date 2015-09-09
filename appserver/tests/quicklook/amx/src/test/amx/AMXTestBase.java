@@ -311,7 +311,7 @@ public class AMXTestBase
         // CHANGE to RMI once it's working
         //
         // final String urlStr = "service:jmx:jmxmp://" + mHost + ":" + mPort;
-        final String urlStr = "service:jmx:rmi:///jndi/rmi://" + host + ":" + port + "/jmxrmi";
+        final String urlStr = "service:jmx:rmi:///jndi/rmi://" + mHost + ":" + mPort + "/jmxrmi";
         
         final long start = System.currentTimeMillis();
 
