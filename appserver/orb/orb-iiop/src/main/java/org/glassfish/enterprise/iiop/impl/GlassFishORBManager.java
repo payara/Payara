@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.impl.javax.rmi.CORBA.StubDelegateImpl;
@@ -261,7 +261,8 @@ public final class GlassFishORBManager {
             finestLog( "GlassFishORBManager.getORB->: {0}", orb);
 
             if (orb == null) {
-                initORB(props);
+                
+                initORB(props);                
             }
 
             return orb;
@@ -553,7 +554,7 @@ public final class GlassFishORBManager {
             // OSGI mode and we're not in OSGI mode, orb initialization fails.  
             boolean useOSGI = false;
 
-            final ClassLoader prevCL = Utility.getClassLoader();
+            ClassLoader prevCL = Utility.getClassLoader();
             try {
                 Utility.setContextClassLoader(GlassFishORBManager.class.getClassLoader());
 
@@ -582,8 +583,14 @@ public final class GlassFishORBManager {
 
             // Can't run with GlassFishORBManager.class.getClassLoader() as the context ClassLoader
             orb = ORBFactory.create() ;
-            ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
-
+            prevCL = Utility.getClassLoader();
+            try {
+                Utility.setContextClassLoader(prevCL.getParent());
+            
+                ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
+            } finally {
+                Utility.setContextClassLoader(prevCL);
+            }
             // Done to indicate this is a server and
             // needs to create listen ports.
             try {
@@ -611,8 +618,12 @@ public final class GlassFishORBManager {
 
                 rfm = (ReferenceFactoryManager) orb.resolve_initial_references(
                         ORBConstants.REFERENCE_FACTORY_MANAGER);
-
+                
+                // ensure we don't inherit any Context Class Loaders when bootstrapping
+                ClassLoader cl = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
                 new InitialGroupInfoService( orb ) ;
+                Thread.currentThread().setContextClassLoader(cl);
 
                 iiopUtils.setORB(orb);
             }
