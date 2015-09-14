@@ -42,33 +42,24 @@ package com.sun.enterprise.connectors.jms.system;
 
 //import org.glassfish.api.monitoring.MonitoringItem;
 //import org.glassfish.jms.admin.monitor.config.JmsServiceMI;
-import com.sun.enterprise.connectors.jms.config.JmsService;
-import com.sun.enterprise.connectors.jms.config.JmsHost;
-import com.sun.enterprise.connectors.jms.system.ActiveJmsResourceAdapter;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.runlevel.RunLevel;
-//import org.jvnet.hk2.config.ConfigSupport;
-//import org.jvnet.hk2.config.SingleConfigCode;
-//import org.jvnet.hk2.config.TransactionFailure;
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import org.glassfish.internal.api.PostStartupRunLevel;
-
 import com.sun.enterprise.config.serverbeans.Config;
-
+import com.sun.enterprise.connectors.jms.config.JmsHost;
+import com.sun.enterprise.connectors.jms.config.JmsService;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.internal.api.PostStartupRunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 //import java.beans.PropertyVetoException;
 //import java.util.logging.Level;
@@ -80,11 +71,16 @@ import org.glassfish.api.admin.ServerEnvironment;
 public class JmsProviderLifecycle implements PostConstruct{
     private static final String JMS_INITIALIZE_ON_DEMAND = "org.glassfish.jms.InitializeOnDemand";
     //Lifecycle properties
-    public static final String EMBEDDED="EMBEDDED";
-    public static final String LOCAL="LOCAL";
-    public static final String REMOTE="REMOTE";
+    enum BROKER_TYPE {
+        DISABLED,
+        EMBEDDED,
+        LOCAL,
+        REMOTE
+    }
+
     public static final String JMS_SERVICE = "jms-service";
-    //static Logger _logger = LogDomains.getLogger(JmsProviderLifecycle.class, LogDomains.RSR_LOGGER);
+
+    BROKER_TYPE brokerType;
 
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     Config config;
@@ -102,6 +98,13 @@ public class JmsProviderLifecycle implements PostConstruct{
     public void postConstruct() 
     {
        final JmsService jmsService = config.getExtensionByType(JmsService.class);
+       brokerType = BROKER_TYPE.valueOf(jmsService.getType());
+       configureConfigListener();
+       
+       if (brokerType == BROKER_TYPE.DISABLED) {
+           return;
+       }
+       
        if (eagerStartupRequired())
        {
         try {
@@ -118,7 +121,7 @@ public class JmsProviderLifecycle implements PostConstruct{
             Logger.getLogger(JmsProviderLifecycle.class.getName()).log(Level.SEVERE, null, ex);
             throw new IllegalStateException(ex);
         }
-       configureConfigListener();
+
        //createMonitoringConfig();
 
     }
@@ -128,15 +131,16 @@ public class JmsProviderLifecycle implements PostConstruct{
     }
     public void initializeBroker () throws ConnectorRuntimeException
     {
+        if (!(brokerType == BROKER_TYPE.DISABLED)) {
             String module = ConnectorConstants.DEFAULT_JMS_ADAPTER;
             String loc = ConnectorsUtil.getSystemModuleLocation(module);
             ConnectorRuntime connectorRuntime = connectorRuntimeProvider.get();
             connectorRuntime.createActiveResourceAdapter(loc, module, null);
+        }
     }
     private boolean eagerStartupRequired(){
         JmsService jmsService = getJmsService();
         if(jmsService == null) return false;
-        String integrationMode =jmsService.getType();
         List <JmsHost> jmsHostList = jmsService.getJmsHost();
         if (jmsHostList == null) return false;
 
@@ -157,7 +161,7 @@ public class JmsProviderLifecycle implements PostConstruct{
 
 
         //we don't manage lifecycle of remote brokers
-        if(REMOTE.equals(integrationMode))
+        if(brokerType == BROKER_TYPE.REMOTE)
                 return false;
 
          //Initialize on demand is currently enabled based on a system property
@@ -166,11 +170,11 @@ public class JmsProviderLifecycle implements PostConstruct{
         if ("true".equals(jmsInitializeOnDemand))
             return false;
 
-        if (EMBEDDED.equals(integrationMode) && (!lazyInit))
+        if (brokerType == BROKER_TYPE.EMBEDDED && (!lazyInit))
             return true;
 
         //local broker has eager startup by default
-        if(LOCAL.equals(integrationMode))
+        if(brokerType == BROKER_TYPE.LOCAL)
             return true;
 
 

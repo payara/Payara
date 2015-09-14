@@ -127,6 +127,8 @@ public class JMSPing implements AdminCommand {
         }
 
          JmsService jmsservice =  config.getExtensionByType(JmsService.class);
+         
+         
               /* for (Config c : configs.getConfig()) {
 
                       if(configRef.equals(c.getName()))

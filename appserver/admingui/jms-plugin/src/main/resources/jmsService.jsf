@@ -153,7 +153,7 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
                             </event>
                             // TODO: Figure what this needs to make it work. :(
                             <sun:property id="typeProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Type}" helpText="$resource{i18njms.jms.TypeHelp}">
-                                <sun:dropDown id="Type"  selected="#{pageSession.valueMap['type']}" labels={"LOCAL" "REMOTE" "EMBEDDED"} values={"LOCAL" "REMOTE" "EMBEDDED"}/>
+                                <sun:dropDown id="Type"  selected="#{pageSession.valueMap['type']}" labels={"LOCAL" "REMOTE" "EMBEDDED" "DISABLED"} values={"LOCAL" "REMOTE" "EMBEDDED" "DISABLED"}/>
                             </sun:property>
                             <sun:property id="timeoutProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18njms.jms.Timeout}" helpText="$resource{i18njms.jms.TimeoutHelp}">
                                 <sun:textField id="Timeout" styleClass="integer" columns="$int{10}" maxLength="#{sessionScope.fieldLengths['maxLength.jms.Timeout']}" text="#{pageSession.valueMap['initTimeoutInSeconds']}" />
