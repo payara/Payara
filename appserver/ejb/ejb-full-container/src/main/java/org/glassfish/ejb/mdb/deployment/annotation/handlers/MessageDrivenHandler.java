@@ -138,7 +138,9 @@ public class MessageDrivenHandler extends AbstractEjbHandler {
                     acProp.propertyName(), acProp.propertyValue(), "");
                                                 // with empty description
             // xml override
-            if (ejbMsgBeanDesc.getActivationConfigValue(envProp.getName()) == null) {
+            if (acProp.propertyName().equals("resourceAdapter")) {
+                ejbMsgBeanDesc.setResourceAdapterMid(acProp.propertyValue());
+            } else if (ejbMsgBeanDesc.getActivationConfigValue(envProp.getName()) == null) {
                 ejbMsgBeanDesc.putActivationConfigProperty(envProp);
             }
         }
