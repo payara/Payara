@@ -46,14 +46,14 @@
   <parent>
     <groupId>org.glassfish.main.extras</groupId>
     <artifactId>extras</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <artifactId>glassfish-embedded-common</artifactId>
   <packaging>pom</packaging>
   <name>Embedded GlassFish Common</name>
-  <version>4.2-SNAPSHOT</version>
+  <version>4.1.1-SNAPSHOT</version>
   <url>http://glassfish.dev.java.net</url>
 
   <modules>

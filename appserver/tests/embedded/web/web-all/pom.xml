@@ -52,13 +52,13 @@
     <!--<parent>-->
     <!--<groupId>org.glassfish</groupId>-->
     <!--<artifactId>glassfish-parent</artifactId>-->
-    <!--<version>4.2-SNAPSHOT</version>-->
+    <!--<version>4.1.1-SNAPSHOT</version>-->
     <!--</parent>-->
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests</groupId>
     <artifactId>web-all-embedded-test</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>Test for glassfish-embedded-web</name>
 
     <properties>
@@ -144,7 +144,7 @@
                 <dependency>
                     <groupId>org.glassfish.extras</groupId>
                     <artifactId>glassfish-embedded-all</artifactId>
-                    <version>4.2-SNAPSHOT</version>
+                    <version>4.1.1-SNAPSHOT</version>
                 </dependency>                
             </dependencies>
         </profile>

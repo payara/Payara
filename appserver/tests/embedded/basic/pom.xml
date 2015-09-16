@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded</groupId>
     <artifactId>basic</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Basic tests for testing org.glassfish.embeddable APIs</name>
     <modules>

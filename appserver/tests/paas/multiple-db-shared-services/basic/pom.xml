@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>multiple-shared-db-service-test-basic</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>Multiple Shared DB service Basic PaaS application</name>
     <packaging>war</packaging>
     <build>

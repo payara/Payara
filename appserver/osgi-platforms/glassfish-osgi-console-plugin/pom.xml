@@ -44,7 +44,7 @@
     <parent>
         <groupId>org.glassfish.main.admingui</groupId>
         <artifactId>admingui</artifactId>
-        <version>4.2-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
       <relativePath>../../admingui/pom.xml</relativePath>
     </parent>
     <artifactId>glassfish-osgi-console-plugin</artifactId>

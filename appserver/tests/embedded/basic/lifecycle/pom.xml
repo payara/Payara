@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded.basic</groupId>
     <artifactId>lifecycle</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>Test newGlassFish(), start(), stop(), dispose() lifecyle operations</name>
     <build>
         <plugins>

@@ -46,13 +46,13 @@
     <parent>
         <groupId>org.glassfish</groupId>
         <artifactId>paas.plugins</artifactId>
-        <version>4.2-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish</groupId>
     <artifactId>paas.mydbplugin</artifactId>
     
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>MyDB Plugin</name>
     <build>
         <resources>

@@ -52,7 +52,7 @@
     <artifactId>ejb_quicklook</artifactId>
     <name>Glassfish JRuby Quicklook</name>
     <packaging>jar</packaging>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <description>This pom describes how to run QuickLook tests on the Glassfish Bundle</description>
 
     <build>

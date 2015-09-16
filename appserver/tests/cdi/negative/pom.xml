@@ -47,14 +47,14 @@
     <parent>
         <groupId>org.glassfish.tests</groupId>
         <artifactId>cdi</artifactId>
-        <version>4.2-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
     <groupId>org.glassfish.tests.cdi</groupId>
     <artifactId>negative</artifactId>
     <packaging>pom</packaging>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
 
     <name>GlassFish CDI Negative Tests</name>  
     <modules>

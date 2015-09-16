@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>service_metadata.provision_using_specified_template</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>Provision service(s) using specified template</name>
     <packaging>war</packaging>
     <build>

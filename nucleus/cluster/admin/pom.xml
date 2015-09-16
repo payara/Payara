@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.cluster</groupId>
         <artifactId>cluster</artifactId>
-        <version>4.2-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
     </parent>    
     <artifactId>cluster-admin</artifactId>
     <packaging>glassfish-jar</packaging>

@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests</groupId>
     <artifactId>paas</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>PaaS samples</name>
     <packaging>pom</packaging>
     

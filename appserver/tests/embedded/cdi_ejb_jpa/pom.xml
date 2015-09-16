@@ -46,7 +46,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.embedded.basic</groupId>
     <artifactId>cdi_ejb_jpa</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>CDI, EJB, JPA integration test</name>
     <build>
         <finalName>cdi_ejb_jpa</finalName>

@@ -44,7 +44,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.glassfish.tests.paas</groupId>
     <artifactId>basic-jpa</artifactId>
-    <version>4.2-SNAPSHOT</version>
+    <version>4.1.1-SNAPSHOT</version>
     <name>Basic JPA PaaS sample</name>
     <packaging>war</packaging>
     <build>

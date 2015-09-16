@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.2-SNAPSHOT</version>
+        <version>4.1.1-SNAPSHOT</version>
     </parent>
     <groupId>org.glassfish.main.ejb</groupId>
     <artifactId>ejb</artifactId>
