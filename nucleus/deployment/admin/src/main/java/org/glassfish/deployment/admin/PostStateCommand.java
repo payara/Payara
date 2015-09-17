@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.deployment.admin;
 
 import java.util.Collection;
@@ -111,8 +112,10 @@ public class PostStateCommand implements AdminCommand,
       } catch (Exception e) {
           logger.log(Level.SEVERE, "Error duirng outer PostState: " + this.getClass().getName(), e);
       } finally {
-          // null out to prevent class loader leaks
+          // null out to prevent class loader leaks as the suppInfo holds a reference to the Deployment Context
+          // which holds a reference to the WebAppClassloader and this instance can be cached
           suppInfo = null;
+          accessChecks = null;
       }
     }
 }
