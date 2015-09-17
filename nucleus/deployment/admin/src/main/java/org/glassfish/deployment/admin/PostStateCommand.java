@@ -47,7 +47,6 @@ import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.internal.deployment.ApplicationLifecycleInterceptor;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import javax.inject.Inject;
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
@@ -111,6 +110,9 @@ public class PostStateCommand implements AdminCommand,
         }
       } catch (Exception e) {
           logger.log(Level.SEVERE, "Error duirng outer PostState: " + this.getClass().getName(), e);
+      } finally {
+          // null out to prevent class loader leaks
+          suppInfo = null;
       }
     }
 }
