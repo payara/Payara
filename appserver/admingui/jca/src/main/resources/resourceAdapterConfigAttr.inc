@@ -71,6 +71,10 @@
                      if (#{sessionScope._jms_exist}){
                         listAdd(list="#{pageSession.connectorList}" value="jmsra" index="$int{0}")
                     }
+                    if (!#{sessionScope._jms_exist}){
+                        listAdd(list="#{pageSession.connectorList}" value="" index="$int{0}")
+                    }  
+
                 />
                 <!command
                     setAttribute(key="click" value="$this{component}");
