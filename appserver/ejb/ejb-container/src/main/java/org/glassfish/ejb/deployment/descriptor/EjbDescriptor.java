@@ -1745,7 +1745,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Return the set of ejb references this ejb declares.
      */
     @Override
-    public Set<EjbReference> getEjbReferenceDescriptors() {
+    public final Set<EjbReference> getEjbReferenceDescriptors() {
         if (env != null)
             return env.getEjbReferenceDescriptors();
         else
@@ -1756,7 +1756,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Adds a reference to another ejb to me.
      */
     @Override
-    public void addEjbReferenceDescriptor(EjbReference ejbReference) {
+    public final void addEjbReferenceDescriptor(EjbReference ejbReference) {
         try {
             EjbReference existing = getEjbReference(ejbReference.getName());
             for(InjectionTarget next : ejbReference.getInjectionTargets() ) {
@@ -1772,7 +1772,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void removeEjbReferenceDescriptor(EjbReference ejbReference) {
+    public final void removeEjbReferenceDescriptor(EjbReference ejbReference) {
         if (env != null)
             env.removeEjbReferenceDescriptor(ejbReference);
         else
@@ -1781,12 +1781,12 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public Set<LifecycleCallbackDescriptor> getPostConstructDescriptors() {
+    public final Set<LifecycleCallbackDescriptor> getPostConstructDescriptors() {
         return postConstructDescs;
     }
 
     @Override
-    public void addPostConstructDescriptor(LifecycleCallbackDescriptor
+    public final void addPostConstructDescriptor(LifecycleCallbackDescriptor
             postConstructDesc) {
         String className = postConstructDesc.getLifecycleCallbackClass();
         boolean found = false;
@@ -1803,19 +1803,19 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public LifecycleCallbackDescriptor
+    public final LifecycleCallbackDescriptor
             getPostConstructDescriptorByClass(String className) {
         return bundleDescriptor.
                             getPostConstructDescriptorByClass(className, this);
     }
 
     @Override
-    public Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors() {
+    public final Set<LifecycleCallbackDescriptor> getPreDestroyDescriptors() {
         return preDestroyDescs;
     }
 
     @Override
-    public void addPreDestroyDescriptor(LifecycleCallbackDescriptor
+    public final void addPreDestroyDescriptor(LifecycleCallbackDescriptor
             preDestroyDesc) {
         String className = preDestroyDesc.getLifecycleCallbackClass();
         boolean found = false;
@@ -1832,21 +1832,21 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public LifecycleCallbackDescriptor
+    public final LifecycleCallbackDescriptor
             getPreDestroyDescriptorByClass(String className) {
         return bundleDescriptor.
                                 getPreDestroyDescriptorByClass(className, this);
     }
 
     @Override
-    public Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
+    public final Set<ServiceReferenceDescriptor> getServiceReferenceDescriptors() {
         if (env != null)
             return env.getServiceReferenceDescriptors();
         else
             return serviceReferences;
     }
 
-    public void addServiceReferenceDescriptor(
+    public final void addServiceReferenceDescriptor(
                                     ServiceReferenceDescriptor serviceRef) {
         try {
             ServiceReferenceDescriptor existing =
@@ -1865,7 +1865,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void removeServiceReferenceDescriptor(
+    public final void removeServiceReferenceDescriptor(
                                     ServiceReferenceDescriptor serviceRef) {
         if (env != null)
             env.removeServiceReferenceDescriptor(serviceRef);
@@ -1878,7 +1878,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Throws an IllegalArgumentException if it is not found.
      */
     @Override
-    public ServiceReferenceDescriptor getServiceReferenceByName(String name) {
+    public final ServiceReferenceDescriptor getServiceReferenceByName(String name) {
         if (env != null)
             return env.getServiceReferenceByName(name);
         for (Iterator itr = this.getServiceReferenceDescriptors().iterator();
@@ -1896,7 +1896,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public Set<MessageDestinationReferenceDescriptor>
+    public final Set<MessageDestinationReferenceDescriptor>
             getMessageDestinationReferenceDescriptors() {
         if (env != null)
             return env.getMessageDestinationReferenceDescriptors();
@@ -1905,7 +1905,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void addMessageDestinationReferenceDescriptor(
+    public final void addMessageDestinationReferenceDescriptor(
                         MessageDestinationReferenceDescriptor messageDestRef) {
 
         try {
@@ -1928,7 +1928,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void removeMessageDestinationReferenceDescriptor(
+    public final void removeMessageDestinationReferenceDescriptor(
                             MessageDestinationReferenceDescriptor msgDestRef) {
         if (env != null)
             env.removeMessageDestinationReferenceDescriptor(msgDestRef);
@@ -1941,7 +1941,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Throws an IllegalArgumentException if it is not found.
      */
     @Override
-    public MessageDestinationReferenceDescriptor
+    public final MessageDestinationReferenceDescriptor
             getMessageDestinationReferenceByName(String name) {
 
         if (env != null)
@@ -1958,7 +1958,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
+    public final Set<ResourceDescriptor> getResourceDescriptors(JavaEEResourceType type) {
         if (env != null)
             return env.getResourceDescriptors(type);
         else
@@ -1966,7 +1966,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void addResourceDescriptor(ResourceDescriptor descriptor) {
+    public final void addResourceDescriptor(ResourceDescriptor descriptor) {
         if (env != null) {
             env.addResourceDescriptor(descriptor);
             return;
@@ -1975,7 +1975,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void removeResourceDescriptor(ResourceDescriptor descriptor) {
+    public final void removeResourceDescriptor(ResourceDescriptor descriptor) {
         if (env != null) {
             env.removeResourceDescriptor(descriptor);
             return;
@@ -1984,14 +1984,14 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public Set<ResourceDescriptor> getAllResourcesDescriptors() {
+    public final Set<ResourceDescriptor> getAllResourcesDescriptors() {
         if (env != null)
             return env.getAllResourcesDescriptors();
         return super.getAllResourcesDescriptors();
     }
 
     @Override
-    public Set<ResourceDescriptor> getAllResourcesDescriptors(Class givenClazz) {
+    public final Set<ResourceDescriptor> getAllResourcesDescriptors(Class givenClazz) {
         if (env != null)
             return env.getAllResourcesDescriptors(givenClazz);
         return super.getAllResourcesDescriptors(givenClazz);
@@ -2001,7 +2001,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Return the set of resource environment references this ejb declares.
      */
     @Override
-    public Set<ResourceEnvReferenceDescriptor>
+    public final Set<ResourceEnvReferenceDescriptor>
             getResourceEnvReferenceDescriptors() {
         if (env != null)
             return env.getResourceEnvReferenceDescriptors();
@@ -2010,7 +2010,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void addResourceEnvReferenceDescriptor(
+    public final void addResourceEnvReferenceDescriptor(
                         ResourceEnvReferenceDescriptor resourceEnvReference) {
 
         try {
@@ -2029,7 +2029,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void removeResourceEnvReferenceDescriptor(
+    public final void removeResourceEnvReferenceDescriptor(
                         ResourceEnvReferenceDescriptor resourceEnvReference) {
         if (env != null)
             env.removeResourceEnvReferenceDescriptor(resourceEnvReference);
@@ -2038,7 +2038,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(
+    public final ResourceEnvReferenceDescriptor getResourceEnvReferenceByName(
                                                                 String name) {
         for (Iterator itr = getResourceEnvReferenceDescriptors().iterator();
                 itr.hasNext();) {
@@ -2058,7 +2058,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Return the set of resource references this ejb declares.
      */
     @Override
-    public Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
+    public final Set<ResourceReferenceDescriptor> getResourceReferenceDescriptors() {
         if (env != null)
             return env.getResourceReferenceDescriptors();
         else
@@ -2069,7 +2069,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Adds a resource reference to me.
      */
     @Override
-    public void addResourceReferenceDescriptor(
+    public final void addResourceReferenceDescriptor(
                             ResourceReferenceDescriptor resourceReference) {
 
         try {
@@ -2091,7 +2091,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Removes the given resource reference from me.
      */
     @Override
-    public void removeResourceReferenceDescriptor(
+    public final void removeResourceReferenceDescriptor(
                             ResourceReferenceDescriptor resourceReference) {
         if (env != null)
             env.removeResourceReferenceDescriptor(resourceReference);
@@ -2105,7 +2105,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * exists.
      */
     @Override
-    public EnvironmentProperty getEnvironmentPropertyByName(String name) {
+    public final EnvironmentProperty getEnvironmentPropertyByName(String name) {
         if (env != null)
             return env.getEnvironmentPropertyByName(name);
         for (Iterator itr = this.getEnvironmentProperties().iterator(); itr.hasNext();) {
@@ -2124,7 +2124,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Return a copy of the structure holding the environment properties.
      */
     @Override
-    public Set<EnvironmentProperty> getEnvironmentProperties() {
+    public final Set<EnvironmentProperty> getEnvironmentProperties() {
         if (env != null)
             return env.getEnvironmentProperties();
         else
@@ -2135,7 +2135,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Add the supplied environment property to the ejb descriptor's list.
      */
     @Override
-    public void addEnvironmentProperty(
+    public final void addEnvironmentProperty(
                                     EnvironmentProperty environmentProperty) {
         if (env != null) {
             env.addEnvironmentProperty(environmentProperty);
@@ -2154,7 +2154,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * Removes the given environment property from me.
      */
     @Override
-    public void removeEnvironmentProperty(
+    public final void removeEnvironmentProperty(
                                 EnvironmentProperty environmentProperty) {
         if (env != null)
             env.removeEnvironmentProperty(environmentProperty);
@@ -2163,7 +2163,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public Set<EntityManagerFactoryReferenceDescriptor>
+    public final Set<EntityManagerFactoryReferenceDescriptor>
             getEntityManagerFactoryReferenceDescriptors() {
         if (env != null)
             return env.getEntityManagerFactoryReferenceDescriptors();
@@ -2176,7 +2176,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * the given name.
      */
     @Override
-    public EntityManagerFactoryReferenceDescriptor
+    public final EntityManagerFactoryReferenceDescriptor
             getEntityManagerFactoryReferenceByName(String name) {
         if (env != null)
             return env.getEntityManagerFactoryReferenceByName(name);
@@ -2194,7 +2194,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void addEntityManagerFactoryReferenceDescriptor(
+    public final void addEntityManagerFactoryReferenceDescriptor(
                         EntityManagerFactoryReferenceDescriptor reference) {
 
         try {
@@ -2216,7 +2216,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public Set<EntityManagerReferenceDescriptor>
+    public final Set<EntityManagerReferenceDescriptor>
             getEntityManagerReferenceDescriptors() {
         if (env != null)
             return env.getEntityManagerReferenceDescriptors();
@@ -2229,7 +2229,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
      * the given name.
      */
     @Override
-    public EntityManagerReferenceDescriptor getEntityManagerReferenceByName(
+    public final EntityManagerReferenceDescriptor getEntityManagerReferenceByName(
                                                                 String name) {
         if (env != null)
             return env.getEntityManagerReferenceByName(name);
@@ -2247,7 +2247,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public void addEntityManagerReferenceDescriptor
+    public final void addEntityManagerReferenceDescriptor
             (EntityManagerReferenceDescriptor reference) {
 
         try {
@@ -2270,7 +2270,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public List<InjectionCapable>
+    public final List<InjectionCapable>
             getInjectableResourcesByClass(String className) {
         if (env != null)
             return env.getInjectableResourcesByClass(className);
@@ -2280,7 +2280,7 @@ public abstract class EjbDescriptor extends CommonResourceDescriptor
     }
 
     @Override
-    public InjectionInfo getInjectionInfoByClass(Class clazz) {
+    public final InjectionInfo getInjectionInfoByClass(Class clazz) {
         if (env != null)
             return env.getInjectionInfoByClass(clazz);
         else
