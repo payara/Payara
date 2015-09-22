@@ -753,17 +753,25 @@ aggregated_tests_summary(){
           -e s@'/testReport/><img style=text-align:right>'@'#'@g \
           -e s@'/aggregatedTestReport/><img style=text-align:right>'@'#'@g \
           -e s@' style=text-align:right>'@'#'@g \
+          -e s@'<.*'@@g \
+          -e s@'.*>'@@g \
           -e s@'/'@'#'@g`
     do
-        jobname=`cut -d '#' -f1 <<< $i`
-        buildnumber=`cut -d '#' -f2 <<< $i`
-        failednumber=`cut -d '#' -f3 <<< $i`
-        totalnumber=`cut -d '#' -f4 <<< $i`
-        passednumber=$((totalnumber-failed))
-    printf "%s%s%s%s\n" \
-            `align_column 55 "." "$jobname (#${buildnumber})"` \
-            `align_column 15 "." "PASSED(${passednumber})"` \
-            "FAILED(${failednumber})"
+        sizei=${#i}
+        y=`sed s@'#'@@g <<< $i`
+        sizey=${#y}
+        if [ $((sizei - sizey)) -eq 3 ]
+        then
+            jobname=`cut -d '#' -f1 <<< $i`
+            buildnumber=`cut -d '#' -f2 <<< $i`
+            failednumber=`cut -d '#' -f3 <<< $i`
+            totalnumber=`cut -d '#' -f4 <<< $i`
+            passednumber=$((totalnumber-failednumber))
+            printf "%s%s%s%s\n" \
+                `align_column 55 "." "$jobname (#${buildnumber})"` \
+                `align_column 15 "." "PASSED(${passednumber})"` \
+                "FAILED(${failednumber})"
+        fi
     done
     rm tests.html
 }
