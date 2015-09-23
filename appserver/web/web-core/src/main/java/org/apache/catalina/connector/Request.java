@@ -2079,7 +2079,7 @@ public class Request
             throws UnsupportedEncodingException {
 
         // START SJSAS 4936855
-        if (usingReader) {
+        if (parametersProcessed || usingReader) {
             String contextName =
                 getContext() != null ? getContext().getName() : "UNKNOWN";
             log.log(Level.WARNING, UNABLE_SET_REQUEST_CHARS, new Object[] {enc, contextName});
