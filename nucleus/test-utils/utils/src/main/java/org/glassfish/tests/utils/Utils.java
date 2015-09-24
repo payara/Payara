@@ -104,7 +104,7 @@ public class Utils {
 				e.printStackTrace();
 			}
 			Logger.getAnonymousLogger().fine(
-					"time to parse domain.xml : "
+					"time to parse domain.xml :- "
 							+ String.valueOf(System.currentTimeMillis() - now));
 		}
         
