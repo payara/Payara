@@ -680,6 +680,8 @@ clean_and_zip_workspace(){
     printf "\n%s \n\n" "===== CLEAN AND ZIP THE WORKSPACE ====="
     svn status main | grep ? | awk '{print $2}' | xargs rm -rf
     zip ${WORKSPACE}/bundles/workspace.zip -r main
+    # zip promorepo without top-leveldir for sdk build and to push IPS pkgs.
+    (cd ${WORKSPACE}/promorepo; zip -ry - .) > ${WORKSPACE}/bundles/promorepo.zip
 }
 
 zip_tests_workspace(){
