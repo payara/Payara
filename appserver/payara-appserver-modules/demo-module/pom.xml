@@ -20,8 +20,9 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-	    <scope>provided</scope>
+            <version>4.1.154-SNAPSHOT</version>
+	    
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
