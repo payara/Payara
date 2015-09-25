@@ -45,6 +45,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.transaction.Status;
 import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
 
@@ -92,18 +93,24 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
             try {
                 proceed = proceed(ctx);
             } finally {
-                if (isTransactionStarted)
+                if (isTransactionStarted) {
                     try {
-                        getTransactionManager().commit();
+                        // Exception handling for proceed method call above can set TM/TRX as setRollbackOnly
+                        if(getTransactionManager().getTransaction().getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                            getTransactionManager().rollback();
+                        } else {
+                            getTransactionManager().commit();
+                        }
                     } catch (Exception exception) {
                         String messageString =
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                         "encountered exception during commit " +
                                         exception;
                         _logger.log(java.util.logging.Level.INFO,
-                            CDI_JTA_MBREQUIREDCT, exception);
+                                CDI_JTA_MBREQUIREDCT, exception);
                         throw new TransactionalException(messageString, exception);
                     }
+                }
             }
             return proceed;
         } finally {

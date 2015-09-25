@@ -45,6 +45,7 @@ import org.glassfish.logging.annotation.LoggerInfo;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
@@ -96,7 +97,12 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                 proceed = proceed(ctx);
             } finally {
                 try {
-                    getTransactionManager().commit();
+                    // Exception handling for proceed method call above can set TM/TRX as setRollbackOnly
+                    if(getTransactionManager().getTransaction().getStatus() == Status.STATUS_MARKED_ROLLBACK) {
+                        getTransactionManager().rollback();
+                    } else {
+                        getTransactionManager().commit();
+                    }
                 } catch (Exception exception) {
                     String messageString =
                             "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
