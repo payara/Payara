@@ -120,11 +120,11 @@
     </profiles>
     
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>console-updatecenter-plugin-l10n</artifactId>
             <version>${project.version}</version>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>fish.payara.admingui</groupId>
             <artifactId>console-payara-branding-plugin-l10n</artifactId>

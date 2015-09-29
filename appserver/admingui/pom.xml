@@ -119,10 +119,10 @@
         <module>ejb-lite</module>
         <module>corba</module>
         <module>full</module>
-        <module>updatecenter</module>
+        <!--<module>updatecenter</module> -->
         <module>war</module>
         <module>dist-fragment</module>
-        <module>updatecenter-l10n</module>
+        <!--<module>updatecenter-l10n</module> -->
         <module>full-l10n</module>
         <module>common-l10n</module>
         <module>corba-l10n</module>
