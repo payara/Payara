@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>internal-api</artifactId>
-            <version>${project.version}</version>
+            <version>4.1.154-SNAPSHOT</version>
             <type>jar</type>
 	    <scope>provided</scope>
         </dependency>
