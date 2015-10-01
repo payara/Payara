@@ -32,5 +32,7 @@
         <module>payara-jsr107</module>
         <module>jsr107-repackaged</module>
         <module>payara-micro-cdi</module>
+        <module>demo-module</module>
+        <module>demo-module2</module>
     </modules>
 </project>
