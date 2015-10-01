@@ -32,6 +32,5 @@
 	<module>hazelcast-bootstrap</module>
         <module>payara-micro</module>
         <module>payara-micro-service</module>
-        <module>hello-world</module>
     </modules>
 </project>
