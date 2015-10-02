@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2015] [C2B2 Consulting Limited] -->
+
 <!-- applications/uploadButtons.inc -->
 
 <sun:button id="uploadButton" text="$resource{i18n.button.OK}"
