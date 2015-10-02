@@ -200,6 +200,12 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
         // bnevins IT 10209
         asenv.getProps().put(SystemPropertyConstants.SERVER_NAME, instanceName);
         System.setProperty(SystemPropertyConstants.SERVER_NAME, instanceName);
+        
+        // Put right the hostName that was probably broken earlier
+        s = asenv.getProps().get(SystemPropertyConstants.HOST_NAME_PROPERTY);
+        if (ok(s)) {
+            System.setProperty(SystemPropertyConstants.HOST_NAME_PROPERTY, s);
+        }
 
         // bnevins Apr 2010 adding clustering support...
         String typeString = args.getProperty("-type");
