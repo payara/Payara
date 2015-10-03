@@ -136,6 +136,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Singleton;
+import org.glassfish.api.invocation.InvocationManager;
 import org.jvnet.hk2.config.types.Property;
 
 //import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
@@ -336,6 +337,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     
     @Inject
     private ApplicationRegistry appRegistry;
+    
+    @Inject
+    InvocationManager invManager;
 
     /**
      * Constructor for an active Jms Adapter.
@@ -539,6 +543,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                 //set the JMSRA system property to enable XA JOINS
                                 //disabling this due to issue - 8727
                                 //System.setProperty(XA_JOIN_ALLOWED, "true");
+                                
+                                // to prevent classloader leaks in new threads clear invocation manager before bootstrapping JMS
                                 resourceadapter_.start(bootStrapContextImpl);
                                 return null;
                             }

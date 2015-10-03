@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Llimited]
 
 package org.glassfish.api.invocation;
 
@@ -294,12 +295,32 @@ public class InvocationManagerImpl
         return (T) v.get(i - 2);
     }
 
+    @Override
     public List getAllInvocations() {
         return frames.get();
     }
 
+    @Override
+    public List<? extends ComponentInvocation> popAllInvocations() {
+        List<? extends ComponentInvocation> result = frames.get();
+        frames.set(null);
+        return result;
+    }
+
+    @Override
+    public void putAllInvocations(List<? extends ComponentInvocation> invocations) {
+        frames.set(new InvocationArray<>((List<ComponentInvocation>) invocations));
+    }
+
     static class InvocationArray<T extends ComponentInvocation> extends java.util.ArrayList<T> {
         private ComponentInvocationType invocationAttribute;
+
+        private InvocationArray(List<T> invocations) {
+            super(invocations);
+        }
+
+        private InvocationArray() {
+        }
 
         public void setInvocationAttribute(ComponentInvocationType attribute) {
             this.invocationAttribute = attribute;

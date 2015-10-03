@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.ejb.containers;
 
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
@@ -100,6 +101,9 @@ public class EjbThreadPoolExecutor extends ThreadPoolExecutor {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            // clear our Context Classloader
+            Thread.currentThread().setContextClassLoader(null);
         }
     }
     
