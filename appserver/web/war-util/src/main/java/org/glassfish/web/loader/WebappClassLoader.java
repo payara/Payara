@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.web.loader;
 
 import com.sun.appserv.BytecodePreprocessor;
@@ -2041,6 +2041,32 @@ public class WebappClassLoader
                             }
                         }
                     }
+                    
+                    try {
+                        // aggressively close parent jars
+
+                        WeakHashMap<Closeable, Void> closeables;
+                        Field closeField = URLClassLoader.class.getDeclaredField("closeables");
+                        closeField.setAccessible(true);
+                        closeables = (WeakHashMap<Closeable, Void>) closeField.get(this);
+                        synchronized (closeables) {
+                            Set<Closeable> keys = closeables.keySet();
+                            for (Closeable c : keys) {
+                                try {
+                                    if (c instanceof JarFile) {
+                                        c.close();
+                                    }
+                                } catch (IOException ioex) {
+                                }
+                            }
+                            closeables.clear();
+                        }
+
+                    } catch (Exception ex) {
+                        Logger.getLogger(WebappClassLoader.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    
+                    
                 }
             }
         }

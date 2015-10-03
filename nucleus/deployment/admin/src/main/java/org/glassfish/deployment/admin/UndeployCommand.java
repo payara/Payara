@@ -74,7 +74,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -437,6 +436,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                      * any special handling (such as stale file handling)
                      * known to the archive can run.
                      */
+
+                    // perform full GC before doing this
+                    System.gc();
                     source.delete();
                 }
 
