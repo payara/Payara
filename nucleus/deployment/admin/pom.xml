@@ -156,11 +156,5 @@
             <artifactId>kernel</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.web</groupId>
-            <artifactId>war-util</artifactId>
-            <version>4.1.154-SNAPSHOT</version>
-            <type>jar</type>
-        </dependency>
     </dependencies>
 </project>
