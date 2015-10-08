@@ -44,7 +44,6 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
 import org.glassfish.weld.connector.WeldUtils;
-import org.glassfish.weld.connector.WeldUtils.*;
 import org.glassfish.weld.ejb.EjbDescriptorImpl;
 import org.jboss.weld.bootstrap.WeldBootstrap;
 import org.jboss.weld.bootstrap.api.ServiceRegistry;
@@ -58,6 +57,7 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.InjectionTarget;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -71,7 +71,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -752,7 +754,27 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
     protected BeansXml parseBeansXML(ReadableArchive archive, String beansXMLPath) throws IOException {
         WeldBootstrap wb = context.getTransientAppMetaData(WeldDeployer.WELD_BOOTSTRAP,
                                                            WeldBootstrap.class);
-        return wb.parse(getBeansXMLFileURL(archive, beansXMLPath));
+        URL url = getBeansXMLFileURL(archive, beansXMLPath);
+        BeansXml result =  wb.parse(url);
+                try {
+            // Ensure JarFile is closed
+            Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
+            Field fields[] = clazz.getDeclaredFields();
+            for (Field field : fields) {
+                if ("fileCache".equals(field.getName())) {
+                    field.setAccessible(true);
+                    HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
+                    Set<JarFile> jars = new HashSet<>();
+                    jars.addAll(files.values());
+                    for (JarFile file : jars) {
+                        file.close();
+                    }
+                } 
+            }
+        } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException | IOException ex) {
+            logger.log(Level.SEVERE, null, ex);
+        }   
+        return result;
     }
 
 
