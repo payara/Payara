@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2015] [C2B2 Consulting Limited] -->
+
 <!-- applications/uploadButtons.inc -->
 
 <sun:button id="uploadButton" text="$resource{i18n.button.OK}"
@@ -81,7 +83,9 @@
               propertyList="$attribute{newList}"
               targets = "#{pageSession.selectedTargets}"
         );
-	deleteFileFromTempDir(deleteTempFile="$attribute{filePath}");
+        if (${needUpload}){
+            deleteFileFromTempDir(deleteTempFile="$attribute{filePath}");
+        }       
         gf.redirect(page="#{request.contextPath}/common/removeFrame.jsf?#{pageSession.listPageLink}&#{extraArgs}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}&bare=true");
     />
 </sun:button>
