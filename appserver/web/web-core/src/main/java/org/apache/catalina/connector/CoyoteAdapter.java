@@ -70,6 +70,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.sun.appserv.ProxyHandler;
+import java.io.CharConversionException;
 import org.apache.catalina.Container;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
@@ -428,50 +429,7 @@ public class CoyoteAdapter extends HttpHandler {
             }
         }
 
-        /* GlassFish Issue 798
-        response.finishResponse();
-        req.action( ActionCode.ACTION_POST_REQUEST , null);
-         */
-        // START GlassFish Issue 798
-//        if (compatWithTomcat) {
-//            afterService(req, res);
-//        }
-        // END GlassFish Issue 798    
     }
-
-    // START GlassFish Issue 798
-    /**
-     * Finish the response and close the connection based on the connection
-     * header.
-     */
-//    @Override
-//    public void afterService(com.sun.grizzly.tcp.Request req,
-//                             com.sun.grizzly.tcp.Response res)
-//            throws Exception{
-//
-//        Request request = (Request) req.getNote(ADAPTER_NOTES);
-//        Response response = (Response) res.getNote(ADAPTER_NOTES);
-//
-//        if ( request == null || response == null) return;
-//
-//        try{
-//            if (!res.isSuspended()){
-//                response.finishResponse();
-//                req.action( ActionCode.ACTION_POST_REQUEST , null);
-//            } else {
-//                request.onAfterService();
-//            }
-//        } catch (Throwable t) {
-//            log.log(Level.SEVERE, sm.getString("coyoteAdapter.service"), t);
-//        } finally {
-//            if (!res.isSuspended()){
-//                // Recycle the wrapper request and response
-//                request.recycle();
-//                response.recycle();
-//            }
-//        }
-//    }
-    // END GlassFish Issue 798
     // ------------------------------------------------------ Protected Methods
 
 
@@ -490,7 +448,14 @@ public class CoyoteAdapter extends HttpHandler {
         request.setSecure(req.isSecure());
 
         // URI decoding
-        DataChunk decodedURI = req.getRequest().getRequestURIRef().getDecodedRequestURIBC();
+        DataChunk decodedURI;
+        try {
+            decodedURI = req.getRequest().getRequestURIRef().getDecodedRequestURIBC();
+        } catch (CharConversionException cce) {
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid URI");
+            return false;
+        }
+        
         if (compatWithTomcat || !v3Enabled) {
 //            decodedURI.duplicate(req.requestURI());
 //            try {

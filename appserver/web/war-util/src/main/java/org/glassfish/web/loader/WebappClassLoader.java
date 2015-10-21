@@ -2671,17 +2671,22 @@ public class WebappClassLoader
                 }
                 WeakReference<?> loaderRef =
                     (WeakReference<?>) loaderRefField.get(key);
+                //In case of JDK 9, java.logging loading  sun.util.logging.resources.logging resource bundle and
+                // java.logging module is used as the cache key with null class loader.So we are adding a null check
+                if (loaderRef!=null){
+                  ClassLoader loader = (ClassLoader) loaderRef.get();
 
-                ClassLoader loader = (ClassLoader) loaderRef.get();
-
-                while (loader != null && loader != this) {
+                  while (loader != null && loader != this) {
                     loader = loader.getParent();
-                }
+                  }
 
-                if (loader != null) {
+                  if (loader != null) {
                     keysIter.remove();
                     countRemoved++;
+                  }
+
                 }
+
             }
 
             if (countRemoved > 0 && logger.isLoggable(Level.FINE)) {
