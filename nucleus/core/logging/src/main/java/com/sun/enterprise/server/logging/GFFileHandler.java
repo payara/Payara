@@ -102,6 +102,7 @@ public class GFFileHandler extends StreamHandler implements
 PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     private static final int DEFAULT_ROTATION_LIMIT_BYTES = 2000000;
+    public static final int DISABLE_LOG_FILE_ROTATION_VALUE = 0;
 
     private final static LocalStringManagerImpl LOCAL_STRINGS = 
         new LocalStringManagerImpl(GFFileHandler.class);
@@ -357,7 +358,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         // We set the LogRotation limit here. The rotation limit is the
         // Threshold for the number of bytes in the log file after which
         // it will be rotated.
-        if (rotationLimitAttrValue >= MINIMUM_ROTATION_LIMIT_VALUE ) {
+        if (rotationLimitAttrValue >= MINIMUM_ROTATION_LIMIT_VALUE || rotationLimitAttrValue == DISABLE_LOG_FILE_ROTATION_VALUE ) {
             setLimitForRotation(rotationLimitAttrValue);        
         }
 
