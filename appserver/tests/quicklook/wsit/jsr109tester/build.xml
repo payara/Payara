@@ -93,7 +93,7 @@
                 wsdl="${client.wsdl}"
                 package="${client.package}">
         </wsimport>
-    </target>
+    </target> 
 
     <target name="build-client" depends="generate-client">
         <javac

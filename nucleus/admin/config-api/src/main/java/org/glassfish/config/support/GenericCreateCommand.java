@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2015] [C2B2 Consulting Limited]
  */
 
 package org.glassfish.config.support;
@@ -52,7 +54,6 @@ import org.glassfish.api.admin.*;
 import org.glassfish.api.admin.config.Named;
 import org.glassfish.common.util.admin.GenericCommandModel;
 import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.component.*;
 import org.jvnet.hk2.config.*;
 
 import java.util.List;
@@ -60,7 +61,6 @@ import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import javax.security.auth.Subject;
 
 import org.glassfish.api.admin.AccessRequired.AccessCheck;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -85,7 +85,7 @@ public class GenericCreateCommand extends GenericCrudCommand implements AdminCom
     Create create;
     
     private ConfigBeanProxy parentBean;
-    
+      
     @Override
     public void postConstruct() {
 

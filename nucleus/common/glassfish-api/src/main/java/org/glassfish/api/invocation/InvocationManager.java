@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Llimited]
 
 package org.glassfish.api.invocation;
 
@@ -92,7 +93,14 @@ public interface InvocationManager {
     public boolean isInvocationStackEmpty();
 
     public java.util.List<? extends ComponentInvocation> getAllInvocations();
-   
+    
+    // useful to temp clear the invocation list for example when spawning a new Thread
+    // to prevent potential classloader leaks.
+     java.util.List<? extends ComponentInvocation> popAllInvocations();
+    
+    // useful to temp clear the invocation list for example when spawning a new Thread
+    // to prevent potential classloader leaks.
+    public void putAllInvocations(java.util.List<? extends ComponentInvocation> invocations);
 
     public void registerComponentInvocationHandler(ComponentInvocationType type, 
             RegisteredComponentInvocationHandler handler);

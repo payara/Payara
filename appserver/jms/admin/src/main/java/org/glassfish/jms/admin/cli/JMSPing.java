@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.jms.admin.cli;
 
 import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
@@ -126,19 +126,26 @@ public class JMSPing implements AdminCommand {
             config = domain.getConfigNamed(cluster.getConfigRef());
         }
 
-         JmsService jmsservice =  config.getExtensionByType(JmsService.class);
-              /* for (Config c : configs.getConfig()) {
+        JmsService jmsservice = config.getExtensionByType(JmsService.class);
+        /* for (Config c : configs.getConfig()) {
 
                       if(configRef.equals(c.getName()))
                             jmsservice = c.getJmsService();
                    } */
-         String defaultJmshostStr = jmsservice.getDefaultJmsHost();
-         JmsHost defaultJmsHost = null;
-               for (JmsHost jmshost : jmsservice.getJmsHost()) {
-
-                      if(defaultJmshostStr.equals(jmshost.getName()))
-                            defaultJmsHost = jmshost;
-                   }
+        String defaultJmshostStr = jmsservice.getDefaultJmsHost();
+        JmsHost defaultJmsHost = null;
+        for (JmsHost jmshost : jmsservice.getJmsHost()) {
+            if (jmshost.getName().equals(defaultJmshostStr)) {
+                defaultJmsHost = jmshost;
+            }
+        }
+        
+        if (defaultJmsHost == null) {
+            report.setMessage(localStrings.getLocalString("jms-ping.noDefaultJMSHost", "Unable to PING the JMS Broker as no Default JMS Host is configured on the DAS"));
+            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+        
          String tmpJMSResource = "test_jms_adapter";
          ActionReport subReport = report.addSubActionsReport();
          createJMSResource(defaultJmsHost, subReport, tmpJMSResource, context.getSubject());
@@ -178,6 +185,7 @@ public class JMSPing implements AdminCommand {
 
    void createJMSResource(JmsHost defaultJmsHost, ActionReport subReport, String tmpJMSResource, final Subject subject)
    {
+       
         String port = null;
         String host = null;
         Server targetServer = domain.getServerNamed(target);

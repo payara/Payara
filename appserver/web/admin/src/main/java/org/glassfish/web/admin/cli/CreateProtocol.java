@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.web.admin.cli;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -71,6 +71,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import org.glassfish.grizzly.config.dom.Ssl;
 
 /**
  * Command to create protocol element within network-config
@@ -170,6 +171,13 @@ public class CreateProtocol implements AdminCommand {
                 newProtocol.setName(name);
                 newProtocol.setSecurityEnabled(securityEnabled == null ? null : securityEnabled.toString());
                 param.getProtocol().add(newProtocol);
+                if (securityEnabled) {
+                    Ssl ssl = newProtocol.createChild(Ssl.class);
+                    ssl.setCertNickname("s1as");
+                    ssl.setSsl2Enabled("false");
+                    ssl.setSsl3Enabled("false");
+                    newProtocol.setSsl(ssl);
+                }
                 return newProtocol;
             }
         }, protocols);

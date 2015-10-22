@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.ejb.startup;
 
@@ -70,6 +71,8 @@ import org.glassfish.internal.deployment.ExtendedDeploymentContext;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.pfl.dynamic.codegen.impl.CurrentClassLoader;
+import org.glassfish.pfl.dynamic.codegen.spi.Wrapper;
 
 /**
  * This class represents a logical collection of EJB components contained in one ejb-jar
@@ -232,6 +235,11 @@ public class EjbApplication
         } catch(Throwable t) {
             abortInitializationAfterException();
             throw new RuntimeException("EJB Container initialization error", t);
+        } finally {
+            // clean up the thread local current classloader after codegen to ensure it isn't 
+            // referencing the deployed application
+            CurrentClassLoader.set(this.getClass().getClassLoader());
+            Wrapper._clear();
         }
         
         return true;

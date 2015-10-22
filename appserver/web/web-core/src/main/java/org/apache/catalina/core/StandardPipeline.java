@@ -774,14 +774,14 @@ public class StandardPipeline
                     Context context = req.getContext();
                     try {
                         context.fireContainerEvent(ContainerEvent.BEFORE_UPGRADE_HANDLER_INITIALIZED, handler);
-                        handler.init(wc);
+                        req.initialiseHttpUpgradeHandler(wc);
                     } finally {
                         context.fireContainerEvent(ContainerEvent.AFTER_UPGRADE_HANDLER_INITIALIZED, handler);
                     }
                 } else {
                     log.log(Level.SEVERE, PROTOCOL_HANDLER_REQUIRED_EXCEPTION);
                 }
-                 req.setUpgrade(false);
+                //req.setUpgrade(false);
             }
         }
     }

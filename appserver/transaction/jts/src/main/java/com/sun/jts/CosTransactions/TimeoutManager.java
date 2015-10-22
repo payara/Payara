@@ -59,7 +59,7 @@
 //   This software contains confidential and proprietary information of
 //   IBM Corp.
 //----------------------------------------------------------------------------
-
+//Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.jts.CosTransactions;
 
 import java.util.*;
@@ -67,12 +67,10 @@ import java.util.*;
 import org.omg.CosTransactions.*;
 import com.sun.jts.jtsxa.XID;
 
-import com.sun.jts.trace.*;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
-import com.sun.jts.utils.LogFormatter;
 
 /**
  * This class records state for timing out transactions, and runs a thread
@@ -150,7 +148,11 @@ class TimeoutManager {
 	if (isSetTimeout)
 	   return;
         isSetTimeout = true;
+        
+        // to prevent classloader explicitly set context classloader
+        
         timeoutThread = new TimeoutThread();
+        timeoutThread.setContextClassLoader(timeoutThread.getClass().getClassLoader());
         timeoutThread.start();
     }
 

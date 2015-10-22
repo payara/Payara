@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.glassfish.web;
 
@@ -80,7 +81,6 @@ import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 
 import static javax.xml.stream.XMLStreamConstants.*;
 
@@ -350,6 +350,7 @@ public class WarHandler extends AbstractArchiveHandler {
                     } else {
                         cloader.addJar(file.getPath().substring(baseFileLen),
                                 new JarFile(file), file);
+                        cloader.closeJARs(true);
                     }
                 } catch (Exception e) {
                     // Catch and ignore any exception in case the JAR file

@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 2009-2015 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.154-SNAPSHOT</version>
+        <version>4.1.1.154</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <groupId>fish.payara.admingui</groupId>
@@ -119,10 +119,10 @@
         <module>ejb-lite</module>
         <module>corba</module>
         <module>full</module>
-        <module>updatecenter</module>
+        <!--<module>updatecenter</module> -->
         <module>war</module>
         <module>dist-fragment</module>
-        <module>updatecenter-l10n</module>
+        <!--<module>updatecenter-l10n</module> -->
         <module>full-l10n</module>
         <module>common-l10n</module>
         <module>corba-l10n</module>
@@ -167,7 +167,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>hk2-core</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

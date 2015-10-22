@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ * 
+ * Portions Copyright [2015] [C2B2 Consulting Limited]
  */
 
 package com.sun.enterprise.config.serverbeans;
@@ -95,6 +97,9 @@ public interface SecureAdminPrincipal extends ConfigBeanProxy {
         
         
         @Inject
+        Domain domain;
+        
+        @Inject
         //@Named(CREATION_DECORATOR_NAME)
         private SecureAdminHelper helper;
         
@@ -106,16 +111,70 @@ public interface SecureAdminPrincipal extends ConfigBeanProxy {
         
         @Override
         public void decorate(AdminCommandContext context, SecureAdminPrincipal instance) throws TransactionFailure, PropertyVetoException {
-            try {
-                /*
-                 * The user might have specified an alias, so delegate to the
-                 * helper to return the DN for that alias (or the DN if that's
-                 * what the user specified).
-                 */
-                instance.setDn(helper.getDN(value, isAlias));
-            } catch (Exception ex) {
-                throw new TransactionFailure("create", ex);
+            
+            // Check if the principal already exists
+            if(isPrincipalDuplicate() == false)
+            {
+                try 
+                {
+                    /*
+                     * The user might have specified an alias, so delegate to 
+                     * the helper to return the DN for that alias (or the DN if 
+                     * that's what the user specified).
+                     */              
+                    instance.setDn(helper.getDN(value, isAlias));
+                } 
+                catch (Exception ex) 
+                {
+                    throw new TransactionFailure("create", ex);
+                }
             }
+            
+            // If the principal already exists, throw an exception
+            else
+            {
+                throw new TransactionFailure("Secure admin principal already "
+                        + "exists");
+            }
+        }
+        
+        /**
+         * Helper method to check if the secure admin principal already exists
+         * @return Returns true if the principal already exists in the config
+         * @throws TransactionFailure 
+         */
+        private boolean isPrincipalDuplicate() throws TransactionFailure
+        {
+            // Initialise return variable
+            boolean principalDuplicate = false;
+            
+            // Get the config of the domain
+            SecureAdmin secureAdmin = domain.getSecureAdmin();
+            
+            // Loop through secure admin principals in config
+            for(SecureAdminPrincipal principal
+                    : secureAdmin.getSecureAdminPrincipal())
+            {
+                try
+                {
+                    /*
+                     * Check if the added secure admin principal already exists
+                     * in the domain.xml
+                     */ 
+                    if(helper.getDN(value, isAlias).equals(principal.getDn()))
+                    {
+                        // If it does, set principalDuplicate to true and return
+                        principalDuplicate = true;
+                        break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw new TransactionFailure("create", ex);
+                }
+            }
+            
+            return principalDuplicate;
         }
     }
     
