@@ -186,7 +186,7 @@ public class ModuleMap {
                 put("fish.payara.admingui.console-jms-plugin", 128);
                 put("fish.payara.admingui.console-jts-plugin", 129);
                 put("fish.payara.admingui.console-plugin-service", 130);
-                put("fish.payara.admingui.console-updatecenter-plugin", 131);
+                //put("fish.payara.admingui.console-updatecenter-plugin", 131);
                 put("fish.payara.admingui.console-web-plugin", 132);
                 put("fish.payara.admingui.dataprovider", 133);
                 put("org.glassfish.main.appclient.client.acc-config", 134);
