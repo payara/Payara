@@ -59,7 +59,6 @@ import java.nio.channels.SelectableChannel;
 
 import org.glassfish.hk2.api.PostConstruct;
 
-import org.glassfish.api.event.Events;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.event.EventListener;

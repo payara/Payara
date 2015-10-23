@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [nC2B2 Consulting Limited]
 
 package com.sun.enterprise.v3.server;
 
@@ -46,6 +47,7 @@ import java.util.concurrent.ThreadFactory;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Singleton executor service factory.
@@ -54,20 +56,30 @@ import java.util.concurrent.Executors;
  */
 @Service
 public class ExecutorServiceFactory implements Factory<ExecutorService> {
+    
+    private ExecutorService service;
+    private AtomicInteger count = new AtomicInteger(1);
 
     /* (non-Javadoc)
      * @see org.glassfish.hk2.api.Factory#provide()
      */
     @Override
     public ExecutorService provide() {
-        return Executors.newCachedThreadPool(new ThreadFactory() {
+       
+        if (service == null) {
+            service = Executors.newCachedThreadPool(new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 Thread t = Executors.defaultThreadFactory().newThread(r);
                 t.setDaemon(true);
+                t.setName("Executor-Service-" + count.getAndIncrement());
+                // ensure we don't inherit any context classloader
+                t.setContextClassLoader(null);
                 return t;
             }
         }
         );
+        }
+        return service;
     }
 
     /* (non-Javadoc)

@@ -22,6 +22,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import org.glassfish.internal.data.ApplicationInfo;
 
@@ -105,6 +106,9 @@ public class InstanceDescriptor implements Serializable {
      * @return the deployedApplications
      */
     public Collection<ApplicationDescriptor> getDeployedApplications() {
+        if (deployedApplications == null) {
+            return new HashSet<>();
+        }
         return deployedApplications.values();
     }
 

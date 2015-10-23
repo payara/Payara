@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.internal.data;
 
@@ -448,10 +449,18 @@ public class ApplicationInfo extends ModuleInfo {
         // clean up the app level classloader
         if (appClassLoader != null) {
             try {
-                appServiceLocator.preDestroy(appClassLoader);
+                if (appServiceLocator != null) {
+                    appServiceLocator.preDestroy(appClassLoader);
+                }
             }
             catch (Exception e) {
                 // Ignore, some failure in preDestroy
+            }
+            try {
+                PreDestroy.class.cast(appClassLoader).preDestroy();
+            } catch (Exception e) {
+                        // ignore, the class loader does not need to be 
+                // explicitely stopped or already stopped
             }
             appClassLoader = null;
         }

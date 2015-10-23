@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2015 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -225,6 +225,7 @@ public class TransactionalInterceptorBase implements Serializable {
         try {
             object = ctx.proceed();
         } catch (RuntimeException runtimeException) {
+            _logger.log(java.util.logging.Level.INFO, "Error during transaction processing", runtimeException);
             Class dontRollbackOnClass =
                     getClassInArrayClosestToClassOrNull(dontRollbackOn, runtimeException.getClass());
             if (dontRollbackOnClass == null) { //proceed as default...
@@ -253,6 +254,7 @@ public class TransactionalInterceptorBase implements Serializable {
             markRollbackIfActiveTransaction();
             throw runtimeException;
         } catch (Exception checkedException) {
+            _logger.log(java.util.logging.Level.INFO, "Error during transaction processing", checkedException);
             Class rollbackOnClass =
                     getClassInArrayClosestToClassOrNull(rollbackOn, checkedException.getClass());
             if (rollbackOnClass == null) { //proceed as default...

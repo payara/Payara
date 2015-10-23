@@ -1095,7 +1095,7 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         // for DAS target, the undeploy should unload the application
         // as well
-        if (DeploymentUtils.isDASTarget(params.target)) {
+        if (DeploymentUtils.isDASTarget(params.target) || DeploymentUtils.isDomainTarget(params.target)) {
             unload(info, context);
         }
 

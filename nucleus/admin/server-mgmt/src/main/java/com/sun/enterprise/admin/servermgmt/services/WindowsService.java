@@ -213,6 +213,16 @@ public class WindowsService extends NonSMFServiceAdapter {
                     throw new RuntimeException(Strings.get("noTargetDir", targetDir));
             }
             targetWin32Exe = new File(targetDir, info.serviceName + "Service.exe");
+            targetConfig = new File(targetDir, info.serviceName + "Service.exe.config");
+            PrintWriter config = new PrintWriter(targetConfig);
+            config.println("<configuration>");
+            config.println("<startup>");
+            config.println("<supportedRuntime version=\"v2.0.50727\" />");
+            config.println("<supportedRuntime version=\"v4.0\" />");
+            config.println("</startup>");
+            config.println("</configuration>");
+            config.close();
+            
             targetXml = new File(targetDir, info.serviceName + "Service.xml");
         }
         catch (IOException ex) {
@@ -375,5 +385,6 @@ public class WindowsService extends NonSMFServiceAdapter {
     private File targetDir;
     private File targetXml;
     private File targetWin32Exe;
+    private File targetConfig;
     private String xmlFileCopy;
 }

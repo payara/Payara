@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.154-SNAPSHOT</version>
+        <version>4.1.1.154</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <artifactId>payara-micro-core</artifactId>
@@ -26,7 +26,7 @@
     <dependencies>
         <dependency>
             <groupId>org.glassfish.hk2</groupId>
-            <artifactId>core</artifactId>
+            <artifactId>hk2-core</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.core</groupId>

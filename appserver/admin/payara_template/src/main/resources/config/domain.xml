@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <!--
- * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2014-2015 C2B2 Consulting Limited. All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -45,13 +45,9 @@
       <property value="${com.sun.aas.instanceRoot}/lib/databases/ejbtimer" name="databaseName" />
       <property value=";create=true" name="connectionAttributes" />
     </jdbc-connection-pool>
-    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.ClientDataSource" res-type="javax.sql.DataSource">
-      <property value="1527" name="PortNumber" />
-      <property value="APP" name="Password" />
-      <property value="APP" name="User" />
-      <property value="localhost" name="serverName" />
-      <property value="sun-appserv-samples" name="DatabaseName" />
-      <property value=";create=true" name="connectionAttributes" />
+    <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" res-type="javax.sql.DataSource">
+      <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
+      <property name="connectionAttributes" value=";create=true" />
     </jdbc-connection-pool>
   </resources>
   <servers>
@@ -93,6 +89,7 @@
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+       <batch-runtime-configuration data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -155,7 +152,7 @@
         </message-security-config>
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
-      <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
+      <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
         <jvm-options>-XX:MaxPermSize=512m</jvm-options>
         <jvm-options>-server</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
@@ -175,6 +172,7 @@
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Xmx1024m</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+        <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -329,6 +327,7 @@
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <jvm-options>-Xmx1024m</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+        <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
       </java-config>
          <availability-service>
              <web-container-availability/>

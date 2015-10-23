@@ -37,10 +37,10 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.connectors.jms.system;
 
-import java.io.File;
 import java.lang.reflect.Method;
 import java.nio.channels.SelectableChannel;
 import java.nio.channels.SocketChannel;
@@ -75,7 +75,6 @@ import com.sun.enterprise.config.serverbeans.AdminService;
 import com.sun.enterprise.config.serverbeans.Applications;
 import com.sun.enterprise.config.serverbeans.AvailabilityService;
 import com.sun.enterprise.config.serverbeans.Clusters;
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.JavaConfig;
 import com.sun.enterprise.config.serverbeans.JmxConnector;
@@ -102,10 +101,15 @@ import com.sun.enterprise.deployment.JMSDestinationDefinitionDescriptor;
 import com.sun.enterprise.deployment.MessageDestinationDescriptor;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.Result;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import java.text.MessageFormat;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.glassfish.admin.mbeanserver.JMXStartupService;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -132,6 +136,7 @@ import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Singleton;
+import org.glassfish.api.invocation.InvocationManager;
 import org.jvnet.hk2.config.types.Property;
 
 //import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
@@ -156,6 +161,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     public static final String JMS_MAIN_LOGGER = "javax.enterprise.resource.jms";
 
     private static final Logger _logger = Logger.getLogger(JMS_MAIN_LOGGER);
+    final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
     private static final String MQ_PASS_FILE_PREFIX = "asmq";
@@ -269,6 +275,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     public static final String LOCAL="LOCAL";
     public static final String REMOTE="REMOTE";
     public static final String DIRECT="DIRECT";
+    public static final String DISABLED="DISABLED";
 
     private final String DEFAULT_STORE_POOL_JNDI_NAME = "jdbc/hastore";
 
@@ -330,6 +337,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     
     @Inject
     private ApplicationRegistry appRegistry;
+    
+    @Inject
+    InvocationManager invManager;
 
     /**
      * Constructor for an active Jms Adapter.
@@ -373,6 +383,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @throws ConnectorRuntimeException in case of an exception.
      */
     protected void loadRAConfiguration() throws ConnectorRuntimeException{
+        
+        JmsService jmsService = getJmsService();
+        if (jmsService != null && jmsService.getType().equals("DISABLED")) {
+            throw new ConnectorRuntimeException("JMS Broker is Disabled");
+        }  
+        
         if (connectorRuntime.isServer()) {
             // Check whether MQ has started up or not.
             try {
@@ -402,6 +418,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     public void destroy() {
         try {
             JmsService jmsService = getJmsService();
+            
+            if (jmsService != null && jmsService.getType().equals("DISABLED")) {
+                return;
+            }
+            
             if (connectorRuntime.isServer() && grizzlyListenerInit && jmsService != null
                     && EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
                 GrizzlyService grizzlyService = null;
@@ -446,7 +467,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * Start Grizzly based JMS lazy listener, which is going to initialize
      * JMS container on first request.
      */  
-    public void initializeLazyListener(JmsService jmsService) {
+    public void initializeLazyListener(JmsService jmsService) throws JmsInitialisationException {
+            
+            if (jmsService != null && jmsService.getType().equals("DISABLED")) {
+                return;
+            }
+        
         if (jmsService != null) {
             if (EMBEDDED.equalsIgnoreCase(jmsService.getType()) && !grizzlyListenerInit) {
                 GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
@@ -469,7 +495,15 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                             String name = GRIZZLY_PROXY_PREFIX + oneHost.getName();
                             dummy.setName(name);
                             synchronized (grizzlyListeners) {
-                                grizzlyService.createNetworkProxy(dummy);
+                                Future<Result<Thread>> createNetworkProxy = grizzlyService.createNetworkProxy(dummy);
+                                try {
+                                    Result<Thread> result = createNetworkProxy.get();
+                                    if (result.exception() != null) {
+                                        throw new JmsInitialisationException(MessageFormat.format("Cannot initialise JMS broker listener on {0}:{1}", oneHost.getHost(), oneHost.getPort()), result.exception());
+                                    }
+                                } catch (InterruptedException | ExecutionException ex) {
+                                    Logger.getLogger(ActiveJmsResourceAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                                 grizzlyListeners.add(name);
                             }
                             grizzlyListenerInit = true;
@@ -481,14 +515,25 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     protected void startResourceAdapter(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
+        
+        JmsService jmsService = getJmsService();
+
+        if (jmsService != null && jmsService.getType().equals("DISABLED")) {
+            return;
+        }
+        
         try{
         if (this.moduleName_.equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
             if (connectorRuntime.isServer()) {
                 Domain domain = Globals.get(Domain.class);
                 ServerContext serverContext = Globals.get(ServerContext.class);
                 Server server = domain.getServerNamed(serverContext.getInstanceName());
-                JmsService jmsService = server.getConfig().getExtensionByType(JmsService.class);
-                initializeLazyListener(jmsService);
+                try {
+                    initializeLazyListener(jmsService);
+                } catch (Throwable ex) {
+                    Logger.getLogger(ActiveJmsResourceAdapter.class.getName()).log(Level.SEVERE, null, ex);
+                    throw new ResourceAdapterInternalException(ex);
+                }
             }
 		//System.setProperty("imq.jmsra.direct.clustered", "true");
                 AccessController.doPrivileged
@@ -498,6 +543,8 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                 //set the JMSRA system property to enable XA JOINS
                                 //disabling this due to issue - 8727
                                 //System.setProperty(XA_JOIN_ALLOWED, "true");
+                                
+                                // to prevent classloader leaks in new threads clear invocation manager before bootstrapping JMS
                                 resourceadapter_.start(bootStrapContextImpl);
                                 return null;
                             }
@@ -561,6 +608,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     //Need to remove this once the original problem is fixed
      public void setup() throws ConnectorRuntimeException {
         //TODO NEED TO REMOVE ONCE THE ActiveResourceAdapterImpl.setup() is fixed
+        JmsService jmsService = getJmsService();
+
+        if (jmsService != null && jmsService.getType().equals("DISABLED")) {
+            return;
+        }
+        
+        
+        
         if (connectionDefs_ == null) {
             throw new ConnectorRuntimeException("No Connection Defs defined in the RA.xml");
         }
@@ -1592,7 +1647,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     private void setConnectionURL(JmsService jmsService, MQAddressList urlList) {
         ConnectorDescriptor cd = super.getDescriptor();
         String val = urlList.toString();
-        _logger.log(Level.INFO, "jms.connection.url", val);
+        _logger.log(Level.INFO, localStrings.getLocalString("jms.connection.url", "jms.connection.url"), val);
         ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
            CONNECTION_URL, val, val, "java.lang.String");
         setProperty(cd, envProp1);
@@ -1605,7 +1660,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         urlList = jmsraUtil.getUrlList();
         addressList = urlList.toString();
         //todo: debug info need to remove log statement in production
-        _logger.log(Level.INFO, "addresslist.setjmsservice.provider", addressList);
+        _logger.log(Level.INFO,localStrings.getLocalString("addresslist.setjmsservice.provider", "addresslist.setjmsservice.provider") , addressList);
         ConnectorDescriptor cd = super.getDescriptor();
         setConnectionURL(service, urlList);
 

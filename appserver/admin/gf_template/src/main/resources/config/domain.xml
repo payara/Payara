@@ -231,6 +231,8 @@
         <jvm-options>-XX:NewRatio=2</jvm-options>
         <!-- Woodstox property needed to pass StAX TCK -->
         <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
+        <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+        <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -412,6 +414,8 @@
              -->
              <jvm-options>-Dfelix.fileinstall.disableConfigSave=false</jvm-options>
              <!-- End of OSGi bundle configurations -->
+             <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
+             <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
         </java-config>
          <availability-service>
              <web-container-availability/>

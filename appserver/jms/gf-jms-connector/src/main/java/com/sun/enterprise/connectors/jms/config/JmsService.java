@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.connectors.jms.config;
 
@@ -107,7 +108,7 @@ public interface JmsService extends ConfigExtension, PropertyBag, Container {
      */
     @Attribute
     @NotNull
-    @Pattern(regexp="(LOCAL|EMBEDDED|REMOTE)")
+    @Pattern(regexp="(LOCAL|EMBEDDED|REMOTE|DISABLED)")
     String getType();
 
     /**

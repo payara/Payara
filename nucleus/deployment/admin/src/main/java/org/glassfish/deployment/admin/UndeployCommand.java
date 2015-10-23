@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.deployment.admin;
 
 import com.sun.enterprise.config.serverbeans.*;
@@ -74,7 +74,6 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -437,6 +436,9 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                      * any special handling (such as stale file handling)
                      * known to the archive can run.
                      */
+
+                    // perform full GC before doing this
+                    System.gc();
                     source.delete();
                 }
 
