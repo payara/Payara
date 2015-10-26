@@ -36,9 +36,10 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- *
- * Portions Copyright [2014-2015] [C2B2 Consulting Limited]
  */
+
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 package com.sun.enterprise.universal.xml;
 
 import java.io.ByteArrayInputStream;
