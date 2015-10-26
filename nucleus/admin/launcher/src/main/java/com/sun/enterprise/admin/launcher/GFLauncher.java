@@ -350,7 +350,18 @@ public abstract class GFLauncher {
     }
 
     private void setLogFilename(MiniXmlParser parser) throws GFLauncherException {
-        logFilename = parser.getLogFilename();
+        
+        // Check if launching an instance to get appropriate logFilename
+        if (info.isInstance()) 
+        {
+            targetConfigName = info.getInstanceName() + "-config";
+            logFilename = parser.getLogFilename(targetConfigName);
+        }
+        
+        else
+        {
+            logFilename = parser.getLogFilename();
+        }
 
         if (logFilename == null)
             logFilename = DEFAULT_LOGFILE;
@@ -1035,6 +1046,7 @@ public abstract class GFLauncher {
     private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
+    private String targetConfigName = "";
 
     ///////////////////////////////////////////////////////////////////////////
     private static class ProcessWhacker implements Runnable {

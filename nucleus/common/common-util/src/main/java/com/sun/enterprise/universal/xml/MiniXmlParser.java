@@ -202,7 +202,30 @@ public class MiniXmlParser {
         }
         return logFilename;
     }
-
+    
+    /**
+     * loggingConfig will return an IOException if there is no
+     * logging properties file.
+     *
+     * @param targetConfigName The name of the target instance config
+     * @return the log filename if available, otherwise return null
+     */
+    public String getLogFilename(String targetConfigName) {
+        String logFilename = null;
+        try {
+            Map<String, String> map = loggingConfig.getLoggingProperties(targetConfigName);
+            String logFileContains = "${com.sun.aas.instanceName}";
+            logFilename = map.get(LoggingPropertyNames.file);
+            if (logFilename != null && logFilename.contains(logFileContains)) {
+                logFilename = replaceOld(logFilename,logFileContains,this.serverName);
+            }
+        }
+        catch (Exception e) {
+            // just return null
+        }
+        return logFilename;
+    }
+    
     private static String replaceOld(
             final String aInput,
             final String aOldPattern,
