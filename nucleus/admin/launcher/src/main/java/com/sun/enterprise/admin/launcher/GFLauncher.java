@@ -1049,7 +1049,6 @@ public abstract class GFLauncher {
     private boolean needsManualUpgrade = false;
     private int debugPort = -1;
     private boolean debugSuspend = false;
-    private String targetConfigName = "";
 
     ///////////////////////////////////////////////////////////////////////////
     private static class ProcessWhacker implements Runnable {
