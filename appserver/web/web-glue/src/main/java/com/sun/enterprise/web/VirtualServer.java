@@ -1271,7 +1271,7 @@ public class VirtualServer extends StandardHost
             }
 
             // create and add new handler
-            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
+            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logServiceFile);
             newLogger.addHandler(fileLoggerHandler);            
             newLogger.setUseParentHandlers(false);
         }
