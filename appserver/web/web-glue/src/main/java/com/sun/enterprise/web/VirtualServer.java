@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
