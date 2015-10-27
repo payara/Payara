@@ -185,6 +185,8 @@ public class MiniXmlParser {
     }
 
     /**
+     * Gets the log file name for the DAS
+     * 
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
@@ -207,16 +209,18 @@ public class MiniXmlParser {
     }
     
     /**
+     * Gets the log file name for instances and clusters
+     * 
      * loggingConfig will return an IOException if there is no
      * logging properties file.
      *
-     * @param targetConfigName The name of the target instance config
      * @return the log filename if available, otherwise return null
      */
-    public String getLogFilename(String targetConfigName) {
+    public String getInstanceLogFilename() {
         String logFilename = null;
+        
         try {
-            Map<String, String> map = loggingConfig.getLoggingProperties(targetConfigName);
+            Map<String, String> map = loggingConfig.getLoggingProperties(configRef);
             String logFileContains = "${com.sun.aas.instanceName}";
             logFilename = map.get(LoggingPropertyNames.file);
             if (logFilename != null && logFilename.contains(logFileContains)) {

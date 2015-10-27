@@ -357,10 +357,10 @@ public abstract class GFLauncher {
         // Check if launching an instance to get appropriate logFilename
         if (info.isInstance()) 
         {
-            targetConfigName = info.getInstanceName() + "-config";
-            logFilename = parser.getLogFilename(targetConfigName);
+            logFilename = parser.getInstanceLogFilename();
         }
         
+        // Assume DAS if not an instance
         else
         {
             logFilename = parser.getLogFilename();
