@@ -48,6 +48,7 @@
                         com.sun.enterprise.resource.pool;\
                         com.sun.enterprise.resource.pool.waitqueue;\
                         com.sun.enterprise.resource.pool.monitor;\
+                        com.sun.logging.enterprise.resource.resourceadapter;\
                         com.sun.enterprise.resource; version=${project.osgi.version}
 
 # This module uses classes from this pkg using reflection, so
