@@ -71,6 +71,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     public DataSourceDefinitionHandler() {
     }
 
+    @Override
     protected HandlerProcessingResult processAnnotation(AnnotationInfo ainfo, ResourceContainerContext[] rcContexts)
             throws AnnotationProcessorException {
         DataSourceDefinition dataSourceDefnAn =
@@ -210,6 +211,7 @@ public class DataSourceDefinitionHandler extends AbstractResourceHandler {
     }
 
 
+    @Override
     public Class<? extends Annotation>[] getTypeDependencies() {
         Class<? extends Annotation> [] annotations = getEjbAndWebAnnotationTypes();
         List<Class <? extends Annotation>> annotationsList = new ArrayList<Class <? extends Annotation>>();

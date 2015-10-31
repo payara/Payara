@@ -40,6 +40,17 @@
 
 package org.glassfish.jdbc.util;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.BindableResource;
@@ -49,16 +60,6 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ClassLoadingUtility;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.glassfish.resourcebase.resources.api.ResourceInfo;
-
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Utility class for JDBC related classes
@@ -69,7 +70,7 @@ public class JdbcResourcesUtil {
     private static Logger _logger = LoggerFactory.getLogger(JdbcResourcesUtil.class);
     private ConnectorRuntime runtime;
 
-    private JdbcResourcesUtil(){
+    private JdbcResourcesUtil() {
     }
 
     public static JdbcResourcesUtil createInstance() {
@@ -119,7 +120,6 @@ public class JdbcResourcesUtil {
      * @param pool - The pool to check
      * @return The name of the JDBC RA that provides this pool's data-source
      */
-
     public String getRANameofJdbcConnectionPool(JdbcConnectionPool pool) {
         String dsRAName = ConnectorConstants.JDBCDATASOURCE_RA_NAME;
 

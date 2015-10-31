@@ -40,21 +40,31 @@
 
 package org.glassfish.jdbc.deployer;
 
-import com.sun.appserv.connectors.internal.api.ConnectorConstants;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.Resource;
-import com.sun.enterprise.config.serverbeans.Resources;
-import com.sun.enterprise.deployment.*;
-import org.glassfish.deployment.common.JavaEEResourceType;
-import org.glassfish.javaee.services.CommonResourceProxy;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.jdbc.config.JdbcResource;
+import static org.glassfish.deployment.common.JavaEEResourceType.DSDPOOL;
+
+import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.naming.NamingException;
+
 import org.glassfish.deployment.common.Descriptor;
+import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
+import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.jdbc.util.LoggerFactory;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
+import org.glassfish.resourcebase.resources.api.ResourceConstants;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
 import org.glassfish.resourcebase.resources.api.ResourceInfo;
@@ -65,15 +75,17 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.naming.NamingException;
-import java.beans.PropertyVetoException;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import static org.glassfish.deployment.common.JavaEEResourceType.*;
+import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.DataSourceDefinitionDescriptor;
+import com.sun.enterprise.deployment.EjbBundleDescriptor;
+import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.EjbInterceptor;
+import com.sun.enterprise.deployment.JndiNameEnvironment;
+import com.sun.enterprise.deployment.ManagedBeanDescriptor;
 
 
 /**
@@ -94,9 +106,11 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
     private static Logger _logger = LoggerFactory.getLogger(DataSourceDefinitionDeployer.class);
 
+    @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR
     }
+    @Override
     public void deployResource(Object resource) throws Exception {
 
         final DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor) resource;
@@ -122,6 +136,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public boolean canDeploy(boolean postApplicationDeployment, Collection<Resource> allResources, Resource resource){
         if(handles(resource)){
             if(!postApplicationDeployment){
@@ -134,6 +149,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void validatePreservedResource(com.sun.enterprise.config.serverbeans.Application oldApp,
                                           com.sun.enterprise.config.serverbeans.Application newApp, Resource resource,
                                   Resources allResources)
@@ -276,29 +292,31 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
             //String appName = application.getAppName();
             String dsdName = dsd.getName();
-            if(dsdName.startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
+            if(dsdName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)){
                 dsd.setResourceId(appName);
             }
 
-            if(dsdName.startsWith(ConnectorConstants.JAVA_GLOBAL_SCOPE_PREFIX)
+            if(dsdName.startsWith(ResourceConstants.JAVA_GLOBAL_SCOPE_PREFIX)
                     /*|| next.getName().startsWith("java:module/")*/
-                    || dsdName.startsWith(ConnectorConstants.JAVA_APP_SCOPE_PREFIX)){
+                    || dsdName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)){
                 ResourceInfo resourceInfo = new ResourceInfo(dsdName, appName, null);
                 try {
                     resourceNamingService.publishObject(resourceInfo, proxy, true);
                     dsd.setDeployed(true);
                 } catch (NamingException e) {
                     Object params[] = new Object[]{appName, dsdName, e};
-                    _logger.log(Level.WARNING, "dsd.registration.failed", params);    
+                    _logger.log(Level.WARNING, "dsd.registration.failed", params);
                 }
             }
         }
     }
 
+    @Override
     public void undeployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR
     }
 
+    @Override
     public void undeployResource(Object resource) throws Exception {
 
         final DataSourceDefinitionDescriptor desc = (DataSourceDefinitionDescriptor) resource;
@@ -322,18 +340,22 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         desc.setDeployed(false);
     }
 
+    @Override
     public void redeployResource(Object resource) throws Exception {
         throw new UnsupportedOperationException("redeploy() not supported for datasource-definition type");
     }
 
+    @Override
     public void enableResource(Object resource) throws Exception {
         throw new UnsupportedOperationException("enable() not supported for datasource-definition type");
     }
 
+    @Override
     public void disableResource(Object resource) throws Exception {
         throw new UnsupportedOperationException("disable() not supported for datasource-definition type");
     }
 
+    @Override
     public boolean handles(Object resource) {
         return resource instanceof DataSourceDefinitionDescriptor;
     }
@@ -341,6 +363,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public boolean supportsDynamicReconfiguration() {
         return false;
     }
@@ -348,6 +371,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     /**
      * @inheritDoc
      */
+    @Override
     public Class[] getProxyClassesForDynamicReconfiguration() {
         return new Class[0];
     }
@@ -371,7 +395,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public <T extends ConfigBeanProxy> T createChild(Class<T> tClass) throws TransactionFailure {
             return null;
-        }        
+        }
     }
 
     class DataSourceProperty extends FakeConfigBean implements Property {
@@ -385,26 +409,32 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             this.value = value;
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public void setName(String value) throws PropertyVetoException {
             this.name = value;
         }
 
+        @Override
         public String getValue() {
             return value;
         }
 
+        @Override
         public void setValue(String value) throws PropertyVetoException {
             this.value = value;
         }
 
+        @Override
         public String getDescription() {
             return description;
         }
 
+        @Override
         public void setDescription(String value) throws PropertyVetoException {
             this.description = value;
         }
@@ -424,51 +454,64 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             this.jndiName = jndiName;
         }
 
+        @Override
         public String getPoolName() {
             return poolName;
         }
 
+        @Override
         public void setPoolName(String value) throws PropertyVetoException {
             this.poolName = value;
         }
 
+        @Override
         public String getObjectType() {
             return null;
         }
 
+        @Override
         public void setObjectType(String value) throws PropertyVetoException {
         }
 
+        @Override
         public String getIdentity() {
             return jndiName;
         }
 
+        @Override
         public String getEnabled() {
             return String.valueOf(true);
         }
 
+        @Override
         public void setEnabled(String value) throws PropertyVetoException {
         }
 
+        @Override
         public String getDescription() {
             return null;
         }
 
+        @Override
         public void setDescription(String value) throws PropertyVetoException {
         }
 
+        @Override
         public List<Property> getProperty() {
             return null;
         }
 
+        @Override
         public Property getProperty(String name) {
             return null;
         }
 
+        @Override
         public String getPropertyValue(String name) {
             return null;
         }
 
+        @Override
         public String getPropertyValue(String name, String defaultValue) {
             return null;
         }
@@ -476,18 +519,22 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         public void injectedInto(Object o) {
         }
 
+        @Override
         public String getJndiName() {
             return jndiName;
         }
 
+        @Override
         public void setJndiName(String value) throws PropertyVetoException {
             this.jndiName = value;
         }
 
+        @Override
         public String getDeploymentOrder() {
             return null;
         }
 
+        @Override
         public void setDeploymentOrder(String value) {
             //do nothing
         }
@@ -503,6 +550,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             this.name = name;
         }
 
+        @Override
         public String getDatasourceClassname() {
             if(!getResType().equals(ConnectorConstants.JAVA_SQL_DRIVER)){
                 return desc.getClassName();
@@ -510,10 +558,12 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return null;
         }
 
+        @Override
         public void setDatasourceClassname(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getResType() {
             String type = ConnectorConstants.JAVAX_SQL_DATASOURCE;
             try {
@@ -537,6 +587,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return type;
         }
 
+        @Override
         public void setResType(String value) throws PropertyVetoException {
             //do nothing
         }
@@ -551,10 +602,12 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             //To change body of implemented methods use File | Settings | File Templates.
         }
 
+        @Override
         public String getIdentity() {
             return name;
         }
 
+        @Override
         public String getSteadyPoolSize() {
             int minPoolSize = desc.getMinPoolSize();
             if (minPoolSize == -1) {
@@ -563,10 +616,12 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return String.valueOf(minPoolSize);
         }
 
+        @Override
         public void setSteadyPoolSize(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getMaxPoolSize() {
             int maxPoolSize = desc.getMaxPoolSize();
             if (maxPoolSize == -1) {
@@ -575,26 +630,32 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return String.valueOf(maxPoolSize);
         }
 
+        @Override
         public void setMaxPoolSize(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getMaxWaitTimeInMillis() {
             return String.valueOf(60000);
         }
 
+        @Override
         public void setMaxWaitTimeInMillis(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getPoolResizeQuantity() {
             return String.valueOf(2);
         }
 
+        @Override
         public void setPoolResizeQuantity(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getIdleTimeoutInSeconds() {
             long maxIdleTime = desc.getMaxIdleTime();
             if (maxIdleTime == -1) {
@@ -603,10 +664,12 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return String.valueOf(maxIdleTime);
         }
 
+        @Override
         public void setIdleTimeoutInSeconds(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getTransactionIsolationLevel() {
             if (desc.getIsolationLevel() == -1) {
                 return null;
@@ -615,194 +678,242 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             }
         }
 
+        @Override
         public void setTransactionIsolationLevel(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getIsIsolationLevelGuaranteed() {
             return String.valueOf("true");
         }
 
+        @Override
         public void setIsIsolationLevelGuaranteed(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getIsConnectionValidationRequired() {
             return String.valueOf("false");
         }
 
+        @Override
         public void setIsConnectionValidationRequired(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getConnectionValidationMethod() {
             return null;
         }
 
+        @Override
         public void setConnectionValidationMethod(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getValidationTableName() {
             return null;
         }
 
+        @Override
         public void setValidationTableName(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getValidationClassname() {
             return null;
         }
 
+        @Override
         public void setValidationClassname(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getFailAllConnections() {
             return String.valueOf("false");
         }
 
+        @Override
         public void setFailAllConnections(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getNonTransactionalConnections() {
             return String.valueOf(!desc.isTransactional());
         }
 
+        @Override
         public void setNonTransactionalConnections(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getAllowNonComponentCallers() {
             return String.valueOf("false");
         }
 
+        @Override
         public void setAllowNonComponentCallers(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getValidateAtmostOncePeriodInSeconds() {
             return String.valueOf(0);
         }
 
+        @Override
         public void setValidateAtmostOncePeriodInSeconds(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getConnectionLeakTimeoutInSeconds() {
             return String.valueOf(0);
         }
 
+        @Override
         public void setConnectionLeakTimeoutInSeconds(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getConnectionLeakReclaim() {
             return String.valueOf(false);
         }
 
+        @Override
         public void setConnectionLeakReclaim(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getConnectionCreationRetryAttempts() {
             return String.valueOf(0);
         }
 
+        @Override
         public void setConnectionCreationRetryAttempts(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getConnectionCreationRetryIntervalInSeconds() {
             return String.valueOf(10);
         }
 
+        @Override
         public void setConnectionCreationRetryIntervalInSeconds(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getStatementTimeoutInSeconds() {
             return String.valueOf(-1);
         }
 
+        @Override
         public void setStatementTimeoutInSeconds(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getLazyConnectionEnlistment() {
             return String.valueOf(false);
         }
 
+        @Override
         public void setLazyConnectionEnlistment(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getLazyConnectionAssociation() {
             return String.valueOf(false);
         }
 
+        @Override
         public void setLazyConnectionAssociation(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getAssociateWithThread() {
             return String.valueOf(false);
         }
 
+        @Override
         public void setAssociateWithThread(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getPooling() {
             return String.valueOf(true);
         }
 
+        @Override
         public void setPooling(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getStatementCacheSize() {
             return String.valueOf(0);
         }
 
+        @Override
         public void setStatementCacheSize(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getMatchConnections() {
             return String.valueOf(true);
         }
 
+        @Override
         public void setMatchConnections(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getMaxConnectionUsageCount() {
             return String.valueOf(0);
         }
 
+        @Override
         public void setMaxConnectionUsageCount(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getWrapJdbcObjects() {
             return String.valueOf(true);
         }
 
+        @Override
         public void setWrapJdbcObjects(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getDescription() {
             return desc.getDescription();
         }
 
+        @Override
         public void setDescription(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public List<Property> getProperty() {
             Properties p = desc.getProperties();
             List<Property> dataSourceProperties = new ArrayList<Property>();
@@ -873,15 +984,18 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return result;
         }
 
+        @Override
         public Property getProperty(String name) {
             String value = (String) desc.getProperties().get(name);
             return new DataSourceProperty(name, value);
         }
 
+        @Override
         public String getPropertyValue(String name) {
             return (String) desc.getProperties().get(name);
         }
 
+        @Override
         public String getPropertyValue(String name, String defaultValue) {
             String value = null;
             value = (String) desc.getProperties().get(name);
@@ -896,38 +1010,47 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             //do nothing
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public void setName(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getSqlTraceListeners() {
             return null;
         }
 
+        @Override
         public void setSqlTraceListeners(String value) throws PropertyVetoException {
             //do nothing
         }
 
-        public String getPing() {            
+        @Override
+        public String getPing() {
             return String.valueOf(false);
         }
 
+        @Override
         public void setPing(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getInitSql() {
             return null;
         }
 
+        @Override
         public void setInitSql(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getDriverClassname() {
             if(getResType().equals(ConnectorConstants.JAVA_SQL_DRIVER)){
                 return desc.getClassName();
@@ -935,38 +1058,47 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             return null;
         }
 
+        @Override
         public void setDriverClassname(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getStatementLeakTimeoutInSeconds() {
             return String.valueOf(0);
         }
 
+        @Override
         public void setStatementLeakTimeoutInSeconds(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getStatementLeakReclaim() {
             return String.valueOf(false);
         }
 
+        @Override
         public void setStatementLeakReclaim(String value) throws PropertyVetoException {
             //do nothing
         }
-	
+
+        @Override
         public String getStatementCacheType() {
                 return null;
         }
 
+        @Override
         public void setStatementCacheType(String value) throws PropertyVetoException {
             //do nothing
         }
 
+        @Override
         public String getDeploymentOrder() {
             return null;
         }
 
+        @Override
         public void setDeploymentOrder(String value) {
             //do nothing
         }

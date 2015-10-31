@@ -40,23 +40,14 @@
 
 package org.glassfish.jdbc.recovery;
 
-import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
-import com.sun.enterprise.config.serverbeans.*;
-import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.enterprise.deployment.ResourcePrincipal;
-import com.sun.enterprise.transaction.api.XAResourceWrapper;
-import com.sun.enterprise.transaction.config.TransactionService;
-import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.jdbc.config.JdbcConnectionPool;
-import org.glassfish.jdbc.config.JdbcResource;
-import org.glassfish.jdbc.util.JdbcResourcesUtil;
-import org.glassfish.resourcebase.resources.api.PoolInfo;
-import org.glassfish.resourcebase.resources.api.ResourceInfo;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.types.Property;
+import java.security.Principal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -68,11 +59,32 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.security.PasswordCredential;
 import javax.security.auth.Subject;
 import javax.transaction.xa.XAResource;
-import java.security.Principal;
-import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.jdbc.config.JdbcConnectionPool;
+import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.jdbc.util.JdbcResourcesUtil;
 import org.glassfish.jdbc.util.LoggerFactory;
+import org.glassfish.resourcebase.resources.api.PoolInfo;
+import org.glassfish.resourcebase.resources.api.ResourceInfo;
+import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.types.Property;
+
+import com.sun.appserv.connectors.internal.api.ConnectorRuntime;
+import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
+import com.sun.enterprise.config.serverbeans.Application;
+import com.sun.enterprise.config.serverbeans.Applications;
+import com.sun.enterprise.config.serverbeans.Config;
+import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Module;
+import com.sun.enterprise.config.serverbeans.Resource;
+import com.sun.enterprise.config.serverbeans.Resources;
+import com.sun.enterprise.connectors.util.ResourcesUtil;
+import com.sun.enterprise.deployment.ResourcePrincipal;
+import com.sun.enterprise.transaction.api.XAResourceWrapper;
+import com.sun.enterprise.transaction.config.TransactionService;
+import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
 
 /**
  * Recovery Handler for Jdbc Resources
@@ -167,6 +179,7 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void loadXAResourcesAndItsConnections(List xaresList, List connList) {
 
         //Done so as to initialize connectors-runtime before loading jdbc-resources. need a better way ?
@@ -328,6 +341,7 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
     /**
      * {@inheritDoc}
      */
+    @Override
     public void closeConnections(List connList) {
         for (Object obj : connList) {
             try {
