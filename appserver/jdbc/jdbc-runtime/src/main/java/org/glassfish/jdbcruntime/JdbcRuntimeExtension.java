@@ -41,6 +41,7 @@
 package org.glassfish.jdbcruntime;
 
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
+import org.glassfish.jdbc.util.LoggerFactory;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -52,7 +53,6 @@ import com.sun.enterprise.connectors.DeferredResourceConfig;
 import com.sun.enterprise.connectors.util.ClassLoadingUtility;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.deployment.Application;
-import com.sun.logging.LogDomains;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.jdbc.deployer.DataSourceDefinitionDeployer;
@@ -82,8 +82,7 @@ public class JdbcRuntimeExtension implements ConnectorRuntimeExtension {
     @Inject
     private Provider<DataSourceDefinitionDeployer> dataSourceDefinitionDeployerProvider;
 
-    protected final static Logger logger =
-        LogDomains.getLogger(JdbcRuntimeExtension.class, LogDomains.RSR_LOGGER);
+    protected final static Logger logger = LoggerFactory.getLogger(JdbcRuntimeExtension.class);
 
     protected ConnectorRuntime runtime;
 

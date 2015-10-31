@@ -48,7 +48,6 @@ import com.sun.enterprise.resource.pool.PoolManager;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolAppProbeProvider;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolProbeProviderUtil;
 import com.sun.enterprise.resource.pool.monitor.ConnectionPoolStatsProviderBootstrap;
-import com.sun.logging.LogDomains;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
@@ -56,6 +55,7 @@ import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppProbeProvider;
 import org.glassfish.jdbc.pool.monitor.JdbcConnPoolAppStatsProvider;
 import org.glassfish.jdbc.pool.monitor.JdbcConnPoolProbeProvider;
 import org.glassfish.jdbc.pool.monitor.JdbcConnPoolStatsProvider;
+import org.glassfish.jdbc.util.LoggerFactory;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 import org.jvnet.hk2.annotations.Service;
 
@@ -84,8 +84,7 @@ public class JdbcPoolMonitoringExtension implements ConnectionPoolMonitoringExte
 
     private ConnectorRuntime runtime;
 
-    private final static Logger logger =
-        LogDomains.getLogger(JdbcPoolMonitoringExtension.class, LogDomains.RSR_LOGGER);
+    private final static Logger logger = LoggerFactory.getLogger(JdbcPoolMonitoringExtension.class);
 
     //List of all jdbc pool stats providers that are created and stored.
     private List<JdbcConnPoolStatsProvider> jdbcStatsProviders = null;

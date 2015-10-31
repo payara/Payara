@@ -49,7 +49,6 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.connectors.util.ClassLoadingUtility;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
-import com.sun.logging.LogDomains;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
@@ -67,8 +66,7 @@ import java.util.logging.Logger;
 public class JdbcResourcesUtil {
 
     private volatile static JdbcResourcesUtil jdbcResourcesUtil;
-    static Logger _logger = LogDomains.getLogger(JdbcResourcesUtil.class,
-            LogDomains.RSR_LOGGER);
+    private static Logger _logger = LoggerFactory.getLogger(JdbcResourcesUtil.class);
     private ConnectorRuntime runtime;
 
     private JdbcResourcesUtil(){

@@ -49,11 +49,11 @@ import org.glassfish.deployment.common.JavaEEResourceType;
 import org.glassfish.javaee.services.CommonResourceProxy;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
-import com.sun.logging.LogDomains;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
+import org.glassfish.jdbc.util.LoggerFactory;
 import org.glassfish.resourcebase.resources.api.ResourceConflictException;
 import org.glassfish.resourcebase.resources.api.ResourceDeployer;
 import org.glassfish.resourcebase.resources.api.ResourceDeployerInfo;
@@ -92,7 +92,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     @Inject
     private Provider<ResourceNamingService> resourceNamingServiceProvider;
 
-    private static Logger _logger = LogDomains.getLogger(DataSourceDefinitionDeployer.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LoggerFactory.getLogger(DataSourceDefinitionDeployer.class);
 
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
         //TODO ASR

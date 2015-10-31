@@ -40,6 +40,7 @@
 
 package org.glassfish.jdbc.deployer;
 
+import org.glassfish.jdbc.util.LoggerFactory;
 import com.sun.appserv.connectors.internal.api.ConnectorConstants;
 import com.sun.appserv.connectors.internal.api.ConnectorRuntimeException;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
@@ -57,7 +58,6 @@ import com.sun.enterprise.resource.DynamicallyReconfigurableResource;
 import com.sun.enterprise.resource.pool.ResourcePool;
 import com.sun.enterprise.resource.pool.waitqueue.PoolWaitQueue;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.util.JdbcResourcesUtil;
 import org.glassfish.resourcebase.resources.api.*;
@@ -104,7 +104,7 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
             JdbcConnectionPoolDeployer.class);
     static private String msg = sm.getString("resource.restart_needed");
 
-    static private Logger _logger = LogDomains.getLogger(JdbcConnectionPoolDeployer.class,LogDomains.RSR_LOGGER);
+    static private Logger _logger = LoggerFactory.getLogger(JdbcConnectionPoolDeployer.class);
 
     private static final Locale locale = Locale.getDefault();
 

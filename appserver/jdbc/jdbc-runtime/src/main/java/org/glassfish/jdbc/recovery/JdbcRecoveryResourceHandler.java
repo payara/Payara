@@ -48,7 +48,6 @@ import com.sun.enterprise.deployment.ResourcePrincipal;
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
 import com.sun.enterprise.transaction.config.TransactionService;
 import com.sun.enterprise.transaction.spi.RecoveryResourceHandler;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
@@ -73,6 +72,7 @@ import java.security.Principal;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.jdbc.util.LoggerFactory;
 
 /**
  * Recovery Handler for Jdbc Resources
@@ -98,7 +98,7 @@ public class JdbcRecoveryResourceHandler implements RecoveryResourceHandler {
 
     private ResourcesUtil resourcesUtil = null;
 
-    private static Logger _logger = LogDomains.getLogger(JdbcRecoveryResourceHandler.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LoggerFactory.getLogger(JdbcRecoveryResourceHandler.class);
 
     private void loadAllJdbcResources() {
 

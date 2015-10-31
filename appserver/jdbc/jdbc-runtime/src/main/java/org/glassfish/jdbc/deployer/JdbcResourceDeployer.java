@@ -40,6 +40,7 @@
 
 package org.glassfish.jdbc.deployer;
 
+import org.glassfish.jdbc.util.LoggerFactory;
 import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.Application;
 import com.sun.enterprise.config.serverbeans.Resource;
@@ -47,7 +48,6 @@ import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.connectors.ConnectorRegistry;
 import com.sun.enterprise.connectors.ConnectorRuntime;
 import com.sun.enterprise.util.i18n.StringManager;
-import com.sun.logging.LogDomains;
 import org.glassfish.jdbc.config.JdbcConnectionPool;
 import org.glassfish.jdbc.config.JdbcResource;
 import org.glassfish.jdbc.util.JdbcResourcesUtil;
@@ -83,7 +83,7 @@ public class JdbcResourceDeployer implements ResourceDeployer {
     private static final StringManager localStrings =
             StringManager.getManager(JdbcResourceDeployer.class);
     // logger for this deployer
-    private static Logger _logger = LogDomains.getLogger(JdbcResourceDeployer.class, LogDomains.RSR_LOGGER);
+    private static Logger _logger = LoggerFactory.getLogger(JdbcResourceDeployer.class);
 
     /**
      * {@inheritDoc}
