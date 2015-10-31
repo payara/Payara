@@ -329,7 +329,7 @@ public class LogDomains {
      */
 
     public static synchronized Logger getLogger(final Class clazz, final String name) {
-        final ClassLoader cloader = clazz.getClassLoader();
+        final ClassLoader cloader = Thread.currentThread().getContextClassLoader();
         if(LogManager.getLogManager().getLogger(name) == null) {
             //first time through for this logger.  create it and find the resource bundle
 
