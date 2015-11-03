@@ -189,7 +189,7 @@ public class ServerSentEventCdiExtension implements Extension {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    <T> void processAnnotatedType(@Observes ProcessAnnotatedType<T> pat,
+    <T> void processAnnotatedType(@Observes @WithAnnotations(ServerSentEvent.class) ProcessAnnotatedType<T> pat,
             BeanManager beanManager) {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine("scanning type: " + pat.getAnnotatedType().getJavaClass().getName());
