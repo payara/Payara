@@ -41,7 +41,6 @@
 package com.sun.jts.pi;
 
 import java.lang.Object;
-import java.lang.reflect.Method;
 
 import org.omg.IOP.Codec;
 import org.omg.IOP.ServiceContext;
@@ -63,14 +62,9 @@ import org.omg.CosTSInteroperation.TAG_OTS_POLICY;
 
 import com.sun.jts.CosTransactions.CurrentTransaction;
 import com.sun.corba.ee.impl.txpoa.TSIdentificationImpl;
-import com.sun.corba.ee.spi.ior.IOR;
-import com.sun.corba.ee.spi.ior.ObjectKeyTemplate;
-import com.sun.corba.ee.spi.ior.ObjectAdapterId;
-import com.sun.corba.ee.spi.ior.iiop.IIOPProfile;
-import com.sun.corba.ee.spi.orb.ORBVersionFactory;
 import com.sun.corba.ee.spi.oa.rfm.ReferenceFactoryManager;
 import com.sun.corba.ee.spi.misc.ORBConstants;
- 
+
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import com.sun.logging.LogDomains;
@@ -106,11 +100,11 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
     public static final String INTEROP_MODE = "com.sun.jts.pi.INTEROP_MODE";
     // The ReferenceFactoryManager from the orb.
     private static ReferenceFactoryManager rfm = null;
-	
+
 	/*
 		Logger to log transaction messages
-	*/  
-	 static Logger _logger = LogDomains.getLogger(InterceptorImpl.class, LogDomains.TRANSACTION_LOGGER);
+	*/
+	 static Logger _logger = LogDomains.getLogger(InterceptorImpl.class, LogDomains.TRANSACTION_LOGGER, false);
 
     public static final ThreadLocal otsThreadLocal =
         new ThreadLocal() {
@@ -287,7 +281,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-			_logger.log(Level.FINE," sending_request["+ ri.request_id() + 
+			_logger.log(Level.FINE," sending_request["+ ri.request_id() +
 					"] : " + ri.operation() + ", ThreadName : " +
                 Thread.currentThread().toString());
         }
@@ -310,7 +304,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
         // once OTS RTF redrafts the OTS spec based on PI. An issue needs to be
         // filed.
         org.omg.CORBA.Object target = ri.effective_target();
-        if ( StubAdapter.isStub(target) && StubAdapter.isLocal(target) ) { 
+        if ( StubAdapter.isStub(target) && StubAdapter.isLocal(target) ) {
             // target is local
             // load a dummy context and discard the current tx context.
             hctx.value = dummyContext;
@@ -801,7 +795,7 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
             return true;
         }
         */
-        // return ((Integer) stack.peek() == NULL_CTX); 
+        // return ((Integer) stack.peek() == NULL_CTX);
         ArrayListStack stack = (ArrayListStack) threadLocalState[NULL_CTX_SLOT];
         return (stack.peek() == NULL_CTX);
         // IASRI 4698847 END
@@ -825,8 +819,8 @@ public class InterceptorImpl extends org.omg.CORBA.LocalObject
     public static void setThreadLocalData(int slot, Object data) {
         Object[] threadLocalState = (Object[]) otsThreadLocal.get();
         // IASRI 4698847 START
-        //((Stack) threadLocalState[slot]).push(data); 
-        ((ArrayListStack) threadLocalState[slot]).push(data); 
+        //((Stack) threadLocalState[slot]).push(data);
+        ((ArrayListStack) threadLocalState[slot]).push(data);
         // IASRI 4698847 END
     }
 
