@@ -22,7 +22,7 @@ In summary Payara Server provides;
 * Drop in Replacement for GlassFish Open Source Edition
 * Production Enhancements including JCache, JBatch and Hazelcast session clustering.
 * Payara Micro for cloud and microservice deployments
-* Always Open Source
+* Always Open Source dual licensed CDDL/GPL
 * Supported by dedicated engineers 24/7
 * Incident and Software Support
 * Optimised for production and operations
