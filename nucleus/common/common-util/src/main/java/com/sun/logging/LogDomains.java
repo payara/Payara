@@ -295,18 +295,33 @@ public class LogDomains {
     public static final String PAAS_LOGGER = DOMAIN_ROOT + "org.glassfish.paas";
 
     /**
-     * Returns initialized logger using resource bundle.
+     * Returns initialized logger using resource bundle found by the class's
+     * classloader.
      *
      * @param clazz
      * @param name
      * @return
      */
     public static Logger getLogger(final Class clazz, final String namePrefix) {
-        return getLogger(clazz, namePrefix, clazz.getClassLoader());
+        return getLogger(clazz, namePrefix, true);
     }
 
     /**
-     * Returns initialized logger using resource bundle.
+     * Returns initialized logger. If the resourceBundleLookup is true, tries to
+     * find and load the LogStrings.properties via the clazz's classloader.
+     *
+     * @param clazz
+     * @param name
+     * @return
+     */
+    public static Logger getLogger(final Class clazz, final String namePrefix, final boolean resourceBundleLookup) {
+        final ClassLoader contextClassLoader = resourceBundleLookup ? clazz.getClassLoader() : null;
+        return getLogger(clazz, namePrefix, contextClassLoader);
+    }
+
+    /**
+     * Returns initialized logger. If the resourceBundleLoader is not null,
+     * tries to find and load the LogStrings.properties.
      *
      * @param clazz
      * @param name
@@ -323,7 +338,12 @@ public class LogDomains {
         }
 
         final String rbName = getResourceBundleNameForDomainRoot(namePrefix);
-        final ResourceBundle resourceBundle = getResourceBundle(rbName, clazz, resourceBundleLoader);
+        final ResourceBundle resourceBundle;
+        if (resourceBundleLoader == null) {
+            resourceBundle = null;
+        } else {
+            resourceBundle = getResourceBundle(rbName, clazz, resourceBundleLoader);
+        }
 
         // we should only add a logger of the same name at time.
         final Logger cLogger = new LogDomainsLogger(loggerName, resourceBundle);
@@ -340,13 +360,15 @@ public class LogDomains {
     }
 
     // uncomment System.x.println lines only for some voodoo testing
-    private static ResourceBundle getResourceBundle(final String name, final Class clazz, final ClassLoader resourceBundleLoader) {
+    private static ResourceBundle getResourceBundle(final String name, final Class clazz,
+            final ClassLoader resourceBundleLoader) {
         final ResourceBundle classBundle = findResourceBundle(name, clazz, resourceBundleLoader);
         if (classBundle != null) {
 //            System.out.println("Found resource bundle by given classloader: " + name + " for " + clazz);
             return classBundle;
         }
-        System.err.println("Cannot find the resource bundle for the name " + name + " for " + clazz + " using " + resourceBundleLoader);
+        System.err.println("Cannot find the resource bundle for the name " + name + " for " + clazz + " using "
+                + resourceBundleLoader);
         return null;
     }
 
