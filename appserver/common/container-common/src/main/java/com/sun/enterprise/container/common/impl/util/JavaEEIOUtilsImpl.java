@@ -40,10 +40,8 @@
 
 package com.sun.enterprise.container.common.impl.util;
 
-import org.jvnet.hk2.annotations.Contract;
 import javax.inject.Inject;
 import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PostConstruct;
 import org.glassfish.hk2.api.ServiceLocator;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
@@ -60,19 +58,19 @@ import java.util.logging.Logger;
 /**
  * A contract that defines a set of methods to serialize / deserialze Java EE
  * objects (even if they are not directly serializable).
- * 
+ *
  * Some of the objects that are expected to be serialized / de-serialized are a)
  * Local EJB references b) EJB Handles c) JNDI (sub) contexts d) (Non
  * serializable) StatefulSessionBeans
- * 
+ *
  * @author Mahesh Kannan
- * 
+ *
  */
 @Service
 public class JavaEEIOUtilsImpl implements JavaEEIOUtils {
 
 	private static Logger _logger = LogDomains.getLogger(
-			JavaEEIOUtilsImpl.class, LogDomains.JNDI_LOGGER);
+			JavaEEIOUtilsImpl.class, LogDomains.JNDI_LOGGER, false);
 
 	@Inject
 	ServiceLocator habitat;

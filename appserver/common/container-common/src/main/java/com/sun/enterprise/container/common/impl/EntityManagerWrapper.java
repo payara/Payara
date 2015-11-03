@@ -54,7 +54,6 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.ejb.EJBException;
 import static javax.persistence.SynchronizationType.SYNCHRONIZED;
 import static javax.persistence.SynchronizationType.UNSYNCHRONIZED;
 import javax.persistence.criteria.*;
@@ -83,7 +82,7 @@ import java.util.logging.Logger;
  */
 public class EntityManagerWrapper implements EntityManager, Serializable {
 
-    static Logger _logger=LogDomains.getLogger(EntityManagerWrapper.class, LogDomains.UTIL_LOGGER);
+    static Logger _logger=LogDomains.getLogger(EntityManagerWrapper.class, LogDomains.UTIL_LOGGER, false);
 
     // Serializable state
 
@@ -255,7 +254,7 @@ public class EntityManagerWrapper implements EntityManager, Serializable {
     private EntityManager getNonTxEMFromCurrentInvocation() {
         // We store nonTxEM as a payload in a map from EMF to EM inside current invocation.
         // It will be closed during  NonTxEntityManagerCleaner.beforePostInvoke() below
-        
+
         ComponentInvocation currentInvocation = invMgr.getCurrentInvocation();
         Map<EntityManagerFactory, EntityManager> nonTxEMs = getNonTxEMsFromCurrentInvocation(currentInvocation);
         if(nonTxEMs == null) {
