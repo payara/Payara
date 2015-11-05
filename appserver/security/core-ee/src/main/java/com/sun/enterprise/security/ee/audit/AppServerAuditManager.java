@@ -38,11 +38,7 @@
  * holder.
  */
 
-/*
- * AppServerAuditManager.java
- *
- * Created on July 28, 2003, 1:56 PM
- */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.security.ee.audit;
 import java.util.logging.Logger;

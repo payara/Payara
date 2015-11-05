@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.ejb.base.io;
 
@@ -63,7 +64,6 @@ import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
 import com.sun.enterprise.container.common.spi.util.GlassFishOutputStreamHandler;
-import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.SerializableObjectFactory;
 
 /**

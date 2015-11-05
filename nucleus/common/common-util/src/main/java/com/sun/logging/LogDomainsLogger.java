@@ -1,3 +1,4 @@
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package com.sun.logging;
 
 import java.util.ResourceBundle;
@@ -15,5 +16,4 @@ class LogDomainsLogger extends Logger {
 	public ResourceBundle getResourceBundle() {
 		return resourceBundle;
 	}
-
 }

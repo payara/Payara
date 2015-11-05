@@ -37,12 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * EJBSecurityManagerFactory.java
- *
- * Created on June 9, 2003, 5:42 PM
- */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.ejb.security.factory;
 

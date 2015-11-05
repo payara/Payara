@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.iiop.security;
 
@@ -53,12 +54,11 @@ import com.sun.corba.ee.org.omg.CSI.GSS_NT_Scoped_Username_OID;
 import java.util.Arrays;
 import java.util.logging.Level;;
 
-/*
+/**
  * @author    Sekhar Vajjhala
  * (Almost complete rewrite of an old version)
  *
  */
-
 public class GSSUtils
 {
     private static final java.util.logging.Logger _logger =
