@@ -1,5 +1,3 @@
-package com.sun.common.util.logging;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -40,7 +38,9 @@ package com.sun.common.util.logging;
  * holder.
  */
 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
 
+package com.sun.common.util.logging;
 
 import java.util.logging.LogRecord;
 import java.util.logging.Level;
