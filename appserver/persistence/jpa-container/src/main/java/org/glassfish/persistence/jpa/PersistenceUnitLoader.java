@@ -81,7 +81,7 @@ public class PersistenceUnitLoader {
 
     private static Logger logger = LogDomains.getLogger(PersistenceUnitLoader.class, LogDomains.PERSISTENCE_LOGGER);
 
-    private static final StringManager localStrings = StringManager.getManager(PersistenceUnitLoader.class);    
+    private static final StringManager localStrings = StringManager.getManager(PersistenceUnitLoader.class);
 
     private static Map<String, String> integrationProperties;
 
@@ -400,7 +400,7 @@ public class PersistenceUnitLoader {
 
         final String ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY = "eclipselink.target-server"; // NOI18N
         props.put(ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY,
-                System.getProperty(ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY, "SunAS9")); // NOI18N
+                System.getProperty(ECLIPSELINK_SERVER_PLATFORM_CLASS_NAME_PROPERTY, "Glassfish")); // NOI18N
 
         // TopLink specific properties:
         // See https://glassfish.dev.java.net/issues/show_bug.cgi?id=249
