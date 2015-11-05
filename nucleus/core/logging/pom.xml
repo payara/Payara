@@ -81,6 +81,13 @@
         <artifactId>logging-annotation-processor</artifactId>
         <optional>true</optional>
       </dependency>
+
+      <dependency>
+        <groupId>org.glassfish.main.common</groupId>
+        <artifactId>common-util</artifactId>
+	<version>${project.version}</version>
+      </dependency>
+
     </dependencies>
     <build>
         <plugins>

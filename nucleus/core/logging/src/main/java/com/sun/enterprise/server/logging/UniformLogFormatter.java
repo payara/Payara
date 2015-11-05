@@ -41,6 +41,7 @@
 package com.sun.enterprise.server.logging;
 
 
+import com.sun.common.util.logging.GFLogRecord;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.text.MessageFormat;

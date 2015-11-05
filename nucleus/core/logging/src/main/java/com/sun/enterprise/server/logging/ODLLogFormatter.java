@@ -41,6 +41,7 @@
 package com.sun.enterprise.server.logging;
 
 
+import com.sun.common.util.logging.GFLogRecord;
 import com.sun.appserv.server.util.Version;
 import org.jvnet.hk2.annotations.ContractsProvided;
 

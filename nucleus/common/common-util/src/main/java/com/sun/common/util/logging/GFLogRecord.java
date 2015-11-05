@@ -1,3 +1,5 @@
+package com.sun.common.util.logging;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -38,7 +40,7 @@
  * holder.
  */
 
-package com.sun.enterprise.server.logging;
+
 
 import java.util.logging.LogRecord;
 import java.util.logging.Level;

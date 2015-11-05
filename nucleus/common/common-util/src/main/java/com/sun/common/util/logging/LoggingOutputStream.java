@@ -54,7 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import com.sun.enterprise.server.logging.GFLogRecord;
+//import com.sun.enterprise.server.logging.GFLogRecord;
 
 /**
  * Implementation of a OutputStream that flush the records to a Logger.
