@@ -38,7 +38,9 @@
  * holder.
  */
 
-package com.sun.enterprise.server.logging;
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
+package com.sun.common.util.logging;
 
 import java.util.logging.LogRecord;
 import java.util.logging.Level;

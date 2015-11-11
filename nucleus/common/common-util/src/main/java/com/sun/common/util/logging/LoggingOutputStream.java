@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited] 
 package com.sun.common.util.logging;
 
 import java.io.ByteArrayOutputStream;
@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+//import com.sun.enterprise.server.logging.GFLogRecord;
 
 /**
  * Implementation of a OutputStream that flush the records to a Logger.
@@ -112,7 +113,15 @@ public class LoggingOutputStream extends ByteArrayOutputStream {
             return;
         }
         LogRecord logRecord = new LogRecord(level, logMessage);
-        pendingRecords.offer(logRecord);
+        
+        // JUL LogRecord does not capture thread-name. Create a wrapper to
+        // capture the name of the logging thread so that a formatter can
+        // output correct thread-name if done asynchronously. Note that 
+        // this fix is limited to records published through this handler only.
+        GFLogRecord logRecordWrapper = new GFLogRecord(logRecord);
+        logRecordWrapper.setThreadName(Thread.currentThread().getName());
+        
+        pendingRecords.offer(logRecordWrapper);
     }
 
     private void initializePump() {
