@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, 215 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2014, 2015 C2B2 Consulting Limited. All rights reserved.
  
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -31,7 +31,7 @@ public interface PostgresJDBCConstants {
 	public static final String POSTGRES_CREATE_TABLE_STEPSTATUS = "POSTGRES_CREATE_TABLE_STEPSTATUS";
         
         // System properties
-	public static final String P_MJS_RETRY_MAX = "fish.payara.jbatch.pg.mjsretrymax";
+        public static final String P_MJS_RETRY_MAX = "fish.payara.jbatch.pg.mjsretrymax";
         public static final String P_MJS_RETRY_DELAY = "fish.payara.jbatch.pg.mjsretrydelay";
         
         // Default System property values
