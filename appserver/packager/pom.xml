@@ -159,6 +159,7 @@
         <module>json</module>
         <module>hazelcast</module>
         <module>hazelcast-l10n</module>
+        <module>healthcheck</module>
         <module>payara</module>
     </modules>
 
