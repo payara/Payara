@@ -115,6 +115,7 @@
         <dependency>
            <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-osgi</artifactId>
+            <classifier>payara</classifier>
         </dependency>
         <dependency>
            <groupId>org.glassfish.metro</groupId>
