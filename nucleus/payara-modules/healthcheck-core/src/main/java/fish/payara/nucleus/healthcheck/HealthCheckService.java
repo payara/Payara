@@ -13,10 +13,14 @@
  */
 package fish.payara.nucleus.healthcheck;
 
+import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
+import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.CpuUsageHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.GarbageCollectorHealthCheck;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -25,6 +29,7 @@ import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -41,6 +46,10 @@ import java.util.logging.Logger;
 public class HealthCheckService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    HealthCheckServiceConfiguration configuration;
 
     @Inject
     private Events events;
@@ -80,8 +89,27 @@ public class HealthCheckService implements EventListener {
         events.register(this);
         logger.info("Payara Health Check Service Started");
 
-        //TODO these configurations should be moved to domain.xml with custom tag defs. I guess!
-        registerCheck("GC", new GarbageCollectorHealthCheck(new HealthCheckExecutionOptions(10, TimeUnit.SECONDS)));
-        registerCheck("CPU", new CpuUsageHealthCheck(new HealthCheckExecutionOptions(3, TimeUnit.SECONDS)));
+        if (configuration.getCheckEnabled()) {
+            GarbageCollectorChecker garbageCollectorChecker = configuration.getCheckerByType(GarbageCollectorChecker.class);
+            CpuUsageChecker cpuUsageChecker = configuration.getCheckerByType(CpuUsageChecker.class);
+
+            if (garbageCollectorChecker != null) {
+                registerCheck(garbageCollectorChecker.getName(),
+                        new GarbageCollectorHealthCheck(
+                                new HealthCheckExecutionOptions(garbageCollectorChecker.getTime(),
+                                        asTimeUnit(garbageCollectorChecker.getUnit()))));
+            }
+            if (cpuUsageChecker != null) {
+                registerCheck(cpuUsageChecker.getName(),
+                        new CpuUsageHealthCheck(
+                                new HealthCheckExecutionOptions(cpuUsageChecker.getTime(),
+                                        asTimeUnit(cpuUsageChecker.getUnit()))));
+
+            }
+        }
+    }
+
+    private TimeUnit asTimeUnit(String unit) {
+        return TimeUnit.valueOf(unit);
     }
 }
