@@ -76,7 +76,7 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
         long  totalCpuTime = getTotalCpuTime();
         long time = System.nanoTime();
         double percentage = (double) (totalCpuTime - totalTimeBefore) / (double) (time - timeBefore);
-        result.add(new HealthCheckResultEntry(decideOnStatus(percentage), "CPU%: " + percentage
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + percentage
                 + ", CPU Time: " + TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime())
                 + ", " + "User Time: " + TimeUnit.NANOSECONDS.toMillis(getTotalUserTime())));
         totalTimeBefore = totalCpuTime;
