@@ -20,14 +20,19 @@ import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
+import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
 public class CpuUsageHealthCheck extends BaseHealthCheck {
+
+    private static final Logger logger = Logger.getLogger(CpuUsageHealthCheck.class.getCanonicalName());
+
 
     private long timeBefore = 0;
     private long totalTimeBefore = 0;
@@ -62,8 +67,8 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
                 times = new ThreadTimes();
                 times.id = id;
                 times.startCpuTime  = c;
-                times.startUserTime = u;
                 times.endCpuTime = c;
+                times.startUserTime = u;
                 times.endUserTime = u;
                 threadTimes.put(id, times);
             }
@@ -75,10 +80,11 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
 
         long  totalCpuTime = getTotalCpuTime();
         long time = System.nanoTime();
-        double percentage = (double) (totalCpuTime - totalTimeBefore) / (double) (time - timeBefore);
-        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + percentage
-                + ", CPU Time: " + TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime())
-                + ", " + "User Time: " + TimeUnit.NANOSECONDS.toMillis(getTotalUserTime())));
+        double percentage = ((double)(totalCpuTime - totalTimeBefore) / (double)(time - timeBefore)) * 100;
+
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
+                + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime()-totalTimeBefore))));
+
         totalTimeBefore = totalCpuTime;
         timeBefore = time;
 
@@ -114,10 +120,6 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
 
         public long getEndUserTime() {
             return endUserTime;
-        }
-
-        public long getId() {
-            return id;
         }
 
         public long getStartCpuTime() {
