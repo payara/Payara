@@ -87,7 +87,7 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        executor = Executors.newScheduledThreadPool(2);
+        executor = Executors.newScheduledThreadPool(3);
         events.register(this);
         logger.info("Payara Health Check Service Started");
 
@@ -96,20 +96,23 @@ public class HealthCheckService implements EventListener {
             CpuUsageChecker cpuUsageChecker = configuration.getCheckerByType(CpuUsageChecker.class);
             HeapMemoryUsageChecker heapMemoryUsageChecker = configuration.getCheckerByType(HeapMemoryUsageChecker.class);
 
-            if (garbageCollectorChecker != null) {
+            if (garbageCollectorChecker != null &&
+                    Boolean.valueOf(garbageCollectorChecker.getEnabled())) {
                 registerCheck(garbageCollectorChecker.getName(),
                         new GarbageCollectorHealthCheck(
                                 new HealthCheckExecutionOptions(garbageCollectorChecker.getTime(),
                                         asTimeUnit(garbageCollectorChecker.getUnit()))));
             }
-            if (cpuUsageChecker != null) {
+            if (cpuUsageChecker != null &&
+                    Boolean.valueOf(cpuUsageChecker.getEnabled())) {
                 registerCheck(cpuUsageChecker.getName(),
                         new CpuUsageHealthCheck(
                                 new HealthCheckExecutionOptions(cpuUsageChecker.getTime(),
                                         asTimeUnit(cpuUsageChecker.getUnit()))));
 
             }
-            if (heapMemoryUsageChecker != null) {
+            if (heapMemoryUsageChecker != null &&
+                    Boolean.valueOf(heapMemoryUsageChecker.getEnabled())) {
                 registerCheck(heapMemoryUsageChecker.getName(),
                         new HeapMemoryUsageHealthCheck(
                                 new HealthCheckExecutionOptions(heapMemoryUsageChecker.getTime(),
