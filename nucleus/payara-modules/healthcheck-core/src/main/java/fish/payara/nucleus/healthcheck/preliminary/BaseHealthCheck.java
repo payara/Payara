@@ -15,17 +15,54 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
+import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
 
 /**
  * @author mertcaliskan
  */
 public abstract class BaseHealthCheck {
 
+    protected final long ONE_KB = 1024;
+    protected final long ONE_MB = ONE_KB * ONE_KB;
+    protected final long ONE_GB = ONE_KB * ONE_MB;
+
     protected HealthCheckExecutionOptions options;
-
     public abstract HealthCheckResult doCheck();
-
     public HealthCheckExecutionOptions getOptions() {
         return options;
+    }
+
+    protected HealthCheckResultStatus decideOnStatus(Double percentage) {
+        if (percentage > 80) {
+            return HealthCheckResultStatus.CRITICAL;
+        }
+        else if (percentage > 50) {
+            return HealthCheckResultStatus.WARNING;
+        }
+        else if (percentage > 0) {
+            return HealthCheckResultStatus.GOOD;
+        }
+        else {
+            return HealthCheckResultStatus.CHECK_ERROR;
+        }
+    }
+
+    protected String prettyPrintBytes(long value) {
+        String result;
+
+        if (value / ONE_GB > 0) {
+            result = (value / ONE_GB) + " Gb";
+        }
+        else if (value / ONE_MB > 0) {
+            result = (value / ONE_MB) + " Mb";
+        }
+        else if (value / ONE_KB > 0) {
+            result = (value / ONE_KB) + " Kb";
+        }
+        else {
+            result = (value) + " bytes";
+        }
+
+        return result;
     }
 }
