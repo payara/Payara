@@ -47,7 +47,7 @@ public class HeapMemoryUsageHealthCheck extends BaseHealthCheck {
                 prettyPrintBytes(heap.getCommitted()),
                 prettyPrintBytes(heap.getMax())));
         Double percentage = calculatePercentage(heap);
-        result.add(new HealthCheckResultEntry(decideOnStatus(percentage), descText + "\n"
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), descText + "\n"
                 + heapValueText + "\n"
                 + "heap%: " + percentage + "%"));
 
