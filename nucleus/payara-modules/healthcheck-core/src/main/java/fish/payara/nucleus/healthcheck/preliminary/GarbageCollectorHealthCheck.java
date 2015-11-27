@@ -29,7 +29,6 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
     static final String GC_BEANNAME1 = "PS Scavenge";
     static final String GC_BEANNAME2 = "PS MarkSweep";
 
-    private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS");
     private long youngLastCollectionCount;
     private long youngLastCollectionTime;
     private long oldLastCollectionCount;
@@ -49,20 +48,26 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
             if (GC_BEANNAME1.equals(gcBean.getName())) {
                 long diffCount = gcBean.getCollectionCount() - youngLastCollectionCount;
                 long diffTime = gcBean.getCollectionTime() - youngLastCollectionTime;
-                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.GOOD, getTimeStamp() + "Young GC x " +
-                        diffCount + ", " + diffTime + " milliseconds"));
+                
+                if (diffTime > 0) {
+                    result.add(new HealthCheckResultEntry(decideOnStatusWithDuration(diffTime),
+                            diffCount + " times Young GC after " + prettyPrintDuration(diffTime)));
 
-                youngLastCollectionCount = gcBean.getCollectionCount();
-                youngLastCollectionTime = gcBean.getCollectionTime();
+                    youngLastCollectionCount = gcBean.getCollectionCount();
+                    youngLastCollectionTime = gcBean.getCollectionTime();
+                }
             }
             else if (GC_BEANNAME2.equals(gcBean.getName())) {
                 long diffCount = gcBean.getCollectionCount() - oldLastCollectionCount;
                 long diffTime = gcBean.getCollectionTime() - oldLastCollectionTime;
-                result.add(new HealthCheckResultEntry(HealthCheckResultStatus.GOOD, getTimeStamp() + "Old GC x " +
-                        diffCount + ", " + diffTime + " milliseconds"));
 
-                oldLastCollectionCount = gcBean.getCollectionCount();
-                oldLastCollectionTime = gcBean.getCollectionTime();
+                if (diffTime > 0) {
+                    result.add(new HealthCheckResultEntry(decideOnStatusWithDuration(diffTime),
+                            diffCount + " times Old GC after " + prettyPrintDuration(diffTime)));
+
+                    oldLastCollectionCount = gcBean.getCollectionCount();
+                    oldLastCollectionTime = gcBean.getCollectionTime();
+                }
             }
             else {
                 result.add(new HealthCheckResultEntry(HealthCheckResultStatus.CHECK_ERROR, "Could not identify " +
@@ -71,15 +76,5 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
         }
 
         return result;
-    }
-
-    private String getTimeStamp() {
-        Date now = new Date();
-
-        long upTime = ManagementFactory.getRuntimeMXBean().getUptime();
-        long upTimeSecs = upTime / 1000;
-        long upTimeMillis = upTime % 1000;
-
-        return dateFormat.format(now) + " [" + upTimeSecs + "." + upTimeMillis + "] ";
     }
 }
