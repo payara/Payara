@@ -85,21 +85,6 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
         return result;
     }
 
-    private HealthCheckResultStatus decideOnStatus(double percentage) {
-        if (percentage > 80) {
-            return HealthCheckResultStatus.CRITICAL;
-        }
-        else if (percentage > 50) {
-            return HealthCheckResultStatus.WARNING;
-        }
-        else if (percentage > 0) {
-            return HealthCheckResultStatus.GOOD;
-        }
-        else {
-            return HealthCheckResultStatus.CHECK_ERROR;
-        }
-    }
-
     public long getTotalCpuTime( ) {
         final Collection<ThreadTimes>  threadTimesValues = threadTimes.values();
         long time = 0L;

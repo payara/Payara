@@ -16,9 +16,11 @@ package fish.payara.nucleus.healthcheck;
 import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
 import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.CpuUsageHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.GarbageCollectorHealthCheck;
+import fish.payara.nucleus.healthcheck.preliminary.HeapMemoryUsageHealthCheck;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -92,6 +94,7 @@ public class HealthCheckService implements EventListener {
         if (configuration.getCheckEnabled()) {
             GarbageCollectorChecker garbageCollectorChecker = configuration.getCheckerByType(GarbageCollectorChecker.class);
             CpuUsageChecker cpuUsageChecker = configuration.getCheckerByType(CpuUsageChecker.class);
+            HeapMemoryUsageChecker heapMemoryUsageChecker = configuration.getCheckerByType(HeapMemoryUsageChecker.class);
 
             if (garbageCollectorChecker != null) {
                 registerCheck(garbageCollectorChecker.getName(),
@@ -105,6 +108,12 @@ public class HealthCheckService implements EventListener {
                                 new HealthCheckExecutionOptions(cpuUsageChecker.getTime(),
                                         asTimeUnit(cpuUsageChecker.getUnit()))));
 
+            }
+            if (heapMemoryUsageChecker != null) {
+                registerCheck(heapMemoryUsageChecker.getName(),
+                        new HeapMemoryUsageHealthCheck(
+                                new HealthCheckExecutionOptions(heapMemoryUsageChecker.getTime(),
+                                        asTimeUnit(heapMemoryUsageChecker.getUnit()))));
             }
         }
     }
