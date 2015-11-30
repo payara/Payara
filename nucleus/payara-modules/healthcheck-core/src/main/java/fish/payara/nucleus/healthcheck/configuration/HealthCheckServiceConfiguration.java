@@ -18,7 +18,6 @@ import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
@@ -26,9 +25,6 @@ import java.util.logging.Logger;
  */
 @Configured
 public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
-
-    Logger logger = Logger.getLogger(HealthCheckServiceConfiguration.class.getCanonicalName());
-
 
     @Attribute(defaultValue="false",dataType=Boolean.class)
     Boolean getCheckEnabled();
