@@ -16,6 +16,8 @@ package fish.payara.nucleus.healthcheck.preliminary;
 import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
 
 import java.util.concurrent.TimeUnit;
 
@@ -33,9 +35,19 @@ public abstract class BaseHealthCheck {
     protected final long FIVE_MIN = 5 * ONE_MIN;
 
     protected HealthCheckExecutionOptions options;
+
     public abstract HealthCheckResult doCheck();
-    public HealthCheckExecutionOptions getOptions() {
-        return options;
+    protected abstract HealthCheckService getService();
+    
+    protected TimeUnit asTimeUnit(String unit) {
+        return TimeUnit.valueOf(unit);
+    }
+
+    protected <T extends BaseHealthCheck> void postConstruct(Checker checker, T t) {
+        if (Boolean.valueOf(checker.getEnabled())) {
+            t.setOptions(new HealthCheckExecutionOptions(checker.getTime(), asTimeUnit(checker.getUnit())));
+            getService().registerCheck(checker.getName(), t);
+        }
     }
 
     protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
@@ -116,5 +128,13 @@ public abstract class BaseHealthCheck {
         else {
             return null;
         }
+    }
+
+    public HealthCheckExecutionOptions getOptions() {
+        return options;
+    }
+
+    public void setOptions(HealthCheckExecutionOptions options) {
+        this.options = options;
     }
 }
