@@ -14,16 +14,25 @@
 package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.*;
+import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 
 /**
  * @author mertcaliskan
  */
+@Service(name = "healthcheck-gc")
+@RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck extends BaseHealthCheck {
 
     static final String GC_BEANNAME1 = "PS Scavenge";
@@ -34,8 +43,16 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
     private long oldLastCollectionCount;
     private long oldLastCollectionTime;
 
-    public GarbageCollectorHealthCheck(HealthCheckExecutionOptions options) {
-        this.options = options;
+    @Inject
+    protected HealthCheckService healthCheckService;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    HealthCheckServiceConfiguration configuration;
+
+    @PostConstruct
+    void postConstruct() {
+        super.postConstruct(configuration.getCheckerByType(GarbageCollectorChecker.class), this);
     }
 
     @Override
@@ -76,5 +93,10 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
         }
 
         return result;
+    }
+
+    @Override
+    protected HealthCheckService getService() {
+        return healthCheckService;
     }
 }

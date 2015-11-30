@@ -13,33 +13,45 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
-import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.*;
+import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
+@Service(name = "healthcheck-cpu")
+@RunLevel(StartupRunLevel.VAL)
 public class CpuUsageHealthCheck extends BaseHealthCheck {
-
-    private static final Logger logger = Logger.getLogger(CpuUsageHealthCheck.class.getCanonicalName());
-
 
     private long timeBefore = 0;
     private long totalTimeBefore = 0;
     private HashMap<Long, ThreadTimes> threadTimes = new HashMap<Long, ThreadTimes>();
 
-    public CpuUsageHealthCheck(HealthCheckExecutionOptions options) {
-        this.options = options;
+    @Inject
+    protected HealthCheckService healthCheckService;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    HealthCheckServiceConfiguration configuration;
+
+    @PostConstruct
+    void postConstruct() {
+        super.postConstruct(configuration.getCheckerByType(CpuUsageChecker.class), this);
     }
 
     @Override
@@ -105,6 +117,11 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
         for (ThreadTimes times : threadTimesValues)
             time += times.getEndUserTime() - times.getStartUserTime();
         return time;
+    }
+
+    @Override
+    protected HealthCheckService getService() {
+        return healthCheckService;
     }
 
     private static class ThreadTimes {

@@ -13,14 +13,8 @@
  */
 package fish.payara.nucleus.healthcheck;
 
-import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
-import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
-import fish.payara.nucleus.healthcheck.preliminary.CpuUsageHealthCheck;
-import fish.payara.nucleus.healthcheck.preliminary.GarbageCollectorHealthCheck;
-import fish.payara.nucleus.healthcheck.preliminary.HeapMemoryUsageHealthCheck;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -36,7 +30,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -57,14 +50,13 @@ public class HealthCheckService implements EventListener {
     private Events events;
 
     private ScheduledExecutorService executor;
-
     private final Map<String, HealthCheckTask> registeredTasks = new HashMap<String, HealthCheckTask>(5);
 
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             executor.shutdownNow();
         }
-        else if (event.is(EventTypes.SERVER_READY)) {
+        else if (event.is(EventTypes.SERVER_READY) && configuration.getCheckEnabled()) {
             for (HealthCheckTask registeredTask : registeredTasks.values()) {
                 logger.info("Scheduling Health Check " + registeredTask.getName());
                 executor.scheduleAtFixedRate(registeredTask, 0,
@@ -74,54 +66,14 @@ public class HealthCheckService implements EventListener {
         }
     }
 
-    public void setCheckEnabled(String name, boolean state) {
-        HealthCheckTask task = registeredTasks.get(name);
-        if (task != null) {
-            task.setEnabled(state);
-        }
-    }
-
     public void registerCheck(String name, BaseHealthCheck check) {
         registeredTasks.put(name, new HealthCheckTask(name, check));
     }
 
     @PostConstruct
     void postConstruct() {
-        executor = Executors.newScheduledThreadPool(3);
+        executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
         events.register(this);
-        logger.info("Payara Health Check Service Started");
-
-        if (configuration.getCheckEnabled()) {
-            GarbageCollectorChecker garbageCollectorChecker = configuration.getCheckerByType(GarbageCollectorChecker.class);
-            CpuUsageChecker cpuUsageChecker = configuration.getCheckerByType(CpuUsageChecker.class);
-            HeapMemoryUsageChecker heapMemoryUsageChecker = configuration.getCheckerByType(HeapMemoryUsageChecker.class);
-
-            if (garbageCollectorChecker != null &&
-                    Boolean.valueOf(garbageCollectorChecker.getEnabled())) {
-                registerCheck(garbageCollectorChecker.getName(),
-                        new GarbageCollectorHealthCheck(
-                                new HealthCheckExecutionOptions(garbageCollectorChecker.getTime(),
-                                        asTimeUnit(garbageCollectorChecker.getUnit()))));
-            }
-            if (cpuUsageChecker != null &&
-                    Boolean.valueOf(cpuUsageChecker.getEnabled())) {
-                registerCheck(cpuUsageChecker.getName(),
-                        new CpuUsageHealthCheck(
-                                new HealthCheckExecutionOptions(cpuUsageChecker.getTime(),
-                                        asTimeUnit(cpuUsageChecker.getUnit()))));
-
-            }
-            if (heapMemoryUsageChecker != null &&
-                    Boolean.valueOf(heapMemoryUsageChecker.getEnabled())) {
-                registerCheck(heapMemoryUsageChecker.getName(),
-                        new HeapMemoryUsageHealthCheck(
-                                new HealthCheckExecutionOptions(heapMemoryUsageChecker.getTime(),
-                                        asTimeUnit(heapMemoryUsageChecker.getUnit()))));
-            }
-        }
-    }
-
-    private TimeUnit asTimeUnit(String unit) {
-        return TimeUnit.valueOf(unit);
+        logger.info("Payara Health Check Service Started.");
     }
 }
