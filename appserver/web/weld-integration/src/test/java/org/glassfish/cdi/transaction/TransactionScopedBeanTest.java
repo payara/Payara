@@ -37,9 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.cdi.transaction;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.junit.Test;
 
 import javax.enterprise.context.spi.Contextual;
@@ -61,6 +63,7 @@ public class TransactionScopedBeanTest {
         Contextual<LocalBean> contextual = (Contextual<LocalBean>) mockSupport.createMock(Contextual.class);
         CreationalContext<LocalBean> creationalContext = (CreationalContext<LocalBean>) mockSupport.createMock(CreationalContext.class);
         TransactionScopedContextImpl transactionScopedContext = mockSupport.createMock(TransactionScopedContextImpl.class);
+        transactionScopedContext.beansPerTransaction = new ConcurrentHashMap<>();
 
         // test getContextualInstance
         TransactionScopedBean<LocalBean> transactionScopedBean = getTransactionScopedBean(mockSupport,

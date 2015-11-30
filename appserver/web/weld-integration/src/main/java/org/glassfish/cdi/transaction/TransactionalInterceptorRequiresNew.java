@@ -37,10 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.cdi.transaction;
 
-import org.glassfish.logging.annotation.LoggerInfo;
+import com.sun.enterprise.transaction.TransactionManagerHelper;
 
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
@@ -49,6 +50,7 @@ import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionalException;
 import java.util.logging.Logger;
+import javax.transaction.TransactionManager;
 
 /**
  * Transactional annotation Interceptor class for RequiresNew transaction type,
@@ -83,6 +85,10 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                 //todo catch, wrap in new transactional exception and throw
             }
             try {
+                TransactionManager tm = getTransactionManager();
+                if (tm instanceof TransactionManagerHelper) {
+                   ((TransactionManagerHelper)tm).preInvokeTx(true);
+                }
                 getTransactionManager().begin();
             } catch (Exception exception) {
                 String messageString =
@@ -97,6 +103,10 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                 proceed = proceed(ctx);
             } finally {
                 try {
+                    TransactionManager tm = getTransactionManager();
+                    if (tm instanceof TransactionManagerHelper) {
+                       ((TransactionManagerHelper)tm).postInvokeTx(false,true);
+                    }
                     // Exception handling for proceed method call above can set TM/TRX as setRollbackOnly
                     if(getTransactionManager().getTransaction().getStatus() == Status.STATUS_MARKED_ROLLBACK) {
                         getTransactionManager().rollback();
