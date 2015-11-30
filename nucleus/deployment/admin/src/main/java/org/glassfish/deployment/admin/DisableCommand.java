@@ -380,7 +380,7 @@ public class DisableCommand extends UndeployCommandParameters implements AdminCo
 
             // SHOULD CHECK THAT WE ARE THE CORRECT TARGET BEFORE DISABLING 
             String serverName = server.getName();
-            if (serverName.equals(target)) {
+            if (serverName.equals(target) || (server.getCluster() != null && server.getCluster().getName().equals(target)) ) {
                 final DeploymentContext basicDC = deployment.disable(this, app, appInfo, report, logger);           
                 suppInfo.setDeploymentContext((ExtendedDeploymentContext)basicDC);  
             }
