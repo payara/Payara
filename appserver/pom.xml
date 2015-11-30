@@ -614,6 +614,11 @@
                 <version>${webservices.version}</version>
             </dependency>
             <dependency>
+                <groupId>org.ops4j.pax.logging</groupId>
+                <artifactId>pax-logging-api</artifactId>
+                <version>${pax.logging.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>org.glassfish.metro</groupId>
                 <artifactId>webservices-extra-jdk-packages</artifactId>
                 <version>${webservices.version}</version>
