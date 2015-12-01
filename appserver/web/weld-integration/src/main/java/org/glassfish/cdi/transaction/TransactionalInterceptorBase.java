@@ -130,12 +130,12 @@ public class TransactionalInterceptorBase implements Serializable {
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during begin {0}",
-                     level = "FINE")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQUIREDBT = "AS-JTA-00011";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                "encountered exception during commit {0}",
-                     level = "FINE")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQUIREDCT = "AS-JTA-00012";
 
     @LogMessageInfo( message = "In REQUIRES_NEW TransactionalInterceptor",
@@ -149,17 +149,17 @@ public class TransactionalInterceptorBase implements Serializable {
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                "encountered exception during begin {0}",
-                     level = "FINE")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQNEWBT = "AS-JTA-00015";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                "encountered exception during commit {0}",
-                     level = "FINE")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQNEWCT = "AS-JTA-00016";
 
     @LogMessageInfo( message = "Managed bean with Transactional annotation and TxType of REQUIRED " +
                      "encountered exception during resume {0}",
-                     level = "FINE")
+                     level = "WARNING")
     public static final String CDI_JTA_MBREQNEWRT = "AS-JTA-00017";
 
     @LogMessageInfo( message = "In SUPPORTS TransactionalInterceptor",
