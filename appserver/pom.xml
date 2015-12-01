@@ -104,7 +104,7 @@
         <jsftemplating.version>2.1.1</jsftemplating.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <webservices.version>2.3.2-b620</webservices.version>
+        <webservices.version>2.3.2-b608</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.2.0</woodstox.version>
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
@@ -612,7 +612,6 @@
                 <groupId>org.glassfish.metro</groupId>
                 <artifactId>webservices-osgi</artifactId>
                 <version>${webservices.version}</version>
-                <classifier>payara</classifier>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
