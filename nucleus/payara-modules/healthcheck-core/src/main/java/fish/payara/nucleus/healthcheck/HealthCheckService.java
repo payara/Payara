@@ -74,6 +74,8 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
+        System.out.println("------ " + configuration);
+
         if (configuration == null) {
             return;
         }
