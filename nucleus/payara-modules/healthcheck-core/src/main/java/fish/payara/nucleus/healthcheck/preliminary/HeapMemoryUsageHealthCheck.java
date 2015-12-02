@@ -13,10 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
 import org.glassfish.api.StartupRunLevel;
@@ -37,7 +34,7 @@ import java.lang.management.MemoryUsage;
  */
 @Service(name = "healthcheck-heap")
 @RunLevel(StartupRunLevel.VAL)
-public class HeapMemoryUsageHealthCheck extends BaseHealthCheck {
+public class HeapMemoryUsageHealthCheck extends BaseHealthCheck implements HealthCheckConstants {
 
     @Inject
     protected HealthCheckService healthCheckService;

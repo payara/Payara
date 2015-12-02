@@ -13,10 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 
 import java.util.concurrent.TimeUnit;
@@ -24,22 +21,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author mertcaliskan
  */
-public abstract class BaseHealthCheck {
-
-    protected final long ONE_KB = 1024;
-    protected final long ONE_MB = ONE_KB * ONE_KB;
-    protected final long ONE_GB = ONE_KB * ONE_MB;
-
-    protected final long ONE_SEC = 1000;
-    protected final long ONE_MIN = 60 * ONE_SEC;
-    protected final long FIVE_MIN = 5 * ONE_MIN;
-
-    public static final String THRESHOLD_CRITICAL = "threshold-critical";
-    public static final String THRESHOLD_WARNING = "threshold-warning";
-    public static final String THRESHOLD_GOOD = "threshold-good";
-    public static final String THRESHOLD_DEFAULTVAL_CRITICAL = "80";
-    public static final String THRESHOLD_DEFAULTVAL_WARNING = "50";
-    public static final String THRESHOLD_DEFAULTVAL_GOOD = "0";
+public abstract class BaseHealthCheck implements HealthCheckConstants {
 
     protected HealthCheckExecutionOptions options;
 
