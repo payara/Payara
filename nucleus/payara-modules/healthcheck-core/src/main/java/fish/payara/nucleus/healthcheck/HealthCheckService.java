@@ -58,7 +58,7 @@ public class HealthCheckService implements EventListener {
         }
         else if (event.is(EventTypes.SERVER_READY) && configuration.getCheckEnabled()) {
             for (HealthCheckTask registeredTask : registeredTasks.values()) {
-                logger.info("Scheduling Health Check " + registeredTask.getName());
+                logger.info("Scheduling Health Check for task: " + registeredTask.getName());
                 executor.scheduleAtFixedRate(registeredTask, 0,
                         registeredTask.getCheck().getOptions().getTime(),
                         registeredTask.getCheck().getOptions().getUnit());

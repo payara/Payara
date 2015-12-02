@@ -51,7 +51,13 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
 
     @PostConstruct
     void postConstruct() {
-        super.postConstruct(configuration.getCheckerByType(CpuUsageChecker.class), this);
+        CpuUsageChecker checker = configuration.getCheckerByType(CpuUsageChecker.class);
+            options = new HealthCheckExecutionOptions(checker.getTime(),
+                    asTimeUnit(checker.getUnit()),
+                    checker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
+                    checker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
+                    checker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
+            postConstruct(checker, this, options);
     }
 
     @Override
@@ -94,8 +100,8 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
         long time = System.nanoTime();
         double percentage = ((double)(totalCpuTime - totalTimeBefore) / (double)(time - timeBefore)) * 100;
 
-        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
-                + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime()-totalTimeBefore))));
+            result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), "CPU%: " + new DecimalFormat("#.00").format(percentage)
+                    + ", Time CPU used: " + prettyPrintDuration(TimeUnit.NANOSECONDS.toMillis(getTotalCpuTime() - totalTimeBefore))));
 
         totalTimeBefore = totalCpuTime;
         timeBefore = time;

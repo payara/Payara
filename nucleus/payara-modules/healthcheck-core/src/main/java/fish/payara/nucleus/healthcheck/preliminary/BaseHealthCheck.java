@@ -34,30 +34,42 @@ public abstract class BaseHealthCheck {
     protected final long ONE_MIN = 60 * ONE_SEC;
     protected final long FIVE_MIN = 5 * ONE_MIN;
 
+    public static final String THRESHOLD_CRITICAL = "threshold-critical";
+    public static final String THRESHOLD_WARNING = "threshold-warning";
+    public static final String THRESHOLD_GOOD = "threshold-good";
+    public static final String THRESHOLD_DEFAULTVAL_CRITICAL = "80";
+    public static final String THRESHOLD_DEFAULTVAL_WARNING = "50";
+    public static final String THRESHOLD_DEFAULTVAL_GOOD = "0";
+
     protected HealthCheckExecutionOptions options;
 
     public abstract HealthCheckResult doCheck();
     protected abstract HealthCheckService getService();
-    
+
     protected TimeUnit asTimeUnit(String unit) {
         return TimeUnit.valueOf(unit);
     }
 
     protected <T extends BaseHealthCheck> void postConstruct(Checker checker, T t) {
+        HealthCheckExecutionOptions options = new HealthCheckExecutionOptions(checker.getTime(), asTimeUnit(checker.getUnit()));
+        postConstruct(checker, t, options);
+    }
+
+    protected <T extends BaseHealthCheck> void postConstruct(Checker checker, T t, HealthCheckExecutionOptions options) {
         if (Boolean.valueOf(checker.getEnabled())) {
-            t.setOptions(new HealthCheckExecutionOptions(checker.getTime(), asTimeUnit(checker.getUnit())));
+            this.options = options;
             getService().registerCheck(checker.getName(), t);
         }
     }
 
     protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
-        if (percentage > 80) {
+        if (percentage > options.getThresholdCritical()) {
             return HealthCheckResultStatus.CRITICAL;
         }
-        else if (percentage > 50) {
+        else if (percentage > options.getThresholdWarning()) {
             return HealthCheckResultStatus.WARNING;
         }
-        else if (percentage > 0) {
+        else if (percentage > options.getThresholdGood()) {
             return HealthCheckResultStatus.GOOD;
         }
         else {
@@ -132,9 +144,5 @@ public abstract class BaseHealthCheck {
 
     public HealthCheckExecutionOptions getOptions() {
         return options;
-    }
-
-    public void setOptions(HealthCheckExecutionOptions options) {
-        this.options = options;
     }
 }
