@@ -19,6 +19,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
@@ -47,10 +48,15 @@ public class CpuUsageHealthCheck extends BaseHealthCheck {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional
     HealthCheckServiceConfiguration configuration;
 
     @PostConstruct
     void postConstruct() {
+        if (configuration == null) {
+            return;
+        }
+
         CpuUsageChecker checker = configuration.getCheckerByType(CpuUsageChecker.class);
             options = new HealthCheckExecutionOptions(checker.getTime(),
                     asTimeUnit(checker.getUnit()),
