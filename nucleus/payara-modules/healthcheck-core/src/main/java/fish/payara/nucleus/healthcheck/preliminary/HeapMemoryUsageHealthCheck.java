@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
+import fish.payara.nucleus.healthcheck.HealthCheckExecutionOptions;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
@@ -46,7 +47,13 @@ public class HeapMemoryUsageHealthCheck extends BaseHealthCheck {
 
     @PostConstruct
     void postConstruct() {
-        super.postConstruct(configuration.getCheckerByType(HeapMemoryUsageChecker.class), this);
+        HeapMemoryUsageChecker checker = configuration.getCheckerByType(HeapMemoryUsageChecker.class);
+        options = new HealthCheckExecutionOptions(checker.getTime(),
+                asTimeUnit(checker.getUnit()),
+                checker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
+                checker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
+                checker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
+        postConstruct(checker, this, options);
     }
 
     @Override
@@ -55,19 +62,13 @@ public class HeapMemoryUsageHealthCheck extends BaseHealthCheck {
         MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
         MemoryUsage heap = memBean.getHeapMemoryUsage();
 
-        String descText = "[Description] init: JVM initial size requested. " +
-                "used: memory used. " +
-                "committed: memory committed to be used by JVM. " +
-                "max: Max. memory JVM can use.";
-
         String heapValueText = (String.format("heap: init: %s, used: %s, committed: %s, max.: %s",
                 prettyPrintBytes(heap.getInit()),
                 prettyPrintBytes(heap.getUsed()),
                 prettyPrintBytes(heap.getCommitted()),
                 prettyPrintBytes(heap.getMax())));
         Double percentage = calculatePercentage(heap);
-        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), descText + "\n"
-                + heapValueText + "\n"
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), heapValueText + "\n"
                 + "heap%: " + percentage + "%"));
 
         return result;

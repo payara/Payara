@@ -13,11 +13,30 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.PropertyDesc;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
+
+import java.util.List;
 
 /**
  * @author mertcaliskan
  */
 @Configured
-public interface HeapMemoryUsageChecker extends Checker {
+public interface HeapMemoryUsageChecker extends Checker, PropertyBag {
+
+    @Element
+    @PropertiesDesc(props = {
+            @PropertyDesc(name = BaseHealthCheck.THRESHOLD_CRITICAL, defaultValue = BaseHealthCheck
+                    .THRESHOLD_DEFAULTVAL_CRITICAL),
+            @PropertyDesc(name = BaseHealthCheck.THRESHOLD_WARNING, defaultValue = BaseHealthCheck
+                    .THRESHOLD_DEFAULTVAL_WARNING),
+            @PropertyDesc(name = BaseHealthCheck.THRESHOLD_GOOD, defaultValue = BaseHealthCheck
+                    .THRESHOLD_DEFAULTVAL_GOOD)
+    })
+    List<Property> getProperty();
 }

@@ -22,10 +22,21 @@ public class HealthCheckExecutionOptions {
 
     private long time;
     private TimeUnit unit;
+    private int thresholdCritical;
+    private int thresholdWarning;
+    private int thresholdGood;
 
     public HealthCheckExecutionOptions(long time, TimeUnit unit) {
         this.time = time;
         this.unit = unit;
+    }
+
+    public HealthCheckExecutionOptions(long time, TimeUnit unit, String thresholdCritical, String thresholdWarning, String thresholdGood) {
+        this.time = time;
+        this.unit = unit;
+        this.thresholdCritical = Integer.parseInt(thresholdCritical);
+        this.thresholdWarning = Integer.parseInt(thresholdWarning);
+        this.thresholdGood = Integer.parseInt(thresholdGood);
     }
 
     public long getTime() {
@@ -34,5 +45,17 @@ public class HealthCheckExecutionOptions {
 
     public TimeUnit getUnit() {
         return unit;
+    }
+
+    public int getThresholdCritical() {
+        return thresholdCritical;
+    }
+
+    public int getThresholdWarning() {
+        return thresholdWarning;
+    }
+
+    public int getThresholdGood() {
+        return thresholdGood;
     }
 }
