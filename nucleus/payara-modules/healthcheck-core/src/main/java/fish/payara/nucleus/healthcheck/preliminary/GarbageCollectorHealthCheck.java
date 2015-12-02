@@ -22,6 +22,7 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
@@ -38,7 +39,7 @@ import java.util.List;
 @RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck extends BaseHealthCheck {
 
-    static final String GC_BEANNAME1 = "PS Scavenge";
+    static final String YOUNG_PS_SCAVENGE = "PS Scavenge";
     static final String GC_BEANNAME2 = "PS MarkSweep";
 
     private long youngLastCollectionCount;
@@ -51,10 +52,15 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional
     HealthCheckServiceConfiguration configuration;
 
     @PostConstruct
     void postConstruct() {
+        if (configuration == null) {
+            return;
+        }
+
         super.postConstruct(configuration.getCheckerByType(GarbageCollectorChecker.class), this);
     }
 
@@ -65,7 +71,7 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
         List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
         for (GarbageCollectorMXBean gcBean : gcBeanList) {
 
-            if (GC_BEANNAME1.equals(gcBean.getName())) {
+            if (YOUNG_PS_SCAVENGE.equals(gcBean.getName())) {
                 long diffCount = gcBean.getCollectionCount() - youngLastCollectionCount;
                 long diffTime = gcBean.getCollectionTime() - youngLastCollectionTime;
                 
