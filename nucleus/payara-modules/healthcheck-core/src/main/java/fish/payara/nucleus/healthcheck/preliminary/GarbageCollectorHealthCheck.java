@@ -34,13 +34,27 @@ import java.util.List;
 
 /**
  * @author mertcaliskan
+ *
+ * -XX:+UseSerialGC                           --> <YOUNG_COPY, OLD_MARK_SWEEP_COMPACT>
+ * -XX:+UseG1GC                               --> <YOUNG_G1GC, OLD_G1GC>
+ * -XX:+UseParallelGC                         --> <YOUNG_PS_SCAVENGE, OLD_PS_MARKSWEEP>
+ * -XX:+UseParNewGC                           --> <YOUNG_PARNEW, OLD_MARK_SWEEP_COMPACT>
+ * -XX:+UseConcMarkSweepGC -XX:+UseParNewGC   --> <YOUNG_PARNEW, OLD_CONCURRENTMARKSWEEP>
+ * -XX:+UseConcMarkSweepGC -XX:-UseParNewGC   --> <YOUNG_COPY, OLD_CONCURRENTMARKSWEEP>
  */
 @Service(name = "healthcheck-gc")
 @RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck extends BaseHealthCheck {
 
+    static final String YOUNG_COPY = "Copy";
     static final String YOUNG_PS_SCAVENGE = "PS Scavenge";
-    static final String GC_BEANNAME2 = "PS MarkSweep";
+    static final String YOUNG_PARNEW = "ParNew";
+    static final String YOUNG_G1GC = "G1 Young Generation";
+
+    static final String OLD_MARK_SWEEP_COMPACT = "MarkSweepCompact";
+    static final String OLD_PS_MARKSWEEP = "PS MarkSweep";
+    static final String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
+    static final String OLD_G1GC = "G1 Old Generation";
 
     private long youngLastCollectionCount;
     private long youngLastCollectionTime;
@@ -71,25 +85,31 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
         List<GarbageCollectorMXBean> gcBeanList = ManagementFactory.getGarbageCollectorMXBeans();
         for (GarbageCollectorMXBean gcBean : gcBeanList) {
 
-            if (YOUNG_PS_SCAVENGE.equals(gcBean.getName())) {
+            if (YOUNG_PS_SCAVENGE.equals(gcBean.getName()) ||
+                    YOUNG_G1GC.equals(gcBean.getName()) ||
+                    YOUNG_COPY.equals(gcBean.getName()) ||
+                    YOUNG_PARNEW.equals(gcBean.getName())) {
                 long diffCount = gcBean.getCollectionCount() - youngLastCollectionCount;
                 long diffTime = gcBean.getCollectionTime() - youngLastCollectionTime;
                 
                 if (diffTime > 0) {
                     result.add(new HealthCheckResultEntry(decideOnStatusWithDuration(diffTime),
-                            diffCount + " times Young GC after " + prettyPrintDuration(diffTime)));
+                            diffCount + " times Young GC (" + gcBean.getName()  + ") after " + prettyPrintDuration(diffTime)));
 
                     youngLastCollectionCount = gcBean.getCollectionCount();
                     youngLastCollectionTime = gcBean.getCollectionTime();
                 }
             }
-            else if (GC_BEANNAME2.equals(gcBean.getName())) {
+            else if (OLD_PS_MARKSWEEP.equals(gcBean.getName()) ||
+                    OLD_G1GC.equals(gcBean.getName()) ||
+                    OLD_MARK_SWEEP_COMPACT.equals(gcBean.getName()) ||
+                    OLD_CONCURRENTMARKSWEEP.equals(gcBean.getName())) {
                 long diffCount = gcBean.getCollectionCount() - oldLastCollectionCount;
                 long diffTime = gcBean.getCollectionTime() - oldLastCollectionTime;
 
                 if (diffTime > 0) {
                     result.add(new HealthCheckResultEntry(decideOnStatusWithDuration(diffTime),
-                            diffCount + " times Old GC after " + prettyPrintDuration(diffTime)));
+                            diffCount + " times Old GC (\" + gcBean.getName()  + \") after " + prettyPrintDuration(diffTime)));
 
                     oldLastCollectionCount = gcBean.getCollectionCount();
                     oldLastCollectionTime = gcBean.getCollectionTime();
