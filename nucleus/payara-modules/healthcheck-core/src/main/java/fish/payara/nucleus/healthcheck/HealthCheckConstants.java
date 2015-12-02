@@ -11,13 +11,25 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.healthcheck.configuration;
-
-import org.jvnet.hk2.config.Configured;
+package fish.payara.nucleus.healthcheck;
 
 /**
- * @author mertcaliskan
+ * Created by mertcaliskan
  */
-@Configured
-public interface HeapMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
+public interface HealthCheckConstants {
+
+    long ONE_KB = 1024;
+    long ONE_MB = ONE_KB * ONE_KB;
+    long ONE_GB = ONE_KB * ONE_MB;
+
+    long ONE_SEC = 1000;
+    long ONE_MIN = 60 * ONE_SEC;
+    long FIVE_MIN = 5 * ONE_MIN;
+
+    String THRESHOLD_CRITICAL = "threshold-critical";
+    String THRESHOLD_WARNING = "threshold-warning";
+    String THRESHOLD_GOOD = "threshold-good";
+    String THRESHOLD_DEFAULTVAL_CRITICAL = "80";
+    String THRESHOLD_DEFAULTVAL_WARNING = "50";
+    String THRESHOLD_DEFAULTVAL_GOOD = "0";
 }
