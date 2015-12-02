@@ -21,6 +21,7 @@ import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
@@ -44,6 +45,7 @@ public class HealthCheckService implements EventListener {
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional
     HealthCheckServiceConfiguration configuration;
 
     @Inject
@@ -72,6 +74,9 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
+        if (configuration == null) {
+            return;
+        }
         executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
         events.register(this);
         logger.info("Payara Health Check Service Started.");
