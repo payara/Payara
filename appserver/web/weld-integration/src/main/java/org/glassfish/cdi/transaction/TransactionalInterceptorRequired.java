@@ -39,6 +39,8 @@
  */
 // Portions Copyright [2015] [C2B2 Consulting Limited]
 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 package org.glassfish.cdi.transaction;
 
 
@@ -71,13 +73,13 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.INFO, CDI_JTA_REQUIRED);
+        _logger.log(java.util.logging.Level.FINE, CDI_JTA_REQUIRED);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(false);
         try {
             boolean isTransactionStarted = false;
             if (getTransactionManager().getTransaction() == null) {
-                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQUIRED);
+                _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBREQUIRED);
                 try {
                     getTransactionManager().begin();
                     TransactionManager tm = getTransactionManager();
@@ -90,7 +92,7 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
                             "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                     "encountered exception during begin " +
                                     exception;
-                    _logger.log(java.util.logging.Level.INFO,
+                    _logger.log(java.util.logging.Level.FINE,
                         CDI_JTA_MBREQUIREDBT, exception);
                     throw new TransactionalException(messageString, exception);
                 }
@@ -117,7 +119,7 @@ public class TransactionalInterceptorRequired extends TransactionalInterceptorBa
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                         "encountered exception during commit " +
                                         exception;
-                        _logger.log(java.util.logging.Level.INFO,
+                        _logger.log(java.util.logging.Level.FINE,
                                 CDI_JTA_MBREQUIREDCT, exception);
                         throw new TransactionalException(messageString, exception);
                     }
