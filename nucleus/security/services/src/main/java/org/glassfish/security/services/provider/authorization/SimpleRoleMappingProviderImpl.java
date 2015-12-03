@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.security.services.provider.authorization;
 
 import java.security.Principal;
@@ -97,7 +98,7 @@ public class SimpleRoleMappingProviderImpl implements RoleMappingProvider {
 	@Override
 	public void initialize(SecurityProvider providerConfig) {
 		cfg = (RoleMappingProviderConfig)providerConfig.getSecurityProviderConfig().get(0);        
-		deployable = cfg.getSupportRoleDeploy();
+		deployable = Boolean.parseBoolean(cfg.getSupportRoleDeploy());
 		version = cfg.getVersion();
 		options = cfg.getProviderOptions();
 		if (isDebug()) {
