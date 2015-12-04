@@ -172,8 +172,10 @@ function delayDisableComponent(componentName, type, timeouted) {
     	window.setTimeout("disableComponent('" + componentName + "','" + type + "', true)", 10);
     }
     if (component == null){
+if (!(typeof(console) === 'undefined') && (typeof(console.log) === 'function')) {
         window.console.log('component is NULL' + componentName);
         window.console.debug('component is NULL' + componentName);
+}
     }
 
     component.disabled = true;
@@ -2741,9 +2743,11 @@ var globalEval = function(src) {
         try {
             window.execScript(src);
         } catch (error) {
+	if (!(typeof(console) === 'undefined') && (typeof(console.log) === 'function')) {
             if (console && console.log) {
                 console.log(error);
             }
+	}	
         }
         return;
     }

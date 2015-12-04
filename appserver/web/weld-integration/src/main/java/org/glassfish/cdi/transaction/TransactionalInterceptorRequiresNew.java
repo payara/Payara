@@ -39,6 +39,8 @@
  */
 // Portions Copyright [2015] [C2B2 Consulting Limited]
 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 package org.glassfish.cdi.transaction;
 
 import com.sun.enterprise.transaction.TransactionManagerHelper;
@@ -74,13 +76,13 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
 
     @AroundInvoke
     public Object transactional(InvocationContext ctx) throws Exception {
-        _logger.log(java.util.logging.Level.INFO, CDI_JTA_REQNEW);
+        _logger.log(java.util.logging.Level.FINE, CDI_JTA_REQNEW);
         if (isLifeCycleMethod(ctx)) return proceed(ctx);
         setTransactionalTransactionOperationsManger(false);
         try {
             Transaction suspendedTransaction = null;
             if (getTransactionManager().getTransaction() != null) {
-                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEW);
+                _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBREQNEW);
                 suspendedTransaction = getTransactionManager().suspend();
                 //todo catch, wrap in new transactional exception and throw
             }
@@ -95,7 +97,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                         "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                 "encountered exception during begin " +
                                 exception;
-                _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEWBT, exception);
+                _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBREQNEWBT, exception);
                 throw new TransactionalException(messageString, exception);
             }
             Object proceed = null;
@@ -118,7 +120,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                             "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
                                     "encountered exception during commit " +
                                     exception;
-                    _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEWCT, exception);
+                    _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBREQNEWCT, exception);
                     throw new TransactionalException(messageString, exception);
                 }
                 if (suspendedTransaction != null) {
@@ -129,7 +131,7 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                                 "Managed bean with Transactional annotation and TxType of REQUIRED " +
                                         "encountered exception during resume " +
                                         exception;
-                        _logger.log(java.util.logging.Level.INFO, CDI_JTA_MBREQNEWRT, exception);
+                        _logger.log(java.util.logging.Level.FINE, CDI_JTA_MBREQNEWRT, exception);
                         throw new TransactionalException(messageString, exception);
                     }
                 }
