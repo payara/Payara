@@ -44,14 +44,13 @@ public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck {
         MemoryMXBean memBean = ManagementFactory.getMemoryMXBean() ;
         MemoryUsage heap = memBean.getHeapMemoryUsage();
 
-        String heapValueText = (String.format("heap: init: %s, used: %s, committed: %s, max.: %s",
+        String heapValueText = String.format("heap: init: %s, used: %s, committed: %s, max.: %s",
                 prettyPrintBytes(heap.getInit()),
                 prettyPrintBytes(heap.getUsed()),
                 prettyPrintBytes(heap.getCommitted()),
-                prettyPrintBytes(heap.getMax())));
+                prettyPrintBytes(heap.getMax()));
         Double percentage = calculatePercentage(heap);
-        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), heapValueText + "\n"
-                + "heap%: " + percentage + "%"));
+        result.add(new HealthCheckResultEntry(decideOnStatusWithRatio(percentage), heapValueText + "heap%: " + percentage + "%"));
 
         return result;
     }
