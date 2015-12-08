@@ -16,18 +16,12 @@ package fish.payara.nucleus.healthcheck.preliminary;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
 import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.inject.Named;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.util.List;
@@ -46,36 +40,14 @@ import java.util.List;
 @RunLevel(StartupRunLevel.VAL)
 public class GarbageCollectorHealthCheck extends BaseHealthCheck {
 
-    static final String YOUNG_COPY = "Copy";
-    static final String YOUNG_PS_SCAVENGE = "PS Scavenge";
-    static final String YOUNG_PARNEW = "ParNew";
-    static final String YOUNG_G1GC = "G1 Young Generation";
-
-    static final String OLD_MARK_SWEEP_COMPACT = "MarkSweepCompact";
-    static final String OLD_PS_MARKSWEEP = "PS MarkSweep";
-    static final String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
-    static final String OLD_G1GC = "G1 Old Generation";
-
     private long youngLastCollectionCount;
     private long youngLastCollectionTime;
     private long oldLastCollectionCount;
     private long oldLastCollectionTime;
 
-    @Inject
-    protected HealthCheckService healthCheckService;
-
-    @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    @Optional
-    HealthCheckServiceConfiguration configuration;
-
     @PostConstruct
     void postConstruct() {
-        if (configuration == null) {
-            return;
-        }
-
-        super.postConstruct(configuration.getCheckerByType(GarbageCollectorChecker.class), this);
+        postConstruct(this, GarbageCollectorChecker.class);
     }
 
     @Override
@@ -122,10 +94,5 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
         }
 
         return result;
-    }
-
-    @Override
-    protected HealthCheckService getService() {
-        return healthCheckService;
     }
 }

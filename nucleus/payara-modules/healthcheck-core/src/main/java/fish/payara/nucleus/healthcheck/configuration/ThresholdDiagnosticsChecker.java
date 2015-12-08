@@ -14,7 +14,6 @@
 package fish.payara.nucleus.healthcheck.configuration;
 
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import org.glassfish.api.admin.config.PropertiesDesc;
 import org.glassfish.api.admin.config.PropertyDesc;
 import org.jvnet.hk2.config.Element;
@@ -26,7 +25,7 @@ import java.util.List;
 /**
  * @author mertcaliskan
  */
-public interface ThresholdDiagnosticsChecker extends PropertyBag {
+public interface ThresholdDiagnosticsChecker extends Checker, PropertyBag {
 
     @Element
     @PropertiesDesc(props = {
