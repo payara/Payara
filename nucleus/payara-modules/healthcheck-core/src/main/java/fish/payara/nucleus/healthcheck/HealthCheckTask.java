@@ -26,7 +26,6 @@ class HealthCheckTask implements Runnable {
     private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
 
     private final String name;
-    private boolean enabled = true;
     private final BaseHealthCheck check;
 
     HealthCheckTask(String name, BaseHealthCheck check) {
@@ -42,32 +41,26 @@ class HealthCheckTask implements Runnable {
         return check;
     }
 
-    boolean isEnabled() {
-        return enabled;
-    }
-
-    void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
 
     @Override
     public void run() {
-        if (enabled) {
+        if (check.getOptions().isEnabled()) {
             HealthCheckResult checkResult = check.doCheck();
-
-            switch (checkResult.getCumulativeStatus()) {
-                case CHECK_ERROR:
-                    logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
-                    break;
-                case CRITICAL:
-                    logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
-                    break;
-                case WARNING:
-                    logger.log(Level.WARNING, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
-                    break;
-                case GOOD:
-                    logger.log(Level.INFO, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
-                    break;
+            if (checkResult != null) {
+                switch (checkResult.getCumulativeStatus()) {
+                    case CHECK_ERROR:
+                        logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        break;
+                    case CRITICAL:
+                        logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        break;
+                    case WARNING:
+                        logger.log(Level.WARNING, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        break;
+                    case GOOD:
+                        logger.log(Level.INFO, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        break;
+                }
             }
         }
     }

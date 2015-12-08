@@ -14,7 +14,7 @@
 package fish.payara.nucleus.healthcheck;
 
 /**
- * Created by mertcaliskan
+ * @author mertcaliskan
  */
 public interface HealthCheckConstants {
 
@@ -32,4 +32,14 @@ public interface HealthCheckConstants {
     String THRESHOLD_DEFAULTVAL_CRITICAL = "80";
     String THRESHOLD_DEFAULTVAL_WARNING = "50";
     String THRESHOLD_DEFAULTVAL_GOOD = "0";
+
+    String YOUNG_COPY = "Copy";
+    String YOUNG_PS_SCAVENGE = "PS Scavenge";
+    String YOUNG_PARNEW = "ParNew";
+    String YOUNG_G1GC = "G1 Young Generation";
+
+    String OLD_MARK_SWEEP_COMPACT = "MarkSweepCompact";
+    String OLD_PS_MARKSWEEP = "PS MarkSweep";
+    String OLD_CONCURRENTMARKSWEEP = "ConcurrentMarkSweep";
+    String OLD_G1GC = "G1 Old Generation";
 }

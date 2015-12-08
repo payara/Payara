@@ -15,48 +15,46 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.jvnet.hk2.annotations.Contract;
+import org.jvnet.hk2.annotations.Optional;
 
+import javax.inject.Inject;
+import javax.inject.Named;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
+@Contract
 public abstract class BaseHealthCheck implements HealthCheckConstants {
 
-    protected HealthCheckExecutionOptions options;
+    private HealthCheckExecutionOptions options;
+
+    @Inject
+    protected HealthCheckService healthCheckService;
+
+    @Inject
+    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
+    @Optional
+    HealthCheckServiceConfiguration configuration;
 
     public abstract HealthCheckResult doCheck();
-    protected abstract HealthCheckService getService();
+
+    protected <T extends BaseHealthCheck> void postConstruct(T t, Class checkerType) {
+        if (configuration == null) {
+            return;
+        }
+
+        Checker checker = configuration.getCheckerByType(checkerType);
+        options = new HealthCheckExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(), asTimeUnit(checker.getUnit()));
+        healthCheckService.registerCheck(checker.getName(), t);
+    }
 
     protected TimeUnit asTimeUnit(String unit) {
         return TimeUnit.valueOf(unit);
-    }
-
-    protected <T extends BaseHealthCheck> void postConstruct(Checker checker, T t) {
-        HealthCheckExecutionOptions options = new HealthCheckExecutionOptions(checker.getTime(), asTimeUnit(checker.getUnit()));
-        postConstruct(checker, t, options);
-    }
-
-    protected <T extends BaseHealthCheck> void postConstruct(Checker checker, T t, HealthCheckExecutionOptions options) {
-        if (Boolean.valueOf(checker.getEnabled())) {
-            this.options = options;
-            getService().registerCheck(checker.getName(), t);
-        }
-    }
-
-    protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
-        if (percentage > options.getThresholdCritical()) {
-            return HealthCheckResultStatus.CRITICAL;
-        }
-        else if (percentage > options.getThresholdWarning()) {
-            return HealthCheckResultStatus.WARNING;
-        }
-        else if (percentage > options.getThresholdGood()) {
-            return HealthCheckResultStatus.GOOD;
-        }
-        else {
-            return HealthCheckResultStatus.CHECK_ERROR;
-        }
     }
 
     protected HealthCheckResultStatus decideOnStatusWithDuration(long duration) {

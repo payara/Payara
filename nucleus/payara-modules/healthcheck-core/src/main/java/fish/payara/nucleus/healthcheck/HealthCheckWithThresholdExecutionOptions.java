@@ -18,31 +18,29 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author mertcaliskan
  */
-public class HealthCheckExecutionOptions {
+public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecutionOptions {
 
-    private boolean enabled;
-    private long time;
-    private TimeUnit unit;
+    private int thresholdCritical;
+    private int thresholdWarning;
+    private int thresholdGood;
 
-    public HealthCheckExecutionOptions(boolean enabled, long time, TimeUnit unit) {
-        this.enabled = enabled;
-        this.time = time;
-        this.unit = unit;
+    public HealthCheckWithThresholdExecutionOptions(boolean enabled, long time, TimeUnit unit, String
+            thresholdCritical, String thresholdWarning, String thresholdGood) {
+        super(enabled, time, unit);
+        this.thresholdCritical = Integer.parseInt(thresholdCritical);
+        this.thresholdWarning = Integer.parseInt(thresholdWarning);
+        this.thresholdGood = Integer.parseInt(thresholdGood);
     }
 
-    public boolean isEnabled() {
-        return enabled;
+    public int getThresholdCritical() {
+        return thresholdCritical;
     }
 
-    public long getTime() {
-        return time;
+    public int getThresholdWarning() {
+        return thresholdWarning;
     }
 
-    public TimeUnit getUnit() {
-        return unit;
-    }
-
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public int getThresholdGood() {
+        return thresholdGood;
     }
 }

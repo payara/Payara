@@ -52,19 +52,15 @@ public class HealthCheckService implements EventListener {
     private Events events;
 
     private ScheduledExecutorService executor;
-    private final Map<String, HealthCheckTask> registeredTasks = new HashMap<String, HealthCheckTask>(5);
+    private final Map<String, HealthCheckTask> registeredTasks = new HashMap<String, HealthCheckTask>();
+    private boolean enabled;
 
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             executor.shutdownNow();
         }
         else if (event.is(EventTypes.SERVER_READY) && configuration.getCheckEnabled()) {
-            for (HealthCheckTask registeredTask : registeredTasks.values()) {
-                logger.info("Scheduling Health Check for task: " + registeredTask.getName());
-                executor.scheduleAtFixedRate(registeredTask, 0,
-                        registeredTask.getCheck().getOptions().getTime(),
-                        registeredTask.getCheck().getOptions().getUnit());
-            }
+            executeTasks();
         }
     }
 
@@ -74,11 +70,35 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        if (configuration == null) {
-            return;
+        if (configuration != null && configuration.getCheckEnabled()) {
+            enabled = true;
+            bootstrapHealthCheck();
         }
-        executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
-        events.register(this);
-        logger.info("Payara Health Check Service Started.");
+    }
+
+    public void bootstrapHealthCheck() {
+        if (enabled) {
+            executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
+            events.register(this);
+            logger.info("Payara Health Check Service Started.");
+            executeTasks();
+        }
+    }
+
+    private void executeTasks() {
+        for (HealthCheckTask registeredTask : registeredTasks.values()) {
+            logger.info("Scheduling Health Check for task: " + registeredTask.getName());
+            executor.scheduleAtFixedRate(registeredTask, 0,
+                    registeredTask.getCheck().getOptions().getTime(),
+                    registeredTask.getCheck().getOptions().getUnit());
+        }
+    }
+
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public void startService(String checkerName) {
+
     }
 }
