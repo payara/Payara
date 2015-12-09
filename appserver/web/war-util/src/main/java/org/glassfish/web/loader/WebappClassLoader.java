@@ -318,7 +318,12 @@ public class WebappClassLoader
             message = "Unable to determine TLD resources for [{0}] tag library, because class loader [{1}] for [{2}] is not an instance of java.net.URLClassLoader",
             level = "WARNING")
     public static final String UNABLE_TO_DETERMINE_TLD_RESOURCES = "AS-WEB-UTIL-00039";
-
+    
+    @LogMessageInfo(
+            message = "Using previously defined JDBC leak prevention resource",
+            level = "FINE")
+    public static final String LEAK_PREVENTION_JDBC_REUSE = "AS-WEB-UTIL-00040";
+    
     /**
      * Set of package names which are not allowed to be loaded from a webapp
      * class loader without delegating first.
@@ -539,6 +544,13 @@ public class WebappClassLoader
      * resources.
      */
     boolean antiJARLocking = false;
+    
+    /**
+     * Reference to the JDBC Leak Prevention class.
+     * Held uniquely due to the way it is accessed outside the normal
+     * ClassLoader mechanism.
+     */
+    private Class<?> jdbcLeakPreventionResourceClass = null;
 
     // ----------------------------------------------------------- Constructors
 
@@ -2015,7 +2027,7 @@ public class WebappClassLoader
         if (loaderDir != null) {
             deleteDir(loaderDir);
         }
-
+        
         DirContextURLStreamHandler.unbind(this);
     }
 
@@ -2133,21 +2145,27 @@ public class WebappClassLoader
         byte[] classBytes = new byte[2048];
         int offset = 0;
         try {
-            int read = is.read(classBytes, offset, classBytes.length-offset);
-            while (read > -1) {
-                offset += read;
-                if (offset == classBytes.length) {
-                    // Buffer full - double size
-                    byte[] tmp = new byte[classBytes.length * 2];
-                    System.arraycopy(classBytes, 0, tmp, 0, classBytes.length);
-                    classBytes = tmp;
+            synchronized (this) {
+                if (jdbcLeakPreventionResourceClass == null) {
+                    int read = is.read(classBytes, offset, classBytes.length-offset);
+                    while (read > -1) {
+                        offset += read;
+                        if (offset == classBytes.length) {
+                            // Buffer full - double size
+                            byte[] tmp = new byte[classBytes.length * 2];
+                            System.arraycopy(classBytes, 0, tmp, 0, classBytes.length);
+                            classBytes = tmp;
+                        }
+                        read = is.read(classBytes, offset, classBytes.length-offset);
+                    }
+                    jdbcLeakPreventionResourceClass =
+                        defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
+                            classBytes, 0, offset, this.getClass().getProtectionDomain());
+                } else {
+                    logger.log(Level.FINE, getString(LEAK_PREVENTION_JDBC_REUSE, contextName));   
                 }
-                read = is.read(classBytes, offset, classBytes.length-offset);
             }
-            Class<?> lpClass =
-                defineClass("org.glassfish.web.loader.JdbcLeakPrevention",
-                    classBytes, 0, offset, this.getClass().getProtectionDomain());
-            Object obj = lpClass.newInstance();
+            Object obj = jdbcLeakPreventionResourceClass.newInstance();
             @SuppressWarnings("unchecked") // clearJdbcDriverRegistrations() returns List<String>
             List<String> driverNames = (List<String>) obj.getClass().getMethod(
                     "clearJdbcDriverRegistrations").invoke(obj);
