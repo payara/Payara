@@ -42,6 +42,15 @@
 
 <!-- common/commonTaskDoc.inc -->
 
+
+<sun:commonTasksGroup title="$resource{i18n.commonTasks.group.payara.docs}">
+<sun:commonTask
+        text="$resource{i18n.commonTasks.task.payaraWiki}"
+        toolTip="$resource{i18n.commonTasks.task.payaraWiki.toolTip}"
+        onClick="var win=window.open('$resource{i18n.commonTasks.doc.payara.payaraWiki}','_blank');if (win) {win.focus();}; return false;">
+    </sun:commonTask>
+</sun:commonTasksGroup>
+
 <sun:commonTasksGroup title="$resource{i18n.commonTasks.group.docs}">
     <sun:commonTask
         text="$resource{i18n.commonTasks.task.docpage}"
@@ -67,10 +76,5 @@
         text="$resource{i18n.commonTasks.task.deployGuide}"
         toolTip="$resource{i18n.commonTasks.task.deployGuide.toolTip}"
         onClick="var win=window.open('$resource{i18n.commonTasks.doc.deployGuide}','_blank');if (win) {win.focus();}; return false;">
-    </sun:commonTask>
-    <sun:commonTask
-        text="$resource{i18n.commonTasks.task.payaraWiki}"
-        toolTip="$resource{i18n.commonTasks.task.payaraWiki.toolTip}"
-        onClick="var win=window.open('$resource{i18n.commonTasks.doc.payaraWiki}','_blank');if (win) {win.focus();}; return false;">
     </sun:commonTask>
 </sun:commonTasksGroup>
