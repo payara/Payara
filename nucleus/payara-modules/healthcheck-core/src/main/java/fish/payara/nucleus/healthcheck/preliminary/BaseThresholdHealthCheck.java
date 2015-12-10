@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author mertcaliskan
  */
+@Contract
 public abstract class BaseThresholdHealthCheck extends BaseHealthCheck {
 
     private HealthCheckWithThresholdExecutionOptions options;

@@ -43,4 +43,16 @@ public class HealthCheckWithThresholdExecutionOptions extends HealthCheckExecuti
     public int getThresholdGood() {
         return thresholdGood;
     }
+
+    public void setThresholdCritical(int thresholdCritical) {
+        this.thresholdCritical = thresholdCritical;
+    }
+
+    public void setThresholdGood(int thresholdGood) {
+        this.thresholdGood = thresholdGood;
+    }
+
+    public void setThresholdWarning(int thresholdWarning) {
+        this.thresholdWarning = thresholdWarning;
+    }
 }
