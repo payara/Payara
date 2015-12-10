@@ -50,7 +50,7 @@ import java.security.PrivilegedAction;
 import javax.security.auth.Subject;
 import javax.security.auth.login.LoginContext;
 import javax.security.auth.x500.X500Principal;
-import sun.security.x509.X500Name;
+import com.ibm.security.x509.X500Name;
 import com.sun.logging.*;
 import com.sun.enterprise.common.iiop.security.GSSUPName;
 import com.sun.enterprise.common.iiop.security.AnonCredential;

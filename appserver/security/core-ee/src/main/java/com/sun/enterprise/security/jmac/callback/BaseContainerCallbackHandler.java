@@ -103,7 +103,7 @@ import com.sun.enterprise.server.pluggable.SecuritySupport;
 import com.sun.logging.LogDomains;
 import java.util.Set;
 
-import sun.security.util.DerValue;
+import com.ibm.security.util.DerValue;
 import org.glassfish.internal.api.Globals;
 
 
