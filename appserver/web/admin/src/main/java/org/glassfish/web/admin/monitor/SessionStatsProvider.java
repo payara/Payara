@@ -40,6 +40,7 @@
 
 package org.glassfish.web.admin.monitor;
 
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.external.statistics.CountStatistic;
@@ -82,7 +83,7 @@ public class SessionStatsProvider{
 
     private String moduleName;
     private String vsName;
-    
+
     private RangeStatisticImpl activeSessionsCount;
     private CountStatisticImpl sessionsTotal;
     private CountStatisticImpl expiredSessionsTotal;
@@ -90,31 +91,35 @@ public class SessionStatsProvider{
     private CountStatisticImpl persistedSessionsTotal;
     private CountStatisticImpl passivatedSessionsTotal;
     private CountStatisticImpl activatedSessionsTotal;
-
+    private CircularFifoBuffer buffer; 
+    private HashMap<String,Long> sessionTimestamps; 
+        
     public SessionStatsProvider(String moduleName, String vsName) {
+        buffer = new CircularFifoBuffer(10);
+        sessionTimestamps = new HashMap<>();
         this.moduleName = moduleName;
         this.vsName = vsName;
         long curTime = System.currentTimeMillis();
         activeSessionsCount = new RangeStatisticImpl(
-            0L, 0L, 0L, "ActiveSessions", StatisticImpl.UNIT_COUNT,
-            ACTIVE_SESSIONS_DESCRIPTION, curTime, curTime);
+                0L, 0L, 0L, "ActiveSessions", StatisticImpl.UNIT_COUNT,
+                ACTIVE_SESSIONS_DESCRIPTION, curTime, curTime);
         sessionsTotal = new CountStatisticImpl("SessionsTotal",
-            StatisticImpl.UNIT_COUNT, TOTAL_SESSIONS_DESCRIPTION);
+                StatisticImpl.UNIT_COUNT, TOTAL_SESSIONS_DESCRIPTION);
         expiredSessionsTotal = new CountStatisticImpl(
-            "ExpiredSessionsTotal", StatisticImpl.UNIT_COUNT,
-            EXPIRED_SESSIONS_DESCRIPTION);
+                "ExpiredSessionsTotal", StatisticImpl.UNIT_COUNT,
+                EXPIRED_SESSIONS_DESCRIPTION);
         rejectedSessionsTotal = new CountStatisticImpl(
-            "RejectedSessionsTotal", StatisticImpl.UNIT_COUNT,
-            REJECTED_SESSIONS_DESCRIPTION);
+                "RejectedSessionsTotal", StatisticImpl.UNIT_COUNT,
+                REJECTED_SESSIONS_DESCRIPTION);
         persistedSessionsTotal = new CountStatisticImpl(
-            "PersistedSessionsTotal", StatisticImpl.UNIT_COUNT,
-            PERSISTED_SESSIONS_DESCRIPTION);
+                "PersistedSessionsTotal", StatisticImpl.UNIT_COUNT,
+                PERSISTED_SESSIONS_DESCRIPTION);
         passivatedSessionsTotal = new CountStatisticImpl(
-            "PassivatedSessionsTotal", StatisticImpl.UNIT_COUNT,
-            PASSIVATED_SESSIONS_DESCRIPTION);
+                "PassivatedSessionsTotal", StatisticImpl.UNIT_COUNT,
+                PASSIVATED_SESSIONS_DESCRIPTION);
         activatedSessionsTotal = new CountStatisticImpl(
-            "ActivatedSessionsTotal", StatisticImpl.UNIT_COUNT,
-            ACTIVATED_SESSIONS_DESCRIPTION);
+                "ActivatedSessionsTotal", StatisticImpl.UNIT_COUNT,
+                ACTIVATED_SESSIONS_DESCRIPTION);
     }
     
     @ManagedAttribute(id="activesessionscurrent")
@@ -158,13 +163,16 @@ public class SessionStatsProvider{
     public CountStatistic getActivatedSessionsTotal() {
         return activatedSessionsTotal;
     }
-    
+   
     @ProbeListener("glassfish:web:session:sessionCreatedEvent")
     public void sessionCreatedEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-
+        
+        buffer.add(sessionId);
+        sessionTimestamps.put(sessionId, System.currentTimeMillis());
+        
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionCreatedEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -173,20 +181,23 @@ public class SessionStatsProvider{
         if (isValidEvent(appName, hostName)) {
             incrementActiveSessions();
             sessionsTotal.increment();
-        }
+        }        
     }
 
     @ProbeListener("glassfish:web:session:sessionDestroyedEvent")
     public void sessionDestroyedEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionDestroyedEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
                           ": hostName = " + hostName);
         }
+        
+        buffer.remove(sessionId);
+        sessionTimestamps.remove(sessionId);
         if (isValidEvent(appName, hostName)) {
             decrementActiveSessions();
         }
@@ -194,11 +205,11 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionRejectedEvent")
     public void sessionRejectedEvent(
-        @ProbeParam("maxThresholdSize") int maxSessions,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("maxThresholdSize") int maxSessions,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
 
-        if (logger.isLoggable(Level.FINEST)) {        
+        if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionRejectedEvent received - max sessions = " + 
                           maxSessions + ": appname = " + appName + 
                           ": hostName = " + hostName);
@@ -210,10 +221,10 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionExpiredEvent")
     public void sessionExpiredEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionExpiredEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -226,10 +237,10 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionPersistedStartEvent")
     public void sessionPersistedStartEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionPersistedStartEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -239,10 +250,10 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionPersistedEndEvent")
     public void sessionPersistedEndEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionPersistedEndEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -255,10 +266,10 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionActivatedStartEvent")
     public void sessionActivatedStartEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+         
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionActivatedStartEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -268,27 +279,40 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionActivatedEndEvent")
     public void sessionActivatedEndEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionActivatedEndEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
                           ": hostName = " + hostName);
         }
+        
         if (isValidEvent(appName, hostName)) {
-            incrementActiveSessions();
+            
+            if (buffer.contains(sessionId)) {
+                // check timestamp of the session id to fix PAYARA-486 
+                Long timestamp = sessionTimestamps.get(sessionId);
+                if (timestamp != null) {
+                    long currentTime = System.currentTimeMillis();
+                    if ((currentTime - timestamp < 100)) {
+                        // this is a failed over session see PAYARA-486
+                        decrementActiveSessions();
+                    }
+                }
+            }
+            incrementActiveSessions();               
             activatedSessionsTotal.increment();
         }
     }
 
     @ProbeListener("glassfish:web:session:sessionPassivatedStartEvent")
     public void sessionPassivatedStartEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionPassivatedStartEvent  received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -298,10 +322,10 @@ public class SessionStatsProvider{
 
     @ProbeListener("glassfish:web:session:sessionPassivatedEndEvent")
     public void sessionPassivatedEndEvent(
-        @ProbeParam("sessionId") String sessionId,
-        @ProbeParam("appName") String appName,
+            @ProbeParam("sessionId") String sessionId,
+            @ProbeParam("appName") String appName,
         @ProbeParam("hostName") String hostName){
-        
+
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionPassivatedEndEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
@@ -312,29 +336,29 @@ public class SessionStatsProvider{
             passivatedSessionsTotal.increment();
         }
     }
-    
+
     public String getModuleName() {
         return moduleName;
     }
-    
+
     public String getVSName() {
         return vsName;
     }
-    
+
     private void incrementActiveSessions() {
         synchronized (activeSessionsCount) {
             activeSessionsCount.setCurrent(
-                activeSessionsCount.getCurrent() + 1);
+                    activeSessionsCount.getCurrent() + 1);
         }
     }
 
     private void decrementActiveSessions() {
         synchronized (activeSessionsCount) {
             activeSessionsCount.setCurrent(
-                activeSessionsCount.getCurrent() - 1);
+                    activeSessionsCount.getCurrent() - 1);
         }
     }
-    
+
     private boolean isValidEvent(String mName, String hostName) {
         //Temp fix, get the appname from the context root
         if ((moduleName == null) || (vsName == null)) {
