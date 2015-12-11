@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2014,2015] [C2B2 Consulting Limited] 
 package org.glassfish.grizzly.config;
 
 import java.beans.PropertyChangeEvent;
@@ -790,7 +790,7 @@ public class GenericGrizzlyListener implements GrizzlyListener {
                                         final Http2 http2Element,
                                         final FilterChainBuilder builder,
                                         final boolean secure) {
-        if (http2Element != null && http2Element.getEnabled()) {
+        if (http2Element != null && GrizzlyConfig.toBoolean(http2Element.getEnabled())) {
 
             // first try to lookup a service appropriate for the mode
             // that has been configured.
