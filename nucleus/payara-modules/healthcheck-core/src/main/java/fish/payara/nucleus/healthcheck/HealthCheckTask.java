@@ -41,7 +41,6 @@ class HealthCheckTask implements Runnable {
         return check;
     }
 
-
     @Override
     public void run() {
         if (check.getOptions().isEnabled()) {
@@ -61,6 +60,7 @@ class HealthCheckTask implements Runnable {
                         logger.log(Level.INFO, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
                         break;
                 }
+
             }
         }
     }
