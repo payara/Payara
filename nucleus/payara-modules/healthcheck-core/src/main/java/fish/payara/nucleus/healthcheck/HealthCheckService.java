@@ -77,7 +77,7 @@ public class HealthCheckService implements EventListener {
     }
 
     public void bootstrapHealthCheck() {
-        if (enabled) {
+        if (enabled && configuration != null) {
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
             events.register(this);
             logger.info("Payara Health Check Service Started.");
