@@ -59,7 +59,7 @@ public class HealthCheckService implements EventListener {
         if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             executor.shutdownNow();
         }
-        else if (event.is(EventTypes.SERVER_READY) && configuration.getCheckEnabled()) {
+        else if (event.is(EventTypes.SERVER_READY) && configuration.getEnabled()) {
             executeTasks();
         }
     }
@@ -70,7 +70,7 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        if (configuration != null && configuration.getCheckEnabled()) {
+        if (configuration != null && configuration.getEnabled()) {
             enabled = true;
             bootstrapHealthCheck();
         }
@@ -96,9 +96,5 @@ public class HealthCheckService implements EventListener {
 
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
-    }
-
-    public void startService(String checkerName) {
-
     }
 }

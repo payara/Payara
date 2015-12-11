@@ -27,8 +27,8 @@ import java.util.List;
 public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     @Attribute(defaultValue="false",dataType=Boolean.class)
-    Boolean getCheckEnabled();
-    void setCheckEnabled(String value) throws PropertyVetoException;
+    Boolean getEnabled();
+    void enabled(String value) throws PropertyVetoException;
 
     @Element("*")
     List<Checker> getCheckerList();
