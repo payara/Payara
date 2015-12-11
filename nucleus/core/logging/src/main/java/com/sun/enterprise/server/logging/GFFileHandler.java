@@ -874,6 +874,11 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         GFLogRecord recordWrapper;
         if (record.getClass().getSimpleName().equals("GFLogRecord")) {
             recordWrapper = (GFLogRecord) record;
+            
+            // Double check there is actually a set thread name
+            if (recordWrapper.getThreadName() == null) {
+                recordWrapper.setThreadName(Thread.currentThread().getName());
+            }
         }    
         else {
             recordWrapper = new GFLogRecord(record);            
