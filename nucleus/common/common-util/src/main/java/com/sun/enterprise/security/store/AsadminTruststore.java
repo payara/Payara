@@ -137,7 +137,9 @@ public class AsadminTruststore {
         NoSuchAlgorithmException, CertificateException
     {
         _keyStore.setCertificateEntry(alias, cert);
-        writeStore();
+        if (_keyFile.canWrite()) {
+            writeStore();            
+        } 
     }
     
     public void writeStore() throws KeyStoreException, IOException, 
