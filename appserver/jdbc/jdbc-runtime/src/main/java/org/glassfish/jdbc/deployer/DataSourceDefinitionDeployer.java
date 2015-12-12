@@ -221,10 +221,27 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     }
 
 
-    private void unregisterDSDReferredByApplication(DataSourceDefinitionDescriptor dsd){
+    private void unregisterDSDReferredByApplication(String appName, DataSourceDefinitionDescriptor dsd){
         try{
             if(dsd.isDeployed()){
                 undeployResource(dsd);
+                
+                // unbind from JNDI              
+                ResourceNamingService resourceNamingService = resourceNamingServiceProvider.get();
+                String dsdName = dsd.getName();
+
+                if(dsdName.startsWith(ResourceConstants.JAVA_GLOBAL_SCOPE_PREFIX)
+                        /*|| next.getName().startsWith("java:module/")*/
+                        || dsdName.startsWith(ResourceConstants.JAVA_APP_SCOPE_PREFIX)){
+                    ResourceInfo resourceInfo = new ResourceInfo(dsdName, appName, null);
+                    try {
+                        resourceNamingService.unpublishObject(resourceInfo, dsdName);
+                        dsd.setDeployed(false);
+                    } catch (NamingException e) {
+                        Object params[] = new Object[]{appName, dsdName, e};
+                        _logger.log(Level.WARNING, "dsd.unregistration.failed", params);
+                    }
+                }
             }
         }catch(Exception e){
             _logger.log(Level.WARNING, "exception while unregistering DSD [ "+dsd.getName()+" ]", e);
@@ -234,21 +251,21 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
     public void unRegisterDataSourceDefinitions(com.sun.enterprise.deployment.Application application) {
         Set<BundleDescriptor> bundles = application.getBundleDescriptors();
         for (BundleDescriptor bundle : bundles) {
-            unRegisterDataSourceDefinitions(bundle);
+            unRegisterDataSourceDefinitions(application.getName(),bundle);
             Collection<RootDeploymentDescriptor> dds = bundle.getExtensionsDescriptors();
             if(dds != null){
                 for(RootDeploymentDescriptor dd : dds){
-                    unRegisterDataSourceDefinitions(dd);
+                    unRegisterDataSourceDefinitions(application.getName(), dd);
                 }
             }
         }
     }
 
-    private void unRegisterDataSourceDefinitions(Descriptor descriptor) {
+    private void unRegisterDataSourceDefinitions(String appName, Descriptor descriptor) {
         if (descriptor instanceof JndiNameEnvironment) {
             JndiNameEnvironment env = (JndiNameEnvironment) descriptor;
             for (Descriptor dsd : env.getResourceDescriptors(JavaEEResourceType.DSD)) {
-                unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
+                unregisterDSDReferredByApplication(appName, (DataSourceDefinitionDescriptor)dsd);
             }
         }
 
@@ -258,14 +275,14 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             Set<? extends EjbDescriptor> ejbDescriptors = ejbDesc.getEjbs();
             for (EjbDescriptor ejbDescriptor : ejbDescriptors) {
                 for (Descriptor dsd : ejbDescriptor.getResourceDescriptors(JavaEEResourceType.DSD)) {
-                    unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
+                    unregisterDSDReferredByApplication(appName, (DataSourceDefinitionDescriptor)dsd);
                 }
             }
             //ejb interceptors
             Set<EjbInterceptor> ejbInterceptors = ejbDesc.getInterceptors();
             for (EjbInterceptor ejbInterceptor : ejbInterceptors) {
                 for (Descriptor dsd : ejbInterceptor.getResourceDescriptors(JavaEEResourceType.DSD)) {
-                    unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
+                    unregisterDSDReferredByApplication(appName, (DataSourceDefinitionDescriptor)dsd);
                 }
             }
         }
@@ -275,7 +292,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
             Set<ManagedBeanDescriptor> managedBeanDescriptors = ((BundleDescriptor)descriptor).getManagedBeans();
             for (ManagedBeanDescriptor mbd : managedBeanDescriptors) {
                 for (Descriptor dsd : mbd.getResourceDescriptors(JavaEEResourceType.DSD)) {
-                    unregisterDSDReferredByApplication((DataSourceDefinitionDescriptor)dsd);
+                    unregisterDSDReferredByApplication(appName, (DataSourceDefinitionDescriptor)dsd);
                 }
             }
         }
