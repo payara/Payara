@@ -1004,8 +1004,12 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public Property getProperty(String name) {
+            Property result = null;
             String value = (String) desc.getProperties().get(name);
-            return new DataSourceProperty(name, value);
+            if (value != null) {
+                result = new DataSourceProperty(name, value);
+            }
+            return result;
         }
 
         @Override
