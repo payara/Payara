@@ -18,6 +18,7 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -49,7 +50,9 @@ import javax.inject.Inject;
             description = "Enables/Disables Health Check Service")
 })
 public class HealthCheckConfigurer implements AdminCommand {
-    
+
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
+
     @Inject
     HealthCheckService service;
 
@@ -62,6 +65,7 @@ public class HealthCheckConfigurer implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
         service.setEnabled(enabled);
         service.bootstrapHealthCheck();
-        actionReport.appendMessage("Health Check Service status is set to " + enabled);
+        actionReport.appendMessage(strings.getLocalString("healthcheck.configure.status.success",
+                "Health Check Service status is set to {0}.", enabled));
     }
 }

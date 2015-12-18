@@ -18,8 +18,8 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -52,6 +52,8 @@ import javax.inject.Inject;
 })
 public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
 
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceThresholdConfigurer.class);
+
     @Inject
     HealthCheckService service;
 
@@ -75,20 +77,26 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
         final ActionReport report = context.getActionReport();
         BaseThresholdHealthCheck service = habitat.getService(BaseThresholdHealthCheck.class, serviceName);
         if (service == null) {
-            report.appendMessage("Service with name: " + serviceName + " could not be found.");
+            report.appendMessage(strings.getLocalString("healthcheck.service.configure.status.error",
+                    "Service with name {0} could not be found.", serviceName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {
+        }
+        else {
             if (thresholdCritical != null) {
                 service.getOptions().setThresholdCritical(thresholdCritical);
-                report.appendMessage("Service threshold critical value is set to " + thresholdCritical);
+                report.appendMessage(strings.getLocalString(
+                        "healthcheck.service.configure.threshold.critical.success",
+                        "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
             }
             if (thresholdWarning != null) {
                 service.getOptions().setThresholdWarning(thresholdWarning);
-                report.appendMessage("Service threshold warning value is set to " + thresholdWarning);
+                report.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
+                        "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
             }
             if (thresholdGood != null) {
                 service.getOptions().setThresholdGood(thresholdGood);
-                report.appendMessage("Service threshold good value is set to " + thresholdGood);
+                report.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
+                        "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
             }
             report.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         }

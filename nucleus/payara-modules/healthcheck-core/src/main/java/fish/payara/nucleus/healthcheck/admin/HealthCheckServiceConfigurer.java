@@ -18,6 +18,7 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import org.glassfish.api.ActionReport;
@@ -51,6 +52,8 @@ import javax.inject.Inject;
 })
 public class HealthCheckServiceConfigurer implements AdminCommand {
 
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
+
     @Inject
     HealthCheckService service;
 
@@ -68,11 +71,14 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         final ActionReport report = context.getActionReport();
         BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
         if (service == null) {
-            report.appendMessage("Service with name: " + serviceName + " could not be found.");
+            report.appendMessage(strings.getLocalString("healthcheck.service.configure.status.error",
+                    "Service with name {0} could not be found.", serviceName));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
         } else {
             service.getOptions().setEnabled(enabled);
-            report.appendMessage("Health Check status set to " + enabled);
+
+            report.appendMessage(strings.getLocalString("healthcheck.service.configure.status.success",
+                    "Service status for {0} is set to {1}.", serviceName, enabled));
         }
     }
 }
