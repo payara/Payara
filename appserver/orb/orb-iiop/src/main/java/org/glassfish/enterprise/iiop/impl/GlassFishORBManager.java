@@ -352,7 +352,7 @@ public final class GlassFishORBManager {
                 public java.lang.Object run() {
                     if (System.getProperty(OMG_ORB_CLASS_PROPERTY) == null) {
                         // set ORB based on JVM vendor
-                        if (System.getProperty("java.vendor").equals(
+                        if (System.getProperty("java.vendor").contains(
                             "Sun Microsystems Inc.")) {
                             System.setProperty(OMG_ORB_CLASS_PROPERTY,
                                 ORB_SE_CLASS);
@@ -585,7 +585,9 @@ public final class GlassFishORBManager {
             orb = ORBFactory.create() ;
             prevCL = Utility.getClassLoader();
             try {
+               if (processType != processType.Other) {
                 Utility.setContextClassLoader(prevCL.getParent());
+               }
             
                 ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
             } finally {

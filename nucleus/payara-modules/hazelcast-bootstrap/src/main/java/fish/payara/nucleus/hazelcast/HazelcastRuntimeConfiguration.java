@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2014,2015 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -30,9 +30,9 @@ import org.jvnet.hk2.config.Configured;
 public interface HazelcastRuntimeConfiguration 
     extends ConfigBeanProxy, ConfigExtension {
 
-    @Attribute(defaultValue = "false")
-    Boolean getEnabled();
-    public void setEnabled(Boolean value);
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getEnabled();
+    public void setEnabled(String value);
     
     @Attribute(defaultValue = "hazelcast-config.xml")
     String getHazelcastConfigurationFile();

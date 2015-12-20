@@ -523,26 +523,24 @@ public class PayaraMicro {
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
         }       
         // check hazelcast cluster overrides
-        if (!noCluster) { // ie we are clustering
-            MulticastConfiguration mc = new MulticastConfiguration();
-            mc.setMemberName(instanceName);
-            if (hzPort > Integer.MIN_VALUE) {
-                mc.setMulticastPort(hzPort);
-            }
-
-            if (hzStartPort > Integer.MIN_VALUE) {
-                mc.setStartPort(hzStartPort);
-            }
-
-            if (hzMulticastGroup != null) {
-                mc.setMulticastGroup(hzMulticastGroup);
-            }
-            
-            if (alternateHZConfigFile != null) {
-                mc.setAlternateConfiguration(alternateHZConfigFile);
-            }
-            HazelcastCore.setMulticastOverride(mc);
+        MulticastConfiguration mc = new MulticastConfiguration();
+        mc.setMemberName(instanceName);
+        if (hzPort > Integer.MIN_VALUE) {
+            mc.setMulticastPort(hzPort);
         }
+
+        if (hzStartPort > Integer.MIN_VALUE) {
+            mc.setStartPort(hzStartPort);
+        }
+
+        if (hzMulticastGroup != null) {
+            mc.setMulticastGroup(hzMulticastGroup);
+        }
+
+        if (alternateHZConfigFile != null) {
+            mc.setAlternateConfiguration(alternateHZConfigFile);
+        }
+        HazelcastCore.setMulticastOverride(mc);
         
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
@@ -673,14 +671,6 @@ public class PayaraMicro {
                     gfproperties.setConfigFileReadOnly(false);
                 }
 
-            }
-
-            if (this.hzPort != Integer.MIN_VALUE) {
-                gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastPort", Integer.toString(hzPort));
-            }
-
-            if (this.hzMulticastGroup != null) {
-                gfproperties.setProperty("embedded-glassfish-config.server.hazelcast-runtime-configuration.multicastGroup", hzMulticastGroup);
             }
 
             if (this.maxHttpThreads != Integer.MIN_VALUE) {

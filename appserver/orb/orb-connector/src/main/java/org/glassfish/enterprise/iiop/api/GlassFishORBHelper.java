@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.enterprise.iiop.api;
 
@@ -83,7 +84,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     private ProcessEnvironment processEnv;
 
     private static final Logger _logger =
-        LogDomains.getLogger(GlassFishORBHelper.class, LogDomains.CORBA_LOGGER);
+        LogDomains.getLogger(GlassFishORBHelper.class, LogDomains.CORBA_LOGGER, false);
 
     private volatile ORB orb = null ;
 
@@ -118,7 +119,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
 
     public synchronized void setORB( ORB orb ) {
         this.orb = orb ;
-        
+
         if (orb != null) {
             EventListener glassfishEventListener = new org.glassfish.api.event.EventListener() {
 
@@ -138,7 +139,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
      */
     public ORB getORB() {
         // Use a volatile double-checked locking idiom here so that we can publish
-        // a partly-initialized ORB early, so that lazy init can come into getORB() 
+        // a partly-initialized ORB early, so that lazy init can come into getORB()
         // and allow an invocation to the transport to complete.
         if (orb == null) {
 
@@ -174,7 +175,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
 
                                 // Now make protocol manager visible.
                                 protocolManager = tempProtocolManager;
-                                
+
                                 GlassfishNamingManager namingManager =
                                     glassfishNamingManagerProvider.get();
 
@@ -187,7 +188,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
                     } catch(Exception e) {
                         orb = null;
                         protocolManager = null;
-                        throw new RuntimeException("Orb initialization erorr", e);    
+                        throw new RuntimeException("Orb initialization erorr", e);
                     }
                 }
             }
@@ -210,7 +211,7 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
         public void handleRequest(SelectableChannel channel);
 
     }
-    
+
 
     /**
      * Get a protocol manager for creating remote references. ProtocolManager is only
@@ -224,12 +225,12 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
         if( !processEnv.getProcessType().isServer() ) {
             return null;
         }
-        
+
         synchronized (this) {
             if (protocolManager == null) {
                 getORB();
             }
-            
+
             return protocolManager;
         }
     }
@@ -239,11 +240,11 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     }
 
     public int getOTSPolicyType() {
-        return orbFactory.getOTSPolicyType();    
+        return orbFactory.getOTSPolicyType();
     }
 
     public int getCSIv2PolicyType() {
-        return orbFactory.getCSIv2PolicyType();    
+        return orbFactory.getCSIv2PolicyType();
     }
 
     public Properties getCSIv2Props() {
@@ -265,10 +266,10 @@ public class GlassFishORBHelper implements PostConstruct, ORBLocator {
     public int getORBPort(ORB orb) {
         return orbFactory.getORBPort(orb);
     }
-      
+
     public boolean isEjbCall(ServerRequestInfo sri) {
         return orbFactory.isEjbCall(sri);
     }
-      
-    
+
+
 }

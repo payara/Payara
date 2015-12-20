@@ -37,12 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.deployment.util;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -56,7 +56,6 @@ import java.util.logging.Level;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.types.EjbReference;
 import com.sun.enterprise.deployment.types.MessageDestinationReferencer;
-import com.sun.enterprise.deployment.web.EnvironmentEntry;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;

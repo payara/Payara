@@ -37,6 +37,9 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 package com.sun.enterprise.admin.launcher;
 
 import java.io.*;
@@ -350,7 +353,18 @@ public abstract class GFLauncher {
     }
 
     private void setLogFilename(MiniXmlParser parser) throws GFLauncherException {
-        logFilename = parser.getLogFilename();
+        
+        // Check if launching an instance to get appropriate logFilename
+        if (info.isInstance()) 
+        {
+            logFilename = parser.getInstanceLogFilename();
+        }
+        
+        // Assume DAS if not an instance
+        else
+        {
+            logFilename = parser.getLogFilename();
+        }
 
         if (logFilename == null)
             logFilename = DEFAULT_LOGFILE;

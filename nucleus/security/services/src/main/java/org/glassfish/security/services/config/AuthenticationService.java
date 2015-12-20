@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 package org.glassfish.security.services.config;
 
 import java.beans.PropertyVetoException;
@@ -53,7 +54,7 @@ public interface AuthenticationService extends SecurityConfiguration {
      * Determines if the Authentication Service instance should use
      * a GlassFish AuthRealm PasswordCredential with the LoginModule(s).
      */
-    @Attribute(defaultValue = "false")
-    boolean getUsePasswordCredential();
-    void setUsePasswordCredential(boolean value) throws PropertyVetoException;
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getUsePasswordCredential();
+    void setUsePasswordCredential(String value) throws PropertyVetoException;
 }
