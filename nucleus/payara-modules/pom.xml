@@ -29,7 +29,8 @@
     <packaging>pom</packaging>
     <name>Payara Nucleus Modules</name>
     <modules>
-	<module>hazelcast-bootstrap</module>
+	    <module>hazelcast-bootstrap</module>
+        <module>healthcheck-core</module>
         <module>payara-micro</module>
         <module>payara-micro-service</module>
     </modules>

@@ -39,13 +39,18 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2015] [C2B2 Consulting Limited]
 -->
-
-<entity-mappings version="1.0" xmlns="http://java.sun.com/xml/ns/persistence/orm" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_1_0.xsd">
-    <description>Empty mapping to be overrided if needed.</description>
+<entity-mappings
+  xmlns="http://www.eclipse.org/eclipselink/xsds/persistence/orm"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.eclipse.org/eclipselink/xsds/persistence/orm http://www.eclipse.org/eclipselink/xsds/eclipselink_orm_2_1.xsd"
+  version="2.1">
+    <description>Empty mapping to be overridden if needed.</description>
     <persistence-unit-metadata>
         <persistence-unit-defaults>
             <delimited-identifiers/>
         </persistence-unit-defaults>
     </persistence-unit-metadata>
 </entity-mappings>
+

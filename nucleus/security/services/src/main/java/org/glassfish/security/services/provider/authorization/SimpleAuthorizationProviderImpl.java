@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.security.services.provider.authorization;
 
@@ -99,7 +100,7 @@ public class SimpleAuthorizationProviderImpl implements AuthorizationProvider{
     public void initialize(SecurityProvider providerConfig) {
                 
         cfg = (AuthorizationProviderConfig)providerConfig.getSecurityProviderConfig().get(0);        
-        deployable = cfg.getSupportPolicyDeploy();
+        deployable = Boolean.parseBoolean(cfg.getSupportPolicyDeploy());
         version = cfg.getVersion();
         domain = serviceLocator.getService(Domain.class);
         secureAdmin = domain.getSecureAdmin();

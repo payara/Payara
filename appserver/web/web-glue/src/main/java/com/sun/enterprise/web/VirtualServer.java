@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.ApplicationRef;
@@ -1271,7 +1273,7 @@ public class VirtualServer extends StandardHost
             }
 
             // create and add new handler
-            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logFile);
+            fileLoggerHandler = fileLoggerHandlerFactory.getHandler(logServiceFile);
             newLogger.addHandler(fileLoggerHandler);            
             newLogger.setUseParentHandlers(false);
         }

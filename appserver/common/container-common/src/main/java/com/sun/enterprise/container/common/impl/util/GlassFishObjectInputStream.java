@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.container.common.impl.util;
 
@@ -69,14 +70,14 @@ class GlassFishObjectInputStream extends ObjectInputStream
     private ObjectInputOutputStreamFactory inputStreamHelper;
 
     private Collection<GlassFishInputStreamHandler> handlers;
-    
+
     GlassFishObjectInputStream(Collection<GlassFishInputStreamHandler> handlers,  InputStream in, ClassLoader appCl, boolean resolve)
         throws IOException, StreamCorruptedException
     {
         super(in);
         appLoader = appCl;
         this.handlers = handlers;
-        
+
         if (resolve) {
             enableResolveObject(resolve);
 
@@ -101,14 +102,14 @@ class GlassFishObjectInputStream extends ObjectInputStream
 						break;
 					}
 				}
-            	
+
             	return result;
             }
         } catch (IOException ioEx ) {
-            _logger.log(Level.SEVERE, "ejb.resolve_object_exception", ioEx);
+            _logger.log(Level.SEVERE, "Exception resolving object", ioEx);
             throw ioEx;
         } catch (Exception ex) {
-            _logger.log(Level.SEVERE, "ejb.resolve_object_exception", ex);
+            _logger.log(Level.SEVERE, "Exception resolving object", ex);
             IOException ioe = new IOException();
             ioe.initCause(ex);
             throw ioe;
@@ -148,7 +149,7 @@ class GlassFishObjectInputStream extends ObjectInputStream
                 clazz = appLoader.loadClass(desc.getName());
             }  catch (ClassNotFoundException e) {
 
-                clazz = super.resolveClass(desc);               
+                clazz = super.resolveClass(desc);
             }
 
         }
