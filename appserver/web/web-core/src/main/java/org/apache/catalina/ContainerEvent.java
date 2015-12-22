@@ -219,7 +219,10 @@ public final class ContainerEvent extends EventObject {
         = "beforePostAuthentication";
     public static final String AFTER_POST_AUTHENTICATION 
         = "afterPostAuthentication";
-
+    public static final String BEFORE_LOGOUT 
+        = "beforePostAuthentication";
+    public static final String AFTER_LOGOUT 
+        = "afterPostAuthentication";
     /**
      * The Container on which this event occurred.
      */

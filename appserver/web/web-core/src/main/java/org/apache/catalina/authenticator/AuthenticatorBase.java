@@ -605,10 +605,8 @@ public abstract class AuthenticatorBase
             if (log.isLoggable(Level.FINE)) {
                 log.log(Level.FINE, " Calling authenticate()");
             }
-            context.fireContainerEvent(ContainerEvent.BEFORE_AUTHENTICATION, null);
             boolean authenticateResult = realm.invokeAuthenticateDelegate(
                     hrequest, hresponse, context, this, false);
-            context.fireContainerEvent(ContainerEvent.AFTER_AUTHENTICATION, null);
             if(!authenticateResult) {
                 if(log.isLoggable(Level.FINE)) {
                     log.log(Level.FINE, " Failed authenticate() test");
@@ -689,9 +687,7 @@ public abstract class AuthenticatorBase
          * realm will have been set to null. See IT 6801
          */
         if (realm != null) {
-            context.fireContainerEvent(ContainerEvent.BEFORE_POST_AUTHENTICATION, null);
             realm.invokePostAuthenticateDelegate(hrequest, hresponse, context);
-            context.fireContainerEvent(ContainerEvent.AFTER_POST_AUTHENTICATION, null);
         }
     }
     
