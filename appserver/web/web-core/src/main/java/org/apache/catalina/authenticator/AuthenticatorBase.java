@@ -55,6 +55,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
+
 
 package org.apache.catalina.authenticator;
 
