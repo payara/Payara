@@ -18,11 +18,10 @@
 package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import fish.payara.nucleus.healthcheck.HealthCheckService;
+import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
-import org.glassfish.api.Param;
 import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
@@ -53,6 +52,8 @@ import java.util.List;
 })
 public class HealthCheckServiceLister implements AdminCommand {
 
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceLister.class);
+
     @Inject
     ServiceLocator habitat;
 
@@ -62,12 +63,14 @@ public class HealthCheckServiceLister implements AdminCommand {
         List<ServiceHandle<BaseHealthCheck>> allServiceHandles = habitat.getAllServiceHandles(BaseHealthCheck.class);
 
         if (allServiceHandles.isEmpty()) {
-            report.appendMessage("No registered health check service found");
+
+            report.appendMessage(strings.getLocalString("healthcheck.list.services.warning",
+                    "No registered health check service found."));
             report.setActionExitCode(ActionReport.ExitCode.WARNING);
-        }
-        else {
+        } else {
             StringBuffer sb = new StringBuffer();
-            sb.append("Available Health Check Services:\n");
+            sb.append(strings.getLocalString("healthcheck.list.services.availability.info",
+                    "Available Health Check Services") + ":\n");
             for (ServiceHandle serviceHandle : allServiceHandles) {
                 sb.append("\t" + serviceHandle.getActiveDescriptor().getName() + "\n");
             }
