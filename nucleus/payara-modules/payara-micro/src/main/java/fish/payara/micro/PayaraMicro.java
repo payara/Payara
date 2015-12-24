@@ -834,7 +834,7 @@ public class PayaraMicro {
                     break;
                 case "--deploy":
                     File deployment = new File(args[i + 1]);
-                    if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || !deployment.getAbsolutePath().endsWith(".war")) {
+                    if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || ( !deployment.getName().endsWith(".war") && !deployment.getName().endsWith(".ear") && !deployment.getName().endsWith(".jar")  )) {
                         logger.log(Level.SEVERE, "{0} is not a valid deployment path and will be ignored", deployment.getAbsolutePath());
                     } else {
                         if (deployments == null) {
