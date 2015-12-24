@@ -868,12 +868,25 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         // capture the name of the logging thread so that a formatter can
         // output correct thread-name if done asynchronously. Note that 
         // this fix is limited to records published through this handler only.
-        GFLogRecord recordWrapper = new GFLogRecord(record);
-        recordWrapper.setThreadName(Thread.currentThread().getName());
-
-        try {
+        // ***
+        // PAYARA-406 Check if the LogRecord passed in is already a GFLogRecord,
+        // and just cast the passed record if it is
+        GFLogRecord recordWrapper;
+        if (record.getClass().getSimpleName().equals("GFLogRecord")) {
+            recordWrapper = (GFLogRecord) record;
+            
+            // Check there is actually a set thread name
+            if (recordWrapper.getThreadName() == null) {
+                recordWrapper.setThreadName(Thread.currentThread().getName());
+            }
+        }    
+        else {
+            recordWrapper = new GFLogRecord(record);            
             // set the thread id to be the current thread that is logging the message
-//            record.setThreadID((int)Thread.currentThread().getId());
+            recordWrapper.setThreadName(Thread.currentThread().getName());
+        }
+        
+        try {
             pendingRecords.add(recordWrapper);
         } catch (IllegalStateException e) {
             // queue is full, start waiting.
