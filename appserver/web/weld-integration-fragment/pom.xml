@@ -115,7 +115,8 @@
                                 org.jboss.classfilewriter.util,
                                 org.jboss.weld.security
                             </Export-Package>
-                            <Import-Package>org.glassfish.weld</Import-Package>
+                            <Import-Package>org.glassfish.weld,
+                                javax.ejb</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>
                     </archive>
