@@ -549,6 +549,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                 }
             }
         };
+        pump.setName("GFFileHandler log pump");
         pump.setDaemon(true);
         pump.start();        
     }
