@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.gjc.common;
 
@@ -104,6 +105,9 @@ public class DataSourceSpec implements java.io.Serializable {
     public static final int POOLNAME = 45;
     public static final int APPLICATIONNAME = 46;
     public static final int MODULENAME = 47;
+    public static final int SLOWSQLLOGTHRESHOLD = 48;
+    public static final int LOGJDBCCALLS = 49;
+    
 
     private ConcurrentHashMap<Integer, String> details = new ConcurrentHashMap<Integer, String>();
 

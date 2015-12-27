@@ -37,32 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+//Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.gjc.util;
 
 import com.sun.gjc.monitoring.JdbcRAConstants;
 import com.sun.gjc.monitoring.SQLTraceProbeProvider;
+import com.sun.logging.LogDomains;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.api.jdbc.SQLTraceRecord;
 
 /**
- * Implementation of SQLTraceListener to listen to events related to a 
- * sql record tracing. The registry allows multiple listeners 
- * to listen to the sql tracing events. Maintains a list of listeners.
- * 
+ * Implementation of SQLTraceListener to listen to events related to a sql
+ * record tracing. The registry allows multiple listeners to listen to the sql
+ * tracing events. Maintains a list of listeners.
+ *
  * @author Shalini M
  */
 //@Singleton
 public class SQLTraceDelegator implements SQLTraceListener {
-    
+
     //List of listeners 
     protected List<SQLTraceListener> sqlTraceListenersList;
     private String poolName;
     private String appName;
     private String moduleName;
+    private static final Logger logger = LogDomains.getLogger(SQLTraceLogger.class, LogDomains.SQL_TRACE_LOGGER);
+
     private SQLTraceProbeProvider probeProvider = null;
+    
 
     public SQLTraceProbeProvider getProbeProvider() {
         return probeProvider;
@@ -75,28 +81,51 @@ public class SQLTraceDelegator implements SQLTraceListener {
         probeProvider = new SQLTraceProbeProvider();
     }
 
+    public void setPoolName(String poolName) {
+        this.poolName = poolName;
+    }
+
+    public void setAppName(String appName) {
+        this.appName = appName;
+    }
+
+    public void setModuleName(String moduleName) {
+        this.moduleName = moduleName;
+    }
+
     /**
-     * Add a listener to the list of sql trace listeners maintained by 
-     * this registry.
+     * Add a listener to the list of sql trace listeners maintained by this
+     * registry.
+     *
      * @param listener
      */
     public void registerSQLTraceListener(SQLTraceListener listener) {
-        if(sqlTraceListenersList == null) {
-                sqlTraceListenersList = new ArrayList<SQLTraceListener>();
+        if (sqlTraceListenersList == null) {
+            sqlTraceListenersList = new ArrayList<SQLTraceListener>();
+        }
+        // check there isn't already a listener of the specified type
+        for (SQLTraceListener test : sqlTraceListenersList) {
+            if (test.getClass().equals(listener.getClass())) {
+                return;
+            }
         }
         sqlTraceListenersList.add(listener);
-    }    
+    }
 
-   
-   public void sqlTrace(SQLTraceRecord record) {
-       if (sqlTraceListenersList != null) {
-           for (SQLTraceListener listener : sqlTraceListenersList) {
-               listener.sqlTrace(record);
-           }
-       }
-
+    @Override
+    public void sqlTrace(SQLTraceRecord record) {
         if (record != null) {
             record.setPoolName(poolName);
+            if (sqlTraceListenersList != null) {
+                for (SQLTraceListener listener : sqlTraceListenersList) {
+                    try {
+                        listener.sqlTrace(record);
+                    } catch (Throwable t) { // don't let a broken listener break the JDBC calls
+                      logger.log(Level.WARNING, "SQL Trace Listener threw exception", t);
+                    }
+                }
+            }
+
             String methodName = record.getMethodName();
             //Check if the method name is one in which sql query is used
             if (isMethodValidForCaching(methodName)) {
@@ -104,7 +133,7 @@ public class SQLTraceDelegator implements SQLTraceListener {
                 if (params != null && params.length > 0) {
                     String sqlQuery = null;
                     for (Object param : params) {
-                        if(param instanceof String) {
+                        if (param instanceof String) {
                             sqlQuery = param.toString();
                         }
                         break;
@@ -117,16 +146,16 @@ public class SQLTraceDelegator implements SQLTraceListener {
         }
     }
 
-   /**
-    * Check if the method name from the sql trace record can be used to 
-    * retrieve a sql string for caching purpose. Most of the method names do not
-    * contain a sql string and hence are unusable for caching the sql strings.
-    * These method names are filtered in this method.
-    * 
-    * @param methodName
-    * @return true if method name can be used to get a sql string for caching.
-    */
-    private boolean isMethodValidForCaching(String methodName) {
+/**
+ * Check if the method name from the sql trace record can be used to retrieve a
+ * sql string for caching purpose. Most of the method names do not contain a sql
+ * string and hence are unusable for caching the sql strings. These method names
+ * are filtered in this method.
+ *
+ * @param methodName
+ * @return true if method name can be used to get a sql string for caching.
+ */
+private boolean isMethodValidForCaching(String methodName) {
         return JdbcRAConstants.validSqlTracingMethodNames.contains(methodName);
     }
 }

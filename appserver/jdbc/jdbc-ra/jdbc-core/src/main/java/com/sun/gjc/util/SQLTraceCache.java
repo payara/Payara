@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.gjc.util;
 
 import com.sun.logging.LogDomains;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Timer;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -59,14 +59,14 @@ import java.util.logging.Logger;
 public class SQLTraceCache {
 
     //List of sql trace objects
-    private final List<SQLTrace> list;
+    private final ConcurrentSkipListMap<SQLTrace,SQLTrace> list;
     //Maximum size of the cache.
     private int numTopQueriesToReport = 10;
     private long timeToKeepQueries = 60 * 1000;
     private SQLTraceTimerTask sqlTraceTimerTask;
-    private String poolName;
-    private String appName;
-    private String moduleName;
+    private final String poolName;
+    private final String appName;
+    private final String moduleName;
     private final static Logger _logger = LogDomains.getLogger(SQLTraceCache.class,
             LogDomains.RSR_LOGGER);
     private static final String LINE_BREAK = "%%%EOL%%%";
@@ -76,12 +76,12 @@ public class SQLTraceCache {
         this.appName = appName;
         this.moduleName = moduleName;
         this.numTopQueriesToReport = maxSize;
-        list = new ArrayList<SQLTrace>();
+        list = new ConcurrentSkipListMap<>();
         this.timeToKeepQueries = timeToKeepQueries * 60 * 1000;
     }
 
-    public List<SQLTrace> getSqlTraceList() {
-        return list;
+    public Collection<SQLTrace> getSqlTraceList() {
+        return list.keySet();
     }
 
     public String getPoolName() {
@@ -91,6 +91,7 @@ public class SQLTraceCache {
     /**
      * Schedule timer to perform purgeEntries on the cache after the
      * specified timeToKeepQueries delay and period.
+     * @param timer
      */
     public void scheduleTimerTask(Timer timer) {
 
@@ -147,24 +148,18 @@ public class SQLTraceCache {
      * @return
      */
     public void checkAndUpdateCache(SQLTrace cacheObj) {
-        synchronized (list) {
             if (cacheObj != null) {
-                int index = list.indexOf(cacheObj);
-                if (index != -1) {
+                SQLTrace cache = list.get(cacheObj);
+                if (cache != null) {
                     //If already found in the cache
                     //equals is invoked here and hence comparison based on query name is done
                     //Get the object at the index to update the numExecutions
-                    SQLTrace cache = (SQLTrace) list.get(index);
                     cache.setNumExecutions(cache.getNumExecutions() + 1);
                     cache.setLastUsageTime(System.currentTimeMillis());
                 } else {
-                    //First occurrence of the query. query to be added.
-                    cacheObj.setNumExecutions(1);
-                    cacheObj.setLastUsageTime(System.currentTimeMillis());
-                    list.add(cacheObj);
+                    list.put(cacheObj,cacheObj);
                 }
             }
-        }
     }
 
     /**
@@ -173,23 +168,16 @@ public class SQLTraceCache {
      * entries are maintained in the list after the purgeEntries.
      */
     public void purgeEntries() {
-        synchronized(list) {
-            Collections.sort(list, Collections.reverseOrder());
-            Iterator i = list.iterator();
-            while (i.hasNext()) {
+            Iterator i = list.keySet().descendingIterator();
+            int elementCount = list.size(); // avoid using size in the loop as expensive in time
+            while (i.hasNext() && elementCount > numTopQueriesToReport) {
                 SQLTrace cacheObj = (SQLTrace) i.next();
-                if (list.size() > numTopQueriesToReport) {
-                    if(_logger.isLoggable(Level.FINEST)) {
-                        _logger.finest("removing sql=" + cacheObj.getQueryName());
-                    }
-                    i.remove();
-                } else {
-                    break;
+                if(_logger.isLoggable(Level.FINEST)) {
+                    _logger.finest("removing sql=" + cacheObj.getQueryName());
                 }
+                i.remove();
+                elementCount--;
             }
-            //sort by most frequently used queries first
-            Collections.sort(list);
-        }
     }
 
     /**
@@ -202,10 +190,11 @@ public class SQLTraceCache {
      */
     public String getTopQueries() {
         purgeEntries();
-        StringBuffer sb = new StringBuffer();
-        for(SQLTrace cache : list) {
+        StringBuilder sb = new StringBuilder();
+        for(SQLTrace cache : list.keySet()) {
             sb.append(LINE_BREAK);
             sb.append(cache.getQueryName());
+            sb.append(" executions: ").append(cache.getNumExecutions());
         }
         return sb.toString();
     }
