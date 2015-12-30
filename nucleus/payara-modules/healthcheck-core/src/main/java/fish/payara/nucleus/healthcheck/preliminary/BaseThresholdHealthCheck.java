@@ -37,6 +37,7 @@ public abstract class BaseThresholdHealthCheck extends BaseHealthCheck {
         if (configuration == null) {
             return;
         }
+        this.checkerType = checkerType;
 
         ThresholdDiagnosticsChecker diagnosticsChecker = (ThresholdDiagnosticsChecker)
                 configuration.getCheckerByType(checkerType);
