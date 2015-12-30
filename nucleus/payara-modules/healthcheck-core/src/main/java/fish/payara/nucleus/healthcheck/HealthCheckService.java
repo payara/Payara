@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -59,8 +60,8 @@ public class HealthCheckService implements EventListener {
         if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             executor.shutdownNow();
         }
-        else if (event.is(EventTypes.SERVER_READY) && configuration.getEnabled()) {
-            executeTasks();
+        else if (event.is(EventTypes.SERVER_READY)) {
+            bootstrapHealthCheck();
         }
     }
 
@@ -77,11 +78,13 @@ public class HealthCheckService implements EventListener {
     }
 
     public void bootstrapHealthCheck() {
-        if (enabled && configuration != null) {
+        if (configuration != null) {
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
             events.register(this);
-            logger.info("Payara Health Check Service Started.");
-            executeTasks();
+            if (enabled) {
+                logger.info("Payara Health Check Service Started.");
+                executeTasks();
+            }
         }
     }
 
@@ -95,6 +98,20 @@ public class HealthCheckService implements EventListener {
     }
 
     public void setEnabled(Boolean enabled) {
-        this.enabled = enabled;
+        if (this.enabled && !enabled) {
+            this.enabled = false;
+            shutdownHealthCheck();
+        } else if (!this.enabled && enabled) {
+            this.enabled = true;
+            bootstrapHealthCheck();
+        } else if (this.enabled && enabled) {
+            shutdownHealthCheck();
+            bootstrapHealthCheck();
+        }
+    }
+
+    private void shutdownHealthCheck() {
+        executor.shutdown();
+        Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
     }
 }
