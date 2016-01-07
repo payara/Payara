@@ -31,6 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,14 +45,16 @@ import java.util.logging.Logger;
 public class HealthCheckService implements EventListener {
 
     private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
+    private static final String PREFIX = "healthcheck-service-";
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
     HealthCheckServiceConfiguration configuration;
-
     @Inject
     private Events events;
+
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
 
     private ScheduledExecutorService executor;
     private final Map<String, HealthCheckTask> registeredTasks = new HashMap<String, HealthCheckTask>();
@@ -79,7 +83,12 @@ public class HealthCheckService implements EventListener {
 
     public void bootstrapHealthCheck() {
         if (configuration != null) {
-            executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size());
+            executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, PREFIX + threadNumber.getAndIncrement());
+                }
+            });
+
             events.register(this);
             if (enabled) {
                 logger.info("Payara Health Check Service Started.");
