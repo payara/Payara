@@ -126,7 +126,7 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>            
+            </plugin>
         </plugins>
     </build>
 
@@ -175,7 +175,7 @@
         <dependency>
             <groupId>javax.json</groupId>
             <artifactId>javax.json-api</artifactId>
-	    <optional>true</optional>
+            <optional>true</optional>
         </dependency>        
         <dependency>
             <groupId>javax.annotation</groupId>
@@ -185,12 +185,12 @@
         <dependency>
             <groupId>javax.ejb</groupId>
             <artifactId>javax.ejb-api</artifactId>
-	    <optional>true</optional>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>javax.transaction</groupId>
             <artifactId>javax.transaction-api</artifactId>
-	    <optional>true</optional>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
@@ -200,6 +200,7 @@
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
+            <version>${javax.validation-api.version}</version>
             <optional>true</optional>
         </dependency>
         <dependency>
