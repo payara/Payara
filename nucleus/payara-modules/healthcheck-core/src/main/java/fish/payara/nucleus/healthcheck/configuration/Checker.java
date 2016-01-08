@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -23,9 +24,9 @@ import java.beans.PropertyVetoException;
  * @author mertcaliskan
  */
 @Configured
-public interface Checker extends ConfigBeanProxy {
+public interface Checker extends ConfigBeanProxy, ConfigExtension {
 
-    @Attribute(defaultValue="true",dataType=Boolean.class)
+    @Attribute
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 

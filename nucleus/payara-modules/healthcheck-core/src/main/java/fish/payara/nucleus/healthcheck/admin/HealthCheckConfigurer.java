@@ -17,9 +17,11 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -27,9 +29,17 @@ import org.glassfish.api.admin.*;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
+import java.beans.PropertyVetoException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /**
@@ -54,17 +64,62 @@ public class HealthCheckConfigurer implements AdminCommand {
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
 
     @Inject
+    protected Logger logger;
+
+    @Inject
     HealthCheckService service;
+
+    @Inject
+    ServiceLocator serviceLocator;
+
+    @Inject
+    protected Target targetUtil;
+
+    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    protected Boolean dynamic;
+
+    @Param(name = "target", optional = true, defaultValue = "server")
+    protected String target;
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
     @Override
     public void execute(AdminCommandContext context) {
-        
         final ActionReport actionReport = context.getActionReport();
+
+        Config config = targetUtil.getConfig(target);
+        HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
+        if (healthCheckServiceConfiguration != null) {
+            try {
+                ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+                    @Override
+                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
+                            PropertyVetoException, TransactionFailure {
+                        if (enabled != null) {
+                            healthCheckServiceConfigurationProxy.enabled(enabled.toString());
+                        }
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return null;
+                    }
+
+                }, healthCheckServiceConfiguration);
+            }
+            catch(TransactionFailure ex){
+                logger.log(Level.WARNING, "Exception during command ", ex);
+                actionReport.setMessage(ex.getCause().getMessage());
+                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                return;
+            }
+        }
+
+        if (dynamic) {
+            enableOnTarget(actionReport, context, enabled);
+        }
+    }
+
+    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         service.setEnabled(enabled);
-        service.bootstrapHealthCheck();
         actionReport.appendMessage(strings.getLocalString("healthcheck.configure.status.success",
                 "Health Check Service status is set to {0}.", enabled));
     }

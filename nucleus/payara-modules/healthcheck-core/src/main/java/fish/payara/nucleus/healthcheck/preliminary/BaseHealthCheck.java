@@ -18,6 +18,7 @@ import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;
 
@@ -31,8 +32,6 @@ import java.util.concurrent.TimeUnit;
 @Contract
 public abstract class BaseHealthCheck implements HealthCheckConstants {
 
-    private HealthCheckExecutionOptions options;
-
     @Inject
     protected HealthCheckService healthCheckService;
 
@@ -41,6 +40,9 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
     @Optional
     HealthCheckServiceConfiguration configuration;
 
+    private HealthCheckExecutionOptions options;
+    protected Class checkerType;
+
     public abstract HealthCheckResult doCheck();
 
     protected <T extends BaseHealthCheck> void postConstruct(T t, Class checkerType) {
@@ -48,6 +50,7 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
             return;
         }
 
+        this.checkerType = checkerType;
         Checker checker = configuration.getCheckerByType(checkerType);
         options = new HealthCheckExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(), asTimeUnit(checker.getUnit()));
         healthCheckService.registerCheck(checker.getName(), t);
@@ -124,5 +127,9 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
 
     public HealthCheckExecutionOptions getOptions() {
         return options;
+    }
+
+    public <T extends ConfigExtension> Class<T> getCheckerType() {
+        return checkerType;
     }
 }

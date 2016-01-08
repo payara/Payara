@@ -17,9 +17,12 @@
  */
 package fish.payara.nucleus.healthcheck.admin;
 
+import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -29,9 +32,15 @@ import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
+import java.beans.PropertyVetoException;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Admin command to enable/disable specific health check service given with its name
@@ -52,33 +61,102 @@ import javax.inject.Inject;
 })
 public class HealthCheckServiceConfigurer implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
-
-    @Inject
-    HealthCheckService service;
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer
+            .class);
 
     @Inject
     ServiceLocator habitat;
 
+    @Inject
+    protected Target targetUtil;
+
+    @Inject
+    protected Logger logger;
+
+    @Inject
+    HealthCheckService healthCheckService;
+
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
+
+    @Param(name = "time", optional = true)
+    private String time;
+
+    @Param(name = "unit", optional = true)
+    private String unit;
 
     @Param(name = "serviceName", optional = false)
     private String serviceName;
 
+    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    protected Boolean dynamic;
+
+    @Param(name = "target", optional = true, defaultValue = "server")
+    protected String target;
+
     @Override
     public void execute(AdminCommandContext context) {
-        final ActionReport report = context.getActionReport();
-        BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
-        if (service == null) {
-            report.appendMessage(strings.getLocalString("healthcheck.service.configure.status.error",
-                    "Service with name {0} could not be found.", serviceName));
-            report.setActionExitCode(ActionReport.ExitCode.FAILURE);
-        } else {
-            service.getOptions().setEnabled(enabled);
+        final ActionReport actionReport = context.getActionReport();
+        Config config = targetUtil.getConfig(target);
 
-            report.appendMessage(strings.getLocalString("healthcheck.service.configure.status.success",
-                    "Service status for {0} is set to {1}.", serviceName, enabled));
+        final BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
+        if (service == null) {
+            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.error",
+                    "Service with name {0} could not be found.", serviceName));
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
         }
+
+        final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
+        Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.<Checker>getCheckerType());
+        try {
+            ConfigSupport.apply(new SingleConfigCode<Checker>() {
+                @Override
+                public Object run(final Checker checkerProxy) throws
+                        PropertyVetoException, TransactionFailure {
+
+                    if (enabled != null) {
+                        checkerProxy.setEnabled(enabled.toString());
+                    }
+                    if (time != null) {
+                        checkerProxy.setTime(time);
+                    }
+                    if (unit != null) {
+                        checkerProxy.setUnit(unit);
+                    }
+                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return null;
+                }
+
+            }, checker);
+        }
+        catch (TransactionFailure ex) {
+            logger.log(Level.WARNING, "Exception during command ", ex);
+            actionReport.setMessage(ex.getCause().getMessage());
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
+
+        if (dynamic) {
+            enableOnTarget(actionReport, service, enabled, time, unit);
+        }
+    }
+
+    private void enableOnTarget(ActionReport actionReport, BaseHealthCheck service, Boolean enabled, String time, String unit) {
+        if (enabled != null) {
+            service.getOptions().setEnabled(enabled);
+        }
+        if (time != null) {
+            service.getOptions().setTime(Long.valueOf(time));
+        }
+        if (unit != null) {
+            service.getOptions().setUnit(TimeUnit.valueOf(unit));
+        }
+
+        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.success",
+                "Service status for {0} is set to {1}.", serviceName, enabled));
+
+        healthCheckService.shutdownHealthCheck();
+        healthCheckService.bootstrapHealthCheck();
     }
 }
