@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package org.glassfish.jdbc.deployer;
 
@@ -1127,7 +1127,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getSlowQueryThresholdInSeconds() {
-            return getPropertyValue("fish.payara.slow-query-threshold-in-seconds", null);
+            return getPropertyValue("fish.payara.slow-query-threshold-in-seconds", "-1");
         }
 
         @Override
@@ -1136,7 +1136,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getLogJdbcCalls() {
-            return getPropertyValue("fish.payara.log-jdbc-calls", null);
+            return getPropertyValue("fish.payara.log-jdbc-calls", "false");
         }
 
         @Override
