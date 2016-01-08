@@ -20,6 +20,7 @@ package fish.payara.nucleus.healthcheck.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
@@ -33,12 +34,11 @@ import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
+import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -73,8 +73,17 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Inject
     protected Logger logger;
 
+    @Inject
+    HealthCheckService healthCheckService;
+
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
+
+    @Param(name = "time", optional = true)
+    private String time;
+
+    @Param(name = "unit", optional = true)
+    private String unit;
 
     @Param(name = "serviceName", optional = false)
     private String serviceName;
@@ -90,7 +99,7 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
         Config config = targetUtil.getConfig(target);
 
-        BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
+        final BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
         if (service == null) {
             actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.error",
                     "Service with name {0} could not be found.", serviceName));
@@ -98,32 +107,48 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
             return;
         }
 
-        HealthCheckServiceConfiguration configuration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
-        final Checker checker = configuration.getCheckerByType(service.<Checker>getCheckerType());
-        if (checker != null) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<Checker>() {
-                    @Override
-                    public Object run(final Checker checkerProxy) throws
-                            PropertyVetoException, TransactionFailure {
-                        if (enabled != null) {
-                            checker.setEnabled(enabled.toString());
-                        }
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return null;
+        final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
+        Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.<Checker>getCheckerType());
+        try {
+            ConfigSupport.apply(new SingleConfigCode<Checker>() {
+                @Override
+                public Object run(final Checker checkerProxy) throws
+                        PropertyVetoException, TransactionFailure {
+                    boolean bootstrapService = false;
+                    if (enabled != null) {
+                        checkerProxy.setEnabled(enabled.toString());
+                        service.getOptions().setEnabled(enabled);
+                        bootstrapService = true;
                     }
+                    if (time != null) {
+                        checkerProxy.setTime(time);
+                        service.getOptions().setTime(Long.valueOf(time));
+                        bootstrapService = true;
+                    }
+                    if (unit != null) {
+                        checkerProxy.setUnit(unit);
+                        service.getOptions().setUnit(TimeUnit.valueOf(unit));
+                        bootstrapService = true;
+                    }
+                    if (bootstrapService) {
+                        healthCheckService.shutdownHealthCheck();
+                        healthCheckService.bootstrapHealthCheck();
+                    }
+                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return null;
+                }
 
-                }, checker);
-            } catch (TransactionFailure ex) {
-                logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
+            }, checker);
+        }
+        catch (TransactionFailure ex) {
+            logger.log(Level.WARNING, "Exception during command ", ex);
+            actionReport.setMessage(ex.getCause().getMessage());
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
-            if (dynamic) {
-                enableOnTarget(actionReport, service, enabled);
-            }
+        if (dynamic) {
+            enableOnTarget(actionReport, service, enabled);
         }
     }
 

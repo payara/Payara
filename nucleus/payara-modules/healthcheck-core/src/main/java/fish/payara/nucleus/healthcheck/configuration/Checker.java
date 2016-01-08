@@ -26,7 +26,7 @@ import java.beans.PropertyVetoException;
 @Configured
 public interface Checker extends ConfigBeanProxy, ConfigExtension {
 
-    @Attribute(defaultValue="true",dataType=Boolean.class)
+    @Attribute
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 

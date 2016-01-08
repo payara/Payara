@@ -98,6 +98,7 @@ public class HealthCheckConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
+                            service.setEnabled(enabled);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;

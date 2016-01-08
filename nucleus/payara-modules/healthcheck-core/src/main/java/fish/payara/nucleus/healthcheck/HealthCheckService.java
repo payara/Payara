@@ -100,9 +100,11 @@ public class HealthCheckService implements EventListener {
     private void executeTasks() {
         for (HealthCheckTask registeredTask : registeredTasks.values()) {
             logger.info("Scheduling Health Check for task: " + registeredTask.getName());
-            executor.scheduleAtFixedRate(registeredTask, 0,
-                    registeredTask.getCheck().getOptions().getTime(),
-                    registeredTask.getCheck().getOptions().getUnit());
+            if (registeredTask.getCheck().getOptions().isEnabled()) {
+                executor.scheduleAtFixedRate(registeredTask, 0,
+                        registeredTask.getCheck().getOptions().getTime(),
+                        registeredTask.getCheck().getOptions().getUnit());
+            }
         }
     }
 
@@ -119,7 +121,7 @@ public class HealthCheckService implements EventListener {
         }
     }
 
-    private void shutdownHealthCheck() {
+    public void shutdownHealthCheck() {
         executor.shutdown();
         Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
     }
