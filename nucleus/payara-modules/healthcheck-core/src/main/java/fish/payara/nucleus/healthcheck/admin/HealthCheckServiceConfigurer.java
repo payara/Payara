@@ -114,25 +114,15 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
                 @Override
                 public Object run(final Checker checkerProxy) throws
                         PropertyVetoException, TransactionFailure {
-                    boolean bootstrapService = false;
+
                     if (enabled != null) {
                         checkerProxy.setEnabled(enabled.toString());
-                        service.getOptions().setEnabled(enabled);
-                        bootstrapService = true;
                     }
                     if (time != null) {
                         checkerProxy.setTime(time);
-                        service.getOptions().setTime(Long.valueOf(time));
-                        bootstrapService = true;
                     }
                     if (unit != null) {
                         checkerProxy.setUnit(unit);
-                        service.getOptions().setUnit(TimeUnit.valueOf(unit));
-                        bootstrapService = true;
-                    }
-                    if (bootstrapService) {
-                        healthCheckService.shutdownHealthCheck();
-                        healthCheckService.bootstrapHealthCheck();
                     }
                     actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                     return null;
@@ -148,13 +138,25 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         }
 
         if (dynamic) {
-            enableOnTarget(actionReport, service, enabled);
+            enableOnTarget(actionReport, service, enabled, time, unit);
         }
     }
 
-    private void enableOnTarget(ActionReport actionReport, BaseHealthCheck service, Boolean enabled) {
-        service.getOptions().setEnabled(enabled);
+    private void enableOnTarget(ActionReport actionReport, BaseHealthCheck service, Boolean enabled, String time, String unit) {
+        if (enabled != null) {
+            service.getOptions().setEnabled(enabled);
+        }
+        if (time != null) {
+            service.getOptions().setTime(Long.valueOf(time));
+        }
+        if (unit != null) {
+            service.getOptions().setUnit(TimeUnit.valueOf(unit));
+        }
+
         actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.success",
                 "Service status for {0} is set to {1}.", serviceName, enabled));
+
+        healthCheckService.shutdownHealthCheck();
+        healthCheckService.bootstrapHealthCheck();
     }
 }
