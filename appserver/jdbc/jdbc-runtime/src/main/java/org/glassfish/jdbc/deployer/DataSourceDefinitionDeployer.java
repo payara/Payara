@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package org.glassfish.jdbc.deployer;
 
@@ -655,7 +655,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getMaxWaitTimeInMillis() {
-            return String.valueOf(60000);
+            return getPropertyValue("fish.payara.max-wait-time-in-millis", "60000");
         }
 
         @Override
@@ -665,7 +665,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getPoolResizeQuantity() {
-            return String.valueOf(2);
+            return getPropertyValue("fish.payara.pool-resize-quantity", "2");
         }
 
         @Override
@@ -713,7 +713,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getIsConnectionValidationRequired() {
-            return String.valueOf("false");
+            return getPropertyValue("fish.payara.is-connection-validation-required", "false");
         }
 
         @Override
@@ -723,7 +723,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getConnectionValidationMethod() {
-            return null;
+            return getPropertyValue("fish.payara.connection-validation-method", "table");
         }
 
         @Override
@@ -733,7 +733,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getValidationTableName() {
-            return null;
+            return getPropertyValue("fish.payara.validation-table-name", null);
         }
 
         @Override
@@ -743,7 +743,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getValidationClassname() {
-            return null;
+            return getPropertyValue("fish.payara.validation-classname", null);
         }
 
         @Override
@@ -753,7 +753,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getFailAllConnections() {
-            return String.valueOf("false");
+            return getPropertyValue("fish.payara.fail-all-connections", "false");
         }
 
         @Override
@@ -773,7 +773,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getAllowNonComponentCallers() {
-            return String.valueOf("false");
+            return getPropertyValue("fish.payara.allow-non-component-callers", "false");
         }
 
         @Override
@@ -783,7 +783,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getValidateAtmostOncePeriodInSeconds() {
-            return String.valueOf(0);
+            return getPropertyValue("fish.payara.validate-atmost-once-period-in-seconds", "0");
         }
 
         @Override
@@ -793,7 +793,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getConnectionLeakTimeoutInSeconds() {
-            return String.valueOf(0);
+            return getPropertyValue("fish.payara.connection-leak-timeout-in-seconds", "0");
         }
 
         @Override
@@ -803,7 +803,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getConnectionLeakReclaim() {
-            return String.valueOf(false);
+            return getPropertyValue("fish.payara.connection-leak-reclaim", "false");
         }
 
         @Override
@@ -813,7 +813,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getConnectionCreationRetryAttempts() {
-            return String.valueOf(0);
+            return getPropertyValue("fish.payara.connection-creation-retry-attempts", "0");
         }
 
         @Override
@@ -823,7 +823,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getConnectionCreationRetryIntervalInSeconds() {
-            return String.valueOf(10);
+            return getPropertyValue("fish.payara.connection-creation-retry-interval-in-seconds", "10");
         }
 
         @Override
@@ -833,7 +833,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getStatementTimeoutInSeconds() {
-            return String.valueOf(-1);
+            return getPropertyValue("fish.payara.statement-timeout-in-seconds", "-1");
         }
 
         @Override
@@ -843,7 +843,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getLazyConnectionEnlistment() {
-            return String.valueOf(false);
+            return getPropertyValue("fish.payara.lazy-connection-enlistment", "false");
         }
 
         @Override
@@ -853,7 +853,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getLazyConnectionAssociation() {
-            return String.valueOf(false);
+            return getPropertyValue("fish.payara.lazy-connection-association", "false");
         }
 
         @Override
@@ -863,7 +863,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getAssociateWithThread() {
-            return String.valueOf(false);
+            return getPropertyValue("fish.payara.associate-with-thread", "false");
         }
 
         @Override
@@ -873,7 +873,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getPooling() {
-            return String.valueOf(true);
+            return getPropertyValue("fish.payara.pooling", "true");
         }
 
         @Override
@@ -883,7 +883,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getStatementCacheSize() {
-            return String.valueOf(0);
+            return getPropertyValue("fish.payara.statement-cache-size", "0");
         }
 
         @Override
@@ -893,7 +893,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getMatchConnections() {
-            return String.valueOf(true);
+            return getPropertyValue("fish.payara.match-connections", "true");
         }
 
         @Override
@@ -903,7 +903,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getMaxConnectionUsageCount() {
-            return String.valueOf(0);
+            return getPropertyValue("fish.payara.max-connection-usage-count", "0");
         }
 
         @Override
@@ -913,7 +913,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getWrapJdbcObjects() {
-            return String.valueOf(true);
+            return getPropertyValue("fish.payara.wrap-jdbc-objects", "true");
         }
 
         @Override
@@ -1044,7 +1044,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getSqlTraceListeners() {
-            return null;
+            return getPropertyValue("fish.payara.sql-trace-listeners");
         }
 
         @Override
@@ -1054,7 +1054,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getPing() {
-            return String.valueOf(false);
+            return getPropertyValue("fish.payara.ping", "false");
         }
 
         @Override
@@ -1064,7 +1064,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getInitSql() {
-            return null;
+            return getPropertyValue("fish.payara.init-sql", null);
         }
 
         @Override
@@ -1087,7 +1087,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getStatementLeakTimeoutInSeconds() {
-            return String.valueOf(0);
+            return getPropertyValue("fish.payara.statement-leak-timeout-in-seconds", "0");
         }
 
         @Override
@@ -1097,7 +1097,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getStatementLeakReclaim() {
-            return String.valueOf(false);
+            return getPropertyValue("fish.payara.statement-leak-reclaim", "false");
         }
 
         @Override
@@ -1107,7 +1107,7 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
 
         @Override
         public String getStatementCacheType() {
-                return null;
+            return getPropertyValue("fish.payara.statement-cache-type", null);
         }
 
         @Override
@@ -1123,6 +1123,24 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public void setDeploymentOrder(String value) {
             //do nothing
+        }
+
+        @Override
+        public String getSlowQueryThresholdInSeconds() {
+            return getPropertyValue("fish.payara.slow-query-threshold-in-seconds", "-1");
+        }
+
+        @Override
+        public void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException {
+        }
+
+        @Override
+        public String getLogJdbcCalls() {
+            return getPropertyValue("fish.payara.log-jdbc-calls", "false");
+        }
+
+        @Override
+        public void setLogJdbcCalls(String value) throws PropertyVetoException {
         }
     }
 }
