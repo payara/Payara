@@ -143,7 +143,7 @@ public class SSLClientConfigurator {
        // Certificate encoding algorithm (e.g., SunX509)
        String algorithm = sslParams.getKeyAlgorithm();
        if (algorithm == null) {
-            algorithm = "SunX509";
+            algorithm = KeyManagerFactory.getDefaultAlgorithm();
        }
 
        String keyAlias = sslParams.getCertNickname();
