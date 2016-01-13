@@ -37,6 +37,7 @@ import java.util.logging.Logger;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
+import org.glassfish.embeddable.GlassFishRuntime;
 
 /**
  * This class represents a running Payara Micro server and enables you to
@@ -67,7 +68,14 @@ public class PayaraMicroRuntime  {
             throw new IllegalStateException("Unable to retrieve the embedded Payara Micro HK2 service. Something bad has happened", ex);
         }
     }
-
+    
+    private GlassFishRuntime gfRuntime;
+    
+    PayaraMicroRuntime(String instanceName, GlassFish instance, GlassFishRuntime gfRuntime) {
+        this(instanceName, instance);
+        this.gfRuntime = gfRuntime;
+    }
+    
     /**
      * Returns the instance name
      * @return 
@@ -84,7 +92,8 @@ public class PayaraMicroRuntime  {
     public void shutdown() throws BootstrapException {
         checkState();
         try {
-            runtime.dispose();
+            //runtime.dispose();
+            this.gfRuntime.shutdown();
         } catch (GlassFishException ex) {
             throw new BootstrapException("Unable to stop Payara Micro", ex);
         }
