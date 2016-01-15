@@ -665,7 +665,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         for (int i=0; i<descs.length; i++)
         {
             // 2^16 beans max per stand alone module
-            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 50000);
+            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65535);
             descs[i].setUniqueId( (id | uid) );
         }
     }
