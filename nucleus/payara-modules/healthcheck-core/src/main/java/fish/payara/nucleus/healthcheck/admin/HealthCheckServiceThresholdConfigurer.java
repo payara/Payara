@@ -114,8 +114,8 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
 
         HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType
                 (HealthCheckServiceConfiguration.class);
-        ThresholdDiagnosticsChecker checker = healthCheckServiceConfiguration.getCheckerByType(service
-                .<ThresholdDiagnosticsChecker>getCheckerType());
+        ThresholdDiagnosticsChecker checker = healthCheckServiceConfiguration.
+                <ThresholdDiagnosticsChecker>getCheckerByType(service.getCheckerType());
 
         Property thresholdCriticalProp = checker.getProperty(HealthCheckConstants.THRESHOLD_CRITICAL);
         Property thresholdWarningProp = checker.getProperty(HealthCheckConstants.THRESHOLD_WARNING);

@@ -15,6 +15,7 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
+import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -24,13 +25,16 @@ import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
 @Contract
-public abstract class BaseHealthCheck implements HealthCheckConstants {
+public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C extends Checker> implements HealthCheckConstants {
 
     @Inject
     protected HealthCheckService healthCheckService;
@@ -40,20 +44,30 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
     @Optional
     HealthCheckServiceConfiguration configuration;
 
-    private HealthCheckExecutionOptions options;
-    protected Class checkerType;
+    protected O options;
+    protected Class<C> checkerType;
 
     public abstract HealthCheckResult doCheck();
+    protected abstract O constructOptions(C c);
 
-    protected <T extends BaseHealthCheck> void postConstruct(T t, Class checkerType) {
+    protected <T extends BaseHealthCheck> O postConstruct(T t, Class checkerType) {
+        this.checkerType = checkerType;
         if (configuration == null) {
-            return;
+            return null;
         }
 
-        this.checkerType = checkerType;
-        Checker checker = configuration.getCheckerByType(checkerType);
-        options = new HealthCheckExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(), asTimeUnit(checker.getUnit()));
+        C checker = configuration.getCheckerByType(this.checkerType);
+        options = constructOptions(checker);
         healthCheckService.registerCheck(checker.getName(), t);
+
+        return options;
+    }
+
+    protected HealthCheckExecutionOptions constructBaseOptions(Checker checker) {
+        return new HealthCheckExecutionOptions(
+                Boolean.valueOf(checker.getEnabled()),
+                checker.getTime(),
+                asTimeUnit(checker.getUnit()));
     }
 
     protected TimeUnit asTimeUnit(String unit) {
@@ -109,10 +123,10 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
         }
         if (value >= 0) {
             if (minutes > 0) {
-                sb.append(minutes + " minutes ");
+                sb.append(minutes).append(" minutes ");
             }
             if (seconds > 0) {
-                sb.append(seconds + " seconds ");
+                sb.append(seconds).append(" seconds ");
             }
             if (value > 0) {
                 sb.append(value);
@@ -125,11 +139,19 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
         }
     }
 
-    public HealthCheckExecutionOptions getOptions() {
+    protected String prettyPrintStackTrace(StackTraceElement[] elements) {
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement traceElement : elements) {
+            sb.append("\tat ").append(traceElement);
+        }
+        return sb.toString();
+    }
+
+    public O getOptions() {
         return options;
     }
 
-    public <T extends ConfigExtension> Class<T> getCheckerType() {
+    public Class<C> getCheckerType() {
         return checkerType;
     }
 }
