@@ -83,6 +83,7 @@ import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.UUID;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.deployment.common.DescriptorVisitor;
@@ -664,7 +665,8 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         for (int i=0; i<descs.length; i++)
         {
             // 2^16 beans max per stand alone module
-            descs[i].setUniqueId( (id | i) );
+            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 50000);
+            descs[i].setUniqueId( (id | uid) );
         }
     }
 

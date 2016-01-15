@@ -76,6 +76,7 @@ import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.UUID;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.Descriptor;
@@ -1321,9 +1322,10 @@ public class Application extends CommonResourceBundleDescriptor
 
         for (int i = 0; i < descs.length; i++) {
             // Maximum of 2^16 beans max per application
-            descs[i].setUniqueId((id | i));
+            String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+            long uid = Math.abs(UUID.nameUUIDFromBytes((module + descs[i].getName()).getBytes()).getLeastSignificantBits() % 50000);
+            descs[i].setUniqueId((id | uid));
             if (_logger.isLoggable(Level.FINE)) {
-                String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
                 _logger.log(Level.FINE, "Ejb  " + module + ":" + descs[i].getName() + " id = " +
                         descs[i].getUniqueId());
             }
