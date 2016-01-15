@@ -25,19 +25,6 @@ import org.jvnet.hk2.annotations.Contract;
 public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThresholdExecutionOptions,
         C extends ThresholdDiagnosticsChecker> extends BaseHealthCheck<O, C> {
 
-    protected <T extends BaseThresholdHealthCheck> HealthCheckWithThresholdExecutionOptions postConstruct(T t, Class<C>
-            checkerType) {
-        if (configuration == null) {
-            return null;
-        }
-        this.checkerType = checkerType;
-
-        C checker = configuration.getCheckerByType(this.checkerType);
-        options = constructOptions(checker);
-        healthCheckService.registerCheck(checker.getName(), t);
-        return options;
-    }
-
     public HealthCheckWithThresholdExecutionOptions constructThresholdOptions(ThresholdDiagnosticsChecker checker) {
         return new HealthCheckWithThresholdExecutionOptions(
                 Boolean.valueOf(checker.getEnabled()),
