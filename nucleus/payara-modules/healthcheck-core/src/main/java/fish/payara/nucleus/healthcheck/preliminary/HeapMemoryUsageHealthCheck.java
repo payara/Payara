@@ -13,9 +13,9 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckResult;
 import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
+import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.HeapMemoryUsageChecker;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -31,11 +31,16 @@ import java.lang.management.MemoryUsage;
  */
 @Service(name = "healthcheck-heap")
 @RunLevel(StartupRunLevel.VAL)
-public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck {
+public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, HeapMemoryUsageChecker> {
 
     @PostConstruct
     void postConstruct() {
         postConstruct(this, HeapMemoryUsageChecker.class);
+    }
+
+    @Override
+    protected HealthCheckWithThresholdExecutionOptions constructOptions(HeapMemoryUsageChecker checker) {
+        return super.constructThresholdOptions(checker);
     }
 
     @Override
