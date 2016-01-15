@@ -50,15 +50,17 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     public abstract HealthCheckResult doCheck();
     protected abstract O constructOptions(C c);
 
-    protected <T extends BaseHealthCheck> O postConstruct(T t, Class checkerType) {
-        this.checkerType = checkerType;
+    protected <T extends BaseHealthCheck> O postConstruct(T t, Class<C> checkerType) {
         if (configuration == null) {
             return null;
         }
 
+        this.checkerType = checkerType;
         C checker = configuration.getCheckerByType(this.checkerType);
-        options = constructOptions(checker);
-        healthCheckService.registerCheck(checker.getName(), t);
+        if (checker != null) {
+            options = constructOptions(checker);
+            healthCheckService.registerCheck(checker.getName(), t);
+        }
 
         return options;
     }
