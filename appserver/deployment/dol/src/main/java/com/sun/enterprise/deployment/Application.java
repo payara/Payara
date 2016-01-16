@@ -1326,10 +1326,10 @@ public class Application extends CommonResourceBundleDescriptor
             // Maximum of 2^16 beans max per application
             String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
             long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst("\\..*", "")
-                    + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65535);
+                    + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65536);
             // in case of an id collision, increment until find empty elot
             while(uniqueIds.contains(uid)) {
-                ++uid;
+                uid = ++uid % 65536;
             }
             uniqueIds.add(uid);
             descs[i].setUniqueId((id | uid));

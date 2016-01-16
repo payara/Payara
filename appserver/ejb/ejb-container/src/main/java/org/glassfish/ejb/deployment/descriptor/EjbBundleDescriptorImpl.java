@@ -667,10 +667,10 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         for (int i=0; i<descs.length; i++)
         {
             // 2^16 beans max per stand alone module
-            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65535);
+            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65536);
             // in case of an id collision, increment until find empty elot
             while(uniqueIds.contains(uid)) {
-                ++uid;
+                uid = ++uid % 65536;
             }
             uniqueIds.add(uid);
             descs[i].setUniqueId( (id | uid) );
