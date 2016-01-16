@@ -1322,10 +1322,11 @@ public class Application extends CommonResourceBundleDescriptor
 
         for (int i = 0; i < descs.length; i++) {
             // Maximum of 2^16 beans max per application
-            long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65535);
+            String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
+            long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst("\\..*", "")
+                    + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65535);
             descs[i].setUniqueId((id | uid));
             if (_logger.isLoggable(Level.FINE)) {
-                String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
                 _logger.log(Level.FINE, "Ejb  " + module + ":" + descs[i].getName() + " id = " +
                         descs[i].getUniqueId());
             }
