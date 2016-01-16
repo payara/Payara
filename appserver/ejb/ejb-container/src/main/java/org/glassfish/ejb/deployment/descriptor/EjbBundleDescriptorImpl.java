@@ -83,6 +83,7 @@ import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.util.EjbBundleVisitor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.TreeSet;
 import java.util.UUID;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
@@ -662,10 +663,16 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
             }
         );
 
+        Set<Long> uniqueIds = new TreeSet<>();
         for (int i=0; i<descs.length; i++)
         {
             // 2^16 beans max per stand alone module
             long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65535);
+            // in case of an id collision, increment until find empty elot
+            while(uniqueIds.contains(uid)) {
+                ++uid;
+            }
+            uniqueIds.add(uid);
             descs[i].setUniqueId( (id | uid) );
         }
     }

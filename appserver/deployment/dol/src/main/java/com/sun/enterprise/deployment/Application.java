@@ -76,6 +76,7 @@ import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.TreeSet;
 import java.util.UUID;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
@@ -1320,11 +1321,17 @@ public class Application extends CommonResourceBundleDescriptor
 
         EjbDescriptor[] descs = getSortedEjbDescriptors();
 
+        Set<Long> uniqueIds = new TreeSet<>();
         for (int i = 0; i < descs.length; i++) {
             // Maximum of 2^16 beans max per application
             String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
             long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst("\\..*", "")
                     + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65535);
+            // in case of an id collision, increment until find empty elot
+            while(uniqueIds.contains(uid)) {
+                ++uid;
+            }
+            uniqueIds.add(uid);
             descs[i].setUniqueId((id | uid));
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Ejb  " + module + ":" + descs[i].getName() + " id = " +
