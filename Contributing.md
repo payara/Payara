@@ -4,7 +4,7 @@ In order to clarify the intellectual property license granted with Contributions
 
 For us to accept pull requests please download the contributor agreement https://github.com/payara/Payara/blob/master/PayaraCLA.pdf, scan and forward to info@payara.co 
 
-Also as a condition of the upstream Oralce CDDL license you must add the comment below to each changed file for the pull request to be accepted.
+Also as a condition of the upstream Oracle CDDL license you must add the comment below to each changed file for the pull request to be accepted.
 
 ```java
 Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
