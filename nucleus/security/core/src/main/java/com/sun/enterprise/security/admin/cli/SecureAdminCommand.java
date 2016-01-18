@@ -264,7 +264,7 @@ public abstract class SecureAdminCommand implements AdminCommand {
 
         /**
          * Prepares a given Ssl configuration instance so the connection 
-         * represented by the Ssl's parent configuration object operates
+         * represented by the 3's parent configuration object operates
          * securely, using SSL.
          * 
          * @param ssl_w writeable Ssl instance to be modified
