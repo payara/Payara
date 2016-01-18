@@ -2,7 +2,8 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2015,2016 C2B2 Consulting Limited and /or its affiliates.
+ All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -59,6 +60,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     private final IMap pkCache;
     private final IMap containerCache;
     private final IMap applicationCache;
+    private final String serverName;
 
     private static final Logger logger
             = LogDomains.getLogger(HazelcastTimerStore.class, LogDomains.EJB_LOGGER);
@@ -75,6 +77,8 @@ public class HazelcastTimerStore extends EJBTimerService {
         pkCache = core.getInstance().getMap(EJB_TIMER_CACHE_NAME);
         containerCache = core.getInstance().getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
         applicationCache = core.getInstance().getMap(EJB_TIMER_APPLICAION_CACHE_NAME);
+        serverName = core.getInstance().getName();
+        this.domainName_ = core.getInstance().getName();
     }
 
     private void removeTimers(Set<TimerPrimaryKey> timerIdsToRemove) {
@@ -86,8 +90,8 @@ public class HazelcastTimerStore extends EJBTimerService {
     @Override
     protected void _createTimer(TimerPrimaryKey timerId, long containerId, long applicationId, Object timedObjectPrimaryKey, String server_name, Date initialExpiration, long intervalDuration, EJBTimerSchedule schedule, TimerConfig timerConfig) throws Exception {
         if (timerConfig.isPersistent()) {
-
-            pkCache.put(timerId, new HZTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, server_name, initialExpiration, intervalDuration, schedule, timerConfig));
+            
+            pkCache.put(timerId, new HZTimer(timerId, containerId, applicationId, timedObjectPrimaryKey, this.serverName, ownerIdOfThisServer_, initialExpiration, intervalDuration, schedule, timerConfig));
 
             // add to container cache
             HashSet<TimerPrimaryKey> keysForContainer = (HashSet<TimerPrimaryKey>) containerCache.get(containerId);
@@ -178,7 +182,7 @@ public class HazelcastTimerStore extends EJBTimerService {
                     tm.begin();
                 }
                 EJBTimerService.getEJBTimerService().cancelTimerSynchronization(null, timerId,
-                        timer.getContainerId(), timer.getServerName());
+                        timer.getContainerId(), timer.getOwnerId());
                 if (localTx) {
                     tm.commit();
                 }
@@ -256,8 +260,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     }
 
     @Override
-    public void createSchedules(long containerId, long applicationId, Map<MethodDescriptor, List<ScheduledTimerDescriptor>> methodDescriptorSchedules, String server_name
-    ) {
+    public void createSchedules(long containerId, long applicationId, Map<MethodDescriptor, List<ScheduledTimerDescriptor>> methodDescriptorSchedules, String server_name) {
         TransactionManager tm = ejbContainerUtil.getTransactionManager();
         try {
             tm.begin();
@@ -276,8 +279,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     }
 
     @Override
-    public void createSchedulesOnServer(EjbDescriptor ejbDescriptor, String server_name
-    ) {
+    public void createSchedulesOnServer(EjbDescriptor ejbDescriptor, String server_name) {
         Map<MethodDescriptor, List<ScheduledTimerDescriptor>> schedules
                 = new HashMap<MethodDescriptor, List<ScheduledTimerDescriptor>>();
         for (ScheduledTimerDescriptor schd : ejbDescriptor.getScheduledTimerDescriptors()) {
@@ -434,7 +436,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         boolean result = true;
         if (timerState.isPersistent()) {
             HZTimer timer = (HZTimer) pkCache.get(timerId);
-            if (timer == null || !timer.getServerName().equals(ownerIdOfThisServer_)) {
+            if (timer == null || !timer.getMemberName().equals(serverName)) {
                 result = false;
             }
         }
@@ -449,7 +451,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         HashMap<String, Long> counts = new HashMap<>();
         for (Object timer : pkCache.values()) {
             HZTimer hzTimer = (HZTimer) timer;
-            String serverName = hzTimer.getServerName();
+            String serverName = hzTimer.getMemberName();
             Long val = counts.get(serverName);
             if (val == null) {
                 val = new Long(0);
@@ -494,9 +496,10 @@ public class HazelcastTimerStore extends EJBTimerService {
 
         for (TimerPrimaryKey pk : (Collection<TimerPrimaryKey>) pkCache.keySet()) {
             HZTimer hZTimer = (HZTimer) pkCache.get(pk);
-            if (hZTimer.getServerName().equals(fromOwnerId)) {
+            if (hZTimer.getOwnerId().equals(fromOwnerId)) {
                 toRestore.put(pk, hZTimer);
-                hZTimer.setServerName(ownerIdOfThisServer);
+                hZTimer.setOwnerId(ownerIdOfThisServer);
+                hZTimer.setMemberName(serverName);
             }
         }
 
@@ -565,7 +568,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         if (containerKeys != null) {
             for (TimerPrimaryKey containerKey : containerKeys) {
                 HZTimer timer = (HZTimer) pkCache.get(containerKey);
-                if (timer != null && timer.getServerName().equals(getOwnerIdOfThisServer())) {
+                if (timer != null && timer.getMemberName().equals(this.serverName)) {
                     activeTimers.add(timer);
                 } else if (timer == null) {
                     deadKeys.add(containerKey);
@@ -745,7 +748,7 @@ public class HazelcastTimerStore extends EJBTimerService {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(HazelcastTimerStore.class.getClassLoader());
         HZTimer timer = (HZTimer) pkCache.get(timerId);
-        if (timer != null && timer.getServerName().equals(ownerIdOfThisServer_)) {
+        if (timer != null && timer.getMemberName().equals(this.serverName)) {
             result = true;
         }
         Thread.currentThread().setContextClassLoader(cl);
@@ -1126,7 +1129,7 @@ public class HazelcastTimerStore extends EJBTimerService {
     private Collection<HZTimer> findActiveTimersOwnedByThisServer() {
         HashSet<HZTimer> result = new HashSet<>();
         for (HZTimer timer : (Collection<HZTimer>) pkCache.values()) {
-            if (timer.getServerName().equals(getOwnerIdOfThisServer())) {
+            if (timer.getMemberName().equals(this.serverName)) {
                 result.add(timer);
             }
         }

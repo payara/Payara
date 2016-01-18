@@ -93,7 +93,7 @@ Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
             <connector-service shutdown-timeout-in-seconds="30">
             </connector-service>
             <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-                <ejb-timer-service />
+                <ejb-timer-service ejb-timer-service="Hazelcast"></ejb-timer-service>
             </ejb-container>
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />

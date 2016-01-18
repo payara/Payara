@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -92,7 +92,7 @@ public class EJBTimerService {
 
     private long nextTimerIdMillis_ = 0;
     private long nextTimerIdCounter_ = 0;
-    private String domainName_;
+    protected String domainName_;
 
     protected boolean isDas;
 
@@ -237,7 +237,15 @@ public class EJBTimerService {
                             break;
                         }
                     }
-                    persistentTS.initPersistentTimerService(target);
+                    if (persistentTS != null) {
+                        persistentTS.initPersistentTimerService(target);
+                    } else { // Fall back to the non-persistent service
+                        try {
+                            _timerService = new EJBTimerService();
+                        } catch (Exception e) {
+                            logger.log (Level.WARNING, "Cannot start EJBTimerService: ", e);
+                        }
+                    }
                     _timerServiceVerified = true;
                 }
 

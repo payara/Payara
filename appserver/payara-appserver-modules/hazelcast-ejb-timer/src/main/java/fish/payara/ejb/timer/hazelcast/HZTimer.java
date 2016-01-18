@@ -2,7 +2,8 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2015 C2B2 Consulting Limited and/or its affiliates.
+ All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -30,7 +31,8 @@ import javax.ejb.TimerConfig;
 public class HZTimer implements Serializable {
 
     private final TimerPrimaryKey key;
-    private String serverName;
+    private String hzMemberName;
+    private String ownerId;
     private final long containerId;
     private long applicationId;
     private final Serializable timedObjectPk;
@@ -40,7 +42,7 @@ public class HZTimer implements Serializable {
     private final Serializable info;
     private Date lastExpiration;
 
-    public HZTimer(TimerPrimaryKey timerId, long containerId, long applicationId, Object timedObjectPrimaryKey, String server_name, Date initialExpiration, long intervalDuration, EJBTimerSchedule schedule, TimerConfig timerConfig) {
+    public HZTimer(TimerPrimaryKey timerId, long containerId, long applicationId, Object timedObjectPrimaryKey, String hzMemberName, String ownerId, Date initialExpiration, long intervalDuration, EJBTimerSchedule schedule, TimerConfig timerConfig) {
         this.key = timerId;
         this.containerId = containerId;
         this.applicationId = applicationId;
@@ -51,7 +53,8 @@ public class HZTimer implements Serializable {
             this.timedObjectPk = null;
         }
         
-        this.serverName = server_name;
+        this.hzMemberName = hzMemberName;
+        this.ownerId = ownerId;
         this.initialExpiration = initialExpiration;
         this.intervalDuration  = intervalDuration;
         this.schedule = schedule;
@@ -61,17 +64,25 @@ public class HZTimer implements Serializable {
             info = null;
         }
     }
+    
+    public void setOwnerId(String id) {
+        this.ownerId = id;
+    }
+    
+    public String getOwnerId() {
+        return ownerId;
+    }
 
-    public void setServerName(String serverName) {
-        this.serverName = serverName;
+    public void setMemberName(String serverName) {
+        this.hzMemberName = serverName;
     }
 
     public TimerPrimaryKey getKey() {
         return key;
     }
 
-    public String getServerName() {
-        return serverName;
+    public String getMemberName() {
+        return hzMemberName;
     }
 
     public long getContainerId() {
