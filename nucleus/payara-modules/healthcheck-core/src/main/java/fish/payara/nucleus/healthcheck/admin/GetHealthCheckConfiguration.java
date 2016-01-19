@@ -61,8 +61,8 @@ import java.util.List;
 public class GetHealthCheckConfiguration implements AdminCommand, HealthCheckConstants {
 
     final static String baseHeaders[] = {"Name", "Enabled", "Time", "Unit"};
-    final static String hoggingThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "thresholdPercentage",
-            "retryCount"};
+    final static String hoggingThreadsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Threshold Percentage",
+            "Retry Count"};
     final static String thresholdDiagnosticsHeaders[] = {"Name", "Enabled", "Time", "Unit", "Critical Threshold",
             "Warning Threshold", "Good Threshold"};
 
