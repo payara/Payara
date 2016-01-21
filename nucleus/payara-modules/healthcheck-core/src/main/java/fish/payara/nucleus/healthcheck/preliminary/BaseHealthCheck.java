@@ -52,8 +52,10 @@ public abstract class BaseHealthCheck implements HealthCheckConstants {
 
         this.checkerType = checkerType;
         Checker checker = configuration.getCheckerByType(checkerType);
-        options = new HealthCheckExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(), asTimeUnit(checker.getUnit()));
-        healthCheckService.registerCheck(checker.getName(), t);
+        if (checker != null) {
+            options = new HealthCheckExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(), asTimeUnit(checker.getUnit()));
+            healthCheckService.registerCheck(checker.getName(), t);
+        }
     }
 
     protected TimeUnit asTimeUnit(String unit) {

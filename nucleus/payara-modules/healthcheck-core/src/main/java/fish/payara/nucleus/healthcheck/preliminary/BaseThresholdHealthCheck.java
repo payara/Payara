@@ -42,15 +42,17 @@ public abstract class BaseThresholdHealthCheck extends BaseHealthCheck {
         ThresholdDiagnosticsChecker diagnosticsChecker = (ThresholdDiagnosticsChecker)
                 configuration.getCheckerByType(checkerType);
 
-        options = new HealthCheckWithThresholdExecutionOptions(
-                Boolean.valueOf(diagnosticsChecker.getEnabled()),
-                diagnosticsChecker.getTime(),
-                asTimeUnit(diagnosticsChecker.getUnit()),
-                diagnosticsChecker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
-                diagnosticsChecker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
-                diagnosticsChecker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
+        if (diagnosticsChecker != null) {
+            options = new HealthCheckWithThresholdExecutionOptions(
+                    Boolean.valueOf(diagnosticsChecker.getEnabled()),
+                    diagnosticsChecker.getTime(),
+                    asTimeUnit(diagnosticsChecker.getUnit()),
+                    diagnosticsChecker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
+                    diagnosticsChecker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
+                    diagnosticsChecker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
 
-        healthCheckService.registerCheck(diagnosticsChecker.getName(), t);
+            healthCheckService.registerCheck(diagnosticsChecker.getName(), t);
+        }
     }
 
     protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
