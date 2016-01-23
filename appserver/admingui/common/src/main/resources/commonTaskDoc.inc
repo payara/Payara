@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2015-2016] [C2B2 Consulting Limited] -->
+
 <!-- common/commonTaskDoc.inc -->
 
 <sun:commonTasksGroup title="$resource{i18n.commonTasks.group.payara.docs}">
