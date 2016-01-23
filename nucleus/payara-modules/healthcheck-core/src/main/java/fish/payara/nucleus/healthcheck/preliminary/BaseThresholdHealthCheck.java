@@ -13,63 +13,41 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.*;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.HealthCheckWithThresholdExecutionOptions;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
-import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Contract;
-import org.jvnet.hk2.annotations.Optional;
-
-import javax.inject.Inject;
-import javax.inject.Named;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author mertcaliskan
  */
 @Contract
-public abstract class BaseThresholdHealthCheck extends BaseHealthCheck {
+public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThresholdExecutionOptions,
+        C extends ThresholdDiagnosticsChecker> extends BaseHealthCheck<O, C> {
 
-    private HealthCheckWithThresholdExecutionOptions options;
-
-    protected <T extends BaseThresholdHealthCheck> void postConstruct(T t, Class checkerType) {
-        if (configuration == null) {
-            return;
-        }
-        this.checkerType = checkerType;
-
-        ThresholdDiagnosticsChecker diagnosticsChecker = (ThresholdDiagnosticsChecker)
-                configuration.getCheckerByType(checkerType);
-
-        options = new HealthCheckWithThresholdExecutionOptions(
-                Boolean.valueOf(diagnosticsChecker.getEnabled()),
-                diagnosticsChecker.getTime(),
-                asTimeUnit(diagnosticsChecker.getUnit()),
-                diagnosticsChecker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
-                diagnosticsChecker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
-                diagnosticsChecker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
-
-        healthCheckService.registerCheck(diagnosticsChecker.getName(), t);
+    public HealthCheckWithThresholdExecutionOptions constructThresholdOptions(ThresholdDiagnosticsChecker checker) {
+        return new HealthCheckWithThresholdExecutionOptions(
+                Boolean.valueOf(checker.getEnabled()),
+                checker.getTime(),
+                asTimeUnit(checker.getUnit()),
+                checker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
+                checker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),
+                checker.getPropertyValue(THRESHOLD_GOOD, THRESHOLD_DEFAULTVAL_GOOD));
     }
 
     protected HealthCheckResultStatus decideOnStatusWithRatio(Double percentage) {
         if (percentage > options.getThresholdCritical()) {
             return HealthCheckResultStatus.CRITICAL;
-        }
-        else if (percentage > options.getThresholdWarning()) {
+        } else if (percentage > options.getThresholdWarning()) {
             return HealthCheckResultStatus.WARNING;
-        }
-        else if (percentage > options.getThresholdGood()) {
+        } else if (percentage > options.getThresholdGood()) {
             return HealthCheckResultStatus.GOOD;
-        }
-        else {
+        } else {
             return HealthCheckResultStatus.CHECK_ERROR;
         }
     }
 
-    @Override
-    public HealthCheckWithThresholdExecutionOptions getOptions() {
+    public O getOptions() {
         return options;
     }
 }

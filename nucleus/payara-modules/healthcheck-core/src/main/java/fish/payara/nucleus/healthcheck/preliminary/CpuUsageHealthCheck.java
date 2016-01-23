@@ -13,10 +13,9 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
-import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.CpuUsageChecker;
+import fish.payara.nucleus.healthcheck.entity.ThreadTimes;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -34,7 +33,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service(name = "healthcheck-cpu")
 @RunLevel(StartupRunLevel.VAL)
-public class CpuUsageHealthCheck extends BaseThresholdHealthCheck {
+public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWithThresholdExecutionOptions, CpuUsageChecker> {
 
     private long timeBefore = 0;
     private long totalTimeBefore = 0;
@@ -43,6 +42,11 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck {
     @PostConstruct
     void postConstruct() {
         postConstruct(this, CpuUsageChecker.class);
+    }
+
+    @Override
+    protected HealthCheckWithThresholdExecutionOptions constructOptions(CpuUsageChecker checker) {
+        return super.constructThresholdOptions(checker);
     }
 
     @Override
@@ -71,16 +75,16 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck {
             ThreadTimes times = threadTimes.get(id);
             if (times == null) {
                 times = new ThreadTimes();
-                times.id = id;
-                times.startCpuTime  = c;
-                times.endCpuTime = c;
-                times.startUserTime = u;
-                times.endUserTime = u;
+                times.setId(id);
+                times.setStartCpuTime(c);
+                times.setEndCpuTime(c);
+                times.setStartUserTime(u);
+                times.setEndUserTime(u);
                 threadTimes.put(id, times);
             }
             else {
-                times.endCpuTime  = c;
-                times.endUserTime = u;
+                times.setEndCpuTime(c);
+                times.setEndUserTime(u);
             }
         }
 
@@ -103,48 +107,5 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck {
         for (ThreadTimes times : threadTimesValues)
             time += times.getEndCpuTime() - times.getStartCpuTime();
         return time;
-    }
-
-    public long getTotalUserTime( ) {
-        final Collection<ThreadTimes> threadTimesValues = threadTimes.values();
-        long time = 0L;
-        for (ThreadTimes times : threadTimesValues)
-            time += times.getEndUserTime() - times.getStartUserTime();
-        return time;
-    }
-
-    private static class ThreadTimes {
-        private long id;
-        private long startCpuTime;
-        private long startUserTime;
-        private long endCpuTime;
-        private long endUserTime;
-
-        public long getEndCpuTime() {
-            return endCpuTime;
-        }
-
-        public long getEndUserTime() {
-            return endUserTime;
-        }
-
-        public long getStartCpuTime() {
-            return startCpuTime;
-        }
-
-        public long getStartUserTime() {
-            return startUserTime;
-        }
-
-        @Override
-        public String toString() {
-            return "Times{" +
-                    "id=" + id +
-                    ", startCpuTime=" + startCpuTime +
-                    ", endCpuTime=" + endCpuTime +
-                    ", startUserTime=" + startUserTime +
-                    ", endUserTime=" + endUserTime +
-                    '}';
-        }
     }
 }
