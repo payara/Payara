@@ -89,7 +89,7 @@ public class HealthCheckConfigurer implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
 
         Config config = targetUtil.getConfig(target);
-        HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
+        final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         if (healthCheckServiceConfiguration != null) {
             try {
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
@@ -100,7 +100,7 @@ public class HealthCheckConfigurer implements AdminCommand {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return null;
+                        return healthCheckServiceConfiguration;
                     }
 
                 }, healthCheckServiceConfiguration);

@@ -122,7 +122,9 @@ public class HealthCheckService implements EventListener {
     }
 
     public void shutdownHealthCheck() {
-        executor.shutdown();
-        Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
+        if (executor != null) {
+            executor.shutdown();
+            Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
+        }
     }
 }

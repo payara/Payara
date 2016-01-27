@@ -84,7 +84,7 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck<HealthCheckExec
 
                 if (diffTime > 0) {
                     result.add(new HealthCheckResultEntry(decideOnStatusWithDuration(diffTime),
-                            diffCount + " times Old GC (\" + gcBean.getName()  + \") after " + prettyPrintDuration(diffTime)));
+                            diffCount + " times Old GC (" + gcBean.getName()  + ") after " + prettyPrintDuration(diffTime)));
 
                     oldLastCollectionCount = gcBean.getCollectionCount();
                     oldLastCollectionTime = gcBean.getCollectionTime();
