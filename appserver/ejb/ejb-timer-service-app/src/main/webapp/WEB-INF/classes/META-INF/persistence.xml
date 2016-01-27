@@ -48,7 +48,7 @@
     http://www.oracle.com/webfolder/technetwork/jsc/xml/ns/persistence/persistence_2_1.xsd">
     <persistence-unit name="__EJB__Timer__App">
           <jta-data-source>jdbc/__TimerPool</jta-data-source>
-          <mapping-file>META-INF/orm.xml</mapping-file>
+          <mapping-file>META-INF/__ejb_timer_mappings.xml</mapping-file>
           <class>org.glassfish.ejb.persistent.timer.TimerState</class>
           <exclude-unlisted-classes/>
           <properties>
