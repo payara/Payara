@@ -301,7 +301,9 @@ public class SecurityTest extends BaseSeleniumTestClass {
             reset();
             pressButton("Masthead:logoutLink");
             waitForLoginPageLoad(30);
-            open ("http://localhost:4848/common/help/help.jsf?contextRef=/resource/common/en/help/ref-developercommontasks.html");
+            //open ("http://localhost:4848/common/help/help.jsf?contextRef=/resource/common/en/help/ref-developercommontasks.html");
+            // PAYARA-491
+            open ("https://github.com/payara/Payara/wiki");
             handleLogin(newUser, newPass, "The Common Tasks page provides shortcuts for common Administration Console tasks.");
         } finally {
             reset();
