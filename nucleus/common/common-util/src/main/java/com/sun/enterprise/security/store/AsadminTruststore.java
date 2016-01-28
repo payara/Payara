@@ -142,11 +142,8 @@ public class AsadminTruststore {
     {
         _keyStore.setCertificateEntry(alias, cert);
         
-        // PAYARA-496 Check if truststore exists, and create it if it doesn't
-        _keyFile.createNewFile();
-    
-        // PAYARA-496 Check if the keystore can be written to
-        if (_keyFile.canWrite()) {
+        // PAYARA-496 Check if the keystore exists, and can be written to
+        if (!_keyFile.exists() || _keyFile.canWrite()) {
             writeStore();            
         } else {
             _logger.log(Level.INFO, CULoggerInfo.exceptionWritingToAsadminTruststore, _keyFile.getAbsolutePath());
