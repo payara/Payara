@@ -323,7 +323,9 @@
              <!-- From which hosts users can connect -->
              <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
              <!-- Gogo shell configuration -->
-             <jvm-options>-Dgosh.args=--noshutdown -c noop=true</jvm-options>
+             <!--PAYARA-495-->
+             <!--<jvm-options>-Dgosh.args=noshutdown -c noop=true</jvm-options>-->
+             <jvm-options>-Dgosh.args=--noshutdown</jvm-options>
              <!-- Directory being watched by fileinstall. -->
              <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
              <!-- Time period fileinstaller thread in ms. -->
