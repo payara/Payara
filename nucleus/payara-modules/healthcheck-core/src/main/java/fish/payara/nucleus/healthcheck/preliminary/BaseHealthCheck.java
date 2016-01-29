@@ -51,11 +51,11 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     protected abstract O constructOptions(C c);
 
     protected <T extends BaseHealthCheck> O postConstruct(T t, Class<C> checkerType) {
+        this.checkerType = checkerType;
         if (configuration == null) {
             return null;
         }
 
-        this.checkerType = checkerType;
         C checker = configuration.getCheckerByType(this.checkerType);
         if (checker != null) {
             options = constructOptions(checker);

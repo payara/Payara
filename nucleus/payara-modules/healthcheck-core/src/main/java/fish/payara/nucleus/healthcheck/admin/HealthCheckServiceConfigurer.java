@@ -88,6 +88,9 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Param(name = "serviceName", optional = false)
     private String serviceName;
 
+    @Param(name = "name", optional = true)
+    private String name;
+
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
@@ -107,38 +110,58 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
             return;
         }
 
-        final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
-        Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.<Checker>getCheckerType());
+        HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
+        final Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
+
         try {
-            ConfigSupport.apply(new SingleConfigCode<Checker>() {
-                @Override
-                public Object run(final Checker checkerProxy) throws
-                        PropertyVetoException, TransactionFailure {
+            if (checker == null) {
+                ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
+                    @Override
+                    public Object run(final HealthCheckServiceConfiguration healthCheckServiceConfigurationProxy) throws
+                            PropertyVetoException, TransactionFailure {
+                        Checker checkerProxy = (Checker) healthCheckServiceConfigurationProxy.createChild(service.getCheckerType());
+                        applyValues(checkerProxy);
+                        healthCheckServiceConfigurationProxy.getCheckerList().add(checkerProxy);
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return healthCheckServiceConfigurationProxy;
+                    }
+                }, healthCheckServiceConfiguration);
+            }
+            else {
+                ConfigSupport.apply(new SingleConfigCode<Checker>() {
+                    @Override
+                    public Object run(final Checker checkerProxy) throws
+                            PropertyVetoException, TransactionFailure {
+                        applyValues(checkerProxy);
+                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                        return checker;
+                    }
+                }, checker);
+            }
 
-                    if (enabled != null) {
-                        checkerProxy.setEnabled(enabled.toString());
-                    }
-                    if (time != null) {
-                        checkerProxy.setTime(time);
-                    }
-                    if (unit != null) {
-                        checkerProxy.setUnit(unit);
-                    }
-                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                    return null;
-                }
-
-            }, checker);
+            if (dynamic && service.getOptions() != null) {
+                enableOnTarget(actionReport, service, enabled, time, unit);
+            }
         }
         catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
         }
+    }
 
-        if (dynamic) {
-            enableOnTarget(actionReport, service, enabled, time, unit);
+    private void applyValues(Checker checkerProxy) throws PropertyVetoException {
+        if (enabled != null) {
+            checkerProxy.setEnabled(enabled.toString());
+        }
+        if (time != null) {
+            checkerProxy.setTime(time);
+        }
+        if (unit != null) {
+            checkerProxy.setUnit(unit);
+        }
+        if (name != null) {
+            checkerProxy.setName(name);
         }
     }
 

@@ -22,7 +22,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
@@ -102,7 +101,7 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        BaseThresholdHealthCheck service = habitat.getService(BaseThresholdHealthCheck.class, serviceName);
+        final BaseThresholdHealthCheck service = habitat.getService(BaseThresholdHealthCheck.class, serviceName);
         Config config = targetUtil.getConfig(target);
 
         if (service == null) {
@@ -114,46 +113,22 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
 
         HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType
                 (HealthCheckServiceConfiguration.class);
-        ThresholdDiagnosticsChecker checker = healthCheckServiceConfiguration.
-                <ThresholdDiagnosticsChecker>getCheckerByType(service.getCheckerType());
+        final ThresholdDiagnosticsChecker checker = healthCheckServiceConfiguration
+                .<ThresholdDiagnosticsChecker>getCheckerByType(service.getCheckerType());
 
-        Property thresholdCriticalProp = checker.getProperty(HealthCheckConstants.THRESHOLD_CRITICAL);
-        Property thresholdWarningProp = checker.getProperty(HealthCheckConstants.THRESHOLD_WARNING);
-        Property thresholdGoodProp = checker.getProperty(HealthCheckConstants.THRESHOLD_GOOD);
+        if (checker == null) {
+            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.checker.not.exists",
+                    "Health Check Service Checker Configuration with name {0} could not be found.", serviceName));
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+            return;
+        }
 
         try {
-            ConfigSupport.apply(new SingleConfigCode<Property>() {
-                @Override
-                public Object run(final Property propertyProxy) throws PropertyVetoException, TransactionFailure {
-                    if (thresholdCritical != null) {
-                        propertyProxy.setValue(thresholdCritical);
-                    }
-                    return null;
-                }
-            }, thresholdCriticalProp);
-
-            ConfigSupport.apply(new SingleConfigCode<Property>() {
-                @Override
-                public Object run(final Property propertyProxy) throws PropertyVetoException, TransactionFailure {
-                    if (thresholdWarning != null) {
-                        propertyProxy.setValue(thresholdWarning);
-                    }
-                    return null;
-                }
-            }, thresholdWarningProp);
-
-            ConfigSupport.apply(new SingleConfigCode<Property>() {
-                @Override
-                public Object run(final Property propertyProxy) throws PropertyVetoException, TransactionFailure {
-                    if (thresholdGood != null) {
-                        propertyProxy.setValue(thresholdGood);
-                    }
-                    return null;
-                }
-            }, thresholdGoodProp);
-
-
-        } catch (TransactionFailure ex) {
+            evaluateThresholdProp(actionReport, checker, HealthCheckConstants.THRESHOLD_CRITICAL, thresholdCritical);
+            evaluateThresholdProp(actionReport, checker, HealthCheckConstants.THRESHOLD_WARNING, thresholdWarning);
+            evaluateThresholdProp(actionReport, checker, HealthCheckConstants.THRESHOLD_GOOD, thresholdGood);
+        }
+        catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -165,6 +140,41 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
         }
     }
 
+    private void evaluateThresholdProp(final ActionReport actionReport, final ThresholdDiagnosticsChecker checker,
+                                       final String name, final String value) throws TransactionFailure {
+
+        Property thresholdProp = checker.getProperty(name);
+        if (thresholdProp == null) {
+            ConfigSupport.apply(new SingleConfigCode<ThresholdDiagnosticsChecker>() {
+                @Override
+                public Object run(final ThresholdDiagnosticsChecker checkerProxy) throws
+                        PropertyVetoException, TransactionFailure {
+                    Property propertyProxy = checkerProxy.createChild(Property.class);
+                    applyThreshold(propertyProxy, name, value);
+                    checkerProxy.getProperty().add(propertyProxy);
+                    actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
+                    return checkerProxy;
+                }
+            }, checker);
+        }
+        else {
+            ConfigSupport.apply(new SingleConfigCode<Property>() {
+                @Override
+                public Object run(final Property propertyProxy) throws PropertyVetoException, TransactionFailure {
+                    applyThreshold(propertyProxy, name, value);
+                    return propertyProxy;
+                }
+            }, thresholdProp);
+        }
+    }
+
+    private void applyThreshold(Property propertyProxy, String name, String value) throws PropertyVetoException {
+        if (value != null) {
+            propertyProxy.setName(name);
+            propertyProxy.setValue(value);
+        }
+    }
+
     private void enableOnTarget(ActionReport actionReport, BaseThresholdHealthCheck service, String
             thresholdCritical, String thresholdWarning, String thresholdGood) {
 
@@ -173,16 +183,19 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
             actionReport.appendMessage(strings.getLocalString(
                     "healthcheck.service.configure.threshold.critical.success",
                     "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
+            actionReport.appendMessage("\n");
         }
         if (thresholdWarning != null) {
             service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
             actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
                     "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
+            actionReport.appendMessage("\n");
         }
         if (thresholdGood != null) {
             service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
             actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
                     "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
+            actionReport.appendMessage("\n");
         }
 
         healthCheckService.shutdownHealthCheck();
