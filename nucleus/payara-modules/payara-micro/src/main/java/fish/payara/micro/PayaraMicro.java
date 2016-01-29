@@ -72,6 +72,7 @@ public class PayaraMicro {
     private boolean noCluster = false;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
+    private boolean generateLogo = false;
     private int autoBindRange = 5;
 
     /**
@@ -168,6 +169,16 @@ public class PayaraMicro {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.hzMulticastGroup = hzMulticastGroup;
+        return this;
+    }
+    
+    /**
+     * Set whether the logo should be generated on boot
+     * @param generate
+     * @return 
+     */
+    public PayaraMicro setGenerateLogo(boolean generate) {
+        generateLogo = generate;
         return this;
     }
 
@@ -533,10 +544,13 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public PayaraMicroRuntime bootStrap() throws BootstrapException {
+        
+        long start = System.currentTimeMillis();
          //if (runtime != null) {
         if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
-        }       
+        } 
+        
         // check hazelcast cluster overrides
         MulticastConfiguration mc = new MulticastConfiguration();
         mc.setMemberName(instanceName);
@@ -715,6 +729,15 @@ public class PayaraMicro {
             //this.runtime = new PayaraMicroRuntime(instanceName, gf);
             this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
             deployAll();
+            
+                    
+            if (generateLogo) {
+                generateLogo();
+            }
+            
+            long end = System.currentTimeMillis();
+            logger.info("Payara Micro ready in " + (end - start) + " (ms)");
+            
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
@@ -915,8 +938,13 @@ public class PayaraMicro {
                             + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
                             + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
                             + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
+                            + "--logo reveal the #BadAssFish\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
+                    break;
+                case "--logo":
+                    generateLogo = true;
+                    break;
             }
         }
     }
@@ -1035,6 +1063,48 @@ public class PayaraMicro {
         } catch (GlassFishException ex) {
             return false;
         }
+    }
+    
+    void generateLogo() {
+        System.err.print(
+"\n\n                           :+                               \n" +
+"                        :+=+=                               \n" +
+"                      ~=++=+=.                              \n" +
+"                    ~+==++++=                               \n" +
+"                ..=++++++++++                          . =++\n" +
+"                :=+++++++++++                         .=++++\n" +
+"               =+=+++++++++++~                       ~++++++\n" +
+"            .~+=++=+++++++++++~+++++++++++++++++=++++++==+++\n" +
+"            :+==++++++++++++==+++++++++++++++++++=++++++++++\n" +
+"           ~++=++++++++==+++==++++++++++++++++++++++++++++++\n" +
+"          =+==++==+++===+=:+++++++++++++++++++++++++++++++++\n" +
+"         =++==++===++:~+=.=:==++++++++++++++++++++++++++++++\n" +
+"       .~++++++++++ :== :~ +~+==+=++++=:.             . :=++\n" +
+"       ~+++++++++++=~.== +~+=++++?~:                        \n" +
+"       +++++++=+++++=:  :~=+=+=                             \n" +
+"      ++=+++++++++++++ .===+:                               \n" +
+"     :==++++++++++++++  +++                                 \n" +
+"    :+=+++++++++++++++~~+                                   \n" +
+"    ==++++++++++++++++++=.         .                        \n" +
+"    +=++++++++++++++++=+            ::                      \n" +
+"   =+++=++++++++++++++=+          .:+:                      \n" +
+"   ++++++=++=++++++++=++=         =+=                       \n" +
+"  :+++++++++=++++==+++++++~  . :=+++=                       \n" +
+"  =+++++++++~. ++=++++=+++=+++==+++?                        \n" +
+" :+=+++++=+:   +++++++++++++++=+=+?~                        \n" +
+" =++++++++    ~+=++++++++++++++=++.                         \n" +
+".+====++++.  =++=+++++++++++++=+=.                          \n" +
+".+++++++++===++++++++++++++++++=                            \n" +
+" +++++++++++++++++++++++++++++                              \n" +
+" =+++=++++++++++++++++++++++=                               \n" +
+".   :       :=+++++++++++++                                 \n" +
+" .: ~=      :=+=+++++=+++                                   \n" +
+"  :~ +:     =++++++++++=.                                   \n" +
+"   +::+  .~++=++++=+= :                                     \n" +
+"   =+++++=+=+=+++~                                          \n" +
+"    =+~++=++++~.                                            \n" +
+"    =++++:                                                  \n" +
+"                                                            \n\n\n");
     }
 
 
