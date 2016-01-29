@@ -126,11 +126,11 @@
        <class name="test.security.appperms.ApppermsTestNG" />
     </classes>
   </test>
-  <!--<test name="ejb_remoteview">
+  <test name="ejb_remoteview">
     <classes>
         <class name="test.ejb.remoteview.RemoteViewTestNG"/>
     </classes>
-  </test>-->
+  </test>
   <test name="ejb_singleton_ear_redeploy">
     <classes>
 	<class name="test.ejb.singleton.SingletonTestNG" />
