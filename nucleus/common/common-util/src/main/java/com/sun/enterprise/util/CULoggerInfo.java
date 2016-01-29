@@ -317,7 +317,9 @@ public class CULoggerInfo {
                     level="WARNING")
     public static final String NULL_BUNDLE = LOGMSG_PREFIX + "-00042";
 
-
+    @LogMessageInfo(message = "Could not write to Asadmin Truststore: {0}",
+            level="INFO")
+    public static final String exceptionWritingToAsadminTruststore = LOGMSG_PREFIX + "-00043";
 /*
 
 
