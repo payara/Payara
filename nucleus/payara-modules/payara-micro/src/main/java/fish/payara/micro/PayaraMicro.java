@@ -22,6 +22,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -74,6 +75,8 @@ public class PayaraMicro {
     private boolean autoBindSsl = false;
     private boolean generateLogo = false;
     private int autoBindRange = 5;
+    private String bootImage = "boot.txt";
+    private String applicationDomainXml;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -173,11 +176,22 @@ public class PayaraMicro {
     }
     
     /**
+     * Sets the path to the logo file printed at boot. This can be
+     * on the classpath of the server or an absolute URL
+     * @param filePath
+     * @return 
+     */
+    public PayaraMicro setLogoFile(String filePath) {
+        bootImage = filePath;
+        return this;
+    }
+    
+    /**
      * Set whether the logo should be generated on boot
      * @param generate
      * @return 
      */
-    public PayaraMicro setGenerateLogo(boolean generate) {
+    public PayaraMicro setPrintLogo(boolean generate) {
         generateLogo = generate;
         return this;
     }
@@ -328,6 +342,17 @@ public class PayaraMicro {
      */
     public File getAlternateDomainXML() {
         return alternateDomainXML;
+    }
+    
+    /**
+     * Sets an application specific domain.xml file that is embedded on the classpath
+     * of your application. 
+     * @param domainXml This is a resource string for your domain.xml
+     * @return 
+     */
+    public PayaraMicro setApplicationDomainXML(String domainXml) {
+        applicationDomainXml = domainXml;
+        return this;
     }
 
     /**
@@ -680,11 +705,15 @@ public class PayaraMicro {
                 gfproperties.setConfigFileReadOnly(false);
                 gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
             } else {
-                if (noCluster) {
-                    gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain-nocluster.xml").toExternalForm());
+                if (applicationDomainXml != null) {
+                        gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource(applicationDomainXml).toExternalForm());                    
+                }else {
+                    if (noCluster) {
+                        gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain-nocluster.xml").toExternalForm());
 
-                } else {
-                    gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain.xml").toExternalForm());
+                    } else {
+                        gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain.xml").toExternalForm());
+                    }
                 }
             }
 
@@ -1066,45 +1095,16 @@ public class PayaraMicro {
     }
     
     void generateLogo() {
-        System.err.print(
-"\n\n                           :+                               \n" +
-"                        :+=+=                               \n" +
-"                      ~=++=+=.                              \n" +
-"                    ~+==++++=                               \n" +
-"                ..=++++++++++                          . =++\n" +
-"                :=+++++++++++                         .=++++\n" +
-"               =+=+++++++++++~                       ~++++++\n" +
-"            .~+=++=+++++++++++~+++++++++++++++++=++++++==+++\n" +
-"            :+==++++++++++++==+++++++++++++++++++=++++++++++\n" +
-"           ~++=++++++++==+++==++++++++++++++++++++++++++++++\n" +
-"          =+==++==+++===+=:+++++++++++++++++++++++++++++++++\n" +
-"         =++==++===++:~+=.=:==++++++++++++++++++++++++++++++\n" +
-"       .~++++++++++ :== :~ +~+==+=++++=:.             . :=++\n" +
-"       ~+++++++++++=~.== +~+=++++?~:                        \n" +
-"       +++++++=+++++=:  :~=+=+=                             \n" +
-"      ++=+++++++++++++ .===+:                               \n" +
-"     :==++++++++++++++  +++                                 \n" +
-"    :+=+++++++++++++++~~+                                   \n" +
-"    ==++++++++++++++++++=.         .                        \n" +
-"    +=++++++++++++++++=+            ::                      \n" +
-"   =+++=++++++++++++++=+          .:+:                      \n" +
-"   ++++++=++=++++++++=++=         =+=                       \n" +
-"  :+++++++++=++++==+++++++~  . :=+++=                       \n" +
-"  =+++++++++~. ++=++++=+++=+++==+++?                        \n" +
-" :+=+++++=+:   +++++++++++++++=+=+?~                        \n" +
-" =++++++++    ~+=++++++++++++++=++.                         \n" +
-".+====++++.  =++=+++++++++++++=+=.                          \n" +
-".+++++++++===++++++++++++++++++=                            \n" +
-" +++++++++++++++++++++++++++++                              \n" +
-" =+++=++++++++++++++++++++++=                               \n" +
-".   :       :=+++++++++++++                                 \n" +
-" .: ~=      :=+=+++++=+++                                   \n" +
-"  :~ +:     =++++++++++=.                                   \n" +
-"   +::+  .~++=++++=+= :                                     \n" +
-"   =+++++=+=+=+++~                                          \n" +
-"    =+~++=++++~.                                            \n" +
-"    =++++:                                                  \n" +
-"                                                            \n\n\n");
+        try(InputStream is = this.getClass().getClassLoader().getResourceAsStream(bootImage);) {
+            byte[] buffer = new byte[1024];
+            for (int length; (length = is.read(buffer)) != -1; ){
+
+                System.err.write(buffer, 0, length);
+                System.err.flush();
+            }            
+        } catch (IOException | NullPointerException ex) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.WARNING, "Problems displaying Boot Image", ex);
+        }
     }
 
 
