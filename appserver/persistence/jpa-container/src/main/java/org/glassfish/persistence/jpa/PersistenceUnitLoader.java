@@ -104,8 +104,15 @@ public class PersistenceUnitLoader {
        // This should be removed once version of EclipseLink which fixes the issue is integrated.
        // set the system property required by EclipseLink before we load it.
        setSystemPropertyToEnableDoPrivilegedInEclipseLink();
-
+       
+        //NOTE If we are going to create datasources we must switch to the final classloader otherwise 
+        // the datasource will have the wrong classloader associated with the classes.
+        // This is to fix PAYARA-547
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        Thread.currentThread().setContextClassLoader(providerContainerContractInfo.getClassLoader());
+ 
        emf = loadPU(puToInstatntiate);
+       Thread.currentThread().setContextClassLoader(cl);
    }
 
     /**

@@ -13,9 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import fish.payara.nucleus.healthcheck.HealthCheckResult;
-import fish.payara.nucleus.healthcheck.HealthCheckResultEntry;
-import fish.payara.nucleus.healthcheck.HealthCheckResultStatus;
+import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -38,7 +36,7 @@ import java.util.List;
  */
 @Service(name = "healthcheck-gc")
 @RunLevel(StartupRunLevel.VAL)
-public class GarbageCollectorHealthCheck extends BaseHealthCheck {
+public class GarbageCollectorHealthCheck extends BaseHealthCheck<HealthCheckExecutionOptions, GarbageCollectorChecker> {
 
     private long youngLastCollectionCount;
     private long youngLastCollectionTime;
@@ -48,6 +46,11 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
     @PostConstruct
     void postConstruct() {
         postConstruct(this, GarbageCollectorChecker.class);
+    }
+
+    @Override
+    protected HealthCheckExecutionOptions constructOptions(GarbageCollectorChecker checker) {
+        return super.constructBaseOptions(checker);
     }
 
     @Override
@@ -81,7 +84,7 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck {
 
                 if (diffTime > 0) {
                     result.add(new HealthCheckResultEntry(decideOnStatusWithDuration(diffTime),
-                            diffCount + " times Old GC (\" + gcBean.getName()  + \") after " + prettyPrintDuration(diffTime)));
+                            diffCount + " times Old GC (" + gcBean.getName()  + ") after " + prettyPrintDuration(diffTime)));
 
                     oldLastCollectionCount = gcBean.getCollectionCount();
                     oldLastCollectionTime = gcBean.getCollectionTime();

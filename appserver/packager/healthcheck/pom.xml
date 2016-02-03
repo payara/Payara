@@ -19,9 +19,8 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.1.161</version>
     </parent>
-    <groupId>org.glassfish.main.packager</groupId>
     <artifactId>healthcheck</artifactId>
     <name>Healthcheck Package</name>
     <packaging>distribution-fragment</packaging>

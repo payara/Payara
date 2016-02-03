@@ -163,7 +163,8 @@ public class PayaraMicro {
      * @return
      */
     public PayaraMicro setClusterMulticastGroup(String hzMulticastGroup) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.hzMulticastGroup = hzMulticastGroup;
@@ -186,7 +187,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setClusterPort(int hzPort) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.hzPort = hzPort;
@@ -210,7 +212,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setClusterStartPort(int hzStartPort) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.hzStartPort = hzStartPort;
@@ -231,7 +234,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setHttpPort(int httpPort) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.httpPort = httpPort;
@@ -253,7 +257,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setSslPort(int sslPort) {
-        if (runtime != null) {
+       //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.sslPort = sslPort;
@@ -275,7 +280,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setInstanceName(String instanceName) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.instanceName = instanceName;
@@ -297,7 +303,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setDeploymentDir(File deploymentRoot) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.deploymentRoot = deploymentRoot;
@@ -319,7 +326,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setAlternateDomainXML(File alternateDomainXML) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.alternateDomainXML = alternateDomainXML;
@@ -333,7 +341,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro addDeployment(String pathToWar) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         File file = new File(pathToWar);
@@ -347,7 +356,8 @@ public class PayaraMicro {
      * @return
      */    
     public PayaraMicro addDeploymentFile(File file) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         if (deployments == null) {
@@ -371,7 +381,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setNoCluster(boolean noCluster) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.noCluster = noCluster;
@@ -397,7 +408,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setMaxHttpThreads(int maxHttpThreads) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.maxHttpThreads = maxHttpThreads;
@@ -420,7 +432,8 @@ public class PayaraMicro {
      * @return 
      */
     public PayaraMicro setMinHttpThreads(int minHttpThreads) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.minHttpThreads = minHttpThreads;
@@ -446,7 +459,8 @@ public class PayaraMicro {
      * @return Returns the PayaraMicro instance
      */
     public PayaraMicro setRootDir(File rootDir) {
-        if (runtime != null) {
+        //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.rootDir = rootDir;
@@ -519,7 +533,8 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public PayaraMicroRuntime bootStrap() throws BootstrapException {
-         if (runtime != null) {
+         //if (runtime != null) {
+        if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
         }       
         // check hazelcast cluster overrides
@@ -697,7 +712,8 @@ public class PayaraMicro {
                 }
             }
             gf.start();
-            this.runtime = new PayaraMicroRuntime(instanceName, gf);
+            //this.runtime = new PayaraMicroRuntime(instanceName, gf);
+            this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
             deployAll();
             return runtime;
         } catch (GlassFishException ex) {
@@ -727,6 +743,7 @@ public class PayaraMicro {
             throw new IllegalStateException("Payara Micro is not running");
         }
         runtime.shutdown();
+        runtime = null;
     }
 
     private void scanArgs(String[] args) {
@@ -834,7 +851,7 @@ public class PayaraMicro {
                     break;
                 case "--deploy":
                     File deployment = new File(args[i + 1]);
-                    if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || !deployment.getAbsolutePath().endsWith(".war")) {
+                    if (!deployment.exists() || !deployment.isFile() || !deployment.canRead() || ( !deployment.getName().endsWith(".war") && !deployment.getName().endsWith(".ear") && !deployment.getName().endsWith(".jar")  )) {
                         logger.log(Level.SEVERE, "{0} is not a valid deployment path and will be ignored", deployment.getAbsolutePath());
                     } else {
                         if (deployments == null) {

@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.1.161</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-parent</artifactId>
@@ -57,7 +57,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-      <tag>payara-server-4.1.1.161-SNAPSHOT</tag>
+      <tag>payara-server-4.1.1.161</tag>
   </scm>
     
     <properties>
@@ -68,7 +68,7 @@
         <jstl-api.version>1.2.1</jstl-api.version>
         <mojarra.version>2.2.12</mojarra.version>
         <jsf-ext.version>0.2</jsf-ext.version>
-        <woodstock.version>4.0.2.10</woodstock.version>
+        <woodstock.version>4.0.2.10.payara-p2</woodstock.version>
         <javax.ejb-api.version>3.2</javax.ejb-api.version>
         <javax.interceptor-api.version>1.2</javax.interceptor-api.version>
         <javax.xml.rpc-api.version>1.1.1</javax.xml.rpc-api.version>
@@ -93,7 +93,7 @@
         <major_version>4</major_version>
         <minor_version>1</minor_version>
         <update_version>1</update_version>
-        <payara_version>161-SNAPSHOT</payara_version>
+        <payara_version>161</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
         
@@ -105,20 +105,20 @@
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
         <pax.logging.version>1.8.4</pax.logging.version>
-        <webservices.version>2.3.2-b608.payara-p1</webservices.version>
+        <webservices.version>2.3.2-b608.payara-p2</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.2.0</woodstox.version>
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
         <jaxb.version>2.2.12-b141219.1637</jaxb.version>
         <stax2-api.version>3.1.1</stax2-api.version>
-        <eclipselink.version>2.6.1.payara-p1</eclipselink.version>
+        <eclipselink.version>2.6.2.payara-p1</eclipselink.version>
         <javax.xml.registry-api.version>1.0.7</javax.xml.registry-api.version>
         <javax-persistence-api.version>2.1.0</javax-persistence-api.version> 
         <dbschema.version>3.1.1</dbschema.version>
         <dbschema.osgi.version>6.0</dbschema.osgi.version>
         <schema2beans.version>3.1.1</schema2beans.version>
         <schema2beans.osgi.version>5.5</schema2beans.osgi.version>
-        <mq.version>5.1.1-b02</mq.version>
+        <mq.version>5.1.1-b02.payara-p1</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
         <weld.version>2.2.16.Final</weld.version>

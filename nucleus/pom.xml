@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2014-2016] [C2B2 Consulting Limited] -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
@@ -52,7 +52,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.1.1.161-SNAPSHOT</version>
+    <version>4.1.1.161</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -60,7 +60,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</url>
-      <tag>payara-server-4.1.1.161-SNAPSHOT</tag>
+      <tag>payara-server-4.1.1.161</tag>
   </scm>
 
     <issueManagement>
@@ -166,7 +166,7 @@
         <pluginRepository>
            <id>payara-patched-externals</id>
 	   <name>Payara Patched Externals</name>
-	   <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
+	     <url>https://raw.github.com/payara/Payara_PatchedProjects/master</url>
 	   <!--<url>file:///opt/PayaraDev/Payara_PatchedProjects</url> -->
            	<releases>
            		<enabled>true</enabled>
@@ -188,7 +188,7 @@
         <findbugs.version>2.5.2</findbugs.version>
         <findbugs.glassfish.logging.validLoggerPrefixes>javax.enterprise</findbugs.glassfish.logging.validLoggerPrefixes>
 
-        <glassfish-corba.version>4.0.1-p2</glassfish-corba.version>
+        <glassfish-corba.version>4.0.1-p3</glassfish-corba.version>
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>

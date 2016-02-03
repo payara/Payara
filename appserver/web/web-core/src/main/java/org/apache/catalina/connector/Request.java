@@ -734,6 +734,7 @@ public class Request
             return;
         }
 
+        handlerInitialised = false;
         context = null;
         servletContext = null;
         contextPath = null;
