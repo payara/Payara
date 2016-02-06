@@ -184,6 +184,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
     public Class<?> resolveClass(ObjectInputStream in, final ObjectStreamClass desc)
             throws IOException, ClassNotFoundException
     {
+        try {
         String key = in.readUTF();
 
         if (! NOT_A_BUNDLE_KEY.equals(key)) {
@@ -197,6 +198,9 @@ public class OSGiObjectInputOutputStreamFactoryImpl
                     return loadClassFromBundle(b, cname);
                 }
             }
+        }
+        }catch(IOException e) {
+            
         }
 
         return null;
