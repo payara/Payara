@@ -200,7 +200,7 @@ public class OSGiObjectInputOutputStreamFactoryImpl
             }
         }
         }catch(IOException e) {
-            
+            logger.fine("Missing Bundle Key continuing...");
         }
 
         return null;
