@@ -46,7 +46,7 @@ class HealthCheckTask implements Runnable {
     public void run() {
         if (check.getOptions().isEnabled()) {
             HealthCheckResult checkResult = check.doCheck();
-            if (checkResult != null) {
+            if (checkResult != null && checkResult.getCumulativeStatus() != null) {
                 switch (checkResult.getCumulativeStatus()) {
                     case CHECK_ERROR:
                         logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});

@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2015] [C2B2 Consulting Limited]
+
 package org.glassfish.enterprise.iiop.impl;
 
 import com.sun.corba.ee.impl.misc.ORBUtility;
@@ -99,6 +101,8 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
     private static final String PERSISTENT_SSL = "PERSISTENT_SSL";
 
     private static final int BACKLOG = 50;
+    
+    private static final String SO_KEEPALIVE = "fish.payara.SOKeepAlive";
 
     //private static SecureRandom sr = null;
 
@@ -333,6 +337,15 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
                         inetSocketAddress.getPort());
 	        }
 
+                // PAYARA-408
+                // Check if SO_KEEPALIVE property set
+                if (Boolean.getBoolean("fish.payara.SOKeepAlive")) {
+                    if (_logger.isLoggable(Level.FINER)) {
+                        _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
+                    }
+                    socket.setKeepAlive(true);
+                }
+                
                 // Disable Nagle's algorithm (i.e. always send immediately).
 		socket.setTcpNoDelay(true);
                 return socket;
@@ -459,7 +472,16 @@ public class IIOPSSLSocketFactory  implements ORBSocketFactory
             if (clientCiphers != null) {
                 socket.setEnabledCipherSuites(clientCiphers);
             }
-        }catch(Exception e) {
+                  
+            // PAYARA-408
+            // Check if SO_KEEPALIVE property set
+            if (Boolean.getBoolean("fish.payara.SOKeepAlive")) {
+                if (_logger.isLoggable(Level.FINER)) {
+                    _logger.log(Level.FINER, "Enabling SO_KEEPALIVE");
+                }
+                socket.setKeepAlive(true);
+            }
+        } catch(Exception e) {
             if(_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "iiop.createsocket_exception",
                 new Object[] { host, String.valueOf(port) });

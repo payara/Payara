@@ -34,6 +34,10 @@ public class HealthCheckExecutionOptions {
         return enabled;
     }
 
+    public void setTime(long time) {
+        this.time = time;
+    }
+
     public long getTime() {
         return time;
     }
@@ -44,5 +48,9 @@ public class HealthCheckExecutionOptions {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public void setUnit(TimeUnit unit) {
+        this.unit = unit;
     }
 }

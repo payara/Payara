@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package com.sun.web.security;
 
@@ -115,9 +116,7 @@ import java.security.PrivilegedAction;
 
 import org.jvnet.hk2.annotations.Service;
 import com.sun.enterprise.security.auth.digest.api.DigestAlgorithmParameter;
-import com.sun.enterprise.security.auth.login.DigestCredentials;
 import com.sun.enterprise.security.auth.digest.api.Key;
-import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
 import static com.sun.enterprise.security.auth.digest.api.Constants.A1;
 import com.sun.enterprise.security.auth.digest.impl.DigestParameterGenerator;
 import com.sun.enterprise.security.auth.digest.impl.NestedDigestAlgoParamImpl;
@@ -128,7 +127,7 @@ import com.sun.enterprise.util.net.NetUtils;
 import javax.inject.Inject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import org.apache.catalina.ContainerEvent;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -473,7 +472,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                     if (subject.isReadOnly()) {
                         _logger.log(Level.WARNING, "Read-only subject found during logout processing");
                     }
-                    sAC.cleanSubject(messageInfo, subject);
+                    try {
+                        req.getContext().fireContainerEvent(ContainerEvent.BEFORE_LOGOUT, null);
+                        sAC.cleanSubject(messageInfo, subject);
+                    }finally {
+                        req.getContext().fireContainerEvent(ContainerEvent.AFTER_LOGOUT, null);
+                    }
                 }
             } catch (AuthException ex) {
                 throw new RuntimeException(ex);
@@ -1518,7 +1522,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         
         if (serverAuthConfig != null) {
             //JSR 196 is enabled for this application
-            result = validate(request, response, config, authenticator, calledFromAuthenticate);
+            try {
+                context.fireContainerEvent(ContainerEvent.BEFORE_AUTHENTICATION, null);
+                result = validate(request, response, config, authenticator, calledFromAuthenticate);
+            } finally {
+                context.fireContainerEvent(ContainerEvent.AFTER_AUTHENTICATION, null);
+            }
         } else {
             //jsr196 is not enabled.  Use the current authenticator.
             result = ((AuthenticatorBase) authenticator).authenticate(
@@ -1551,10 +1560,15 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                     //JSR 196 is enabled for this application
                     sAC = (ServerAuthContext) messageInfo.getMap().get(SERVER_AUTH_CONTEXT);
                     if (sAC != null) {
-                        AuthStatus authStatus =
-                                sAC.secureResponse(messageInfo,
-                                null); //null serviceSubject
-                        result = AuthStatus.SUCCESS.equals(authStatus);
+                            try {
+                                context.fireContainerEvent(ContainerEvent.BEFORE_POST_AUTHENTICATION, null);
+                            AuthStatus authStatus =
+                                    sAC.secureResponse(messageInfo,
+                                    null); //null serviceSubject
+                            result = AuthStatus.SUCCESS.equals(authStatus);
+                        } finally {
+                            context.fireContainerEvent(ContainerEvent.AFTER_POST_AUTHENTICATION, null);
+                        }
                     }
                 }
             }

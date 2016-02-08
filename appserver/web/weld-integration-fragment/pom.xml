@@ -46,7 +46,7 @@
     <parent>
 	<groupId>org.glassfish.main.web</groupId>
     	<artifactId>web</artifactId>
-        <version>4.1.1.161-SNAPSHOT</version>
+        <version>4.1.1.162-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>weld-integration-fragment</artifactId>
@@ -115,7 +115,8 @@
                                 org.jboss.classfilewriter.util,
                                 org.jboss.weld.security
                             </Export-Package>
-                            <Import-Package>org.glassfish.weld</Import-Package>
+                            <Import-Package>org.glassfish.weld,
+                                javax.ejb</Import-Package>
                             <Bundle-Description>${project.description}</Bundle-Description> 
                         </manifestEntries>
                     </archive>

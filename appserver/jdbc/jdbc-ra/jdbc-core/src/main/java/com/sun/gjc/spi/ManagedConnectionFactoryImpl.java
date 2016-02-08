@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.gjc.spi;
 
 import com.sun.appserv.connectors.internal.spi.MCFLifecycleListener;
@@ -46,8 +46,10 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.common.DataSourceSpec;
 import com.sun.gjc.monitoring.JdbcStatsProvider;
 import com.sun.gjc.util.SQLTraceDelegator;
+import com.sun.gjc.util.SQLTraceLogger;
 import com.sun.gjc.util.SecurityUtils;
 import com.sun.logging.LogDomains;
+import fish.payara.jdbc.SlowSQLLogger;
 import org.glassfish.api.jdbc.ConnectionValidation;
 import org.glassfish.api.jdbc.SQLTraceListener;
 import org.glassfish.external.probe.provider.PluginPoint;
@@ -547,7 +549,9 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
         String delimiter = ",";
         
         if(sqlTraceListeners != null && !sqlTraceListeners.equals("null")) {
-            sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
+            if (sqlTraceDelegator == null) {
+                sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
+            }
             StringTokenizer st = new StringTokenizer(sqlTraceListeners, delimiter);
             while (st.hasMoreTokens()) {
                 String sqlTraceListener = st.nextToken().trim();            
@@ -561,7 +565,11 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                     try {
                         listenerClass = Thread.currentThread().getContextClassLoader().loadClass(sqlTraceListener);
                     } catch (ClassNotFoundException ex) {
-                        _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_cnfe", sqlTraceListener);
+                        try {
+                            listenerClass = this.getClass().getClassLoader().loadClass(sqlTraceListener);
+                        }catch (ClassNotFoundException ex2) {
+                            _logger.log(Level.SEVERE, "jdbc.sql_trace_listener_cnfe", sqlTraceListener);
+                        }
                     }
                     Class intf[] = listenerClass.getInterfaces();
                     for (int i = 0; i < intf.length; i++) {
@@ -1045,6 +1053,9 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
 
     public void setApplicationName(String value) {
         spec.setDetail(DataSourceSpec.APPLICATIONNAME, value);
+        if (sqlTraceDelegator != null) {
+            sqlTraceDelegator.setAppName(value);
+        }
     }
 
     public String getModuleName() {
@@ -1053,6 +1064,9 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
 
     public void setModuleName(String value) {
         spec.setDetail(DataSourceSpec.MODULENAME, value);
+        if (sqlTraceDelegator != null) {
+            sqlTraceDelegator.setModuleName(value);
+        }
     }
 
     public String getPoolName() {
@@ -1061,6 +1075,9 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
 
     public void setPoolName(String value) {
         spec.setDetail(DataSourceSpec.POOLNAME, value);
+        if (sqlTraceDelegator != null) {
+            sqlTraceDelegator.setPoolName(value);
+        }
     }
 
     public String getStatementCacheType() {
@@ -1139,6 +1156,35 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
             spec.setDetail(DataSourceSpec.SQLTRACELISTENERS, sqlTraceListeners);
             detectSqlTraceListeners();
         }
+    }
+    
+    public void setSlowQueryThresholdInSeconds(String seconds) {
+        spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
+        int threshold = Integer.valueOf(seconds);
+        if (threshold > 0) {
+            if (sqlTraceDelegator == null) {
+                sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
+            }
+            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger(threshold*1000));
+        }
+    }
+    
+    public String getSlowQueryThresholdInSeconds() {
+         return spec.getDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD);       
+    }
+    
+    public void setLogJdbcCalls(String enabled) {
+        spec.setDetail(DataSourceSpec.LOGJDBCCALLS, enabled);
+        if (Boolean.valueOf(enabled)) {
+            if (sqlTraceDelegator == null) {
+                sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
+            }
+            sqlTraceDelegator.registerSQLTraceListener(new SQLTraceLogger());
+        }
+    }
+    
+    public String getLogJdbcCalls() {
+         return spec.getDetail(DataSourceSpec.LOGJDBCCALLS);       
     }
     
     /**

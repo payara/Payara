@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+/*Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 /*
  * Common utility
  */
@@ -1027,7 +1028,7 @@ admingui.help = {
     },
 
     launchHelp: function(url) {
-        var helpLink = "/common/help/help.jsf";
+        var helpLink = "https://github.com/payara/Payara/wiki";
         var helpKeys = admingui.util.findNodes(document,
             function(node, name) {
                 if ((typeof(node.id) === "undefined") || (node.id == null)) {
@@ -1045,7 +1046,7 @@ admingui.help = {
                 url:"url"
             },
             function(result) {
-                admingui.help.openHelpWindow(helpLink + "?contextRef=" + "/resource/" + admingui.help.pluginId + result.url);
+                admingui.help.openHelpWindow(helpLink + result.url);
             }, 3, false);
         } else {
             admingui.help.openHelpWindow(helpLink);
@@ -1053,7 +1054,7 @@ admingui.help = {
     },
 
     openHelpWindow: function (url) {
-        var win = window.open(url, "HelpWindow" , "width=800, height=530, resizable");
+        var win = window.open(url, "HelpWindow" , "width=1200, height=800, resizable");
         if (win) {
             win.focus();
         }

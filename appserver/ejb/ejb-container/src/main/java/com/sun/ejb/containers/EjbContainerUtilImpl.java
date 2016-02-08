@@ -199,7 +199,7 @@ public class EjbContainerUtilImpl
         ClassLoader originalClassLoader = null;
         try {
             originalClassLoader = Utility.setContextClassLoader(ejbImplClassLoader);
-            _timer = new Timer(true);
+            _timer = new Timer("EJB Container Timer", true);
         } finally {
             if (originalClassLoader != null) {
                 Utility.setContextClassLoader(originalClassLoader);

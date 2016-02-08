@@ -7,7 +7,7 @@ Payara Server is a patched, enhanced and supported application server derived fr
 
 **See the wiki for full Payara Server and Payara Micro documentation:** https://github.com/payara/Payara/wiki 
 
-Payara Server is a drop in replacement for GlassFish Server Open Source with the peace of mind of quarterly releases containing enhancements, bug fixes and patches includin patches to dependent libraries including Tyrus, Eclipse Link, Jersey and others. Our vision is to optimise Payara Server and make it the best server for production Java applications with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry.
+Payara Server is a drop in replacement for GlassFish Server Open Source with the peace of mind of quarterly releases containing enhancements, bug fixes and patches including patches to dependent libraries, as required, including Tyrus, Eclipse Link, Jersey and others. Our vision is to optimise Payara Server and make it the best server for production Java applications with responsive 24/7 dedicated incident and software support from the best middleware engineers in the industry.
 
 We have added full JCache support, enhanced JBatch functionality, replaced Shoal with Hazelcast for session clustering and are driving development of Payara Micro. A completely new way of running war applications on top of an embedded GlassFish core. Payara Micro is ideally suited to cloud and microservice architectures with elastic clustering and no installation. Payara Micro can run war applications simply using
 
@@ -31,5 +31,5 @@ We take GlassFish, support it, add fixes, add enhancements and we release it as 
 
 
 GlassFish is a trademark of Oracle Corporation.
-Payara is a trademark of C2B2 Consulting Limited.
+Payara is a trademark of Zenthis Limited.
 

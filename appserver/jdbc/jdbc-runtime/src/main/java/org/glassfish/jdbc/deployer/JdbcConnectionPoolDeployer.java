@@ -359,7 +359,16 @@ public class JdbcConnectionPoolDeployer implements ResourceDeployer {
                 adminPool.getWrapJdbcObjects() + "",
                 "Statement Wrapping",
                 "java.lang.String"));
-
+        
+        propList.add(new ConnectorConfigProperty("LogJdbcCalls",
+                adminPool.getLogJdbcCalls() + "",
+                "Log JDBC Calls",
+                "java.lang.String"));
+                
+        propList.add(new ConnectorConfigProperty("SlowQueryThresholdInSeconds",
+                adminPool.getSlowQueryThresholdInSeconds() + "",
+                "Slow Query Threshold In Seconds",
+                "java.lang.String"));
 
         propList.add(new ConnectorConfigProperty("StatementTimeout",
                 adminPool.getStatementTimeoutInSeconds() + "",
