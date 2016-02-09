@@ -42,7 +42,7 @@ package com.sun.enterprise.common.iiop.security;
 
 import java.io.IOException;
 import org.jvnet.hk2.annotations.Contract;
-import sun.security.util.ObjectIdentifier;
+import com.ibm.security.util.ObjectIdentifier;
 
 /**
  *

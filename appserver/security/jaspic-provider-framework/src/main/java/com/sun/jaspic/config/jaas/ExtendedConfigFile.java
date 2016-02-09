@@ -42,7 +42,7 @@
 package com.sun.jaspic.config.jaas;
 
 import com.sun.jaspic.config.helper.JASPICLogManager;
-import com.sun.security.auth.login.ConfigFile;
+import com.ibm.security.auth.login.ConfigFile;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.security.AccessController;
