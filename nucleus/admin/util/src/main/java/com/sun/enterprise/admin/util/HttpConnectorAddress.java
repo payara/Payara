@@ -175,8 +175,8 @@ public final class HttpConnectorAddress {
                  * protocol is entered, log a message and use the GlassFish
                  * default of TLSv1.
                  */
-                if (System.getProperty("fish.payara.asadminHttpsProtocol") != null) {
-                    switch (System.getProperty("fish.payara.asadminHttpsProtocol")) {
+                if (System.getProperty("fish.payara.clientHttpsProtocol") != null) {
+                    switch (System.getProperty("fish.payara.clientHttpsProtocol")) {
                         case "TLSv1.1": protocol = "TLSV1.1";
                                         logger.log(Level.FINE, 
                                                 AdminLoggerInfo.settingHttpsProtocol,
@@ -191,7 +191,7 @@ public final class HttpConnectorAddress {
                         
                         default:        protocol = "TLSv1";
                                         String[] logParams = {protocol, 
-                                                System.getProperty("fish.payara.asadminHttpsProtocol")};
+                                                System.getProperty("fish.payara.clientHttpsProtocol")};
                                         
                                         logger.log(Level.INFO, 
                                                 AdminLoggerInfo.unrecognisedHttpsProtocol, 
