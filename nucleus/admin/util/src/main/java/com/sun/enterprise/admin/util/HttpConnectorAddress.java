@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+
 package com.sun.enterprise.admin.util;
 
 import java.io.IOException;
