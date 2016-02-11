@@ -207,4 +207,25 @@ public class AdminLoggerInfo {
             level = "WARNING")
     public final static String mExceptionFromEventListener = LOGMSG_PREFIX + "-00018";
 
+    @LogMessageInfo(
+            message = "Unrecognised HTTPS protocol provided, reverting to default: {0}",
+            cause = "Unrecognised protocol provided by system property fish.payara.asadminHttpsProtocol: {1}",
+            action = "Edit the system property to use a supported protocol.",
+            level = "INFO")
+    public final static String unrecognisedHttpsProtocol = LOGMSG_PREFIX + "-00019";
+    
+    @LogMessageInfo(
+            message = "Using default HTTPS protocol: {0}",
+            cause = "No protocol provided.",
+            action = "Use the fish.payara.asadminHttpsProtocol system property "
+                    + "to set an alternative protocol to use.",
+            level = "FINE")
+    public final static String usingDefaultHttpsProtocol = LOGMSG_PREFIX + "-00020";
+    
+    @LogMessageInfo(
+            message = "Setting HTTPS protocol to: {0}",
+            cause = "Protocol set using fish.payara.asadminHttpsProtocol system property.",
+            level = "FINE"
+            )
+    public final static String settingHttpsProtocol = LOGMSG_PREFIX + "-00021";
 }
