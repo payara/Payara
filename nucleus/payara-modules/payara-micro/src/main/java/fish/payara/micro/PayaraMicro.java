@@ -73,6 +73,7 @@ public class PayaraMicro {
     private boolean noCluster = false;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
+    private boolean liteMember = false;
     private boolean generateLogo = false;
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
@@ -100,6 +101,7 @@ public class PayaraMicro {
      * pool<br/>
      * --maxHttpThreads the maximum number of threads in the HTTP thread
      * pool<br/>
+     * --lite Sets this Payara Micro to not store Cluster Data
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -424,6 +426,30 @@ public class PayaraMicro {
         this.noCluster = noCluster;
         return this;
     }
+    
+    /**
+     * Indicates whether this is a lite cluster member which means it stores no
+     * cluster data although it participates fully in the cluster.
+     * @return
+     */
+    public boolean isLite() {
+        return liteMember;
+    }
+
+    /**
+     * Sets the lite status of this cluster member. If true the Payara Micro is a lite
+     * cluster member which means it stores no cluster data.
+     * @param liteMember set to true to set as a lite cluster member with no data storage
+     * @return 
+     */
+    public PayaraMicro setLite(boolean liteMember) {
+        //if (runtime != null) {
+        if(isRunning()){
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
+        this.liteMember = liteMember;
+        return this;
+    }   
 
     /**
      * The maximum threads in the HTTP(S) threadpool processing HTTP(S) requests.
@@ -594,6 +620,7 @@ public class PayaraMicro {
         if (alternateHZConfigFile != null) {
             mc.setAlternateConfiguration(alternateHZConfigFile);
         }
+        mc.setLite(liteMember);
         HazelcastCore.setMulticastOverride(mc);
         
         setSystemProperties();
@@ -922,6 +949,9 @@ public class PayaraMicro {
                 case "--noCluster":
                     noCluster = true;
                     break;
+                case "--lite":
+                    liteMember = true;
+                    break;
                 case "--hzConfigFile":
                     alternateHZConfigFile = new File(args[i+1]);
                     if (!alternateHZConfigFile.exists() || !alternateHZConfigFile.isFile() || !alternateHZConfigFile.canRead() || !alternateHZConfigFile.getAbsolutePath().endsWith(".xml")) {
@@ -967,6 +997,7 @@ public class PayaraMicro {
                             + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
                             + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
                             + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
+                            + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
                             + "--logo reveal the #BadAssFish\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
