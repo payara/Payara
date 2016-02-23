@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2015-2016 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -26,9 +26,12 @@ import java.io.InputStream;
 import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -81,6 +84,10 @@ public class PayaraMicro {
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
     private boolean enableHealthCheck = false;
+    private List<String> GAVs;
+    private Map<String, URL> deploymentURLsMap;
+    private List<URL> repositoryURLs;
+    private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -149,12 +156,13 @@ public class PayaraMicro {
     }
 
     private PayaraMicro() {
-        addShutdownHook();
-    }
-
-    private PayaraMicro(String args[]) {
-        scanArgs(args);
-        addShutdownHook();
+        try {
+            repositoryURLs = new LinkedList<>();
+            repositoryURLs.add(new URL(defaultMavenRepository));
+            addShutdownHook();
+        } catch (MalformedURLException ex) {
+            logger.log(Level.SEVERE, "{0} is not a valid default URL", defaultMavenRepository);
+        }
     }
 
     /**
@@ -992,6 +1000,28 @@ public class PayaraMicro {
                     String enableHealthCheckString = args[i + 1];
                     enableHealthCheck = Boolean.valueOf(enableHealthCheckString);
                     break;
+                case "--deployFromGAV":                
+                    if (GAVs == null) {
+                        GAVs = new LinkedList<>();
+                    }
+                    
+                    GAVs.add(args[i + 1]);
+                    i++;
+                    break;  
+                case "--additionalRepository":
+                    try {
+                        // If there isn't a trailing /, add one
+                        if (!args[i + 1].endsWith("/")) {
+                            repositoryURLs.add(new URL(args[i + 1] + "/"));
+                        } else {
+                            repositoryURLs.add(new URL(args[i + 1]));
+                        }  
+                    } catch (MalformedURLException ex) {
+                        logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", args[i + 1]);
+                    }
+                    
+                    i++;
+                    break;   
                 case "--help":
                     System.err.println("Usage: --noCluster  Disables clustering\n"
                             + "--port sets the http port\n"
@@ -1013,6 +1043,8 @@ public class PayaraMicro {
                             + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
                             + "--enableHealthCheck enables/disables Health Check Service (disabled by default).\n"
                             + "--logo reveal the #BadAssFish\n"
+                            + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
+                            + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
                     break;
@@ -1024,7 +1056,7 @@ public class PayaraMicro {
     }
 
     private void deployAll() throws GlassFishException {
-        // deploy explicit wars first.
+        // Deploy explicit wars first.
         int deploymentCount = 0;
         Deployer deployer = gf.getDeployer();
         if (deployments != null) {
@@ -1038,13 +1070,38 @@ public class PayaraMicro {
             }
         }
 
-        // deploy from deployment director
+        // Deploy from deployment directory
         if (deploymentRoot != null) {
             for (File war : deploymentRoot.listFiles()) {
                 String warPath = war.getAbsolutePath();
                 if (war.isFile() && war.canRead() && ( warPath.endsWith(".war") ||  warPath.endsWith(".ear") || warPath.endsWith(".jar") || warPath.endsWith(".rar"))) {
                     deployer.deploy(war, "--availabilityenabled=true");
                     deploymentCount++;
+                }
+            }
+        }
+        
+        // Deploy from URI only called if GAVs provided
+        if (GAVs != null) {
+            // Convert the provided GAV Strings into target URLs
+            getGAVURLs();
+
+            if (!deploymentURLsMap.isEmpty()) {               
+                for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
+                    try {
+                        // Convert the URL to a URI for use with the deploy method
+                        URI artefactURI = deploymentMapEntry.getValue().toURI();
+
+                        deployer.deploy(artefactURI, "--availabilityenabled", 
+                                "true", "--contextroot", 
+                                deploymentMapEntry.getKey());
+
+                        deploymentCount++;
+                    } catch (URISyntaxException ex) {
+                        logger.log(Level.WARNING, "{0} could not be converted to a URI,"
+                                + " artefact will be skipped", 
+                                deploymentMapEntry.getValue().toString());
+                    }
                 }
             }
         }
@@ -1152,5 +1209,23 @@ public class PayaraMicro {
         }
     }
 
+    /**
+     * Converts the GAVs provided to a URLs, and stores them in the 
+     * deploymentURLsMap.
+     */
+    private void getGAVURLs() throws GlassFishException {
+        GAVConvertor gavConvertor = new GAVConvertor(); 
+        
+        for (String gav : GAVs) {
+            Map.Entry<String, URL> artefactMapEntry = 
+                    gavConvertor.getArtefactMapEntry(gav, repositoryURLs);
 
+            if (deploymentURLsMap == null) {
+                deploymentURLsMap = new LinkedHashMap<>();
+            }
+
+            deploymentURLsMap.put(artefactMapEntry.getKey(), 
+                    artefactMapEntry.getValue());
+        }
+    }
 }
