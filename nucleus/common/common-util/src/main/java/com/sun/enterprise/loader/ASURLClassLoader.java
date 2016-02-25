@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+ //Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.loader;
 
@@ -562,11 +563,20 @@ public class ASURLClassLoader
      * (b) changes to contents or length of 'resourcesList' and/or 'notFoundResources' while iterating
      * over them, (c) thread visibility to all of the above.
      */
+    private boolean warnedOnce = false;
     public synchronized Enumeration<URL>
     findResources(String name) throws IOException {
         if( doneCalled ) {
-            _logger.log(Level.WARNING, CULoggerInfo.doneAlreadyCalled,
+            //PAYARA-588
+            if ( warnedOnce ) {
+                  _logger.log(Level.FINE, CULoggerInfo.doneAlreadyCalled,
                         new Object[] { name, doneSnapshot });
+            
+            }else{
+                   _logger.log(Level.WARNING, CULoggerInfo.doneAlreadyCalled,
+                        new Object[] { name, doneSnapshot }); 
+                   warnedOnce = true;
+            }
             // return an empty enumeration instead of null. See issue #13096
             return Collections.enumeration(Collections.EMPTY_LIST);
         }
