@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
