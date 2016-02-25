@@ -135,7 +135,7 @@
         <com.ibm.jbatch.spi.version>1.0.1-b09</com.ibm.jbatch.spi.version>
         <javax.xml.soap-api.version>1.3.7</javax.xml.soap-api.version>
 	    <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
-        <jboss.logging.version>3.2.1.Final</jboss.logging.version>
+        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>13.0.1</guava.version>
     </properties>
 
@@ -677,11 +677,6 @@
                 <version>${jboss.classfilewriter.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.ops4j.pax.logging</groupId>
-                <artifactId>pax-logging-log4j2</artifactId>
-                <version>${pax.logging.version}</version>
-            </dependency>
-            <dependency>
                 <groupId>org.jboss.weld.se</groupId>
                 <artifactId>weld-se-core</artifactId>
                 <version>${weld.version}</version>
@@ -1073,11 +1068,6 @@
                 <artifactId>jboss-logging</artifactId>
                 <version>${jboss.logging.version}</version>
                 <optional>true</optional>
-            </dependency>
-            <dependency>
-                <groupId>org.ops4j.pax.logging</groupId>
-                <artifactId>pax-logging-api</artifactId>
-                <version>${pax.logging.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
