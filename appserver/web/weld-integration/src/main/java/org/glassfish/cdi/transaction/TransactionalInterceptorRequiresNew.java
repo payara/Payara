@@ -37,9 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
-
-// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+// Portions Copyright [2015-2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.cdi.transaction;
 
@@ -87,11 +85,11 @@ public class TransactionalInterceptorRequiresNew extends TransactionalIntercepto
                 //todo catch, wrap in new transactional exception and throw
             }
             try {
+                getTransactionManager().begin();
                 TransactionManager tm = getTransactionManager();
                 if (tm instanceof TransactionManagerHelper) {
                    ((TransactionManagerHelper)tm).preInvokeTx(true);
                 }
-                getTransactionManager().begin();
             } catch (Exception exception) {
                 String messageString =
                         "Managed bean with Transactional annotation and TxType of REQUIRES_NEW " +
