@@ -265,10 +265,10 @@ a.LncLnk:hover {color:#003399;text-decoration:underline}
 .logTxtCpy {font-size:10px;color:#fff;vertical-align:top}
 /* New Styles */
 .LogBdy {background-color:#4A5C69;margin:0px}
-.LogTopBnd {background-color:#4A5C69}
-.LogCntTd {background-color:#fff;padding-top:120px}
-.LogBotBnd {background-color:#4A5C69}
-.LogMidBnd {background-color:#D4DCE1}
+/*.LogTopBnd {background-color:#4A5C69}*/
+.LogCntTd {background-color:#fff;padding-top:120px-webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px;}
+.LogBotBnd {text-align:center;}
+/*.LogMidBnd {background-color:#D4DCE1}*/
 
 
 /* MASTHEAD */
