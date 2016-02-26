@@ -22,6 +22,7 @@ import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.BindException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -72,7 +73,10 @@ public class PayaraMicro {
     private boolean noCluster = false;
     private boolean autoBindHttp = false;
     private boolean autoBindSsl = false;
+    private boolean generateLogo = false;
     private int autoBindRange = 5;
+    private String bootImage = "boot.txt";
+    private String applicationDomainXml;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -168,6 +172,27 @@ public class PayaraMicro {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         this.hzMulticastGroup = hzMulticastGroup;
+        return this;
+    }
+    
+    /**
+     * Sets the path to the logo file printed at boot. This can be
+     * on the classpath of the server or an absolute URL
+     * @param filePath
+     * @return 
+     */
+    public PayaraMicro setLogoFile(String filePath) {
+        bootImage = filePath;
+        return this;
+    }
+    
+    /**
+     * Set whether the logo should be generated on boot
+     * @param generate
+     * @return 
+     */
+    public PayaraMicro setPrintLogo(boolean generate) {
+        generateLogo = generate;
         return this;
     }
 
@@ -317,6 +342,17 @@ public class PayaraMicro {
      */
     public File getAlternateDomainXML() {
         return alternateDomainXML;
+    }
+    
+    /**
+     * Sets an application specific domain.xml file that is embedded on the classpath
+     * of your application. 
+     * @param domainXml This is a resource string for your domain.xml
+     * @return 
+     */
+    public PayaraMicro setApplicationDomainXML(String domainXml) {
+        applicationDomainXml = domainXml;
+        return this;
     }
 
     /**
@@ -533,10 +569,13 @@ public class PayaraMicro {
      * @throws BootstrapException 
      */
     public PayaraMicroRuntime bootStrap() throws BootstrapException {
+        
+        long start = System.currentTimeMillis();
          //if (runtime != null) {
         if(isRunning()){
             throw new IllegalStateException("Payara Micro is already running, calling bootstrap now is meaningless");
-        }       
+        } 
+        
         // check hazelcast cluster overrides
         MulticastConfiguration mc = new MulticastConfiguration();
         mc.setMemberName(instanceName);
@@ -666,11 +705,15 @@ public class PayaraMicro {
                 gfproperties.setConfigFileReadOnly(false);
                 gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
             } else {
-                if (noCluster) {
-                    gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain-nocluster.xml").toExternalForm());
+                if (applicationDomainXml != null) {
+                        gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource(applicationDomainXml).toExternalForm());                    
+                }else {
+                    if (noCluster) {
+                        gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain-nocluster.xml").toExternalForm());
 
-                } else {
-                    gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain.xml").toExternalForm());
+                    } else {
+                        gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain.xml").toExternalForm());
+                    }
                 }
             }
 
@@ -715,6 +758,15 @@ public class PayaraMicro {
             //this.runtime = new PayaraMicroRuntime(instanceName, gf);
             this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
             deployAll();
+            
+                    
+            if (generateLogo) {
+                generateLogo();
+            }
+            
+            long end = System.currentTimeMillis();
+            logger.info("Payara Micro ready in " + (end - start) + " (ms)");
+            
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
@@ -915,8 +967,13 @@ public class PayaraMicro {
                             + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
                             + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
                             + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
+                            + "--logo reveal the #BadAssFish\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
+                    break;
+                case "--logo":
+                    generateLogo = true;
+                    break;
             }
         }
     }
@@ -1034,6 +1091,19 @@ public class PayaraMicro {
             return (gf!= null && gf.getStatus() == Status.STARTED);
         } catch (GlassFishException ex) {
             return false;
+        }
+    }
+    
+    void generateLogo() {
+        try(InputStream is = this.getClass().getClassLoader().getResourceAsStream(bootImage);) {
+            byte[] buffer = new byte[1024];
+            for (int length; (length = is.read(buffer)) != -1; ){
+
+                System.err.write(buffer, 0, length);
+                System.err.flush();
+            }            
+        } catch (IOException | NullPointerException ex) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.WARNING, "Problems displaying Boot Image", ex);
         }
     }
 
