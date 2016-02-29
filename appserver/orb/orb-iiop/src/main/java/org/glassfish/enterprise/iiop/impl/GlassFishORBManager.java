@@ -585,11 +585,10 @@ public final class GlassFishORBManager {
             orb = ORBFactory.create() ;
             prevCL = Utility.getClassLoader();
             try {
-               if (processType != processType.Other) {
+              if (processType != processType.Other && !prevCL.getClass().getName().contains("OSGi")) {
                 Utility.setContextClassLoader(prevCL.getParent());
                }
-            
-                ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
+               ORBFactory.initialize( orb, args, orbInitProperties, useOSGI);
             } finally {
                 Utility.setContextClassLoader(prevCL);
             }

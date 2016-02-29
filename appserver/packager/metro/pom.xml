@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>packages</artifactId>
-        <version>4.1.1.161</version>
+        <version>4.1.1.161.1</version>
     </parent>
     <artifactId>metro</artifactId>
     <name>Metro Package</name>
@@ -164,10 +164,6 @@
         <dependency>
             <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-osgi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
-            <artifactId>pax-logging-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.metro</groupId>

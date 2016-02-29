@@ -1,4 +1,4 @@
-Thank you for downloading Payara Server 4.1.1.161!
+Thank you for downloading Payara Server 4.1.1.161.1!
 
 Here are a few short steps to get you started...
 
@@ -13,7 +13,7 @@ Check http://www.oracle.com/technetwork/java/javase/downloads/index.html to down
 1. Installing Payara Server
 ===========================
 
-Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.1.161.zip
+Installing Payara Server is just a matter of unzipping the Payara Server archive in the desired directory. Since you are reading this, you have probably already unzipped Payara Server. If not, just type the following command in the directory where you want Payara Server to be installed: jar xvf payara-4.1.1.161.1.zip
 
 
 The default domain called 'domain1' is installed and preconfigured.
