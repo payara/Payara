@@ -104,8 +104,7 @@
         <jsftemplating.version>2.1.1</jsftemplating.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <pax.logging.version>1.8.4</pax.logging.version>
-        <webservices.version>2.3.2-b608.payara-p2</webservices.version>
+        <webservices.version>2.3.2-b608.payara-p3</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.2.0</woodstox.version>
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
@@ -611,13 +610,8 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
-                <artifactId>webservices-osgi</artifactId>
-                <version>${webservices.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ops4j.pax.logging</groupId>
-                <artifactId>pax-logging-api</artifactId>
-                <version>${pax.logging.version}</version>
+                <artifactId>webservices-osgi-aix</artifactId>
+                 <version>${webservices.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
