@@ -70,6 +70,13 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
     </servers>
     <configs>
         <config name="server-config">
+            <health-check-service-configuration enabled="false">
+                <cpu-usage-checker unit="MINUTES" name="CPU" time="1" enabled="true" />
+                <machine-memory-usage-checker unit="MINUTES" name="MMEM" time="3" enabled="true" />
+                <heap-memory-usage-checker unit="MINUTES" name="HEAP" time="3" enabled="true" />
+                <hogging-threads-checker unit="MINUTES" name="HT" time="5" enabled="true" />
+                <garbage-collector-checker unit="MINUTES" name="GC" time="5" enabled="true" />
+            </health-check-service-configuration>
             <http-service>
                 <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
                 <virtual-server id="server" network-listeners="http-listener, https-listener">

@@ -22,6 +22,15 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>mcaliskan</id>
+            <name>Mert Caliskan</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
     <dependencies>
         <dependency>
@@ -41,6 +50,11 @@
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>healthcheck-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.appserver</groupId>

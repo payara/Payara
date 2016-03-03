@@ -280,8 +280,16 @@
             <version>${project.version}</version>
             <type>zip</type>
             <optional>true</optional>
-        </dependency>     
-        <!-- ha package -->
+        </dependency>
+          <!-- healthcheck package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>healthcheck</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+          <!-- ha package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-ha</artifactId>
