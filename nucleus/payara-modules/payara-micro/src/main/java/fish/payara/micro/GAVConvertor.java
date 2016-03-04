@@ -53,24 +53,25 @@ public class GAVConvertor {
     public Map.Entry<String, URL> getArtefactMapEntry(String GAV, List<URL> repositoryURLs)
             throws GlassFishException {
         final Map<String, String> GAVMap = splitGAV(GAV);
+        Map.Entry<String, URL> artefactMapEntry = null;
         
         try {
             final String relativeURLString = constructRelativeURLString(GAVMap);
             final URL artefactURL = findArtefactURL(repositoryURLs, 
                     relativeURLString);
-            final Map.Entry<String, URL> artefactMapEntry = 
-                    new AbstractMap.SimpleEntry<>(GAVMap.get("artefactId"), 
+            artefactMapEntry = new AbstractMap.SimpleEntry<>(GAVMap.get("artefactId"), 
                             artefactURL);
-            
-            return artefactMapEntry;
         } catch (MalformedURLException ex) {
             logger.log(Level.WARNING, "Error converting GAV to URL: {0}", GAV);
         }
         
-        // If the method has not returned at this point, throw an exception
-        throw new GlassFishException("Error getting artefact URL for GAV: " 
+        if (artefactMapEntry == null) {
+            throw new GlassFishException("Error getting artefact URL for GAV: " 
                 + GAVMap.get("groupId") + ", " + GAVMap.get("artefactId")
                 + ", " + GAVMap.get("versionNumber"));
+        }
+        
+        return artefactMapEntry;
     } 
     
     /**
