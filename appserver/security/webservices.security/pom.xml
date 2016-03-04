@@ -46,7 +46,7 @@
      <parent>
         <groupId>org.glassfish.main.security</groupId>
         <artifactId>securitymodule</artifactId>
-        <version>4.1.1.161</version>
+        <version>4.1.1.161.1</version>
         <relativePath>../pom.xml</relativePath>        
     </parent>    
     <artifactId>webservices.security</artifactId>
@@ -115,10 +115,6 @@
         <dependency>
            <groupId>org.glassfish.metro</groupId>
             <artifactId>webservices-osgi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.ops4j.pax.logging</groupId>
-            <artifactId>pax-logging-api</artifactId>
         </dependency>
         <dependency>
            <groupId>org.glassfish.metro</groupId>

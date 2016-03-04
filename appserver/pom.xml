@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-nucleus-parent</artifactId>
-        <version>4.1.1.161</version>
+        <version>4.1.1.161.1</version>
         <relativePath>../nucleus/pom.xml</relativePath>
     </parent>    
     <artifactId>glassfish-parent</artifactId>
@@ -57,7 +57,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/appserver</url>
-      <tag>payara-server-4.1.1.161</tag>
+      <tag>payara-server-4.1.1.161.1</tag>
   </scm>
     
     <properties>
@@ -94,7 +94,7 @@
         <minor_version>1</minor_version>
         <update_version>1</update_version>
         <payara_version>161</payara_version>
-        <payara_update_version></payara_update_version>
+        <payara_update_version>1</payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
         
         <javaee.major_version>7</javaee.major_version>
@@ -104,8 +104,7 @@
         <jsftemplating.version>2.1.1</jsftemplating.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
-        <pax.logging.version>1.8.4</pax.logging.version>
-        <webservices.version>2.3.2-b608.payara-p2</webservices.version>
+        <webservices.version>2.3.2-b608.payara-p3</webservices.version>
         <jsr181-api.version>1.0-MR1</jsr181-api.version>
         <woodstox.version>4.2.0</woodstox.version>
         <jaxb-api.version>2.2.13-b141020.1521</jaxb-api.version>
@@ -613,11 +612,6 @@
                 <groupId>org.glassfish.metro</groupId>
                 <artifactId>webservices-osgi</artifactId>
                 <version>${webservices.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.ops4j.pax.logging</groupId>
-                <artifactId>pax-logging-api</artifactId>
-                <version>${pax.logging.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
