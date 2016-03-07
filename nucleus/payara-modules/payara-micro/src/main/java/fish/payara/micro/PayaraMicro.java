@@ -89,6 +89,8 @@ public class PayaraMicro {
     private Map<String, URL> deploymentURLsMap;
     private List<URL> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
+    private final short defaultHttpPort = 8080;
+    private final short defaultHttpsPort = 8181;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -645,102 +647,90 @@ public class PayaraMicro {
             gfruntime = GlassFishRuntime.bootstrap(bprops,Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
 
-            if (httpPort != Integer.MIN_VALUE) 
-            {   
-                // If httpAutoBind is set to true
-                if (autoBindHttp == true)
-                {
-                    // Search for an available port and set it as the http port
-                    try
-                    {
+            if (httpPort != Integer.MIN_VALUE) {
+                if (autoBindHttp == true) {
+                    // Log warnings if overriding other options
+                    logPortPrecedenceWarnings(false);
+                    
+                    // Search for an available port from the specified port
+                    try {
                         gfproperties.setPort("http-listener",
                                 portBinder.findAvailablePort(httpPort, 
                                         autoBindRange));
-                    }
-
-                    // If no available port is found, log an exception and throw a GlassFish Exception to fail the bootstrap
-                    catch (BindException ex)
-                    {
-                        Logger.getLogger(PayaraMicro.class.getName())
-                                .log(Level.SEVERE, 
-                                        "No available port found in range: "
+                    } catch (BindException ex) {
+                        logger.log(Level.SEVERE, "No available port found in range: "
                                                 + httpPort + " - " 
                                                 + (httpPort + autoBindRange), ex);
 
                         throw new GlassFishException("Could not bind HTTP port");
                     }
-                }
-                
-                // If httpAutoBind is not set to true...
-                else
-                {
+                } else {
+                    // Log warnings if overriding other options
+                    logPortPrecedenceWarnings(false);
+                    
                     // Set the port as normal
                     gfproperties.setPort("http-listener", httpPort);
-                }
-                
-            }
-            
-            // If the port has not been set
-            else
-            {
-                // If httpAutoBind is set to true
-                if (autoBindHttp == true)
-                {
-                    // Search for an available port and set it as the http port
-                    try
-                    {
+                }  
+            } else {
+                if (autoBindHttp == true) {
+                    // Log warnings if overriding other options
+                    logPortPrecedenceWarnings(false);
+                    
+                    // Search for an available port from the default HTTP port
+                    try {
                         gfproperties.setPort("http-listener",
-                                portBinder.findAvailablePort(8080, 
+                                portBinder.findAvailablePort(defaultHttpPort, 
                                         autoBindRange));
-                    }
-
-                    // If no available port is found, log an exception and throw a GlassFish Exception to fail the bootstrap
-                    catch (BindException ex)
-                    {
-                        Logger.getLogger(PayaraMicro.class.getName())
-                                .log(Level.SEVERE, 
-                                        "No available port found in range: "
-                                                + 8080 + " - " 
-                                                + (8080 + autoBindRange), ex);
+                    } catch (BindException ex) {
+                        logger.log(Level.SEVERE, "No available port found in range: " 
+                                + defaultHttpPort + " - " 
+                                + (defaultHttpPort + autoBindRange), ex);
 
                         throw new GlassFishException("Could not bind HTTP port");
                     }
                 }
             }
 
-            if (sslPort != Integer.MIN_VALUE) 
-            {
-                // If sslAutoBind is set to true
-                if (autoBindSsl == true)
-                {     
-                    // Search for an available port and set it as the ssl port
-                    try
-                    {
+            if (sslPort != Integer.MIN_VALUE) {
+                if (autoBindSsl == true) {
+                    // Log warnings if overriding other options
+                    logPortPrecedenceWarnings(true);
+                    
+                    // Search for an available port from the specified port
+                    try {
                         gfproperties.setPort("https-listener",
-                                portBinder.findAvailablePort(sslPort, 
-                                        autoBindRange));
-                    }
+                                portBinder.findAvailablePort(sslPort, autoBindRange));
+                    } catch (BindException ex) {
+                        logger.log(Level.SEVERE, "No available port found in range: "
+                                + sslPort + " - " + (sslPort + autoBindRange), ex);
 
-                    catch (BindException ex)
-                    {
-                        Logger.getLogger(PayaraMicro.class.getName())
-                                .log(Level.SEVERE, 
-                                        "No available port found in range: "
-                                                + sslPort + " - " 
-                                                + (sslPort + autoBindRange), ex);
+                        throw new GlassFishException("Could not bind SSL port");
+                    }
+                } else {
+                    // Log warnings if overriding other options
+                    logPortPrecedenceWarnings(true);
+                    
+                    // Set the port as normal
+                    gfproperties.setPort("https-listener", sslPort);
+                }
+            } else {
+                if (autoBindSsl == true) {
+                    // Log warnings if overriding other options
+                    logPortPrecedenceWarnings(true);
+                    
+                    // Search for an available port from the default HTTPS port
+                    try {
+                        gfproperties.setPort("https-listener",
+                                portBinder.findAvailablePort(defaultHttpsPort, autoBindRange));
+                    } catch (BindException ex) {
+                        logger.log(Level.SEVERE, "No available port found in range: "
+                                + defaultHttpsPort + " - " + (defaultHttpsPort + autoBindRange), ex);
 
                         throw new GlassFishException("Could not bind SSL port");
                     }
                 }
-                
-                // If sslAutoBind is not set to true...
-                else
-                {
-                    // Set the port as normal
-                    gfproperties.setPort("https-listener", sslPort);
-                }
-            }
-
+            }            
+            
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
                 gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
@@ -770,7 +760,7 @@ public class PayaraMicro {
                 }
 
             }
-
+            
             if (this.maxHttpThreads != Integer.MIN_VALUE) {
                 gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size", Integer.toString(maxHttpThreads));
             }
@@ -940,7 +930,7 @@ public class PayaraMicro {
                     }   i++;
                     break;
                 case "--rootDir":
-                    rootDir = new File(args[i + 1]);
+                    rootDir = new File(args[i + 1]); 
                     if (!rootDir.exists() || !rootDir.isDirectory()) {
                         logger.log(Level.SEVERE, "{0} is not a valid root directory and will be ignored", args[i + 1]);
                         throw new IllegalArgumentException();
@@ -1227,6 +1217,127 @@ public class PayaraMicro {
 
             deploymentURLsMap.put(artefactMapEntry.getKey(), 
                     artefactMapEntry.getValue());
+        }
+    }
+     
+     /**
+     * Logs warnings if ports are being overridden
+     * @param HTTPS True if checking if HTTPS ports are being overridden
+     */
+    private void logPortPrecedenceWarnings(boolean HTTPS) {
+        if (HTTPS == true) {
+            if (alternateDomainXML != null) {
+                if (sslPort != Integer.MIN_VALUE) {
+                    if (autoBindSsl == true) {
+                        logger.log(Level.INFO, "Overriding HTTPS port value set"
+                                + " in {0} and auto-binding against " + sslPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    } else {
+                        logger.log(Level.INFO, "Overriding HTTPS port value set"
+                                + " in {0} with " + sslPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    }
+                } else {
+                    if (autoBindSsl == true) {
+                        logger.log(Level.INFO, "Overriding HTTPS port value set"
+                                + " in {0} and auto-binding against " 
+                                + defaultHttpsPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    } else {
+                        logger.log(Level.INFO, "Overriding HTTPS port value set"
+                                + " in {0} with " + defaultHttpsPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    }            
+                }       
+            } 
+            
+            if (rootDir != null) {
+                File configFile = new File(rootDir.getAbsolutePath() 
+                        + File.separator + "config" + File.separator
+                        + "domain.xml");
+                if (configFile.exists()) {
+                    if (sslPort != Integer.MIN_VALUE) {
+                        if (autoBindSsl == true) {
+                            logger.log(Level.INFO, "Overriding HTTPS port value"
+                                    + " set in {0} and auto-binding against " 
+                                    + sslPort, configFile.getAbsolutePath());
+                        } else {
+                            logger.log(Level.INFO, "Overriding HTTPS port value"
+                                    + " set in {0} with " + sslPort, 
+                                    configFile.getAbsolutePath());
+                        }
+                    } else {
+                        if (autoBindSsl == true) {
+                            logger.log(Level.INFO, "Overriding HTTPS port value"
+                                    + " set in {0} and auto-binding against " 
+                                    + defaultHttpsPort, 
+                                    configFile.getAbsolutePath());
+                        } else {
+                            logger.log(Level.INFO, "Overriding HTTPS port value"
+                                    + " set in {0} with default value of " 
+                                    + defaultHttpsPort, 
+                                    configFile.getAbsolutePath());
+                        }
+                    }
+                }         
+            }
+        } else {
+            if (alternateDomainXML != null) {
+                if (httpPort != Integer.MIN_VALUE) {
+                    if (autoBindHttp == true) {
+                        logger.log(Level.INFO, "Overriding HTTP port value set "
+                                + "in {0} and auto-binding against " + httpPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    } else {
+                        logger.log(Level.INFO, "Overriding HTTP port value set "
+                                + "in {0} with " + httpPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    }       
+                } else {
+                    if (autoBindHttp == true) {
+                        logger.log(Level.INFO, "Overriding HTTP port value set "
+                                + "in {0} and auto-binding against " 
+                                + defaultHttpPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    } else {
+                        logger.log(Level.INFO, "Overriding HTTP port value set "
+                                + "in {0} with default value of "
+                                + defaultHttpPort, 
+                                alternateDomainXML.getAbsolutePath());
+                    }                   
+                }                
+            } 
+            
+            if (rootDir != null) {
+                File configFile = new File(rootDir.getAbsolutePath() 
+                        + File.separator + "config" + File.separator
+                        + "domain.xml");
+                if (configFile.exists()) {
+                    if (httpPort != Integer.MIN_VALUE) {
+                        if (autoBindHttp == true) {
+                            logger.log(Level.INFO, "Overriding HTTP port value "
+                                    + "set in {0} and auto-binding against " 
+                                    + httpPort, configFile.getAbsolutePath());
+                        } else {
+                            logger.log(Level.INFO, "Overriding HTTP port value "
+                                    + "set in {0} with " + httpPort, 
+                                    configFile.getAbsolutePath());
+                        }       
+                    } else {
+                        if (autoBindHttp == true) {
+                            logger.log(Level.INFO, "Overriding HTTP port value "
+                                    + "set in {0} and auto-binding against " 
+                                    + defaultHttpPort, 
+                                    configFile.getAbsolutePath());
+                        } else {
+                            logger.log(Level.INFO, "Overriding HTTP port value "
+                                    + "set in {0} with default value of " 
+                                    + defaultHttpPort, 
+                                    configFile.getAbsolutePath());
+                        }                       
+                    }
+                }         
+            }
         }
     }
 }
