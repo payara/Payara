@@ -42,9 +42,10 @@ package com.sun.enterprise.admin.cli.schemadoc;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.objectweb.asm.*;
 
-public class DocClassVisitor implements ClassVisitor {
+import org.glassfish.hk2.external.org.objectweb.asm.*;
+
+public class DocClassVisitor extends ClassVisitor {
     private boolean hasConfiguredAnnotation = false;
     private String className;
     private List<String> interfaces;
@@ -52,6 +53,7 @@ public class DocClassVisitor implements ClassVisitor {
     private boolean showDeprecated;
 
     public DocClassVisitor(final boolean showDep) {
+        super(Opcodes.ASM5);
         showDeprecated = showDep;
     }
 

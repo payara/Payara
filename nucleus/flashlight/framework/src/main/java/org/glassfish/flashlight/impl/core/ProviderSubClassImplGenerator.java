@@ -46,8 +46,9 @@ package org.glassfish.flashlight.impl.core;
  */
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.flashlight.FlashlightLoggerInfo;
+import org.glassfish.hk2.external.org.objectweb.asm.*;
+
 import java.security.*;
-import org.objectweb.asm.*;
 
 import java.io.InputStream;
 import java.security.ProtectionDomain;
@@ -153,13 +154,13 @@ public class ProviderSubClassImplGenerator {
     }
 
     private static class ProbeProviderSubClassGenerator
-            extends ClassAdapter {
+            extends ClassVisitor {
         String superClassName;
         String token;
         String id;
 
         ProbeProviderSubClassGenerator(ClassVisitor cv, String token, String id) {
-            super(cv);
+            super(Opcodes.ASM5, cv);
             this.id = id;
             this.token = token;
         }
@@ -202,11 +203,12 @@ public class ProviderSubClassImplGenerator {
     }
 
     private static class ProbeProviderAnnotationVisitor
-            implements AnnotationVisitor {
+            extends AnnotationVisitor {
         private AnnotationVisitor delegate;
         private String token;
 
         ProbeProviderAnnotationVisitor(AnnotationVisitor delegate, String token) {
+            super(Opcodes.ASM5);
             this.delegate = delegate;
             this.token = token;
         }

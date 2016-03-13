@@ -39,7 +39,7 @@
  */
 package org.glassfish.admin.rest.composite;
 
-import static org.objectweb.asm.Opcodes.*;
+import static org.glassfish.hk2.external.org.objectweb.asm.Opcodes.*;
 
 /**
  * This enum encapsulates the metadata for primitives needed for generating fields, getters and setters

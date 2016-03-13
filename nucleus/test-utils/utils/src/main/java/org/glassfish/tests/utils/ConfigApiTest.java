@@ -61,12 +61,13 @@ import static org.junit.Assert.*;
 import java.util.logging.Logger;
 import org.glassfish.hk2.api.Descriptor;
 import org.glassfish.hk2.api.ServiceHandle;
+import org.jvnet.hk2.testing.junit.HK2Runner;
 
 /**
  * Super class for all config-api related tests, give access to a configured habitat
  */
 @Ignore
-public abstract class ConfigApiTest {
+public abstract class ConfigApiTest extends HK2Runner {
 
     public static final Logger logger = Logger.getAnonymousLogger();
     

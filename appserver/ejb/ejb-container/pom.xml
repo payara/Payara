@@ -247,8 +247,8 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>asm-all</artifactId>
+            <groupId>org.glassfish.hk2.external</groupId>
+            <artifactId>asm-all-repackaged</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.pfl</groupId>

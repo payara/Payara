@@ -40,7 +40,6 @@
 
 package org.glassfish.deployment.common;
 
-import org.objectweb.asm.*;
 
 import java.io.FileNotFoundException;
 import java.util.List;
@@ -59,6 +58,9 @@ import java.net.URI;
 
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
+import org.glassfish.hk2.external.org.objectweb.asm.AnnotationVisitor;
+import org.glassfish.hk2.external.org.objectweb.asm.ClassReader;
+import org.glassfish.hk2.external.org.objectweb.asm.Type;
 import org.glassfish.internal.api.Globals;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
