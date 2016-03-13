@@ -434,7 +434,34 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
 
                 //remove context from generated
                 deploymentContext.clean();
-
+                
+                
+                // Ensure All cached JarFiles are closed after undeployment to 
+                // free file descriptors
+                try {
+                    
+                    Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
+                    Field fields[] = clazz.getDeclaredFields();
+                    for (Field field : fields) {
+                        if ("fileCache".equals(field.getName())) {
+                            field.setAccessible(true);
+                            HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
+                            Set<JarFile> jars = new HashSet<>();
+                            jars.addAll(files.values());
+                            for (JarFile file : jars) {
+                                file.close();
+                            }
+                        } 
+                    }
+                } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }   catch (IOException ex) {            
+                    logger.log(Level.SEVERE, null, ex);
+                }
+                           
+                // perform full GC after cleaning to ensure full clean up
+                System.gc();
+                    
                 //if directory deployment then do not remove the directory
                 if ( (! keepreposdir) && !isDirectoryDeployed && source.exists()) {
                     /*
@@ -442,30 +469,6 @@ public class UndeployCommand extends UndeployCommandParameters implements AdminC
                      * any special handling (such as stale file handling)
                      * known to the archive can run.
                      */
-                    
-                    try {
-                        // Ensure All cached JarFiles are closed before we go for deletion
-                        Class clazz = Class.forName("sun.net.www.protocol.jar.JarFileFactory", true, URL.class.getClassLoader());
-                        Field fields[] = clazz.getDeclaredFields();
-                        for (Field field : fields) {
-                            if ("fileCache".equals(field.getName())) {
-                                field.setAccessible(true);
-                                HashMap<String,JarFile> files = (HashMap<String,JarFile>) field.get(null);
-                                Set<JarFile> jars = new HashSet<>();
-                                jars.addAll(files.values());
-                                for (JarFile file : jars) {
-                                    file.close();
-                                }
-                            } 
-                        }
-                    } catch (ClassNotFoundException | IllegalAccessException | SecurityException | IllegalArgumentException ex) {
-                        logger.log(Level.SEVERE, null, ex);
-                    }   catch (IOException ex) {            
-                        logger.log(Level.SEVERE, null, ex);
-                    } 
-
-                    // perform full GC before doing this
-                    System.gc();
                     source.delete();
                 }
 
