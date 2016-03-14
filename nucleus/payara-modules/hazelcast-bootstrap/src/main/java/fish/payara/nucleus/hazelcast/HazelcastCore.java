@@ -62,6 +62,7 @@ public class HazelcastCore implements EventListener {
 
     private CachingProvider hazelcastCachingProvider;
     private boolean enabled;
+    private String memberName;
 
     @Inject
     Events events;
@@ -157,8 +158,7 @@ public class HazelcastCore implements EventListener {
                 }
             } else {
                 
-                String instanceName = context.getDefaultDomainName() + "." + context.getInstanceName();
-                config.setInstanceName(instanceName);
+                memberName = context.getInstanceName();
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
@@ -167,13 +167,14 @@ public class HazelcastCore implements EventListener {
                     mcConfig.setMulticastPort(overrideConfiguration.getMulticastPort());
                     config.getNetworkConfig().setPort(overrideConfiguration.getStartPort());
                     if (overrideConfiguration.getMemberName() != null) {
-                        config.setInstanceName(overrideConfiguration.getMemberName());
+                        memberName = overrideConfiguration.getMemberName();
                     }
+                    config.setLiteMember(overrideConfiguration.isLite());
                 } else {
                    mcConfig.setMulticastGroup(configuration.getMulticastGroup());
                    mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
                    config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
-                   config.setInstanceName(configuration.getMemberName());
+                   config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
                 }
 
                 // build the configuration
@@ -202,7 +203,7 @@ public class HazelcastCore implements EventListener {
     private void bootstrapHazelcast() { 
         Config config = buildConfiguration();
         theInstance = Hazelcast.newHazelcastInstance(config);
-        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, context.getInstanceName());
+        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
     }
 

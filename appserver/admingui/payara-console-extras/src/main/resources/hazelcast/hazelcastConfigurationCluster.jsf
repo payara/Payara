@@ -101,6 +101,9 @@
     <sun:property id="jndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.jndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.jndiNameHelp}">
         <sun:textField id="jndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['jndiName']}" />
     </sun:property>
+    <sun:property id="liteProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
+        <sun:checkbox id="lite" selected="#{pageSession.valueMap['lite']}" selectedValue="true" />
+    </sun:property>
 </sun:propertySheetSection>
 
 <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />

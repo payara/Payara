@@ -29,6 +29,7 @@ public class MulticastConfiguration {
     private int startPort = 5900;
     private String memberName;
     private File alternateConfigFile;
+    private boolean lite = false;
 
     public MulticastConfiguration() {
     }
@@ -79,6 +80,14 @@ public class MulticastConfiguration {
 
     public File getAlternateConfigFile() {
         return alternateConfigFile;
+    }
+
+    public boolean isLite() {
+        return lite;
+    }
+
+    public void setLite(boolean lite) {
+        this.lite = lite;
     }
     
     

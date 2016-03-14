@@ -100,6 +100,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
+    
+    @Param(name = "lite", optional = true, defaultValue = "false")
+    private Boolean lite;
 
     @Inject
     ServiceLocator serviceLocator;
@@ -143,6 +146,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         }
                         if (configFile != null) {
                             hazelcastRuntimeConfigurationProxy.setHazelcastConfigurationFile(configFile);
+                        }
+                        if (lite != null) {
+                            hazelcastRuntimeConfigurationProxy.setLite(lite.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;

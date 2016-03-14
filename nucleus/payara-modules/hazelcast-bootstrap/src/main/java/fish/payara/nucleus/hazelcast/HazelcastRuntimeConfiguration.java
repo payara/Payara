@@ -65,4 +65,8 @@ public interface HazelcastRuntimeConfiguration
     @Attribute(defaultValue = "payara/CachingProvider")
     String getCachingProviderJNDIName();
     public void setCachingProviderJNDIName(String value);
+    
+    @Attribute(defaultValue = "false", dataType = Boolean.class)
+    String getLite();
+    public void setLite(String value);
 }
