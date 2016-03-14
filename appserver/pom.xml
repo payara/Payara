@@ -120,7 +120,8 @@
         <mq.version>5.1.1-b02.payara-p1</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <weld.version>2.2.16.Final</weld.version>
+        <weld.version>2.3.2.Final</weld.version>
+        <jboss.classfilewriter.version>1.1.2.Final</jboss.classfilewriter.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
         <tyrus.version>1.12</tyrus.version>
@@ -133,8 +134,8 @@
         <com.ibm.jbatch.container.version>1.0.1-b09</com.ibm.jbatch.container.version>
         <com.ibm.jbatch.spi.version>1.0.1-b09</com.ibm.jbatch.spi.version>
         <javax.xml.soap-api.version>1.3.7</javax.xml.soap-api.version>
-	<javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
-        <jboss.logging.version>3.1.3.GA</jboss.logging.version>
+	    <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
+        <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>13.0.1</guava.version>
     </properties>
 
@@ -662,12 +663,18 @@
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
                 <version>${weld.version}</version>
+                <classifier>glassfish4</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.classfilewriter</groupId>
                         <artifactId>jboss-classfilewriter</artifactId>
                     </exclusion>
                 </exclusions>                
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.classfilewriter</groupId>
+                <artifactId>jboss-classfilewriter</artifactId>
+                <version>${jboss.classfilewriter.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.jboss.weld.se</groupId>
@@ -1059,8 +1066,8 @@
             <dependency>
                 <groupId>org.jboss.logging</groupId>
                 <artifactId>jboss-logging</artifactId>
-                <optional>true</optional>
                 <version>${jboss.logging.version}</version>
+                <optional>true</optional>
             </dependency>
             <dependency>
                 <groupId>com.google.guava</groupId>
