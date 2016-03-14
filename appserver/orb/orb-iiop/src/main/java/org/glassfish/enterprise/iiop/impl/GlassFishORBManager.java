@@ -90,7 +90,7 @@ import org.jvnet.hk2.config.types.Property;
 
 public final class GlassFishORBManager {
     static final Logger logger = LogDomains.getLogger(
-        GlassFishORBManager.class, LogDomains.CORBA_LOGGER);
+        GlassFishORBManager.class, LogDomains.CORBA_LOGGER, false);
 
     private static void fineLog( String fmt, Object... args ) {
         if (logger.isLoggable(Level.FINE)) {
@@ -598,7 +598,7 @@ public final class GlassFishORBManager {
                 org.omg.CORBA.Object obj =
                         orb.resolve_initial_references("RootPOA");
             } catch (org.omg.CORBA.ORBPackage.InvalidName in) {
-                logger.log(Level.SEVERE, "enterprise.orb_reference_exception", in);
+                logger.log(Level.SEVERE, "Problem resolving RootPOA ORB reference", in);
             }
 
             if (processType.isServer()) {
@@ -634,7 +634,7 @@ public final class GlassFishORBManager {
             // Invoke this for its side-effects: ignore returned IOR.
             orb.getFVDCodeBaseIOR();
         } catch (Exception ex) {
-            logger.log(Level.SEVERE, "enterprise_util.excep_in_createorb", ex);
+            logger.log(Level.SEVERE, "UTIL6009:Unexpected Exception in createORB.", ex);
             throw new RuntimeException(ex);
         } finally {
             if (logger.isLoggable(Level.FINE)) {
@@ -827,7 +827,7 @@ public final class GlassFishORBManager {
             } catch (NumberFormatException nfe) {
                 if (logger.isLoggable(Level.WARNING)) {
                     logger.log(Level.WARNING,
-                        "enterprise_util.excep_orbmgr_numfmt", nfe);
+                        "UTIL6031:Number Format Exception, Using default value(s).", nfe);
                 }
 
                 maxConnections = DEFAULT_MAX_CONNECTIONS;
@@ -856,7 +856,7 @@ public final class GlassFishORBManager {
             } catch (NumberFormatException nfe) {
                 // Print stack trace and use default values
                 logger.log(Level.WARNING,
-                    "enterprise_util.excep_in_reading_fragment_size", nfe);
+                    "UTIL6035: Exception converting to integer", nfe);
                 logger.log(Level.INFO,
                     "Setting ORB Message Fragment size to Default " +
                     SUN_GIOP_DEFAULT_FRAGMENT_SIZE);

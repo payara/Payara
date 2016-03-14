@@ -368,7 +368,7 @@ public class LogDomains {
 //            System.out.println("Found resource bundle by given classloader: " + name + " for " + clazz);
             return classBundle;
         }
-        System.err.println("Cannot find the resource bundle for the name " + name + " for " + clazz + " using "
+        Logger.getAnonymousLogger().info("Cannot find the resource bundle for the name " + name + " for " + clazz + " using "
                 + resourceBundleLoader);
         return null;
     }
