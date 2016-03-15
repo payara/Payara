@@ -22,6 +22,15 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>mcaliskan</id>
+            <name>Mert Caliskan</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
     <dependencies>
         <dependency>

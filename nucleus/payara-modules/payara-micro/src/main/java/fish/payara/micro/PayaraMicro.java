@@ -34,6 +34,8 @@ import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import fish.payara.nucleus.healthcheck.HealthCheckService;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -78,6 +80,7 @@ public class PayaraMicro {
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
+    private boolean enableHealthCheck = false;
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -101,7 +104,8 @@ public class PayaraMicro {
      * pool<br/>
      * --maxHttpThreads the maximum number of threads in the HTTP thread
      * pool<br/>
-     * --lite Sets this Payara Micro to not store Cluster Data
+     * --lite Sets this Payara Micro to not store Cluster Data<br/>
+     * --enableHealthCheck enables/disables Health Check Service<br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -622,7 +626,7 @@ public class PayaraMicro {
         }
         mc.setLite(liteMember);
         HazelcastCore.setMulticastOverride(mc);
-        
+
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
         GlassFishRuntime gfruntime;
@@ -790,7 +794,12 @@ public class PayaraMicro {
             if (generateLogo) {
                 generateLogo();
             }
-            
+
+            if (enableHealthCheck) {
+                HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
+                healthCheckService.setEnabled(enableHealthCheck);
+            }
+
             long end = System.currentTimeMillis();
             logger.info("Payara Micro ready in " + (end - start) + " (ms)");
             
@@ -979,6 +988,10 @@ public class PayaraMicro {
                         throw new IllegalArgumentException();
                     }   i++;
                     break;
+                case "--enableHealthCheck":
+                    String enableHealthCheckString = args[i + 1];
+                    enableHealthCheck = Boolean.valueOf(enableHealthCheckString);
+                    break;
                 case "--help":
                     System.err.println("Usage: --noCluster  Disables clustering\n"
                             + "--port sets the http port\n"
@@ -998,6 +1011,7 @@ public class PayaraMicro {
                             + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
                             + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
                             + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
+                            + "--enableHealthCheck enables/disables Health Check Service (disabled by default).\n"
                             + "--logo reveal the #BadAssFish\n"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
