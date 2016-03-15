@@ -2,7 +2,8 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -82,12 +83,18 @@ public class GAVConvertor {
      * @return A Map containing the groupId, artefactId, and versionNumber of 
      * the provided GAV as Strings
      */
-    private Map<String, String> splitGAV(String GAV) {
+    private Map<String, String> splitGAV(String GAV) throws GlassFishException {
         final String[] splitGAV = GAV.split(",");
         final Map<String, String> GAVMap = new HashMap<>();
-        GAVMap.put("groupId", splitGAV[0].replace('.', '/'));
-        GAVMap.put("artefactId", splitGAV[1]);
-        GAVMap.put("versionNumber", splitGAV[2]);
+        try {
+            GAVMap.put("groupId", splitGAV[0].replace('.', '/'));
+            GAVMap.put("artefactId", splitGAV[1]);
+            GAVMap.put("versionNumber", splitGAV[2]);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            throw new GlassFishException("Error converting String \"" + GAV
+                    + "\" to GAV, make sure it takes the form of "
+                    + "groupId,artifactId,version");
+        }
         
         return GAVMap;
     }
