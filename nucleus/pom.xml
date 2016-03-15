@@ -1092,9 +1092,9 @@
                 <version>1.5</version>
             </dependency>
             <dependency>
-                <groupId>org.glassfish.external</groupId>
-                <artifactId>asm-all</artifactId>
-                <version>3.3</version>
+                <groupId>org.glassfish.hk2.external</groupId>
+                <artifactId>asm-all-repackaged</artifactId>
+                <version>${hk2.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
