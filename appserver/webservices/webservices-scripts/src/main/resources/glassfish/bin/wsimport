@@ -55,4 +55,4 @@ if [ ${AS_JAVA} ]; then
     JAVA=${AS_JAVA}/bin/java
 fi
 
-exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsImport "$@"
+exec "$JAVA" $WSIMPORT_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi-aix.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar" com.sun.tools.ws.WsImport "$@"
