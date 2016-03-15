@@ -26,13 +26,12 @@ import java.beans.PropertyVetoException;
 @Configured
 public interface Checker extends ConfigBeanProxy, ConfigExtension {
 
+    String getName();
+    void setName(String value) throws PropertyVetoException;
+
     @Attribute
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
-
-    @Attribute
-    String getName();
-    void setName(String value) throws PropertyVetoException;
 
     @Attribute
     Long getTime();
