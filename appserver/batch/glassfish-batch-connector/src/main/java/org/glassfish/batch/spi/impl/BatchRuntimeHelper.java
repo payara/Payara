@@ -207,7 +207,11 @@ public class BatchRuntimeHelper
                     String appName = props.getProperty("defaultAppName");
                     if (!Boolean.parseBoolean(props.getProperty("retain-batch-jobs"))) {
                         String tagName = config.getName() + ":" + appName;
+                        ClassLoader prevCL = Thread.currentThread().getContextClassLoader();
                         try {
+                            // set TCCL to ensure loading of the Joboperator
+                            Thread.currentThread().setContextClassLoader(BatchSPIManager.class.getClassLoader());
+                            
                             BatchSPIManager batchSPIManager = BatchSPIManager.getInstance();
                             if (batchSPIManager != null && batchSPIManager.getBatchJobUtil() != null) {
                                 batchSPIManager.getBatchJobUtil().purgeOwnedRepositoryData(tagName);
@@ -223,6 +227,8 @@ public class BatchRuntimeHelper
                             }
                         } catch (Exception ex) {
                             logger.log(Level.FINE, "Error while purging jobs", ex);
+                        } finally {
+                            Thread.currentThread().setContextClassLoader(prevCL);
                         }
                     }
                 }
