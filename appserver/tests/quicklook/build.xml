@@ -247,10 +247,10 @@
         <!--<ant dir="security/basicauth" target="build-deploy"/>-->
         <ant dir="ejb/slsbnicmt" target="build-deploy"/>
         <ant dir="ejb/sfulnoi" target="build-deploy"/>
-        <!--ant dir="bean-validator/simple-bv-servlet" target="build-deploy"/>-->
+        <ant dir="bean-validator/simple-bv-servlet" target="build-deploy"/>
         <!--<ant dir="weld/numberguess" target="build-deploy"/>-->
         <!--<ant dir="weld/osgiweld" target="build-deploy"/>-->
-        <!--ant dir="weld/extensions" target="build-deploy"/>-->
+        <ant dir="weld/extensions" target="build-deploy"/>
         <record name="${basedir}/build.output" action="stop"/>
     </target>
 
@@ -265,7 +265,7 @@
              for the test to pass. We are waiting for RE to release a newer version.
         <ant dir="web/jruby" target="build-deploy"/>
         -->
-        <ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>
+        <!--<ant dir="wsit/JaxwsFromWsdl" target="build-deploy"/>-->
         <ant dir="wsit/jsr109tester" target="build-deploy"/>
         <ant dir="wsit/jaxbosgi" target="build-deploy"/>
         <ant dir="security/appperms" target="build-deploy"/>
@@ -283,10 +283,10 @@
         <!--<ant dir="security/basicauth" target="undeploy"/>-->
         <ant dir="ejb/slsbnicmt" target="undeploy"/>
         <ant dir="ejb/sfulnoi" target="undeploy"/>
-        <!--ant dir="bean-validator/simple-bv-servlet" target="undeploy"/>-->
+        <ant dir="bean-validator/simple-bv-servlet" target="undeploy"/>
         <!--<ant dir="weld/numberguess" target="undeploy"/>-->
         <!--<ant dir="weld/osgiweld" target="undeploy"/>-->
-        <!--ant dir="weld/extensions" target="undeploy"/>-->
+        <ant dir="weld/extensions" target="undeploy"/>
         <ant dir="jms/injection" target="undeploy"/>
         <record name="${basedir}/undeploy.output" action="stop"/>
     </target>
@@ -299,7 +299,7 @@
              for the test to pass. We are waiting for RE to release a newer version.
 	<ant dir="web/jruby" target="undeploy"/>
         -->
-        <ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>
+        <!--<ant dir="wsit/JaxwsFromWsdl" target="undeploy"/>-->
         <ant dir="wsit/jsr109tester" target="undeploy"/>
         <ant dir="wsit/jaxbosgi" target="undeploy"/>
         <ant dir="security/appperms" target="undeploy"/>
