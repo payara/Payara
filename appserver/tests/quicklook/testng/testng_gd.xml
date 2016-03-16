@@ -188,17 +188,17 @@
         <class name="test.osgi.hello.HelloOSGITestNG" />
     </classes>
   </test>
-  <!--<test name="wsit_jaxb_tests">
+  <test name="wsit_jaxb_tests">
     <classes>
       <class name="jaxbosgi.JaxbOsgiTestNG"/>
     </classes>
-  </test>-->
-  <!--<test name="wsit_jaxws_tests">
+  </test>
+  <!--test name="wsit_jaxws_tests">
     <classes>
       <class name="jaxwsfromwsdl.client.JaxwsFromWsdlTestNG"/>
       <class name="fromjava.client.CheckTesterUITestNG"/>
     </classes>
-  </test> -->
+  </test>-->
   <!--<test name="cluster_setup">
     <classes>
         <class name="test.clustersetup.ClusterSetupTest"/>
