@@ -60,6 +60,12 @@
         setPageSessionAttribute(key="byPassLogin" value="true");
     }
     setSessionAttribute(key="showLogoutButton" value="#{! pageSession.byPassLogin}")
+    
+    gf.restRequest(endpoint="#{request.scheme}://#{sessionScope.serverName}:#{sessionScope.serverPort}/management/domain/asadmin-recorder-enabled"
+        method="GET", result="#{requestScope.result}");
+    setPageSessionAttribute(key="asadminRecorderEnabled", value="#{requestScope.result.data.extraProperties.asadminRecorderEnabled}");
+    setSessionAttribute(key="showEnableAsadminRecorderButton", value="#{! pageSession.asadminRecorderEnabled}");
+    setSessionAttribute(key="showDisableAsadminRecorderButton", value="#{pageSession.asadminRecorderEnabled}");
     getThemeFromIntegrationPoints(themeContext=>$application{com.sun.webui.theme.THEME_CONTEXT});
 </ui:event>
 <event>

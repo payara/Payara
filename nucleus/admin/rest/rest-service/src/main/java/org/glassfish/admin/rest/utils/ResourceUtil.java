@@ -41,6 +41,7 @@ package org.glassfish.admin.rest.utils;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import fish.payara.asadmin.recorder.AsadminRecorderService;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -123,7 +124,7 @@ public class ResourceUtil {
     // need to make sure that the method convertName is refactored into smaller methods such that trimming of prefixes
     // stops. We will need a promotion of HK2 for this.
     static final Pattern TOKENIZER;
-
+    
     static {
         String pattern = or(
                 split("x", "X"), // AbcDef -> Abc|Def
@@ -242,7 +243,14 @@ public class ResourceUtil {
     public static RestActionReporter runCommand(String commandName,
                                                 ParameterMap parameters,
                                                 Subject subject,
-                                                boolean managedJob) {
+                                                boolean managedJob) {            
+        AsadminRecorderService asadminRecorderService = Globals.
+                getDefaultHabitat().getService(AsadminRecorderService.class);
+        if (asadminRecorderService.isEnabled()) {
+            asadminRecorderService.recordAsadminCommand(commandName, 
+                                                        parameters);
+        }        
+
         CommandRunner cr = Globals.getDefaultHabitat().getService(CommandRunner.class);
         RestActionReporter ar = new RestActionReporter();
         final CommandInvocation commandInvocation =

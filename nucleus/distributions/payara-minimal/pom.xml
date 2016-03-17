@@ -184,5 +184,12 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>  
-</dependencies>
+        <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>asadmin-recorder-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
 </project>

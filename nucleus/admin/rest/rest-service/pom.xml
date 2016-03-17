@@ -140,6 +140,12 @@
             <artifactId>org.osgi.core</artifactId>
             <scope>provided</scope>
         </dependency>
+        
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>asadmin-recorder</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build> 
         <plugins>

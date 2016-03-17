@@ -39,4 +39,12 @@
             parentId="standaloneInstanceTabs"
             content="hazelcast/hazelcastTabsStandalone.jsf"
             />
+    
+    <integration-point
+            id="asadminRecorder"
+            type="org.glassfish.admingui:serverInstTab"
+            priority="50"
+            parentId="serverInstTabs"
+            content="asadminRecorder/asadminRecorderTabs.jsf"
+            />
  </console-config>
