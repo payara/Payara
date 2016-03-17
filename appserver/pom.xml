@@ -148,6 +148,7 @@
 	    <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>18.0</guava.version>
+    </properties>
 
     <modules>
         <module>common</module>
