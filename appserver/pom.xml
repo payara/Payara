@@ -3,7 +3,7 @@
 
     DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-    Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+    Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
 
     The contents of this file are subject to the terms of either the GNU
     General Public License Version 2 only ("GPL") or the Common Development
@@ -85,10 +85,14 @@
         <product.name>Payara Server</product.name>
         <brief_product_name>Payara Server</brief_product_name>
         <abbrev_product_name>Payara</abbrev_product_name>
+	<javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
+
+
         <admin_client_command_name>asadmin</admin_client_command_name>
         <default_domain_template>appserver-domain.jar</default_domain_template>
         <payara_domain_template>payara-domain.jar</payara_domain_template>
         <version_prefix />
+
         <version_suffix>#badassfish</version_suffix>
         <major_version>4</major_version>
         <minor_version>1</minor_version>
@@ -101,6 +105,13 @@
         <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
         <javaee.version>${javaee.major_version}.${minor_version}</javaee.version>
         
+
+       
+
+        <javaee.major_version>7</javaee.major_version>
+        <javaee.version_qualifier>-b${build.id}</javaee.version_qualifier>
+        <javaee.version>${javaee.major_version}.${minor_version}${javaee.version_qualifier}</javaee.version>
+
         <jsftemplating.version>2.1.1</jsftemplating.version>
         <uc-pkg-client.version>1.122-57.2889</uc-pkg-client.version>
         <uc-pkg-bootstrap.version>1.122-57.2889</uc-pkg-bootstrap.version>
@@ -137,7 +148,6 @@
 	    <javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>18.0</guava.version>
-    </properties>
 
     <modules>
         <module>common</module>
