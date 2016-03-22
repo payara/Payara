@@ -105,14 +105,13 @@ public class ConnectionHolder40 extends ConnectionHolder {
             if (isSupportClientInfo()) {
                 defaultClientInfo = getClientInfo();
             }
-        } catch (Throwable e) {
-            _logger.log(Level.INFO, "jdbc.unable_to_get_client_info", e.getMessage());
+        } catch (Exception e) {
             if(_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, "jdbc.unable_to_get_client_info", e);
             }
         }
     }
- 
+
     /**
      * Constructs an object that implements the <code>Clob</code> interface. The object
      * returned initially contains no data.  The <code>setAsciiStream</code>,
@@ -585,11 +584,8 @@ public class ConnectionHolder40 extends ConnectionHolder {
                         setClientInfo(defaultClientInfo);
                     }
                 }
-            } catch (Throwable e) {
-                _logger.log(Level.INFO, "jdbc.unable_to_set_client_info", e.getMessage());
-                if(_logger.isLoggable(Level.FINEST)) {
-                    _logger.log(Level.FINEST, "jdbc.unable_to_set_client_info", e);
-                }
+            } catch (Exception e) {
+                _logger.log(Level.SEVERE, "jdbc.unable_to_set_client_info", e);
             }
         }
         super.close();
@@ -658,7 +654,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * of the transaction, the connection is destroyed. A running thread
      * holding a connection will run to completion before the connection is
      * destroyed
-     * 
+     *
      * @param executor
      * @throws SQLException
      */
