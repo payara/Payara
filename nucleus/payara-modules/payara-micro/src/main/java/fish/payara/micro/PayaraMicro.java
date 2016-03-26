@@ -40,6 +40,12 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import java.net.JarURLConnection;
+import java.nio.file.Path;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -1096,7 +1102,50 @@ public class PayaraMicro {
                 }
             }
         }
-        logger.log(Level.INFO, "Deployed {0} wars", deploymentCount);
+        
+        // search META-INF/deploy for deployments
+        // if there is a deployment called ROOT deploy to the root context /
+        URL url = this.getClass().getClassLoader().getResource("META-INF/deploy");
+        if (url != null) {
+            String entryName = "";
+            try {
+                HashSet<String> entriesToDeploy = new HashSet<>();
+                JarURLConnection urlcon = (JarURLConnection) url.openConnection();
+                JarFile jFile = urlcon.getJarFile();
+                Enumeration<JarEntry> entries = jFile.entries();
+                while(entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    entryName = entry.getName();
+                    if (!entry.isDirectory() && entry.getName().startsWith("META-INF/deploy")) {
+                        entriesToDeploy.add(entry.getName());
+                    }
+                }
+                
+                for(String entry : entriesToDeploy) {
+                        File file = new File(entry);
+                        String contextRoot = file.getName();
+                        if(contextRoot.endsWith(".ear") || contextRoot.endsWith(".war") || contextRoot.endsWith(".jar")) {
+                            contextRoot = contextRoot.substring(0,contextRoot.length()-4);
+                        }
+                        
+                        if (contextRoot.equals("ROOT")) {
+                            contextRoot="/";
+                        }
+                        
+                        deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled", 
+                                "true", "--contextroot", 
+                                contextRoot, "--name", file.getName());
+                        deploymentCount++;
+                }
+            } catch(IOException ioe) {
+                logger.log(Level.WARNING, "Could not deploy jar entry {0}", 
+                        entryName);                
+            }
+        } else {
+            logger.info("No META-INF/deploy directory");
+        }
+        
+        logger.log(Level.INFO, "Deployed {0} archives", deploymentCount);
     }
 
     private void addShutdownHook() {
