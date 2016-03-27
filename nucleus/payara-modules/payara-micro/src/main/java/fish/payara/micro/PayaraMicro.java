@@ -40,12 +40,15 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.JarURLConnection;
 import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarOutputStream;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
@@ -92,6 +95,7 @@ public class PayaraMicro {
     private String applicationDomainXml;
     private boolean enableHealthCheck = false;
     private List<String> GAVs;
+    private File uberJar;
     private Map<String, URL> deploymentURLsMap;
     private List<URL> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
@@ -128,7 +132,12 @@ public class PayaraMicro {
     public static void main(String args[]) throws BootstrapException {
         PayaraMicro main = getInstance();
         main.scanArgs(args);
-        main.bootStrap();
+        
+        if (main.getUberJar() != null) {
+            main.packageUberJar();
+        } else {
+            main.bootStrap();
+        }
     }
 
     /**
@@ -162,16 +171,6 @@ public class PayaraMicro {
             instance = new PayaraMicro();
         }
         return instance;
-    }
-
-    private PayaraMicro() {
-        try {
-            repositoryURLs = new LinkedList<>();
-            repositoryURLs.add(new URL(defaultMavenRepository));
-            addShutdownHook();
-        } catch (MalformedURLException ex) {
-            logger.log(Level.SEVERE, "{0} is not a valid default URL", defaultMavenRepository);
-        }
     }
 
     /**
@@ -296,6 +295,14 @@ public class PayaraMicro {
      */
     public int getSslPort() {
         return sslPort;
+    }
+
+    /**
+     * The UberJar to create
+     * @return 
+     */
+    public File getUberJar() {
+        return uberJar;
     }
 
     /**
@@ -838,6 +845,17 @@ public class PayaraMicro {
         runtime.shutdown();
         runtime = null;
     }
+    
+    private PayaraMicro() {
+        try {
+            repositoryURLs = new LinkedList<>();
+            repositoryURLs.add(new URL(defaultMavenRepository));
+            setArgumentsFromSystemProperties();
+            addShutdownHook();
+        } catch (MalformedURLException ex) {
+            logger.log(Level.SEVERE, "{0} is not a valid default URL", defaultMavenRepository);
+        }
+    }
 
     private void scanArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -1018,7 +1036,11 @@ public class PayaraMicro {
                     }
                     
                     i++;
-                    break;   
+                    break; 
+                case "--outputUberJar":
+                    uberJar = new File(args[i+1]);  
+                    i++;
+                    break;
                 case "--help":
                     System.err.println("Usage: --noCluster  Disables clustering\n"
                             + "--port sets the http port\n"
@@ -1042,6 +1064,7 @@ public class PayaraMicro {
                             + "--logo reveal the #BadAssFish\n"
                             + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
                             + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
+                            + "--outputUberJar packages up an uber jar at the specified path based on the command line arguments and exits"
                             + "--help Shows this message and exits\n");
                     System.exit(1);
                     break;
@@ -1116,7 +1139,7 @@ public class PayaraMicro {
                 while(entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
                     entryName = entry.getName();
-                    if (!entry.isDirectory() && entry.getName().startsWith("META-INF/deploy")) {
+                    if (!entry.isDirectory() && !entry.getName().endsWith(".properties") && entry.getName().startsWith("META-INF/deploy")) {
                         entriesToDeploy.add(entry.getName());
                     }
                 }
@@ -1124,7 +1147,7 @@ public class PayaraMicro {
                 for(String entry : entriesToDeploy) {
                         File file = new File(entry);
                         String contextRoot = file.getName();
-                        if(contextRoot.endsWith(".ear") || contextRoot.endsWith(".war") || contextRoot.endsWith(".jar")) {
+                        if(contextRoot.endsWith(".ear") || contextRoot.endsWith(".war") || contextRoot.endsWith(".jar") || contextRoot.endsWith(".rar")) {
                             contextRoot = contextRoot.substring(0,contextRoot.length()-4);
                         }
                         
@@ -1389,4 +1412,220 @@ public class PayaraMicro {
             }
         }
     }
+    
+    private void setArgumentsFromSystemProperties() {
+        
+        // load all from the resource
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("META-INF/deploy/payaramicro.properties")) {
+            if (is != null) {
+                Properties props = new Properties();
+                props.load(is);
+                for (Map.Entry<?, ?> entry: props.entrySet()) {
+                    System.setProperty((String)entry.getKey(), (String)entry.getValue());
+                }
+            }
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "", ex);
+        }
+        
+       // Set the domain.xml
+        String alternateDomainXMLStr = System.getProperty("payaramicro.domainConfig");
+       if (alternateDomainXMLStr != null && !alternateDomainXMLStr.isEmpty()) {
+           alternateDomainXML = new File(alternateDomainXMLStr);
+       }
+       
+       // Set the hazelcast config file
+       String alternateHZConfigFileStr = System.getProperty("payaramicro.hzConfigFile");
+       if (alternateHZConfigFileStr != null && !alternateHZConfigFileStr.isEmpty()) {
+           alternateHZConfigFile = new File(alternateHZConfigFileStr);
+       }
+
+       autoBindHttp = Boolean.getBoolean("payaramicro.autoBindHttp");
+       autoBindRange = Integer.getInteger("payaramicro.autoBindRange", 5);
+       autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
+       generateLogo = Boolean.getBoolean("payaramicro.logo"); 
+       enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
+       httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
+       hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
+       hzPort = Integer.getInteger("payaramicro.mcPort",Integer.MIN_VALUE);
+       hzStartPort = Integer.getInteger("payaramicro.startPort",Integer.MIN_VALUE);
+       liteMember = Boolean.getBoolean("payaramicro.lite");
+       maxHttpThreads = Integer.getInteger("payaramicro.maxHttpThreads",Integer.MIN_VALUE);
+       minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads",Integer.MIN_VALUE);
+       noCluster = Boolean.getBoolean("payaramicro.noCluster");
+       
+       // Set the rootDir file
+       String rootDirFileStr = System.getProperty("payaramicro.rootDir");
+       if (rootDirFileStr != null && !rootDirFileStr.isEmpty()) {
+           rootDir = new File(rootDirFileStr);
+       }
+       
+       String name = System.getProperty("payaramicro.name");
+       if (name != null && !name.isEmpty()) {
+           instanceName = name;
+       } 
+    }
+
+    private void packageUberJar() {
+        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));){
+            // get the current payara micro jar
+            URL url = this.getClass().getClassLoader().getResource("META-INF/MANIFEST.MF");
+            JarURLConnection urlcon = (JarURLConnection) url.openConnection();
+            
+            // copy all entries from the existing jar file
+            JarFile jFile = urlcon.getJarFile();
+            Enumeration<JarEntry> entries = jFile.entries();
+            while(entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                InputStream is = jFile.getInputStream(entry);
+                jos.putNextEntry(new JarEntry(entry.getName()));
+                byte[] buffer = new byte[4096];
+                int bytesRead = 0;
+                while ((bytesRead = is.read(buffer)) != -1) {
+                    jos.write(buffer, 0, bytesRead);
+                }
+                is.close();
+                jos.flush();
+                jos.closeEntry();
+            }
+            
+            // write the META-INF deploy directory
+            if (deployments != null || deploymentRoot != null || GAVs != null) {
+                // create the directory entry
+                JarEntry deploymentDir = new JarEntry("META-INF/deploy/");
+                jos.putNextEntry(deploymentDir);
+                jos.flush();
+                jos.closeEntry();
+                if (deployments != null) {
+                    for (File deployment : deployments) {
+                        JarEntry deploymentEntry = new JarEntry("META-INF/deploy/" + deployment.getName());
+                        jos.putNextEntry(deploymentEntry);
+                        try (FileInputStream fis = new FileInputStream(deployment)) {
+                            byte[] buffer = new byte[4096];
+                            int bytesRead = 0;
+                            while ((bytesRead = fis.read(buffer)) != -1) {
+                                jos.write(buffer, 0, bytesRead);
+                            }
+                            jos.flush();
+                            jos.closeEntry();                           
+                        } catch (IOException ioe) {
+                            logger.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
+                        }
+                    }
+                }
+                
+                if (deploymentRoot != null) {
+                    for (File deployment : deploymentRoot.listFiles()) {
+                        if (deployment.isFile()) {
+                            JarEntry deploymentEntry = new JarEntry("META-INF/deploy/" + deployment.getName());
+                            jos.putNextEntry(deploymentEntry);
+                            try (FileInputStream fis = new FileInputStream(deployment)) {
+                                byte[] buffer = new byte[4096];
+                                int bytesRead = 0;
+                                while ((bytesRead = fis.read(buffer)) != -1) {
+                                    jos.write(buffer, 0, bytesRead);
+                                }
+                                jos.flush();
+                                jos.closeEntry();                           
+                            } catch (IOException ioe) {
+                                logger.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
+                            }
+                        }
+                    }
+                }
+                
+                if (GAVs != null) {
+                    try {
+                        // Convert the provided GAV Strings into target URLs
+                        getGAVURLs();
+                        for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
+                            URL deployment = deploymentMapEntry.getValue();
+                            String name = deploymentMapEntry.getKey();
+                            try (InputStream is = deployment.openStream()) {
+                                JarEntry deploymentEntry = new JarEntry("META-INF/deploy/" + name);
+                                jos.putNextEntry(deploymentEntry);
+                                byte[] buffer = new byte[4096];
+                                int bytesRead = 0;
+                                while ((bytesRead = is.read(buffer)) != -1) {
+                                    jos.write(buffer, 0, bytesRead);
+                                }
+                                jos.flush();
+                                jos.closeEntry();                                                            
+                            }catch (IOException ioe) {
+                                logger.log(Level.WARNING, "Error adding deployment " + name + " to the Uber Jar Skipping...", ioe);                                
+                            }
+                        }                       
+                    } catch (GlassFishException ex) {
+                        logger.log(Level.SEVERE, "Unable to process maven deployment units", ex);
+                    }
+                }
+                
+                // write the system properties file
+                JarEntry je = new JarEntry("META-INF/deploy/payaramicro.properties");
+                jos.putNextEntry(je);
+                Properties props = new Properties();
+                if (hzMulticastGroup != null) {
+                    props.setProperty("payaramicro.mcAddress", hzMulticastGroup);
+                }
+                
+                if (hzPort != Integer.MIN_VALUE) {
+                    props.setProperty("payaramicro.mcPort", Integer.toString(hzPort));
+                }
+                
+                if (hzStartPort != Integer.MIN_VALUE) {
+                    props.setProperty("payaramicro.startPort", Integer.toString(hzStartPort));
+                }
+                
+                props.setProperty("payaramicro.name", instanceName);
+                
+                if (rootDir != null) {
+                    props.setProperty("payaramicro.rootDir", rootDir.getAbsolutePath());
+                }
+                
+                if (alternateDomainXML != null) {
+                    props.setProperty("payaramicro.domainConfig", rootDir.getAbsolutePath());
+                }
+                
+                if (minHttpThreads != Integer.MIN_VALUE) {
+                    props.setProperty("payaramicro.minHttpThreads", Integer.toString(minHttpThreads));
+                }
+                
+                if (maxHttpThreads != Integer.MIN_VALUE) {
+                    props.setProperty("payaramicro.maxHttpThreads", Integer.toString(maxHttpThreads));
+                }
+                
+                if (alternateHZConfigFile != null) {
+                    props.setProperty("payaramicro.hzConfigFile",alternateHZConfigFile.getAbsolutePath());
+                }
+                
+                props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
+                props.setProperty("payaramicro.autoBindSsl", Boolean.toString(autoBindSsl));
+                props.setProperty("payaramicro.autoBindRange", Integer.toString(autoBindRange));
+                props.setProperty("payaramicro.lite", Boolean.toString(liteMember));
+                props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
+                props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
+                props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
+                
+                if (httpPort != Integer.MIN_VALUE) {
+                    props.setProperty("payaramicro.port", Integer.toString(httpPort));
+                }
+                
+                if (sslPort != Integer.MIN_VALUE) {
+                    props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
+                }
+                
+                
+                props.store(jos, "");
+                jos.flush();
+                jos.closeEntry();
+            }
+            
+
+        } catch (IOException ex) {
+            logger.log(Level.SEVERE, "Error creating Uber Jar " + uberJar.getAbsolutePath(), ex);
+        }
+        
+    }
+    
+    
 }
