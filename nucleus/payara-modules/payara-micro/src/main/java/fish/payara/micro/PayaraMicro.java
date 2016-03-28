@@ -1118,7 +1118,7 @@ public class PayaraMicro {
                                 + "--logo reveal the #BadAssFish\n"
                                 + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
                                 + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
-                                + "--outputUberJar packages up an uber jar at the specified path based on the command line arguments and exits"
+                                + "--outputUberJar packages up an uber jar at the specified path based on the command line arguments and exits\n"
                                 + "--help Shows this message and exits\n");
                         System.exit(1);
                         break;
