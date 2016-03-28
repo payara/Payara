@@ -257,16 +257,40 @@ public class PayaraMicroRuntime  {
         }
         return result;
     }
+    
+    /**
+     * Deploys a new archive to a running Payara Micro instance
+     * @param name The name to give the application once deployed
+     * @param contextRoot The context root to give the application
+     * @param war A File object representing the archive to deploy, it can be an exploded directory
+     * @return 
+     */
+    public boolean deploy(String name, String contextRoot, File war) {
+        checkState();
+        boolean result = false;
+        if (war.exists() && (war.isFile() || war.isDirectory()) && war.canRead()) {
+            try {
+                runtime.getDeployer().deploy(war, "--availabilityenabled=true","--name",name, "--contextroot", contextRoot);
+                result = true;
+            } catch (GlassFishException ex) {
+                logger.log(Level.WARNING, "Failed to deploy archive ", ex);
+            }
+        } else {
+            logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
+        }
+        return result;        
+    }
+    
 
     /**
      *  Deploys a new archive to a running Payara Micro instance
-     * @param war A File object representing the archive to deploy
+     * @param war A File object representing the archive to deploy, it can be an exploded directory
      * @return true if the file deployed successfully
      */
     public boolean deploy(File war) {
         checkState();
         boolean result = false;
-        if (war.exists() && war.isFile() && war.canRead()) {
+        if (war.exists() && (war.isFile() || war.isDirectory()) && war.canRead()) {
             try {
                 runtime.getDeployer().deploy(war, "--availabilityenabled=true");
                 result = true;
