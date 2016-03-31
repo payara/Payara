@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -281,7 +282,7 @@ public class GFLauncherInfo {
             map.put("-instancedir", SmartFile.sanitize(instanceRootDir.getPath()));
         }
 
-        // no need for watchdog here.  It is a client-side phenomenon only!
+        map.put("-watchdog", Boolean.toString(watchdog));
         map.put("-verbose", Boolean.toString(verbose));
         map.put("-debug", Boolean.toString(debug));
         map.put("-instancename", instanceName);

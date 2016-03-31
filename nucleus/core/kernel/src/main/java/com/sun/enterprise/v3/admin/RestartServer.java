@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.module.ModulesRegistry;
@@ -107,7 +108,7 @@ public class RestartServer {
                 gfKernel = glassfishProvider.get();
             }
             
-            if (!verbose) {
+            if (!supervised) {
                 // do it now while we still have the Logging service running...
                 reincarnate();
             }
@@ -134,7 +135,8 @@ public class RestartServer {
     private void init(AdminCommandContext context) throws IOException {
         logger = context.getLogger();
         props = Globals.get(StartupContext.class).getArguments();
-        verbose = Boolean.parseBoolean(props.getProperty("-verbose", "false"));
+        supervised = Boolean.parseBoolean(props.getProperty("-verbose", "false"))
+                || Boolean.parseBoolean(props.getProperty("-watchdog", "false"));
         logger.info(strings.get("restart.server.init"));
     }
 
@@ -308,7 +310,7 @@ public class RestartServer {
     private Boolean debug = null;
     private Properties props;
     private Logger logger;
-    private boolean verbose;
+    private boolean supervised;
     private String classpath;
     private String classname;
     private String argsString;
