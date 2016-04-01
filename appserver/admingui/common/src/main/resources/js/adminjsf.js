@@ -1046,15 +1046,15 @@ admingui.help = {
                 url:"url"
             },
             function(result) {
-                admingui.help.openHelpWindow(helpLink + result.url);
+                admingui.help.openHelpWindow(helpLink + result.url, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
             }, 3, false);
         } else {
-            admingui.help.openHelpWindow(helpLink);
+            admingui.help.openHelpWindow(helpLink, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
         }
     },
 
     openHelpWindow: function (url) {
-        var win = window.open(url, "HelpWindow" , "width=1200, height=800, resizable");
+        var win = window.open(url, "HelpWindow" , "width=1200, height=800,resizable=yes,scrollbars=yes");
         if (win) {
             win.focus();
         }
