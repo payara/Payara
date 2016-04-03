@@ -1004,10 +1004,7 @@ public class PayaraMicro {
                             logger.log(Level.SEVERE, "{0} is not a valid minimum threads number and will be ignored", threads);
                             throw new IllegalArgumentException();
                         }
-                    } catch (NumberFormatException nfe) {
-                        logger.log(Level.SEVERE, "{0} is not a valid minimum threads number and will be ignored", threads);
-                        throw new IllegalArgumentException();
-                    }       i++;
+                        i++;
                     break;
                 }
                 case "--mcAddress":
@@ -1022,12 +1019,16 @@ public class PayaraMicro {
                     hzClusterPassword = args[i+1];
                     i++;
                     break;
-                case "--mcPort":{
+                case "--mcPort": {
                     String httpPortS = args[i + 1];
                     try {
                         hzPort = Integer.parseInt(httpPortS);
                         if (hzPort < 1 || hzPort > 65535) {
                             throw new NumberFormatException("Not a valid tcp port");
+                        }
+                        } catch (NumberFormatException nfe) {
+                            logger.log(Level.SEVERE, "{0} is not a valid multicast port number and will be ignored", httpPortS);
+                            throw new IllegalArgumentException();
                         }
                         i++;
                         break;
@@ -1070,52 +1071,13 @@ public class PayaraMicro {
                         if (!deployment.exists() || !deployment.canRead()) {
                             logger.log(Level.SEVERE, "{0} is not a valid deployment path and will be ignored", deployment.getAbsolutePath());
                         } else {
-                            repositoryURLs.add(new URL(args[i + 1]));
-                        }  
-                    } catch (MalformedURLException ex) {
-                        logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", args[i + 1]);
-                    }
-                    
-                    i++;
-                    break;   
-                case "--help":
-                    System.err.println("Usage: --noCluster  Disables clustering\n"
-                            + "--port sets the http port\n"
-                            + "--sslPort sets the https port number\n"
-                            + "--mcAddress sets the cluster multicast group\n"
-                            + "--mcPort sets the cluster multicast port\n"
-                            + "--clusterName sets the cluster name\n"
-                            + "--clusterPassword sets the cluster password\n"
-                            + "--startPort sets the cluster start port number\n"
-                            + "--name sets the instance name\n"
-                            + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
-                            + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
-                            + "--deploy specifies a war file to deploy\n"
-                            + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
-                            + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
-                            + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
-                            + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
-                            + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
-                            + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
-                            + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
-                            + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
-                            + "--enableHealthCheck enables/disables Health Check Service (disabled by default).\n"
-                            + "--logo reveal the #BadAssFish\n"
-                            + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
-                            + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
-                            + "--help Shows this message and exits\n");
-                    System.exit(1);
-                    break;
-                case "--logo":
-                    generateLogo = true;
-                    break;
                             if (deployments == null) {
                                 deployments = new LinkedList<>();
                             }
                             deployments.add(deployment);
                         }
                         i++;
-                        break;
+                        break;   
                     case "--domainConfig":
                         alternateDomainXML = new File(args[i + 1]);
                         if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
@@ -1196,6 +1158,8 @@ public class PayaraMicro {
                                 + "--sslPort sets the https port number\n"
                                 + "--mcAddress sets the cluster multicast group\n"
                                 + "--mcPort sets the cluster multicast port\n"
+                                + "--clusterName sets the Cluster Group Name\n"
+                                + "--clusterPassword sets the Cluster Group Password\n"
                                 + "--startPort sets the cluster start port number\n"
                                 + "--name sets the instance name\n"
                                 + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
@@ -1597,6 +1561,8 @@ public class PayaraMicro {
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
         hzPort = Integer.getInteger("payaramicro.mcPort", Integer.MIN_VALUE);
         hzStartPort = Integer.getInteger("payaramicro.startPort", Integer.MIN_VALUE);
+        hzClusterName = System.getProperty("payaramicro.clusterName");
+        hzClusterPassword = System.getProperty("payaramicro.clusterPassword");
         liteMember = Boolean.getBoolean("payaramicro.lite");
         maxHttpThreads = Integer.getInteger("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
         minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads", Integer.MIN_VALUE);
@@ -1744,6 +1710,14 @@ public class PayaraMicro {
 
             if (alternateHZConfigFile != null) {
                 props.setProperty("payaramicro.hzConfigFile", "META-INF/deploy/hzconfig.xml");
+            }
+            
+            if (hzClusterName != null) {
+                props.setProperty("payaramicro.clusterName", hzClusterName);
+            }
+            
+            if (hzClusterPassword != null) {
+                props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
             }
 
             props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));

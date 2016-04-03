@@ -144,15 +144,9 @@ public class HazelcastCore implements EventListener {
         String hazelcastFilePath = "";
         URL serverConfigURL;
         try {
-<<<<<<< HEAD
             if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null) {
                 XmlConfigBuilder builder = new XmlConfigBuilder(overrideConfiguration.getAlternateConfigFile().toURL());
                 config = builder.build();
-=======
-            // Payara Micro configuration override
-            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null && overrideConfiguration.getAlternateConfigFile().exists()) {
-                config = ConfigLoader.load(overrideConfiguration.getAlternateConfigFile().getAbsolutePath());
->>>>>>> PAYARA-687 support Hazelcast Group Config to prevent cluster cross talk
                 return config;
             }
             serverConfigURL = new URL(context.getServerConfigURL());
