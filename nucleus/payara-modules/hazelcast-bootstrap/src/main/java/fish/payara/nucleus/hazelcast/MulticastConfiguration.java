@@ -31,6 +31,8 @@ public class MulticastConfiguration {
     private String memberName;
     private URI alternateConfigFile;
     private boolean lite = false;
+    private String clusterGroupName = "development";
+    private String clusterGroupPassword = "D3v3l0pm3nt";
 
     public MulticastConfiguration() {
     }
@@ -89,6 +91,22 @@ public class MulticastConfiguration {
 
     public void setLite(boolean lite) {
         this.lite = lite;
+    }
+
+    public String getClusterGroupName() {
+        return clusterGroupName;
+    }
+
+    public void setClusterGroupName(String clusterGroupName) {
+        this.clusterGroupName = clusterGroupName;
+    }
+
+    public String getClusterGroupPassword() {
+        return clusterGroupPassword;
+    }
+
+    public void setClusterGroupPassword(String clusterGroupPassword) {
+        this.clusterGroupPassword = clusterGroupPassword;
     }
     
     

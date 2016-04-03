@@ -74,6 +74,8 @@ public class PayaraMicro {
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
     private int hzStartPort = Integer.MIN_VALUE;
+    private String hzClusterName;
+    private String hzClusterPassword;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
     private int maxHttpThreads = Integer.MIN_VALUE;
@@ -664,6 +666,44 @@ public class PayaraMicro {
     }
 
     /**
+     * Gets the name of the Hazelcast cluster group.
+     * Clusters with different names do not interact
+     * @return The current Cluster Name
+     */
+    public String getHzClusterName() {
+        return hzClusterName;
+    }
+
+    /**
+     * Sets the name of the Hazelcast cluster group
+     * @param hzClusterName The name of the hazelcast cluster
+     * @return
+     */
+    public PayaraMicro setHzClusterName(String hzClusterName) {
+        this.hzClusterName = hzClusterName;
+        return this;
+    }
+
+    /**
+     * Gets the password of the Hazelcast cluster group 
+     * @return 
+     */
+    public String getHzClusterPassword() {
+        return hzClusterPassword;
+    }
+
+    /**
+     * Sets the Hazelcast cluster group password.
+     * For two clusters to work together then the group name and password must be the same
+     * @param hzClusterPassword The password to set
+     * @return 
+     */
+    public PayaraMicro setHzClusterPassword(String hzClusterPassword) {
+        this.hzClusterPassword = hzClusterPassword;
+        return this;
+    }
+
+    /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      *
      * @return An instance of PayaraMicroRuntime that can be used to access the
@@ -697,6 +737,15 @@ public class PayaraMicro {
             mc.setAlternateConfiguration(alternateHZConfigFile);
         }
         mc.setLite(liteMember);
+        
+        if (hzClusterName != null) {
+            mc.setClusterGroupName(hzClusterName);
+        }
+        
+        if (hzClusterPassword != null) {
+            mc.setClusterGroupPassword(hzClusterPassword);
+        }
+        
         HazelcastCore.setMulticastOverride(mc);
 
         setSystemProperties();
@@ -955,23 +1004,30 @@ public class PayaraMicro {
                             logger.log(Level.SEVERE, "{0} is not a valid minimum threads number and will be ignored", threads);
                             throw new IllegalArgumentException();
                         }
-                        i++;
-                        break;
-                    }
-                    case "--mcAddress":
-                        hzMulticastGroup = args[i + 1];
-                        i++;
-                        break;
-                    case "--mcPort": {
-                        String httpPortS = args[i + 1];
-                        try {
-                            hzPort = Integer.parseInt(httpPortS);
-                            if (hzPort < 1 || hzPort > 65535) {
-                                throw new NumberFormatException("Not a valid tcp port");
-                            }
-                        } catch (NumberFormatException nfe) {
-                            logger.log(Level.SEVERE, "{0} is not a valid multicast port number and will be ignored", httpPortS);
-                            throw new IllegalArgumentException();
+                    } catch (NumberFormatException nfe) {
+                        logger.log(Level.SEVERE, "{0} is not a valid minimum threads number and will be ignored", threads);
+                        throw new IllegalArgumentException();
+                    }       i++;
+                    break;
+                }
+                case "--mcAddress":
+                    hzMulticastGroup = args[i + 1];
+                    i++;
+                    break;
+                case "--clusterName" :
+                    hzClusterName = args[i+1];
+                    i++;
+                    break;
+                case "--clusterPassword" :
+                    hzClusterPassword = args[i+1];
+                    i++;
+                    break;
+                case "--mcPort":{
+                    String httpPortS = args[i + 1];
+                    try {
+                        hzPort = Integer.parseInt(httpPortS);
+                        if (hzPort < 1 || hzPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
                         }
                         i++;
                         break;
@@ -1014,6 +1070,45 @@ public class PayaraMicro {
                         if (!deployment.exists() || !deployment.canRead()) {
                             logger.log(Level.SEVERE, "{0} is not a valid deployment path and will be ignored", deployment.getAbsolutePath());
                         } else {
+                            repositoryURLs.add(new URL(args[i + 1]));
+                        }  
+                    } catch (MalformedURLException ex) {
+                        logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", args[i + 1]);
+                    }
+                    
+                    i++;
+                    break;   
+                case "--help":
+                    System.err.println("Usage: --noCluster  Disables clustering\n"
+                            + "--port sets the http port\n"
+                            + "--sslPort sets the https port number\n"
+                            + "--mcAddress sets the cluster multicast group\n"
+                            + "--mcPort sets the cluster multicast port\n"
+                            + "--clusterName sets the cluster name\n"
+                            + "--clusterPassword sets the cluster password\n"
+                            + "--startPort sets the cluster start port number\n"
+                            + "--name sets the instance name\n"
+                            + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
+                            + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
+                            + "--deploy specifies a war file to deploy\n"
+                            + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
+                            + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
+                            + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
+                            + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
+                            + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
+                            + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
+                            + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
+                            + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
+                            + "--enableHealthCheck enables/disables Health Check Service (disabled by default).\n"
+                            + "--logo reveal the #BadAssFish\n"
+                            + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
+                            + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
+                            + "--help Shows this message and exits\n");
+                    System.exit(1);
+                    break;
+                case "--logo":
+                    generateLogo = true;
+                    break;
                             if (deployments == null) {
                                 deployments = new LinkedList<>();
                             }

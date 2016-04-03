@@ -50,6 +50,14 @@ public interface HazelcastRuntimeConfiguration
     String getMemberName();
     public void setMemberName(String value);
     
+    @Attribute(defaultValue = "development")
+    String getClusterGroupName();
+    public void setClusterGroupName(String value);
+    
+    @Attribute(defaultValue = "D3v3l0pm3nt")
+    String getClusterGroupPassword();
+    public void setClusterGroupPassword(String value);
+    
     @Attribute(defaultValue = "54327")
     String getMulticastPort();
     public void setMulticastPort(String value);

@@ -73,9 +73,9 @@ public class GetHazelcastConfiguration implements AdminCommand {
         
         HazelcastRuntimeConfiguration runtimeConfiguration = config.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
-        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member"};
+        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[7];
+        Object values[] = new Object[9];
         values[0] = runtimeConfiguration.getHazelcastConfigurationFile();
         values[1] = runtimeConfiguration.getEnabled();
         values[2] = runtimeConfiguration.getStartPort();
@@ -83,9 +83,11 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[4] = runtimeConfiguration.getMulticastPort();
         values[5] = runtimeConfiguration.getJNDIName();
         values[6] = runtimeConfiguration.getLite();
+        values[7] = runtimeConfiguration.getClusterGroupName();
+        values[8] = runtimeConfiguration.getClusterGroupPassword();
         columnFormatter.addRow(values);
         
-        Map<String, Object> map = new HashMap<String,Object>(6);
+        Map<String, Object> map = new HashMap<String,Object>(9);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", values[0]);
         map.put("enabled", values[1]);
@@ -94,6 +96,8 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("multicastPort", values[4]);
         map.put("jndiName", values[5]);
         map.put("lite", values[6]);
+        map.put("clusterName", values[7]);
+        map.put("clusterPassword", values[8]);
         extraProps.put("getHazelcastConfiguration",map);
                 
         actionReport.setExtraProperties(extraProps);
