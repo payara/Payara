@@ -21,6 +21,7 @@ import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
 import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import java.io.File;
@@ -142,8 +143,9 @@ public class HazelcastCore implements EventListener {
         String hazelcastFilePath = "";
         URL serverConfigURL;
         try {
-            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null && overrideConfiguration.getAlternateConfigFile().exists()) {
-                config = ConfigLoader.load(overrideConfiguration.getAlternateConfigFile().getAbsolutePath());
+            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null) {
+                XmlConfigBuilder builder = new XmlConfigBuilder(overrideConfiguration.getAlternateConfigFile().toURL());
+                config = builder.build();
                 return config;
             }
             serverConfigURL = new URL(context.getServerConfigURL());
@@ -203,6 +205,9 @@ public class HazelcastCore implements EventListener {
     private void bootstrapHazelcast() { 
         Config config = buildConfiguration();
         theInstance = Hazelcast.newHazelcastInstance(config);
+        if (memberName == null) {
+            memberName = context.getInstanceName();
+        }
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
     }

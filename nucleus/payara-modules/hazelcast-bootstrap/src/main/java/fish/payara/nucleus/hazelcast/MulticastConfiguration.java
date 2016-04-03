@@ -18,6 +18,7 @@
 package fish.payara.nucleus.hazelcast;
 
 import java.io.File;
+import java.net.URI;
 
 /**
  *
@@ -28,13 +29,13 @@ public class MulticastConfiguration {
     private int multicastPort = 54327;
     private int startPort = 5900;
     private String memberName;
-    private File alternateConfigFile;
+    private URI alternateConfigFile;
     private boolean lite = false;
 
     public MulticastConfiguration() {
     }
 
-    public MulticastConfiguration(String multicastGroup, int multicastPort, int startPort, String memberName, File alternateConfigurationFile) {
+    public MulticastConfiguration(String multicastGroup, int multicastPort, int startPort, String memberName, URI alternateConfigurationFile) {
         this.multicastGroup = multicastGroup;
         this.multicastPort = multicastPort;
         this.startPort = startPort;
@@ -74,11 +75,11 @@ public class MulticastConfiguration {
         this.memberName = memberName;
     }
 
-    public void setAlternateConfiguration(File alternateHZConfigFile) {
+    public void setAlternateConfiguration(URI alternateHZConfigFile) {
         alternateConfigFile = alternateHZConfigFile;
     }
 
-    public File getAlternateConfigFile() {
+    public URI getAlternateConfigFile() {
         return alternateConfigFile;
     }
 
