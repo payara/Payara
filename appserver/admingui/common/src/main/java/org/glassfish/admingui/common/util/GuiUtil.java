@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates] 
+
 /*
  * GuiUtil.java
  *
@@ -196,6 +198,17 @@ public class GuiUtil {
             sessionMap.put("secureAdminEnabled", "false");
         }
 
+        Map asadminRecorderEnabled = 
+                RestUtil.restRequest(sessionMap.get("REST_URL") 
+                        + "/asadmin-recorder-enabled", null, "GET", null, 
+                        false);
+        sessionMap.put("showEnableAsadminRecorderButton", !(boolean)((Map) 
+                ((Map) asadminRecorderEnabled.get("data"))
+                        .get("extraProperties")).get("asadminRecorderEnabled"));
+        sessionMap.put("showDisableAsadminRecorderButton", (boolean)((Map) 
+                ((Map) asadminRecorderEnabled.get("data"))
+                        .get("extraProperties")).get("asadminRecorderEnabled"));        
+       
         sessionMap.put("reqMsg", GuiUtil.getMessage("msg.JS.enterValue"));
         sessionMap.put("reqMsgSelect", GuiUtil.getMessage("msg.JS.selectValue"));
         sessionMap.put("reqInt", GuiUtil.getMessage("msg.JS.enterIntegerValue"));
