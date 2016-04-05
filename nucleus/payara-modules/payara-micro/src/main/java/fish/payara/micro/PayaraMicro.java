@@ -787,6 +787,8 @@ public class PayaraMicro {
                     throw new GlassFishException("Could not bind SSL port");
                 }
             }
+            
+            
 
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
@@ -806,10 +808,12 @@ public class PayaraMicro {
                 if (!configFile.exists()) {
                     installFiles(gfproperties);
                 } else {
-                    String absolutePath = rootDir.getAbsolutePath();
-                    absolutePath = absolutePath.replace('\\', '/');
-                    gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
-                    gfproperties.setConfigFileReadOnly(false);
+                    if (alternateDomainXML ==null) {
+                        String absolutePath = rootDir.getAbsolutePath();
+                        absolutePath = absolutePath.replace('\\', '/');
+                        gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
+                        gfproperties.setConfigFileReadOnly(false);
+                    }   
                 }
 
             }
