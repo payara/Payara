@@ -20,6 +20,7 @@ import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
@@ -37,7 +38,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author steve
  */
 @Service(name = "healthcheck-core")
@@ -51,6 +51,10 @@ public class HealthCheckService implements EventListener {
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
     HealthCheckServiceConfiguration configuration;
+
+    @Inject
+    private ServiceLocator habitat;
+
     @Inject
     private Events events;
 
@@ -82,6 +86,7 @@ public class HealthCheckService implements EventListener {
     }
 
     public void bootstrapHealthCheck() {
+        HealthCheckServiceConfiguration configuration = habitat.getService(HealthCheckServiceConfiguration.class);
         if (configuration != null) {
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
                 public Thread newThread(Runnable r) {
