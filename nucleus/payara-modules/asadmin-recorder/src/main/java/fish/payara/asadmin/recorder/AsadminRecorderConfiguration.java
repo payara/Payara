@@ -42,7 +42,9 @@ public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExt
     public String getOutputLocation();
     public void setOutputLocation(String outputLocation);
     
-    @Attribute(defaultValue = "version,_(.*),list(.*),get(.*),uptime")
+    @Attribute(defaultValue = "version,_(.*),list(.*),get(.*),uptime,"
+            + "enable-asadmin-recorder,disable-asadmin-recorder,"
+            + "set-asadmin-recorder-configuration,asadmin-recorder-enabled")
     public String getFilteredCommands();
     public void setFilteredCommands(String filteredCommands);
 }
