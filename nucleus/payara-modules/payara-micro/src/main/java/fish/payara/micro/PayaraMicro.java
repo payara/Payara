@@ -21,6 +21,7 @@ package fish.payara.micro;
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
+import fish.payara.nucleus.phonehome.PhoneHomeCore;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -99,6 +100,7 @@ public class PayaraMicro {
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
     private boolean enableHealthCheck = false;
+    private boolean disablePhoneHome = false;
     private List<String> GAVs;
     private File uberJar;
     private Properties userSystemProperties;
@@ -132,6 +134,7 @@ public class PayaraMicro {
      * pool<br/>
      * --lite Sets this Payara Micro to not store Cluster Data<br/>
      * --enableHealthCheck enables/disables Health Check Service<br/>
+     * --disablePhomeHome disables Phone Home Service<br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -909,7 +912,13 @@ public class PayaraMicro {
                 HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
                 healthCheckService.setEnabled(enableHealthCheck);
             }
-
+            
+            if (disablePhoneHome) {
+                logger.log(Level.INFO, "Phone Home Service Disabled");
+            } else {    
+                gf.getService(PhoneHomeCore.class).start();
+            }
+            
             long end = System.currentTimeMillis();
             logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
@@ -1188,6 +1197,9 @@ public class PayaraMicro {
                             }
                         }
                         break;
+                    case "--disablePhoneHome":
+                        disablePhoneHome = true;
+                        break;
                     case "--help":
                         System.err.println("Usage:\n  --noCluster  Disables clustering\n"
                                 + "  --port <http-port-number> sets the http port\n"
@@ -1215,6 +1227,7 @@ public class PayaraMicro {
                                 + "  --additionalRepository <repo-url> specifies an additional repository to search for deployable artefacts in\n"
                                 + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
                                 + "  --systemProperties <file-path> Reads system properties from a file\n"
+                                + "  --disablePhoneHome Disables sending of usage tracking information\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
@@ -1604,6 +1617,7 @@ public class PayaraMicro {
         maxHttpThreads = Integer.getInteger("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
         minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads", Integer.MIN_VALUE);
         noCluster = Boolean.getBoolean("payaramicro.noCluster");
+        disablePhoneHome = Boolean.getBoolean("payaramicro.disablePhoneHome");
 
         // Set the rootDir file
         String rootDirFileStr = System.getProperty("payaramicro.rootDir");
@@ -1764,6 +1778,7 @@ public class PayaraMicro {
             props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
             props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
             props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
+            props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
             if (httpPort != Integer.MIN_VALUE) {
                 props.setProperty("payaramicro.port", Integer.toString(httpPort));
