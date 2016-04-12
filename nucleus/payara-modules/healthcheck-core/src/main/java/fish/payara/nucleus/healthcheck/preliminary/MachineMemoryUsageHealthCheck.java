@@ -42,7 +42,7 @@ public class MachineMemoryUsageHealthCheck extends BaseThresholdHealthCheck<Heal
     }
 
     @Override
-    protected HealthCheckWithThresholdExecutionOptions constructOptions(MachineMemoryUsageChecker checker) {
+    public HealthCheckWithThresholdExecutionOptions constructOptions(MachineMemoryUsageChecker checker) {
         return super.constructThresholdOptions(checker);
     }
 
