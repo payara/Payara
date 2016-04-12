@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.net.JarURLConnection;
 import java.nio.file.Path;
 import java.util.Enumeration;
@@ -100,6 +101,7 @@ public class PayaraMicro {
     private boolean enableHealthCheck = false;
     private List<String> GAVs;
     private File uberJar;
+    private Properties userSystemProperties;
     private Map<String, URL> deploymentURLsMap;
     private List<URL> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
@@ -1161,6 +1163,31 @@ public class PayaraMicro {
                         uberJar = new File(args[i + 1]);
                         i++;
                         break;
+                    case "--systemProperties": {
+                            File propertiesFile = new File(args[i + 1]);
+                            userSystemProperties = new Properties();
+                            try (FileReader reader = new FileReader(propertiesFile)) {
+                                userSystemProperties.load(reader);
+                                Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
+                                while (names.hasMoreElements()) {
+                                    String name = names.nextElement();
+                                    System.setProperty(name, userSystemProperties.getProperty(name));
+                                }
+                            } catch (IOException e) {
+                                logger.log(Level.SEVERE,
+                                        "{0} is not a valid properties file",
+                                        propertiesFile.getAbsolutePath());
+                                throw new IllegalArgumentException(e);
+                            }
+                            if (!propertiesFile.isFile() && !propertiesFile.canRead()) {
+                                logger.log(Level.SEVERE,
+                                        "{0} is not a valid properties file",
+                                        propertiesFile.getAbsolutePath());
+                                throw new IllegalArgumentException();
+
+                            }
+                        }
+                        break;
                     case "--help":
                         System.err.println("Usage:\n  --noCluster  Disables clustering\n"
                                 + "  --port <http-port-number> sets the http port\n"
@@ -1187,6 +1214,7 @@ public class PayaraMicro {
                                 + "  --deployFromGAV <list-of-artefacts> specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
                                 + "  --additionalRepository <repo-url> specifies an additional repository to search for deployable artefacts in\n"
                                 + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
+                                + "  --systemProperties <file-path> Reads system properties from a file\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
@@ -1744,7 +1772,16 @@ public class PayaraMicro {
             if (sslPort != Integer.MIN_VALUE) {
                 props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
             }
-
+            
+            // write all user defined system properties
+            if (userSystemProperties != null) {
+                Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
+                while (names.hasMoreElements()) {
+                    String name = names.nextElement();
+                    props.setProperty(name, userSystemProperties.getProperty(name));
+                }
+            }
+            
             props.store(jos, "");
             jos.flush();
             jos.closeEntry();
