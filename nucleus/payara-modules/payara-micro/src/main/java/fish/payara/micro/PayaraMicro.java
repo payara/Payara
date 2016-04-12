@@ -74,6 +74,8 @@ public class PayaraMicro {
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
     private int hzStartPort = Integer.MIN_VALUE;
+    private String hzClusterName;
+    private String hzClusterPassword;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
     private int maxHttpThreads = Integer.MIN_VALUE;
@@ -664,6 +666,44 @@ public class PayaraMicro {
     }
 
     /**
+     * Gets the name of the Hazelcast cluster group.
+     * Clusters with different names do not interact
+     * @return The current Cluster Name
+     */
+    public String getHzClusterName() {
+        return hzClusterName;
+    }
+
+    /**
+     * Sets the name of the Hazelcast cluster group
+     * @param hzClusterName The name of the hazelcast cluster
+     * @return
+     */
+    public PayaraMicro setHzClusterName(String hzClusterName) {
+        this.hzClusterName = hzClusterName;
+        return this;
+    }
+
+    /**
+     * Gets the password of the Hazelcast cluster group 
+     * @return 
+     */
+    public String getHzClusterPassword() {
+        return hzClusterPassword;
+    }
+
+    /**
+     * Sets the Hazelcast cluster group password.
+     * For two clusters to work together then the group name and password must be the same
+     * @param hzClusterPassword The password to set
+     * @return 
+     */
+    public PayaraMicro setHzClusterPassword(String hzClusterPassword) {
+        this.hzClusterPassword = hzClusterPassword;
+        return this;
+    }
+
+    /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      *
      * @return An instance of PayaraMicroRuntime that can be used to access the
@@ -697,6 +737,15 @@ public class PayaraMicro {
             mc.setAlternateConfiguration(alternateHZConfigFile);
         }
         mc.setLite(liteMember);
+        
+        if (hzClusterName != null) {
+            mc.setClusterGroupName(hzClusterName);
+        }
+        
+        if (hzClusterPassword != null) {
+            mc.setClusterGroupPassword(hzClusterPassword);
+        }
+        
         HazelcastCore.setMulticastOverride(mc);
 
         setSystemProperties();
@@ -956,19 +1005,27 @@ public class PayaraMicro {
                             throw new IllegalArgumentException();
                         }
                         i++;
-                        break;
-                    }
-                    case "--mcAddress":
-                        hzMulticastGroup = args[i + 1];
-                        i++;
-                        break;
-                    case "--mcPort": {
-                        String httpPortS = args[i + 1];
-                        try {
-                            hzPort = Integer.parseInt(httpPortS);
-                            if (hzPort < 1 || hzPort > 65535) {
-                                throw new NumberFormatException("Not a valid tcp port");
-                            }
+                    break;
+                }
+                case "--mcAddress":
+                    hzMulticastGroup = args[i + 1];
+                    i++;
+                    break;
+                case "--clusterName" :
+                    hzClusterName = args[i+1];
+                    i++;
+                    break;
+                case "--clusterPassword" :
+                    hzClusterPassword = args[i+1];
+                    i++;
+                    break;
+                case "--mcPort": {
+                    String httpPortS = args[i + 1];
+                    try {
+                        hzPort = Integer.parseInt(httpPortS);
+                        if (hzPort < 1 || hzPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
+                        }
                         } catch (NumberFormatException nfe) {
                             logger.log(Level.SEVERE, "{0} is not a valid multicast port number and will be ignored", httpPortS);
                             throw new IllegalArgumentException();
@@ -1020,7 +1077,7 @@ public class PayaraMicro {
                             deployments.add(deployment);
                         }
                         i++;
-                        break;
+                        break;   
                     case "--domainConfig":
                         alternateDomainXML = new File(args[i + 1]);
                         if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
@@ -1101,6 +1158,8 @@ public class PayaraMicro {
                                 + "--sslPort sets the https port number\n"
                                 + "--mcAddress sets the cluster multicast group\n"
                                 + "--mcPort sets the cluster multicast port\n"
+                                + "--clusterName sets the Cluster Group Name\n"
+                                + "--clusterPassword sets the Cluster Group Password\n"
                                 + "--startPort sets the cluster start port number\n"
                                 + "--name sets the instance name\n"
                                 + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
@@ -1502,6 +1561,8 @@ public class PayaraMicro {
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
         hzPort = Integer.getInteger("payaramicro.mcPort", Integer.MIN_VALUE);
         hzStartPort = Integer.getInteger("payaramicro.startPort", Integer.MIN_VALUE);
+        hzClusterName = System.getProperty("payaramicro.clusterName");
+        hzClusterPassword = System.getProperty("payaramicro.clusterPassword");
         liteMember = Boolean.getBoolean("payaramicro.lite");
         maxHttpThreads = Integer.getInteger("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
         minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads", Integer.MIN_VALUE);
@@ -1649,6 +1710,14 @@ public class PayaraMicro {
 
             if (alternateHZConfigFile != null) {
                 props.setProperty("payaramicro.hzConfigFile", "META-INF/deploy/hzconfig.xml");
+            }
+            
+            if (hzClusterName != null) {
+                props.setProperty("payaramicro.clusterName", hzClusterName);
+            }
+            
+            if (hzClusterPassword != null) {
+                props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
             }
 
             props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));

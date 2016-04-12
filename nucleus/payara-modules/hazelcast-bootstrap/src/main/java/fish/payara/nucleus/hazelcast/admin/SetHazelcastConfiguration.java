@@ -97,6 +97,12 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "multicastPort", optional = true)
     private String multicastPort;
+        
+    @Param(name = "clusterName", optional = true)
+    private String hzClusterName;
+
+    @Param(name = "clusterPassword", optional = true)
+    private String hzClusterPassword;    
 
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
@@ -149,6 +155,12 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         }
                         if (lite != null) {
                             hazelcastRuntimeConfigurationProxy.setLite(lite.toString());
+                        }
+                        if (hzClusterName != null) {
+                            hazelcastRuntimeConfigurationProxy.setClusterGroupName(hzClusterName);
+                        }
+                        if (hzClusterPassword != null) {
+                            hazelcastRuntimeConfigurationProxy.setClusterGroupPassword(hzClusterPassword);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;

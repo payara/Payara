@@ -20,6 +20,7 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
+import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
@@ -158,7 +159,7 @@ public class HazelcastCore implements EventListener {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
                     config = new Config();
                 }
-            } else {
+            } else { // there is no config override
                 
                 memberName = context.getInstanceName();
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
@@ -172,11 +173,19 @@ public class HazelcastCore implements EventListener {
                         memberName = overrideConfiguration.getMemberName();
                     }
                     config.setLiteMember(overrideConfiguration.isLite());
+                    // set group config
+                    GroupConfig gc = config.getGroupConfig();
+                    gc.setName(overrideConfiguration.getClusterGroupName());
+                    gc.setPassword(overrideConfiguration.getClusterGroupPassword());
                 } else {
                    mcConfig.setMulticastGroup(configuration.getMulticastGroup());
                    mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
                    config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
                    config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                   // set group config
+                   GroupConfig gc = config.getGroupConfig();
+                   gc.setName(configuration.getClusterGroupName());
+                   gc.setPassword(configuration.getClusterGroupPassword());
                 }
 
                 // build the configuration
