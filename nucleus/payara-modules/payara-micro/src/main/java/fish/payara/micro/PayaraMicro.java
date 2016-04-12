@@ -883,7 +883,9 @@ public class PayaraMicro {
             File configDir = new File(instanceRootStr, "config");
             File loggingProperties = new File(configDir.getAbsolutePath(), "logging.properties");
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
-                System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                if (System.getProperty("java.util.logging.config.file") == null) {
+                    System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                }
                 try {
                     LogManager.getLogManager().readConfiguration();
                 } catch (IOException | SecurityException ex) {
