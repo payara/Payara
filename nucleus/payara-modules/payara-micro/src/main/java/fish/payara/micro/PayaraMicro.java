@@ -56,6 +56,7 @@ import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+import com.sun.appserv.server.util.Version;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -904,7 +905,7 @@ public class PayaraMicro {
             }
 
             long end = System.currentTimeMillis();
-            logger.info("Payara Micro ready in " + (end - start) + " (ms)");
+            logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
             return runtime;
         } catch (GlassFishException ex) {
@@ -1157,32 +1158,32 @@ public class PayaraMicro {
                         i++;
                         break;
                     case "--help":
-                        System.err.println("Usage: --noCluster  Disables clustering\n"
-                                + "--port sets the http port\n"
-                                + "--sslPort sets the https port number\n"
-                                + "--mcAddress sets the cluster multicast group\n"
-                                + "--mcPort sets the cluster multicast port\n"
-                                + "--clusterName sets the Cluster Group Name\n"
-                                + "--clusterPassword sets the Cluster Group Password\n"
-                                + "--startPort sets the cluster start port number\n"
-                                + "--name sets the instance name\n"
-                                + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
-                                + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
-                                + "--deploy specifies a war file to deploy\n"
-                                + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
-                                + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
-                                + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
-                                + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
-                                + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
-                                + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
-                                + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
-                                + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
-                                + "--enableHealthCheck enables/disables Health Check Service (disabled by default).\n"
-                                + "--logo reveal the #BadAssFish\n"
-                                + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
-                                + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
-                                + "--outputUberJar packages up an uber jar at the specified path based on the command line arguments and exits\n"
-                                + "--help Shows this message and exits\n");
+                        System.err.println("Usage:\n  --noCluster  Disables clustering\n"
+                                + "  --port <http-port-number> sets the http port\n"
+                                + "  --sslPort <ssl-port-number> sets the https port number\n"
+                                + "  --mcAddress <muticast-address> sets the cluster multicast group\n"
+                                + "  --mcPort <multicast-port-number> sets the cluster multicast port\n"
+                                + "  --clusterName <cluster-name> sets the Cluster Group Name\n"
+                                + "  --clusterPassword <cluster-password> sets the Cluster Group Password\n"
+                                + "  --startPort <cluster-start-port-number> sets the cluster start port number\n"
+                                + "  --name <instance-name> sets the instance name\n"
+                                + "  --rootDir <directory-path> Sets the root configuration directory and saves the configuration across restarts\n"
+                                + "  --deploymentDir <directory-path> if set to a valid directory all war files in this directory will be deployed\n"
+                                + "  --deploy <file-path> specifies a war file to deploy\n"
+                                + "  --domainConfig <file-path> overrides the complete server configuration with an alternative domain.xml file\n"
+                                + "  --minHttpThreads <threads-number> the minimum number of threads in the HTTP thread pool\n"
+                                + "  --maxHttpThreads <threads-number> the maximum number of threads in the HTTP thread pool\n"
+                                + "  --hzConfigFile <file-path> the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
+                                + "  --autoBindHttp sets autobinding of the http port to a non-bound port\n"
+                                + "  --autoBindSsl sets autobinding of the https port to a non-bound port\n"
+                                + "  --autoBindRange <number-of-ports> sets the maximum number of ports to look at for port autobinding\n"
+                                + "  --lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
+                                + "  --enableHealthCheck <boolean> enables/disables Health Check Service (disabled by default).\n"
+                                + "  --logo reveal the #BadAssFish\n"
+                                + "  --deployFromGAV <list-of-artefacts> specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
+                                + "  --additionalRepository <repo-url> specifies an additional repository to search for deployable artefacts in\n"
+                                + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
+                                + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logo":
