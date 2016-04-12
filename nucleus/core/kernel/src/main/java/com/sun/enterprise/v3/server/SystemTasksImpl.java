@@ -37,7 +37,6 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited]
 package com.sun.enterprise.v3.server;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -143,9 +142,7 @@ public class SystemTasksImpl implements SystemTasks, PostConstruct {
      * Here is where we make the change Post-TP2 to *not* use JVM System Properties
      */
     private void setSystemProperty(String name, String value) {
-        // do not override existing system property
-        if (System.getProperty(name) == null)
-            System.setProperty(name, value);
+        System.setProperty(name, value);
     }
 
     private void setSystemPropertiesFromEnv() {
