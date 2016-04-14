@@ -187,6 +187,12 @@ public final class HttpConnectorAddress {
                                                 AdminLoggerInfo.settingHttpsProtocol,
                                                 protocol);
                                         break;
+                                        
+                        case "TLSv1.2": protocol = "TLSv1.2";
+                                        logger.log(Level.FINE, 
+                                                AdminLoggerInfo.settingHttpsProtocol,
+                                                protocol);
+                                        break;
                         
                         default:        protocol = "TLSv1.2";
                                         String[] logParams = {protocol, 
