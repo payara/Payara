@@ -110,7 +110,6 @@
         <module>hazelcast-package</module>
         <module>healthcheck-package</module>
         <module>payara-nucleus</module>
-        <module>CreateBackupConfigPackage</module>
     </modules>
 
     <build>

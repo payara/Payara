@@ -33,6 +33,5 @@
         <module>healthcheck-core</module>
         <module>payara-micro</module>
         <module>payara-micro-service</module>
-        <module>CreateBackupConfig</module>
     </modules>
 </project>
