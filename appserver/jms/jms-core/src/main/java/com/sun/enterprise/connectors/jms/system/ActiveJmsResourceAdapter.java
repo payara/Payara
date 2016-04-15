@@ -107,6 +107,8 @@ import com.sun.enterprise.util.SystemPropertyConstants;
 import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
+import com.sun.logging.LogDomains;
+
 import java.text.MessageFormat;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -160,7 +162,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     @LoggerInfo(subsystem="JMS", description="Main JMS Logger", publish=true)
     public static final String JMS_MAIN_LOGGER = "javax.enterprise.resource.jms";
 
-    private static final Logger _logger = Logger.getLogger(JMS_MAIN_LOGGER);
+    private static final Logger _logger = LogDomains.getLogger(ActiveJmsResourceAdapter.class, JMS_MAIN_LOGGER);
     final private static LocalStringManagerImpl localStrings = new LocalStringManagerImpl(ActiveJmsResourceAdapter.class);
     private final String SETTER = "setProperty";
     private static final String SEPARATOR = "#";
@@ -314,30 +316,30 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
 
     @Inject
     private Provider<JMSConfigListener> jmsConfigListenerProvider;
-    
+
     @Inject
     private Provider<ServerEnvironmentImpl> serverEnvironmentImplProvider;
-    
+
     @Inject @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     private Provider<AdminService> adminServiceProvider;
-    
+
     @Inject
     private Provider<Servers> serversProvider;
-    
+
     private Provider<JmsService> jmsServiceProvider;
-    
+
     @Inject
     private Provider<ServerContext> serverContextProvider;
-    
+
     @Inject
     private Provider<ConnectorRuntime> connectorRuntimeProvider;
 
     @Inject
      private ServiceLocator habitat;
-    
+
     @Inject
     private ApplicationRegistry appRegistry;
-    
+
     @Inject
     InvocationManager invManager;
 
@@ -383,12 +385,12 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
      * @throws ConnectorRuntimeException in case of an exception.
      */
     protected void loadRAConfiguration() throws ConnectorRuntimeException{
-        
+
         JmsService jmsService = getJmsService();
         if (jmsService != null && jmsService.getType().equals("DISABLED")) {
             throw new ConnectorRuntimeException("JMS Broker is Disabled");
-        }  
-        
+        }
+
         if (connectorRuntime.isServer()) {
             // Check whether MQ has started up or not.
             try {
@@ -418,11 +420,11 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     public void destroy() {
         try {
             JmsService jmsService = getJmsService();
-            
+
             if (jmsService != null && jmsService.getType().equals("DISABLED")) {
                 return;
             }
-            
+
             if (connectorRuntime.isServer() && grizzlyListenerInit && jmsService != null
                     && EMBEDDED.equalsIgnoreCase(jmsService.getType())) {
                 GrizzlyService grizzlyService = null;
@@ -466,13 +468,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     /**
      * Start Grizzly based JMS lazy listener, which is going to initialize
      * JMS container on first request.
-     */  
+     */
     public void initializeLazyListener(JmsService jmsService) throws JmsInitialisationException {
-            
+
             if (jmsService != null && jmsService.getType().equals("DISABLED")) {
                 return;
             }
-        
+
         if (jmsService != null) {
             if (EMBEDDED.equalsIgnoreCase(jmsService.getType()) && !grizzlyListenerInit) {
                 GrizzlyService grizzlyService = Globals.get(GrizzlyService.class);
@@ -515,13 +517,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
     protected void startResourceAdapter(BootstrapContext bootstrapContext) throws ResourceAdapterInternalException {
-        
+
         JmsService jmsService = getJmsService();
 
         if (jmsService != null && jmsService.getType().equals("DISABLED")) {
             return;
         }
-        
+
         try{
         if (this.moduleName_.equals(ConnectorRuntime.DEFAULT_JMS_ADAPTER)) {
             if (connectorRuntime.isServer()) {
@@ -543,7 +545,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                 //set the JMSRA system property to enable XA JOINS
                                 //disabling this due to issue - 8727
                                 //System.setProperty(XA_JOIN_ALLOWED, "true");
-                                
+
                                 // to prevent classloader leaks in new threads clear invocation manager before bootstrapping JMS
                                 resourceadapter_.start(bootStrapContextImpl);
                                 return null;
@@ -613,9 +615,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (jmsService != null && jmsService.getType().equals("DISABLED")) {
             return;
         }
-        
-        
-        
+
+
+
         if (connectionDefs_ == null) {
             throw new ConnectorRuntimeException("No Connection Defs defined in the RA.xml");
         }
@@ -827,7 +829,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                 same values in all broker instances in the conventional cluster
 
                 */
-    String prefix = null;        
+    String prefix = null;
     if (ClusterMode.CONVENTIONAL_WITH_MASTER_BROKER == clusterMode) {
       prefix = ENHANCED_CLUSTER_DB_PREFIX;
     } else if (ClusterMode.CONVENTIONAL_OF_PEER_BROKERS == clusterMode) {
@@ -864,14 +866,14 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         String propertyPrefix = fullprefix + "property.";
 
         if(dbJdbcUrl != null) {
-		if ("derby".equals(dbVendor))	
+		if ("derby".equals(dbVendor))
 			dbProps.setProperty(fullprefix + "opendburl", dbJdbcUrl);
 		else
 			dbProps.setProperty(propertyPrefix + "url", dbJdbcUrl);
 	}
 
         for (Object obj : dbprops){
-	    Property prop = (Property) obj;	
+	    Property prop = (Property) obj;
             String key = prop.getName();
             String value = prop.getValue();
             //don't set a prefix if the property name is already prefixed with "imq."
@@ -1154,7 +1156,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
     }
 
    private Properties listToProperties(List<Property> props){
-	Properties properties = new Properties();   
+	Properties properties = new Properties();
 	if(props != null){
 		for (Property prop : props){
 			String key = prop.getName();
@@ -1378,7 +1380,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                      return;
             } else {
                if (! isDBEnabled()){
-		       
+
                 String masterbrkr = getMasterBroker();
                     ConnectorConfigProperty  envProp2 = new ConnectorConfigProperty
                         (MASTERBROKER,masterbrkr , "Master  Broker",
@@ -2149,13 +2151,13 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
             } else {
                 destName = getPhysicalDestinationFromConfiguration(jndiName, appName, moduleName);
             }
-    
+
             //1.3 jndi-name ==> 1.4 setDestination
             descriptor_.putRuntimeActivationConfigProperty(
                     new EnvironmentProperty(DESTINATION,
                             destName, null));
-    
-    
+
+
             //1.3 (standard) destination-type == 1.4 setDestinationType
             //XXX Do we really need this???
             if (descriptor_.getDestinationType() != null &&
@@ -2199,9 +2201,9 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
                                     Object[]{aor.getResType() , aor.getJndiName() , descriptor_.getName()});
                         }
                     }
-    
+
                 } catch (Exception e) {
-    
+
                 }
             }
         }

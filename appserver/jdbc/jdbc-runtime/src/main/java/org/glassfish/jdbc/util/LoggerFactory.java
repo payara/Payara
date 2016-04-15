@@ -31,6 +31,6 @@ public class LoggerFactory {
      * @return logger using resource bundle same as the connectors-runtime.jar
      */
     public static Logger getLogger(final Class clazz) {
-        return LogDomains.getLogger(clazz, LogDomains.RSR_LOGGER, Thread.currentThread().getContextClassLoader());
+        return LogDomains.getLogger(clazz, LogDomains.RSR_LOGGER, clazz.getClassLoader());
     }
 }

@@ -42,7 +42,6 @@ package com.sun.enterprise.connectors.util;
 
 import com.sun.enterprise.loader.ASURLClassLoader;
 import com.sun.logging.LogDomains;
-import org.glassfish.internal.api.DelegatingClassLoader;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -182,7 +181,7 @@ public class ConnectorClassLoader extends ASURLClassLoader
             rarModuleClassLoaders.remove(moduleName);
             _logger.log(
                     Level.WARNING,
-                    "enterprise_util.remove_connector", 
+                    "enterprise_util.remove_connector",
                     moduleName);
         }
     }

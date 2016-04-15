@@ -124,10 +124,10 @@ public abstract class JdbcObjectsFactory implements Serializable {
         }
         return proxiedConn;
     }
-    
-    protected <T> T getProxyObject(final Object actualObject, Class<T>[] ifaces, 
+
+    protected <T> T getProxyObject(final Object actualObject, Class<T>[] ifaces,
             final SQLTraceDelegator sqlTraceDelegator) throws Exception {
-        
+
         T result;
         InvocationHandler ih = new InvocationHandler() {
 
@@ -146,8 +146,8 @@ public abstract class JdbcObjectsFactory implements Serializable {
                 return methodResult;
             }
         };
-        result = (T) Proxy.newProxyInstance(actualObject.getClass().getClassLoader(), ifaces, ih);        
+        result = (T) Proxy.newProxyInstance(actualObject.getClass().getClassLoader(), ifaces, ih);
         return result;
-    }    
+    }
 
 }
