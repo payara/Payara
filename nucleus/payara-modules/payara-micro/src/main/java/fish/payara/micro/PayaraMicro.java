@@ -880,16 +880,20 @@ public class PayaraMicro {
 
             // reset logger.
             // reset the Log Manager
-            File configDir = new File(System.getProperty("com.sun.aas.instanceRoot"), "config");
+            String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
+            File configDir = new File(instanceRootStr, "config");
             File loggingProperties = new File(configDir.getAbsolutePath(), "logging.properties");
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
-                System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                if (System.getProperty("java.util.logging.config.file") == null) {
+                    System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                }
                 try {
                     LogManager.getLogManager().readConfiguration();
                 } catch (IOException | SecurityException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
+            configureSSL();
             gf.start();
             //this.runtime = new PayaraMicroRuntime(instanceName, gf);
             this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
@@ -1785,6 +1789,20 @@ public class PayaraMicro {
             logger.log(Level.SEVERE, "Error creating Uber Jar " + uberJar.getAbsolutePath(), ex);
         }
 
+    }
+
+    private void configureSSL() {
+        String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
+        
+        // check keystore
+        if (System.getProperty("javax.net.ssl.keyStore") == null) {
+            System.setProperty("javax.net.ssl.keyStore",instanceRootStr+"/config/keystore.jks");
+        }
+        
+        // check truststore
+        if (System.getProperty("javax.net.ssl.trustStore") == null) {
+            System.setProperty("javax.net.ssl.trustStore",instanceRootStr+"/config/cacerts.jks");
+        }
     }
 
 }
