@@ -1590,7 +1590,7 @@ public class PayaraMicro {
         logger.info("Building Uber Jar... " + uberJar);
         try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));) {
             // get the current payara micro jar
-            URL url = this.getClass().getClassLoader().getResource("META-INF/MANIFEST.MF");
+            URL url = this.getClass().getClassLoader().getResource("payara-boot.properties");
             JarURLConnection urlcon = (JarURLConnection) url.openConnection();
 
             // copy all entries from the existing jar file
