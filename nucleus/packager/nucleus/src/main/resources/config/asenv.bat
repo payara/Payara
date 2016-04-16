@@ -45,7 +45,7 @@ REM  Although the lines in this file are formatted as environment
 REM  variable assignments, this file is NOT typically invoked as a script
 REM  from another script to define these variables.  Rather, this file is read
 REM  and processed by a server as it starts up.  That scanning code resolves 
-REM  the relative paths against the GlassFish installation directory.
+REM  the relative paths against the Payara installation directory.
 REM
 REM Yet, this file is also where users of earlier versions have sometimes added 
 REM a definition of AS_JAVA to control which version of Java Payara should use.
