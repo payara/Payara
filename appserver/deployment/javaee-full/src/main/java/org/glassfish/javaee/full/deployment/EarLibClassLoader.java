@@ -59,7 +59,7 @@ public class EarLibClassLoader extends ASURLClassLoader
 {
     public EarLibClassLoader(URL[] urls, ClassLoader classLoader) {
         super(classLoader); 
-        setEnabled();
+        enableCurrentBeforeParent();
         for (URL url : urls) {
             addURL(url);
         }

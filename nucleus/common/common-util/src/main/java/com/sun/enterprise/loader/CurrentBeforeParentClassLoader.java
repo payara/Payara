@@ -77,7 +77,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
      */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        if(Boolean.getBoolean(ENABLE_BEFORE_PARENT_CLASSLOADER) == false || !enabled)
+        if(Boolean.getBoolean(ENABLE_BEFORE_PARENT_CLASSLOADER) == false || !currentBeforeParentEnabled)
         {
             return super.loadClass(name, resolve);
         }
@@ -106,12 +106,12 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     /**
      * enable current-first behavior
      */
-    final public void setEnabled() {
-        enabled = true;
+    final public void enableCurrentBeforeParent() {
+        currentBeforeParentEnabled = true;
     }
     
     
-    protected boolean enabled = false;
+    protected boolean currentBeforeParentEnabled = false;
     
     private final ClassLoader system = getClass().getClassLoader();
     private final ClassLoader _parent = getParent();
