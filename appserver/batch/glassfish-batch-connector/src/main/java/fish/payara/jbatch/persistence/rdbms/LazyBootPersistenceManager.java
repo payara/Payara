@@ -14,7 +14,6 @@
  */
 package fish.payara.jbatch.persistence.rdbms;
 
-import com.hazelcast.core.HazelcastInstance;
 import com.ibm.jbatch.container.context.impl.StepContextImpl;
 import com.ibm.jbatch.container.jobinstance.RuntimeFlowInSplitExecution;
 import com.ibm.jbatch.container.jobinstance.RuntimeJobExecution;
@@ -305,10 +304,10 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
                         }
                     }
                 }
-            } else if (object instanceof HazelcastInstance) {
+            } //else if (object instanceof HazelcastInstance) {
                 //lazyProxy = new HazelcastPersistenceService();
                 //lazyProxy.init(ibc);
-            }
+            //}
         } catch (NamingException ex) {
             Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
         }    }

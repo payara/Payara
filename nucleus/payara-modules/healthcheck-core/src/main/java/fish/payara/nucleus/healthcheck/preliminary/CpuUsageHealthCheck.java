@@ -45,7 +45,7 @@ public class CpuUsageHealthCheck extends BaseThresholdHealthCheck<HealthCheckWit
     }
 
     @Override
-    protected HealthCheckWithThresholdExecutionOptions constructOptions(CpuUsageChecker checker) {
+    public HealthCheckWithThresholdExecutionOptions constructOptions(CpuUsageChecker checker) {
         return super.constructThresholdOptions(checker);
     }
 

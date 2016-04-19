@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2015] [C2B2 Consulting Limited]
+Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
@@ -159,10 +159,6 @@ Portions Copyright [2015] [C2B2 Consulting Limited]
             </transaction-service>
             <hazelcast-runtime-configuration enabled="false" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
-            <java-config>
-                <jvm-options>-Djavax.net.ssl.keyStore=${com.sun.aas.instanceRoot}/config/keystore.jks</jvm-options>
-                <jvm-options>-Djavax.net.ssl.trustStore=${com.sun.aas.instanceRoot}/config/cacerts.jks</jvm-options>
-            </java-config>
             <availability-service availability-enabled="false" >
                 <web-container-availability availability-enabled="false"></web-container-availability>
                 <ejb-container-availability sfsb-store-pool-name="jdbc/hastore"></ejb-container-availability>

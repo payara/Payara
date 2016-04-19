@@ -39,7 +39,7 @@ public class HeapMemoryUsageHealthCheck extends BaseThresholdHealthCheck<HealthC
     }
 
     @Override
-    protected HealthCheckWithThresholdExecutionOptions constructOptions(HeapMemoryUsageChecker checker) {
+    public HealthCheckWithThresholdExecutionOptions constructOptions(HeapMemoryUsageChecker checker) {
         return super.constructThresholdOptions(checker);
     }
 

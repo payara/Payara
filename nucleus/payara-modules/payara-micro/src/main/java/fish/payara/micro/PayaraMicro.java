@@ -42,6 +42,7 @@ import java.util.logging.Logger;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.net.JarURLConnection;
 import java.nio.file.Path;
 import java.util.Enumeration;
@@ -56,6 +57,7 @@ import org.glassfish.embeddable.GlassFish.Status;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
+import com.sun.appserv.server.util.Version;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -74,6 +76,8 @@ public class PayaraMicro {
     private String hzMulticastGroup;
     private int hzPort = Integer.MIN_VALUE;
     private int hzStartPort = Integer.MIN_VALUE;
+    private String hzClusterName;
+    private String hzClusterPassword;
     private int httpPort = Integer.MIN_VALUE;
     private int sslPort = Integer.MIN_VALUE;
     private int maxHttpThreads = Integer.MIN_VALUE;
@@ -97,6 +101,7 @@ public class PayaraMicro {
     private boolean enableHealthCheck = false;
     private List<String> GAVs;
     private File uberJar;
+    private Properties userSystemProperties;
     private Map<String, URL> deploymentURLsMap;
     private List<URL> repositoryURLs;
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
@@ -664,6 +669,44 @@ public class PayaraMicro {
     }
 
     /**
+     * Gets the name of the Hazelcast cluster group.
+     * Clusters with different names do not interact
+     * @return The current Cluster Name
+     */
+    public String getHzClusterName() {
+        return hzClusterName;
+    }
+
+    /**
+     * Sets the name of the Hazelcast cluster group
+     * @param hzClusterName The name of the hazelcast cluster
+     * @return
+     */
+    public PayaraMicro setHzClusterName(String hzClusterName) {
+        this.hzClusterName = hzClusterName;
+        return this;
+    }
+
+    /**
+     * Gets the password of the Hazelcast cluster group 
+     * @return 
+     */
+    public String getHzClusterPassword() {
+        return hzClusterPassword;
+    }
+
+    /**
+     * Sets the Hazelcast cluster group password.
+     * For two clusters to work together then the group name and password must be the same
+     * @param hzClusterPassword The password to set
+     * @return 
+     */
+    public PayaraMicro setHzClusterPassword(String hzClusterPassword) {
+        this.hzClusterPassword = hzClusterPassword;
+        return this;
+    }
+
+    /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      *
      * @return An instance of PayaraMicroRuntime that can be used to access the
@@ -697,6 +740,15 @@ public class PayaraMicro {
             mc.setAlternateConfiguration(alternateHZConfigFile);
         }
         mc.setLite(liteMember);
+        
+        if (hzClusterName != null) {
+            mc.setClusterGroupName(hzClusterName);
+        }
+        
+        if (hzClusterPassword != null) {
+            mc.setClusterGroupPassword(hzClusterPassword);
+        }
+        
         HazelcastCore.setMulticastOverride(mc);
 
         setSystemProperties();
@@ -787,6 +839,8 @@ public class PayaraMicro {
                     throw new GlassFishException("Could not bind SSL port");
                 }
             }
+            
+            
 
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
@@ -806,10 +860,12 @@ public class PayaraMicro {
                 if (!configFile.exists()) {
                     installFiles(gfproperties);
                 } else {
-                    String absolutePath = rootDir.getAbsolutePath();
-                    absolutePath = absolutePath.replace('\\', '/');
-                    gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
-                    gfproperties.setConfigFileReadOnly(false);
+                    if (alternateDomainXML ==null) {
+                        String absolutePath = rootDir.getAbsolutePath();
+                        absolutePath = absolutePath.replace('\\', '/');
+                        gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
+                        gfproperties.setConfigFileReadOnly(false);
+                    }   
                 }
 
             }
@@ -826,16 +882,20 @@ public class PayaraMicro {
 
             // reset logger.
             // reset the Log Manager
-            File configDir = new File(System.getProperty("com.sun.aas.instanceRoot"), "config");
+            String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
+            File configDir = new File(instanceRootStr, "config");
             File loggingProperties = new File(configDir.getAbsolutePath(), "logging.properties");
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
-                System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                if (System.getProperty("java.util.logging.config.file") == null) {
+                    System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+                }
                 try {
                     LogManager.getLogManager().readConfiguration();
                 } catch (IOException | SecurityException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
+            configureSSL();
             gf.start();
             //this.runtime = new PayaraMicroRuntime(instanceName, gf);
             this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
@@ -851,7 +911,7 @@ public class PayaraMicro {
             }
 
             long end = System.currentTimeMillis();
-            logger.info("Payara Micro ready in " + (end - start) + " (ms)");
+            logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
             return runtime;
         } catch (GlassFishException ex) {
@@ -956,19 +1016,27 @@ public class PayaraMicro {
                             throw new IllegalArgumentException();
                         }
                         i++;
-                        break;
-                    }
-                    case "--mcAddress":
-                        hzMulticastGroup = args[i + 1];
-                        i++;
-                        break;
-                    case "--mcPort": {
-                        String httpPortS = args[i + 1];
-                        try {
-                            hzPort = Integer.parseInt(httpPortS);
-                            if (hzPort < 1 || hzPort > 65535) {
-                                throw new NumberFormatException("Not a valid tcp port");
-                            }
+                    break;
+                }
+                case "--mcAddress":
+                    hzMulticastGroup = args[i + 1];
+                    i++;
+                    break;
+                case "--clusterName" :
+                    hzClusterName = args[i+1];
+                    i++;
+                    break;
+                case "--clusterPassword" :
+                    hzClusterPassword = args[i+1];
+                    i++;
+                    break;
+                case "--mcPort": {
+                    String httpPortS = args[i + 1];
+                    try {
+                        hzPort = Integer.parseInt(httpPortS);
+                        if (hzPort < 1 || hzPort > 65535) {
+                            throw new NumberFormatException("Not a valid tcp port");
+                        }
                         } catch (NumberFormatException nfe) {
                             logger.log(Level.SEVERE, "{0} is not a valid multicast port number and will be ignored", httpPortS);
                             throw new IllegalArgumentException();
@@ -1020,7 +1088,7 @@ public class PayaraMicro {
                             deployments.add(deployment);
                         }
                         i++;
-                        break;
+                        break;   
                     case "--domainConfig":
                         alternateDomainXML = new File(args[i + 1]);
                         if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
@@ -1095,31 +1163,59 @@ public class PayaraMicro {
                         uberJar = new File(args[i + 1]);
                         i++;
                         break;
+                    case "--systemProperties": {
+                            File propertiesFile = new File(args[i + 1]);
+                            userSystemProperties = new Properties();
+                            try (FileReader reader = new FileReader(propertiesFile)) {
+                                userSystemProperties.load(reader);
+                                Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
+                                while (names.hasMoreElements()) {
+                                    String name = names.nextElement();
+                                    System.setProperty(name, userSystemProperties.getProperty(name));
+                                }
+                            } catch (IOException e) {
+                                logger.log(Level.SEVERE,
+                                        "{0} is not a valid properties file",
+                                        propertiesFile.getAbsolutePath());
+                                throw new IllegalArgumentException(e);
+                            }
+                            if (!propertiesFile.isFile() && !propertiesFile.canRead()) {
+                                logger.log(Level.SEVERE,
+                                        "{0} is not a valid properties file",
+                                        propertiesFile.getAbsolutePath());
+                                throw new IllegalArgumentException();
+
+                            }
+                        }
+                        break;
                     case "--help":
-                        System.err.println("Usage: --noCluster  Disables clustering\n"
-                                + "--port sets the http port\n"
-                                + "--sslPort sets the https port number\n"
-                                + "--mcAddress sets the cluster multicast group\n"
-                                + "--mcPort sets the cluster multicast port\n"
-                                + "--startPort sets the cluster start port number\n"
-                                + "--name sets the instance name\n"
-                                + "--rootDir Sets the root configuration directory and saves the configuration across restarts\n"
-                                + "--deploymentDir if set to a valid directory all war files in this directory will be deployed\n"
-                                + "--deploy specifies a war file to deploy\n"
-                                + "--domainConfig overrides the complete server configuration with an alternative domain.xml file\n"
-                                + "--minHttpThreads the minimum number of threads in the HTTP thread pool\n"
-                                + "--maxHttpThreads the maximum number of threads in the HTTP thread pool\n"
-                                + "--hzConfigFile the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
-                                + "--autoBindHttp sets autobinding of the http port to a non-bound port\n"
-                                + "--autoBindSsl sets autobinding of the https port to a non-bound port\n"
-                                + "--autoBindRange sets the maximum number of ports to look at for port autobinding\n"
-                                + "--lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
-                                + "--enableHealthCheck enables/disables Health Check Service (disabled by default).\n"
-                                + "--logo reveal the #BadAssFish\n"
-                                + "--deployFromGAV specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
-                                + "--additionalRepository specifies an additional repository to search for deployable artefacts in\n"
-                                + "--outputUberJar packages up an uber jar at the specified path based on the command line arguments and exits\n"
-                                + "--help Shows this message and exits\n");
+                        System.err.println("Usage:\n  --noCluster  Disables clustering\n"
+                                + "  --port <http-port-number> sets the http port\n"
+                                + "  --sslPort <ssl-port-number> sets the https port number\n"
+                                + "  --mcAddress <muticast-address> sets the cluster multicast group\n"
+                                + "  --mcPort <multicast-port-number> sets the cluster multicast port\n"
+                                + "  --clusterName <cluster-name> sets the Cluster Group Name\n"
+                                + "  --clusterPassword <cluster-password> sets the Cluster Group Password\n"
+                                + "  --startPort <cluster-start-port-number> sets the cluster start port number\n"
+                                + "  --name <instance-name> sets the instance name\n"
+                                + "  --rootDir <directory-path> Sets the root configuration directory and saves the configuration across restarts\n"
+                                + "  --deploymentDir <directory-path> if set to a valid directory all war files in this directory will be deployed\n"
+                                + "  --deploy <file-path> specifies a war file to deploy\n"
+                                + "  --domainConfig <file-path> overrides the complete server configuration with an alternative domain.xml file\n"
+                                + "  --minHttpThreads <threads-number> the minimum number of threads in the HTTP thread pool\n"
+                                + "  --maxHttpThreads <threads-number> the maximum number of threads in the HTTP thread pool\n"
+                                + "  --hzConfigFile <file-path> the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
+                                + "  --autoBindHttp sets autobinding of the http port to a non-bound port\n"
+                                + "  --autoBindSsl sets autobinding of the https port to a non-bound port\n"
+                                + "  --autoBindRange <number-of-ports> sets the maximum number of ports to look at for port autobinding\n"
+                                + "  --lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
+                                + "  --enableHealthCheck <boolean> enables/disables Health Check Service (disabled by default).\n"
+                                + "  --logo reveal the #BadAssFish\n"
+                                + "  --deployFromGAV <list-of-artefacts> specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
+                                + "  --additionalRepository <repo-url> specifies an additional repository to search for deployable artefacts in\n"
+                                + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
+                                + "  --systemProperties <file-path> Reads system properties from a file\n"
+                                + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logo":
@@ -1502,6 +1598,8 @@ public class PayaraMicro {
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
         hzPort = Integer.getInteger("payaramicro.mcPort", Integer.MIN_VALUE);
         hzStartPort = Integer.getInteger("payaramicro.startPort", Integer.MIN_VALUE);
+        hzClusterName = System.getProperty("payaramicro.clusterName");
+        hzClusterPassword = System.getProperty("payaramicro.clusterPassword");
         liteMember = Boolean.getBoolean("payaramicro.lite");
         maxHttpThreads = Integer.getInteger("payaramicro.maxHttpThreads", Integer.MIN_VALUE);
         minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads", Integer.MIN_VALUE);
@@ -1650,6 +1748,14 @@ public class PayaraMicro {
             if (alternateHZConfigFile != null) {
                 props.setProperty("payaramicro.hzConfigFile", "META-INF/deploy/hzconfig.xml");
             }
+            
+            if (hzClusterName != null) {
+                props.setProperty("payaramicro.clusterName", hzClusterName);
+            }
+            
+            if (hzClusterPassword != null) {
+                props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
+            }
 
             props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
             props.setProperty("payaramicro.autoBindSsl", Boolean.toString(autoBindSsl));
@@ -1666,7 +1772,16 @@ public class PayaraMicro {
             if (sslPort != Integer.MIN_VALUE) {
                 props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
             }
-
+            
+            // write all user defined system properties
+            if (userSystemProperties != null) {
+                Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
+                while (names.hasMoreElements()) {
+                    String name = names.nextElement();
+                    props.setProperty(name, userSystemProperties.getProperty(name));
+                }
+            }
+            
             props.store(jos, "");
             jos.flush();
             jos.closeEntry();
@@ -1711,6 +1826,20 @@ public class PayaraMicro {
             logger.log(Level.SEVERE, "Error creating Uber Jar " + uberJar.getAbsolutePath(), ex);
         }
 
+    }
+
+    private void configureSSL() {
+        String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
+        
+        // check keystore
+        if (System.getProperty("javax.net.ssl.keyStore") == null) {
+            System.setProperty("javax.net.ssl.keyStore",instanceRootStr+"/config/keystore.jks");
+        }
+        
+        // check truststore
+        if (System.getProperty("javax.net.ssl.trustStore") == null) {
+            System.setProperty("javax.net.ssl.trustStore",instanceRootStr+"/config/cacerts.jks");
+        }
     }
 
 }

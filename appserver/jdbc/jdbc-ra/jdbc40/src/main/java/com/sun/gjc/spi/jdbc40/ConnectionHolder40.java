@@ -45,6 +45,7 @@ import com.sun.gjc.common.DataSourceObjectBuilder;
 import com.sun.gjc.spi.ManagedConnectionFactoryImpl;
 import com.sun.gjc.spi.ManagedConnectionImpl;
 import com.sun.gjc.spi.base.ConnectionHolder;
+import com.sun.logging.LogDomains;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -54,6 +55,8 @@ import java.sql.*;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.resource.ResourceException;
 
 
@@ -66,9 +69,13 @@ import javax.resource.ResourceException;
  */
 public class ConnectionHolder40 extends ConnectionHolder {
 
-    protected Properties defaultClientInfo;
+    // this class uses LogStrings.properties of the jdbc-core library.
+    private static final Logger _logger = LogDomains.getLogger(ConnectionHolder40.class, LogDomains.RSR_LOGGER,
+            ConnectionHolder.class.getClassLoader());
     protected final static StringManager localStrings =
             StringManager.getManager(ManagedConnectionFactoryImpl.class);
+
+    protected Properties defaultClientInfo;
     protected boolean jdbc30Connection;
 
     /**

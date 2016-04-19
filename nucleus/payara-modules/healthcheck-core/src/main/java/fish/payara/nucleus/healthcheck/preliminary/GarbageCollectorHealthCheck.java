@@ -49,7 +49,7 @@ public class GarbageCollectorHealthCheck extends BaseHealthCheck<HealthCheckExec
     }
 
     @Override
-    protected HealthCheckExecutionOptions constructOptions(GarbageCollectorChecker checker) {
+    public HealthCheckExecutionOptions constructOptions(GarbageCollectorChecker checker) {
         return super.constructBaseOptions(checker);
     }
 
