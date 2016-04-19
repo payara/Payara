@@ -8,7 +8,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>BackupConfigPackage</artifactId>
-    <packaging>pom</packaging>
+    <packaging>distribution-fragment</packaging>
     <name>Backup Config Package</name>
     
     <dependencies>

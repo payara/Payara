@@ -130,11 +130,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>BackupConfigPackage</artifactId>
-            <type>zip</type>
-            <version>${project.version}</version>
-        </dependency>
+        
     </dependencies>
 </project>

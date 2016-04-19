@@ -161,6 +161,7 @@
         <module>hazelcast-l10n</module>
         <module>healthcheck</module>
         <module>payara</module>
+        <module>BackupConfig</module>
     </modules>
 
     <build>
