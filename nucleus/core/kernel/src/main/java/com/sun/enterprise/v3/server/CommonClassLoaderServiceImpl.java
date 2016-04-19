@@ -166,7 +166,7 @@ public class CommonClassLoaderServiceImpl implements PostConstruct {
             // when all it would have done was to delegate up.
             commonClassLoader = new CurrentBeforeParentClassLoader(
                     urls.toArray(new URL[urls.size()]), APIClassLoader);
-            commonClassLoader.setEnabled();
+            commonClassLoader.enableCurrentBeforeParent();
         } else {
             logger.logp(Level.FINE, "CommonClassLoaderManager",
                     "Skipping creation of CommonClassLoader " +
