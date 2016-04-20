@@ -45,7 +45,7 @@ import imp
 conf = imp.load_source("pkg_conf", "../pkg_conf.py")
 
 pkg = {
-    "name"          : "phonehome",
+    "name"          : "BackupConfig",
     "version"       : conf.glassfish_version,
     "attributes"    : {
                         "pkg.summary" : "Backup Service Integration",

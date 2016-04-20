@@ -50,7 +50,7 @@
     </parent>
     <!--<groupId>org.glassfish.main.packager</groupId>-->
     <artifactId>BackupConfig</artifactId>
-    <name>Backup Config Package</name>
+    <name>Backup Config Packager</name>
     <packaging>distribution-fragment</packaging>
     <description>This pom describes how to assemble the Backup Config package</description>
     
@@ -127,7 +127,7 @@
     
     <dependencies>
         <dependency>
-           <groupId>org.glassfish.main.packager</groupId>
+           <groupId>fish.payara.packager</groupId>
            <artifactId>BackupConfigPackage</artifactId>
            <version>${project.version}</version>
            <type>zip</type>

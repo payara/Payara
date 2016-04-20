@@ -7,6 +7,7 @@
         <version>4.1.1.162-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    <groupId>fish.payara.packager</groupId>
     <artifactId>BackupConfigPackage</artifactId>
     <packaging>distribution-fragment</packaging>
     <name>Backup Config Package</name>
@@ -14,7 +15,7 @@
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>CreateBackupConfig</artifactId>
+            <artifactId>BackupConfigService</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
