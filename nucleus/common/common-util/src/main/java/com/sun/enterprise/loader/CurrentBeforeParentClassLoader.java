@@ -77,7 +77,8 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
      */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        if(Boolean.getBoolean(ENABLE_BEFORE_PARENT_CLASSLOADER) == false || !currentBeforeParentEnabled)
+        String parentClassLoaderDelegateStr = System.getProperty(PARENT_CLASSLOADER_DELEGATE_PROPERTY, "true");
+        if(Boolean.parseBoolean(parentClassLoaderDelegateStr) || !currentBeforeParentEnabled)
         {
             return super.loadClass(name, resolve);
         }
@@ -117,5 +118,5 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     private final ClassLoader _parent = getParent();
     private final ClassLoader parent = _parent != null? _parent : system;
     private static final Logger logger = CULoggerInfo.getLogger();
-    public static final String ENABLE_BEFORE_PARENT_CLASSLOADER = "fish.payara.classloading";
+    public static final String PARENT_CLASSLOADER_DELEGATE_PROPERTY = "fish.payara.classloading.delegate";
 }
