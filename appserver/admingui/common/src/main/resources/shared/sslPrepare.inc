@@ -61,6 +61,8 @@ if (! #{requestScope.exist}){
     createMap(result="#{pageSession.valueMap}");
     mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tlsEnabled" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="tlsEnabled11" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="tlsEnabled12" value="true");
     mapPut(map="#{pageSession.valueMap}" key="trustMaxCertLength" value="5");
 
     convertToDifferentCiphersGroup(ciphers="#{pageSession.valueMap['ssl3TlsCiphers']}"
@@ -71,7 +73,7 @@ if (! #{requestScope.exist}){
 }
 
 //set the following for including buttons.inc
-setPageSessionAttribute(key="convertToFalseList" value={"ssl3Enabled" "tlsEnabled" "clientAuthEnabled" })
+setPageSessionAttribute(key="convertToFalseList" value={"ssl3Enabled" "tlsEnabled" "tls11Enabled" "tls12Enabled" "clientAuthEnabled" })
 setPageSessionAttribute(key="skipAttrsList", value={"sslInactivityTimeout"});
 setPageSessionAttribute(key="showDefaultButton" value="#{false}" )
 setPageSessionAttribute(key="hasPropertySheet" value="#{true}" )
