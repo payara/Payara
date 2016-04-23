@@ -83,6 +83,8 @@
         <attribute name="ssl2-enabled" property="Ssl2Enabled" convert="boolean"/>
         <attribute name="ssl3-enabled" property="Ssl3Enabled" convert="boolean"/>
         <attribute name="tls-enabled" property="TlsEnabled" convert="boolean"/>
+        <attribute name="tls11-enabled" property="Tls11Enabled" convert="boolean"/>
+        <attribute name="tls12-enabled" property="Tls12Enabled" convert="boolean"/>
         <attribute name="tls-rollback-enabled" property="TlsRollbackEnabled" convert="boolean"/>
     </element>
 
