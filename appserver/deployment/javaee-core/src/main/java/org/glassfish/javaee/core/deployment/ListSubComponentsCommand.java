@@ -186,7 +186,10 @@ public class ListSubComponentsCommand implements AdminCommand {
         if (appname == null) {
             subComponents = getAppLevelComponents(app, type, subComponentsMap);
         } else {
-            BundleDescriptor bundleDesc = app.getModuleByUri(modulename);
+            // strip the version suffix (delimited by colon), if present
+            int versionSuffix = modulename.indexOf(':');
+            String versionLessModuleName = versionSuffix > 0 ? modulename.substring(0, versionSuffix) : modulename;
+            BundleDescriptor bundleDesc = app.getModuleByUri(versionLessModuleName);
             if (bundleDesc == null) {
                 report.setMessage(localStrings.getLocalString("listsubcomponents.invalidmodulename", "Invalid module name", appname, modulename));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);

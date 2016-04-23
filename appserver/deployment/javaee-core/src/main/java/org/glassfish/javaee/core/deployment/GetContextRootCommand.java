@@ -98,7 +98,10 @@ public class GetContextRootCommand implements AdminCommand {
         if (appInfo != null) {
             Application app = appInfo.getMetaData(Application.class);
             if (app != null) {
-                BundleDescriptor bundleDesc = app.getModuleByUri(modulename);
+                // strip the version suffix (delimited by colon), if present
+                int versionSuffix = modulename.indexOf(':');
+                String versionLessModuleName = versionSuffix > 0 ? modulename.substring(0, versionSuffix) : modulename;
+                BundleDescriptor bundleDesc = app.getModuleByUri(versionLessModuleName);
                 if (bundleDesc != null &&
                     bundleDesc instanceof WebBundleDescriptor) {
                     String contextRoot = ((WebBundleDescriptor)bundleDesc).getContextRoot();
