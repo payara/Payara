@@ -212,14 +212,13 @@ public class PoolManagerImpl extends AbstractPoolManager implements ComponentInv
             }
         } catch (Exception e) {
             //In the rare cases where enlistResource throws exception, we
-            //should return the resource to the pool
-            putbackDirectToPool(handle, spec.getPoolInfo());
+            //should throw the resource away
+            putbackBadResourceToPool(handle);
             _logger.log(Level.WARNING, "poolmgr.err_enlisting_res_in_getconn",
                     spec.getPoolInfo());
-            logFine("rm.enlistResource threw Exception. Returning resource to pool");
+            logFine("rm.enlistResource threw Exception. Evicting resource from pool");
             //and rethrow the exception
             throw new PoolingException(e);
-
         }
 
         return handle.getUserConnection();

@@ -149,14 +149,14 @@ public class LazyEnlistableResourceManagerImpl extends ResourceManagerImpl {
                     h.setEnlistmentSuspended(true);
             } catch( Exception e ) {
                 //In the rare cases where enlistResource throws exception, we
-    	        //should return the resource to the pool
+    	        //should report the resource to the pool as bad
                     PoolManager mgr = ConnectorRuntime.getRuntime().getPoolManager();
-    	            mgr.putbackDirectToPool( h, h.getResourceSpec().getPoolInfo());
+    	            mgr.putbackBadResourceToPool(h);
                     _logger.log(Level.WARNING,
                                 "poolmgr.err_enlisting_res_in_getconn", h
                                 .getResourceSpec().getPoolInfo());
     	        if (_logger.isLoggable(Level.FINE) ) {
-    	            _logger.fine("rm.enlistResource threw Exception. Returning resource to pool");
+    	            _logger.fine("rm.enlistResource threw Exception. Evicting resource from pool");
     	        }
     	        //and rethrow the exception
     	        throw new ResourceException( e );
