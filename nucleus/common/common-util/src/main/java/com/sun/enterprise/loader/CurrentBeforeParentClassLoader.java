@@ -126,7 +126,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     /**
      * disable functionality
      */
-    final public void disableCurrentBeforeParentUnconditional() {
+    final public void disableCurrentBeforeParent() {
         currentBeforeParentEnabled = false;
     }
     
