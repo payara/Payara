@@ -41,27 +41,6 @@
 
 package com.sun.enterprise.deployment;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.persistence.EntityManagerFactory;
-
 import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
@@ -77,8 +56,28 @@ import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.UUID;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.inject.Inject;
+import javax.persistence.EntityManagerFactory;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.DeploymentUtils;
 import org.glassfish.deployment.common.Descriptor;
@@ -88,10 +87,9 @@ import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.deployment.common.SecurityRoleMapperFactory;
 import org.glassfish.deployment.versioning.VersioningUtils;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.security.common.Role;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.ServiceLocator;
 
 /**
  * Objects of this type encapsulate the data and behaviour of a J2EE
@@ -166,6 +164,8 @@ public class Application extends CommonResourceBundleDescriptor
     private String archiveName;
 
     private String compatValue;
+    
+    private String classLoadingDelegate;
 
     private boolean initializeInOrder = false;
 
@@ -716,6 +716,13 @@ public class Application extends CommonResourceBundleDescriptor
         this.compatValue = compatValue;
     }
 
+    public String getClassLoadingDelegate() {
+        return classLoadingDelegate;
+    }
+
+    public void setClassLoadingDelegate(String classLoadingDelegate) {
+        this.classLoadingDelegate = classLoadingDelegate;
+    }
 
     /**
      * @return the initializeInOrder flag

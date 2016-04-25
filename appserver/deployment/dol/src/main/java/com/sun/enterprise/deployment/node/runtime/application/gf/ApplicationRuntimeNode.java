@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
@@ -51,14 +52,13 @@ import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.xml.DTDRegistry;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.deployment.xml.WebServicesTagNames;
+import java.util.List;
+import java.util.Map;
 import org.glassfish.deployment.common.ModuleDescriptor;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import org.glassfish.security.common.Group;
 import org.glassfish.security.common.Role;
 import org.w3c.dom.Node;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * This node handles all runtime-information pertinent to applications
@@ -180,6 +180,9 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	if (element.getQName().equals(RuntimeTagNames.COMPATIBILITY)) {
 	    descriptor.setCompatibility(value);
 	} else
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_CLASSLOADING_DELEGATE)) {
+	    descriptor.setClassLoadingDelegate(value);
+	} else 
 	if (element.getQName().equals(RuntimeTagNames.WEB_URI)) {
 	    currentWebUri=value;
 	} else 

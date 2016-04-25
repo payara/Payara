@@ -77,8 +77,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
      */
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        String parentClassLoaderDelegateStr = System.getProperty(PARENT_CLASSLOADER_DELEGATE_PROPERTY, "true");
-        if(Boolean.parseBoolean(parentClassLoaderDelegateStr) || !currentBeforeParentEnabled)
+        if(!currentBeforeParentEnabled || isAlwaysDelegate(name))
         {
             return super.loadClass(name, resolve);
         }
@@ -106,12 +105,36 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     
     /**
      * enable current-first behavior
+     * conditional upon PARENT_CLASSLOADER_DELEGATE_PROPERTY system property being turned on
      */
     final public void enableCurrentBeforeParent() {
-        currentBeforeParentEnabled = true;
+        String parentClassLoaderDelegateStr = System.getProperty(PARENT_CLASSLOADER_DELEGATE_PROPERTY, "true");
+        if(!Boolean.parseBoolean(parentClassLoaderDelegateStr)) {
+            currentBeforeParentEnabled = true;
+        }
     }
     
+    /**
+     * enable current-first behavior unconditionally, regardless of system property
+     * used by application configuration parser, so if application developer uses the config xml element,
+     * they presumably want the behavior regardless of the system property settings
+     */
+    final public void enableCurrentBeforeParentUnconditional() {
+        currentBeforeParentEnabled = true;
+    }
+
+    /**
+     * disable functionality
+     */
+    final public void disableCurrentBeforeParentUnconditional() {
+        currentBeforeParentEnabled = false;
+    }
     
+    private boolean isAlwaysDelegate(String name) {
+        return name.startsWith("sun") || name.startsWith("javax");
+    }
+
+
     protected boolean currentBeforeParentEnabled = false;
     
     private final ClassLoader system = getClass().getClassLoader();

@@ -37,65 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
+import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.connectors.connector.module.RarDetector;
-import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
-import java.net.URI;
-
-import org.glassfish.api.ActionReport;
-import org.glassfish.api.deployment.archive.*;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.DeployCommandParameters;
-import org.glassfish.appclient.server.connector.CarDetector;
-import org.glassfish.deployment.common.*;
-import org.glassfish.ejb.deployment.archive.EjbJarDetector;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.internal.api.DelegatingClassLoader;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.javaee.core.deployment.ApplicationHolder;
-import org.glassfish.loader.util.ASClassLoaderUtil;
-import org.glassfish.internal.deployment.Deployment;
-import org.glassfish.web.sniffer.WarDetector;
-import org.jvnet.hk2.annotations.Service;
-import org.glassfish.hk2.api.PreDestroy;
-import org.xml.sax.SAXParseException;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.deploy.shared.ArchiveFactory;
-import com.sun.enterprise.deployment.deploy.shared.Util;
-import com.sun.enterprise.util.io.FileUtils;
-import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
-import com.sun.enterprise.deployment.util.DOLUtils;
-import com.sun.enterprise.deployment.io.DescriptorConstants;
-import com.sun.enterprise.config.serverbeans.DasConfig;
 import com.sun.enterprise.deploy.shared.FileArchive;
+import com.sun.enterprise.deployment.archivist.ApplicationArchivist;
+import com.sun.enterprise.deployment.deploy.shared.InputJarArchive;
 import com.sun.enterprise.deployment.deploy.shared.JarArchive;
+import com.sun.enterprise.deployment.deploy.shared.Util;
+import com.sun.enterprise.deployment.io.DescriptorConstants;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.perms.EarEEPermissionsProcessor;
-import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
-
+import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-
+import com.sun.enterprise.util.io.FileUtils;
 import java.io.*;
-import java.util.logging.*;
-import java.util.Map;
-import java.net.URLClassLoader;
+import java.net.URI;
 import java.net.URL;
-import java.text.MessageFormat;
+import java.net.URLClassLoader;
 import java.security.AccessController;
 import java.security.PermissionCollection;
-import java.security.Permission;
-import java.security.PrivilegedExceptionAction;
-import java.security.PrivilegedActionException;
 import java.security.PrivilegedAction;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.text.MessageFormat;
+import java.util.Map;
+import java.util.logging.*;
 import javax.inject.Inject;
 import javax.inject.Named;
 import static javax.xml.stream.XMLStreamConstants.*;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import org.glassfish.api.ActionReport;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeployCommandParameters;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.*;
+import org.glassfish.appclient.server.connector.CarDetector;
+import org.glassfish.deployment.common.*;
+import org.glassfish.ejb.deployment.archive.EjbJarDetector;
+import org.glassfish.hk2.api.PreDestroy;
+import org.glassfish.internal.api.DelegatingClassLoader;
+import org.glassfish.internal.deployment.Deployment;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.javaee.core.deployment.ApplicationHolder;
+import org.glassfish.loader.util.ASClassLoaderUtil;
+import org.glassfish.web.sniffer.WarDetector;
+import org.jvnet.hk2.annotations.Service;
+import org.xml.sax.SAXParseException;
 
 @Service(name=EarDetector.ARCHIVE_TYPE)
 public class EarHandler extends AbstractArchiveHandler implements CompositeHandler {
@@ -357,6 +354,14 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                     return new EarLibClassLoader(earLibURLs, parent);
                 }
             });
+            String clDelegate = holder.app.getClassLoadingDelegate();
+            // default to true if null
+            if(Boolean.parseBoolean(clDelegate == null? "true" : clDelegate) == false) {
+                earLibCl.enableCurrentBeforeParentUnconditional();
+            }
+            else if(clDelegate != null) { // otherwise clDelegate == true
+                earLibCl.disableCurrentBeforeParent();
+            }
 
             if (System.getSecurityManager() != null) {
                 addEEOrDeclaredPermissions(earLibCl, earDeclaredPC, false);   
