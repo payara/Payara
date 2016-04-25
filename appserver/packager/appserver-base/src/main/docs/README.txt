@@ -44,7 +44,7 @@ To stop Payara Server, just issue the following command:
 4. Where to go next?
 ====================
 
-Open the following in your browser: https://github.com/payara/Payara/wiki. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
+Open the following in your browser: https://payara.gitbooks.io/payara-server/content/. It contains useful information such as the details about the Payara Project, links to the Payara Server Documentation, etc.
 
 
 Make sure to also check the Payara Server 4.1.1 Release Notes as they contain important information: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.161)
@@ -55,7 +55,7 @@ Make sure to also check the Payara Server 4.1.1 Release Notes as they contain im
 
 Payara Server 4.1.1 Releases Notes: https://github.com/payara/Payara/wiki/Release-Notes-(Payara-4.1.1.161)
 
-Payara Server Documentation: https://github.com/payara/Payara/wiki/Documentation
+Payara Server Documentation: https://payara.gitbooks.io/payara-server/content/
 
 Payara Server GitHub Project: https://github.com/payara/Payara
 
