@@ -61,8 +61,8 @@ if (! #{requestScope.exist}){
     createMap(result="#{pageSession.valueMap}");
     mapPut(map="#{pageSession.valueMap}" key="ssl3Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="tlsEnabled" value="true");
-    mapPut(map="#{pageSession.valueMap}" key="tlsEnabled11" value="true");
-    mapPut(map="#{pageSession.valueMap}" key="tlsEnabled12" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="tls11Enabled" value="true");
+    mapPut(map="#{pageSession.valueMap}" key="tls12Enabled" value="true");
     mapPut(map="#{pageSession.valueMap}" key="trustMaxCertLength" value="5");
 
     convertToDifferentCiphersGroup(ciphers="#{pageSession.valueMap['ssl3TlsCiphers']}"
