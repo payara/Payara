@@ -168,13 +168,14 @@
         <class name="test.bv.servlet.simple.SimpleBVServletTestNG" />
     </classes>
   </test>
-  <!--<test name="weld_tests">
+  
+  <test name="weld_tests">
     <classes>
-        <class name="test.web.numberguess.NumberGuessTestNG" />
-        <class name="test.weld.osgi.OsgiWeldTestNG" />
-	<class name="test.web.extensions.ExtensionsTestNG" />
+        <!--<class name="test.web.numberguess.NumberGuessTestNG" />
+        <class name="test.weld.osgi.OsgiWeldTestNG" />-->
+	 <class name="test.web.extensions.ExtensionsTestNG" />
     </classes>
-  </test>-->
+  </test>
   <test name="asadmin_tests">
     <classes>
       <class name="test.admin.JvmOptionTests"/>

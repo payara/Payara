@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [C2B2 Consulting Limited]
+
 package org.glassfish.web.admin.cli;
 
 import java.beans.PropertyVetoException;
@@ -73,7 +75,7 @@ import org.jvnet.hk2.config.TransactionFailure;
  * Command to create transport element within network-config
  *
  * Sample Usage : create-transport [--acceptorThreads no_of_acceptor_threads] [--bufferSizeBytes buff_size_bytes]
- * [--classname class_name] [--enableSnoop true|false][--selectionKeyHandler true|false] [--displayConfiguration
+ * [--classname class_name] [--selectionKeyHandler true|false] [--displayConfiguration
  * true|false][--maxConnectionsCount count] [--idleKeyTimeoutSeconds idle_key_timeout] [--tcpNoDelay true|false]
  * [--readTimeoutMillis read_timeout][--writeTimeoutMillis write_timeout] [--byteBufferType buff_type]
  * [--selectorPollTimeoutMillis true|false] transport_name
@@ -114,8 +116,6 @@ public class CreateTransport implements AdminCommand {
     String className;
     @Param(name = "displayconfiguration", alias="displayConfiguration", optional = true, defaultValue = "false")
     Boolean displayConfiguration;
-    @Param(name = "enablesnoop", alias="enableSnoop", optional = true, defaultValue = "false")
-    Boolean enableSnoop;
     @Param(name = "idlekeytimeoutseconds", alias="idleKeyTimeoutSeconds", optional = true, defaultValue = "30")
     String idleKeyTimeoutSeconds;
     @Param(name = "maxconnectionscount", alias="maxConnectionsCount", optional = true, defaultValue = "4096")
@@ -177,7 +177,6 @@ public class CreateTransport implements AdminCommand {
                     newTransport.setByteBufferType(byteBufferType);
                     newTransport.setClassname(className);
                     newTransport.setDisplayConfiguration(displayConfiguration.toString());
-                    newTransport.setEnableSnoop(enableSnoop.toString());
                     newTransport.setIdleKeyTimeoutSeconds(idleKeyTimeoutSeconds);
                     newTransport.setMaxConnectionsCount(maxConnectionsCount);
                     newTransport.setName(transportName);

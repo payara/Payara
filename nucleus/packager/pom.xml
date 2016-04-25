@@ -39,6 +39,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 -->
 
 <!--
@@ -110,6 +111,7 @@
         <module>hazelcast-package</module>
         <module>healthcheck-package</module>
         <module>payara-nucleus</module>
+        <module>asadmin-recorder-package</module>
     </modules>
 
     <build>
