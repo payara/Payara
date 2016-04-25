@@ -178,7 +178,7 @@
         <dependency>
             <groupId>org.glassfish.docs</groupId>
             <artifactId>basedocs</artifactId>
-            <version>4.1.payara-p2</version>
+            <version>4.1.payara-p3</version>
             <type>zip</type>
             <optional>true</optional>
         </dependency>
