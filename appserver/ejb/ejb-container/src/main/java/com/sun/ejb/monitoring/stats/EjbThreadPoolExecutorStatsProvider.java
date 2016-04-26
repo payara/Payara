@@ -1,7 +1,19 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ * All rights reserved.
+ *
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  */
 package com.sun.ejb.monitoring.stats;
 
@@ -18,21 +30,19 @@ import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
 
 /**
- *
+ * Class that provides monitoring stats for the ThreadPoolExecutor
  * @author Andrew Pielage
  */
 @AMXMetadata(type="exec-pool-mon", group="monitoring", isSingleton=false)
 @ManagedObject
-@Description("Executor Thread Pool Statistics")
-public class EjbExecutorThreadPoolStatsProvider
+@Description("ThreadPoolExecutor Statistics")
+public class EjbThreadPoolExecutorStatsProvider
 {
-    private ThreadPoolExecutor threadPoolExecutor;
-    private long beanId;
-    private String appName = null;
-    private String moduleName = null;
-    private String beanName = null;
+    
+    private final ThreadPoolExecutor threadPoolExecutor;
+    private final String poolName;
+    private final EjbContainerUtil ejbContainerUtilImpl;
     private boolean registered = false;
-    private EjbContainerUtil ejbContainerUtilImpl;
     
     private CountStatisticImpl NumActiveThreads = new CountStatisticImpl(
             "ActiveNumThreads", "count", 
@@ -59,12 +69,12 @@ public class EjbExecutorThreadPoolStatsProvider
             "TotalTasksCreated", "count", 
             "Number of tasks created in the associated pool");
     
-    public EjbExecutorThreadPoolStatsProvider(String poolName, long beanId, 
-            String appName, String moduleName, String beanName) {
-        this.beanId = beanId;
-        this.appName = appName;
-        this.moduleName = moduleName;
-        this.beanName = beanName;
+    public EjbThreadPoolExecutorStatsProvider(String poolName) {      
+        if (poolName != null) {
+            this.poolName = poolName;
+        } else {
+            this.poolName = "default-exec-pool";
+        }
         
         ejbContainerUtilImpl = EjbContainerUtilImpl.getInstance();
         threadPoolExecutor = ejbContainerUtilImpl.getThreadPoolExecutor(
@@ -72,10 +82,8 @@ public class EjbExecutorThreadPoolStatsProvider
     }
     
     public void register() {
-        String invokerId = EjbMonitoringUtils.getInvokerId(appName, moduleName, 
-                beanName);
-        String node = EjbMonitoringUtils.registerSubComponent(appName, 
-                moduleName, beanName, "bean-pool", this, invokerId);
+        String node = EjbMonitoringUtils.registerSingleComponent(poolName, 
+                this);
         if (node != null) {
             registered = true;
         }
