@@ -52,6 +52,7 @@ import com.sun.enterprise.deployment.deploy.shared.JarArchive;
 import com.sun.enterprise.deployment.deploy.shared.Util;
 import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.util.DOLUtils;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.integration.DDPermissionsLoader;
 import com.sun.enterprise.security.perms.EarEEPermissionsProcessor;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
@@ -582,10 +583,15 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
                 holder = new ApplicationHolder(archivist.createApplication(
                     source, isDirectory));
+                if(context.getAppProps().containsKey(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP) 
+                        == false) { // don't override existing setting (from cmd line, GUI, etc.)
+                    Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
+                    if(cdiEnabled != null) {
+                        context.getAppProps().put(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP, cdiEnabled.toString().toLowerCase());
+                    }
+                }
                 _logger.fine("time to read application.xml " + (System.currentTimeMillis() - start));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (SAXParseException e) {
+            } catch (IOException | XMLStreamException | SAXParseException e) {
                 throw new RuntimeException(e);
             }
             context.addModuleMetaData(holder);
@@ -617,6 +623,7 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
     private static class GFApplicationXmlParser {
         private XMLStreamReader parser = null;
         private String compatValue = null;
+        private Boolean enableImplicitCDI = null;
 
         GFApplicationXmlParser(ReadableArchive archive) throws XMLStreamException, FileNotFoundException, IOException {
             InputStream input = null;
@@ -714,6 +721,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
                     String name = parser.getLocalName();
                     if (DeploymentProperties.COMPATIBILITY.equals(name)) {
                         compatValue = parser.getElementText();
+                    }
+                    else if (RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI.equals(name)) {
+                        enableImplicitCDI = Boolean.parseBoolean(parser.getElementText());
                         done = true;
                     } else {
                         skipSubTree(name);
@@ -747,6 +757,10 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
         String getCompatibilityValue() {
             return compatValue;
+        }
+
+        public Boolean isEnableImplicitCDI() {
+            return enableImplicitCDI;
         }
     }
 

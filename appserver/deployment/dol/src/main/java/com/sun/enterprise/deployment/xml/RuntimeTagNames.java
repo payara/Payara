@@ -67,6 +67,10 @@ public interface RuntimeTagNames extends TagNames {
     public final static String GF_WEB_RUNTIME_TAG = "glassfish-web-app";
     
     public final static String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
+    public final static String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
+    // The name of the deployment context property used to disable implicit bean discovery for a
+    // particular application deployment.
+    public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
 
     String AS_CONTEXT = "as-context";
     String AUTH_METHOD = "auth-method";
