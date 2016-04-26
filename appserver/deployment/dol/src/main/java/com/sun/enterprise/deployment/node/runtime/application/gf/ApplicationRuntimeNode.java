@@ -183,6 +183,9 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_CLASSLOADING_DELEGATE)) {
 	    descriptor.setClassLoadingDelegate(value);
 	} else 
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
+            // ignore, handled in EarHandler.java
+	} else 
 	if (element.getQName().equals(RuntimeTagNames.WEB_URI)) {
 	    currentWebUri=value;
 	} else 
