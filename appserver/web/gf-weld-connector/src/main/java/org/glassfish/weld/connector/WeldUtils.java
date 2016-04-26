@@ -37,24 +37,25 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld.connector;
 
 import com.sun.enterprise.config.serverbeans.Config;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.deployment.DeploymentContext;
-import org.glassfish.api.deployment.archive.ReadableArchive;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
-import org.glassfish.hk2.classmodel.reflect.AnnotationType;
-import org.glassfish.hk2.classmodel.reflect.Type;
-import org.glassfish.hk2.classmodel.reflect.Types;
-import org.glassfish.internal.api.Globals;
-import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
-
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import javax.decorator.Decorator;
 import javax.ejb.MessageDriven;
 import javax.ejb.Stateful;
@@ -70,19 +71,19 @@ import javax.inject.Singleton;
 import javax.interceptor.Interceptor;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.Target;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.deployment.DeploymentContext;
+import org.glassfish.api.deployment.archive.ReadableArchive;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.classmodel.reflect.AnnotationModel;
+import org.glassfish.hk2.classmodel.reflect.AnnotationType;
+import org.glassfish.hk2.classmodel.reflect.Type;
+import org.glassfish.hk2.classmodel.reflect.Types;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 public class WeldUtils {
 
@@ -111,10 +112,6 @@ public class WeldUtils {
     public static final String EXPANDED_JAR_SUFFIX = "_jar";
 
     public static enum BDAType { WAR, JAR, RAR, UNKNOWN };
-
-    // The name of the deployment context property used to disable implicit bean discovery for a
-    // particular application deployment.
-    public static final String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";
 
     protected static final List<String> cdiScopeAnnotations;
     static {
@@ -497,7 +494,7 @@ public class WeldUtils {
         if (isImplicitBeanDiscoveryEnabled()) {
             // If implicit discovery is enabled for the server, then check if it's disabled for the
             // deployment of this application.
-            Object propValue = context.getAppProps().get(IMPLICIT_CDI_ENABLED_PROP);
+            Object propValue = context.getAppProps().get(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP);
 
             // If the property is not set, or it's value is true, then implicit discovery is enabled
             result = (propValue == null || Boolean.parseBoolean((String) propValue));
@@ -625,6 +622,4 @@ public class WeldUtils {
             super();
         }
     }
-
-
 }
