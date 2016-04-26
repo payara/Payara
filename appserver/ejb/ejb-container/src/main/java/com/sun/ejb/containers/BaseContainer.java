@@ -115,6 +115,7 @@ import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbMonitoringProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbTimedObjectProbeProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbExecutorThreadPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
@@ -513,6 +514,7 @@ public abstract class BaseContainer
     protected EjbPoolStatsProvider          poolProbeListener;
     protected EjbCacheProbeProvider         cacheProbeNotifier;
     protected EjbCacheStatsProvider         cacheProbeListener;
+    protected EjbExecutorThreadPoolStatsProvider executorProbeListener;
 
     protected ContainerInfo                 containerInfo;
         

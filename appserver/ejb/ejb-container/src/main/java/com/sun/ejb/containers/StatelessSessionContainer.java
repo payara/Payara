@@ -65,6 +65,7 @@ import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.util.pool.AbstractPool;
 import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
+import com.sun.ejb.monitoring.stats.EjbExecutorThreadPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
@@ -269,6 +270,12 @@ public class StatelessSessionContainer
                 containerInfo.ejbName);
         poolProbeListener.register();
 
+        executorProbeListener = new EjbExecutorThreadPoolStatsProvider(null, 
+                getContainerId(), containerInfo.appName, containerInfo.modName,
+                containerInfo.ejbName);
+        
+        executorProbeListener.register();
+        
         _logger.log(Level.FINE, "[SLSB Container] registered monitorable");
     }
 
@@ -679,6 +686,8 @@ public class StatelessSessionContainer
                 pool.close();
                 poolProbeListener.unregister();
             }
+            
+            executorProbeListener.unregister();
 
         } catch(Throwable t) {
             _logger.log(Level.FINE, "Exception during conrete StatelessSessionBean cleanup", t);
