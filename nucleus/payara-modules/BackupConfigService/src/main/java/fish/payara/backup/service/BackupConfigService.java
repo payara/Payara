@@ -36,6 +36,6 @@ public class BackupConfigService implements EventListener,PostConstruct {
     @Override
     public void postConstruct() {
         events.register(this);
-        System.out.println("");
+        System.out.println("HELLOES");
     }
 }

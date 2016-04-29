@@ -20,7 +20,7 @@ public interface BackupConfigConfiguration extends ConfigBeanProxy, ConfigExtens
     @Attribute(defaultValue="5")
     @Pattern(regexp="[1-9]")
     public String getMinutes();
-    public String setMinutes();
+    public String setMinutes(String param);
     
     
     
