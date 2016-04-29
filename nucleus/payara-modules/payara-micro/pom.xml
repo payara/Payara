@@ -31,6 +31,15 @@
                 <role>developer</role>
             </roles>
         </developer>
+        <developer>
+            <id>davidweaver</id>
+            <name>David Weaver</name>
+            <url>http://www.payara.fish</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
     <dependencies>
         <dependency>
@@ -42,6 +51,12 @@
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>hazelcast-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>phonehome-bootstrap</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

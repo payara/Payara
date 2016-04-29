@@ -32,6 +32,7 @@
     <modules>
         <module>hazelcast-bootstrap</module>
         <module>healthcheck-core</module>
+        <module>phonehome-bootstrap</module>
         <module>payara-micro</module>
         <module>payara-micro-service</module>
         <module>asadmin-recorder</module>
