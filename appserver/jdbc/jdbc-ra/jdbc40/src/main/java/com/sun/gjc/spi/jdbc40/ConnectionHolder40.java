@@ -36,6 +36,8 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
+ *
+ * Portions Copyright [2016] [C2B2 Consulting Limited]
  */
 
 package com.sun.gjc.spi.jdbc40;
@@ -103,14 +105,13 @@ public class ConnectionHolder40 extends ConnectionHolder {
             if (isSupportClientInfo()) {
                 defaultClientInfo = getClientInfo();
             }
-        } catch (Throwable e) {
-            _logger.log(Level.INFO, "jdbc.unable_to_get_client_info", e.getMessage());
+        } catch (Exception e) {
             if(_logger.isLoggable(Level.FINEST)) {
                 _logger.log(Level.FINEST, "jdbc.unable_to_get_client_info", e);
             }
         }
     }
- 
+
     /**
      * Constructs an object that implements the <code>Clob</code> interface. The object
      * returned initially contains no data.  The <code>setAsciiStream</code>,
@@ -388,40 +389,39 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * whether the driver supports the client info properties or not.
      * Note that the <code>DatabaseMetaData</code> will be cached by <code>ManagedConnection</code>.
      * <p/>
-     * 
+     *
      * @return true if the client info properties are supported, false otherwise
-     *
-     * @throws javax.resource.ResourceException if the access to connection is failed.
-     *
-     * @throws java.sql.SQLException if the database server returns an error when retrieving 
-     *                               a list of the client info properties.
      *
      * @see java.sql.DatabaseMetaData#getClientInfoProperties
      * @since 1.6
      */
-    private boolean isSupportClientInfo() throws ResourceException, SQLException {
+    private boolean isSupportClientInfo() {
         Boolean isSupportClientInfo = getManagedConnection().isClientInfoSupported();
         if (isSupportClientInfo != null) {
             return isSupportClientInfo;
-        } else {
-            ResultSet rs = getManagedConnection().getCachedDatabaseMetaData().getClientInfoProperties();
+        }
+        ResultSet rs = null;
+        try {
+            rs = getManagedConnection().getCachedDatabaseMetaData().getClientInfoProperties();
+            isSupportClientInfo = rs.next();
+        } catch (final Exception e) {
+            isSupportClientInfo = false;
+            if(_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "jdbc.unable_to_get_client_info", e);
+            }
+        } finally {
             try {
-                isSupportClientInfo = rs.next();
-                getManagedConnection().setClientInfoSupported(isSupportClientInfo);
-                return isSupportClientInfo;
-            } finally {
-                try {
-                rs.close();
-                } catch(SQLException ex) {
-                    if(_logger.isLoggable(Level.FINEST)) {
-                        _logger.log(Level.FINEST, "jdbc.unable_to_get_client_info", ex);
-                    }
-                    return false;
+                if (rs != null) {
+                    rs.close();
                 }
+            } catch(SQLException e) {
+                _logger.log(Level.SEVERE, "Cannot close resultset!", e);
             }
         }
+        getManagedConnection().setClientInfoSupported(isSupportClientInfo);
+        return isSupportClientInfo;
     }
-    
+
     /**
      * Factory method for creating Array objects.
      *
@@ -584,11 +584,8 @@ public class ConnectionHolder40 extends ConnectionHolder {
                         setClientInfo(defaultClientInfo);
                     }
                 }
-            } catch (Throwable e) {
-                _logger.log(Level.INFO, "jdbc.unable_to_set_client_info", e.getMessage());
-                if(_logger.isLoggable(Level.FINEST)) {
-                    _logger.log(Level.FINEST, "jdbc.unable_to_set_client_info", e);
-                }
+            } catch (Exception e) {
+                _logger.log(Level.SEVERE, "jdbc.unable_to_set_client_info", e);
             }
         }
         super.close();
@@ -657,7 +654,7 @@ public class ConnectionHolder40 extends ConnectionHolder {
      * of the transaction, the connection is destroyed. A running thread
      * holding a connection will run to completion before the connection is
      * destroyed
-     * 
+     *
      * @param executor
      * @throws SQLException
      */
