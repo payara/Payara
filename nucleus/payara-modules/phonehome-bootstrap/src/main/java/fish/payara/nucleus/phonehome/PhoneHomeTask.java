@@ -150,15 +150,22 @@ public class PhoneHomeTask implements Runnable {
     }
     
     private void send(String target) {
+
+        HttpURLConnection conn = null;
         try {
             URL url = new URL(target);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setRequestProperty("User-Agent", USER_AGENT);
             conn.setConnectTimeout(CONN_TIMEOUT_MS);
             conn.setReadTimeout(READ_TIMEOUT_MS);
             conn.getResponseCode();
+        } catch (IOException ioe) {
+            /*Ignore*/
+        } finally {
+            if (conn != null) {
+                    conn.disconnect();
+            }
         }
-        catch (IOException ioe) {/*Ignore*/}
     }   
 }
