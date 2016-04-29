@@ -38,6 +38,8 @@
 # holder.
 #
 
+# Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+
 -exportcontents: \
                         com.sun.enterprise.v3.admin; \
                         com.sun.enterprise.v3.admin.adapter; \
@@ -50,9 +52,13 @@
                         org.glassfish.kernel.event; version=${project.osgi.version}
 
 # dependent flashlight package resolved at runtime
-DynamicImport-Package: org.glassfish.flashlight.provider, \
+DynamicImport-Package: fish.payara.nucleus.requesttracing, \
+                       fish.payara.nucleus.requesttracing.domain, \
+                       fish.payara.nucleus.requesttracing.configuration, \
+                       fish.payara.nucleus.requesttracing.domain.execoptions, \
+                       org.glassfish.flashlight.provider, \
                        com.sun.pkg.client, \
-		       org.glassfish.branding, \
+		               org.glassfish.branding, \
                        org.objectweb.asm;password=GlassFish, \
                        org.objectweb.asm.commons;password=GlassFish
 

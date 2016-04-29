@@ -28,6 +28,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
+
 /**
  * @author mertcaliskan
  */
