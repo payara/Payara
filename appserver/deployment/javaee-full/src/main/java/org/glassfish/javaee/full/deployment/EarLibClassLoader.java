@@ -61,7 +61,7 @@ public class EarLibClassLoader extends ASURLClassLoader
         super(classLoader); 
         enableCurrentBeforeParent();
         for (URL url : urls) {
-            addURL(url);
+            super.addURL(url);
         }
     }
 
@@ -80,7 +80,10 @@ public class EarLibClassLoader extends ASURLClassLoader
         Enumeration<URL> parentResources = getParent().getResources(name);
         
         Enumeration<URL> combinedResources = Iterators.asEnumeration(Iterators.concat(
-                Lists.transform(ImmutableList.of(localResources, parentResources), new Function<Enumeration<URL>, Iterator<URL>>() {
+                Lists.transform(currentBeforeParentEnabled?
+                        ImmutableList.of(localResources, parentResources) :
+                        ImmutableList.of(parentResources, localResources),
+                        new Function<Enumeration<URL>, Iterator<URL>>() {
                     @Override
                     public Iterator<URL> apply(Enumeration<URL> enumeration) {
                         return Iterators.forEnumeration(enumeration);
