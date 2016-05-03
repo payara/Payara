@@ -86,6 +86,10 @@ public class ListHazelcastMembers implements AdminCommand {
                     if (member.localMember()) {
                         builder.append("-this");
                     }
+                    
+                    if (member.isLiteMember()) {
+                        builder.append("-LITE");
+                    }
                     builder.append(" ");
                 }
                 builder.append('}');

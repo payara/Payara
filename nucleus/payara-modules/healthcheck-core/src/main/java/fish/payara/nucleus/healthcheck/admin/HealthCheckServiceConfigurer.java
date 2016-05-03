@@ -114,6 +114,7 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         final Checker checker = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
 
         try {
+            final Checker[] createdChecker = {null};
             if (checker == null) {
                 ConfigSupport.apply(new SingleConfigCode<HealthCheckServiceConfiguration>() {
                     @Override
@@ -122,25 +123,27 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
                         Checker checkerProxy = (Checker) healthCheckServiceConfigurationProxy.createChild(service.getCheckerType());
                         applyValues(checkerProxy);
                         healthCheckServiceConfigurationProxy.getCheckerList().add(checkerProxy);
+                        createdChecker[0] = checkerProxy;
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return healthCheckServiceConfigurationProxy;
                     }
                 }, healthCheckServiceConfiguration);
             }
             else {
+                createdChecker[0] = checker;
                 ConfigSupport.apply(new SingleConfigCode<Checker>() {
                     @Override
                     public Object run(final Checker checkerProxy) throws
                             PropertyVetoException, TransactionFailure {
                         applyValues(checkerProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return checker;
+                        return checkerProxy;
                     }
                 }, checker);
             }
 
-            if (dynamic && service.getOptions() != null) {
-                enableOnTarget(actionReport, service, enabled, time, unit);
+            if (dynamic) {
+                enableOnTarget(actionReport, service, createdChecker[0], enabled, time, unit);
             }
         }
         catch (TransactionFailure ex) {
@@ -165,7 +168,12 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         }
     }
 
-    private void enableOnTarget(ActionReport actionReport, BaseHealthCheck service, Boolean enabled, String time, String unit) {
+    private void enableOnTarget(ActionReport actionReport, BaseHealthCheck service, Checker checker, Boolean enabled, String time, String unit) {
+        if (service.getOptions() == null) {
+            service.setOptions(service.constructOptions(checker));
+            healthCheckService.registerCheck(checker.getName(), service);
+        }
+
         if (enabled != null) {
             service.getOptions().setEnabled(enabled);
         }

@@ -103,8 +103,8 @@
              <fileset dir="src/java/jar" excludes="*.java"/>
          </jar>
 
-        <!--<war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
-            <fileset dir="web/html"/>
+        <war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
+            <!--<fileset dir="web/html"/>-->
             <fileset dir="web/jsp"/>
             <lib dir="${dist.dir}/lib"/>
             <classes dir="${class.output}">
@@ -118,6 +118,6 @@
                 <include name="**/*.xml"/>
                 <exclude name="**/persistence.xml"/>
             </webinf>
-        </war>-->
+        </war>
     </target>
 </project>

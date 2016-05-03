@@ -106,7 +106,7 @@ public class ApplicationValidator extends ComponentValidator
             accept(application);
 
             if (!validateResourceDescriptor(application)) {
-                DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.fail",
+                DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0001:Application validation fails for given application: {0}",
                         new Object[] { application.getAppName() });
                 throw new IllegalStateException(
                     localStrings.getLocalString("enterprise.deployment.util.application.fail",
@@ -555,8 +555,8 @@ public class ApplicationValidator extends ComponentValidator
                     if (!descriptor.equals(existingDescriptor)) {
                         allUniqueResource = false;
                         return true;
-                    } else {
-                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                    } else if (!(existingDescriptor == descriptor)){
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0001:Application validation fails for given application: {0}",
                                 new Object[] { descriptor.getName() });
 
                     }
@@ -564,8 +564,8 @@ public class ApplicationValidator extends ComponentValidator
                     if (!descriptor.equals(existingDescriptor)) {
                         allUniqueResource = false;
                         return true;
-                    } else {
-                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                    } else if (!(existingDescriptor == descriptor)) {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0002:Duplicate descriptor found for given jndi-name: {0}",
                                 new Object[] { descriptor.getName() });
 
                     }
@@ -573,8 +573,8 @@ public class ApplicationValidator extends ComponentValidator
                     if (!descriptor.equals(existingDescriptor)) {
                         allUniqueResource = false;
                         return true;
-                    } else {
-                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                    } else if (!(existingDescriptor == descriptor)) {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0002:Duplicate descriptor found for given jndi-name: {0}",
                                 new Object[] { descriptor.getName() });
 
                     }
@@ -582,8 +582,8 @@ public class ApplicationValidator extends ComponentValidator
                     if (!descriptor.equals(existingDescriptor)) {
                         allUniqueResource = false;
                         return true;
-                    } else {
-                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.descriptor.duplicate",
+                    } else if (!(existingDescriptor == descriptor)) {
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0002:Duplicate descriptor found for given jndi-name: {0}",
                                 new Object[] { descriptor.getName() });
 
                     }
@@ -624,7 +624,7 @@ public class ApplicationValidator extends ComponentValidator
                     for (int j = 0; j < appVectorName.size(); j++) {
                         if (scope.equals(appVectorName.get(j))) {
                             inValidJndiName = jndiName;
-                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
+                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0005:Deployment failed due to the invalid scope defined for jndi-name: {0}",
                                 new Object[] { jndiName });
                             return false;
                         }
@@ -632,7 +632,7 @@ public class ApplicationValidator extends ComponentValidator
                     for (int j = 0; j < ebdVectorName.size(); j++) {
                         if (scope.equals(ebdVectorName.get(j))) {
                             inValidJndiName = jndiName;
-                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
+                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0005:Deployment failed due to the invalid scope defined for jndi-name: {0}",
                                 new Object[] { jndiName });
                             return false;
                         }
@@ -646,7 +646,7 @@ public class ApplicationValidator extends ComponentValidator
                     for (int j = 0; j < appVectorName.size(); j++) {
                         if (scope.equals(appVectorName.get(j))) {
                             inValidJndiName = jndiName;
-                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.jndiname.scope",
+                            DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0005:Deployment failed due to the invalid scope defined for jndi-name: {0}",
                                 new Object[] { jndiName });
                             return false;
                         }
@@ -670,14 +670,17 @@ public class ApplicationValidator extends ComponentValidator
                     }
                 } else {
                     try {
-                        InitialContext ic = new InitialContext();
-                        Object lookup = ic.lookup(jndiName);
-                        if (lookup != null) {
-                            return false;
+                            boolean selfDefining = ((commonResourceValidator.getDescriptor() instanceof JMSDestinationDefinitionDescriptor) || (commonResourceValidator.getDescriptor() instanceof DataSourceDefinitionDescriptor));
+                            if (!selfDefining) {
+                                InitialContext ic = new InitialContext();
+                                Object lookup = ic.lookup(jndiName);
+                                if (lookup != null) {
+                                    return false;
+                                }
                         }
                     } catch (NamingException e) {
                         inValidJndiName = jndiName;
-                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.lookup",
+                        DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0003:Lookup failed for given jndi-name: {0}",
                                 new Object[] { jndiName });
                     }
 
@@ -707,7 +710,7 @@ public class ApplicationValidator extends ComponentValidator
                 }
                 if (firstElement.equals(otherElements)) {
                     inValidJndiName = jndiName;
-                    DOLUtils.getDefaultLogger().log(Level.SEVERE, "enterprise.deployment.util.application.invalid.namespace",
+                    DOLUtils.getDefaultLogger().log(Level.SEVERE, "DEP0004:Deployment failed due to the conflict occur for jndi-name: {0} for application: {1}",
                         new Object[] { jndiName, application.getAppName() });
                 }
             }

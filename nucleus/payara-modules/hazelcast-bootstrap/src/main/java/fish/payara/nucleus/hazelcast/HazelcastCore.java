@@ -20,7 +20,9 @@ package fish.payara.nucleus.hazelcast;
 import com.hazelcast.cache.impl.HazelcastServerCachingProvider;
 import com.hazelcast.config.Config;
 import com.hazelcast.config.ConfigLoader;
+import com.hazelcast.config.GroupConfig;
 import com.hazelcast.config.MulticastConfig;
+import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
 import java.io.File;
@@ -62,6 +64,7 @@ public class HazelcastCore implements EventListener {
 
     private CachingProvider hazelcastCachingProvider;
     private boolean enabled;
+    private String memberName;
 
     @Inject
     Events events;
@@ -141,8 +144,9 @@ public class HazelcastCore implements EventListener {
         String hazelcastFilePath = "";
         URL serverConfigURL;
         try {
-            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null && overrideConfiguration.getAlternateConfigFile().exists()) {
-                config = ConfigLoader.load(overrideConfiguration.getAlternateConfigFile().getAbsolutePath());
+            if (overrideConfiguration != null && overrideConfiguration.getAlternateConfigFile() != null) {
+                XmlConfigBuilder builder = new XmlConfigBuilder(overrideConfiguration.getAlternateConfigFile().toURL());
+                config = builder.build();
                 return config;
             }
             serverConfigURL = new URL(context.getServerConfigURL());
@@ -155,10 +159,9 @@ public class HazelcastCore implements EventListener {
                     Logger.getLogger(HazelcastCore.class.getName()).log(Level.WARNING, "Hazelcast Core could not find configuration file {0} using default configuration", hazelcastFilePath);
                     config = new Config();
                 }
-            } else {
+            } else { // there is no config override
                 
-                String instanceName = context.getDefaultDomainName() + "." + context.getInstanceName();
-                config.setInstanceName(instanceName);
+                memberName = context.getInstanceName();
                 MulticastConfig mcConfig = config.getNetworkConfig().getJoin().getMulticastConfig();
                 config.getNetworkConfig().setPortAutoIncrement(true);
                 mcConfig.setEnabled(true);                // check Payara micro overrides
@@ -167,13 +170,22 @@ public class HazelcastCore implements EventListener {
                     mcConfig.setMulticastPort(overrideConfiguration.getMulticastPort());
                     config.getNetworkConfig().setPort(overrideConfiguration.getStartPort());
                     if (overrideConfiguration.getMemberName() != null) {
-                        config.setInstanceName(overrideConfiguration.getMemberName());
+                        memberName = overrideConfiguration.getMemberName();
                     }
+                    config.setLiteMember(overrideConfiguration.isLite());
+                    // set group config
+                    GroupConfig gc = config.getGroupConfig();
+                    gc.setName(overrideConfiguration.getClusterGroupName());
+                    gc.setPassword(overrideConfiguration.getClusterGroupPassword());
                 } else {
                    mcConfig.setMulticastGroup(configuration.getMulticastGroup());
                    mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
                    config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
-                   config.setInstanceName(configuration.getMemberName());
+                   config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
+                   // set group config
+                   GroupConfig gc = config.getGroupConfig();
+                   gc.setName(configuration.getClusterGroupName());
+                   gc.setPassword(configuration.getClusterGroupPassword());
                 }
 
                 // build the configuration
@@ -202,7 +214,10 @@ public class HazelcastCore implements EventListener {
     private void bootstrapHazelcast() { 
         Config config = buildConfiguration();
         theInstance = Hazelcast.newHazelcastInstance(config);
-        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, context.getInstanceName());
+        if (memberName == null) {
+            memberName = context.getInstanceName();
+        }
+        theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
     }
 

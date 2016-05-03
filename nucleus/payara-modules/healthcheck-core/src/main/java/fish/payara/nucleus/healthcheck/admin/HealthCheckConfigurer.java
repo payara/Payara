@@ -100,7 +100,7 @@ public class HealthCheckConfigurer implements AdminCommand {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return healthCheckServiceConfiguration;
+                        return healthCheckServiceConfigurationProxy;
                     }
 
                 }, healthCheckServiceConfiguration);

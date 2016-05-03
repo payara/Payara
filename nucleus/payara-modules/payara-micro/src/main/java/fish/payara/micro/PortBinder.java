@@ -26,45 +26,33 @@ import java.net.ServerSocket;
  *
  * @author Andrew Pielage
  */
-public class PortBinder
-{
-    public int findAvailablePort(int port, int autoBindRange) throws BindException
-    {
-        // Initialise a return variable equal to parameter passed in
+public class PortBinder {
+    
+    /**
+     * Searches for and returns a bindable port number.
+     * @param port The port to start searching from.
+     * @param autoBindRange The maximum range of ports to check for availability.
+     * @return A bindable port number.
+     * @throws BindException 
+     */
+    public int findAvailablePort(int port, int autoBindRange) throws BindException {
         int returnPort = port;
-        
-        // Initialise a flag for throwing a custom error if no available ports within range
         boolean foundAvailablePort = false;
-        
-        /**
-         * Loop through, incrementing the port to bind to by 1 for each failure, until PORT_COUNT is reached
-         */
-        for (int i = 0; i <= autoBindRange; i++)
-        {        
-            // Try to bind to the port                     
-            try (ServerSocket serverSocket = new ServerSocket(port);)
-            {
-                // If no exception thrown, set returnPort to the open port, set the "found" flag to true, and break out of loop
+
+        for (int i = 0; i <= autoBindRange; i++) {   
+            try (ServerSocket serverSocket = new ServerSocket(port);) {
                 returnPort = port;
                 foundAvailablePort = true;
                 break;
-            }
-
-            catch (IOException ex)
-            {
-                // Increment port to try again on next port
+            } catch (IOException ex) {
                 port++;
             }
         }
         
-        // Check if an available port has been found
-        if (foundAvailablePort == false)
-        {
-            // If a port hasn't been found, throw a BindException
+        if (foundAvailablePort == false) {
             throw new BindException();
         }
         
-        // Return the available port, or the original port passed in if no available port found
         return returnPort;
     }
 }

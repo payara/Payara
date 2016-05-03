@@ -127,6 +127,17 @@
         />
     </sun:button>
 
+    <sun:button id="restartButton" text="Restart Cluster" disabled="#{disableStop}" primary="#{false}"
+        onClick="if ( getConfirm(this,'Restart the selected cluster(s)?') )
+                { return submitAndDisable(this, '$resource{i18n.button.Processing}');}  else {return false;} " >
+        <!command
+            println("Restarting Cluster...");
+            println("#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}/restart-cluster");
+            gf.restRequest(endpoint="#{sessionScope.REST_URL}/clusters/cluster/#{pageSession.encodedClusterName}/restart-cluster" method="POST");
+            gf.redirect(page="#{pageSession.selfPage}&alertType=${alertType}&alertSummary=${alertSummary}&alertDetail=${alertDetail}");
+        />
+    </sun:button>
+
     <event>
         <!afterCreate
             getUIComponent(clientId="#{sheetId}"  component=>$attribute{component})

@@ -24,6 +24,10 @@ import java.beans.PropertyVetoException;
 @Configured
 public interface HoggingThreadsChecker extends Checker {
 
+    @Attribute(defaultValue = "HOGT")
+    String getName();
+    void setName(String value) throws PropertyVetoException;
+
     @Attribute(defaultValue = "95")
     Long getThresholdPercentage();
     void setThresholdPercentage(String value) throws PropertyVetoException;
