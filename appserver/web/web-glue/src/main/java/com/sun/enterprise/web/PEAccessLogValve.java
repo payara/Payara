@@ -302,6 +302,11 @@ public final class PEAccessLogValve
      */
     private boolean flushRealTime = true;
     
+    /**
+     * access log to console
+     */
+    private boolean accessLogToConsole = false;
+    
 
     /**
      * Are we supposed to add datestamp to first access log file we create,
@@ -712,7 +717,7 @@ public final class PEAccessLogValve
             try{
                 charBuffer.flip();
                 String bufString = charBuffer.toString();
-                if (!bufString.isEmpty()) {
+                if (accessLogToConsole && !bufString.isEmpty()) {
                     logManager.getOutStream().print(bufString.replaceAll("(?m)^", "AccessLog: "));
                 }
                 ByteBuffer byteBuffer =
@@ -953,6 +958,9 @@ public final class PEAccessLogValve
         } else if (maxHistoryFiles > 0) {
             historyFiles = new LinkedList<File>();
         }
+        
+        // log to console
+        accessLogToConsole = accessLogConfig.getLogToConsoleEnabled();
     }
 
 
