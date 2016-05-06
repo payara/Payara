@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <version>4.1.1.162</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
     <artifactId>payara-micro-service</artifactId>
@@ -19,6 +19,15 @@
             <organization>Payara Inc.</organization>
             <roles>
                 <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>mcaliskan</id>
+            <name>Mert Caliskan</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
                 <role>developer</role>
             </roles>
         </developer>
@@ -41,6 +50,11 @@
             <artifactId>hazelcast-bootstrap</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>healthcheck-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>fish.payara.appserver</groupId>

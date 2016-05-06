@@ -104,8 +104,8 @@
         <mkdir dir="${class.output}/META-INF"/>
         <copy file="metadata/persistence.xml" todir="${class.output}/META-INF" failonerror="false"/>
 
-        <!--<war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
-            <fileset dir="web/html"/>
+      <war destfile="${dist.dir}/${app.file.ext}" webxml="metadata/web.xml">
+            <!--<fileset dir="web/html"/>-->
             <fileset dir="web/jsp"/>
             <classes dir="${class.output}">
                 <include name="**/*.class"/>
@@ -116,7 +116,7 @@
                 <include name="**/*.xml"/>
                 <exclude name="**/persistence.xml"/>
             </webinf>
-        </war>-->
+        </war>
     </target>
 
 </project>

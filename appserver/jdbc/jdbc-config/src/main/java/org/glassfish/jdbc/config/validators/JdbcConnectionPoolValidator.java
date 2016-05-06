@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.jdbc.config.validators;
 
 import com.sun.enterprise.config.serverbeans.ResourcePool;
@@ -93,7 +93,9 @@ public class JdbcConnectionPoolValidator
                 JdbcConnectionPool jdbcPool = (JdbcConnectionPool) pool;
                 String stmtCacheSize = jdbcPool.getStatementCacheSize();
                 String stmtLeakTimeout = jdbcPool.getStatementLeakTimeoutInSeconds();
-                if (jdbcPool.getSqlTraceListeners() != null) {
+                
+                // PAYARA-661 allow empty "" sql trace listeners
+                if (jdbcPool.getSqlTraceListeners() != null && !jdbcPool.getSqlTraceListeners().isEmpty()) {
                     if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
                         return false;
                     }

@@ -188,6 +188,7 @@
     <echo message="stopping server on unix ..."/>
     <exec executable="${glassfish.home}/bin/asadmin">        
         <arg value="stop-domain"/>
+        <arg value="domain2"/>
     </exec>
 </target>
 
@@ -197,6 +198,7 @@
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
         <arg value="stop-domain"/>
+        <arg value="domain2"/>
     </exec>
 </target>
     
@@ -212,6 +214,8 @@
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="deploy"/>
+    <arg value="--port"/>
+    <arg value="5048"/>
     <arg line="${dist.dir}/${app.file.ext}"/>   
    </exec>  
 </target>
@@ -237,6 +241,8 @@
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="deploy"/>
+    <arg value="--port"/>
+    <arg value="5048"/>
     <arg value="--upload"/>
     <arg line="${dist.dir}/${app.file.ext}"/>   
    </exec>  
@@ -263,6 +269,8 @@
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
     <arg value="deploy"/>
+    <arg value="--port"/>
+    <arg value="5048"/>
     <arg value="--force=true"/>
     <arg line="${dist.dir}/${app.file.ext}"/>
    </exec> 
@@ -289,7 +297,9 @@
     <exec executable="cmd">
     <arg value="/c"/>
     <arg value="${glassfish.home}\bin\asadmin.bat"/>
-    <arg value="undeploy"/>    
+    <arg value="undeploy"/>  
+    <arg value="--port"/>
+    <arg value="5048"/>  
     <arg value="${app.file}"/>
   </exec>  
 </target>
@@ -375,4 +385,3 @@
 </target>
 
 </project>
-

@@ -107,7 +107,7 @@ public class MailResourceDeployer extends GlobalResourceDeployer
 
 
         if (mailRes == null) {
-            _logger.log(Level.INFO, "core.resourcedeploy_error");
+            _logger.log(Level.INFO, "Error in resource deploy.");
         } else {
             ResourceInfo resourceInfo = new ResourceInfo(mailRes.getJndiName(), applicationName, moduleName);
             //registers the jsr77 object for the mail resource deployed

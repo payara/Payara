@@ -133,7 +133,7 @@
   
     <mkdir dir="../test-output"/>
     <testng outputdir="../test-output"
-            classpathref="test.classpath" groups="">
+            classpathref="test.classpath" groups="" haltOnFailure="true">
          <classfileset dir="classes/test" includes="**/SeleniumTest.class"/>
         <!--<xmlfileset dir="../../../" includes="testng.xml"/>-->
     </testng>

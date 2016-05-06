@@ -122,6 +122,8 @@ import org.glassfish.grizzly.http.util.MessageBytes;
  * @version $Revision: 1.48 $ $Date: 2007/07/25 00:52:04 $
  */
 
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+
 public class StandardContext
     extends ContainerBase
     implements Context, ServletContext
@@ -6047,11 +6049,7 @@ public class StandardContext
             for (Map.Entry<Class<? extends ServletContainerInitializer>, Set<Class<?>>> e :
                     initializerList.entrySet()) {
                 Class<? extends ServletContainerInitializer> initializer = e.getKey();
-                // See IT 11333
-                if (isUseMyFaces() &&
-                        Globals.FACES_INITIALIZER.equals(initializer.getName())) {
-                    continue;
-                }
+
                 try {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "Calling ServletContainerInitializer [" + initializer

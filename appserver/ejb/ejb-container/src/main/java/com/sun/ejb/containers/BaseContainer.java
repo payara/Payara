@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -115,6 +115,7 @@ import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbMonitoringProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbTimedObjectProbeProvider;
 import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
+import com.sun.ejb.monitoring.stats.EjbThreadPoolExecutorStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
@@ -155,7 +156,6 @@ import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbMessageBeanDescriptor;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
@@ -513,6 +513,7 @@ public abstract class BaseContainer
     protected EjbPoolStatsProvider          poolProbeListener;
     protected EjbCacheProbeProvider         cacheProbeNotifier;
     protected EjbCacheStatsProvider         cacheProbeListener;
+    protected EjbThreadPoolExecutorStatsProvider executorProbeListener;
 
     protected ContainerInfo                 containerInfo;
         
@@ -4474,6 +4475,8 @@ public abstract class BaseContainer
                     probeFactory.unregisterProbeProvider(cacheProbeNotifier);
                 }
             }
+            
+            executorProbeListener.unregister();
         } catch (Exception ex) {
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Error unregistering the ProbeProvider");
@@ -4873,6 +4876,9 @@ public abstract class BaseContainer
     protected void registerMonitorableComponents() {
         createMonitoringRegistry();
         registerTimerMonitorableComponent();
+        executorProbeListener = new EjbThreadPoolExecutorStatsProvider(null);
+        
+        executorProbeListener.register();
     }
 
     protected void registerTimerMonitorableComponent() {

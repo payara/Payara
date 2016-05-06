@@ -5,7 +5,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <version>4.1.1.162</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>healthcheck-core</artifactId>
@@ -47,13 +47,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>internal-api</artifactId>
+            <groupId>org.glassfish.main.jdbc</groupId>
+            <artifactId>jdbc-runtime</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

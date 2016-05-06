@@ -37,11 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.admin.monitor;
 
 import java.lang.reflect.InvocationTargetException;
@@ -71,7 +67,6 @@ import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import com.sun.logging.LogDomains;
 import com.sun.enterprise.util.StringUtils;
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -84,6 +79,7 @@ import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.TransactionFailure;
 import java.beans.PropertyVetoException;
+import javax.management.InstanceAlreadyExistsException;
 import org.glassfish.admin.monitor.StatsProviderRegistry.StatsProviderRegistryElement;
 
 import org.glassfish.external.amx.MBeanListener;
@@ -779,7 +775,26 @@ public class StatsProviderManagerDelegateImpl extends MBeanListener.CallbackImpl
             }
             //To register hierarchy in mom specify parent ManagedObject, and the ManagedObject itself
             //DynamicMBean mbean = (DynamicMBean)mom.register(parent, obj);
+        } catch (IllegalArgumentException ex) {
+            // Check if this is an InstanceAlreadyExistsException, 
+            // so we can just print out a smaller log statement rather than the
+            // full stack trace
+            if (ex.getCause().getCause() instanceof 
+                    InstanceAlreadyExistsException) {
+                // createRoot failed - need to return a null mom so we know not 
+                // to unregister an mbean that does not exist
+                mom = null;
+                logger.log(Level.INFO, "Could not register MBean - "
+                        + "MBean already exists: {0}", 
+                        ex.getCause().getCause().getMessage());
+            } else {
+                // createRoot failed - need to return a null mom so we know not 
+                // to unregister an mbean that does not exist
+                mom = null;
+                logger.log(Level.SEVERE, gmbalRegistrationFailed, ex);
+            }
         }
+        
         catch (Exception e) {
             //createRoot failed - need to return a null mom so we know not to unregister an mbean that does not exist
             mom = null;

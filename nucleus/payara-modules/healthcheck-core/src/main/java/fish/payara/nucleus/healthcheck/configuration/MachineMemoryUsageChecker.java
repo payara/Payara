@@ -13,11 +13,18 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
+
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
 @Configured
 public interface MachineMemoryUsageChecker extends Checker, ThresholdDiagnosticsChecker {
+
+ @Attribute(defaultValue = "MEMM")
+ String getName();
+ void setName(String value) throws PropertyVetoException;
 }

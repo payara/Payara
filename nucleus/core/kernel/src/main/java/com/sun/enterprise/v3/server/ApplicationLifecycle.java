@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.v3.server;
 
@@ -1093,11 +1094,9 @@ public class ApplicationLifecycle implements Deployment, PostConstruct {
 
         events.send(new Event(Deployment.UNDEPLOYMENT_START, info));
 
-        // for DAS target, the undeploy should unload the application
-        // as well
-        if (DeploymentUtils.isDASTarget(params.target) || DeploymentUtils.isDomainTarget(params.target)) {
-            unload(info, context);
-        }
+        // we unconditionally unload the application, even if it is not loaded, because we must clean the
+        // application, especially the classloaders need to be closed to release file handles
+        unload(info, context);
 
         if (report.getActionExitCode().equals(ActionReport.ExitCode.SUCCESS)) {
             events.send(new Event(Deployment.UNDEPLOYMENT_SUCCESS, context));

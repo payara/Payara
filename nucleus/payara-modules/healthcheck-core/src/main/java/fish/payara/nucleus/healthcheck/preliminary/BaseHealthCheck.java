@@ -15,19 +15,13 @@ package fish.payara.nucleus.healthcheck.preliminary;
 
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
-import fish.payara.nucleus.healthcheck.configuration.GarbageCollectorChecker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -48,7 +42,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     protected Class<C> checkerType;
 
     public abstract HealthCheckResult doCheck();
-    protected abstract O constructOptions(C c);
+    public abstract O constructOptions(C c);
 
     protected <T extends BaseHealthCheck> O postConstruct(T t, Class<C> checkerType) {
         this.checkerType = checkerType;
@@ -151,6 +145,10 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     public O getOptions() {
         return options;
+    }
+
+    public void setOptions(O options) {
+        this.options = options;
     }
 
     public Class<C> getCheckerType() {

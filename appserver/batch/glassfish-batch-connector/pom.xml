@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main.batch</groupId>
         <artifactId>batch</artifactId>
-        <version>4.1.1.162-SNAPSHOT</version>
+        <version>4.1.1.162</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -83,13 +83,12 @@
             <groupId>com.ibm.jbatch</groupId>
             <artifactId>com.ibm.jbatch.container</artifactId>
             <version>${com.ibm.jbatch.container.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>com.hazelcast</groupId>
-            <artifactId>hazelcast</artifactId>
-            <version>${hazelcast.version}</version>
-            <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jboss.weld.se</groupId>
+                    <artifactId>weld-se</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

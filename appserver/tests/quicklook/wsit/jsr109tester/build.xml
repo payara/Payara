@@ -138,7 +138,7 @@
     </target>
 
     <target name="undeploy">
-        <!--<antcall target="undeploy-${deploy.platform}-impl"/>-->
+     <antcall target="undeploy-${deploy.platform}-impl"/>
     </target>
 
     <target name="help">

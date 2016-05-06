@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.admin.launcher;
 
@@ -726,6 +726,7 @@ public abstract class GFLauncher {
         all.putAll(envProps);
         all.putAll(asenvProps);
         all.putAll(sysProps);
+        all.put(SystemPropertyConstants.SERVER_NAME, getInfo().getInstanceName());
         all.putAll(sysPropsFromXml);
         all.putAll(jvmOptions.getCombinedMap());
         all.putAll(profiler.getConfig());

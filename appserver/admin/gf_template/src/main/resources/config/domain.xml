@@ -118,6 +118,7 @@
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+       <asadmin-recorder-configuration></asadmin-recorder-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -397,8 +398,8 @@
              <jvm-options>-Dosgi.shell.telnet.ip=127.0.0.1</jvm-options>
              <!-- Gogo shell configuration -->
              <!--PAYARA-495-->
-             <!--<jvm-options>-Dgosh.args=noshutdown -c noop=true</jvm-options>-->
-             <jvm-options>-Dgosh.args=--noshutdown</jvm-options>
+             <!--<jvm-options>-Dgosh.args=nointeractive</jvm-options>-->
+             <jvm-options>-Dgosh.args=--nointeractive</jvm-options>
              <!-- Directory being watched by fileinstall. -->
              <jvm-options>-Dfelix.fileinstall.dir=${com.sun.aas.installRoot}/modules/autostart/</jvm-options>
              <!-- Time period fileinstaller thread in ms. -->
