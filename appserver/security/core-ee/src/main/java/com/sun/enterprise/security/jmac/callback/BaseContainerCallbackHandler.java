@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates] 
 /*
  * BaseContainerCallbackHandler.java
  *
@@ -374,6 +374,13 @@ abstract class BaseContainerCallbackHandler
     private void processCallerPrincipal(CallerPrincipalCallback cpCallback) {
         final Subject fs = cpCallback.getSubject();
         Principal principal = cpCallback.getPrincipal();
+        
+        if (principal != null && !(principal instanceof WebPrincipal)) {
+            Principal additional = SecurityContext.getCurrent().getAdditionalPrincipal();
+            if (additional != null) {
+                principal = additional;
+            }
+        }
 
         if (principal instanceof WebPrincipal) {
             WebPrincipal wp = (WebPrincipal) principal;
