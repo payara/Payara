@@ -98,7 +98,7 @@
         <major_version>4</major_version>
         <minor_version>1</minor_version>
         <update_version>1</update_version>
-        <payara_version>162-SNAPSHOT</payara_version>
+        <payara_version>162</payara_version>
         <payara_update_version></payara_update_version>
         <install.dir.name>payara${major_version}${minor_version}</install.dir.name>
         
