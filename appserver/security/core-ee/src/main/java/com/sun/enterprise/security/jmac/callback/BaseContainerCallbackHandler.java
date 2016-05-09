@@ -375,9 +375,10 @@ abstract class BaseContainerCallbackHandler
         final Subject fs = cpCallback.getSubject();
         Principal principal = cpCallback.getPrincipal();
         
+        // PAYARA-755 If the SAM has set a custom principal then we check that the original WebPrincipal has the same custom principal within it
         if (principal != null && !(principal instanceof WebPrincipal)) {
             Principal additional = SecurityContext.getCurrent().getAdditionalPrincipal();
-            if (additional != null) {
+            if ((additional != null) && (additional instanceof WebPrincipal) && ((WebPrincipal)additional).getCustomPrincipal() == principal) {
                 principal = additional;
             }
         }
