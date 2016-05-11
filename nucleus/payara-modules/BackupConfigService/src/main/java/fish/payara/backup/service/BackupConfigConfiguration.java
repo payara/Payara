@@ -18,9 +18,13 @@ import org.jvnet.hk2.config.Configured;
 @Configured
 public interface BackupConfigConfiguration extends ConfigBeanProxy, ConfigExtension{
     @Attribute(defaultValue="5")
-    @Pattern(regexp="[1-9]")
+    
     public String getMinutes();
-    public String setMinutes(String param);
+    public String setMinutes(String value);
+    
+    @Attribute
+    public String getparam2();
+    public String setparam2(String value);
     
     
     
