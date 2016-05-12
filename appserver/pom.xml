@@ -1106,11 +1106,6 @@
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
             </dependency>
-            
-            <!-- 
-                 Currently requires you to build the Soteria project manually
-                 - https://github.com/javaee-security-spec/soteria
-             -->
             <dependency>
                 <groupId>org.glassfish.soteria</groupId>
                 <artifactId>soteria</artifactId>
