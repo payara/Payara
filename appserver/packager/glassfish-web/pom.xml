@@ -260,12 +260,10 @@
         <dependency>
             <groupId>org.glassfish.soteria</groupId>
             <artifactId>soteria</artifactId>
-            <version>1.0-m01-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>javax.security</groupId>
             <artifactId>javax.security-api</artifactId>
-            <version>1.0-m01-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>

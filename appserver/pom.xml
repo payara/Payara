@@ -82,6 +82,7 @@
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
         <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
+        <javax.security-api.version>1.0-m01-SNAPSHOT</javax.security-api.version>
         
         <product.name>Payara Server</product.name>
         <brief_product_name>Payara Server</brief_product_name>
@@ -149,6 +150,7 @@
 	<javax.management.j2ee-api.version>1.1.1</javax.management.j2ee-api.version>
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>18.0</guava.version>
+        <soteria.version>1.0-m01-SNAPSHOT</soteria.version>
     </properties>
 
     <modules>
@@ -483,6 +485,19 @@
                             <apiPackage>javax.el</apiPackage>
                             <implNamespace>com.sun.el</implNamespace>
                         </spec>
+                        <spec>
+                            <artifact>
+                                <groupId>javax.security</groupId>
+                                <artifactId>javax.security-api</artifactId>
+                                <version>${javax.security-api.version}</version>
+                            </artifact>
+                            <nonFinal>false</nonFinal>
+                            <jarType>api</jarType>
+                            <specVersion>1.0-m01-SNAPSHOT</specVersion>
+                            <specImplVersion>${soteria.version}</specImplVersion>
+                            <apiPackage>javax.security</apiPackage>
+                            <implNamespace>org.glassfish.soteria</implNamespace>
+                         </spec>
                     </specs>
                 </configuration>
             </plugin>            
@@ -1090,6 +1105,21 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+            
+            <!-- 
+                 Currently requires you to build the Soteria project manually
+                 - https://github.com/javaee-security-spec/soteria
+             -->
+            <dependency>
+                <groupId>org.glassfish.soteria</groupId>
+                <artifactId>soteria</artifactId>
+                <version>${soteria.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.security</groupId>
+                <artifactId>javax.security-api</artifactId>
+                <version>${javax.security-api.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
