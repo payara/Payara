@@ -66,5 +66,5 @@
         <module>core-ee-l10n</module>
         <module>webservices.security-l10n</module>
         <module>security-dol-l10n</module>
-  </modules>
+    </modules>
 </project>
