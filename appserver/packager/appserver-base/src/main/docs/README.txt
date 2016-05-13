@@ -6,8 +6,8 @@ Here are a few short steps to get you started...
 0. Prerequisite
 ===============
 
-Payara Server 4.1.1 requires Oracle JDK 7 Update 65+ or Oracle JDK 8 Update 5+. 
-Check http://www.oracle.com/technetwork/java/javase/downloads/index.html to download the JDK.
+Payara Server 4.1.1 requires IBM JDK Version 7, SR9 FP40 or higher, IBM JDK Version 7 Release 1, SR3 FP40 or higher or IBM JDK Version 8 SR3 or higher. 
+Check http://www.ibm.com/developerworks/java/jdk/ to download the JDK.
 
 
 1. Installing Payara Server
