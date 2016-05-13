@@ -1,5 +1,8 @@
 ![alt tag](https://avatars3.githubusercontent.com/u/7817189?v=3&s=100)
 
+#Payara 5
+This is an experimental branch for including the changes and upcoming modules due to debut with Java EE 8. The main Payara project continues to exist on the _master_ branch.
+
 #Payara Server
 
 Payara Server is a patched, enhanced and supported application server derived from GlassFish Server Open Source Edition 4.x.
