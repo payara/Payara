@@ -162,6 +162,7 @@
         <module>healthcheck</module>
         <module>payara</module>
         <module>BackupConfig</module>
+        
     </modules>
 
     <build>

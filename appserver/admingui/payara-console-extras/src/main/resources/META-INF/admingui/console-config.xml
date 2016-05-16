@@ -39,4 +39,11 @@
             parentId="standaloneInstanceTabs"
             content="hazelcast/hazelcastTabsStandalone.jsf"
             />
+    <integration-point
+            id="backupConsole"
+            type="org.glassfish.admingui:serverInstTab"
+            priority="60"
+            parentId="serverInstTabs"
+            content="BackupConsole/BackupConsoleTabs.jsf"
+            />
  </console-config>
