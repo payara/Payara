@@ -15,7 +15,7 @@ package fish.payara.nucleus.notification;
 
 import com.google.common.eventbus.EventBus;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.service.NotifierServiceBase;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
@@ -32,11 +32,11 @@ public class NotificationEventBus {
 
     private EventBus eventBus = new EventBus();
 
-    public void register(NotifierServiceBase notifier) {
+    public void register(BaseNotifierService notifier) {
         eventBus.register(notifier);
     }
 
-    public void unregister(NotifierServiceBase notifier) {
+    public void unregister(BaseNotifierService notifier) {
         eventBus.unregister(notifier);
     }
 

@@ -37,6 +37,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -77,8 +80,14 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
 
-    @Param(name = "enabled", optional = false)
+    @Param(name = "enabled", optional = true)
     private Boolean enabled;
+
+    @Param(name = "thresholdUnit", optional = true)
+    private String unit;
+
+    @Param(name = "thresholdValue", optional = true)
+    private String value;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -95,6 +104,12 @@ public class RequestTracingConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
                             requestTracingServiceConfigurationProxy.enabled(enabled.toString());
+                        }
+                        if (unit !=null ) {
+                            requestTracingServiceConfigurationProxy.setThresholdUnit(unit);
+                        }
+                        if (value != null) {
+                            requestTracingServiceConfigurationProxy.setThresholdValue(value);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return requestTracingServiceConfigurationProxy;
@@ -115,8 +130,20 @@ public class RequestTracingConfigurer implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        service.getExecutionOptions().setEnabled(enabled);
-        actionReport.appendMessage(strings.getLocalString("requesttracing.configure.status.success",
-                "Request Tracing Service status is set to {0}.", enabled));
+        if (enabled != null) {
+            service.getExecutionOptions().setEnabled(enabled);
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.status.success",
+                    "request tracing service status is set to {0}.", enabled) + "\n");
+        }
+        if (value != null) {
+            service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
+                    "Request Tracing Service Threshold Value is set to {0}.", value)  + "\n");
+        }
+        if (unit != null) {
+            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
+            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
+                    "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
+        }
     }
 }

@@ -52,4 +52,20 @@ public abstract class NotifierExecutionOptions {
                 ", enabled=" + enabled +
                 '}';
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        NotifierExecutionOptions that = (NotifierExecutionOptions) o;
+
+        return notifierType == that.notifierType;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return notifierType != null ? notifierType.hashCode() : 0;
+    }
 }
