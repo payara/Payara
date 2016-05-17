@@ -999,6 +999,45 @@ public class PayaraMicro {
                         i++;
                         break;
                     }
+                    case "--version": {
+                        String deployments = System.getProperty("user.dir");
+                        System.err.println("deployments "+deployments);
+                        try {
+                            Properties props = new Properties();
+                            InputStream input = PayaraMicro.class.getResourceAsStream("/config/branding/glassfish-version.properties");
+                            props.load(input); 
+                            StringBuilder output = new StringBuilder();
+                            if (props.getProperty("product_name").isEmpty() == false){
+                                output.append(props.getProperty("product_name")+" ");
+                            }
+                            if (props.getProperty("major_version").isEmpty() == false){
+                                output.append(props.getProperty("major_version")+".");
+                            }
+                            if (props.getProperty("minor_version").isEmpty() == false){
+                                output.append(props.getProperty("minor_version")+".");
+                            }
+                            if (props.getProperty("update_version").isEmpty() == false){
+                                output.append(props.getProperty("update_version")+".");
+                            }
+                            if (props.getProperty("payara_version").isEmpty() == false){
+                                output.append(props.getProperty("payara_version"));
+                            }
+                            if (props.getProperty("payara_update_version").isEmpty() == false){
+                                output.append("." + props.getProperty("payara_update_version"));
+                            }
+                            if (props.getProperty("build_id").isEmpty() == false){
+                                output.append(" Build Number " + props.getProperty("build_id"));
+                            }
+                            
+                            System.err.println(output.toString());
+                        } catch (FileNotFoundException ex) {
+                            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException ex) {
+                            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                        }                       
+                            System.exit(1);
+                            break;
+                    }
                     case "--maxHttpThreads": {
                         String threads = args[i + 1];
                         try {
