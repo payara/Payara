@@ -59,6 +59,7 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
+import java.io.FileNotFoundException;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -1032,9 +1033,9 @@ public class PayaraMicro {
                             System.err.println(output.toString());
                         } catch (FileNotFoundException ex) {
                             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (IOException ex) {
-                            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
-                        }                       
+                        } catch (IOException io){
+                            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, io);
+                        }                      
                             System.exit(1);
                             break;
                     }
