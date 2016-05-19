@@ -1,0 +1,142 @@
+<!--
+
+    DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+    Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+
+    The contents of this file are subject to the terms of either the GNU
+    General Public License Version 2 only ("GPL") or the Common Development
+    and Distribution License("CDDL") (collectively, the "License").  You
+    may not use this file except in compliance with the License.  You can
+    obtain a copy of the License at
+    https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+    or packager/legal/LICENSE.txt.  See the License for the specific
+    language governing permissions and limitations under the License.
+
+    When distributing the software, include this License Header Notice in each
+    file and include the License file at packager/legal/LICENSE.txt.
+
+    GPL Classpath Exception:
+    Oracle designates this particular file as subject to the "Classpath"
+    exception as provided by Oracle in the GPL Version 2 section of the License
+    file that accompanied this code.
+
+    Modifications:
+    If applicable, add the following below the License Header, with the fields
+    enclosed by brackets [] replaced by your own identifying information:
+    "Portions Copyright [year] [name of copyright owner]"
+
+    Contributor(s):
+    If you wish your version of this file to be governed by only the CDDL or
+    only the GPL Version 2, indicate your decision by adding "[Contributor]
+    elects to include this software in this distribution under the [CDDL or GPL
+    Version 2] license."  If you don't indicate a single choice of license, a
+    recipient has the option to distribute your version of this file under
+    either the CDDL, the GPL Version 2 or to extend the choice of license to
+    its licensees as provided above.  However, if you add GPL Version 2 code
+    and therefore, elected the GPL Version 2 license, then the option applies
+    only if the new code is made subject to such option by the copyright
+    holder.
+
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nhc.hazelcast.configurationTitle}" xmlns="http://www.w3.org/1999/xhtml"  xmlns="http://java.sun.com/jstl/core">
+
+<!define name="content">
+<!beforeCreate
+    getRequestValue(key="target" value="#{pageSession.target}");
+    urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
+    getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
+
+    setPageSessionAttribute(key="selfPage" value="#{request.contextPath}/payaraExtras/hazelcast.jsf?target=#{pageSession.target}");
+    setPageSessionAttribute(key="parentUrl", value="#{sessionScope.REST_URL}/configs/config/#{pageSession.target}");
+    setPageSessionAttribute(key="selfUrl", value="#{pageSession.parentUrl}/hazelcast-runtime-configuration");
+    setPageSessionAttribute(key="rest-api" value="true");
+    setPageSessionAttribute(key="childType" value="hazelcast-runtime-configuration");
+
+    if(#{pageSession.isCluster}=true){
+    setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
+    setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
+    }
+    if(#{pageSession.isCluster}=false){
+    setPageSessionAttribute(key="isCluster", value="false");
+    setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
+    setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
+    }
+
+    createMap(result="#{pageSession.attrsMap}")
+    mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
+    gf.getEntityAttrs(endpoint="#{pageSession.selfUrl}.json", valueMap="#{pageSession.valueMap}");
+    gf.restRequest(endpoint="#{pageSession.selfUrl}/property.json", method="GET", result="#{requestScope.resp}");
+    setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
+    mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.encodedTarget}");
+    setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
+    if (#{pageSession.valueMap['enabled']}=true) {
+        setPageSessionAttribute(key="enabledSelected", value="true");
+    }
+    setPageSessionAttribute(key="dynamic", value="true");
+/>
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+    <h:column>
+        <h:outputText value="#{pageSession.target}" />
+    </h:column>
+    <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.configurationTitle}" helpText="$resource{i18nhc.hazelcast.configurationTitleHelp}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    mapPut(map="#{pageSession.valueMap}" key="enabled" value="#{pageSession.enabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    prepareSuccessfulMsg();
+                    gf.updateEntity(endpoint="#{pageSession.selfUrl}" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}" );
+
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+#include "/common/shared/nameSection.inc"
+<sun:propertySheetSection >
+    <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.enabled}"  helpText="$resource{i18nhc.hazelcast.configuration.enabledHelp}">
+        <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.dynamic}"  helpText="$resource{i18nhc.hazelcast.configuration.dynamicHelp}">
+        <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="configFileProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.configFile}"  helpText="$resource{i18nhc.hazelcast.configuration.configFileHelp}">
+        <sun:textField id="hazelcastConfigurationFile" columns="$int{40}" maxLength="250" text="#{pageSession.valueMap['hazelcastConfigurationFile']}" />
+    </sun:property>
+    <sun:property id="clusterNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.clusterName}"  helpText="$resource{i18nhc.hazelcast.configuration.clusterNameHelp}">
+        <sun:textField id="clusterName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['clusterName']}" />
+    </sun:property>
+    <sun:property id="clusterPasswordProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.clusterPassword}"  helpText="$resource{i18nhc.hazelcast.configuration.clusterPasswordHelp}">
+        <sun:passwordField id="clusterName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['clusterPassword']}" />
+    </sun:property>
+    <sun:property id="startPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.startPort}"  helpText="$resource{i18nhc.hazelcast.configuration.startPortHelp}">
+        <sun:textField id="startPort" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['startPort']}" />
+    </sun:property>
+    <sun:property id="multicastPortProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastPort}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastPortHelp}">
+        <sun:textField id="multicastPort"  styleClass="integer" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastPort']}" />
+    </sun:property>
+    <sun:property id="multicastGroupProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.multicastGroup}"  helpText="$resource{i18nhc.hazelcast.configuration.multicastGroupHelp}">
+        <sun:textField id="multicastGroup" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['multicastGroup']}" />
+    </sun:property>    
+    <sun:property id="jndiNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.jndiName}"  helpText="$resource{i18nhc.hazelcast.configuration.jndiNameHelp}">
+        <sun:textField id="jndiName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['jndiName']}" />
+    </sun:property>
+    <sun:property id="liteProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.configuration.lite}"  helpText="$resource{i18nhc.hazelcast.configuration.liteHelp}">
+        <sun:checkbox id="lite" selected="#{pageSession.valueMap['lite']}" selectedValue="true" />
+    </sun:property>
+</sun:propertySheetSection>
+
+<sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
+</sun:form>
+</define>
+</composition>
