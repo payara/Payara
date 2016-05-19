@@ -50,19 +50,7 @@
     </resources>
   </build>
     
-    <profiles>
-            <profile>
-            <id>build</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-             <properties>
-                 <build-number>${build.number}</build-number>
-             </properties>
-        </profile>
-        <profile>
-    </profile>
-    </profiles>
+
     <dependencies>
         <dependency>
             <groupId>org.glassfish.main.core</groupId>
