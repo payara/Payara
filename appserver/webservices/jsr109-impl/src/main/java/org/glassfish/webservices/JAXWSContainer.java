@@ -85,6 +85,8 @@ public class JAXWSContainer extends Container {
 
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
     public <T> T getSPI(Class<T> spiType) {
         if (ServletContext.class.isAssignableFrom( spiType)) {
             return (T)servletContext;
@@ -113,7 +115,13 @@ public class JAXWSContainer extends Container {
                 return ((T)spiType.cast(new Module() {
                     @Override
                     public List<BoundEndpoint> getBoundEndpoints() {
-                        return new ArrayList<>();
+                        return new ArrayList<BoundEndpoint>(){
+                            private static final long serialVersionUID = 1L;
+                            @Override
+                            public boolean add(BoundEndpoint e) {
+                                return true;
+                            }
+                        };
                     }
                 }));
             }
