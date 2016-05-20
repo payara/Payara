@@ -169,6 +169,10 @@ public class GAVConvertor {
                             + "response code");
                 }      
             }
+            
+            if (validURLFound == true) {
+                break;
+            }
         }
         
         if (validURLFound == false) {
