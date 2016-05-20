@@ -471,6 +471,57 @@ public class PayaraMicro {
         deployments.add(file);
         return this;
     }
+ 
+    /**
+     * Adds a Maven GAV coordinate to the list of archives to be deployed at boot.
+     *
+     * @param GAV GAV coordinate
+     * @return 
+     */
+    public PayaraMicro addDeployFromGAV(String GAV) {
+        //if (runtime != null) {
+        if (isRunning()) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
+        if (GAVs == null) {
+            GAVs = new LinkedList<>();
+        }
+        GAVs.add(GAV);
+        if (GAVs != null) {
+            try {
+                // Convert the provided GAV Strings into target URLs
+                getGAVURLs();
+            } catch (GlassFishException ex) {
+                Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        return this;
+    }
+    
+    /**
+     * Adds a Maven repository to the list of repositories to search for artifacts in 
+     * 
+     * @param URLs URL to Maven repository
+     * @return 
+     */
+    public PayaraMicro addRepoUrl(String... URLs){
+        //if (runtime != null) {
+        if (isRunning()) {
+            throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
+        }
+        for (String url : URLs){
+            try {                 
+                if (!url.endsWith("/")) {
+                    repositoryURLs.add(new URL(url + "/"));
+                } else {
+                    repositoryURLs.add(new URL(url));
+                }
+            } catch (MalformedURLException ex) {
+                    logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", url);
+            }
+       }
+        return this;
+    }
 
     /**
      * Indicated whether clustering is enabled
@@ -692,8 +743,8 @@ public class PayaraMicro {
     }
 
     /**
-     * Gets the password of the Hazelcast cluster group 
-     * @return 
+     * Gets the password of the Hazelcast cluster group
+     * @return
      */
     public String getHzClusterPassword() {
         return hzClusterPassword;
@@ -703,7 +754,7 @@ public class PayaraMicro {
      * Sets the Hazelcast cluster group password.
      * For two clusters to work together then the group name and password must be the same
      * @param hzClusterPassword The password to set
-     * @return 
+     * @return
      */
     public PayaraMicro setHzClusterPassword(String hzClusterPassword) {
         this.hzClusterPassword = hzClusterPassword;
@@ -744,15 +795,15 @@ public class PayaraMicro {
             mc.setAlternateConfiguration(alternateHZConfigFile);
         }
         mc.setLite(liteMember);
-        
+
         if (hzClusterName != null) {
             mc.setClusterGroupName(hzClusterName);
         }
-        
+
         if (hzClusterPassword != null) {
             mc.setClusterGroupPassword(hzClusterPassword);
         }
-        
+
         HazelcastCore.setMulticastOverride(mc);
 
         setSystemProperties();
@@ -843,7 +894,7 @@ public class PayaraMicro {
                     throw new GlassFishException("Could not bind SSL port");
                 }
             }
-            
+
             
 
             if (alternateDomainXML != null) {
@@ -865,11 +916,11 @@ public class PayaraMicro {
                     installFiles(gfproperties);
                 } else {
                     if (alternateDomainXML ==null) {
-                        String absolutePath = rootDir.getAbsolutePath();
-                        absolutePath = absolutePath.replace('\\', '/');
-                        gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
-                        gfproperties.setConfigFileReadOnly(false);
-                    }   
+                    String absolutePath = rootDir.getAbsolutePath();
+                    absolutePath = absolutePath.replace('\\', '/');
+                    gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
+                    gfproperties.setConfigFileReadOnly(false);
+                }
                 }
 
             }
@@ -913,13 +964,13 @@ public class PayaraMicro {
                 HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
                 healthCheckService.setEnabled(enableHealthCheck);
             }
-            
+
             if (disablePhoneHome) {
                 logger.log(Level.INFO, "Phone Home Service Disabled");
-            } else {    
+            } else {
                 gf.getService(PhoneHomeCore.class).start();
             }
-            
+
             long end = System.currentTimeMillis();
             logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
@@ -1002,11 +1053,11 @@ public class PayaraMicro {
                     }
                     case "--version": {
                         String deployments = System.getProperty("user.dir");
-                        System.err.println("deployments "+deployments);
+                        System.err.println("deployments " + deployments);
                         try {
                             Properties props = new Properties();
                             InputStream input = PayaraMicro.class.getResourceAsStream("/config/branding/glassfish-version.properties");
-                            props.load(input); 
+                            props.load(input);
                             StringBuilder output = new StringBuilder();
                             if (props.getProperty("product_name").isEmpty() == false){
                                 output.append(props.getProperty("product_name")+" ");
@@ -1029,15 +1080,15 @@ public class PayaraMicro {
                             if (props.getProperty("build_id").isEmpty() == false){
                                 output.append(" Build Number " + props.getProperty("build_id"));
                             }
-                            
+
                             System.err.println(output.toString());
                         } catch (FileNotFoundException ex) {
                             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
                         } catch (IOException io){
                             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, io);
-                        }                      
-                            System.exit(1);
-                            break;
+                        }
+                        System.exit(1);
+                        break;
                     }
                     case "--maxHttpThreads": {
                         String threads = args[i + 1];
@@ -1065,27 +1116,27 @@ public class PayaraMicro {
                             throw new IllegalArgumentException();
                         }
                         i++;
-                    break;
-                }
-                case "--mcAddress":
-                    hzMulticastGroup = args[i + 1];
-                    i++;
-                    break;
+                        break;
+                    }
+                    case "--mcAddress":
+                        hzMulticastGroup = args[i + 1];
+                        i++;
+                        break;
                 case "--clusterName" :
                     hzClusterName = args[i+1];
-                    i++;
-                    break;
+                        i++;
+                        break;
                 case "--clusterPassword" :
                     hzClusterPassword = args[i+1];
-                    i++;
-                    break;
-                case "--mcPort": {
-                    String httpPortS = args[i + 1];
-                    try {
-                        hzPort = Integer.parseInt(httpPortS);
-                        if (hzPort < 1 || hzPort > 65535) {
-                            throw new NumberFormatException("Not a valid tcp port");
-                        }
+                        i++;
+                        break;
+                    case "--mcPort": {
+                        String httpPortS = args[i + 1];
+                        try {
+                            hzPort = Integer.parseInt(httpPortS);
+                            if (hzPort < 1 || hzPort > 65535) {
+                                throw new NumberFormatException("Not a valid tcp port");
+                            }
                         } catch (NumberFormatException nfe) {
                             logger.log(Level.SEVERE, "{0} is not a valid multicast port number and will be ignored", httpPortS);
                             throw new IllegalArgumentException();
@@ -1137,7 +1188,7 @@ public class PayaraMicro {
                             deployments.add(deployment);
                         }
                         i++;
-                        break;   
+                        break;
                     case "--domainConfig":
                         alternateDomainXML = new File(args[i + 1]);
                         if (!alternateDomainXML.exists() || !alternateDomainXML.isFile() || !alternateDomainXML.canRead() || !alternateDomainXML.getAbsolutePath().endsWith(".xml")) {
@@ -1213,30 +1264,30 @@ public class PayaraMicro {
                         i++;
                         break;
                     case "--systemProperties": {
-                            File propertiesFile = new File(args[i + 1]);
-                            userSystemProperties = new Properties();
-                            try (FileReader reader = new FileReader(propertiesFile)) {
-                                userSystemProperties.load(reader);
-                                Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
-                                while (names.hasMoreElements()) {
-                                    String name = names.nextElement();
-                                    System.setProperty(name, userSystemProperties.getProperty(name));
-                                }
-                            } catch (IOException e) {
-                                logger.log(Level.SEVERE,
-                                        "{0} is not a valid properties file",
-                                        propertiesFile.getAbsolutePath());
-                                throw new IllegalArgumentException(e);
+                        File propertiesFile = new File(args[i + 1]);
+                        userSystemProperties = new Properties();
+                        try (FileReader reader = new FileReader(propertiesFile)) {
+                            userSystemProperties.load(reader);
+                            Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
+                            while (names.hasMoreElements()) {
+                                String name = names.nextElement();
+                                System.setProperty(name, userSystemProperties.getProperty(name));
                             }
-                            if (!propertiesFile.isFile() && !propertiesFile.canRead()) {
-                                logger.log(Level.SEVERE,
-                                        "{0} is not a valid properties file",
-                                        propertiesFile.getAbsolutePath());
-                                throw new IllegalArgumentException();
-
-                            }
+                        } catch (IOException e) {
+                            logger.log(Level.SEVERE,
+                                    "{0} is not a valid properties file",
+                                    propertiesFile.getAbsolutePath());
+                            throw new IllegalArgumentException(e);
                         }
-                        break;
+                        if (!propertiesFile.isFile() && !propertiesFile.canRead()) {
+                            logger.log(Level.SEVERE,
+                                    "{0} is not a valid properties file",
+                                    propertiesFile.getAbsolutePath());
+                            throw new IllegalArgumentException();
+
+                        }
+                    }
+                    break;
                     case "--disablePhoneHome":
                         disablePhoneHome = true;
                         break;
@@ -1802,11 +1853,11 @@ public class PayaraMicro {
             if (alternateHZConfigFile != null) {
                 props.setProperty("payaramicro.hzConfigFile", "META-INF/deploy/hzconfig.xml");
             }
-            
+
             if (hzClusterName != null) {
                 props.setProperty("payaramicro.clusterName", hzClusterName);
             }
-            
+
             if (hzClusterPassword != null) {
                 props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
             }
@@ -1827,7 +1878,7 @@ public class PayaraMicro {
             if (sslPort != Integer.MIN_VALUE) {
                 props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
             }
-            
+
             // write all user defined system properties
             if (userSystemProperties != null) {
                 Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
@@ -1836,7 +1887,7 @@ public class PayaraMicro {
                     props.setProperty(name, userSystemProperties.getProperty(name));
                 }
             }
-            
+
             props.store(jos, "");
             jos.flush();
             jos.closeEntry();
@@ -1885,12 +1936,12 @@ public class PayaraMicro {
 
     private void configureSSL() {
         String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
-        
+
         // check keystore
         if (System.getProperty("javax.net.ssl.keyStore") == null) {
             System.setProperty("javax.net.ssl.keyStore",instanceRootStr+"/config/keystore.jks");
         }
-        
+
         // check truststore
         if (System.getProperty("javax.net.ssl.trustStore") == null) {
             System.setProperty("javax.net.ssl.trustStore",instanceRootStr+"/config/cacerts.jks");
