@@ -37,8 +37,8 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-
 -->
+<!-- Portions Copyright [2014-2016] [C2B2 Consulting Limited] -->
 
 <!-- configuration/accessLog.jsf -->
 
@@ -97,6 +97,10 @@
 
         <sun:property id="acLog" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.vs.accessLogging}">
             <sun:checkbox id="accessLoggingEnabled" label="$resource{i18n.common.Enabled}"  selected="#{pageSession.valueMap['accessLoggingEnabled']}" selectedValue="true"/>
+        </sun:property>
+        <sun:property id="logToConsoleProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.LogToConsole}" helpText="$resource{i18n_web.access.LogToConsoleHelp}">
+            <sun:checkbox label="$resource{i18n.common.Enabled}" selected="#{pageSession.valueMap2['logToConsoleEnabled']}" selectedValue="true" >
+           </sun:checkbox>
         </sun:property>
 
         <sun:property id="rotationProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n_web.access.Rotation}" helpText="$resource{i18n_web.access.RotationHelp}">
