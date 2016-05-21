@@ -230,7 +230,7 @@
         <mail.version>1.5.4</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
-        <jdk.version>1.7.0-09</jdk.version>
+        <jdk.version>1.8.0</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>
         <javadoc.skip>false</javadoc.skip>
         <deploy.skip>false</deploy.skip>
