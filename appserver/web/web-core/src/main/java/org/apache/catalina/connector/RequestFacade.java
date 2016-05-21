@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2015,2016] [C2B2 Consulting Limited]
 
 package org.apache.catalina.connector;
 
@@ -845,6 +845,13 @@ public class RequestFacade
         }
 
         return request.isUserInRole(role);
+    }
+    
+    public java.security.Principal getPrincipal() {
+        if (request == null) {
+            throw new IllegalStateException(rb.getString(CANNOT_USE_REQUEST_OBJECT_OUTSIDE_SCOPE_EXCEPTION));
+        }
+        return request.getUserPrincipal();
     }
 
 
