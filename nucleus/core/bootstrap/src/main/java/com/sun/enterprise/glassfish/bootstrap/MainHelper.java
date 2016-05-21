@@ -69,8 +69,8 @@ public class MainHelper {
     static void checkJdkVersion() {
         int minor = getMinorJdkVersion();
 
-        if (minor < 7) {
-            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{ 7, minor});
+        if (minor < 8) {
+            logger.log(Level.SEVERE, LogFacade.BOOTSTRAP_INCORRECT_JDKVERSION, new Object[]{ 8, minor});
             System.exit(1);
         }
     }
