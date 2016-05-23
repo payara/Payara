@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.web.deployment.descriptor;
 
@@ -257,10 +258,13 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
         Boolean otherIsDistributable = webBundleDescriptor.isDistributable();
         if (otherIsDistributable != null) {
+            // the only way distributable is true is when
+            // all of it's web fragments are true
+            // The Servlet spec (section 8.2.3):
             if (isDistributable != null) {
                 setDistributable(isDistributable && otherIsDistributable);
             } else {
-                setDistributable(otherIsDistributable);
+                setDistributable(false);
             }
         }
         combinePostConstructDescriptors(webBundleDescriptor);
