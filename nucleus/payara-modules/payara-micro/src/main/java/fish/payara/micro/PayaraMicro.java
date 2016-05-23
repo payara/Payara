@@ -934,11 +934,11 @@ public class PayaraMicro {
             }
 
             gf = gfruntime.newGlassFish(gfproperties);
-
+                      
             // reset logger.
-            // reset the Log Manager
+            // reset the Log Manager     
             String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
-            File configDir = new File(instanceRootStr, "config");
+            File configDir = new File(instanceRootStr, "config");                    
             File loggingProperties = new File(configDir.getAbsolutePath(), "logging.properties");
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
                 if (System.getProperty("java.util.logging.config.file") == null) {
@@ -950,7 +950,7 @@ public class PayaraMicro {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
-            configureSSL();
+            configureSecurity();
             gf.start();
             //this.runtime = new PayaraMicroRuntime(instanceName, gf);
             this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
@@ -1496,7 +1496,7 @@ public class PayaraMicro {
                 if (System.getProperty(keyStr) == null) {
                     System.setProperty(keyStr, embeddedBootProperties.getProperty(keyStr));
                 }
-            }
+            } 
         } catch (IOException ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1934,17 +1934,27 @@ public class PayaraMicro {
 
     }
 
-    private void configureSSL() {
+    private void configureSecurity() {
         String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
+        File configDir = new File(instanceRootStr, "config");
 
+        // Set security properties PAYARA-803
+        if (System.getProperty("java.security.auth.login.config") == null) {
+                System.setProperty("java.security.auth.login.config", new File(configDir.getAbsolutePath(),"login.conf").getAbsolutePath());
+            }
+
+        if (System.getProperty("java.security.policy") == null) {
+                System.setProperty("java.security.policy", new File(configDir.getAbsolutePath(),"server.policy").getAbsolutePath());
+        }
+        
         // check keystore
         if (System.getProperty("javax.net.ssl.keyStore") == null) {
-            System.setProperty("javax.net.ssl.keyStore",instanceRootStr+"/config/keystore.jks");
+            System.setProperty("javax.net.ssl.keyStore",new File(configDir.getAbsolutePath(),"keystore.jks").getAbsolutePath());
         }
 
         // check truststore
         if (System.getProperty("javax.net.ssl.trustStore") == null) {
-            System.setProperty("javax.net.ssl.trustStore",instanceRootStr+"/config/cacerts.jks");
+            System.setProperty("javax.net.ssl.trustStore",new File(configDir.getAbsolutePath(),"cacerts.jks").getAbsolutePath());
         }
     }
 
