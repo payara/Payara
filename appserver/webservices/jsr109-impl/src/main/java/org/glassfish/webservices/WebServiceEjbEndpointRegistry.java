@@ -37,15 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package org.glassfish.webservices;
 
 import com.sun.enterprise.container.common.spi.util.InjectionException;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
-import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
-
+import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
+import com.sun.xml.ws.transport.http.servlet.ServletAdapterList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,14 +56,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Singleton;
-import org.jvnet.hk2.annotations.Service;
-
-import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
-import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
-import org.glassfish.ejb.api.EjbEndpointFacade;
-
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.handler.Handler;
+import org.glassfish.ejb.api.EjbEndpointFacade;
+import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * This class acts as a registry of all the webservice EJB end points
@@ -150,8 +148,10 @@ public class WebServiceEjbEndpointRegistry implements WSEjbEndpointRegistry {
                         for (Handler handler : x.getEndpoint().getBinding().getHandlerChain()) {
                         try {
                             WebServiceContractImpl wscImpl = WebServiceContractImpl.getInstance();
-                            InjectionManager injManager = wscImpl.getInjectionManager();
-                            injManager.destroyManagedObject(handler);
+                            if(wscImpl.getInvocationManager().getCurrentInvocation() != null) {
+                                InjectionManager injManager = wscImpl.getInjectionManager();
+                                injManager.destroyManagedObject(handler);
+                            }
                         } catch (InjectionException e) {
                             logger.log(Level.WARNING, LogUtils.DESTORY_ON_HANDLER_FAILED,
                                     new Object[]{handler.getClass(), x.getEndpoint().getServiceName(), e.getMessage()});

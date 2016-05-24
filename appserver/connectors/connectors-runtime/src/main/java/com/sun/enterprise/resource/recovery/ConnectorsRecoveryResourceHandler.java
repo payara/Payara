@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.resource.recovery;
 
@@ -103,11 +104,7 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
 
     @Inject
     private Provider<ConnectorResourceDeployer> connectorResourceDeployerProvider;
-
-    @Inject
-    @Named("ApplicationLoaderService")
-    private Provider<ApplicationLoaderService> startupProvider;
-    
+   
     @Inject
     private ConfigBeansUtilities configBeansUtilities;
 
@@ -216,8 +213,11 @@ public class ConnectorsRecoveryResourceHandler implements RecoveryResourceHandle
         //Done so as to initialize connectors-runtime before loading connector-resources. need a better way ?
         ConnectorRuntime crt = connectorRuntimeProvider.get();
 
-        //Done so as to load all connector-modules. need to load only connector-modules instead of all apps
-        startupProvider.get();
+        // ApplicationLoaderService already guarantees that connectors are loaded before any other applications.
+        // Recovery will not start sooner than transaction is first needed on EE application startup, therefore
+        // it is safe to continue here without waiting for startupProvider, as that ultimately creates a deadlock
+        // between ApplicationLoaderService needed a transaction manager, and recovery wainting for applications
+        // to finish loading.
 
         Collection<ConnectorResource> connectorResources = getAllConnectorResources();
 

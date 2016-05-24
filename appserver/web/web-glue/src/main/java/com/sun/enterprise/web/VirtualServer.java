@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2015] [C2B2 Consulting Limited]
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.web;
 
@@ -65,18 +65,35 @@ import com.sun.enterprise.web.logger.FileLoggerHandlerFactory;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.session.SessionCookieConfig;
 import com.sun.web.security.RealmAdapter;
-
+import java.io.File;
+import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
+import java.util.*;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.catalina.*;
 import org.apache.catalina.authenticator.AuthenticatorBase;
 import org.apache.catalina.authenticator.SingleSignOn;
+import org.apache.catalina.connector.Request;
+import org.apache.catalina.connector.Response;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
-import org.apache.catalina.connector.Response;
-import org.apache.catalina.connector.Request;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.valves.RemoteAddrValve;
 import org.apache.catalina.valves.RemoteHostValve;
-
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -87,10 +104,9 @@ import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.ApplicationConfigInfo;
 import org.glassfish.deployment.common.DeploymentContextImpl;
 import org.glassfish.deployment.common.DeploymentUtils;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.ConfigException;
+import org.glassfish.embeddable.web.Context;
 import org.glassfish.embeddable.web.WebListener;
 import org.glassfish.embeddable.web.config.VirtualServerConfig;
 import org.glassfish.grizzly.Buffer;
@@ -98,60 +114,30 @@ import org.glassfish.grizzly.Connection;
 import org.glassfish.grizzly.ConnectionProbe;
 import org.glassfish.grizzly.config.GenericGrizzlyListener;
 import org.glassfish.grizzly.config.dom.NetworkListener;
-import org.glassfish.grizzly.http.ContentEncoding;
-import org.glassfish.grizzly.http.HttpContent;
+import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.grizzly.http.HttpCodecFilter;
-import org.glassfish.grizzly.http.HttpProbe;
-import org.glassfish.grizzly.http.HttpHeader;
 import org.glassfish.grizzly.http.HttpPacket;
+import org.glassfish.grizzly.http.HttpProbe;
 import org.glassfish.grizzly.http.HttpRequestPacket;
 import org.glassfish.grizzly.http.HttpResponsePacket;
-import org.glassfish.grizzly.http.TransferEncoding;
 import org.glassfish.grizzly.http.util.HttpStatus;
-import org.glassfish.grizzly.filterchain.FilterChainContext;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.hk2.api.ServiceLocatorFactory;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.RequestProbeProvider;
-import org.glassfish.web.deployment.archivist.WebArchivist;
-import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
-
 import org.glassfish.internal.api.ClassLoaderHierarchy;
-import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.api.ServerContext;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.admin.monitor.RequestProbeProvider;
+import org.glassfish.web.deployment.archivist.WebArchivist;
+import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.valve.GlassFishValve;
-
-import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
-
-import java.io.File;
-import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.*;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
-import java.util.logging.LogRecord;
-
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.w3c.dom.*;
 
 

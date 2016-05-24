@@ -37,11 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
 
 package org.glassfish.internal.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.logging.Handler;
 import org.jvnet.hk2.annotations.Contract;
@@ -59,4 +61,7 @@ public interface LogManager {
      * @param handler handler to be iadded.
      */
     void addHandler(Handler handler);
+    
+    PrintStream getErrStream();
+    PrintStream getOutStream();
 }
