@@ -408,6 +408,11 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (key == null) {
                 key = e.getKey();
             }
+            
+            if (key.contains("\\:")) {
+                key = key.replace("\\:", ":");
+            }
+            
             props.remove(key);
         }
 

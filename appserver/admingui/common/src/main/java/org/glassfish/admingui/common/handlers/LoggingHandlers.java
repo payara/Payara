@@ -62,6 +62,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
@@ -169,7 +170,10 @@ public class LoggingHandlers {
         StringBuilder sb = new StringBuilder();
         String sep = "";
         for (String logger : oldLoggers) {
-            if (!newLoggers.contains(logger)) {
+            if (logger.contains(":")) {
+                logger = logger.replace(":", "\\:");
+            }
+            if (!newLoggers.contains(logger)) {                      
                 sb.append(sep).append(logger);
                 sep=":";
             }

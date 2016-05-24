@@ -111,7 +111,7 @@ public class DeleteLogLevel implements AdminCommand {
         Map<String, String> m = new HashMap<String, String>();
         try {
 
-            String loggerNames[] = properties.split(":");
+            String loggerNames[] = properties.split("(?<!\\\\):");
 
             for (final Object key : loggerNames) {
                 final String logger_name = (String) key;
