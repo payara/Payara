@@ -350,15 +350,20 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
         WebFragmentDescriptor mergedWebFragment = null;
         for (WebFragmentDescriptor wf : wfList) {
             if (mergedWebFragment == null) {
-                if(wf.isExists()) {
-                    mergedWebFragment = wf;
-                }
+                mergedWebFragment = wf;
             } else {
+                if(wf.isExists() && wf.isDistributable() == null) {
+                    wf.setDistributable(false);
+                }
                 mergedWebFragment.addWebBundleDescriptor(wf);
             }
         }
 
         if (mergedWebFragment != null) {
+            mergedWebFragment.setExists(true);
+            if(descriptor.isDistributable() == null) {
+                descriptor.setDistributable(false);
+            }
             descriptor.addWebBundleDescriptor(mergedWebFragment);
         }
 

@@ -147,6 +147,10 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public WebBundleDescriptor createWebBundleDescriptor() {
         return new WebBundleDescriptorImpl();
     }
+    
+    protected boolean isExists() {
+        return true;
+    }
 
     /**
      * This method will merge the contents of webComponents.
@@ -257,14 +261,14 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         combineLoginConfiguration(webBundleDescriptor);
 
         Boolean otherIsDistributable = webBundleDescriptor.isDistributable();
-        if (otherIsDistributable != null) {
+        if (otherIsDistributable != null && webBundleDescriptor.isExists()) {
             // the only way distributable is true is when
             // all of it's web fragments are true
             // The Servlet spec (section 8.2.3):
             if (isDistributable != null) {
                 setDistributable(isDistributable && otherIsDistributable);
             } else {
-                setDistributable(false);
+                setDistributable(otherIsDistributable);
             }
         }
         combinePostConstructDescriptors(webBundleDescriptor);

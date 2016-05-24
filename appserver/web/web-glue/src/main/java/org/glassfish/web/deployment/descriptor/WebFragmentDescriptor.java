@@ -88,6 +88,7 @@ public class WebFragmentDescriptor extends WebBundleDescriptorImpl
         this.ordering = ordering;
     }
 
+    @Override
     public boolean isExists() {
         return exists;
     }
