@@ -13,19 +13,12 @@
  */
 package fish.payara.nucleus.requesttracing.domain;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+
 /**
  * @author mertcaliskan
  *
- * Enumeration that depicts event types from start and 'till the end of request tracing.
+ * Stores web socket specific event values
  */
-public enum EventType {
-    TRACE_START,
-    SERVLET,
-    SERVLET_INCLUDE,
-    SERVLET_FORWARD,
-    EJB,
-    EJB_METHOD,
-    WS,
-    WEBSOCKET,
-    TRACE_END;
+public class WebSocketRequestEvent extends RequestEvent {
 }
