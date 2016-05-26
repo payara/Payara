@@ -16,17 +16,25 @@ package fish.payara.nucleus.requesttracing.domain;
 /**
  * @author mertcaliskan
  *
- * Enumeration that depicts event types from start and 'till the end of request tracing.
+ * Stores soap web service specific event values
  */
-public enum EventType {
-    TRACE_START,
-    SERVLET,
-    SERVLET_INCLUDE,
-    SERVLET_FORWARD,
-    EJB,
-    EJB_METHOD,
-    WS,
-    RESTWS,
-    WEBSOCKET,
-    TRACE_END;
+public class SoapWSRequestEvent extends ServletRequestEvent {
+
+    private String uri;
+
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    @Override
+    public String toString() {
+        return "SoapWSRequestEvent{" +
+                "uri='" + uri + '\'' +
+                ", " + super.toString() +
+                '}';
+    }
 }

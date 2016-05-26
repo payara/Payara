@@ -48,7 +48,7 @@ import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.WSRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.SoapWSRequestEvent;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
@@ -179,7 +179,7 @@ public class JAXWSServlet extends HttpServlet {
                 targetEndpoint.handle(getServletContext(), request, response);
 
                 if (requestTracing.isRequestTracingEnabled()) {
-                    WSRequestEvent requestEvent = constructWsRequestEvent(request,
+                    SoapWSRequestEvent requestEvent = constructWsRequestEvent(request,
                             targetEndpoint.getAddress(), EventType.WS);
                     requestTracing.traceRequestEvent(requestEvent);
                 }
@@ -194,10 +194,10 @@ public class JAXWSServlet extends HttpServlet {
         endedEvent(endpoint.getEndpointAddressPath());
     }
 
-    private WSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
-                                                   URI uri,
-                                                   EventType eventType) {
-        WSRequestEvent requestEvent  = new WSRequestEvent();
+    private SoapWSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+                                                       URI uri,
+                                                       EventType eventType) {
+        SoapWSRequestEvent requestEvent  = new SoapWSRequestEvent();
         requestEvent.setUri(uri.toString());
         requestEvent.setEventType(eventType);
 

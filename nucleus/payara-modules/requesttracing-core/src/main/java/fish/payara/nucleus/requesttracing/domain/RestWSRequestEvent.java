@@ -16,25 +16,7 @@ package fish.payara.nucleus.requesttracing.domain;
 /**
  * @author mertcaliskan
  *
- * Stores web service specific event values
+ * Stores rest web service specific event values
  */
-public class WSRequestEvent extends ServletRequestEvent {
-
-    private String uri;
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    @Override
-    public String toString() {
-        return "WSRequestEvent{" +
-                "uri='" + uri + '\'' +
-                ", " + super.toString() +
-                '}';
-    }
+public class RestWSRequestEvent extends ServletRequestEvent {
 }

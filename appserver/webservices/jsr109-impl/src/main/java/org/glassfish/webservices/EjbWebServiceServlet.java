@@ -45,7 +45,7 @@ import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.WSRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.SoapWSRequestEvent;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
@@ -163,7 +163,7 @@ public class EjbWebServiceServlet extends HttpServlet {
                     dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
 
                     if (requestTracing.isRequestTracingEnabled()) {
-                        WSRequestEvent requestEvent = constructWsRequestEvent(hreq, ejbEndpoint, EventType.WS);
+                        SoapWSRequestEvent requestEvent = constructWsRequestEvent(hreq, ejbEndpoint, EventType.WS);
                         requestTracing.traceRequestEvent(requestEvent);
                     }
                 }
@@ -173,10 +173,10 @@ public class EjbWebServiceServlet extends HttpServlet {
         }
     }
 
-    private WSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+    private SoapWSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
                                                         EjbRuntimeEndpointInfo ejbEndpoint,
                                                         EventType eventType) {
-        WSRequestEvent requestEvent  = new WSRequestEvent();
+        SoapWSRequestEvent requestEvent  = new SoapWSRequestEvent();
         requestEvent.setUri(ejbEndpoint.getEndpoint().getEndpointAddressUri());
         requestEvent.setEventType(eventType);
 

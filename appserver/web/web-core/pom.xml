@@ -148,5 +148,10 @@
             <artifactId>tyrus-container-servlet</artifactId>
             <version>${tyrus.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
    </dependencies>
 </project>
