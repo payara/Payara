@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
+ 
 /*
  * InstanceHandler.java
  *
@@ -62,7 +64,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
 
 import org.glassfish.admingui.common.util.GuiUtil;
 import org.glassfish.admingui.common.util.RestUtil;
