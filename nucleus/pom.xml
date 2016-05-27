@@ -1089,7 +1089,7 @@
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
                 <artifactId>hawtjni-runtime</artifactId>
-                <version>1.13</version>
+                <version>1.5</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2.external</groupId>
