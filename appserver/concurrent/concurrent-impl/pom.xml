@@ -117,6 +117,11 @@
             <version>3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>monitoring-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
 

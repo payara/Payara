@@ -42,7 +42,6 @@ package org.glassfish.concurrent.admin;
 
 import com.sun.enterprise.config.serverbeans.Resources;
 import com.sun.enterprise.config.serverbeans.ServerTags;
-import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.I18n;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfiguredBy;
