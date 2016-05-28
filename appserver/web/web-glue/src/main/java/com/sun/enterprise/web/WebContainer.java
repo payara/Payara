@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -92,7 +93,6 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
-import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.grizzly.config.ContextRootInfo;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -162,6 +162,8 @@ import com.sun.enterprise.web.logger.IASLogger;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
 import com.sun.enterprise.web.reconfig.WebConfigListener;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import javax.naming.NamingException;
+import org.glassfish.api.deployment.DeploymentContext;
 
 /**
  * Web container service
@@ -882,6 +884,14 @@ public class WebContainer implements org.glassfish.api.container.Container, Post
             loadDefaultWebModulesAfterAllAppsProcessed();
         } else if (event.is(EventTypes.PREPARE_SHUTDOWN)) {
             isShutdown = true;
+        } else if(event.is(Deployment.DEPLOYMENT_FAILURE)) {
+            DeploymentContext dc = (DeploymentContext)event.hook();
+            try {
+                // Fix https://github.com/payara/Payara/issues/315
+                componentEnvManager.unbindFromComponentNamespace(dc.getModuleMetaData(WebBundleDescriptor.class));
+            } catch (NamingException ex) {
+                logger.log(Level.SEVERE, EXCEPTION_DURING_DESTROY, ex);
+            }
         }
     }
 
