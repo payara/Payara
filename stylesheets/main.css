@@ -158,10 +158,9 @@ a {
 
 header {
     background: #0a303d;
-    padding: 34px 0 42px;
+    padding: 34px 0 0;
     border-bottom: 10px solid #f89b22;
     position: relative;
-    height:158px;
     margin-bottom: 50px;
 }
 
@@ -169,6 +168,10 @@ header img {
     max-width:200px;
     float:left;
     margin-right: 2em;
+}
+
+header .container > div {
+    display:inline-block;
 }
 
 header h1 {
@@ -197,7 +200,7 @@ p {
 
 .container {
     position:relative;
-    width:962px;
+    max-width:962px;
     margin:auto;
 }
 
