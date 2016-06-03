@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+
 package org.glassfish.batch;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -71,7 +73,7 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("list.batch.job.executions")
 @ExecuteOn({RuntimeType.DAS})
-@TargetType({CommandTarget.CLUSTER, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,

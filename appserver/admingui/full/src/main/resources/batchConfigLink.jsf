@@ -17,15 +17,15 @@
  file and include the License file at packager/legal/LICENSE.txt.
 -->
 
-<!-- pluginTreeNodeHazelcast.jsf -->
-
-<!--  ===================================== Nodes ======================  -->
-<sun:treeNode  id="hazelcast"
-    text="$resource{i18nhc.tree.hazelcast}"
-    url="/payaraExtras/hazelcast.jsf?config=${configName}"
-    imageURL="/resource/images/hazelcast.png"
-    >
+<sun:property>
+    <sun:hyperlink 
+        toolTip="$resource{i18nf.tree.batch}"
+        url="/full/batch.jsf?config=#{configName}"
+        >
+        <sun:image url="/resource/images/batch.png" />
+        <sun:staticText text="$resource{i18nf.tree.batch}" />
+    </sun:hyperlink>
     <!beforeCreate
-        setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
-    />
-</sun:treeNode>
+        setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
+        />
+</sun:property>
