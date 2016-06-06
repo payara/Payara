@@ -45,7 +45,7 @@ import java.io.IOException;
 
 import org.jvnet.hk2.annotations.Service;
 import javax.inject.Singleton;
-import sun.security.util.ObjectIdentifier;
+import com.ibm.security.util.ObjectIdentifier;
 
 /**
  *

@@ -623,8 +623,8 @@
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>
-                <artifactId>webservices-osgi</artifactId>
-                <version>${webservices.version}</version>
+                <artifactId>webservices-osgi-aix</artifactId>
+                 <version>${webservices.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.metro</groupId>

@@ -56,4 +56,4 @@ if [ ${AS_JAVA} ]; then
     JAVA=${AS_JAVA}/bin/java
 fi
 
-exec "$JAVA" $WSCOMPILE_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar:$AS_INSTALL_LIB/aixporting-repackaged.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"
+exec "$JAVA" $WSCOMPILE_OPTS -Djava.endorsed.dirs="$AS_INSTALL_LIB/endorsed" -cp "$AS_INSTALL_LIB/webservices-osgi-aix.jar:$AS_INSTALL_LIB/javax.xml.rpc-api.jar:$AS_INSTALL_LIB/jaxb-osgi.jar:$JAVAX_MAIL_JAR:$JAVA_HOME/lib/tools.jar:$AS_INSTALL_LIB/aixporting-repackaged.jar" com.sun.xml.rpc.tools.wscompile.Main "$@"

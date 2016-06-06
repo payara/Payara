@@ -413,7 +413,7 @@
 
     <condition property="wsjar.available">
         <and>
-            <available file="${glassfish.home}/modules/webservices-osgi.jar"/>
+            <available file="${glassfish.home}/modules/webservices-osgi-aix.jar"/>
             <available file="${glassfish.home}/modules/jaxb-osgi.jar"/>
         </and>
     </condition>
