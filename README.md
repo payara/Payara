@@ -6,7 +6,7 @@ Payara Server is a patched, enhanced and supported application server derived fr
 
 Visit [www.payara.fish](http://www.payara.fish) for full 24/7 support and lots of free resources.
 
-Information about the opensource project is on the [GitHub project page](http://payara.github.io/Payara/).
+Information about the opensource project is on the [GitHub project page](https://payara.github.io/Payara/).
 
 **Full Payara Server and Payara Micro documentation:** https://payara.gitbooks.io/payara-server/content/ 
 
