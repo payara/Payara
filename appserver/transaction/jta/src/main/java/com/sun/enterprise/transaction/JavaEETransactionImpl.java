@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consutlting Limited and/or its affiliates]
 package com.sun.enterprise.transaction;
 
 import java.util.*;
@@ -135,7 +135,7 @@ public final class JavaEETransactionImpl extends TimerTask implements
     static synchronized private void initializeTimer() {
         if (isTimerInitialized)
             return;
-        timer = new Timer(true); // daemon 
+        timer = new Timer("JTA TX Timer",true); // daemon 
         isTimerInitialized = true;
     }
 
