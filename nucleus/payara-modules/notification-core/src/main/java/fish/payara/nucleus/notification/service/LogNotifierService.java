@@ -15,6 +15,7 @@ package fish.payara.nucleus.notification.service;
 
 import com.google.common.eventbus.Subscribe;
 import fish.payara.nucleus.notification.configuration.LogNotifier;
+import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.LogNotificationEvent;
 import org.glassfish.api.StartupRunLevel;
@@ -30,13 +31,13 @@ import java.util.logging.Logger;
  */
 @Service(name = "service-log")
 @RunLevel(StartupRunLevel.VAL)
-public class LogNotifierService extends BaseNotifierService<LogNotificationEvent, LogNotifier> {
+public class LogNotifierService extends BaseNotifierService<LogNotificationEvent, LogNotifier, LogNotifierConfiguration> {
 
     private Logger logger = Logger.getLogger(LogNotifierService.class.getCanonicalName());
 
     @PostConstruct
     void postConstruct() {
-        register(NotifierType.LOG, LogNotifier.class, this);
+        register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class, this);
     }
 
     @Override

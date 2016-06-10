@@ -33,6 +33,10 @@ public class NotificationExecutionOptions {
         notifierConfigurationExecutionOptionsList.put(executionOptions.getNotifierType(), executionOptions);
     }
 
+    public void removeNotifierConfigurationExecutionOption(NotifierConfigurationExecutionOptions executionOptions) {
+        notifierConfigurationExecutionOptionsList.remove(executionOptions.getNotifierType());
+    }
+
     public boolean isEnabled() {
         return enabled;
     }

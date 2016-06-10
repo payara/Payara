@@ -17,6 +17,7 @@ package fish.payara.nucleus.notification.service;
 import fish.payara.nucleus.notification.NotificationEventBus;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.LogNotifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import org.jvnet.hk2.annotations.Contract;
@@ -29,17 +30,22 @@ import javax.inject.Inject;
  * Base contract for all notifier services.
  */
 @Contract
-public abstract class BaseNotifierService<E extends NotificationEvent, C extends LogNotifier> {
+public abstract class BaseNotifierService<E extends NotificationEvent, C extends LogNotifier, NC extends NotifierConfiguration> {
 
     @Inject
     private NotificationEventBus eventBus;
 
     @Inject
     private NotificationService notificationService;
-    private Class<C> notifierType;
 
-    void register(NotifierType type, Class<C> notifierType, BaseNotifierService service) {
+    private NotifierType type;
+    private Class<C> notifierType;
+    private Class<NC> notifierConfigType;
+
+    void register(NotifierType type, Class<C> notifierType, Class<NC> notifierConfigType, BaseNotifierService service) {
+        this.type = type;
         this.notifierType = notifierType;
+        this.notifierConfigType = notifierConfigType;
         if (notificationService.getExecutionOptions().isNotifierServiceEnabled(type)){
             eventBus.register(service);
         }
@@ -51,4 +57,11 @@ public abstract class BaseNotifierService<E extends NotificationEvent, C extends
         return notifierType;
     }
 
+    public Class<NC> getNotifierConfigType() {
+        return notifierConfigType;
+    }
+
+    public NotifierType getType() {
+        return type;
+    }
 }

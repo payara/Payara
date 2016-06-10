@@ -28,7 +28,7 @@ public class RequestTracingExecutionOptions {
     private boolean enabled;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
-    private Set<NotifierExecutionOptions> notifierExecutionOptionsList = new HashSet<>();
+    private Set<NotifierExecutionOptions> notifierExecutionOptionsList = new HashSet<NotifierExecutionOptions>();
 
     public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
         getNotifierExecutionOptionsList().add(notifierExecutionOptions);
