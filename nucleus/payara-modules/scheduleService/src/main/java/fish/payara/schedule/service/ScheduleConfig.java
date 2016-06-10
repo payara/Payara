@@ -5,10 +5,13 @@
  */
 package fish.payara.schedule.service;
 
+import java.util.List;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.api.admin.config.Container;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.Element;
 
 
 
@@ -17,8 +20,21 @@ import org.jvnet.hk2.config.Configured;
  * @author Daniel
  */
 @Configured
-public interface ScheduleConfig extends ConfigBeanProxy, ConfigExtension{
-    @Attribute
-    public String getTime();
-    public String setTime(String time);
+public interface ScheduleConfig extends ConfigBeanProxy, ConfigExtension, Container{
+    @Attribute(defaultValue="false")
+    public Boolean getEnabled();
+    public void setEnabled(String enabled);
+    
+    @Attribute(defaultValue="1")
+    public int getCoreSize();
+    public void setCoreSize(String size);
+    
+    
+    @Element
+    public void setJobs(List<String> args);
+    public List<String> getJobs();
+    
+    @Element
+    public ScheduleJobConfig getJobConfig();
+    public void setJobConfig(ScheduleJobConfig config);
 }
