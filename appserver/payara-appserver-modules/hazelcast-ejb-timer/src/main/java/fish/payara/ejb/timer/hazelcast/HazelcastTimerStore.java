@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,8 +78,9 @@ public class HazelcastTimerStore extends EJBTimerService {
         pkCache = core.getInstance().getMap(EJB_TIMER_CACHE_NAME);
         containerCache = core.getInstance().getMap(EJB_TIMER_CONTAINER_CACHE_NAME);
         applicationCache = core.getInstance().getMap(EJB_TIMER_APPLICAION_CACHE_NAME);
-        serverName = core.getInstance().getName();
-        this.domainName_ = core.getInstance().getName();
+        serverName = core.getInstance().getCluster().getLocalMember().getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE);
+        this.ownerIdOfThisServer_ = serverName;
+        this.domainName_ = core.getInstance().getConfig().getGroupConfig().getName();
     }
 
     private void removeTimers(Set<TimerPrimaryKey> timerIdsToRemove) {
@@ -609,14 +611,19 @@ public class HazelcastTimerStore extends EJBTimerService {
                             logger.log(Level.FINE, "@@@ FOUND existing schedule: "
                                     + ts.getScheduleAsString() + " FOR method: " + m);
                         }
+                        schedules.remove(m);
                     }
                 }
             }
         }
 
+        
+        
         try {
-            createSchedules(containerId, applicationId, schedules, result, ownerIdOfThisServer_, true,
+            if (!schedules.isEmpty()) {
+                createSchedules(containerId, applicationId, schedules, result, serverName, true,
                     (deploy && isDas));
+            }
         } catch (Exception ex) {
             Logger.getLogger(HazelcastTimerStore.class.getName()).log(Level.SEVERE, null, ex);
         }

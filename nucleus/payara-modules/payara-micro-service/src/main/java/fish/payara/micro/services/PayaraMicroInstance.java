@@ -17,6 +17,7 @@
  */
 package fish.payara.micro.services;
 
+import com.sun.enterprise.deployment.Application;
 import fish.payara.micro.services.command.AsAdminCallable;
 import fish.payara.micro.services.command.ClusterCommandResult;
 import fish.payara.micro.services.data.InstanceDescriptor;
@@ -35,6 +36,7 @@ import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
@@ -62,6 +64,8 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
 
     public static final String CDI_EVENTS_NAME = "payara.micro.cdi.event";
 
+    public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
+    
     private static final Logger logger = Logger.getLogger(PayaraMicroInstance.class);
 
     @Inject
@@ -215,10 +219,18 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             ClusterMessage<PayaraInternalEvent> message = new ClusterMessage<>(pie);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
 
-        } else if (event.is(Deployment.APPLICATION_LOADED)) {
-            if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
-                ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
-                me.addApplication(applicationInfo);
+        } 
+        else if (event.is(Deployment.APPLICATION_PREPARED)) {
+            if (event.hook() != null && event.hook() instanceof DeploymentContext) {
+                DeploymentContext deploymentContext = (DeploymentContext) event.hook();
+                Application app = deploymentContext.getModuleMetaData(Application.class);
+                Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
+                if (appID != null) {
+                    app.setUniqueId(appID);
+                } else {
+                    cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), new Long(app.getUniqueId()));
+                }
+               // sort out with another event me.addApplication(app.);
                 cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
 
