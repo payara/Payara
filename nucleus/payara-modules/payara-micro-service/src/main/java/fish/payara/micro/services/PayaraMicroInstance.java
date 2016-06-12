@@ -220,6 +220,16 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
 
         } 
+        // Adds the application to the clustered register of deployed applications
+        else if (event.is(Deployment.APPLICATION_LOADED)) {
+            if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
+                ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
+                me.addApplication(applicationInfo);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+            }
+        }
+        // ensures the same application id is used when there is a deployment 
+        // if the application id is in the cluster keyed by application name
         else if (event.is(Deployment.APPLICATION_PREPARED)) {
             if (event.hook() != null && event.hook() instanceof DeploymentContext) {
                 DeploymentContext deploymentContext = (DeploymentContext) event.hook();
@@ -230,11 +240,11 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
                 } else {
                     cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), new Long(app.getUniqueId()));
                 }
-               // sort out with another event me.addApplication(app.);
-                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
             }
 
-        } else if (event.is(Deployment.APPLICATION_UNLOADED)) {
+        } 
+        // removes the application from the clustered registry of applications
+        else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
                 ApplicationInfo applicationInfo = (ApplicationInfo) event.hook();
                 me.removeApplication(applicationInfo);
