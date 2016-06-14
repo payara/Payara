@@ -9,7 +9,9 @@ import fish.payara.schedule.service.ScheduleConfig;
 import fish.payara.schedule.service.ScheduleService;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Future;
 import javax.inject.Inject;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
@@ -44,6 +46,8 @@ public class SetScheduleCommand implements AdminCommand{
     @Inject
     ScheduleService service;
     
+    String newJob;
+    
     String job;
 
     @Override
@@ -64,7 +68,7 @@ public class SetScheduleCommand implements AdminCommand{
 
                             System.out.println("SET: the name form the domain.xml is "+nameInfo[1]);
                             if (nameInfo[1].equals(name) ){ 
-                                String newJob = "name="+nameInfo[1]+",cron="+service.buildCron(cron)+",filePath="+filePath;
+                                newJob = "name="+nameInfo[1]+",cron="+service.buildCron(cron)+",filePath="+filePath;
                                 if (service.validateSchedule(newJob,false)){                                      
                                     jobs.add(newJob);
                                     System.out.println("the job is" + configProxy.getJobs().get(i));
@@ -78,11 +82,19 @@ public class SetScheduleCommand implements AdminCommand{
                             }
                             
                         }
-                        
+                                            
                         if (found.equals(false)){
                             System.out.println("The schedule name was not found, please check that schedule exists");
                         }else {
+                            HashMap david = service.getFuturesList();                            
+                            System.out.println("futures = "+ david.toString());
+                            System.out.println(" NUMBER FOUR");
+                            System.out.println(david.get(name));
+                            Future job = (Future)david.get(name);
+                            job.cancel(true);
                             configProxy.setJobs(jobs);
+                            service.validateSchedule(newJob, true);
+                            
                         }
                     }
                     return null;

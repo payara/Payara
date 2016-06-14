@@ -258,4 +258,8 @@ public class ScheduleService implements EventListener, PostConstruct{
         
         
     }
+    
+    public void shutdown(){
+        
+    }
 }
