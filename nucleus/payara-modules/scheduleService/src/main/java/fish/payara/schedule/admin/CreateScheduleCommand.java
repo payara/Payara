@@ -75,12 +75,12 @@ public class CreateScheduleCommand implements AdminCommand{
                         for (String job:jobs){
                             service.validateSchedule(job, false);
                         }
-                        String configInfo = "name="+name+",cron="+cron+",filePath="+filePath;
+                        String configInfo = "name="+name+",cron="+service.buildCron(cron)+",filePath="+filePath;
                         service.validateSchedule(configInfo, true);
                         jobs.add(configInfo);
 
 
-                        configProxy.setEnabled(name);
+                        
                         //configProxy.setJobConfig(job);
                     }
                     return null;

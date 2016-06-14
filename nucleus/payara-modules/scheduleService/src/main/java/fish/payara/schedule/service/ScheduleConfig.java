@@ -34,7 +34,5 @@ public interface ScheduleConfig extends ConfigBeanProxy, ConfigExtension, Contai
     public void setJobs(List<String> args);
     public List<String> getJobs();
     
-    @Element
-    public ScheduleJobConfig getJobConfig();
-    public void setJobConfig(ScheduleJobConfig config);
+
 }
