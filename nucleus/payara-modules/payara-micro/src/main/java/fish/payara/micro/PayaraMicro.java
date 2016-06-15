@@ -982,9 +982,8 @@ public class PayaraMicro {
                     props.store(output, "Payara Micro Logging Properties File");
                     output.close();
                 } catch (IOException ex) {
-                    Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                    logger.log(Level.SEVERE, null, ex);
                 }
-
             }
             
             File loggingProperties = new File(configDir.getAbsolutePath(), loggingPropertiesFileName);
