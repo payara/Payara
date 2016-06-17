@@ -62,7 +62,7 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>fish.payara.payara-modules</groupId>
+            <groupId>fish.payara.appserver</groupId>
             <artifactId>requesttracing-interceptor</artifactId>
             <version>${project.version}</version>
         </dependency>

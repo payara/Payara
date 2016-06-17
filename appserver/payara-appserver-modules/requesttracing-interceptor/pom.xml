@@ -20,11 +20,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.payara-modules</groupId>
-        <artifactId>payara-nucleus-modules</artifactId>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
         <version>4.1.1.163-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
+    <groupId>fish.payara.appserver</groupId>
     <artifactId>requesttracing-interceptor</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Request Tracing Interceptors</name>
