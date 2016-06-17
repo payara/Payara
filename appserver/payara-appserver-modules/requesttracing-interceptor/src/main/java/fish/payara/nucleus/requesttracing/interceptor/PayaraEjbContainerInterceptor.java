@@ -25,6 +25,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 /**
  * @author mertcaliskan
@@ -36,7 +37,7 @@ import javax.inject.Inject;
 public class PayaraEjbContainerInterceptor implements EjbContainerInterceptor {
 
     @Inject
-    private RequestTracingService service;
+    private Provider<RequestTracingService> serviceProvider;
 
     @Inject
     private Domain domain;
@@ -47,7 +48,7 @@ public class PayaraEjbContainerInterceptor implements EjbContainerInterceptor {
     private ThreadLocal<EjbRequestEvent> requestEventStore;
 
     public void preInvoke(EjbDescriptor ejbDescriptor) {
-        if (!service.isRequestTracingEnabled()) {
+        if (!serviceProvider.get().isRequestTracingEnabled()) {
             return;
         }
         requestEventStore = new ThreadLocal<EjbRequestEvent>();
@@ -66,14 +67,14 @@ public class PayaraEjbContainerInterceptor implements EjbContainerInterceptor {
     }
 
     public void postInvoke(EjbDescriptor ejbDescriptor) {
-        if (!service.isRequestTracingEnabled()) {
+        if (!serviceProvider.get().isRequestTracingEnabled()) {
             return;
         }
 
         EjbRequestEvent requestEvent = requestEventStore.get();
         if (requestEvent != null) {
             requestEvent.setElapsedTime(System.currentTimeMillis() - requestEvent.getTimestamp());
-            service.traceRequestEvent(requestEvent);
+            serviceProvider.get().traceRequestEvent(requestEvent);
             requestEventStore.remove();
         }
     }
