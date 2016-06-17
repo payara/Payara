@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates] -->
+
 <!-- applications/targetListing.jsf -->
 
 
@@ -58,7 +60,8 @@
             getRequestValue(key="appName" value="#{pageSession.appName}");
             urlencode(value="#{pageSession.appName}" encoding="UTF-8" result="#{pageSession.encodedAppName}");
             getRequestValue(key="listPageLink" value="#{pageSession.listPageLink}"  default="/common/applications/applications.jsf");
-            gf.appScopedResourcesExist(appName="#{pageSession.appName}" appScopedResExists="#{pageSession.appScopedResExists}");
+            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module" result="#{pageSession.moduleList}");
+            gf.appScopedResourcesExist(appName="#{pageSession.appName}" moduleList="#{pageSession.moduleList}" appScopedResExists="#{pageSession.appScopedResExists}");
             gf.getTargetListInfo(appName="#{pageSession.appName}" result=>$attribute{listOfRows} );
             setPageSessionAttribute(key="targetPageLink" value="#{request.contextPath}/common/applications/targetListing.jsf");
         />

@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates]
+
 /*
  * ApplicationHandlers.java
  *
@@ -292,13 +294,21 @@ public class ApplicationHandlers {
 
     @Handler(id = "gf.appScopedResourcesExist",
         input = {
-            @HandlerInput(name = "appName", type = String.class, required = true)
+            @HandlerInput(name = "appName", type = String.class, required = true), 
+            @HandlerInput(name = "moduleList", type = List.class, required = true)
             },
         output = {
             @HandlerOutput(name = "appScopedResExists", type = java.lang.Boolean.class)})
     public static void appScopedResourcesExist(HandlerContext handlerCtx) {
-        String appName = (String) handlerCtx.getInputValue("appName");        
-        handlerCtx.setOutputValue("appScopedResExists", AppUtil.doesAppContainsResources(appName));
+        String appName = (String) handlerCtx.getInputValue("appName"); 
+        try {
+            List<String> moduleList = 
+                    (List) handlerCtx.getInputValue("moduleList");
+            handlerCtx.setOutputValue("appScopedResExists", 
+                    AppUtil.doesAppContainsResources(appName, moduleList));
+        } catch (NullPointerException e) {
+            handlerCtx.setOutputValue("appScopedResExists", false);
+        }
     }
 
     @Handler(id = "gf.getLifecyclesInfo",

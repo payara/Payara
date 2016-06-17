@@ -38,10 +38,7 @@
  * holder.
  */
 
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+// Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates]
 
 package org.glassfish.admingui.common.util;
 
@@ -161,9 +158,25 @@ public class AppUtil {
         attrs.put("target", targetName);
         RestUtil.restRequest(endpoint, attrs, (add)? "POST" : "DELETE", handlerCtx, false);
     }
-
-    static public Boolean doesAppContainsResources(String appName){
-        return RestUtil.doesProxyExist(GuiUtil.getSessionValue("REST_URL") + "/applications/application/" + appName + "/resources");
+    
+    static public Boolean doesAppContainsResources(String appName, 
+            List<String> moduleList) {
+        boolean resourceFound = false;
+        if (RestUtil.doesProxyExist(GuiUtil.getSessionValue("REST_URL")
+                + "/applications/application/" + appName + "/resources")) {
+            resourceFound = true;
+        } else {
+            for (String moduleName : moduleList) {
+                if (RestUtil.doesProxyExist(GuiUtil.getSessionValue("REST_URL")
+                        + "/applications/application/" + appName + "/module/"
+                        + moduleName + "/resources")) {
+                    resourceFound = true;
+                    break;
+                }
+            }           
+        }
+        
+        return resourceFound;
     }
     
     static public String getAppScopedResType(String resName, String type){
