@@ -65,7 +65,9 @@
                         <configuration>
                             <instructions>
                                 <Export-Package>
-                                    fish.payara.nucleus.requesttracing
+                                    fish.payara.nucleus.requesttracing,
+                                    fish.payara.nucleus.requesttracing.domain,
+                                    fish.payara.nucleus.requesttracing.configuration
                                 </Export-Package>
                             </instructions>
                         </configuration>
