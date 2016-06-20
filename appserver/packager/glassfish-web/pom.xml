@@ -257,6 +257,14 @@
             <artifactId>websecurity</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.soteria</groupId>
+            <artifactId>soteria</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.security</groupId>
+            <artifactId>javax.security-api</artifactId>
+        </dependency>
     </dependencies>
 </project>
 
