@@ -37,7 +37,7 @@ import javax.inject.Provider;
 public class PayaraEjbContainerInterceptor implements EjbContainerInterceptor {
 
     @Inject
-    private Provider<RequestTracingService> serviceProvider;
+    private RequestTracingService service;
 
     @Inject
     private Domain domain;
@@ -48,7 +48,7 @@ public class PayaraEjbContainerInterceptor implements EjbContainerInterceptor {
     private ThreadLocal<EjbRequestEvent> requestEventStore;
 
     public void preInvoke(EjbDescriptor ejbDescriptor) {
-        if (!serviceProvider.get().isRequestTracingEnabled()) {
+        if (!service.isRequestTracingEnabled()) {
             return;
         }
         requestEventStore = new ThreadLocal<EjbRequestEvent>();
@@ -67,14 +67,14 @@ public class PayaraEjbContainerInterceptor implements EjbContainerInterceptor {
     }
 
     public void postInvoke(EjbDescriptor ejbDescriptor) {
-        if (!serviceProvider.get().isRequestTracingEnabled()) {
+        if (!service.isRequestTracingEnabled()) {
             return;
         }
 
         EjbRequestEvent requestEvent = requestEventStore.get();
         if (requestEvent != null) {
             requestEvent.setElapsedTime(System.currentTimeMillis() - requestEvent.getTimestamp());
-            serviceProvider.get().traceRequestEvent(requestEvent);
+            service.traceRequestEvent(requestEvent);
             requestEventStore.remove();
         }
     }

@@ -26,6 +26,7 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.glassfish.web.valve.ServletContainerInterceptor;
 import org.jvnet.hk2.annotations.Service;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.util.Collections;
@@ -45,7 +46,7 @@ public class PayaraServletContainerInterceptor implements ServletContainerInterc
     private static final String EVENT_KEY = "PayaraRequestEvent";
 
     @Inject
-    private Provider<RequestTracingService> serviceProvider;
+    private RequestTracingService service;
 
     @Inject
     private Domain domain;
@@ -53,8 +54,13 @@ public class PayaraServletContainerInterceptor implements ServletContainerInterc
     @Inject
     private Server server;
 
+    @PostConstruct
+    void postConstruct() {
+        System.out.println("class: " + this.getClass().getName()  + " - loader:" + this.getClass().getClassLoader().getClass().getName());
+    }
+
     public void preInvoke(Request request, Response response) {
-        if (!serviceProvider.get().isRequestTracingEnabled()) {
+        if (!service.isRequestTracingEnabled()) {
             return;
         }
         ServletRequestEvent requestEvent = new ServletRequestEvent();
@@ -74,11 +80,11 @@ public class PayaraServletContainerInterceptor implements ServletContainerInterc
     }
 
     public void postInvoke(Request request, Response response) {
-        if (!serviceProvider.get().isRequestTracingEnabled()) {
+        if (!service.isRequestTracingEnabled()) {
             return;
         }
         RequestEvent requestEvent = (RequestEvent) request.getNote(EVENT_KEY);
         requestEvent.setElapsedTime(System.currentTimeMillis() - requestEvent.getTimestamp());
-        serviceProvider.get().traceRequestEvent(requestEvent);
+        service.traceRequestEvent(requestEvent);
     }
 }

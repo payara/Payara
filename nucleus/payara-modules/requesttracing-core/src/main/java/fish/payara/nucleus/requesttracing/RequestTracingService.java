@@ -79,6 +79,8 @@ public class RequestTracingService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
+        System.out.println("class: " + this.getClass().getName()  + " - loader:" + this.getClass().getClassLoader().getClass().getName());
+
         if (configuration != null) {
             executionOptions.setEnabled(configuration.getEnabled());
             executionOptions.setThresholdValue(configuration.getThresholdValue());
