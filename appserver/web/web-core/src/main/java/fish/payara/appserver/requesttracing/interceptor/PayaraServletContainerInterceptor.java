@@ -11,7 +11,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.requesttracing.interceptor;
+package fish.payara.appserver.requesttracing.interceptor;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Server;
