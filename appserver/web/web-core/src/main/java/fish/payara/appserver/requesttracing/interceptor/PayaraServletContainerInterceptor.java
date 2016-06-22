@@ -84,7 +84,9 @@ public class PayaraServletContainerInterceptor implements ServletContainerInterc
             return;
         }
         RequestEvent requestEvent = (RequestEvent) request.getNote(EVENT_KEY);
-        requestEvent.setElapsedTime(System.currentTimeMillis() - requestEvent.getTimestamp());
-        service.traceRequestEvent(requestEvent);
+        if (requestEvent != null) {
+            requestEvent.setElapsedTime(System.currentTimeMillis() - requestEvent.getTimestamp());
+            service.traceRequestEvent(requestEvent);
+        }
     }
 }
