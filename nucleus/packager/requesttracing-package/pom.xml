@@ -41,11 +41,6 @@
             <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>fish.payara.appserver</groupId>
-            <artifactId>requesttracing-interceptor</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 </project>
 
