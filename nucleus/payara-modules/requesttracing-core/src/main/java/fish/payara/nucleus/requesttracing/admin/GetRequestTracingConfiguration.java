@@ -43,7 +43,7 @@ import java.util.List;
 })
 public class GetRequestTracingConfiguration  implements AdminCommand {
 
-    final static String notifiersHeaders[] = {"Name", "Enabled"};
+    final static String notifiersHeaders[] = {"Name", "Service Name", "Enabled"};
 
     @Inject
     ServiceLocator habitat;
@@ -82,9 +82,10 @@ public class GetRequestTracingConfiguration  implements AdminCommand {
             if (notifier instanceof LogNotifier) {
                 LogNotifier logNotifier = (LogNotifier) notifier;
 
-                Object values[] = new Object[2];
+                Object values[] = new Object[3];
                 values[0] = notifierHandle.getService().getType().toString();
-                values[1] = logNotifier.getEnabled();
+                values[1] = notifierHandle.getActiveDescriptor().getName();
+                values[2] = logNotifier.getEnabled();
                 notifiersColumnFormatter.addRow(values);
             }
         }
