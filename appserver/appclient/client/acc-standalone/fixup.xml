@@ -61,7 +61,7 @@
     <property name="jdbc-config.classpath.additions" value="../modules/jdbc-config.jar"/>
     <property name="aix.additions" value="../modules/aixporting-repackaged.jar"/>
     <property name="entitybean-container.additions" value="../modules/entitybean-container.jar"/>
-    <property name="weld.classpath.additions" value="../modules/weld-osgi-bundle-glassfish4.jar"/>
+    <property name="weld.classpath.additions" value="../modules/weld-osgi-bundle.jar"/>
     
     <property name="classpath.additions" value=" ${resources-runtime.classpath.additions} ${javamail-connector.classpath.additions} ${javamail-runtime.classpath.additions} ${mq.classpath.additions} ${ds-jdbcra.classpath.additions} ${cp-jdbcra.classpath.additions} ${xa-jdbcra.classpath.additions} ${dm-jdbcra.classpath.additions} ${derby.jar.classpath.additions} ${jaxr-ra.classpath.additions} ${entitybean-container.additions} ${jdbc-runtime.classpath.additions} ${jdbc-config.classpath.additions} ${weld.classpath.additions}"/>
     <property name="classpath.conditional.additions" value="${aix.additions}"/>

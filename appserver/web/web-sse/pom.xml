@@ -80,7 +80,6 @@
         <dependency>
             <groupId>org.jboss.weld</groupId>
             <artifactId>weld-osgi-bundle</artifactId>
-            <classifier>glassfish4</classifier>
             <scope>provided</scope>
         </dependency>
     </dependencies>

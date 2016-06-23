@@ -76,7 +76,7 @@
         <javax.transaction-api.version>1.2</javax.transaction-api.version>
         <jaxws-api.version>2.2.8</jaxws-api.version>
         <javax.faces-api.version>2.2</javax.faces-api.version>
-        <cdi-api.version>1.2</cdi-api.version>
+        <cdi-api.version>2.0.Alpha4</cdi-api.version>
         <javax.inject.version>1</javax.inject.version>
         <javax.resource-api.version>1.7</javax.resource-api.version>
         <javax.enterprise.deploy-api.version>1.6</javax.enterprise.deploy-api.version>
@@ -133,7 +133,7 @@
         <mq.version>5.1.1-b02.payara-p1</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <weld.version>2.3.5.Final</weld.version>
+        <weld.version>3.0.0.Alpha16</weld.version>
         <jboss.classfilewriter.version>1.1.2.Final</jboss.classfilewriter.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
@@ -690,7 +690,6 @@
                 <groupId>org.jboss.weld</groupId>
                 <artifactId>weld-osgi-bundle</artifactId>
                 <version>${weld.version}</version>
-                <classifier>glassfish4</classifier>
                 <exclusions>
                     <exclusion>
                         <groupId>org.jboss.classfilewriter</groupId>
