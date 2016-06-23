@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.weld;
 
 import org.jboss.weld.Container;
@@ -103,4 +103,13 @@ public class GlassFishWeldProvider implements CDIProvider {
       }
     }
 
+    @Override
+    public boolean isInitialized() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public CDI<Object> initialize(Map<String, Object> params) {
+        throw new UnsupportedOperationException();
+    }
 }

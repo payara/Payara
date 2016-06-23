@@ -147,9 +147,11 @@ public class EjbServicesImpl implements EjbServices {
     public void registerInterceptors(EjbDescriptor<?> ejbDesc, InterceptorBindings interceptorBindings) {
 
         // Work around bug that ejbDesc might be internal 299 descriptor.
-        if (ejbDesc instanceof org.jboss.weld.ejb.InternalEjbDescriptor) {
-            ejbDesc = ((org.jboss.weld.ejb.InternalEjbDescriptor<?>) ejbDesc).delegate();
-        }
+
+        //TODO see https://issues.jboss.org/browse/WELD-2184
+        //if (ejbDesc instanceof org.jboss.weld.ejb.InternalEjbDescriptor) {
+        //    ejbDesc = ((org.jboss.weld.ejb.InternalEjbDescriptor<?>) ejbDesc).delegate();
+        //}
 
         com.sun.enterprise.deployment.EjbDescriptor glassfishEjbDesc = (com.sun.enterprise.deployment.EjbDescriptor) ((EjbDescriptorImpl<?>) ejbDesc).getEjbDescriptor();
 
