@@ -62,6 +62,6 @@ file and include the License file at packager/legal/LICENSE.txt.
             type="org.glassfish.admingui:configuration"
             priority="300"
             parentId="propSheetSection"
-            content="hazelcastConfigLink.jsf"
+            content="hazelcast/hazelcastConfigLink.jsf"
     />
 </console-config>
