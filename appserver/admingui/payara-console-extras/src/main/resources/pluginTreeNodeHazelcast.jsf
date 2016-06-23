@@ -23,7 +23,7 @@
 <sun:treeNode  id="hazelcast"
     text="$resource{i18nhc.tree.hazelcast}"
     url="/payaraExtras/hazelcast.jsf?config=${configName}"
-    imageURL="/resource/images/cluster.gif"
+    imageURL="/resource/images/hazelcast.png"
     >
     <!beforeCreate
         setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");

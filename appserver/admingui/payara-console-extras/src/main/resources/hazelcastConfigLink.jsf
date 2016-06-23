@@ -22,7 +22,7 @@
         toolTip="$resource{i18nhc.tree.hazelcast}"
         url="/payaraExtras/hazelcast.jsf?config=#{configName}"
         >
-        <sun:image url="/resource/images/cluster.gif" />
+        <sun:image url="/resource/images/hazelcast.png" />
         <sun:staticText text="$resource{i18nhc.tree.hazelcast}" />
     </sun:hyperlink>
     <!beforeCreate
