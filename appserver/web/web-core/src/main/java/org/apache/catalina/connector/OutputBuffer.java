@@ -55,14 +55,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.apache.catalina.connector;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.CharBuffer;
 import java.nio.channels.InterruptedByTimeoutException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CodingErrorAction;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
@@ -81,6 +89,7 @@ import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.RequestUtil;
 import org.glassfish.grizzly.WriteHandler;
 import org.glassfish.grizzly.http.util.ByteChunk;
+import org.glassfish.grizzly.utils.Charsets;
 import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
@@ -137,6 +146,17 @@ public class OutputBuffer extends Writer
      */
     private int charsWritten = 0;
 
+    private String enc;
+    private boolean gotEnc = false;
+    /**
+     * List of encoders.
+     */
+    protected final HashMap<String, CharsetEncoder> encoders = new HashMap<>();
+
+    /**
+     * Current char to byte converter.
+     */
+    protected CharsetEncoder conv;
 
     /**
      * Associated Coyote response.
@@ -379,9 +399,9 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        grizzlyOutputBuffer.writeChar(c);
-        charsWritten++;
-        
+        checkConverter();
+        grizzlyOutputBuffer.writeByteBuffer(conv.encode(CharBuffer.wrap(Character.toChars(c))));
+        charsWritten++;        
     }
 
 
@@ -392,7 +412,6 @@ public class OutputBuffer extends Writer
             return;
 
         write(c, 0, c.length);
-
     }
 
 
@@ -402,7 +421,8 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
-        grizzlyOutputBuffer.write(c, off, len);
+        checkConverter();
+        grizzlyOutputBuffer.writeByteBuffer(conv.encode(CharBuffer.wrap(c, off, len)));
         charsWritten += len;
     }
 
@@ -416,10 +436,11 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
+        checkConverter();
         charsWritten += len;
         if (s==null)
             s="null";
-        grizzlyOutputBuffer.write(s, off, len);
+        grizzlyOutputBuffer.writeByteBuffer(conv.encode(CharBuffer.wrap(s, off, len)));
     }
 
 
@@ -429,17 +450,18 @@ public class OutputBuffer extends Writer
         if (suspended)
             return;
 
+        checkConverter();
         if (s == null)
             s = "null";
-        grizzlyOutputBuffer.write(s);
+        grizzlyOutputBuffer.writeByteBuffer(conv.encode(CharBuffer.wrap(s)));
     } 
 
 
     public void checkConverter()
         throws IOException {
-        
         grizzlyOutputBuffer.prepareCharacterEncoder();
-
+        if (!gotEnc)
+            setConverter();
     }
 
     
@@ -739,6 +761,50 @@ public class OutputBuffer extends Writer
                 grizzlyOutputBuffer.getBufferedDataSize() > 0);
     }
     // END PWC 6512276
+    
+    protected void setConverter() 
+        throws IOException {
+        if (response != null)
+            enc = response.getCharacterEncoding();
+
+        if (log.isLoggable(Level.FINE))
+            log.fine("Got encoding: " + enc);
+
+        gotEnc = true;
+        if (enc == null)
+            enc = DEFAULT_ENCODING;
+        conv = encoders.get(enc);
+        if (conv == null) {
+            if (Globals.IS_SECURITY_ENABLED){
+                try{
+                    conv = AccessController.doPrivileged(
+                            new PrivilegedExceptionAction<CharsetEncoder>(){
+                                @Override
+                                public CharsetEncoder run() throws IOException{
+                                    return Charset.forName(enc).newEncoder();
+                                }
+
+                            }
+                    );              
+                } catch(PrivilegedActionException ex) {
+                    Exception e = ex.getException();
+                    if (e instanceof IOException)
+                        throw (IOException)e; 
+                    
+                    if (log.isLoggable(Level.FINE))
+                        log.fine("setConverter: " + ex.getMessage());
+                }
+            } else {
+                conv = Charsets.lookupCharset(enc).newEncoder();
+                conv.onMalformedInput(CodingErrorAction.REPLACE);
+                conv.onUnmappableCharacter(CodingErrorAction.REPLACE);
+            }
+            encoders.put(enc, conv);
+        }
+        else {
+            conv.reset();
+        }
+    }
     
     private class SessionCookieChecker implements org.glassfish.grizzly.http.io.OutputBuffer.LifeCycleListener {
 
