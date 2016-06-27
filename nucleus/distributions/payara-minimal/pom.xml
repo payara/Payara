@@ -196,7 +196,6 @@
             <artifactId>asadmin-recorder-package</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
-            <optional>true</optional>
         </dependency>
     </dependencies>
 </project>
