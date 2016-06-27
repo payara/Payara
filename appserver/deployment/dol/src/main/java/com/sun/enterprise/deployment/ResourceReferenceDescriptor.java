@@ -37,12 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
 import com.sun.enterprise.deployment.web.ResourceReference;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -154,9 +156,17 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
         if (mappedName != null && ! mappedName.equals("")) { 
             return mappedName;
         }
-        return lookupName;
+        if(StringUtils.ok(lookupName)) {
+            return lookupName;
+        }
+        // named data sources are looked up, not defaulted
+        if(getName() != null && !isInjectionTarget()) {
+            setJndiName(getName());
+            return getValue();
+        }
+        return "";
     }
-    
+        
     /** 
      * Set the JNDI name of this resource reference.
      * @param the JNDI name of the resource reference.
@@ -560,5 +570,17 @@ public class ResourceReferenceDescriptor extends EnvironmentProperty
                 getSharingScope().equals(other.getSharingScope())
                 ) ||
             isConflictResourceGroup(other));
+    }
+
+    /**
+     * @return true if current resource reference is a result of an injection
+     */
+    private boolean isInjectionTarget() {
+        for(InjectionTarget t : getInjectionTargets()) {
+            if(getName().startsWith(t.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
