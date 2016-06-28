@@ -16,14 +16,11 @@ package fish.payara.nucleus.healthcheck;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author steve
  */
 class HealthCheckTask implements Runnable {
-
-    private static final Logger logger = Logger.getLogger(HealthCheckService.class.getCanonicalName());
 
     private final String name;
     private final BaseHealthCheck check;
@@ -41,26 +38,31 @@ class HealthCheckTask implements Runnable {
         return check;
     }
 
-
     @Override
     public void run() {
         if (check.getOptions().isEnabled()) {
             HealthCheckResult checkResult = check.doCheck();
+
             if (checkResult != null && checkResult.getCumulativeStatus() != null) {
+                Level level;
                 switch (checkResult.getCumulativeStatus()) {
                     case CHECK_ERROR:
-                        logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        level = Level.SEVERE;
                         break;
                     case CRITICAL:
-                        logger.log(Level.SEVERE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        level = Level.SEVERE;
                         break;
                     case WARNING:
-                        logger.log(Level.WARNING, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        level = Level.WARNING;
                         break;
                     case GOOD:
-                        logger.log(Level.INFO, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        level = Level.INFO;
+                        break;
+                    default:
+                        level = Level.OFF;
                         break;
                 }
+                check.sendNotification(level, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
             }
         }
     }

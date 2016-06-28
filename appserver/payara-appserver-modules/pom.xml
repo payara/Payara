@@ -23,7 +23,6 @@
         <artifactId>glassfish-parent</artifactId>
         <version>4.1.1.163-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main</groupId>
     <artifactId>payara-appserver-modules</artifactId>
     <name>Payara Appserver Modules</name>
     <description>Payara Appserver modules</description>
