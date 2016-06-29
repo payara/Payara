@@ -140,12 +140,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>payara-appserver</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
 
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>

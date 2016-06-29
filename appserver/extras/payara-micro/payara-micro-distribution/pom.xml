@@ -45,17 +45,15 @@
 
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.glassfish.main.extras</groupId>
-    <artifactId>extras</artifactId>
+    <groupId>fish.payara.extras.payara-micro</groupId>
+    <artifactId>payara-micro-parent</artifactId>
     <version>4.1.1.163-SNAPSHOT</version>
-    <relativePath>../../pom.xml</relativePath>
   </parent>
-
-  <groupId>fish.payara.extras</groupId>
-  <artifactId>payara-micro</artifactId>
+  
+  <artifactId>payara-micro-distribution</artifactId>
   <version>4.1.1.163-SNAPSHOT</version>
-  <name>Payara Micro Edition</name>
-      <packaging>jar</packaging>
+  <name>Payara Micro Distribution</name>
+  <packaging>jar</packaging>
 
   <build>
     <defaultGoal>install</defaultGoal>
@@ -81,26 +79,39 @@
             </executions>
         </plugin>
         <plugin>
-        <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
-        <artifactId>maven-antrun-extended-plugin</artifactId>
-        <executions>
-            <execution>
-                <phase>package</phase>
-                <goals>
-                    <goal>run</goal>
-                </goals>
-                <configuration>
-                    <tasks>
-                        <ant dir="." antfile="build.xml" target="create.distribution">
-                            <property name="bundlename" value="fish.payara.micro" />
-                            <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
-                            <property name="install.dir.name" value="${install.dir.name}" />                            
-                        </ant>
-                    </tasks>
-                </configuration>
-            </execution>
-        </executions>
+            <groupId>org.jvnet.maven-antrun-extended-plugin</groupId>
+            <artifactId>maven-antrun-extended-plugin</artifactId>
+            <executions>
+                <execution>
+                    <phase>package</phase>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                    <configuration>
+                        <tasks>
+                            <ant dir="." antfile="build.xml" target="create.distribution">
+                                <property name="bundlename" value="fish.payara.micro" />
+                                <property name="finaljar" value="${project.build.directory}/payara-micro.jar" />
+                                <property name="install.dir.name" value="${install.dir.name}" />                            
+                            </ant>
+                        </tasks>
+                    </configuration>
+                </execution>
+            </executions>
         </plugin>
+        <plugin>
+            <artifactId>maven-jar-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>default-jar</id>
+                    <phase>never</phase>
+                    <configuration>
+                        <finalName>unwanted</finalName>
+                        <classifier>unwanted</classifier>
+                    </configuration>
+                </execution>
+            </executions>
+      </plugin>
     </plugins>
   </build>
 
@@ -315,21 +326,21 @@
         </dependency>
         <!-- Add Payara Micro Core -->
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.extras.payara-micro</groupId>
             <artifactId>payara-micro-core</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <!-- Add Payara Micro Services -->
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.extras.payara-micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
-            <groupId>fish.payara.appserver</groupId>
+            <groupId>fish.payara.extras.payara-micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

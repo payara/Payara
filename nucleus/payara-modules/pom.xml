@@ -35,8 +35,6 @@
         <module>phonehome-bootstrap</module>
         <module>requesttracing-core</module>
         <module>notification-core</module>
-        <module>payara-micro</module>
-        <module>payara-micro-service</module>
         <module>asadmin-recorder</module>
     </modules>
 </project>
