@@ -163,6 +163,7 @@
         <module>phonehome</module>
         <module>payara</module>
         <module>asadmin-recorder</module>
+        <module>scheduler</module>
     </modules>
 
     <build>
