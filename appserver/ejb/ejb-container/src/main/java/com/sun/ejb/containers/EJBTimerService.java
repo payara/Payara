@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -92,7 +92,7 @@ public class EJBTimerService {
 
     private long nextTimerIdMillis_ = 0;
     private long nextTimerIdCounter_ = 0;
-    private String domainName_;
+    protected String domainName_;
 
     protected boolean isDas;
 
@@ -216,9 +216,9 @@ public class EJBTimerService {
 
     private static synchronized void initEJBTimerService(String target, boolean force) {
         if (_timerService == null) {
-            PersistentTimerService persistentTS = 
-                    EjbContainerUtilImpl.getInstance().getServices().getService(PersistentTimerService.class);
-            if (persistentTS == null) {
+            List<PersistentTimerService> persistentTSList = 
+                    EjbContainerUtilImpl.getInstance().getServices().getAllServices(PersistentTimerService.class);
+            if (persistentTSList.isEmpty()) {
                 try {
                     _timerService = new EJBTimerService();
                     _timerServiceVerified = true;
@@ -227,7 +227,25 @@ public class EJBTimerService {
                 }
             } else {
                 synchronized (lock) {
-                    persistentTS.initPersistentTimerService(target);
+                    // choose service based on the configuration setting
+                    EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEJBTimerService();
+                    PersistentTimerService persistentTS = null;
+                    for (PersistentTimerService pts : persistentTSList) {
+                        if (pts.getClass().getSimpleName().startsWith(serviceType)) {
+                            persistentTS = pts;
+                            break;
+                        }
+                    }
+                    if (persistentTS != null) {
+                        persistentTS.initPersistentTimerService(target);
+                    } else { // Fall back to the non-persistent service
+                        try {
+                            _timerService = new EJBTimerService();
+                        } catch (Exception e) {
+                            logger.log (Level.WARNING, "Cannot start EJBTimerService: ", e);
+                        }
+                    }
                     _timerServiceVerified = true;
                 }
 
