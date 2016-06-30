@@ -7,22 +7,15 @@ package fish.payara.schedule.admin;
 
 
 import fish.payara.schedule.service.ScheduleConfig;
-import fish.payara.schedule.service.ScheduleJobConfig;
 import fish.payara.schedule.service.ScheduleService;
 
 import java.beans.PropertyVetoException;
-import static java.lang.annotation.ElementType.FIELD;
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.ElementType.TYPE;
-import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-import java.lang.annotation.Target;
-import java.util.ArrayList;
 import java.util.List;
-import javax.enterprise.event.Event;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.inject.Inject;
-import javax.inject.Qualifier;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -43,6 +36,8 @@ import org.jvnet.hk2.config.TransactionFailure;
 @PerLookup
 public class CreateScheduleCommand implements AdminCommand{
 
+    private static final Logger log = Logger.getLogger(CreateScheduleCommand.class.getCanonicalName());
+    
     @Inject
     ScheduleConfig config;
     
@@ -63,42 +58,49 @@ public class CreateScheduleCommand implements AdminCommand{
     
     @Override
     public void execute(AdminCommandContext context) {
-        
-        System.out.println("I AM FOO");
+        final ActionReport actionReport = context.getActionReport();
         try {
             ConfigSupport.apply(new SingleConfigCode<ScheduleConfig>(){
                 public Object run(ScheduleConfig configProxy)
                     throws PropertyVetoException, TransactionFailure{
-                    if (name != null){
-                        //addStuff.fire("hello");
-                        List<String> jobs = configProxy.getJobs();
-                        for (String job:jobs){
-                            service.validateSchedule(job, false);
+                        if (name != null){
+                            //addStuff.fire("hello");
+                            List<String> jobs = configProxy.getJobs();
+                            System.out.println("ONE");
+                            for (String job:jobs){
+                                String[] configInfo = job.split(",");
+                                String[] nameInfo = configInfo[0].split("=");
+                                System.out.println("the name form the domain.xml is "+nameInfo[1]);
+                                if (nameInfo[1].equals(name) ){
+                                    actionReport.setMessage("This schedule name already exists please a different one ");
+                                    actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                                    return null;
+                                }
+                                
+                            }
+                            String configInfo = "name="+name+",cron="+service.buildCron(cron)+",filePath="+filePath;
+                            if (service.validateSchedule(configInfo, true)){
+                                jobs.add(configInfo);
+                                log.log(Level.INFO,"The schedule "+ name +" has been added");
+                                //configProxy.setJobConfig(job);
+                                service.add(); 
+                            } else {
+                                actionReport.setMessage("Could not add schedule. See server.log for more details");
+                                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+                            }
+                            
                         }
-                        String configInfo = "name="+name+",cron="+service.buildCron(cron)+",filePath="+filePath;
-                        service.validateSchedule(configInfo, true);
-                        jobs.add(configInfo);
-
-
-                        
-                        //configProxy.setJobConfig(job);
-                    }
-                    return null;
+                        return null;
                 }
             },config);
         }catch (TransactionFailure ex){
-            System.out.println("The transaction has failed "+ ex);
-        }//en transaction
-        
-        service.add();
+            log.log(Level.WARNING,"The transaction has failed "+ ex);
+            ex.printStackTrace();
+            actionReport.setMessage("Could not add schedule. See server.log for more details");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }//end transaction
         
     }//end execute
     
-    public List<String> createList(){
-        List<String> jobs = config.getJobs();
-        String configInfo = "name="+name+",cron="+cron+",filePath="+filePath;
-        jobs.add(configInfo);
-        return jobs;
-    }
 
 }

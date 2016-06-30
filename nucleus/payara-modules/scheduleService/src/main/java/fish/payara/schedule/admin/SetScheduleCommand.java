@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.inject.Inject;
+import org.glassfish.api.ActionReport;
 import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
@@ -29,6 +32,9 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name="set-schedule")
 @PerLookup
 public class SetScheduleCommand implements AdminCommand{
+    
+    private static final Logger log = Logger.getLogger(SetScheduleCommand.class.getCanonicalName());
+    
     @Inject
     ScheduleConfig config;
     
@@ -52,7 +58,7 @@ public class SetScheduleCommand implements AdminCommand{
 
     @Override
     public void execute(AdminCommandContext context) {
-        System.out.println("SET RUN");
+        final ActionReport actionReport = context.getActionReport();
         try {
             ConfigSupport.apply(new SingleConfigCode<ScheduleConfig>(){
                 public Object run(ScheduleConfig configProxy)
@@ -66,31 +72,26 @@ public class SetScheduleCommand implements AdminCommand{
                             String[] configInfo = job.split(",");
                             String[] nameInfo = configInfo[0].split("=");
 
-                            System.out.println("SET: the name form the domain.xml is "+nameInfo[1]);
                             if (nameInfo[1].equals(name) ){ 
                                 newJob = "name="+nameInfo[1]+",cron="+service.buildCron(cron)+",filePath="+filePath;
                                 if (service.validateSchedule(newJob,false)){                                      
                                     jobs.add(newJob);
-                                    System.out.println("the job is" + configProxy.getJobs().get(i));
-                                    System.out.println("The new job is " +newJob);
-
-                                    System.out.println("the job is" + configProxy.getJobs().get(i));
                                     found=true;
                                 }                              
                             } else{
                                 jobs.add(configProxy.getJobs().get(i));
+                                log.log(Level.INFO, "Edited schedule "+ name);
                             }
                             
                         }
                                             
                         if (found.equals(false)){
-                            System.out.println("The schedule name was not found, please check that schedule exists");
+                            log.log(Level.WARNING,"The schedule name was not found, please check that schedule exists");
+                            actionReport.setMessage("Could not edit schedule. See server.log for more details");
+                            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
                         }else {
-                            HashMap david = service.getFuturesList();                            
-                            System.out.println("futures = "+ david.toString());
-                            System.out.println(" NUMBER FOUR");
-                            System.out.println(david.get(name));
-                            Future job = (Future)david.get(name);
+                            HashMap scheduledTasks = service.getFuturesList();                            
+                            Future job = (Future)scheduledTasks.get(name);
                             job.cancel(true);
                             configProxy.setJobs(jobs);
                             service.validateSchedule(newJob, true);
@@ -101,8 +102,12 @@ public class SetScheduleCommand implements AdminCommand{
                 }
             },config);
         }catch (TransactionFailure ex){
-            System.out.println("The transaction has failed "+ ex);
-        }//en transaction
+            log.log(Level.WARNING,"The transaction has failed "+ ex);
+            ex.printStackTrace();
+            actionReport.setMessage("Could not edit schedule. See server.log for more details");
+            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        }
+//en transaction
     }
     
     

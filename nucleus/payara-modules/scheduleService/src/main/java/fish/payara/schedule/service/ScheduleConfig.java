@@ -29,6 +29,9 @@ public interface ScheduleConfig extends ConfigBeanProxy, ConfigExtension, Contai
     public int getCoreSize();
     public void setCoreSize(String size);
     
+    @Attribute(defaultValue="false")
+    public Boolean getFixedSize();
+    public void setFixedSize(String sizeEnabled);
     
     @Element
     public void setJobs(List<String> args);
