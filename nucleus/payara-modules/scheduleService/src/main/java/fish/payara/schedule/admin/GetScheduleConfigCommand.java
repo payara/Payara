@@ -45,7 +45,7 @@ public class GetScheduleConfigCommand implements AdminCommand{
                 public Object run(ScheduleConfig configProxy)
                     throws PropertyVetoException, TransactionFailure{
                         StringBuilder outputString = new StringBuilder();
-                        outputString.append("Configuration information for the shceudling service"+ System.lineSeparator());
+                        outputString.append("Configuration information for the scheduling service"+ System.lineSeparator());
                         outputString.append( System.lineSeparator());
                         outputString.append("Scheduling Enabled:        "+configProxy.getEnabled() + System.lineSeparator());
                         outputString.append("Thread Pool Core Size:     "+configProxy.getCoreSize()+ System.lineSeparator());
@@ -63,7 +63,7 @@ public class GetScheduleConfigCommand implements AdminCommand{
         }catch (TransactionFailure ex){
             log.log(Level.WARNING, "The transaction has failed "+ ex);
             ex.printStackTrace();
-            actionReport.setMessage("Could not enable scheduling. See server.log for more details");
+            actionReport.setMessage("Could not get config for scheduling. See server.log for more details");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }//en transaction
         
