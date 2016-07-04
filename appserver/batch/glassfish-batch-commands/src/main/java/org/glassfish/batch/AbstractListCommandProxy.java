@@ -89,7 +89,7 @@ public abstract class AbstractListCommandProxy
     @Param(name = "header", shortName = "h", optional = true)
     protected boolean header;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     protected String target;
 
     @Param(name = "long", shortName = "l", optional = true)

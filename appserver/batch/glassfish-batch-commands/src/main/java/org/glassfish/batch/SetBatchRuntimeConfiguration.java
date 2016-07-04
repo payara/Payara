@@ -98,7 +98,7 @@ public class SetBatchRuntimeConfiguration
     @Inject
     protected Logger logger;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     protected String target;
 
     @Inject
