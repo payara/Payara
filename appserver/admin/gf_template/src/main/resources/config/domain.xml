@@ -119,6 +119,12 @@
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <asadmin-recorder-configuration></asadmin-recorder-configuration>
+       <request-tracing-service-configuration>
+         <log-notifier></log-notifier>
+       </request-tracing-service-configuration>
+       <notification-service-configuration>
+         <log-notifier-configuration></log-notifier-configuration>
+       </notification-service-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
