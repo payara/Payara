@@ -90,6 +90,9 @@
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <asadmin-recorder-configuration></asadmin-recorder-configuration>
+       <notification-service-configuration>
+            <log-notifier-configuration></log-notifier-configuration>
+       </notification-service-configuration>
        <batch-runtime-configuration data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
        <diagnostic-service />
       <security-service>
@@ -309,6 +312,9 @@
          </security-service>
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
          <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+         <notification-service-configuration>
+              <log-notifier-configuration></log-notifier-configuration>
+         </notification-service-configuration>
          <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-XX:MaxPermSize=512m</jvm-options>

@@ -20,6 +20,7 @@ package fish.payara.nucleus.notification.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
@@ -43,6 +44,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -52,15 +54,15 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-    @Service(name = "notification-configure-notifier")
-@PerLookup
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@Service(name = "notification-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
+@PerLookup
 @I18n("notification.configure.notifier")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+            opType = RestEndpoint.OpType.POST,
             path = "notification-configure-notifier",
             description = "Enables/Disables Notifier Specified With Name")
 })
@@ -86,18 +88,23 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
-    protected String target;
+    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
 
-    @Param(name = "notifierName")
+    @Param(name = "notifierName", optional = true)
     private String notifierName;
 
-    @Param(name = "notifierEnabled")
+    @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
+        Properties extraProperties = actionReport.getExtraProperties();
+        if (extraProperties == null) {
+            extraProperties = new Properties();
+            actionReport.setExtraProperties(extraProperties);
+        }
 
         Config config = targetUtil.getConfig(target);
 
@@ -132,8 +139,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                             if (dynamic) {
                                 service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
                             }
-                        }
-                        else {
+                        } else {
                             notifierConfigList.remove(createdNotifier[0]);
                             if (dynamic) {
                                 service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
@@ -144,8 +150,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         return notificationServiceConfigurationProxy;
                     }
                 }, notificationServiceConfiguration);
-            }
-            else {
+            } else {
                 ConfigSupport.apply(new SingleConfigCode<NotifierConfiguration>() {
                     @Override
                     public Object run(final NotifierConfiguration notifierProxy) throws
@@ -158,8 +163,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                             NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
                             if (notifierEnabled) {
                                 service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
-                            }
-                            else {
+                            } else {
                                 service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
                             }
                         }
@@ -173,8 +177,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
 
             actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",
                     "Notifier with name {0} is registered and set enabled to {1}.", notifierName, notifierEnabled) + "\n");
-        }
-        catch (TransactionFailure ex) {
+        } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
