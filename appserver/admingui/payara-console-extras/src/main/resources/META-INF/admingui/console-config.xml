@@ -14,38 +14,45 @@
  or packager/legal/LICENSE.txt.  See the License for the specific
  language governing permissions and limitations under the License.
 
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
- -->
- <console-config id="payaraExtras">
+When distributing the software, include this License Header Notice in each
+file and include the License file at packager/legal/LICENSE.txt.
+-->
+<console-config id="payaraExtras">
     <integration-point
-            id="serverHazelcast"
-            type="org.glassfish.admingui:serverInstTab"
-            priority="30"
-            parentId="serverInstTabs"
-            content="hazelcast/hazelcastTabs.jsf"
-            />
+        id="serverHazelcast"
+        type="org.glassfish.admingui:serverInstTab"
+        priority="30"
+        parentId="serverInstTabs"
+        content="hazelcast/hazelcastTabs.jsf"
+    />
     <integration-point
-            id="clusterHazelcast"
-            type="org.glassfish.admingui:clusterTab"
-            priority="200"
-            parentId="clusterTabs"
-            content="hazelcast/hazelcastTabsCluster.jsf"
-            />
+        id="clusterHazelcast"
+        type="org.glassfish.admingui:clusterTab"
+        priority="200"
+        parentId="clusterTabs"
+        content="hazelcast/hazelcastTabsCluster.jsf"
+    />
 
     <integration-point
-            id="standaloneHazelcast"
-            type="org.glassfish.admingui:standaloneInstTab"
-            priority="40"
-            parentId="standaloneInstanceTabs"
-            content="hazelcast/hazelcastTabsStandalone.jsf"
-            />
+        id="standaloneHazelcast"
+        type="org.glassfish.admingui:standaloneInstTab"
+        priority="40"
+        parentId="standaloneInstanceTabs"
+        content="hazelcast/hazelcastTabsStandalone.jsf"
+    />
     
     <integration-point
-            id="asadminRecorder"
-            type="org.glassfish.admingui:serverInstTab"
-            priority="50"
-            parentId="serverInstTabs"
-            content="asadminRecorder/asadminRecorderTabs.jsf"
-            />
- </console-config>
+        id="asadminRecorder"
+        type="org.glassfish.admingui:serverInstTab"
+        priority="50"
+        parentId="serverInstTabs"
+        content="asadminRecorder/asadminRecorderTabs.jsf"
+    />
+    <integration-point
+        id="notification"
+        type="org.glassfish.admingui:serverInstTab"
+        priority="70"
+        parentId="serverInstTabs"
+        content="notification/notificationServerTabs.jsf"
+    />
+</console-config>
