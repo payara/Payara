@@ -65,7 +65,7 @@ public class GetNotificationConfiguration implements AdminCommand {
     @Inject
     private Target targetUtil;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
     @Override

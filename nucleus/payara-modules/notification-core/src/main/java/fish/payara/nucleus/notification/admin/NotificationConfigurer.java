@@ -77,7 +77,7 @@ public class NotificationConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
     @Param(name = "enabled", optional = false)
