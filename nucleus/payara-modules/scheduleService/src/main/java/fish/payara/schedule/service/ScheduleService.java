@@ -6,7 +6,11 @@
 package fish.payara.schedule.service;
 
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -39,7 +43,9 @@ import org.jvnet.hk2.annotations.Service;
 @Service(name="payara-timer")
 @RunLevel(StartupRunLevel.VAL)
 public class ScheduleService implements EventListener, PostConstruct{
-
+    
+    private final String operatingSystem = System.getProperty("os.name");
+    String asadmin;
     private static final Logger log = Logger.getLogger(ScheduleService.class.getCanonicalName());
     
     @Inject
@@ -75,6 +81,12 @@ public class ScheduleService implements EventListener, PostConstruct{
         if (config.getEnabled()==true){
             startPool();
             prepareSchedules();
+            String installRoot = System.getProperty("com.sun.aas.installRoot");
+            if (operatingSystem.contains("Windows")){               
+                    asadmin = installRoot.substring(0, installRoot.length() - 9) + "bin\\asadmin.bat";           
+                } else {
+                    asadmin = installRoot.substring(0, installRoot.length() - 9) + "bin/asadmin";            
+                }
         }
     }
     
@@ -95,7 +107,7 @@ public class ScheduleService implements EventListener, PostConstruct{
     
     ScheduledThreadPoolExecutor executor;
     String hello = "hello i am the runnable";
-    public void startRun(final String name,final String cron, String filePath){
+    public void startRun(final String name,final String cron, final String filePath){
             log.log(Level.INFO,"Starting Scheduling");
             
                TimerSchedule schedule = new TimerSchedule(cron);
@@ -116,14 +128,19 @@ public class ScheduleService implements EventListener, PostConstruct{
                 ThreadLocal nameInstance = new ThreadLocal();
                 nameInstance.set(name);
                 ThreadLocal cronInstance = new ThreadLocal();
-                cronInstance.set(cron);
-                
+                cronInstance.set(cron);                
                 ThreadLocal filePathInstance = new ThreadLocal();
+                filePathInstance.set(filePath);
                 
+                 if (readFile(filePathInstance.get().toString(), nameInstance.toString())){
+                     log.log(Level.INFO,"Schedule "+nameInstance.get()+" has run the file successfully: the server log contains the full details");
+                 } else {
+                     log.log(Level.WARNING,"Schedule "+nameInstance.get()+" encountered some failures: the server log contains the full details");
+                 }
                 
                 
                 //schedule next task
-                ArrayList jobList = new ArrayList();
+                //ArrayList jobList = new ArrayList();
                 Boolean found = false;
                 for (String job: config.getJobs()){
                     String[] configInfo = job.split(",");
@@ -146,7 +163,7 @@ public class ScheduleService implements EventListener, PostConstruct{
                     
                 } else if(found.equals(true)){
                     TimerSchedule checkSchedule = new TimerSchedule(cronInstance.get().toString());
-                    log.log(Level.INFO,"Schedule "+nameInstance.get()+" has run the file");
+                    
                     ScheduledFuture<?> nextJob = executor.schedule(this, checkSchedule.getNextTimeout().getTime().getTime()-System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                     map.put(name, nextJob);
                     futureList.add(nextJob);
@@ -234,6 +251,62 @@ public class ScheduleService implements EventListener, PostConstruct{
     
     public void shutdown(){
         executor.shutdown();
+        
+    }
+    
+    public String runCommand(ArrayList<String> arguments){
+        String Output="";
+        try {
+            //Carry out an CLI command and read in the output
+            //creates process to run, format is parameters that are seperated by commas
+            ProcessBuilder builder = new ProcessBuilder(arguments);
+            //merge error and output streams for conveniance
+            builder.redirectErrorStream(true);
+            Process process = builder.start();
+            //Input stream gets the output of the command and cast to a reader for efficiency
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = reader.readLine()) != null){
+                Output += line;
+            }
+            //tidy up the method to prevent leaking of resources
+            process.waitFor();
+            reader.close();
+        
+        } catch(IOException ex){
+            Logger.getLogger(ScheduleService.class.getName()).log(Level.SEVERE, null, ex);
+            
+        } catch (Exception ex) {
+            Logger.getLogger(ScheduleService.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return Output;
+    }
+    
+    public Boolean readFile(String fileLocation, String name){
+        Boolean totalSuccess = true;
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(fileLocation)))){
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                ArrayList<String> array = new ArrayList();
+                array.add(asadmin);
+                for (String operand: line.split(" ")){
+                    array.add(operand);
+                }
+                System.out.println(array.toString());
+                String output = runCommand(array);
+                if (output.contains("success")){
+                    log.log(Level.INFO, name + " has successfully run "+array.toString());
+                } else {
+                    log.log(Level.WARNING, name + " has failed to run "+array.toString());
+                    log.log(Level.WARNING, output);
+                    totalSuccess = false;
+                }
+            }
+        }catch(Exception io) {
+            io.printStackTrace();
+        }
+        return totalSuccess;
         
     }
 }
