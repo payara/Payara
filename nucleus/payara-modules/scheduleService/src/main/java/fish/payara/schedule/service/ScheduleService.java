@@ -1,10 +1,21 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ * All rights reserved.
+ *
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  */
 package fish.payara.schedule.service;
-
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -106,7 +117,6 @@ public class ScheduleService implements EventListener, PostConstruct{
     }
     
     ScheduledThreadPoolExecutor executor;
-    String hello = "hello i am the runnable";
     public void startRun(final String name,final String cron, final String filePath){
             log.log(Level.INFO,"Starting Scheduling");
             
@@ -119,12 +129,7 @@ public class ScheduleService implements EventListener, PostConstruct{
         executor.schedule(new Runnable() {
             
             @Override
-            public void run(){
-                //do the job
-                //TO DO ADD IMPLEMENTATION
-                
-
-                
+            public void run(){                             
                 ThreadLocal nameInstance = new ThreadLocal();
                 nameInstance.set(name);
                 ThreadLocal cronInstance = new ThreadLocal();
@@ -140,7 +145,6 @@ public class ScheduleService implements EventListener, PostConstruct{
                 
                 
                 //schedule next task
-                //ArrayList jobList = new ArrayList();
                 Boolean found = false;
                 for (String job: config.getJobs()){
                     String[] configInfo = job.split(",");
@@ -152,7 +156,6 @@ public class ScheduleService implements EventListener, PostConstruct{
                             cronInstance.set(cronInfo[1]);
                             filePathInstance.set(filepathInfo[1]);
                             found=true;
-
                             break;
                         }
                     }
@@ -162,8 +165,7 @@ public class ScheduleService implements EventListener, PostConstruct{
                     log.log(Level.SEVERE,nameInstance.get()+" was not found, will not schedule job for it");
                     
                 } else if(found.equals(true)){
-                    TimerSchedule checkSchedule = new TimerSchedule(cronInstance.get().toString());
-                    
+                    TimerSchedule checkSchedule = new TimerSchedule(cronInstance.get().toString());                   
                     ScheduledFuture<?> nextJob = executor.schedule(this, checkSchedule.getNextTimeout().getTime().getTime()-System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                     map.put(name, nextJob);
                     futureList.add(nextJob);
@@ -185,7 +187,7 @@ public class ScheduleService implements EventListener, PostConstruct{
     }
     
     public Boolean validateSchedule(String job, Boolean start){
-        //chnage this the list is reste each time
+        //change this the list is reste each time
         
             try {
                 String[] configInfo = job.split(",");
@@ -196,7 +198,7 @@ public class ScheduleService implements EventListener, PostConstruct{
             
                 String[] cronParts = cronInfo[1].split(" # ");
                 if (cronParts.length != 10){
-                    log.log(Level.INFO,"size is"+cronParts.length);
+                    log.log(Level.INFO,"size is "+cronParts.length);
                     log.log(Level.INFO,"The cron sequence"+Arrays.toString(cronInfo)+" for "+nameInfo[1]+"is incomplete it must have 7 fields eg * * * * * * *");
                     return false;
                 }
@@ -257,20 +259,17 @@ public class ScheduleService implements EventListener, PostConstruct{
     public String runCommand(ArrayList<String> arguments){
         String Output="";
         try {
-            //Carry out an CLI command and read in the output
-            //creates process to run, format is parameters that are seperated by commas
+
             ProcessBuilder builder = new ProcessBuilder(arguments);
-            //merge error and output streams for conveniance
+
             builder.redirectErrorStream(true);
             Process process = builder.start();
-            //Input stream gets the output of the command and cast to a reader for efficiency
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
             String line;
             while ((line = reader.readLine()) != null){
                 Output += line;
             }
-            //tidy up the method to prevent leaking of resources
             process.waitFor();
             reader.close();
         
@@ -293,7 +292,6 @@ public class ScheduleService implements EventListener, PostConstruct{
                 for (String operand: line.split(" ")){
                     array.add(operand);
                 }
-                System.out.println(array.toString());
                 String output = runCommand(array);
                 if (output.contains("success")){
                     log.log(Level.INFO, name + " has successfully run "+array.toString());
