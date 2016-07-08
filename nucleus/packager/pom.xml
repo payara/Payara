@@ -113,6 +113,7 @@
         <module>requesttracing-package</module>
         <module>payara-nucleus</module>
         <module>asadmin-recorder-package</module>
+        <module>schedule-packager</module>
     </modules>
 
     <build>

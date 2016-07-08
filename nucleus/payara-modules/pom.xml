@@ -38,5 +38,6 @@
         <module>payara-micro</module>
         <module>payara-micro-service</module>
         <module>asadmin-recorder</module>
+        <module>scheduleService</module>
     </modules>
 </project>
