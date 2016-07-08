@@ -74,6 +74,10 @@ public interface HazelcastRuntimeConfiguration
     String getCachingProviderJNDIName();
     public void setCachingProviderJNDIName(String value);
     
+    @Attribute(defaultValue = "")
+    String getLicenseKey();
+    public void setLicenseKey(String value);
+    
     @Attribute(defaultValue = "false", dataType = Boolean.class)
     String getLite();
     public void setLite(String value);
