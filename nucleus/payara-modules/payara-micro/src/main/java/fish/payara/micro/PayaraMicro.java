@@ -1751,7 +1751,7 @@ public class PayaraMicro {
         autoBindRange = Integer.getInteger("payaramicro.autoBindRange", 5);
         autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
         generateLogo = Boolean.getBoolean("payaramicro.logo");
-        logToFile = Boolean.getBoolean("payara.logToFile");
+        logToFile = Boolean.getBoolean("payaramicro.logToFile");
         enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
         httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
@@ -1923,7 +1923,7 @@ public class PayaraMicro {
             props.setProperty("payaramicro.lite", Boolean.toString(liteMember));
             props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
             props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
-            props.setProperty("payara.logToFile", Boolean.toString(logToFile));
+            props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
             props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
             props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 

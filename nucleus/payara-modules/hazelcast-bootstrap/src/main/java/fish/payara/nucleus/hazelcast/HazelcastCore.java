@@ -173,14 +173,17 @@ public class HazelcastCore implements EventListener {
                         memberName = overrideConfiguration.getMemberName();
                     }
                     config.setLiteMember(overrideConfiguration.isLite());
+                    config.setLicenseKey(overrideConfiguration.getLicenseKey());
                     // set group config
                     GroupConfig gc = config.getGroupConfig();
                     gc.setName(overrideConfiguration.getClusterGroupName());
                     gc.setPassword(overrideConfiguration.getClusterGroupPassword());
+                    
                 } else {
                    mcConfig.setMulticastGroup(configuration.getMulticastGroup());
                    mcConfig.setMulticastPort(Integer.valueOf(configuration.getMulticastPort()));
                    config.getNetworkConfig().setPort(Integer.valueOf(configuration.getStartPort()));
+                   config.setLicenseKey(configuration.getLicenseKey());
                    config.setLiteMember(Boolean.parseBoolean(configuration.getLite()));
                    // set group config
                    GroupConfig gc = config.getGroupConfig();

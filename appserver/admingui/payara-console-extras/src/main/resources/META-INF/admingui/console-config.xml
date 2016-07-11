@@ -48,6 +48,7 @@ file and include the License file at packager/legal/LICENSE.txt.
         parentId="serverInstTabs"
         content="asadminRecorder/asadminRecorderTabs.jsf"
     />
+    
     <integration-point
         id="notification"
         type="org.glassfish.admingui:navNode"
@@ -62,5 +63,37 @@ file and include the License file at packager/legal/LICENSE.txt.
         priority="70"
         parentId="propSheetSection"
         content="notification/notificationConfigLink.jsf"
+    />
+
+    <integration-point
+        id="hazelcast"
+        type="org.glassfish.admingui:navNode"
+        priority="300"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeHazelcast.jsf"
+    />
+
+    <integration-point
+        id="hazelcastLink"
+        type="org.glassfish.admingui:configuration"
+        priority="300"
+        parentId="propSheetSection"
+        content="hazelcast/hazelcastConfigLink.jsf"
+    />
+    
+    <integration-point
+        id="requesttracing"
+        type="org.glassfish.admingui:navNode"
+        priority="60"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeRequestTracing.jsf"
+    />
+ 
+    <integration-point
+        id="requesttracingLink"
+        type="org.glassfish.admingui:configuration"
+        priority="60"
+        parentId="propSheetSection"
+        content="requestTracing/requestTracingConfigLink.jsf"
     />
 </console-config>

@@ -54,6 +54,7 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import com.sun.enterprise.util.Result;
+import java.net.*;
 import java.util.concurrent.Callable;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.grizzly.Grizzly;
@@ -264,7 +265,16 @@ public class GrizzlyProxy implements NetworkProxy {
     protected void start0() throws IOException {
         final long t1 = System.currentTimeMillis();
 
-        grizzlyListener.start();
+        try {
+            grizzlyListener.start();
+        } catch (BindException e) {
+            if (logger.isLoggable(Level.SEVERE)) {
+                logger.log(Level.SEVERE, KernelLoggerInfo.grizzlyUnableToBind,
+                    new Object[]{Grizzly.getDotedVersion(),
+                    grizzlyListener.getAddress() + ":" + grizzlyListener.getPort()});
+            }
+            throw e;
+        }
 
         if (logger.isLoggable(Level.INFO)) {
             logger.log(Level.INFO, KernelLoggerInfo.grizzlyStarted,

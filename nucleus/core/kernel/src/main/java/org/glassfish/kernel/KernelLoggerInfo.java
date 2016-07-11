@@ -646,4 +646,9 @@ public class KernelLoggerInfo {
             level = "INFO")
     public static final String checkpointAutoResumeDone = LOGMSG_PREFIX + "-00096";
 
+    @LogMessageInfo(
+            message = "Grizzly Framework {0} could not start - unable to bind to [{1}]",
+            level = "INFO")
+    public static final String grizzlyUnableToBind = LOGMSG_PREFIX + "-00097";
+    
 }
