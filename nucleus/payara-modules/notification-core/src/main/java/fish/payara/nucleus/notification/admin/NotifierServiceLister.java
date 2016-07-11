@@ -41,8 +41,8 @@ import java.util.List;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("notifier.list.services")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,

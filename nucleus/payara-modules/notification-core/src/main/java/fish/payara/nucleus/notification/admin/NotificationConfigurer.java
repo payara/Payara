@@ -20,6 +20,7 @@ package fish.payara.nucleus.notification.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.ActionReport;
@@ -37,12 +38,14 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 /**
- * Admin command to enable/disable all notification services defined in domain.xml.
+ * Admin command to enable/disable all notification services defined in
+ * domain.xml.
  *
  * @author mertcaliskan
  */
@@ -50,11 +53,11 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("notification.configure")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+            opType = RestEndpoint.OpType.POST,
             path = "notification-configure",
             description = "Enables/Disables Notification Service")
 })
@@ -74,15 +77,20 @@ public class NotificationConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
-    protected String target;
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
 
-    @Param(name = "enabled", optional = true)
+    @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
+        Properties extraProperties = actionReport.getExtraProperties();
+        if (extraProperties == null) {
+            extraProperties = new Properties();
+            actionReport.setExtraProperties(extraProperties);
+        }
 
         Config config = targetUtil.getConfig(target);
         final NotificationServiceConfiguration notificationServiceConfiguration = config.getExtensionByType(NotificationServiceConfiguration.class);
