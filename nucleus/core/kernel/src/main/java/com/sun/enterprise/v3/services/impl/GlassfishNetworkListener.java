@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2014,2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -282,16 +282,21 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 maxResponseHeaders);
     }
 
-
-
     protected void registerMonitoringStatsProviders() {
         final String nameLocal = name;
         final GrizzlyMonitoring monitoring = grizzlyService.getMonitoring();
-
-        monitoring.registerThreadPoolStatsProvider(nameLocal);
-        monitoring.registerKeepAliveStatsProvider(nameLocal);
-        monitoring.registerFileCacheStatsProvider(nameLocal);
-        monitoring.registerConnectionQueueStatsProvider(nameLocal);
+        if (monitoring.getThreadPoolStatsProvider(nameLocal) == null) {
+            monitoring.registerThreadPoolStatsProvider(nameLocal);
+        }
+        if (monitoring.getKeepAliveStatsProvider(nameLocal) == null) {
+            monitoring.registerKeepAliveStatsProvider(nameLocal);
+        }
+        if (monitoring.getFileCacheStatsProvider(nameLocal) == null) {
+            monitoring.registerFileCacheStatsProvider(nameLocal);
+        }
+        if (monitoring.getConnectionQueueStatsProvider(nameLocal) == null) {
+            monitoring.registerConnectionQueueStatsProvider(nameLocal);
+        }
     }
 
     protected void unregisterMonitoringStatsProviders() {

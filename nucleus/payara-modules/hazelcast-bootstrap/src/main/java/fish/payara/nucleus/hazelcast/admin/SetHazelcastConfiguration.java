@@ -110,6 +110,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
     
+    @Param(name = "licenseKey", shortName = "lk", optional = true)
+    private String licenseKey;
+    
     @Param(name = "lite", optional = true, defaultValue = "false")
     private Boolean lite;
 
@@ -164,6 +167,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         }
                         if (hzClusterPassword != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupPassword(hzClusterPassword);
+                        }
+                        if (licenseKey != null){
+                            hazelcastRuntimeConfigurationProxy.setLicenseKey(licenseKey);
                         }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;

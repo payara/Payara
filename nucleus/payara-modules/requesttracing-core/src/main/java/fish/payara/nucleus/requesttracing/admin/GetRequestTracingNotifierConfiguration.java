@@ -1,3 +1,21 @@
+/*
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+ */
+
 package fish.payara.nucleus.requesttracing.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
@@ -28,7 +46,8 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- *
+ * Admin command to list Request Tracing Notifier Configuration
+ * 
  * @author Susan Rai
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
@@ -51,7 +70,7 @@ public class GetRequestTracingNotifierConfiguration implements AdminCommand {
     @Inject
     private Target targetUtil;
 
-    @Param(primary = true, optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
     @Override
@@ -66,28 +85,26 @@ public class GetRequestTracingNotifierConfiguration implements AdminCommand {
 
         final ActionReport actionReport = context.getActionReport();
 
-        String headers[] = {"Enabled", "NotifierName", "NotifierServiceName"};
+        String headers[] = {"Notifier Enabled", "Notifier ServiceName"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
         RequestTracingServiceConfiguration configuration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
         List<ServiceHandle<BaseNotifierService>> allNotifierHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
-
+        
         for (ServiceHandle<BaseNotifierService> notifierHandle : allNotifierHandles) {
+            
             Notifier notifier = configuration.getNotifierByType(notifierHandle.getService().getNotifierType());
-
             LogNotifier logNotifier = (LogNotifier) notifier;
 
-            Object values[] = new Object[3];
+            Object values[] = new Object[2];
             values[0] = logNotifier.getEnabled();
-            values[1] = notifierHandle.getService().getType().toString();
-            values[2] = notifierHandle.getActiveDescriptor().getName();
+            values[1] = notifierHandle.getActiveDescriptor().getName();
             columnFormatter.addRow(values);
 
-            Map<String, Object> map = new HashMap<String, Object>(3);
+            Map<String, Object> map = new HashMap<String, Object>(2);
             Properties extraProps = new Properties();
-            map.put("enabled", values[0]);
+            map.put("notifierEnabled", values[0]);
             map.put("notifierName", values[1]);
-            map.put("notifierServiceName", values[2]);
             extraProps.put("getRequesttracingNotifierConfiguration", map);
 
             actionReport.setExtraProperties(extraProps);
