@@ -24,7 +24,7 @@ file and include the License file at packager/legal/LICENSE.txt.
         priority="30"
         parentId="serverInstTabs"
         content="hazelcast/hazelcastTabs.jsf"
-    />    
+    />
     <integration-point
         id="clusterHazelcast"
         type="org.glassfish.admingui:clusterTab"
@@ -50,18 +50,34 @@ file and include the License file at packager/legal/LICENSE.txt.
     />
     
     <integration-point
-            id="hazelcast"
-            type="org.glassfish.admingui:navNode"
-            priority="300"
-            parentId="#{configNameId}"
-            content="pluginTreeNodeHazelcast.jsf"
+        id="hazelcast"
+        type="org.glassfish.admingui:navNode"
+        priority="300"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeHazelcast.jsf"
     />
 
     <integration-point
-            id="hazelcastLink"
-            type="org.glassfish.admingui:configuration"
-            priority="300"
-            parentId="propSheetSection"
-            content="hazelcast/hazelcastConfigLink.jsf"
+        id="hazelcastLink"
+        type="org.glassfish.admingui:configuration"
+        priority="300"
+        parentId="propSheetSection"
+        content="hazelcast/hazelcastConfigLink.jsf"
+    />
+    
+    <integration-point
+        id="requesttracing"
+        type="org.glassfish.admingui:navNode"
+        priority="60"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeRequestTracing.jsf"
+    />
+ 
+    <integration-point
+        id="requesttracingLink"
+        type="org.glassfish.admingui:configuration"
+        priority="60"
+        parentId="propSheetSection"
+        content="requestTracing/requestTracingConfigLink.jsf"
     />
 </console-config>
