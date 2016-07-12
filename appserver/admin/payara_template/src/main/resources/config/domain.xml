@@ -214,7 +214,7 @@
       <thread-pools>
         <thread-pool max-thread-pool-size="50" name="http-thread-pool"></thread-pool>
         <thread-pool max-thread-pool-size="200" name="thread-pool-1"></thread-pool>
-        <thread-pool name="admin-thread-pool" max-thread-pool-size="50" max-queue-size="256"></thread-pool>
+        <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
       </thread-pools>
     </config>
      <config name="default-config" dynamic-reconfiguration-enabled="true" >
@@ -381,7 +381,7 @@
              <network-listeners>
                  <network-listener address="0.0.0.0" port="${HTTP_LISTENER_PORT}" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
                  <network-listener address="0.0.0.0" port="${HTTP_SSL_LISTENER_PORT}" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
-                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="http-thread-pool" />
+                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool" />
              </network-listeners>
              <transports>
                  <transport name="tcp" />
@@ -390,6 +390,7 @@
          <thread-pools>
              <thread-pool name="http-thread-pool" />
              <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+	     <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
          </thread-pools>
          <group-management-service/>
          <!--%%%DEFAULT_TOKENS_HERE%%%-->
