@@ -67,7 +67,12 @@ public class JMXMonitoringService implements EventListener {
     public void postConstruct() throws NamingException { 
         if (configuration != null && configuration.getEnabled()) {
             bootstrapMonitoringService();
-        } 
+        } else {
+            for (int i=0;i<10;i++) {
+                System.out.println("NULL CONFIG");
+            }
+        }
+
     }
 
     @Override
@@ -83,6 +88,13 @@ public class JMXMonitoringService implements EventListener {
     public void bootstrapMonitoringService() {
         JMXMonitoringServiceConfiguration configuration = habitat.getService(JMXMonitoringServiceConfiguration.class);
         if (configuration != null) {
+        // <<<< TEST BLOCK >>>>
+        System.out.println(configuration.getEnabled());
+        System.out.println(configuration.getLogType());
+        System.out.println(configuration.getHost());
+        System.out.println(configuration.getPort());
+        System.out.println(configuration.getLogFrequency());
+        // <<<< TEST BLOCK >>>>
             executor = Executors.newScheduledThreadPool(4, new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
@@ -111,8 +123,7 @@ public class JMXMonitoringService implements EventListener {
                         TimeUnit.SECONDS);
             }
 
-        }
-
+        } 
     }
 
     public void setEnabled(Boolean enabled) {

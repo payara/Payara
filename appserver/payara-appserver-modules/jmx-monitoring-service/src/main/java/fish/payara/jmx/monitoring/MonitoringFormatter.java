@@ -14,10 +14,7 @@
 package fish.payara.jmx.monitoring;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;

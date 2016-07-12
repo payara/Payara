@@ -173,5 +173,12 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        <!-- monitoring -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>jmx-monitoring-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
     </dependencies>
 </project>

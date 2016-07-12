@@ -42,7 +42,7 @@ public interface JMXMonitoringServiceConfiguration extends ConfigBeanProxy, Conf
     String getPort();
     void port(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue="seconds",dataType=Long.class)
+    @Attribute(defaultValue="15",dataType=Long.class)
     Long getLogFrequency();
     void logfrequency(String value) throws PropertyVetoException;
 
