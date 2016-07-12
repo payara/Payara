@@ -162,7 +162,6 @@
         <module>healthcheck</module>
         <module>phonehome</module>
         <module>requesttracing</module>
-        <module>payara</module>
         <module>asadmin-recorder</module>
     </modules>
 

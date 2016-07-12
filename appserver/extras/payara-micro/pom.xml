@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.glassfish.main.extras</groupId>
+        <artifactId>extras</artifactId>
+        <version>4.1.1.163-SNAPSHOT</version>
+    </parent>
+    <groupId>fish.payara.extras.payara-micro</groupId>
+    <artifactId>payara-micro-parent</artifactId>
+    <packaging>pom</packaging>
+    <name>Payara Micro Parent</name>
+    <modules>
+        <module>payara-micro-cdi</module>
+        <module>payara-micro-service</module>
+        <module>payara-micro-distribution</module>
+        <module>payara-micro-core</module>
+    </modules>
+</project>

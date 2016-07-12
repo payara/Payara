@@ -2,11 +2,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.payara-modules</groupId>
-        <artifactId>payara-nucleus-modules</artifactId>
+        <groupId>fish.payara.extras.payara-micro</groupId>
+        <artifactId>payara-micro-parent</artifactId>
         <version>4.1.1.163-SNAPSHOT</version>
     </parent>
-    <groupId>fish.payara.appserver</groupId>
     <artifactId>payara-micro-service</artifactId>
     <packaging>glassfish-jar</packaging>
     <name>Payara Micro Edition Services</name>

@@ -111,7 +111,6 @@
         <module>healthcheck-package</module>
         <module>phonehome-package</module>
         <module>requesttracing-package</module>
-        <module>payara-nucleus</module>
         <module>asadmin-recorder-package</module>
     </modules>
 
