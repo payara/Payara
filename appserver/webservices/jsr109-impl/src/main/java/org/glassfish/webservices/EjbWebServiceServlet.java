@@ -37,30 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.webservices;
 
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.SoapWSRequestEvent;
+import org.glassfish.api.logging.LogHelper;
+import org.glassfish.ejb.api.EjbEndpointFacade;
+import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
+import org.glassfish.internal.api.Globals;
+import org.glassfish.webservices.monitoring.Endpoint;
+import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
+import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
 
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.http.HTTPBinding;
-import org.glassfish.api.logging.LogHelper;
-import org.glassfish.webservices.monitoring.Endpoint;
-import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
-import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
-import org.glassfish.ejb.api.EjbEndpointFacade;
-import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
-import org.glassfish.internal.api.Globals;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Servlet responsible for invoking EJB webservice endpoint.
@@ -78,11 +84,15 @@ public class EjbWebServiceServlet extends HttpServlet {
 
     private SecurityService secServ;
 
+    private RequestTracingService requestTracing;
+
     public EjbWebServiceServlet() {
         super();
         if (Globals.getDefaultHabitat() != null) {
             secServ = Globals.get(SecurityService.class);
         }
+
+        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
     }
 
     @Override
@@ -151,11 +161,34 @@ public class EjbWebServiceServlet extends HttpServlet {
                 }
                 if (dispatch) {
                     dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
+
+                    if (requestTracing.isRequestTracingEnabled()) {
+                        SoapWSRequestEvent requestEvent = constructWsRequestEvent(hreq, ejbEndpoint, EventType.WS);
+                        requestTracing.traceRequestEvent(requestEvent);
+                    }
                 }
             }
         } else {
             hresp.sendError(HttpServletResponse.SC_NOT_FOUND);
         }
+    }
+
+    private SoapWSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+                                                        EjbRuntimeEndpointInfo ejbEndpoint,
+                                                        EventType eventType) {
+        SoapWSRequestEvent requestEvent  = new SoapWSRequestEvent();
+        requestEvent.setUri(ejbEndpoint.getEndpoint().getEndpointAddressUri());
+        requestEvent.setEventType(eventType);
+
+        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
+            requestEvent.getHeaders().put(headerName, headers);
+        }
+        requestEvent.setFormMethod(httpServletRequest.getMethod());
+        return requestEvent;
     }
 
     private void dispatchToEjbEndpoint(HttpServletRequest hreq,

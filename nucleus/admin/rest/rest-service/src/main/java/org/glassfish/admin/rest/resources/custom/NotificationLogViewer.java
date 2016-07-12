@@ -37,9 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
 // Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
-
 package org.glassfish.admin.rest.resources.custom;
 
 import com.sun.enterprise.server.logging.logviewer.backend.LogFilter;
@@ -155,7 +153,9 @@ public class NotificationLogViewer {
 
         readServerLogFile(logLocation);
         String logFolderLocation = logLocation.replace("server.log", "");
-        String notificationLogLocation = logFolderLocation + File.separator + "notification.log";
+        String notificationFolderLocation = logFolderLocation + File.separator + "notificationLogs";
+        createNotificationLogFolder(notificationFolderLocation);
+        String notificationLogLocation = notificationFolderLocation + File.separator + "notification.log";
         writeToNotificationLogFile(notificationLogLocation);
         initLargeText(new File(notificationLogLocation), false);
 
@@ -446,6 +446,17 @@ public class NotificationLogViewer {
         @Override
         public int read(byte[] buf, int offset, int length) throws IOException {
             return file.read(buf, offset, length);
+        }
+    }
+
+    public void createNotificationLogFolder(String FolderName) {
+        File notificationFolder = new File(FolderName);
+        if (!notificationFolder.exists()) {
+            if (notificationFolder.mkdir()) {
+                logger.log(Level.INFO, "Notification Folder was created on " + FolderName);
+            } else {
+                logger.log(Level.SEVERE, "Failed to create Notification Folder");
+            }
         }
     }
 

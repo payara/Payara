@@ -40,6 +40,8 @@
 
 -->
 
+<!-- Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates] -->
+
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.web.admingui.Strings");
     setResourceBundle(key="help_common" bundle="org.glassfish.common.admingui.Helplinks");
@@ -62,7 +64,8 @@
                     result="#{requestScope.result}");
             gf.getDeploymentDescriptorList( data="#{requestScope.result.data.children}" descriptors="#{requestScope.descriptors}");
             gf.onlyDASExist(onlyDAS="#{pageSession.onlyDASExist}");
-            gf.appScopedResourcesExist(appName="#{pageSession.appName}" appScopedResExists="#{pageSession.appScopedResExists}");
+            gf.getChildrenNamesList(endpoint="#{sessionScope.REST_URL}/applications/application/#{pageSession.encodedAppName}/module" result="#{pageSession.moduleList}");
+            gf.appScopedResourcesExist(appName="#{pageSession.appName}" moduleList="#{pageSession.moduleList}" appScopedResExists="#{pageSession.appScopedResExists}");
 
         />
     </event>

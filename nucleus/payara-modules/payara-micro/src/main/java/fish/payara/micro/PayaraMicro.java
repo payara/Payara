@@ -97,6 +97,7 @@ public class PayaraMicro {
     private boolean autoBindSsl = false;
     private boolean liteMember = false;
     private boolean generateLogo = false;
+    private boolean logToFile = false;
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
@@ -110,7 +111,10 @@ public class PayaraMicro {
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
-
+    private String loggingPropertiesFileName = "logging.properties";
+    private String loggingToFilePropertiesFileName = "loggingToFile.properties";
+    private String userLogFile="payara-server%u.log";
+    
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -136,6 +140,7 @@ public class PayaraMicro {
      * --lite Sets this Payara Micro to not store Cluster Data<br/>
      * --enableHealthCheck enables/disables Health Check Service<br/>
      * --disablePhomeHome disables Phone Home Service<br/>
+     * --logToFile outputs all the Log entries to a user defined file<br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -148,8 +153,8 @@ public class PayaraMicro {
         } else {
             main.bootStrap();
         }
-    }
-
+      }
+	  
     /**
      * Obtains the static singleton instance of the Payara Micro Server. If it
      * does not exist it will be create.
@@ -233,7 +238,32 @@ public class PayaraMicro {
         generateLogo = generate;
         return this;
     }
+    
+    /**
+     * Set whether the Log entries can be sent to a file
+     *
+     * @param log
+     * @return
+     */
+    public PayaraMicro setLogToFile(boolean log) {
+        logToFile = log;
+        return this;
+    }
 
+    /**
+     * Set user defined file for the Log entries
+     *
+     * @param fileName
+     */
+    public void setUserLogFile(String fileName) {
+        if (!fileName.endsWith("/")) {
+            this.userLogFile = fileName;
+        } else {
+            this.userLogFile = fileName + userLogFile;
+        }
+        logToFile = true;
+    }
+    
     /**
      * Gets the cluster multicast port used for cluster communications
      *
@@ -471,12 +501,12 @@ public class PayaraMicro {
         deployments.add(file);
         return this;
     }
- 
+
     /**
      * Adds a Maven GAV coordinate to the list of archives to be deployed at boot.
      *
      * @param GAV GAV coordinate
-     * @return 
+     * @return
      */
     public PayaraMicro addDeployFromGAV(String GAV) {
         //if (runtime != null) {
@@ -497,12 +527,12 @@ public class PayaraMicro {
         }
         return this;
     }
-    
+
     /**
      * Adds a Maven repository to the list of repositories to search for artifacts in 
-     * 
+     *
      * @param URLs URL to Maven repository
-     * @return 
+     * @return
      */
     public PayaraMicro addRepoUrl(String... URLs){
         //if (runtime != null) {
@@ -510,16 +540,16 @@ public class PayaraMicro {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
         for (String url : URLs){
-            try {                 
+            try {
                 if (!url.endsWith("/")) {
                     repositoryURLs.add(new URL(url + "/"));
                 } else {
                     repositoryURLs.add(new URL(url));
                 }
             } catch (MalformedURLException ex) {
-                    logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", url);
+                logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", url);
             }
-       }
+        }
         return this;
     }
 
@@ -893,9 +923,7 @@ public class PayaraMicro {
 
                     throw new GlassFishException("Could not bind SSL port");
                 }
-            }
-
-            
+            }           
 
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
@@ -934,12 +962,31 @@ public class PayaraMicro {
             }
 
             gf = gfruntime.newGlassFish(gfproperties);
-                      
+
             // reset logger.
             // reset the Log Manager     
             String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
-            File configDir = new File(instanceRootStr, "config");                    
-            File loggingProperties = new File(configDir.getAbsolutePath(), "logging.properties");
+            File configDir = new File(instanceRootStr, "config");
+            File loggingToFileProperties = new File(configDir.getAbsolutePath(), loggingToFilePropertiesFileName);
+            if (logToFile) {
+                loggingPropertiesFileName = loggingToFilePropertiesFileName;
+                Properties props = new Properties();
+                String propsFilename = loggingToFileProperties.getAbsolutePath();
+                FileInputStream configStream;
+                try {
+                    configStream = new FileInputStream(propsFilename);
+                    props.load(configStream);
+                    configStream.close();
+                    props.setProperty("java.util.logging.FileHandler.pattern", userLogFile);
+                    FileOutputStream output = new FileOutputStream(propsFilename);
+                    props.store(output, "Payara Micro Logging Properties File");
+                    output.close();
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            File loggingProperties = new File(configDir.getAbsolutePath(), loggingPropertiesFileName);
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
                 if (System.getProperty("java.util.logging.config.file") == null) {
                     System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
@@ -1319,9 +1366,15 @@ public class PayaraMicro {
                                 + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
                                 + "  --systemProperties <file-path> Reads system properties from a file\n"
                                 + "  --disablePhoneHome Disables sending of usage tracking information\n"
+                                + "  --version Displays the version information\n"
+                                + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
+                    case "--logToFile":
+                        setUserLogFile(args[i + 1]);
+                        break;
+
                     case "--logo":
                         generateLogo = true;
                         break;
@@ -1441,7 +1494,7 @@ public class PayaraMicro {
             }
         });
     }
-
+    
     private void installFiles(GlassFishProperties gfproperties) {
         // make directories
         File configDir = new File(rootDir.getAbsolutePath(), "config");
@@ -1453,6 +1506,7 @@ public class PayaraMicro {
             "config/keystore.jks",
             "config/login.conf",
             "config/logging.properties",
+            "config/loggingToFile.properties",       
             "config/admin-keyfile",
             "config/default-web.xml",
             "org/glassfish/embed/domain.xml"
@@ -1475,7 +1529,7 @@ public class PayaraMicro {
         if (brandingUrl != null) {
             copy(brandingUrl, new File(configDir.getAbsolutePath(), "branding/glassfish-version.properties"), false);
         }
-
+        
         //Copy in the relevant domain.xml
         String configFileURI = gfproperties.getConfigFileURI();
         try {
@@ -1496,7 +1550,7 @@ public class PayaraMicro {
                 if (System.getProperty(keyStr) == null) {
                     System.setProperty(keyStr, embeddedBootProperties.getProperty(keyStr));
                 }
-            } 
+            }
         } catch (IOException ex) {
             Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -1697,6 +1751,7 @@ public class PayaraMicro {
         autoBindRange = Integer.getInteger("payaramicro.autoBindRange", 5);
         autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
         generateLogo = Boolean.getBoolean("payaramicro.logo");
+        logToFile = Boolean.getBoolean("payaramicro.logToFile");
         enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
         httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
@@ -1868,6 +1923,7 @@ public class PayaraMicro {
             props.setProperty("payaramicro.lite", Boolean.toString(liteMember));
             props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
             props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
+            props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
             props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
             props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
@@ -1941,12 +1997,12 @@ public class PayaraMicro {
         // Set security properties PAYARA-803
         if (System.getProperty("java.security.auth.login.config") == null) {
                 System.setProperty("java.security.auth.login.config", new File(configDir.getAbsolutePath(),"login.conf").getAbsolutePath());
-            }
+        }
 
         if (System.getProperty("java.security.policy") == null) {
                 System.setProperty("java.security.policy", new File(configDir.getAbsolutePath(),"server.policy").getAbsolutePath());
         }
-        
+
         // check keystore
         if (System.getProperty("javax.net.ssl.keyStore") == null) {
             System.setProperty("javax.net.ssl.keyStore",new File(configDir.getAbsolutePath(),"keystore.jks").getAbsolutePath());
@@ -1957,5 +2013,5 @@ public class PayaraMicro {
             System.setProperty("javax.net.ssl.trustStore",new File(configDir.getAbsolutePath(),"cacerts.jks").getAbsolutePath());
         }
     }
-
+    
 }

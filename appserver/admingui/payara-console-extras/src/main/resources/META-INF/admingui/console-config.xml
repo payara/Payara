@@ -48,6 +48,39 @@ file and include the License file at packager/legal/LICENSE.txt.
         parentId="serverInstTabs"
         content="asadminRecorder/asadminRecorderTabs.jsf"
     />
+    
+    <integration-point
+        id="standaloneHazelcast"
+        type="org.glassfish.admingui:standaloneInstTab"
+        priority="40"
+        parentId="standaloneInstanceTabs"
+        content="hazelcast/hazelcastTabsStandalone.jsf"
+    />
+    
+    <integration-point
+        id="asadminRecorder"
+        type="org.glassfish.admingui:serverInstTab"
+        priority="50"
+        parentId="serverInstTabs"
+        content="asadminRecorder/asadminRecorderTabs.jsf"
+    />
+    
+    <integration-point
+        id="requesttracing"
+        type="org.glassfish.admingui:navNode"
+        priority="60"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeRequestTracing.jsf"
+    />
+ 
+    <integration-point
+        id="requesttracingLink"
+        type="org.glassfish.admingui:configuration"
+        priority="60"
+        parentId="propSheetSection"
+        content="requestTracing/requestTracingConfigLink.jsf"
+    />
+    
     <integration-point
         id="notification"
         type="org.glassfish.admingui:serverInstTab"
@@ -55,4 +88,38 @@ file and include the License file at packager/legal/LICENSE.txt.
         parentId="serverInstTabs"
         content="notification/notificationServerTabs.jsf"
     />
+    
+    <integration-point
+        id="notification"
+        type="org.glassfish.admingui:navNode"
+        priority="70"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeNotification.jsf"
+    />
+ 
+    <integration-point
+        id="notificationLink"
+        type="org.glassfish.admingui:configuration"
+        priority="70"
+        parentId="propSheetSection"
+        content="notification/notificationConfigLink.jsf"
+    />
+
+        
+    <integration-point
+        id="hazelcast"
+        type="org.glassfish.admingui:navNode"
+        priority="80"
+        parentId="#{configNameId}"
+        content="pluginTreeNodeHazelcast.jsf"
+    />
+
+    <integration-point
+        id="hazelcastLink"
+        type="org.glassfish.admingui:configuration"
+        priority="80"
+        parentId="propSheetSection"
+        content="hazelcast/hazelcastConfigLink.jsf"
+    />
+
 </console-config>

@@ -40,72 +40,7 @@
 // Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.ejb.containers;
 
-import java.io.Serializable;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
-import java.rmi.AccessException;
-import java.rmi.RemoteException;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import javax.ejb.AccessLocalException;
-import javax.ejb.CreateException;
-import javax.ejb.EJBAccessException;
-import javax.ejb.EJBContext;
-import javax.ejb.EJBException;
-import javax.ejb.EJBHome;
-import javax.ejb.EJBLocalHome;
-import javax.ejb.EJBLocalObject;
-import javax.ejb.EJBMetaData;
-import javax.ejb.EJBObject;
-import javax.ejb.EJBTransactionRequiredException;
-import javax.ejb.EJBTransactionRolledbackException;
-import javax.ejb.FinderException;
-import javax.ejb.LockType;
-import javax.ejb.NoSuchEJBException;
-import javax.ejb.NoSuchObjectLocalException;
-import javax.ejb.PostActivate;
-import javax.ejb.PrePassivate;
-import javax.ejb.RemoveException;
-import javax.ejb.TransactionRequiredLocalException;
-import javax.ejb.TransactionRolledbackLocalException;
-import javax.interceptor.AroundConstruct;
-import javax.naming.NamingException;
-import javax.naming.Reference;
-import javax.naming.StringRefAddr;
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.transaction.RollbackException;
-import javax.transaction.Status;
-import javax.transaction.SystemException;
-import javax.transaction.Transaction;
-import javax.transaction.UserTransaction;
-
-import com.sun.ejb.ComponentContext;
-import com.sun.ejb.Container;
-import com.sun.ejb.EJBUtils;
-import com.sun.ejb.EjbInvocation;
-import com.sun.ejb.EjbInvocationFactory;
-import com.sun.ejb.InvocationInfo;
-import com.sun.ejb.MethodLockInfo;
+import com.sun.ejb.*;
 import com.sun.ejb.codegen.EjbOptionalIntfGenerator;
 import com.sun.ejb.codegen.ServiceInterfaceGenerator;
 import com.sun.ejb.containers.interceptors.InterceptorManager;
@@ -114,12 +49,7 @@ import com.sun.ejb.containers.util.MethodMap;
 import com.sun.ejb.monitoring.probes.EjbCacheProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbMonitoringProbeProvider;
 import com.sun.ejb.monitoring.probes.EjbTimedObjectProbeProvider;
-import com.sun.ejb.monitoring.stats.EjbCacheStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbThreadPoolExecutorStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
-import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
-import com.sun.ejb.monitoring.stats.EjbTimedObjectStatsProvider;
+import com.sun.ejb.monitoring.stats.*;
 import com.sun.ejb.portable.EJBMetaDataImpl;
 import com.sun.ejb.spi.container.OptionalLocalInterfaceProvider;
 import com.sun.enterprise.admin.monitor.callflow.CallFlowInfo;
@@ -129,14 +59,8 @@ import com.sun.enterprise.container.common.spi.JavaEEContainer;
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.util.IndirectlySerializable;
 import com.sun.enterprise.container.common.spi.util.InjectionManager;
-import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.EnvironmentProperty;
-import com.sun.enterprise.deployment.InterceptorDescriptor;
-import com.sun.enterprise.deployment.LifecycleCallbackDescriptor;
+import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
-import com.sun.enterprise.deployment.MethodDescriptor;
-import com.sun.enterprise.deployment.WebServiceEndpoint;
-import com.sun.enterprise.deployment.WebServicesDescriptor;
 import com.sun.enterprise.deployment.util.TypeUtil;
 import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.SecurityManager;
@@ -144,7 +68,9 @@ import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
-import java.util.Locale;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.EjbMethodRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.EventType;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -152,12 +78,10 @@ import org.glassfish.deployment.common.DeploymentException;
 import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.ejb.LogFacade;
 import org.glassfish.ejb.api.EjbEndpointFacade;
-import org.glassfish.ejb.deployment.descriptor.EjbApplicationExceptionInfo;
-import org.glassfish.ejb.deployment.descriptor.EjbBundleDescriptorImpl;
+import org.glassfish.ejb.deployment.descriptor.*;
 import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
-import org.glassfish.ejb.deployment.descriptor.EjbInitInfo;
 import org.glassfish.ejb.deployment.descriptor.EjbSessionDescriptor;
-import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
+import org.glassfish.ejb.spi.EjbContainerInterceptor;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
 import org.glassfish.enterprise.iiop.api.GlassFishORBHelper;
 import org.glassfish.enterprise.iiop.api.ProtocolManager;
@@ -167,7 +91,25 @@ import org.glassfish.flashlight.provider.ProbeProviderFactory;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.ejb.spi.EjbContainerInterceptor;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.ejb.*;
+import javax.interceptor.AroundConstruct;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+import javax.naming.StringRefAddr;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.transaction.*;
+import java.io.Serializable;
+import java.lang.reflect.*;
+import java.rmi.AccessException;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -255,6 +197,8 @@ public abstract class BaseContainer
     protected Object[] logParams = null;
 
     protected ContainerType containerType;
+
+    private RequestTracingService requestTracing;
 
     // constants for EJB(Local)Home/EJB(Local)Object methods,
     // used in authorizeRemoteMethod and authorizeLocalMethod
@@ -591,6 +535,7 @@ public abstract class BaseContainer
     {
         this.containerType = type;
         this.securityManager = sm;
+        this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
         
         try {
             this.loader = loader;
@@ -4197,9 +4142,27 @@ public abstract class BaseContainer
                 callFlowInfo.getComponentName(),
                 th,
                 method_sig);
+
+        if (requestTracing.isRequestTracingEnabled()) {
+            EjbMethodRequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo);
+            requestTracing.traceRequestEvent(requestEvent);
+        }
+
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
     }
-    
+
+    private EjbMethodRequestEvent constructEjbMethodRequestEvent(CallFlowInfo info) {
+        EjbMethodRequestEvent requestEvent = new EjbMethodRequestEvent();
+        requestEvent.setEventType(EventType.EJB_METHOD);
+        requestEvent.setApplicationName(info.getApplicationName());
+        requestEvent.setComponentName(info.getComponentName());
+        requestEvent.setComponentType(info.getComponentType().toString());
+        requestEvent.setModuleName(info.getModuleName());
+        requestEvent.setMethodName(info.getMethod().getName());
+
+        return requestEvent;
+    }
+
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,
             Object[] params, com.sun.enterprise.security.SecurityManager mgr)
             throws Throwable {

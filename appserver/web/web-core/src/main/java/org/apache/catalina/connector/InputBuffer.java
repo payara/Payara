@@ -70,6 +70,9 @@ import java.util.logging.Logger;
 import javax.servlet.ReadListener;
 import javax.servlet.http.WebConnection;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.WebSocketRequestEvent;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
@@ -79,6 +82,7 @@ import org.glassfish.grizzly.http.server.Request;
 import org.glassfish.grizzly.http.util.ByteChunk.ByteInputChannel;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.tyrus.servlet.TyrusHttpUpgradeHandler;
 
 /**
  * The buffer used by Tomcat request. This is a derivative of the Tomcat 3.3
@@ -88,12 +92,15 @@ import org.glassfish.logging.annotation.LogMessageInfo;
  *
  * @author Remy Maucherat
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 public class InputBuffer extends Reader
     implements ByteInputChannel, CharChunk.CharInputChannel,
                CharChunk.CharOutputChannel {
 
     private static final Logger log = StandardServer.log;
     private static final ResourceBundle rb = log.getResourceBundle();
+
+    private RequestTracingService requestTracing;
 
     @LogMessageInfo(
             message = "Stream closed",
@@ -150,7 +157,7 @@ public class InputBuffer extends Reader
     public InputBuffer() {
 
         this(DEFAULT_BUFFER_SIZE);
-
+        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
     }
 
 
@@ -485,7 +492,17 @@ public class InputBuffer extends Reader
                     try {
                         context.fireContainerEvent(
                             ContainerEvent.BEFORE_READ_LISTENER_ON_DATA_AVAILABLE, readListener);
+                        // if it's a Tyrus websocket conn.
+                        if (isWebSocketRequest()) {
+                            requestTracing.startTrace();
+                        }
                         readListener.onDataAvailable();
+                        if (isWebSocketRequest()) {
+                            WebSocketRequestEvent requestEvent = new WebSocketRequestEvent();
+                            requestEvent.setEventType(EventType.WEBSOCKET);
+                            requestTracing.traceRequestEvent(requestEvent);
+                            requestTracing.endTrace();
+                        }
                     } catch(Throwable t) {
                         disable = true;
                         readListener.onError(t);
@@ -502,6 +519,10 @@ public class InputBuffer extends Reader
                     Thread.currentThread().setContextClassLoader(oldCL);
                 }
             }
+        }
+
+        private boolean isWebSocketRequest() {
+            return readListener != null && readListener instanceof TyrusHttpUpgradeHandler && requestTracing.isRequestTracingEnabled();
         }
 
         @Override

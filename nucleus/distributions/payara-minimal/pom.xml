@@ -185,6 +185,13 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <groupId>fish.payara.packager</groupId>
+            <artifactId>requesttracing-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>payara-nucleus-package</artifactId>
             <version>${project.version}</version>

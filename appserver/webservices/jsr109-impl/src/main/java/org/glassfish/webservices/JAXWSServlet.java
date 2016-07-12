@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.webservices;
 
 //import com.sun.enterprise.Switch;
@@ -46,6 +46,9 @@ import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.deployment.*;
 import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.SoapWSRequestEvent;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
@@ -58,8 +61,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.xml.ws.WebServiceException;
 import javax.xml.ws.http.HTTPBinding;
 import java.io.IOException;
+import java.net.URI;
 import java.text.MessageFormat;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -82,6 +89,7 @@ public class JAXWSServlet extends HttpServlet {
     private transient WebServiceEngineImpl wsEngine_;
     private boolean wsdlExposed = true;
     private String urlPattern;
+    private RequestTracingService requestTracing;
 
     public void init(ServletConfig servletConfig) throws ServletException {
         String servletName = "unknown";
@@ -138,6 +146,8 @@ public class JAXWSServlet extends HttpServlet {
             logger.log(Level.WARNING, msg, t);
             throw new ServletException(t);
         }
+
+        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
     }
 
     public void destroy() {
@@ -167,6 +177,12 @@ public class JAXWSServlet extends HttpServlet {
             ServletAdapter targetEndpoint = (ServletAdapter) getEndpointFor(request);
             if (targetEndpoint != null) {
                 targetEndpoint.handle(getServletContext(), request, response);
+
+                if (requestTracing.isRequestTracingEnabled()) {
+                    SoapWSRequestEvent requestEvent = constructWsRequestEvent(request,
+                            targetEndpoint.getAddress(), EventType.WS);
+                    requestTracing.traceRequestEvent(requestEvent);
+                }
             } else {
                 throw new ServletException("Service not found");
             }
@@ -176,6 +192,24 @@ public class JAXWSServlet extends HttpServlet {
             throw se;
         }
         endedEvent(endpoint.getEndpointAddressPath());
+    }
+
+    private SoapWSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+                                                       URI uri,
+                                                       EventType eventType) {
+        SoapWSRequestEvent requestEvent  = new SoapWSRequestEvent();
+        requestEvent.setUri(uri.toString());
+        requestEvent.setEventType(eventType);
+
+        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
+            requestEvent.getHeaders().put(headerName, headers);
+        }
+        requestEvent.setFormMethod(httpServletRequest.getMethod());
+        return requestEvent;
     }
 
     @Probe(name = "startedEvent")

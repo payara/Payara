@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consutling Limited]
+// Portions Copyright [2015,2016] [C2B2 Consutling Limited and/or its affiliates]
 package org.glassfish.weld.services;
 
 import java.lang.reflect.Method;
@@ -169,6 +169,7 @@ public class EjbServicesImpl implements EjbServices {
                             new Object[]{next.getBeanClass().getName(), glassfishEjbDesc.getEjbClassName()});
                 }
                 EjbInterceptor ejbInt = makeEjbInterceptor(next, glassfishEjbDesc.getEjbBundleDescriptor());
+                ejbInt.setInterceptorClass(next.getBeanClass());
                 glassfishEjbDesc.addInterceptorClass(ejbInt);
             }
         }
@@ -350,6 +351,7 @@ public class EjbServicesImpl implements EjbServices {
 
         EjbInterceptor ejbInt = new EjbInterceptor();
         ejbInt.setBundleDescriptor(bundle);
+        ejbInt.setInterceptorClass(interceptor.getBeanClass());
         ejbInt.setInterceptorClassName(interceptor.getBeanClass().getName());
         ejbInt.setCDIInterceptor(true);
 

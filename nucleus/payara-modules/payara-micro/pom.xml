@@ -40,6 +40,15 @@
                 <role>developer</role>
             </roles>
         </developer>
+         <developer>
+            <id>susanrai</id>
+            <name>Susan Rai</name>
+            <url>http://www.payara.fish</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
     </developers>
     <build>
      <resources>

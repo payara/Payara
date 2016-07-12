@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+
 package org.glassfish.batch;
 
 import com.sun.enterprise.config.serverbeans.Domain;
@@ -87,7 +89,7 @@ public abstract class AbstractListCommandProxy
     @Param(name = "header", shortName = "h", optional = true)
     protected boolean header;
 
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DEFAULT_SERVER_INSTANCE_NAME)
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     protected String target;
 
     @Param(name = "long", shortName = "l", optional = true)

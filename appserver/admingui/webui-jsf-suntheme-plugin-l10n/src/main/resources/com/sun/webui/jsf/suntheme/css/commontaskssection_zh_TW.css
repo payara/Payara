@@ -38,10 +38,37 @@
  * holder.
  */
 
-/* LAYOUT */
+ /* Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates] */
+
+/* PAYARA-558 */
+
 .commonTaskSection_4_sun4 {
-	width: 100%;
+        background: #dbdada url(../images/commontaskssection/bkgrnd.png); /* Default */
+        background: url(../images/commontaskssection/bkgrnd.png), -moz-linear-gradient(top,  #dbdada 0%, #0a303d 100%); /* For Firefox 3.6 to 15  */
+        background: url(../images/commontaskssection/bkgrnd.png), -webkit-linear-gradient(top,  #dbdada 0%,#0a303d 100%); /* For Chrome 10 to 25 amd Safari 5.1 to 6 */
+        background: url(../images/commontaskssection/bkgrnd.png), linear-gradient(to bottom,  #dbdada 0%,#0a303d 100%); /* W3C, IE 10+, Firefoc 16+, Chrome 26+, Opera 12+, Safari 7+ */
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#dbdada', endColorstr='#0a303d',GradientType=0 ),progid:DXImageTransform.Microsoft.AlphaImageLoader(src="../images/commontaskssection/bkgrnd.png"); /* IE 6 to 9 */
+        background-size: contain;
+        position: absolute;
+        background-position: left;
+        background-repeat: no-repeat;
+        height: 100%;
+        width: 100%;
 }
+
+.commonTaskSection_4_sun4 .TskScnTpBx_sun4{
+       width: 100%;
+       height: 81px;
+       /* Fallback for web browsers that doesn't support RGBa */
+       background: rgb(218, 218, 218);
+       /* RGBa with 0.3 opacity */
+       background: rgba(218, 218, 218, 0.3);
+      -webkit-box-shadow: 0px 7px 17px -2px rgba(10,48,61,0.3);
+      -moz-box-shadow: 0px 7px 17px -2px rgba(10,48,61,0.3);
+       box-shadow: 0px 7px 17px -2px rgba(10,48,61,0.3);
+}
+
+/* LAYOUT */
 .commonTaskSection_4_sun4 .TskScnTpBx_sun4 .header_sun4 {
 	margin: 17px 0px 0px 20px;
 }
@@ -59,18 +86,18 @@
 	margin:0 22px 20px;
 }
 .commonTaskGroup_4_sun4 .commonTask_4_sun4 {
-	margin:0 0 2px 0;
+	margin:0 0 5px 0;
 }
 .commonTask_4_sun4 .left_sun4 {
-	border-top-style:solid;
+	/*border-top-style:solid;
 	border-top-width:1px;
 	border-bottom-style:solid;
 	border-bottom-width:1px;
 	border-left-style:solid;
-	border-left-width:1px;
+	border-left-width:1px;*/
 }
 .commonTask_4_sun4 .center_sun4 {
-	border-top-style:solid;
+	/*border-top-style:solid;
 	border-top-width:1px;
 	border-bottom-style:solid;
 	border-bottom-width:1px;
@@ -81,13 +108,13 @@
 	border-bottom-style:solid;
 	border-bottom-width:1px;
 	border-right-style:solid;
-	border-right-width:1px;
+	border-right-width:1px;*/
 }
 .commonTask_4_sun4 a.TskScnTxtBg_sun4,.commonTask_4_sun4  a.TskScnTxtBgOvr_sun4 {
 	display: block;
 	position: relative;
 	width: 100%;
-	min-height:21px;
+	min-height:26px;
 }
 .commonTask_4_sun4 .infoPanel_sun4 {
 	border-style:solid;
@@ -118,8 +145,8 @@
 	margin-right:.4em;
 }
 .commonTask_4_sun4 a.TskScnTxtBg_sun4, .commonTask_4_sun4 a.TskScnTxtBgOvr_sun4 {
-	border-left-style:solid;
-	border-left-width:1px;
+	/*border-left-style:solid;
+	border-left-width:1px;*/
 }
 .commonTask_4_sun4 .TskScnTskPdng_sun4 {
 	padding: 0px 7px;
@@ -128,16 +155,16 @@
 	padding-bottom: 3px;
 }
 .commonTask_4_sun4 .TskScnTskLftBtm_sun4, .commonTask_4_sun4 .TskScnTskLftTp_sun4, .commonTask_4_sun4 .TskScnTskRghtBtm_sun4, .commonTask_4_sun4 .TskScnTskRghtTp_sun4 {
-	position: absolute;
+	/*position: absolute;
 	width: 8px;
 	height: 11px;
 	cursor: pointer;
 	background-position: top left;
-	background-repeat: no-repeat;
+	background-repeat: no-repeat;*/
 }
 .commonTask_4_sun4 .TskScnTskLftBtm_sun4 {
-	bottom: -1px;
-	left: -1px;
+	/*bottom: -1px;
+	left: -1px;*/
 }     
 .commonTask_4_sun4 .TskScnTskLftTp_sun4 {
 	top: -1px;
@@ -166,44 +193,55 @@
 
 /* COLOR AND MEDIA */
 .commonTaskbgColor_sun4 {
-	background:#B6C6D6
+        background-color:#546f78;
+	
 }
-.commonTaskSection_4_sun4 {
-	background:#B6C6D6 url(../images/commontaskssection/bkgrnd.gif) right top repeat-x;
-}
-.commonTaskSection_4_sun4 .TskScnTpBx_sun4 {
+/*.commonTaskSection_4_sun4 .TskScnTpBx_sun4 {
 	background:url(../images/commontaskssection/s-curve.gif) bottom left repeat-x;
-}
+}*/
 .commonTaskSection_4_sun4 .header_sun4, .commonTaskSection_4_sun4 .help_sun4, .commonTaskGroup_4_sun4 .header_sun4 {
-	color: #4B5E6A;
+	color: #0a303d;
 }
 .commonTask_4_sun4 .left_sun4 {
-	border-top-color:#AEB3B8;
+	/*border-top-color:#AEB3B8;
 	border-bottom-color:#AEB3B8;
-	border-left-color:#AEB3B8;
+	border-left-color:#AEB3B8;*/
 }
 .commonTask_4_sun4 .center_sun4 {
-	border-top-color:#AABCC8;
-	border-bottom-color:#AABCC8;
+	/*border-top-color:#AABCC8;
+	border-bottom-color:#AABCC8;*/
 }
 .commonTask_4_sun4 .right_sun4 {
-	background-color: #99B3C0;
+	/*background-color: #99B3C0;
 	border-top-color:#AABCC8;
 	border-bottom-color:#AABCC8;
-	border-right-color:#AABCC8;
+	border-right-color:#AABCC8;*/
 }
 .commonTask_4_sun4 .background_sun4 {
-	background: #9AB2BF url(../images/commontaskssection/gradation-grey.gif) right top repeat-x;
+	/*background: #9AB2BF url(../images/commontaskssection/gradation-grey.gif) right top repeat-x;*/
+        width:100%;
 }
 .commonTask_4_sun4 a.TskScnTxtBg_sun4 {
-	border-left-color:#AABCC8;
+	/*border-left-color:#AABCC8;*/
 }
 .commonTask_4_sun4 a.TskScnTxtBg_sun4:link,.commonTask_4_sun4  a.TskScnTxtBg_sun4:visited {
-	background: #E2E7EA url(../images/commontaskssection/grad1.gif) right top repeat-x;
+	background: #E2E7EA;
 	color:#333333;
+        width: 105%;
+        margin-right: 20px; 
+        margin-left: -2%;
+       -webkit-border-radius: 5px;
+       -moz-border-radius: 5px;
+        border-radius: 5px;
+       -webkit-box-shadow: inset 0px 0px 7px -2px rgba(102,102,102,1);
+       -moz-box-shadow: inset 0px 0px 7px -2px rgba(102,102,102,1);
+        box-shadow: inset 0px 0px 7px -2px rgba(102,102,102,1);
 }
 .commonTask_4_sun4 a.TskScnTxtBg_sun4:hover {
-	background:#4581B3 url(../images/commontaskssection/grad2.gif) right top repeat-x;
+	background:#4581B3;
+       -webkit-box-shadow: inset 0px 0px 7px -2px rgba(102,102,102,1);
+       -moz-box-shadow: inset 0px 0px 7px -2px rgba(102,102,102,1);
+        box-shadow: inset 0px 0px 7px -2px rgba(102,102,102,1);
 	color:#FFF;
 }
 .commonTask_4_sun4 .infoPanel_sun4 {
@@ -226,7 +264,7 @@
 	color:#666666;
 }
 .commonTask_4_sun4 .TskScnTskLftBtm_sun4 {
-	background-image: url(../images/commontaskssection/leftBottom.gif);
+	/*background-image: url(../images/commontaskssection/leftBottom.gif);
 }     
 .commonTask_4_sun4 .TskScnTskLftTp_sun4 {
 	background-image: url(../images/commontaskssection/leftTop.gif);
@@ -235,10 +273,10 @@
 	background-image: url(../images/commontaskssection/rightBottom.gif);
 }     
 .commonTask_4_sun4 .TskScnTskRghtTp_sun4 {
-	background-image: url(../images/commontaskssection/rightTop.gif);
+	background-image: url(../images/commontaskssection/rightTop.gif);*/
 } 
 .commonTask_4_sun4 .TskScnTskRghtBrdr_sun4 {
-	background-color: #AABCC8;
+	/*background-color: #AABCC8;*/
 }
 /*---*/
 
@@ -259,4 +297,5 @@
 .commonTaskSection_4_sun4 .header_sun4, .commonTaskGroup_4_sun4 .header_sun4, .commonTask_4_sun4 .infoPanel_sun4 .header_sun4 {
 	font-weight: bold;
 }
+
 

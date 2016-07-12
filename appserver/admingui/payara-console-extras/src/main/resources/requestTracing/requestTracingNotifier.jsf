@@ -1,0 +1,77 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nrt" bundle="fish.payara.admingui.extras.Strings");
+    />
+<!composition template="/templates/default.layout"  guiTitle="Request Tracing Notifier Configuration"  >
+<!define name="content">
+<event>
+    <!beforeCreate   
+        setSessionAttribute(key="requestTracingTabs" value="requestTracingConfigureNotifier"); 
+        setSessionAttribute(key="requestTracingTabs" value="requestTracingConfigureNotifier"); 
+          
+        getRequestValue(key="configName" value="#{pageSession.configName}" );
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
+        
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-requesttracing-notifier-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getRequesttracingNotifierConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
+        setPageSessionAttribute(key="convertToFalseList", value={"notifierEnabled","dynamic"});
+        if (#{pageSession.valueMap['notifierEnabled']}=true) {
+            setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+        }
+        setPageSessionAttribute(key="dynamic", value="true");
+        /> 
+</event>
+<sun:form id="propertyForm">
+#include "/payaraExtras/requestTracing/requestTracingTabs.inc"
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nrt.requestTracing.notifier.configurationTitle}" helpText="$resource{i18nrt.requestTracing.notifier.configurationTitleHelp}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    mapPut(map="#{pageSession.valueMap}" key="notifierEnabled" value="#{pageSession.notifierEnabledSelected}");
+                    mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
+                    prepareSuccessfulMsg();
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/requesttracing-configure-notifier" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+#include "/common/shared/configNameSection.inc"
+<sun:propertySheetSection >
+    <sun:property id="notifierServiceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.notifier.name}">
+        <sun:staticText id="notifierName" text="#{pageSession.valueMap['notifierName']}"/>
+    </sun:property> 
+    <sun:property id="notifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.notifier.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.notifier.enabledHelp}">
+        <sun:checkbox id="notifierEnabled" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
+    </sun:property>
+    <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.notifier.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.notifier.dynamicHelp}">
+        <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+    </sun:property> 
+</sun:propertySheetSection>
+</sun:form>
+</define>
+</composition>
