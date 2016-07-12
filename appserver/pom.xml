@@ -83,8 +83,8 @@
         <javax.security.jacc-api.version>1.5</javax.security.jacc-api.version>
         <javax.security.auth.message-api.version>1.1</javax.security.auth.message-api.version>
         
-        <product.name>Payara Server</product.name>
-        <brief_product_name>Payara Server</brief_product_name>
+        <product.name>Payara Server Blue</product.name>
+        <brief_product_name>Payara Server Blue</brief_product_name>
         <abbrev_product_name>Payara</abbrev_product_name>
 	<javax.validation-api.version>1.1.0.Final</javax.validation-api.version>
 
