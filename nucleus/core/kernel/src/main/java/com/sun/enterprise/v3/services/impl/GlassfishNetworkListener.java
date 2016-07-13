@@ -273,7 +273,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         
         return new GlassfishHttpCodecFilter(
                 http == null || Boolean.parseBoolean(http.getXpoweredBy()),
-                Boolean.parseBoolean(http.getServerHeader()),
+                http == null || Boolean.parseBoolean(http.getServerHeader()),
                 isChunkedEnabled,
                 headerBufferLengthBytes,
                 defaultResponseType,
