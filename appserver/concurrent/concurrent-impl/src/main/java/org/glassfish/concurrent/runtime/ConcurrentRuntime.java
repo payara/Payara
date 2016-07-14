@@ -171,13 +171,16 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
 
     public synchronized ManagedExecutorServiceImpl getManagedExecutorService(ResourceInfo resource, ManagedExecutorServiceConfig config) {
         String jndiName = config.getJndiName();
+        
         if (managedExecutorServiceMap != null && managedExecutorServiceMap.containsKey(jndiName)) {
             return managedExecutorServiceMap.get(jndiName);
         }
+        
         ManagedThreadFactoryImpl managedThreadFactory = new ManagedThreadFactoryImpl(
                 config.getJndiName() + "-managedThreadFactory",
                 null,
                 config.getThreadPriority());
+        
         ManagedExecutorServiceImpl mes = new ManagedExecutorServiceImpl(config.getJndiName(),
                 managedThreadFactory,
                 config.getHungAfterSeconds() * 1000L, // in millseconds
@@ -190,13 +193,17 @@ public class ConcurrentRuntime implements PostConstruct, PreDestroy {
                 createContextService(config.getJndiName() + "-contextservice",
                         config.getContextInfo(), config.getContextInfoEnabled(), true),
                 AbstractManagedExecutorService.RejectPolicy.ABORT);
+        
         if (managedExecutorServiceMap == null) {
             managedExecutorServiceMap = new HashMap();
         }
+        
         managedExecutorServiceMap.put(jndiName, mes);
+        
         if (config.getHungAfterSeconds() > 0L && !config.isLongRunningTasks()) {
             scheduleInternalTimer();
         }
+        
         return mes;
     }
 
