@@ -273,6 +273,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         
         return new GlassfishHttpCodecFilter(
                 http == null || Boolean.parseBoolean(http.getXpoweredBy()),
+                http == null || Boolean.parseBoolean(http.getServerHeader()),
                 isChunkedEnabled,
                 headerBufferLengthBytes,
                 defaultResponseType,
@@ -281,7 +282,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 maxRequestHeaders,
                 maxResponseHeaders);
     }
-
+    
     protected void registerMonitoringStatsProviders() {
         final String nameLocal = name;
         final GrizzlyMonitoring monitoring = grizzlyService.getMonitoring();
@@ -369,6 +370,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         
         public GlassfishHttpCodecFilter(
                 final boolean isXPoweredByEnabled,
+                final boolean isServerInfoEnabled,
                 final boolean chunkingEnabled,
                 final int maxHeadersSize,
                 final String defaultResponseContentType,
@@ -394,8 +396,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             */
             String serverInfo = System.getProperty("product.name");
             
-            serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
-            
+            if (isServerInfoEnabled) {
+                serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
+            }else{
+                serverVersion = null;
+            }
+        
             if (isXPoweredByEnabled) {
                 xPoweredBy = "Servlet/3.1 JSP/2.3 "
                         + "(" + ((serverInfo != null && !serverInfo.isEmpty()) ? serverInfo : Version.getVersion())
