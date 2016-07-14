@@ -29,7 +29,20 @@
 <event>
     <!beforeCreate
         getRequestValue(key="config" value="#{pageSession.config}");
-       
+        urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
+        getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
+
+        if(#{pageSession.isCluster}=true){
+        setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
+        setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
+        setPageSessionAttribute(key="listJobsLink" value="#{request.contextPath}/full/batch/batchJobsCluster.jsf?target=#{pageSession.encodedTarget}&isCluster=true&tabSetName=#{pageSession.encodedTabSetName}");
+        }
+        if(#{pageSession.isCluster}=false){
+        setPageSessionAttribute(key="isCluster", value="false");
+        setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
+        setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
+        }
+        
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.config}");
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=#{pageSession.config}"  method="GET" result="#{requestScope.resp}");

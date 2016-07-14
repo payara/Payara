@@ -18,9 +18,8 @@
 package fish.payara.nucleus.hazelcast.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
-import com.sun.enterprise.config.serverbeans.Server;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
-import java.util.List;
 import java.util.Properties;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -33,46 +32,39 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.api.admin.TargetBasedExecutor;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
+
 /**
- *
- * @author steve
+ * Internal Admin command to enable or disable Hazelcast on demand
+ * Used by the set-hazelcast-configuration command to dynamically boot or shutdown hazelcast
+ * @author Susan Rai
  */
-@Service(name = "restart-hazelcast")
+@Service(name = "__enable-hazelcast-internal-on-das")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("restart-hazelcast")
-@ExecuteOn(RuntimeType.INSTANCE)
+@I18n("__enable-hazelcast-internal-on-das")
+@ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
-            path = "restart-hazelcast",
-            description = "Restart Hazelcast")
+            path = "__enable-hazelcast-internal-on-das",
+            description = "Enables Hazelcast On DAS")
 })
-public class RestartHazelcast implements AdminCommand {
+public class EnableHazelcastInternalOnDas implements AdminCommand {
     
     @Inject
-    HazelcastCore hazelcast;    
+    HazelcastCore hazelcast;   
     
-    @Inject
-    TargetBasedExecutor executor;
+    @Param(name = "enabled", optional = false)
+    private Boolean enabled;
     
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
-
-    @Inject
-    private ServerEnvironment serverEnv;
-    
-    @Inject
-    Target targetUtil;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -83,43 +75,9 @@ public class RestartHazelcast implements AdminCommand {
             extraProperties = new Properties();
             actionReport.setExtraProperties(extraProperties);
         }
-
-        // what is wrong is that this does not work for the local server as it will never match
-        boolean forMe = isThisForMe();
-        if (forMe && hazelcast.isEnabled()) {
-            hazelcast.setEnabled(false);
-            hazelcast.setEnabled(true);
-            actionReport.setMessage("Hazelcast Restarted");
-            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        } else if (forMe && !hazelcast.isEnabled()) {
-            actionReport.setMessage("Hazelcast not enabled. Restart ignored");
-            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        } else {
-            actionReport.setMessage("Restart Ignored");
-            actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-        }
-
-    }
-    
-    private boolean isThisForMe() {
-        boolean result = false;
-        String instanceName = serverEnv.getInstanceName();
         
-        if (instanceName.equals(target)) {
-            result = true;
-        }
-        
-        if(targetUtil.isCluster(target)) {
-            List<Server> servers = targetUtil.getInstances(target);
-            for (Server server : servers) {
-                if (server.getName().equals(instanceName)) {
-                    result = true;
-                    break;
-                }
-            }
-            
-        }
-        return result;
+        hazelcast.setEnabled(enabled);
+        actionReport.appendMessage("Hazelcast status set to " + enabled + " on " + target);
     }
     
 }
