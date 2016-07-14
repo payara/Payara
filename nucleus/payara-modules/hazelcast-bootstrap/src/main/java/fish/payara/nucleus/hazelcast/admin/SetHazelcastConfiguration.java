@@ -62,7 +62,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.hazelcast.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -80,7 +80,7 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Inject
     protected Target targetUtil;
      
-    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
     
     @Param(name = "enabled", optional = false)
@@ -194,7 +194,14 @@ public class SetHazelcastConfiguration implements AdminCommand {
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("__enable-hazelcast-internal", subReport, context.getSubject());
+        CommandRunner.CommandInvocation inv;
+           
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("__enable-hazelcast-internal-on-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("__enable-hazelcast-internal-on-instance", subReport, context.getSubject());
+        }
+
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
         params.add("target", target);

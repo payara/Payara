@@ -18,6 +18,7 @@
 package fish.payara.nucleus.hazelcast.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -42,19 +43,19 @@ import org.jvnet.hk2.annotations.Service;
  * Used by the set-hazelcast-configuration command to dynamically boot or shutdown hazelcast
  * @author steve
  */
-@Service(name = "__enable-hazelcast-internal")
+@Service(name = "__enable-hazelcast-internal-on-instance")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("__enable-hazelcast-internal")
+@I18n("__enable-hazelcast-internal-on-instance")
 @ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
-            path = "__enable-hazelcast-internal",
-            description = "Enables Hazelcast")
+            path = "__enable-hazelcast-internal-on-instance",
+            description = "Enables Hazelcast On Instance")
 })
-public class EnableHazelcastInternal implements AdminCommand {
+public class EnableHazelcastInternalOnInstance implements AdminCommand {
     
     @Inject
     HazelcastCore hazelcast;   
