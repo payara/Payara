@@ -133,7 +133,7 @@
         <mq.version>5.1.1-b02.payara-p1</mq.version>
         <javadb.version>10.10.2.0</javadb.version>
         <jaxr.version>JAXR_RA_20091012</jaxr.version>
-        <weld.version>3.0.0.Alpha16</weld.version>
+        <weld.version>2.3.5.Final</weld.version>
         <jboss.classfilewriter.version>1.1.2.Final</jboss.classfilewriter.version>
         <wsdl4j.version>1.6.2</wsdl4j.version>
         <websocket-api.version>1.1</websocket-api.version>
@@ -151,6 +151,7 @@
         <jboss.logging.version>3.3.0.Final</jboss.logging.version>
         <guava.version>18.0</guava.version>
         <soteria.version>1.0-m01</soteria.version>
+        <ozark.version>20160715</ozark.version>
     </properties>
 
     <modules>
@@ -497,6 +498,19 @@
                             <specImplVersion>${soteria.version}</specImplVersion>
                             <apiPackage>javax.security</apiPackage>
                             <implNamespace>org.glassfish.soteria</implNamespace>
+                         </spec>
+                         <spec>
+                            <artifact>
+                                <groupId>javax.mvc</groupId>
+                                <artifactId>javax.mvc-api</artifactId>
+                                <version>${ozark.version}</version>
+                            </artifact>
+                            <nonFinal>false</nonFinal>
+                            <jarType>api</jarType>
+                            <specVersion>${ozark.version}</specVersion>
+                            <specImplVersion>${ozark.version}</specImplVersion>
+                            <apiPackage>javax.mvc-api</apiPackage>
+                            <implNamespace>rg.glassfish.ozark</implNamespace>
                          </spec>
                     </specs>
                 </configuration>
@@ -1114,6 +1128,16 @@
                 <groupId>javax.security</groupId>
                 <artifactId>javax.security-api</artifactId>
                 <version>${javax.security-api.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.glassfish.ozark</groupId>
+                <artifactId>ozark</artifactId>
+                <version>${ozark.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.mvcc</groupId>
+                <artifactId>javax.mvc-api</artifactId>
+                <version>${ozark.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
