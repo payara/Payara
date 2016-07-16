@@ -161,6 +161,17 @@
                <enabled>false</enabled>
            </snapshots>
         </repository>
+        <repository>
+           <id>mvc-spec-bintray</id>
+           <name>Ozark Bintray</name>
+           <url>https://dl.bintray.com/mvc-spec/maven/</url>
+           <releases>
+               <enabled>true</enabled>
+           </releases>
+           <snapshots>
+               <enabled>false</enabled>
+           </snapshots>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
