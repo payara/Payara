@@ -222,6 +222,7 @@ public class StaticGlassFishRuntime extends GlassFishRuntime {
                     "config/keystore.jks",
                     "config/login.conf",
                     "config/logging.properties",
+                    "config/loggingToFile.properties",
                     "config/admin-keyfile",
                     "org/glassfish/web/embed/default-web.xml",
                     "org/glassfish/embed/domain.xml"

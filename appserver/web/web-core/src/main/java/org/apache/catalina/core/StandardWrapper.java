@@ -58,48 +58,35 @@
 
 package org.apache.catalina.core;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.RestWSRequestEvent;
+import org.apache.catalina.*;
+import org.apache.catalina.security.SecurityUtil;
+import org.apache.catalina.util.Enumerator;
+import org.apache.catalina.util.InstanceSupport;
+import org.glassfish.jersey.servlet.ServletContainer;
+import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.valve.GlassFishValve;
+
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
+import javax.management.ObjectName;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.Principal;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.text.MessageFormat;
-import javax.management.Notification;
-import javax.management.NotificationBroadcasterSupport;
-import javax.management.ObjectName;
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.SingleThreadModel;
-import javax.servlet.UnavailableException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.apache.catalina.Container;
-import org.apache.catalina.ContainerServlet;
-import org.apache.catalina.Context;
-import static org.apache.catalina.InstanceEvent.EventType.AFTER_DESTROY_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.AFTER_INIT_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.AFTER_SERVICE_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.BEFORE_DESTROY_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.BEFORE_INIT_EVENT;
-import static org.apache.catalina.InstanceEvent.EventType.BEFORE_SERVICE_EVENT;
-import org.apache.catalina.InstanceListener;
-import org.apache.catalina.LifecycleException;
-import org.apache.catalina.Loader;
-import org.apache.catalina.Wrapper;
-import org.apache.catalina.security.SecurityUtil;
-import org.apache.catalina.util.Enumerator;
-import org.apache.catalina.util.InstanceSupport;
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.valve.GlassFishValve;
+import static org.apache.catalina.InstanceEvent.EventType.*;
 // END GlassFish 1343
 
 /**
@@ -111,12 +98,16 @@ import org.glassfish.web.valve.GlassFishValve;
  * @author Remy Maucherat
  * @version $Revision: 1.12.2.1 $ $Date: 2008/04/17 18:37:09 $
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 public class StandardWrapper
         extends ContainerBase
         implements ServletConfig, Wrapper {
 
     private static final String[] DEFAULT_SERVLET_METHODS = new String[] {
                                                     "GET", "HEAD", "POST" };
+
+    private RequestTracingService requestTracing;
+
 
     @LogMessageInfo(
         message = "Parent container of a Wrapper must be a Context",
@@ -231,7 +222,7 @@ public class StandardWrapper
         super();
         swValve=new StandardWrapperValve();
         pipeline.setBasic(swValve);
-
+        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
     }
 
 
@@ -1678,9 +1669,13 @@ public class StandardWrapper
                                                classTypeUsedInService, 
                                                serviceType,
                                                principal);                                                   
-                } else {  
+                } else {
                     serv.service((HttpServletRequest) request,
                                  (HttpServletResponse) response);
+                    if (serv instanceof ServletContainer && requestTracing.isRequestTracingEnabled()) {
+                        RestWSRequestEvent requestEvent = constructWebServiceRequestEvent((HttpServletRequest)request, EventType.RESTWS);
+                        requestTracing.traceRequestEvent(requestEvent);
+                    }
                 }
             } else {
                 serv.service(request, response);
@@ -1734,6 +1729,21 @@ public class StandardWrapper
 
     }
     // END IASRI 4665318
+
+
+    private RestWSRequestEvent constructWebServiceRequestEvent(HttpServletRequest httpServletRequest, EventType eventType) {
+        RestWSRequestEvent requestEvent  = new RestWSRequestEvent();
+        requestEvent.setEventType(eventType);
+        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
+            requestEvent.getHeaders().put(headerName, headers);
+        }
+        requestEvent.setFormMethod(httpServletRequest.getMethod());
+        return requestEvent;
+    }
 
 
     /**

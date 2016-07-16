@@ -37,27 +37,21 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.web;
 
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
+import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.web.accesslog.AccessLogFormatter;
 import com.sun.enterprise.web.accesslog.CombinedAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.CommonAccessLogFormatterImpl;
 import com.sun.enterprise.web.accesslog.DefaultAccessLogFormatterImpl;
 import com.sun.enterprise.web.pluggable.WebContainerFeatureFactory;
-import com.sun.enterprise.util.io.FileUtils;
-import org.apache.catalina.*;
-import org.apache.catalina.valves.ValveBase;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.lang.String;
 import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -68,6 +62,12 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.catalina.*;
+import org.apache.catalina.valves.ValveBase;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.internal.api.LogManager;
+import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * <p>Implementation of the <b>Valve</b> interface that generates a web server
@@ -90,6 +90,7 @@ public final class PEAccessLogValve
     private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
 
     private static final ResourceBundle _rb = _logger.getResourceBundle();
+    private final LogManager logManager = org.glassfish.internal.api.Globals.get(LogManager.class);
 
     @LogMessageInfo(
             message = "Unable to write access log file {0}",
@@ -301,6 +302,11 @@ public final class PEAccessLogValve
      */
     private boolean flushRealTime = true;
     
+    /**
+     * access log to console
+     */
+    private boolean accessLogToConsole = false;
+    
 
     /**
      * Are we supposed to add datestamp to first access log file we create,
@@ -364,6 +370,9 @@ public final class PEAccessLogValve
         if ( t > 0 ){
             flushRealTime = false;
         }
+        else {
+            flushRealTime = true;
+        }
         writeInterval = t;
     }
     
@@ -388,7 +397,7 @@ public final class PEAccessLogValve
      * Set the direct <code>ByteBuffer</code> size
      */
     public void setBufferSize(int size){
-        if ( size > 0 ){
+        if ( size > 0 && writeInterval != 0){
             flushRealTime = false;
         }
         if (size < MIN_BUFFER_SIZE) {
@@ -707,8 +716,13 @@ public final class PEAccessLogValve
         synchronized(lock){
             try{
                 charBuffer.flip();
+                String bufString = charBuffer.toString();
+                if (accessLogToConsole && !bufString.isEmpty()) {
+                    logManager.getOutStream().print(bufString.replaceAll("(?m)^", "AccessLog: "));
+                }
                 ByteBuffer byteBuffer =
-                    ByteBuffer.wrap(charBuffer.toString().getBytes(Charset.defaultCharset()));
+                    ByteBuffer.wrap(bufString.getBytes(Charset.defaultCharset()));
+                
                 while (byteBuffer.hasRemaining()){
                     fileChannel.write(byteBuffer);
                 }
@@ -720,7 +734,7 @@ public final class PEAccessLogValve
         }
 
     }
-
+    
 
 
     /*
@@ -944,6 +958,9 @@ public final class PEAccessLogValve
         } else if (maxHistoryFiles > 0) {
             historyFiles = new LinkedList<File>();
         }
+        
+        // log to console
+        accessLogToConsole = accessLogConfig.getLogToConsoleEnabled();
     }
 
 

@@ -37,18 +37,18 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.config.serverbeans;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.types.PropertyBag;
 import java.beans.PropertyVetoException;
-
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.ConfigBeanProxy;
+import org.jvnet.hk2.config.Configured;
+import org.jvnet.hk2.config.types.PropertyBag;
 
 /**
  * Access log configuration
@@ -197,5 +197,18 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      */
     void setMaxHistoryFiles(String value) throws PropertyVetoException;
 
+    /**
+     * Specifies whether to display access logs on the console
+     * 
+     * @return true if logging to console
+     */
+    @Attribute (defaultValue="false", dataType=Boolean.class)
+    boolean getLogToConsoleEnabled();
+    /**
+     * specifies whether to display access logs to console
+     * 
+     * @param tf true/false
+     */
+    void setLogToConsoleEnabled(boolean tf);
 }
 

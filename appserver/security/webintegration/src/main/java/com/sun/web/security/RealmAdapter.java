@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2015,2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.web.security;
 
@@ -128,6 +128,7 @@ import javax.inject.Inject;
 import javax.security.jacc.PolicyContext;
 import javax.servlet.ServletContext;
 import org.apache.catalina.ContainerEvent;
+import org.apache.catalina.connector.RequestFacade;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
@@ -1522,10 +1523,20 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
         
         if (serverAuthConfig != null) {
             //JSR 196 is enabled for this application
+            Principal wrapped = null;
             try {
                 context.fireContainerEvent(ContainerEvent.BEFORE_AUTHENTICATION, null);
+                // get the WebPrincipal principal and add to the security context principals
+                RequestFacade rf = (RequestFacade)request.getRequest();
+                if (rf != null) {
+                    wrapped = rf.getPrincipal();
+                    if (wrapped != null) {
+                        SecurityContext.getCurrent().setAdditionalPrincipal(wrapped);
+                    }
+                }
                 result = validate(request, response, config, authenticator, calledFromAuthenticate);
             } finally {
+                SecurityContext.getCurrent().setAdditionalPrincipal(null);
                 context.fireContainerEvent(ContainerEvent.AFTER_AUTHENTICATION, null);
             }
         } else {

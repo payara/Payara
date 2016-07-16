@@ -57,6 +57,7 @@
         <!--module>embedded-shell</module-->
         <module>javaee</module>
         <module>appserv-rt</module>
+        <module>payara-micro</module>
     </modules>
 
     <profiles>

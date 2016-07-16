@@ -16,13 +16,19 @@ package fish.payara.nucleus.healthcheck.preliminary;
 import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.configuration.LogNotifier;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.domain.LogNotificationEvent;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
@@ -37,6 +43,9 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
     HealthCheckServiceConfiguration configuration;
+
+    @Inject
+    NotificationService notificationService;
 
     protected O options;
     protected Class<C> checkerType;
@@ -104,37 +113,6 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         return result;
     }
 
-    protected String prettyPrintDuration(long value) {
-        long minutes = 0;
-        long seconds = 0;
-        StringBuilder sb = new StringBuilder();
-
-        if (value > ONE_MIN) {
-            minutes = TimeUnit.MILLISECONDS.toMinutes(value);
-            value -= TimeUnit.MINUTES.toMillis(minutes);
-        }
-        if (value > ONE_SEC) {
-            seconds = TimeUnit.MILLISECONDS.toSeconds(value);
-            value -= TimeUnit.SECONDS.toMillis(seconds);
-        }
-        if (value >= 0) {
-            if (minutes > 0) {
-                sb.append(minutes).append(" minutes ");
-            }
-            if (seconds > 0) {
-                sb.append(seconds).append(" seconds ");
-            }
-            if (value > 0) {
-                sb.append(value);
-                sb.append(" milliseconds");
-            }
-            return sb.toString();
-        }
-        else {
-            return null;
-        }
-    }
-
     protected String prettyPrintStackTrace(StackTraceElement[] elements) {
         StringBuilder sb = new StringBuilder();
         for (StackTraceElement traceElement : elements) {
@@ -153,5 +131,19 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     public Class<C> getCheckerType() {
         return checkerType;
+    }
+
+    public void sendNotification(Level level, String message, Object[] parameters) {
+        List<Notifier> notifierList = configuration.getNotifierList();
+        for (Notifier notifier : notifierList) {
+            if (notifier instanceof LogNotifier) {
+                LogNotificationEvent notificationEvent = new LogNotificationEvent();
+                notificationEvent.setLevel(level);
+                notificationEvent.setMessage(message);
+                notificationEvent.setParameters(parameters);
+
+                notificationService.notify(notificationEvent);
+            }
+        }
     }
 }

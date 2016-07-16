@@ -92,9 +92,13 @@ public class SetAsadminRecorderConfiguration implements AdminCommand {
                     }
                         
                     if (outputLocation != null) {
+                        if (outputLocation.endsWith("/")||outputLocation.endsWith("\\")){
+                            outputLocation += "asadmin-commands.txt";
+                        }
                         if (!outputLocation.endsWith(".txt")) {
                             outputLocation += ".txt";
                         }
+
                         asadminRecorderConfigurationProxy.
                                 setOutputLocation(outputLocation);
                     }

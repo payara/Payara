@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.web.loader;
 
@@ -248,7 +249,7 @@ public class ServletContainerInitializerUtil {
             Iterable<ServletContainerInitializer> initializers,
             Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
             Types types,
-            ClassLoader cl) {
+            ClassLoader cl, boolean isStandalone) {
 
         if (interestList == null) {
             return null;
@@ -351,9 +352,9 @@ public class ServletContainerInitializerUtil {
                     }
                 }
 
-                initializerList = checkAgainstInterestList(classInfo, interestList, initializerList, cl);
+                initializerList = checkAgainstInterestList(classInfo, interestList, initializerList, cl, isStandalone);
             } else {
-                initializerList = checkAgainstInterestList(types, interestList, initializerList, cl);
+                initializerList = checkAgainstInterestList(types, interestList, initializerList, cl, isStandalone);
             }
         }
 
@@ -443,7 +444,7 @@ public class ServletContainerInitializerUtil {
                                 Types classInfo,
                                 Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
                                 Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
-                                ClassLoader cl) {
+                                ClassLoader cl, boolean isStandalone) {
 
         if (classInfo==null) {
             return initializerList;
@@ -468,8 +469,8 @@ public class ServletContainerInitializerUtil {
                         try {
                             resultSet.add(cl.loadClass(ae.getName()));
                         } catch (Throwable t) {
-                            if (log.isLoggable(Level.WARNING)) {
-                                log.log(Level.WARNING,
+                            if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                                log.log(getStandaloneWarningLevel(isStandalone),
                                     CLASS_LOADING_ERROR,
                                     new Object[] {ae.getName(), t.toString()});
                             }
@@ -487,8 +488,8 @@ public class ServletContainerInitializerUtil {
                     try {
                         resultSet.add(cl.loadClass(classModel.getName()));
                     } catch (Throwable t) {
-                        if (log.isLoggable(Level.WARNING)) {
-                            log.log(Level.WARNING,
+                        if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                            log.log(getStandaloneWarningLevel(isStandalone),
                                 CLASS_LOADING_ERROR,
                                 new Object[] {classModel.getName(), t.toString()});
                         }
@@ -526,7 +527,7 @@ public class ServletContainerInitializerUtil {
                                 ClassDependencyBuilder classInfo,
                                 Map<Class<?>, List<Class<? extends ServletContainerInitializer>>> interestList,
                                 Map<Class<? extends ServletContainerInitializer>, Set<Class<?>>> initializerList,
-                                ClassLoader cl) {
+                                ClassLoader cl, boolean isStandalone) {
         for(Map.Entry<Class<?>, List<Class<? extends ServletContainerInitializer>>> e :
                 interestList.entrySet()) {
 
@@ -542,8 +543,8 @@ public class ServletContainerInitializerUtil {
                     Class aClass = cl.loadClass(className);
                     resultSet.add(aClass);
                 } catch (Throwable t) {
-                    if (log.isLoggable(Level.WARNING)) {
-                        log.log(Level.WARNING,
+                    if (log.isLoggable(getStandaloneWarningLevel(isStandalone))) {
+                        log.log(getStandaloneWarningLevel(isStandalone),
                             CLASS_LOADING_ERROR,
                             new Object[] {className, t.toString()});
                     }
@@ -563,5 +564,10 @@ public class ServletContainerInitializerUtil {
             }
         }
         return initializerList;
+    }
+
+    
+    private static Level getStandaloneWarningLevel(boolean isStandalone) {
+        return isStandalone? Level.WARNING : Level.FINE;
     }
 }

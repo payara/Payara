@@ -38,6 +38,8 @@
  * holder.
  */
 
+ /* Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates] */
+
 /* CSS Document */
 
 body {
@@ -100,8 +102,13 @@ a.BcmLnk_sun4:hover {
 
 /* BUTTONS */
 
+.Btn1_sun4:hover{
+        background:#f89d1f !important;	
+        cursor:pointer
+}
+
 .Btn1_sun4, .Btn1Mni_sun4 {
-	background:#ABD2EB url(../images/button/primary-enabled.gif) repeat-x top;
+	/*background:#ABD2EB url(../images/button/primary-enabled.gif) repeat-x top;*/
 	border-top-color:#6C8197;
 	border-right-color:#4E647A;
 	border-bottom-color:#263E5A;
@@ -135,7 +142,7 @@ a.BcmLnk_sun4:hover {
 
 .Btn1Dis_sun4, .Btn1MniDis_sun4 {
 	background:#BAC4D1 url(../images/button/primary-disabled.gif) repeat-x top;
-	color:#777E86;
+	color:#777E86;         
 	border-top-color:#B5BDC6;
 	border-right-color:#A7AFB8;
 	border-bottom-color:#99A0A8;
@@ -160,22 +167,28 @@ a.BcmLnk_sun4:hover {
 	vertical-align:middle;
 }.MstDiv_sun4 .Btn1_sun4, .MstDiv_sun4 .Btn1Mni_sun4, .MstDiv_sun4 .Btn2_sun4, .MstDiv_sun4 .Btn2Mni_sun4,
 .mastheadButton_4_sun4 a:link, .mastheadButton_4_sun4 a:visited {
-	background:#7595AB url(../images/masthead/masthead_button.gif) repeat-x bottom;
+	background:#18353d;
+        padding: 7px 15px 7px 15px;
+       -webkit-border-radius: 3px;
+       -moz-border-radius: 3px;
+         border-radius: 3px;
 }.mastheadButton_4_sun4 a:link, .mastheadButton_4_sun4 a:visited, .mastheadButton_4_sun4 a:hover {
 	text-decoration:none;
 }
 .mastheadButton_4_sun4 a:hover,
 .MstDiv_sun4 .Btn1Hov_sun4, .MstDiv_sun4 .Btn1MniHov_sun4, .MstDiv_sun4 .Btn2Hov_sun4, .MstDiv_sun4 .Btn2MniHov_sun4 {
-	background:#99B0C4 url(../images/masthead/masthead_button_over.gif) repeat-x bottom;
+	background:#f89d1f;
 }
 
-.mastheadButton_4_sun4 {
+/*.mastheadButton_4_sun4 {
 	background-color:#374154;
 	border-top-color:#4a5467;
 	border-right-color:#374154;
 	border-left-color:#374154;
 	border-bottom-color:#7ea0b8;
 }
+
+*/
 /*---*/
 /* SCHEDULER [originalName: DATE AND TIME]*/
 .DatCalDiv_sun4 {
@@ -761,27 +774,27 @@ a.MstUsrLnk_sun4:link, a.MstUsrLnk_sun4:visited, a.MstAlmLnk_sun4:link, a.MstAlm
 }
 
 .MstBdy_sun4 {
-	background-color:#5B87A5;
+	background-color:#325764;
 }
 
 .MstTblEnd_sun4 {
-	background-color:#5B87A5;
+	background-color:#325764;
 }
 .MstTblBot_sun4 .hrule_sun4{
-	border-top-color:#3E637E;
-	background-color:#7196B0;
+	border-top-color:#144353;
+	background-color:#3c5f6b;
 }	
 
 .MstDiv_sun4 {
-	background:#5B87A5 url(../images/masthead/masthead-background.jpg) top left repeat-x;
+	background:#325764 url(../images/masthead/masthead-background.jpg) top left repeat-x;
 	border-color:#000000;
 }
 .MstSec_sun4 {
-	background:#5B87A5 url(../images/masthead/sec-masthead-background.jpg) top left repeat-x;
+	background:#325764 url(../images/masthead/sec-masthead-background.jpg) top left repeat-x;
 	border-color:#000000;
 }
 .MstFooter_sun4 {
-	background-color:#5B87A5;
+	background-color:#325764;
 	border-color:#000000;
 }
 
@@ -1056,7 +1069,7 @@ a.TreeSelLink_sun4:hover {
 	text-decoration:underline;
 }
 .TreeRootRow_sun4, .TreeRootRowHeader_sun4 {
-	background-color:#e5e9ed;
+	background-color:#dbdada;
 }
 .TreeSelRow_sun4, .TreeRootSelRow  {
 	background-color:#90b7d0;
@@ -1072,18 +1085,18 @@ a.TreeSelLink_sun4:hover {
 
 /* VERSION DIALOG */
 .VrsBdy_sun4, .VrsMgn_sun4, .VrsBtnBdy_sun4 {
-	background-color:#D2DBE4;
+	background-color:#FFFFFF;
 }
 .VrsHdrTxt_sun4, .VrsTxt_sun4 {
 	color:#000000;
 }
 .VrsMstBdy_sun4 {
-	background:#FFFFFF url(../images/version/version_brand.jpg) no-repeat;
+	background:#FFFFFF;
 }
 /*---*/
 /* WIZARD */
 .WizTtlBar_sun4 {
-	background:#5B87A5 url(../images/masthead/sec-masthead-background.jpg) top left repeat-x;
+	background:#325764 url(../images/masthead/sec-masthead-background.jpg) top left repeat-x;
 	border-color:#000000;
 	color:#FFFFFF;
 }
@@ -1109,3 +1122,4 @@ a.WizStpLnk_sun4:hover {
 	text-decoration:underline;
 }
 /*---*/
+

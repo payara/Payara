@@ -33,16 +33,18 @@ public class MulticastConfiguration {
     private boolean lite = false;
     private String clusterGroupName = "development";
     private String clusterGroupPassword = "D3v3l0pm3nt";
+    private String licenseKey;
 
     public MulticastConfiguration() {
     }
 
-    public MulticastConfiguration(String multicastGroup, int multicastPort, int startPort, String memberName, URI alternateConfigurationFile) {
+    public MulticastConfiguration(String multicastGroup, int multicastPort, int startPort, String memberName, URI alternateConfigurationFile, String licenseKey) {
         this.multicastGroup = multicastGroup;
         this.multicastPort = multicastPort;
         this.startPort = startPort;
         this.memberName = memberName;
         this.alternateConfigFile = alternateConfigurationFile;
+        this.licenseKey = licenseKey;
     }
 
     public void setMulticastGroup(String multicastGroup) {
@@ -85,6 +87,14 @@ public class MulticastConfiguration {
         return alternateConfigFile;
     }
 
+    public void setLicenseKey(String licenseKey) {
+        this.licenseKey = licenseKey;
+    }
+
+    public String getLicenseKey() {
+        return licenseKey;
+    }
+
     public boolean isLite() {
         return lite;
     }
@@ -108,6 +118,6 @@ public class MulticastConfiguration {
     public void setClusterGroupPassword(String clusterGroupPassword) {
         this.clusterGroupPassword = clusterGroupPassword;
     }
-    
+
     
 }

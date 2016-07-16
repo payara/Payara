@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.web.deployment.archivist;
 
@@ -351,11 +352,18 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
             if (mergedWebFragment == null) {
                 mergedWebFragment = wf;
             } else {
+                if(wf.isExists() && wf.isDistributable() == null) {
+                    wf.setDistributable(false);
+                }
                 mergedWebFragment.addWebBundleDescriptor(wf);
             }
         }
 
         if (mergedWebFragment != null) {
+            mergedWebFragment.setExists(true);
+            if(descriptor.isDistributable() == null) {
+                descriptor.setDistributable(false);
+            }
             descriptor.addWebBundleDescriptor(mergedWebFragment);
         }
 
@@ -396,6 +404,7 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                         }
                     } else {   
                         wfDesc = new WebFragmentDescriptor();
+                        wfDesc.setExists(false);
                     }
                 } finally {
                     if (embeddedArchive != null) {

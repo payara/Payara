@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.concurrent.admin;
 
@@ -65,7 +66,7 @@ import org.glassfish.concurrent.runtime.deployer.DefaultManagedExecutorService;
  * List Managed Executor Service Resources command
  * 
  */
-@TargetType(value={CommandTarget.DAS,CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE })
+@TargetType(value={CommandTarget.DAS, CommandTarget.DOMAIN, CommandTarget.CLUSTER, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG })
 @ExecuteOn(value={RuntimeType.DAS})
 @Service(name="list-managed-executor-services")
 @PerLookup

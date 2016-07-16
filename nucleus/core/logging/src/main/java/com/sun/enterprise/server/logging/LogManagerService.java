@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
 
 package com.sun.enterprise.server.logging;
 
@@ -50,6 +51,16 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.EarlyLogger;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import java.beans.PropertyChangeEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.logging.*;
+import java.util.logging.Formatter;
+import javax.inject.Inject;
 import org.glassfish.api.admin.FileMonitoring;
 import org.glassfish.common.util.Constants;
 import org.glassfish.hk2.api.PostConstruct;
@@ -62,23 +73,10 @@ import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.config.UnprocessedConfigListener;
 import org.glassfish.server.ServerEnvironmentImpl;
-import javax.inject.Inject;
-
 import org.jvnet.hk2.annotations.Optional;
-
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.UnprocessedChangeEvent;
 import org.jvnet.hk2.config.UnprocessedChangeEvents;
-
-import java.beans.PropertyChangeEvent;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.logging.*;
-import java.util.logging.Formatter;
 
 /**
  * Reinitialzie the log manager using our logging.properties file.
@@ -722,4 +720,13 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
         }
     }
 
+    @Override
+    public PrintStream getErrStream() {
+        return oStdErrBackup;
+    }
+
+    @Override
+    public PrintStream getOutStream() {
+        return oStdOutBackup;
+    }
 }

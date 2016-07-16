@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2015] [C2B2 Consulting Limited]
 
 package org.glassfish.ejb.config;
 
@@ -133,7 +134,7 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      *              {@link String }
      */
     void setTimerDatasource(String value) throws PropertyVetoException;
-
+    
     /**
      * Gets the value of the redeliveryIntervalInternalInMillis property.
      *
@@ -154,6 +155,25 @@ public interface EjbTimerService extends ConfigBeanProxy, PropertyBag {
      *              {@link String }
      */
     void setRedeliveryIntervalInternalInMillis(String value) throws PropertyVetoException;
+
+    /**
+     * Gets the value of the EJB Timer Service  property.
+     *
+     * The EJB Timer Service type to use in Payara.
+     *
+     * @return possible object is
+     *         {@link String }
+     */
+    @Attribute (defaultValue="Distributed")
+    String getEJBTimerService();
+
+    /**
+     * Sets the value of the EJB Timer type to be used.
+     *
+     * @param value allowed object is
+     *              {@link String }
+     */
+    void setEJBTimerService(String value) throws PropertyVetoException;
     
     /**
     	Properties as per {@link PropertyBag}

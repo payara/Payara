@@ -119,6 +119,12 @@
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <asadmin-recorder-configuration></asadmin-recorder-configuration>
+       <request-tracing-service-configuration>
+         <log-notifier></log-notifier>
+       </request-tracing-service-configuration>
+       <notification-service-configuration>
+         <log-notifier-configuration></log-notifier-configuration>
+       </notification-service-configuration>
        <diagnostic-service />
       <security-service>
         <auth-realm classname="com.sun.enterprise.security.auth.realm.file.FileRealm" name="admin-realm">
@@ -265,7 +271,7 @@
         </transports>
       </network-config>
       <thread-pools>
-          <thread-pool name="admin-thread-pool" max-thread-pool-size="50" max-queue-size="256"></thread-pool>
+          <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
           <thread-pool name="http-thread-pool" max-queue-size="4096"></thread-pool>
           <thread-pool name="thread-pool-1" max-thread-pool-size="200"/>
       </thread-pools>
@@ -464,7 +470,7 @@
              <network-listeners>
                  <network-listener address="0.0.0.0" port="${HTTP_LISTENER_PORT}" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
                  <network-listener address="0.0.0.0" port="${HTTP_SSL_LISTENER_PORT}" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
-                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="http-thread-pool" />
+                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool" />
              </network-listeners>
              <transports>
                  <transport name="tcp" />
@@ -473,6 +479,7 @@
          <thread-pools>
              <thread-pool name="http-thread-pool" />
              <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+	     <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
          </thread-pools>
          <group-management-service/>
          <!--%%%DEFAULT_TOKENS_HERE%%%-->
