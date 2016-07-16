@@ -1160,12 +1160,12 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
     
     public void setSlowQueryThresholdInSeconds(String seconds) {
         spec.setDetail(DataSourceSpec.SLOWSQLLOGTHRESHOLD, seconds);
-        int threshold = Integer.valueOf(seconds);
+        double threshold = Double.valueOf(seconds);
         if (threshold > 0) {
             if (sqlTraceDelegator == null) {
                 sqlTraceDelegator = new SQLTraceDelegator(getPoolName(), getApplicationName(), getModuleName());
             }
-            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger(threshold*1000));
+            sqlTraceDelegator.registerSQLTraceListener(new SlowSQLLogger((long) (threshold*1000)));
         }
     }
     

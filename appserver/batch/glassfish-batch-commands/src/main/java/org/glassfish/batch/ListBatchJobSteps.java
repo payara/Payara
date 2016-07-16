@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+
 package org.glassfish.batch;
 
 import com.ibm.jbatch.spi.TaggedJobExecution;
@@ -72,7 +74,7 @@ import java.util.logging.Level;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("_ListBatchJobSteps")
 @ExecuteOn(value = {RuntimeType.INSTANCE})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.STANDALONE_INSTANCE})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,

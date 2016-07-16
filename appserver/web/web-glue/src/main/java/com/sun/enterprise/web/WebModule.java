@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -1348,7 +1349,8 @@ public class WebModule extends PwcWebModule implements Context {
         this.isStandalone = isStandalone;
     }
 
-    boolean isStandalone() {
+    @Override
+    protected boolean isStandalone() {
         return isStandalone;
     }
 

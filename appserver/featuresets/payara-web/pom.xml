@@ -140,12 +140,6 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>payara-appserver</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
 
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
@@ -153,6 +147,13 @@
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>requesttracing</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>asadmin-recorder</artifactId>

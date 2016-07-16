@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -117,7 +118,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
     // is not necessary.
     private static final String WELD_LISTENER = "org.jboss.weld.servlet.WeldListener";
 
-    private static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.servlet.WeldTerminalListener";
+    static final String WELD_TERMINATION_LISTENER = "org.jboss.weld.servlet.WeldTerminalListener";
 
     private static final String WELD_SHUTDOWN = "weld_shutdown";
 
@@ -513,7 +514,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
                 // Weld 2.2.1.Final.  There is a tck test for this: org.jboss.cdi.tck.tests.context.session.listener.SessionContextHttpSessionListenerTest
                 // This WeldTerminationListener must come after all application-defined listeners
-                wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_TERMINATION_LISTENER));
+                wDesc.addAppListenerDescriptor(new AppListenerDescriptorImpl(WeldTerminationListenerProxy.class.getName()));
 
                 // Adding Weld ConverstationFilter if there is filterMapping for it and it doesn't exist already.
                 // However, it will be applied only if web.xml has mapping for it.
@@ -586,7 +587,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
                     // Add the Weld Listener if it does not already exist..
                     // we have to do this regardless because the war may not be cdi-enabled but an ejb is.
                     oneWebBundleDescriptor.addAppListenerDescriptorToFirst(new AppListenerDescriptorImpl(WELD_LISTENER));
-                    oneWebBundleDescriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(WELD_TERMINATION_LISTENER));
+                    oneWebBundleDescriptor.addAppListenerDescriptor(new AppListenerDescriptorImpl(WeldTerminationListenerProxy.class.getName()));
                 }
             }
         }

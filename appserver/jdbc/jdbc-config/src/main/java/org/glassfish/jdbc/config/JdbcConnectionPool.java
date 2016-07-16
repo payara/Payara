@@ -643,7 +643,7 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      * @return possible object is
      *         {@link String }
      */
-    @Attribute (defaultValue="-1", dataType=Integer.class)
+    @Attribute (defaultValue="-1", dataType=String.class)
     @Min(value=-1)
     String getSlowQueryThresholdInSeconds();
 

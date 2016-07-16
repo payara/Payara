@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2015-2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.web.loader;
 
 import com.sun.appserv.BytecodePreprocessor;
@@ -420,6 +420,7 @@ public class WebappClassLoader
      * for locally loaded classes or resources.
      */
     protected JarFile[] jarFiles = new JarFile[0];
+    protected final Object jarFilesLock = new Object();
 
     /**
      * The list of JARs, in the order they should be searched
@@ -2038,7 +2039,7 @@ public class WebappClassLoader
      */
     public void closeJARs(boolean force) {
         if (jarFiles.length > 0) {
-            synchronized (jarFiles) {
+            synchronized (jarFilesLock) {
                 if (force || (System.currentTimeMillis()
                               > (lastJarAccessed + 90000))) {
                     for (int i = 0; i < jarFiles.length; i++) {
@@ -2743,24 +2744,26 @@ public class WebappClassLoader
      */
     protected boolean openJARs() {
         if (started && (jarFiles.length > 0)) {
-            lastJarAccessed = System.currentTimeMillis();
-            if (jarFiles[0] == null) {
-                for (int i = 0; i < jarFiles.length; i++) {
-                    try {
-                        jarFiles[i] = new JarFile(jarRealFiles[i]);
-                    } catch (IOException e) {
-                        if (logger.isLoggable(Level.FINE)) {
-                            logger.log(Level.FINE, "Failed to open JAR", e);
-                        }
-                        for (int j = 0; j < i; j++) {
-                            try {
-                                jarFiles[j].close();
-                            } catch (Throwable t) {
-                                // Ignore
+            synchronized (jarFilesLock) {
+                lastJarAccessed = System.currentTimeMillis();
+                if (jarFiles[0] == null) {
+                    for (int i = 0; i < jarFiles.length; i++) {
+                        try {
+                            jarFiles[i] = new JarFile(jarRealFiles[i]);
+                        } catch (IOException e) {
+                            if (logger.isLoggable(Level.FINE)) {
+                                logger.log(Level.FINE, "Failed to open JAR", e);
                             }
+                            for (int j = 0; j < i; j++) {
+                                try {
+                                    jarFiles[j].close();
+                                } catch (Throwable t) {
+                                    // Ignore
+                                }
+                            }
+                            return false;
                         }
-                        return false; 
-                   }
+                    }
                 }
             }
         }

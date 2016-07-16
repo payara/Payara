@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -62,7 +63,6 @@ import org.glassfish.grizzly.http.server.util.AlternateDocBase;
 import org.glassfish.grizzly.http.server.util.Mapper;
 import org.glassfish.grizzly.http.server.util.MappingData;
 import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.pfl.basic.logex.Log;
 import org.apache.catalina.*;
 import org.apache.catalina.deploy.*;
 import org.apache.catalina.loader.WebappLoader;
@@ -99,7 +99,6 @@ import javax.servlet.http.HttpUpgradeHandler;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
-import java.net.URL;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.text.MessageFormat;
@@ -108,7 +107,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.grizzly.http.util.CharChunk;
 import org.glassfish.grizzly.http.util.MessageBytes;
 
@@ -6020,7 +6018,11 @@ public class StandardContext
     protected Types getTypes() {
         return null;
     }
-
+    
+    protected boolean isStandalone() {
+        return true;
+    }
+    
     protected void callServletContainerInitializers()
             throws LifecycleException {
 
@@ -6033,7 +6035,7 @@ public class StandardContext
             ServletContainerInitializerUtil.getInitializerList(
                 servletContainerInitializers, interestList,
                 getTypes(),
-                getClassLoader());
+                getClassLoader(), isStandalone());
         if (initializerList == null) {
             return;
         }

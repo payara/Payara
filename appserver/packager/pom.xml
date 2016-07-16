@@ -161,7 +161,7 @@
         <module>hazelcast-l10n</module>
         <module>healthcheck</module>
         <module>phonehome</module>
-        <module>payara</module>
+        <module>requesttracing</module>
         <module>asadmin-recorder</module>
     </modules>
 

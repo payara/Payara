@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.extras.payara-micro</groupId>
+        <artifactId>payara-micro-parent</artifactId>
+        <version>5.0.0.163-SNAPSHOT</version>
+    </parent>
+    <artifactId>payara-micro-cdi</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>Payara Micro CDI</name>
+    <description>Payara Micro CDI Extension</description>
+    <developers>
+        <developer>
+            <id>smillidge</id>
+            <name>Steve Millidge</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.extras.payara-micro</groupId>
+            <artifactId>payara-micro-core</artifactId>
+            <version>5.0.0.163-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>

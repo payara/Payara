@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2014-2016 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,9 +17,12 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.util.ColumnFormatter;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +49,7 @@ import org.jvnet.hk2.annotations.Service;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.hazelcast.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -54,12 +57,11 @@ import org.jvnet.hk2.annotations.Service;
             description = "List Hazelcast Configuration")
 })
 public class GetHazelcastConfiguration implements AdminCommand {
-
     @Inject
     private Target targetUtil;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
-    private String target;
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
+    String target;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -73,9 +75,9 @@ public class GetHazelcastConfiguration implements AdminCommand {
         
         HazelcastRuntimeConfiguration runtimeConfiguration = config.getExtensionByType(HazelcastRuntimeConfiguration.class);
         final ActionReport actionReport = context.getActionReport();
-        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password"};
+        String headers[] = {"Configuration File","Enabled","Start Port","MulticastGroup","MulticastPort","JNDIName","Lite Member","Cluster Name","Cluster Password", "License Key"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[9];
+        Object values[] = new Object[10];
         values[0] = runtimeConfiguration.getHazelcastConfigurationFile();
         values[1] = runtimeConfiguration.getEnabled();
         values[2] = runtimeConfiguration.getStartPort();
@@ -85,9 +87,10 @@ public class GetHazelcastConfiguration implements AdminCommand {
         values[6] = runtimeConfiguration.getLite();
         values[7] = runtimeConfiguration.getClusterGroupName();
         values[8] = runtimeConfiguration.getClusterGroupPassword();
+        values[9] = runtimeConfiguration.getLicenseKey();
         columnFormatter.addRow(values);
         
-        Map<String, Object> map = new HashMap<String,Object>(9);
+        Map<String, Object> map = new HashMap<String,Object>(10);
         Properties extraProps = new Properties();
         map.put("hazelcastConfigurationFile", values[0]);
         map.put("enabled", values[1]);
@@ -98,6 +101,7 @@ public class GetHazelcastConfiguration implements AdminCommand {
         map.put("lite", values[6]);
         map.put("clusterName", values[7]);
         map.put("clusterPassword", values[8]);
+        map.put("licenseKey", values[9]);
         extraProps.put("getHazelcastConfiguration",map);
                 
         actionReport.setExtraProperties(extraProps);

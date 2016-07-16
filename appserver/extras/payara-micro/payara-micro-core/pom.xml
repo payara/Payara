@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>fish.payara.extras.payara-micro</groupId>
+        <artifactId>payara-micro-parent</artifactId>
+        <version>5.0.0.163-SNAPSHOT</version>
+    </parent>
+    <artifactId>payara-micro-core</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>Payara Micro Edition Core</name>
+    <description>Payara Micro Edition Modules</description>
+    <developers>
+        <developer>
+            <id>smillidge</id>
+            <name>Steve Millidge</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>lead</role>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>mcaliskan</id>
+            <name>Mert Caliskan</name>
+            <url>http://www.payara.co</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+        <developer>
+            <id>davidweaver</id>
+            <name>David Weaver</name>
+            <url>http://www.payara.fish</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+         <developer>
+            <id>susanrai</id>
+            <name>Susan Rai</name>
+            <url>http://www.payara.fish</url>
+            <organization>Payara Inc.</organization>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <build>
+     <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
+  </build>
+    
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.main.core</groupId>
+            <artifactId>glassfish</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>phonehome-bootstrap</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>fish.payara.extras.payara-micro</groupId>
+            <artifactId>payara-micro-service</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
+</project>

@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck.configuration;
 
+import fish.payara.nucleus.notification.configuration.Notifier;
 import org.glassfish.api.admin.config.ConfigExtension;
 import org.jvnet.hk2.config.*;
 
@@ -36,6 +37,12 @@ public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, Config
     @DuckTyped
     <T extends Checker> T getCheckerByType(Class<T> type);
 
+    @Element("*")
+    List<Notifier> getNotifierList();
+
+    @DuckTyped
+    <T extends Notifier> T getNotifierByType(Class type);
+
     class Duck {
         public static <T extends Checker> T getCheckerByType(HealthCheckServiceConfiguration config, Class<T> type) {
             for (Checker checker : config.getCheckerList()) {
@@ -47,5 +54,17 @@ public interface HealthCheckServiceConfiguration extends ConfigBeanProxy, Config
             }
             return null;
         }
+
+        public static <T extends Notifier> T getNotifierByType(HealthCheckServiceConfiguration config, Class<T> type) {
+            for (Notifier notifier : config.getNotifierList()) {
+                try {
+                    return type.cast(notifier);
+                } catch (Exception e) {
+                    // ignore, not the right type.
+                }
+            }
+            return null;
+        }
+
     }
 }

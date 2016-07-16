@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2014,2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.enterprise.v3.services.impl;
 
 import com.sun.appserv.server.util.Version;
@@ -273,6 +273,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         
         return new GlassfishHttpCodecFilter(
                 http == null || Boolean.parseBoolean(http.getXpoweredBy()),
+                http == null || Boolean.parseBoolean(http.getServerHeader()),
                 isChunkedEnabled,
                 headerBufferLengthBytes,
                 defaultResponseType,
@@ -281,17 +282,22 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
                 maxRequestHeaders,
                 maxResponseHeaders);
     }
-
-
-
+    
     protected void registerMonitoringStatsProviders() {
         final String nameLocal = name;
         final GrizzlyMonitoring monitoring = grizzlyService.getMonitoring();
-
-        monitoring.registerThreadPoolStatsProvider(nameLocal);
-        monitoring.registerKeepAliveStatsProvider(nameLocal);
-        monitoring.registerFileCacheStatsProvider(nameLocal);
-        monitoring.registerConnectionQueueStatsProvider(nameLocal);
+        if (monitoring.getThreadPoolStatsProvider(nameLocal) == null) {
+            monitoring.registerThreadPoolStatsProvider(nameLocal);
+        }
+        if (monitoring.getKeepAliveStatsProvider(nameLocal) == null) {
+            monitoring.registerKeepAliveStatsProvider(nameLocal);
+        }
+        if (monitoring.getFileCacheStatsProvider(nameLocal) == null) {
+            monitoring.registerFileCacheStatsProvider(nameLocal);
+        }
+        if (monitoring.getConnectionQueueStatsProvider(nameLocal) == null) {
+            monitoring.registerConnectionQueueStatsProvider(nameLocal);
+        }
     }
 
     protected void unregisterMonitoringStatsProviders() {
@@ -364,6 +370,7 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
         
         public GlassfishHttpCodecFilter(
                 final boolean isXPoweredByEnabled,
+                final boolean isServerInfoEnabled,
                 final boolean chunkingEnabled,
                 final int maxHeadersSize,
                 final String defaultResponseContentType,
@@ -389,8 +396,12 @@ public class GlassfishNetworkListener extends GenericGrizzlyListener {
             */
             String serverInfo = System.getProperty("product.name");
             
-            serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
-            
+            if (isServerInfoEnabled) {
+                serverVersion = serverInfo != null ? serverInfo : Version.getVersion();
+            }else{
+                serverVersion = null;
+            }
+        
             if (isXPoweredByEnabled) {
                 xPoweredBy = "Servlet/3.1 JSP/2.3 "
                         + "(" + ((serverInfo != null && !serverInfo.isEmpty()) ? serverInfo : Version.getVersion())

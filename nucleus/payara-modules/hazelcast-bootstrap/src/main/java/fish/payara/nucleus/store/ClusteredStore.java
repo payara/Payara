@@ -76,7 +76,11 @@ public class ClusteredStore {
     }
     
     public Serializable get(String storeName, Serializable key) {
-        return (Serializable) hzCore.getInstance().getMap(storeName).get(key);
+        Serializable result = null;
+        if (isEnabled()) {
+            result = (Serializable) hzCore.getInstance().getMap(storeName).get(key);
+        }
+        return result;
     }
     
 }
