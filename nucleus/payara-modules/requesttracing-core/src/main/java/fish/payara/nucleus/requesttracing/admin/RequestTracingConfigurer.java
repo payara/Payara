@@ -84,10 +84,10 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     private Boolean dynamic;
 
-    @Param(name = "thresholdUnit", optional = true)
+    @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true)
+    @Param(name = "thresholdValue", optional = true, defaultValue = "10")
     private String value;
 
     @Inject

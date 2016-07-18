@@ -91,7 +91,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
-    @Param(name = "notifierName", optional = true)
+    @Param(name = "notifierName", optional = true, defaultValue = "service-log")
     private String notifierName;
 
     @Param(name = "notifierEnabled", optional = false)
