@@ -268,12 +268,8 @@ public class PayaraMicro {
      * @param fileName
      * @return
      */
-    public PayaraMicro setPropFile(String fileName) {
-        if (fileName.endsWith("/") || fileName.equals("") || fileName.isEmpty()) {
-            logger.log(Level.SEVERE, "Provide a valid logging properties file");
-        } else {
-            this.userPropFileName = fileName;
-        }
+    public PayaraMicro setPropFile(File fileName) {
+        System.setProperty("java.util.logging.config.file", fileName.getAbsolutePath());
         propsFile = true;
         return this;
     }
@@ -1000,45 +996,6 @@ public class PayaraMicro {
                 }
             }
 
-            if (propsFile) {
-                PrintWriter writer;
-                String sCurrentLine;
-                BufferedReader bufferedReader = null;
-                File tmpDir = new File(configDir.getAbsolutePath() + File.separator + loggingPropertiesFileName);
-
-                try {
-                    writer = new PrintWriter(tmpDir.getAbsoluteFile());
-                    writer.print("");
-                    writer.close();
-                } catch (FileNotFoundException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                }
-
-                try {
-                    bufferedReader = new BufferedReader(new FileReader(userPropFileName));
-                    FileWriter fileWriter = new FileWriter(tmpDir.getAbsoluteFile());
-                    BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                    while ((sCurrentLine = bufferedReader.readLine()) != null) {
-                        bufferedWriter.append(sCurrentLine);
-                        bufferedWriter.newLine();
-
-                    }
-                    bufferedWriter.close();
-                } catch (FileNotFoundException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                } catch (IOException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                } finally {
-                    if (bufferedReader != null) {
-                        try {
-                            bufferedReader.close();
-                        } catch (IOException ex) {
-                            logger.log(Level.SEVERE, null, ex);
-                        }
-                    }
-                }
-            }
-
             File loggingProperties = new File(configDir.getAbsolutePath(), loggingPropertiesFileName);
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
                 if (System.getProperty("java.util.logging.config.file") == null) {
@@ -1429,7 +1386,12 @@ public class PayaraMicro {
                         setUserLogFile(args[i + 1]);
                         break;
                     case "--propFile":
-                        setPropFile(args[i + 1]);
+                        File userLoggingPropsFile = new File(args[i + 1]);
+                        if (!userLoggingPropsFile.exists() || !userLoggingPropsFile.canRead() || userLoggingPropsFile.isDirectory() ) {
+                            logger.log(Level.SEVERE, "{0} is not a valid properties file path and will be ignored", userLoggingPropsFile.getAbsolutePath());
+                        } else {
+                            setPropFile(userLoggingPropsFile);
+                        }
                         break;
                     case "--logo":
                         generateLogo = true;
