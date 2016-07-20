@@ -13,12 +13,9 @@
  */
 package fish.payara.jmx.monitoring;
 
-import fish.payara.jmx.monitoring.configuration.JMXMonitoringServiceConfiguration;
-import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,6 +32,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
+import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import java.util.LinkedList;
+import java.util.List;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import org.jvnet.hk2.config.types.Property;
 
 /**
  *
@@ -42,14 +45,14 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service(name = "payara-monitoring")
 @RunLevel(StartupRunLevel.VAL)
-public class JMXMonitoringService implements EventListener {
+public class MonitoringService implements EventListener {
     
     private static final String PREFIX = "payara-monitoring-service(";
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     @Optional
-    JMXMonitoringServiceConfiguration configuration;    
+    MonitoringServiceConfiguration configuration;    
 
     @Inject
     private ServiceLocator habitat;
@@ -61,18 +64,27 @@ public class JMXMonitoringService implements EventListener {
 
     private ScheduledExecutorService executor;    
     private MonitoringFormatter formatter;
-    private boolean enabled;
 
     @PostConstruct
     public void postConstruct() throws NamingException { 
         if (configuration != null && configuration.getEnabled()) {
+            // <<<< TEST BLOCK >>>>
+            System.out.println(configuration.getEnabled());
+            System.out.println(configuration.getLogType());
+            System.out.println(configuration.getHost());
+            System.out.println(configuration.getPort());
+            System.out.println(configuration.getLogFrequency());
+            // <<<< TEST BLOCK >>>>
             bootstrapMonitoringService();
-        } else {
-            for (int i=0;i<10;i++) {
-                System.out.println("NULL CONFIG");
-            }
+        } else if (configuration != null) {
+            // <<<< TEST BLOCK >>>>
+            System.out.println(configuration.getEnabled());
+            System.out.println(configuration.getLogType());
+            System.out.println(configuration.getHost());
+            System.out.println(configuration.getPort());
+            System.out.println(configuration.getLogFrequency());
+            // <<<< TEST BLOCK >>>>
         }
-
     }
 
     @Override
@@ -86,15 +98,7 @@ public class JMXMonitoringService implements EventListener {
     }
 
     public void bootstrapMonitoringService() {
-        JMXMonitoringServiceConfiguration configuration = habitat.getService(JMXMonitoringServiceConfiguration.class);
         if (configuration != null) {
-        // <<<< TEST BLOCK >>>>
-        System.out.println(configuration.getEnabled());
-        System.out.println(configuration.getLogType());
-        System.out.println(configuration.getHost());
-        System.out.println(configuration.getPort());
-        System.out.println(configuration.getLogFrequency());
-        // <<<< TEST BLOCK >>>>
             executor = Executors.newScheduledThreadPool(4, new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
@@ -107,40 +111,52 @@ public class JMXMonitoringService implements EventListener {
                     + configuration.getPort() + "/jmxrmi";
 
             formatter = new MonitoringFormatter(urlString,
-                                        configuration.getMonitoringJobList());
-
-            try {
-                formatter.createNewConnection();
-            } catch (IOException ex) {
-                enabled = false;
-                Logger.getLogger(JMXMonitoringService.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-            events.register(this);
-            if (enabled) {
-                executor.scheduleAtFixedRate(formatter, 0, 
+                                        buildJobs());
+            System.out.println(configuration.getEnabled());
+            if (configuration.getEnabled()) {
+                /*
+                executor.scheduleAtFixedRate(formatter, 5, 
                         configuration.getLogFrequency(), 
                         TimeUnit.SECONDS);
+                */
             }
 
         } 
-    }
-
-    public void setEnabled(Boolean enabled) {
-        if (this.enabled && !enabled) {
-            
-        } else if (!this.enabled && enabled) {
-            this.enabled = true;
-            bootstrapMonitoringService();
-        } else if (this.enabled && enabled) {
-            shutdownMonitoringService();
-            bootstrapMonitoringService();
-        }
     }
 
     public void shutdownMonitoringService() {
         if (executor != null) {
             executor.shutdown();
         }
+    }
+
+    private List<MonitoringJob> buildJobs() {
+        List<MonitoringJob> jobs = new LinkedList<>();
+        for (Property prop : configuration.getProperty()) {
+            boolean exists = false; 
+            System.out.println(prop.getValue() + ":" + prop.getName());
+            for (MonitoringJob job : jobs) {
+                if (job.getMBean().getCanonicalKeyPropertyListString()
+                        .equals(prop.getValue())) {
+                    job.addAttribute(prop.getName());
+                    exists = true;
+                    break;
+                }
+            }
+
+            if (!exists) {
+                ObjectName name;
+                List<String> list; 
+                try {
+                    name = new ObjectName(prop.getValue());
+                    list = new LinkedList<>();
+                    list.add(prop.getName());
+                    jobs.add(new MonitoringJob(name,list));
+                } catch (MalformedObjectNameException ex) {
+                    Logger.getLogger(MonitoringService.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }
+        return jobs;
     }
 }

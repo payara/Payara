@@ -17,14 +17,18 @@ import fish.payara.jmx.monitoring.MonitoringJob;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import org.glassfish.api.admin.config.ConfigExtension;
+import org.glassfish.api.admin.config.PropertiesDesc;
+import org.glassfish.api.admin.config.PropertyDesc;
 import org.jvnet.hk2.config.*;
+import org.jvnet.hk2.config.types.Property;
+import org.jvnet.hk2.config.types.PropertyBag;
 
 /**
  *
  * @author savage
  */
 @Configured
-public interface JMXMonitoringServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
+public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigExtension, PropertyBag {
 
     @Attribute(defaultValue="false",dataType=Boolean.class)
     Boolean getEnabled();
@@ -38,15 +42,15 @@ public interface JMXMonitoringServiceConfiguration extends ConfigBeanProxy, Conf
     String getHost();
     void host(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue="1099",dataType=String.class)
+    @Attribute(defaultValue="8686",dataType=String.class)
     String getPort();
     void port(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue="15",dataType=Long.class)
     Long getLogFrequency();
     void logfrequency(String value) throws PropertyVetoException;
-
-    @Element("*")
-    List<MonitoringJob> getMonitoringJobList();
-
+   
+    @Element
+    @Override
+    List<Property> getProperty();
 }

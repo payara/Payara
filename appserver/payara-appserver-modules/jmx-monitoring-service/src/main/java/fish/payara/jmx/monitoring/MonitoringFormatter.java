@@ -15,6 +15,8 @@ package fish.payara.jmx.monitoring;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.management.MBeanServerConnection;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
@@ -38,12 +40,19 @@ public class MonitoringFormatter implements Runnable {
     
     @Override
     public void run() {
+
+        if (null == connection) {
+            try {
+                createNewConnection();
+            } catch (IOException ex) {
+                Logger.getLogger(MonitoringFormatter.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
         StringBuilder monitoringString = new StringBuilder();
 
         for (MonitoringJob job : jobs) {
-            if (job.getEnabled()) {
                 monitoringString.append(job.getMonitoringInfo(connection));
-            }
         }
         // Replace this with the relevant formatting when ready
         System.out.println(monitoringString.toString());
@@ -52,7 +61,7 @@ public class MonitoringFormatter implements Runnable {
     public void createNewConnection() throws IOException {
         JMXServiceURL serviceUrl = new JMXServiceURL(serviceURL);
         JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
-        this.connection = jmxConnector.getMBeanServerConnection(); 
+        this.connection = jmxConnector.getMBeanServerConnection();
     }
     
     public void setServiceURL(String value) {

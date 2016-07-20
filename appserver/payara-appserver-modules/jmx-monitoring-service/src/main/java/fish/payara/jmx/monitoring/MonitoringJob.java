@@ -13,13 +13,10 @@
  */
 package fish.payara.jmx.monitoring;
 
-import fish.payara.jmx.monitoring.configuration.MonitoringJobConfiguration;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.inject.Inject;
-import javax.inject.Named;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
@@ -27,8 +24,6 @@ import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.jvnet.hk2.annotations.Optional;
 
 /**
  *
@@ -36,58 +31,51 @@ import org.jvnet.hk2.annotations.Optional;
  */
 public class MonitoringJob {
 
-    @Inject
-    @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
-    @Optional
-    MonitoringJobConfiguration configuration;
-
     private final ObjectName mBean;
-    private final List<MonitoringAttribute> attributes;
-    
-    private boolean enabled;
+    private final List<String> attributes;
 
-    public MonitoringJob(ObjectName mbean, List<MonitoringAttribute> attributes) throws MalformedObjectNameException {
-        this.mBean = new ObjectName(configuration.getMBean());
-        this.enabled = configuration.getEnabled(); 
-        this.attributes = configuration.getMonitoringAttributeList();
+    public MonitoringJob(ObjectName mBean, List<String> attributes) throws MalformedObjectNameException {
+        this.mBean = mBean; 
+        this.attributes = attributes;
     }
 
     public String getMonitoringInfo(MBeanServerConnection connection) {
         StringBuilder monitoringString = new StringBuilder();
-        monitoringString.append(mBean.getDomain());
 
-        for (MonitoringAttribute attribute : attributes) {
-            if (attribute.getEnabled()) {
+        for (String attribute : attributes) {
                 try {
                     String value = getAttributeValue(attribute, connection);
+                    monitoringString.append(attribute);
+                    monitoringString.append("=");
                     monitoringString.append(value);
+                    monitoringString.append(" ");
                 } catch (MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException ex) {
                     Logger.getLogger(MonitoringJob.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }
         }
 
         return monitoringString.toString();
-    }
-
-    public boolean getEnabled() {
-        return enabled;
     }
 
     public ObjectName getMBean() {
         return mBean;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public List<String> getAttributes() {
+        return attributes;
     }
 
-    private String getAttributeValue(MonitoringAttribute attribute,
+    private String getAttributeValue(String attributeName,
                                 MBeanServerConnection connection) throws 
                                 MBeanException, AttributeNotFoundException, 
                                 InstanceNotFoundException, ReflectionException, 
                                 IOException {
-        String name = attribute.getAttributeName();
-        return connection.getAttribute(mBean, name).toString();
+        return connection.getAttribute(mBean, attributeName).toString();
+    }
+
+    public void addAttribute(String attribute) {
+        if (!attributes.contains(attribute)) {
+            attributes.add(attribute);
+        }
     }
 }
