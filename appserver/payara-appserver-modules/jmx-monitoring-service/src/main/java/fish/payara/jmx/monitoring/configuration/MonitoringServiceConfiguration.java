@@ -13,12 +13,9 @@
  */
 package fish.payara.jmx.monitoring.configuration;
 
-import fish.payara.jmx.monitoring.MonitoringJob;
 import java.beans.PropertyVetoException;
 import java.util.List;
 import org.glassfish.api.admin.config.ConfigExtension;
-import org.glassfish.api.admin.config.PropertiesDesc;
-import org.glassfish.api.admin.config.PropertyDesc;
 import org.jvnet.hk2.config.*;
 import org.jvnet.hk2.config.types.Property;
 import org.jvnet.hk2.config.types.PropertyBag;

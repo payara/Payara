@@ -35,6 +35,7 @@ import org.jvnet.hk2.annotations.Service;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import org.jvnet.hk2.config.types.Property;
@@ -68,22 +69,7 @@ public class MonitoringService implements EventListener {
     @PostConstruct
     public void postConstruct() throws NamingException { 
         if (configuration != null && configuration.getEnabled()) {
-            // <<<< TEST BLOCK >>>>
-            System.out.println(configuration.getEnabled());
-            System.out.println(configuration.getLogType());
-            System.out.println(configuration.getHost());
-            System.out.println(configuration.getPort());
-            System.out.println(configuration.getLogFrequency());
-            // <<<< TEST BLOCK >>>>
             bootstrapMonitoringService();
-        } else if (configuration != null) {
-            // <<<< TEST BLOCK >>>>
-            System.out.println(configuration.getEnabled());
-            System.out.println(configuration.getLogType());
-            System.out.println(configuration.getHost());
-            System.out.println(configuration.getPort());
-            System.out.println(configuration.getLogFrequency());
-            // <<<< TEST BLOCK >>>>
         }
     }
 
@@ -97,6 +83,10 @@ public class MonitoringService implements EventListener {
         }
     }
 
+    /**
+     * Bootstrap process for the monitoring service
+     * Creates thread pool and the MonitoringFormatter, scheduling it
+     */
     public void bootstrapMonitoringService() {
         if (configuration != null) {
             executor = Executors.newScheduledThreadPool(4, new ThreadFactory() {
@@ -114,27 +104,33 @@ public class MonitoringService implements EventListener {
                                         buildJobs());
             System.out.println(configuration.getEnabled());
             if (configuration.getEnabled()) {
-                /*
                 executor.scheduleAtFixedRate(formatter, 5, 
                         configuration.getLogFrequency(), 
                         TimeUnit.SECONDS);
-                */
             }
 
         } 
     }
 
+    /**
+     * Shuts the scheduler down
+     */
     public void shutdownMonitoringService() {
         if (executor != null) {
             executor.shutdown();
         }
     }
 
+    /**
+     * Builds the monitoring jobs from the service configuration
+     * 
+     * @return List of built jobs.
+     */
     private List<MonitoringJob> buildJobs() {
         List<MonitoringJob> jobs = new LinkedList<>();
         for (Property prop : configuration.getProperty()) {
             boolean exists = false; 
-            System.out.println(prop.getValue() + ":" + prop.getName());
+            System.out.println(prop.getValue() + " : " + prop.getName());
             for (MonitoringJob job : jobs) {
                 if (job.getMBean().getCanonicalKeyPropertyListString()
                         .equals(prop.getValue())) {

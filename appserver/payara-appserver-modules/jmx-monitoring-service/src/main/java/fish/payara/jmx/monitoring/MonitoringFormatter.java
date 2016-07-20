@@ -28,6 +28,8 @@ import javax.management.remote.JMXServiceURL;
  */
 public class MonitoringFormatter implements Runnable {
 
+    private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
+
     private final List<MonitoringJob> jobs;
     
     private String serviceURL;
@@ -54,8 +56,8 @@ public class MonitoringFormatter implements Runnable {
         for (MonitoringJob job : jobs) {
                 monitoringString.append(job.getMonitoringInfo(connection));
         }
-        // Replace this with the relevant formatting when ready
-        System.out.println(monitoringString.toString());
+        
+        LOGGER.info(monitoringString.toString());
     }
 
     public void createNewConnection() throws IOException {
