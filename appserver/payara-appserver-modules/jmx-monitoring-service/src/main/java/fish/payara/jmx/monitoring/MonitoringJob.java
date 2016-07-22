@@ -24,6 +24,7 @@ import javax.management.MBeanServerConnection;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
+import javax.management.openmbean.CompositeDataSupport;
 
 /**
  *
@@ -44,10 +45,9 @@ public class MonitoringJob {
 
         for (String attribute : attributes) {
                 try {
-                    String value = getAttributeValue(attribute, connection);
-                    monitoringString.append(attribute);
-                    monitoringString.append("=");
-                    monitoringString.append(value);
+                    Object responseObj = getAttributeObject(attribute, connection);
+                    String valueString = getValueString(attribute, responseObj);
+                    monitoringString.append(valueString);
                     monitoringString.append(" ");
                 } catch (MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException ex) {
                     Logger.getLogger(MonitoringJob.class.getName()).log(Level.SEVERE, null, ex);
@@ -65,12 +65,28 @@ public class MonitoringJob {
         return attributes;
     }
 
-    private String getAttributeValue(String attributeName,
+    private Object getAttributeObject(String attributeName,
                                 MBeanServerConnection connection) throws 
                                 MBeanException, AttributeNotFoundException, 
                                 InstanceNotFoundException, ReflectionException, 
                                 IOException {
-        return connection.getAttribute(mBean, attributeName).toString();
+        return connection.getAttribute(mBean, attributeName);
+    }
+
+    private String getValueString(String attributeName, Object attributeObj) {
+        String attributeValue = "";       
+
+        if (attributeObj.getClass() == CompositeDataSupport.class) {
+            CompositeDataSupport compositeObj = (CompositeDataSupport) attributeObj;
+            for (String entry : compositeObj.getCompositeType().keySet()) {
+                attributeValue += entry + attributeName + "=" + compositeObj.get(entry).toString() + " ";
+            }
+        } else {
+            attributeValue += attributeName + "=" + attributeObj.toString();
+        }
+
+
+        return attributeValue;
     }
 
     public void addAttribute(String attribute) {
