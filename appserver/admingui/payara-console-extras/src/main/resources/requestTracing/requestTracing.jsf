@@ -35,12 +35,12 @@
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
-            setPageSessionAttribute(key="enabledSelected", value="true");
+        setPageSessionAttribute(key="enabledSelected", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
         /> 
 </event>
-
+        
 <sun:form id="propertyForm">
 #include "/payaraExtras/requestTracing/requestTracingTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
@@ -59,21 +59,23 @@
         </sun:panelGroup>
     </facet>
 </sun:title>
+<sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-<sun:propertySheetSection >
-    <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
-        <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
-    </sun:property>
-    <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
-        <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
-    </sun:property>
-    <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
-        <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
-    </sun:property>
-    <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
-        <sun:textField id="thresholdValue" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
-    </sun:property>
-</sun:propertySheetSection>
+  <sun:propertySheetSection id="requestTracing">
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.enabled}"  helpText="$resource{i18nrt.requestTracing.configuration.enabledHelp}">
+            <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.dynamic}"  helpText="$resource{i18nrt.requestTracing.configuration.dynamicHelp}">
+            <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="thresholdUnitProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdUnit}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdUnitHelp}">
+            <sun:dropDown id="thresholdUnit" selected="#{pageSession.valueMap['thresholdUnit']}" labels={"NANOSECONDS", "MICROSECONDS", "MILLISECONDS", "SECONDS", "MINUTES", "HOURS", "DAYS"} />
+        </sun:property>
+        <sun:property id="thresholdValueProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nrt.requestTracing.configuration.thresholdValue}"  helpText="$resource{i18nrt.requestTracing.configuration.thresholdValueHelp}">
+            <sun:textField id="thresholdValue" columns="$int{40}"  styleClass="integer" maxLength="30" text="#{pageSession.valueMap['thresholdValue']}" />
+        </sun:property>
+    </sun:propertySheetSection>
+</sun:propertySheet>
 </sun:form>
 </define>
 </composition>

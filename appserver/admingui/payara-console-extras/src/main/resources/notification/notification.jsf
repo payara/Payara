@@ -35,7 +35,7 @@
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"enabled","dynamic"});
         if (#{pageSession.valueMap['enabled']}=true) {
-            setPageSessionAttribute(key="enabledSelected", value="true");
+        setPageSessionAttribute(key="enabledSelected", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
         /> 
@@ -59,15 +59,17 @@
         </sun:panelGroup>
     </facet>
 </sun:title>
+<sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-<sun:propertySheetSection >
-    <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.enabled}"  helpText="$resource{i18nn.notification.configuration.enabledHelp}">
-        <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
-    </sun:property>
-    <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.dynamic}"  helpText="$resource{i18nn.notification.configuration.dynamicHelp}">
-        <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
-    </sun:property>
-</sun:propertySheetSection>
+    <sun:propertySheetSection id="notification">
+        <sun:property id="enabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.enabled}"  helpText="$resource{i18nn.notification.configuration.enabledHelp}">
+            <sun:checkbox id="enabledProp" selected="#{pageSession.enabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.dynamic}"  helpText="$resource{i18nn.notification.configuration.dynamicHelp}">
+            <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property>
+    </sun:propertySheetSection>
+</sun:propertySheet>
 </sun:form>
 </define>
 </composition>
