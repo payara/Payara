@@ -27,21 +27,22 @@
     <!beforeCreate   
         setSessionAttribute(key="notificationTabs" value="notificationConfigureNotifier"); 
         setSessionAttribute(key="notificationTabs" value="notificationConfigureNotifier"); 
-          
+
         getRequestValue(key="configName" value="#{pageSession.configName}" );
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.configName}");
-        
+
         gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-notification-notifier-configuration?target=#{pageSession.configName}"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.getNotificationNotifierConfiguration}");
         mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.configName}");
         setPageSessionAttribute(key="convertToFalseList", value={"notifierEnabled","dynamic"});
         if (#{pageSession.valueMap['notifierEnabled']}=true) {
-            setPageSessionAttribute(key="notifierEnabledSelected", value="true");
+        setPageSessionAttribute(key="notifierEnabledSelected", value="true");
         }
         setPageSessionAttribute(key="dynamic", value="true");
         /> 
 </event>
+
 <sun:form id="propertyForm">
 #include "/payaraExtras/notification/notificationTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
@@ -60,18 +61,20 @@
         </sun:panelGroup>
     </facet>
 </sun:title>
+<sun:propertySheet id="propertySheet">
 #include "/common/shared/configNameSection.inc"
-<sun:propertySheetSection >
-    <sun:property id="notifierServiceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.notifier.name}">
-        <sun:staticText id="notifierName" text="#{pageSession.valueMap['notifierName']}"/>
-    </sun:property> 
-    <sun:property id="notifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.notifier.enabled}"  helpText="$resource{i18nn.notification.configuration.notifier.enabledHelp}">
-        <sun:checkbox id="notifierEnabled" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
-    </sun:property>
-    <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.notifier.dynamic}"  helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
-        <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
-    </sun:property> 
-</sun:propertySheetSection>
+    <sun:propertySheetSection id="notificationNotifier">
+        <sun:property id="notifierServiceNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.notifier.name}">
+            <sun:staticText id="notifierName" text="#{pageSession.valueMap['notifierName']}"/>
+        </sun:property> 
+        <sun:property id="notifierEnabledProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.notifier.enabled}"  helpText="$resource{i18nn.notification.configuration.notifier.enabledHelp}">
+            <sun:checkbox id="notifierEnabled" selected="#{pageSession.notifierEnabledSelected}" selectedValue="true" />
+        </sun:property>
+        <sun:property id="dynamic" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nn.notification.configuration.notifier.dynamic}"  helpText="$resource{i18nn.notification.configuration.notifier.dynamicHelp}">
+            <sun:checkbox id="dynamic" selected="#{pageSession.dynamic}" selectedValue="true" />
+        </sun:property> 
+    </sun:propertySheetSection>
+</sun:propertySheet>
 </sun:form>
 </define>
 </composition>

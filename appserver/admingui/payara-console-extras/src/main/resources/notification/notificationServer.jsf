@@ -35,19 +35,16 @@
 </event>
 
 <sun:form id="propertyForm">
-
 #include "/common/appServer/serverInstTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
-
-    <sun:title id="propertyContentPage" title="$resource{i18nn.notification.serverTabs}" helpText="$resource{i18nn.notification.serverTabs.titleHelp}" >
-     <sun:button id="notificationLogViewer" text="$resource{i18nn.button.notificationLogViewer}"  primary="#{false}"
-                    onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/management/domain/notification-log-view','NotificationLogViewer','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
-                /> 
-    </sun:title>
-#include "/common/shared/nameSection.inc"
-    <sun:propertySheetSection >
+<sun:title id="propertyContentPage" title="$resource{i18nn.notification.serverTabs}" helpText="$resource{i18nn.notification.serverTabs.titleHelp}" />
+    <sun:propertySheetSection id="NotificationServer">
+        <sun:property id="viewNotificationLog"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}">
+            <sun:button id="notificationLogViewer" text="$resource{i18nn.button.notificationLogViewer}"  primary="#{false}"
+                        onClick="javascript:var win=window.open('#{facesContext.externalContext.requestContextPath}/management/domain/notification-log-view','NotificationLogViewer','width='+(screen.width-300)+',height='+(screen.height-75)+',top=0,left=0,toolbar=no,status=no,menubar=no,scrollbars=yes,resizable=yes,directories=no,location=no');win.focus(); return false;"
+                        /> 
+        </sun:property>
     </sun:propertySheetSection>
-
 </sun:form>
 </define>
 </composition>
