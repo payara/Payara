@@ -62,7 +62,7 @@ class HealthCheckTask implements Runnable {
                         level = Level.OFF;
                         break;
                     case FINE:
-                        logger.log(Level.FINE, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
+                        level = Level.FINE;
                         break;
                 }
                 check.sendNotification(level, "{0}:{1}", new Object[]{name, checkResult.getCumulativeMessages()});
