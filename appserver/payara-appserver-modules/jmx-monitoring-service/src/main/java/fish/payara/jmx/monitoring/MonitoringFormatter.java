@@ -13,60 +13,34 @@
  */
 package fish.payara.jmx.monitoring;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.management.MBeanServerConnection;
-import javax.management.remote.JMXConnector;
-import javax.management.remote.JMXConnectorFactory;
-import javax.management.remote.JMXServiceURL;
+import javax.management.MBeanServer;
 
 /**
  *
  * @author savage
  */
 public class MonitoringFormatter implements Runnable {
-
     private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
 
+    private final MBeanServer mBeanServer;
     private final List<MonitoringJob> jobs;
-    
-    private String serviceURL;
-    private MBeanServerConnection connection;
 
-    public MonitoringFormatter(String serviceURLString, List<MonitoringJob> jobs) {
-        this.serviceURL = serviceURLString;
+    public MonitoringFormatter(MBeanServer mBeanServer,List<MonitoringJob> jobs) {
+        this.mBeanServer = mBeanServer;
         this.jobs = jobs;
     }
     
     @Override
     public void run() {
-
-        if (null == connection) {
-            try {
-                createNewConnection();
-            } catch (IOException ex) {
-                Logger.getLogger(MonitoringFormatter.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
         StringBuilder monitoringString = new StringBuilder();
 
         for (MonitoringJob job : jobs) {
-                monitoringString.append(job.getMonitoringInfo(connection));
+                monitoringString.append(job.getMonitoringInfo(mBeanServer));
         }
         
         LOGGER.info(monitoringString.toString());
     }
 
-    public void createNewConnection() throws IOException {
-        JMXServiceURL serviceUrl = new JMXServiceURL(serviceURL);
-        JMXConnector jmxConnector = JMXConnectorFactory.connect(serviceUrl, null);
-        this.connection = jmxConnector.getMBeanServerConnection();
-    }
-    
-    public void setServiceURL(String value) {
-        this.serviceURL = value;
-    }
 }

@@ -35,14 +35,6 @@ public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigE
     String getLogType();
     void logtype(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue="localhost",dataType=String.class)
-    String getHost();
-    void host(String value) throws PropertyVetoException;
-
-    @Attribute(defaultValue="8686",dataType=String.class)
-    String getPort();
-    void port(String value) throws PropertyVetoException;
-
     @Attribute(defaultValue="15",dataType=Long.class)
     Long getLogFrequency();
     void logfrequency(String value) throws PropertyVetoException;

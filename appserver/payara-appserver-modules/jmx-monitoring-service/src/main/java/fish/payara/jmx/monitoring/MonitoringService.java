@@ -33,9 +33,11 @@ import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Optional;
 import org.jvnet.hk2.annotations.Service;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
+import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import org.jvnet.hk2.config.types.Property;
@@ -55,9 +57,6 @@ public class MonitoringService implements EventListener {
     @Optional
     MonitoringServiceConfiguration configuration;    
 
-    @Inject
-    private ServiceLocator habitat;
-
     @Inject 
     private Events events;
 
@@ -68,9 +67,7 @@ public class MonitoringService implements EventListener {
 
     @PostConstruct
     public void postConstruct() throws NamingException { 
-        if (configuration != null && configuration.getEnabled()) {
-            bootstrapMonitoringService();
-        }
+        events.register(this);
     }
 
     @Override
@@ -79,7 +76,9 @@ public class MonitoringService implements EventListener {
             executor.shutdownNow();
         }
         else if (event.is(EventTypes.SERVER_READY)) {
-            bootstrapMonitoringService();
+            if (configuration != null && configuration.getEnabled()) {
+                bootstrapMonitoringService();
+            }
         }
     }
 
@@ -92,17 +91,15 @@ public class MonitoringService implements EventListener {
             executor = Executors.newScheduledThreadPool(4, new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
-                    return new Thread(r, PREFIX.concat(Integer.toString(threadNumber.getAndIncrement())).concat(")"));
+                    return new Thread(r, PREFIX.concat(Integer.toString
+                        (threadNumber.getAndIncrement())).concat(")")
+                    );
                 }
             });
 
-            String urlString = "service:jmx:rmi:///jndi/rmi://" 
-                    + configuration.getHost() + ":" 
-                    + configuration.getPort() + "/jmxrmi";
-
-            formatter = new MonitoringFormatter(urlString,
-                                        buildJobs());
-            System.out.println(configuration.getEnabled());
+            MBeanServer server = getPlatformMBeanServer(); 
+            formatter = new MonitoringFormatter(server, buildJobs());
+            
             if (configuration.getEnabled()) {
                 executor.scheduleAtFixedRate(formatter, 5, 
                         configuration.getLogFrequency(), 
@@ -128,9 +125,10 @@ public class MonitoringService implements EventListener {
      */
     private List<MonitoringJob> buildJobs() {
         List<MonitoringJob> jobs = new LinkedList<>();
+        
         for (Property prop : configuration.getProperty()) {
             boolean exists = false; 
-            System.out.println(prop.getValue() + " : " + prop.getName());
+            
             for (MonitoringJob job : jobs) {
                 if (job.getMBean().getCanonicalKeyPropertyListString()
                         .equals(prop.getValue())) {

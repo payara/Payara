@@ -13,14 +13,13 @@
  */
 package fish.payara.jmx.monitoring;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
 import javax.management.MBeanException;
-import javax.management.MBeanServerConnection;
+import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
@@ -40,16 +39,16 @@ public class MonitoringJob {
         this.attributes = attributes;
     }
 
-    public String getMonitoringInfo(MBeanServerConnection connection) {
+    public String getMonitoringInfo(MBeanServer server) {
         StringBuilder monitoringString = new StringBuilder();
 
         for (String attribute : attributes) {
                 try {
-                    Object responseObj = getAttributeObject(attribute, connection);
+                    Object responseObj = server.getAttribute(mBean, attribute);
                     String valueString = getValueString(attribute, responseObj);
                     monitoringString.append(valueString);
                     monitoringString.append(" ");
-                } catch (MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException | IOException ex) {
+                } catch (MBeanException | AttributeNotFoundException | InstanceNotFoundException | ReflectionException ex) {
                     Logger.getLogger(MonitoringJob.class.getName()).log(Level.SEVERE, null, ex);
                 }
         }
@@ -65,28 +64,24 @@ public class MonitoringJob {
         return attributes;
     }
 
-    private Object getAttributeObject(String attributeName,
-                                MBeanServerConnection connection) throws 
-                                MBeanException, AttributeNotFoundException, 
-                                InstanceNotFoundException, ReflectionException, 
-                                IOException {
-        return connection.getAttribute(mBean, attributeName);
-    }
-
     private String getValueString(String attributeName, Object attributeObj) {
-        String attributeValue = "";       
+        StringBuilder attributeString = new StringBuilder();       
 
         if (attributeObj.getClass() == CompositeDataSupport.class) {
             CompositeDataSupport compositeObj = (CompositeDataSupport) attributeObj;
             for (String entry : compositeObj.getCompositeType().keySet()) {
-                attributeValue += entry + attributeName + "=" + compositeObj.get(entry).toString() + " ";
+                attributeString.append(entry);
+                attributeString.append(attributeName);
+                attributeString.append("=");
+                attributeString.append(compositeObj.get(entry).toString());
             }
         } else {
-            attributeValue += attributeName + "=" + attributeObj.toString();
+            attributeString.append(attributeName);
+            attributeString.append("=");
+            attributeString.append(attributeObj.toString());
         }
 
-
-        return attributeValue;
+        return attributeString.toString();
     }
 
     public void addAttribute(String attribute) {
@@ -94,4 +89,5 @@ public class MonitoringJob {
             attributes.add(attribute);
         }
     }
+
 }
