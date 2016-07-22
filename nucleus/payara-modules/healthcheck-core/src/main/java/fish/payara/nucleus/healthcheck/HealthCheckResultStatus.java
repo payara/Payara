@@ -21,7 +21,8 @@ public enum HealthCheckResultStatus {
     CHECK_ERROR(1),
     CRITICAL(2),
     WARNING(3),
-    GOOD(4);
+    GOOD(4),
+    FINE(5);
 
     private final int level;
 
