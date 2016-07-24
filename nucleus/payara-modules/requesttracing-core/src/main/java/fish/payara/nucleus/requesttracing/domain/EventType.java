@@ -20,13 +20,6 @@ package fish.payara.nucleus.requesttracing.domain;
  */
 public enum EventType {
     TRACE_START,
-    SERVLET,
-    SERVLET_INCLUDE,
-    SERVLET_FORWARD,
-    EJB,
-    EJB_METHOD,
-    WS,
-    RESTWS,
-    WEBSOCKET,
+    REQUEST_EVENT,
     TRACE_END;
 }

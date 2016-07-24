@@ -60,7 +60,7 @@ package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.RestWSRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.apache.catalina.*;
 import org.apache.catalina.security.SecurityUtil;
 import org.apache.catalina.util.Enumerator;
@@ -1670,12 +1670,16 @@ public class StandardWrapper
                                                serviceType,
                                                principal);                                                   
                 } else {
+                    if (requestTracing.isRequestTracingEnabled()) {
+                        if (serv instanceof ServletContainer) {
+                            RequestEvent requestEvent = constructWebServiceRequestEvent((HttpServletRequest)request);
+                            requestTracing.traceRequestEvent(requestEvent);
+                        } else if (serv instanceof Servlet) {
+                            requestTracing.traceRequestEvent(constructServletRequestEvent((HttpServletRequest)request, serv));
+                        }
+                    }
                     serv.service((HttpServletRequest) request,
                                  (HttpServletResponse) response);
-                    if (serv instanceof ServletContainer && requestTracing.isRequestTracingEnabled()) {
-                        RestWSRequestEvent requestEvent = constructWebServiceRequestEvent((HttpServletRequest)request, EventType.RESTWS);
-                        requestTracing.traceRequestEvent(requestEvent);
-                    }
                 }
             } else {
                 serv.service(request, response);
@@ -1731,17 +1735,31 @@ public class StandardWrapper
     // END IASRI 4665318
 
 
-    private RestWSRequestEvent constructWebServiceRequestEvent(HttpServletRequest httpServletRequest, EventType eventType) {
-        RestWSRequestEvent requestEvent  = new RestWSRequestEvent();
-        requestEvent.setEventType(eventType);
-        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
+    private RequestEvent constructWebServiceRequestEvent(HttpServletRequest httpServletRequest) {
+        RequestEvent requestEvent  = new RequestEvent("RESTWSRequest");
+        requestEvent.addProperty("URL", httpServletRequest.getRequestURL().toString());
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.getHeaders().put(headerName, headers);
+            requestEvent.addProperty(headerName,headers.toString());
         }
-        requestEvent.setFormMethod(httpServletRequest.getMethod());
+        requestEvent.addProperty("Method",httpServletRequest.getMethod());
+        return requestEvent;
+    }
+    
+    private RequestEvent constructServletRequestEvent(HttpServletRequest httpServletRequest, Servlet serv) {
+        RequestEvent requestEvent  = new RequestEvent("ServletRequest");
+        requestEvent.addProperty("URL",httpServletRequest.getRequestURL().toString());
+        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
+            requestEvent.addProperty(headerName, headers.toString());
+        }
+        requestEvent.addProperty("Method",httpServletRequest.getMethod());
+        requestEvent.addProperty("QueryString", httpServletRequest.getQueryString());
+        requestEvent.addProperty("Class",serv.getClass().getCanonicalName());
         return requestEvent;
     }
 

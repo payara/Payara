@@ -79,8 +79,6 @@ public class RequestTracingService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        System.out.println("class: " + this.getClass().getName()  + " - loader:" + this.getClass().getClassLoader().getClass().getName());
-
         if (configuration != null) {
             executionOptions.setEnabled(configuration.getEnabled());
             executionOptions.setThresholdValue(configuration.getThresholdValue());
@@ -93,6 +91,7 @@ public class RequestTracingService implements EventListener {
         events.register(this);
     }
 
+    @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapRequestTracingService();
@@ -100,7 +99,7 @@ public class RequestTracingService implements EventListener {
     }
 
     private void bootstrapRequestTracingService() {
-        if (executionOptions.isEnabled()) {
+        if (executionOptions != null && executionOptions.isEnabled()) {
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
         }
     }
@@ -109,26 +108,31 @@ public class RequestTracingService implements EventListener {
         if (!isRequestTracingEnabled()) {
             return null;
         }
-        RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, server.getName(), domain.getName());
+        RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");
+        requestEvent.addProperty("Server", server.getName());
+        requestEvent.addProperty("Domain", domain.getName());
         requestEventStore.storeEvent(requestEvent);
         return requestEvent.getId();
     }
 
     public void traceRequestEvent(RequestEvent requestEvent) {
-        requestEventStore.storeEvent(requestEvent);
+        if (isRequestTracingEnabled()) {
+            requestEventStore.storeEvent(requestEvent);
+        }
     }
 
     public void endTrace() {
         if (!isRequestTracingEnabled()) {
             return;
         }
-        requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, server.getName(), domain.getName()));
+        requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "TraceEnd"));
         Long thresholdValueInMillis = getThresholdValueInMillis();
 
-        if (requestEventStore.calculateElapsedTime() > thresholdValueInMillis) {
+        long elapsedTime = requestEventStore.getElapsedTime();
+        if ( elapsedTime > thresholdValueInMillis) {
             for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList()) {
                 if (notifierExecutionOptions.isEnabled()) {
-                    notificationService.notify(eventFactory.build(notifierExecutionOptions.getNotifierType()));
+                    notificationService.notify(eventFactory.build(elapsedTime, notifierExecutionOptions.getNotifierType()));
                 }
             }
         }

@@ -71,8 +71,7 @@ import javax.servlet.ReadListener;
 import javax.servlet.http.WebConnection;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.WebSocketRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.apache.catalina.ContainerEvent;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
@@ -498,8 +497,7 @@ public class InputBuffer extends Reader
                         }
                         readListener.onDataAvailable();
                         if (isWebSocketRequest()) {
-                            WebSocketRequestEvent requestEvent = new WebSocketRequestEvent();
-                            requestEvent.setEventType(EventType.WEBSOCKET);
+                            RequestEvent requestEvent = new RequestEvent("WebSocketRequest");
                             requestTracing.traceRequestEvent(requestEvent);
                             requestTracing.endTrace();
                         }

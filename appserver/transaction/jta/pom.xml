@@ -163,5 +163,11 @@
             <groupId>org.glassfish.gmbal</groupId>
             <artifactId>gmbal</artifactId>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>requesttracing-core</artifactId>
+            <version>4.1.1.163-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
