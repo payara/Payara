@@ -30,11 +30,17 @@ public class RequestTrace {
     }
     
     private boolean started;
+    private boolean completed;
     private long startTime;
     private long elapsedTime;
     private LinkedList<RequestEvent> trace;
-
+    
     void addEvent(RequestEvent requestEvent) {
+        // Do not add trace events if completed
+        if (completed && requestEvent.getEventType() != EventType.TRACE_START) {
+            return;
+        }
+        
         if (null != requestEvent.getEventType()) switch (requestEvent.getEventType()) {
             case TRACE_START:
                 trace.clear();
@@ -62,6 +68,7 @@ public class RequestTrace {
                 requestEvent.setTraceTime(requestEvent.getTimestamp() - startTime);
                 trace.add(requestEvent);
                 elapsedTime = requestEvent.getTimestamp() - startTime;
+                completed = true;
                     break;
                 }
             default:
@@ -75,16 +82,29 @@ public class RequestTrace {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("RequestTrace{");
-        sb.append("startTime='").append(startTime).append('\'')
-          .append(",elapsedTime='").append(elapsedTime).append('\'');
+        StringBuilder sb = new StringBuilder("{\"RequestTrace\": {");
+        sb.append("\"startTime\":\"").append(startTime).append('"')
+          .append(",\"elapsedTime\":\"").append(elapsedTime).append('"').append(',');
         for (RequestEvent re : trace) {
-            sb.append(re.toString());
+            sb.append(re.toString()); 
+            if (re.getEventType() != EventType.TRACE_END) {
+                sb.append(',');
+            }
         }
-        sb.append('}');
+        sb.append("}}");
         return sb.toString();
     }
     
+    // methods for testing
+    boolean isStarted() {
+        return started;
+    }
     
-    
+    LinkedList<RequestEvent> getTrace() {
+        return trace;
+    }
+
+    long getStartTime() {
+        return startTime;
+    }
 }

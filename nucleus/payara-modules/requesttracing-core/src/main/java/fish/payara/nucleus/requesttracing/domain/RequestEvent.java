@@ -88,19 +88,20 @@ public class RequestEvent implements Comparable<RequestEvent> {
     @Override
     public String toString() {
         
-        StringBuilder result = new StringBuilder("\nTraceEvent{");
-        result.append("eventType='").append(eventType).append('\'')
-                .append(", eventName='").append(eventName).append('\'')
-                .append(", id='").append(id).append('\'')
-                .append(", conversationId='").append(conversationId).append('\'')
-                .append(", timestamp='").append(timestamp).append('\'')
-                .append(", traceTime='").append(traceTime).append('\'');
+        StringBuilder result = new StringBuilder("\n\"TraceEvent\": {");
+        result.append("\"eventType\": \"").append(eventType).append("\",")
+                .append("\"eventName\":\"").append(eventName).append("\",")
+                .append("\"id=\":\"").append(id).append("\",")
+                .append("\"conversationId=\":\"").append(conversationId).append("\",")
+                .append("\"timestamp=\":\"").append(timestamp).append("\",");
 
         if (properties != null) {
             for (String key : properties.keySet()) {
-                result.append(", ").append(key).append("='").append(properties.get(key)).append('\'');
+                result.append("\"").append(key).append("\": \"").append(properties.get(key)).append("\",");
             }
         }
+        
+        result.append("\"traceTime=\":\"").append(traceTime).append('"');
         result.append('}');
         return result.toString();
     }

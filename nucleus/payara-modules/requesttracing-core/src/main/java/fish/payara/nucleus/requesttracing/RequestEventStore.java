@@ -55,4 +55,9 @@ public class RequestEventStore {
     String getTraceAsString() {
         return eventStore.get().toString();
     }
+    
+    // test methods
+    RequestTrace getTrace() {
+        return eventStore.get();
+    }
 }
