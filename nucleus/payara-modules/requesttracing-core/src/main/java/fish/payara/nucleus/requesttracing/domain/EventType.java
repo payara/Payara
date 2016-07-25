@@ -21,5 +21,5 @@ package fish.payara.nucleus.requesttracing.domain;
 public enum EventType {
     TRACE_START,
     REQUEST_EVENT,
-    TRACE_END;
+    TRACE_END
 }

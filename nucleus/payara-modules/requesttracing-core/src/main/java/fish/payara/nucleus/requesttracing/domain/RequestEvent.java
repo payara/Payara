@@ -19,7 +19,7 @@ import java.util.UUID;
 /**
  * @author mertcaliskan
  *
- * Base event class that stores traced values with the help of interceptors.
+ * Event class that stores traced values.
  */
 public class RequestEvent implements Comparable<RequestEvent> {
 
