@@ -20,11 +20,9 @@ import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.logging.Level;
 
-import static fish.payara.nucleus.notification.TimeHelper.prettyPrintDuration;
 
 /**
  * @author mertcaliskan
@@ -38,10 +36,10 @@ class RequestTracingNotificationEventFactory {
     @Inject
     private RequestEventStore store;
 
-    NotificationEvent build(NotifierType notifierType) {
+    NotificationEvent build(long elapsedTime, NotifierType notifierType) {
         if (NotifierType.LOG.equals(notifierType)) {
             LogNotificationEvent event = new LogNotificationEvent();
-            event.setUserMessage("Request execution exceeded the given threshold");
+            event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
             event.setLevel(Level.INFO);
             event.setMessage(getRequestEventsAsStr());
             return event;
@@ -50,10 +48,6 @@ class RequestTracingNotificationEventFactory {
     }
 
     private String getRequestEventsAsStr() {
-        StringBuilder sb = new StringBuilder();
-        for (RequestEvent requestEvent : store.getEvents()) {
-            sb.append(requestEvent);
-        }
-        return sb.toString();
+        return store.getTraceAsString();
     }
 }

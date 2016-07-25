@@ -69,8 +69,7 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EjbMethodRequestEvent;
-import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -4132,6 +4131,10 @@ public abstract class BaseContainer
                 callFlowInfo.getModuleName(),
                 callFlowInfo.getComponentName(),
                 method_sig);
+        if (requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, true);
+            requestTracing.traceRequestEvent(requestEvent);
+        }
         //callFlowAgent.ejbMethodStart(callFlowInfo);
     }
     
@@ -4142,25 +4145,28 @@ public abstract class BaseContainer
                 callFlowInfo.getComponentName(),
                 th,
                 method_sig);
-
-        if (requestTracing.isRequestTracingEnabled()) {
-            EjbMethodRequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo);
-            requestTracing.traceRequestEvent(requestEvent);
-        }
-
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
+        if (requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, false);
+            requestTracing.traceRequestEvent(requestEvent);
+        }    
     }
 
-    private EjbMethodRequestEvent constructEjbMethodRequestEvent(CallFlowInfo info) {
-        EjbMethodRequestEvent requestEvent = new EjbMethodRequestEvent();
-        requestEvent.setEventType(EventType.EJB_METHOD);
-        requestEvent.setApplicationName(info.getApplicationName());
-        requestEvent.setComponentName(info.getComponentName());
-        requestEvent.setComponentType(info.getComponentType().toString());
-        requestEvent.setModuleName(info.getModuleName());
-        requestEvent.setMethodName(info.getMethod().getName());
-
-        return requestEvent;
+    private RequestEvent constructEjbMethodRequestEvent(CallFlowInfo info, boolean callEnter) {
+        String eventName="EJBMethod-ENTER";
+        if (!callEnter) {
+            eventName="EJBMethod-EXIT";
+        }
+        RequestEvent re = new RequestEvent(eventName);
+        re.addProperty("ApplicationName", info.getApplicationName());
+        re.addProperty("ComponentName", info.getComponentName());
+        re.addProperty("ComponentType",info.getComponentType().toString());
+        re.addProperty("ModuleName",info.getModuleName());
+        re.addProperty("EJBClass", this.ejbClass.getCanonicalName());
+        re.addProperty("EJBMethod", info.getMethod().getName());
+        re.addProperty("CallerPrincipal", info.getCallerPrincipal());
+        re.addProperty("TX-ID", info.getTransactionId());
+        return re;
     }
 
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,

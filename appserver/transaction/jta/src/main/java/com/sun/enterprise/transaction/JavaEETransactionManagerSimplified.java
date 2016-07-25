@@ -105,7 +105,7 @@ public class JavaEETransactionManagerSimplified
     @Inject private ServiceLocator habitat;
 
     @Inject protected InvocationManager invMgr;
-
+    
     private JavaEETransactionManagerDelegate delegate;
 
     // Sting Manager for Localization
@@ -842,7 +842,7 @@ public class JavaEETransactionManagerSimplified
     public void commit() throws RollbackException,
             HeuristicMixedException, HeuristicRollbackException, SecurityException,
             IllegalStateException, SystemException {
-
+        
         boolean acquiredlock=false;
         try {
             JavaEETransaction tx = transactions.get();

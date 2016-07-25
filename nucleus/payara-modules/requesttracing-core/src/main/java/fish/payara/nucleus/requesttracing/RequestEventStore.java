@@ -32,53 +32,32 @@ import java.util.List;
 @Singleton
 public class RequestEventStore {
 
-    private ThreadLocal<LinkedList<RequestEvent>> eventStore = new ThreadLocal<LinkedList<RequestEvent>>();
+    private ThreadLocal<RequestTrace> eventStore = new ThreadLocal<RequestTrace>() {
+        @Override
+        protected RequestTrace initialValue() {
+            return new RequestTrace();
+        }      
+    };
 
-    void storeEvent(RequestEvent requestEvent) {
-        if (EventType.TRACE_START.equals(requestEvent.getEventType())) {
-            eventStore.set(new LinkedList<RequestEvent>());
-            eventStore.get().add(requestEvent);
-        }
-        else {
-            //TODO Should we assume that the first event is always a start event?
-            //TODO Maybe after testing the execution with a variety of applications.
-            RequestEvent startEvent = fetchEvent(EventType.TRACE_START);
-            if (startEvent != null) {
-                requestEvent.setConversationId(startEvent.getId());
-                eventStore.get().add(requestEvent);
-            }
-        }
+    void storeEvent(RequestEvent requestEvent) {       
+        RequestTrace currentTrace = eventStore.get();
+        currentTrace.addEvent(requestEvent);
     }
 
-    Long calculateElapsedTime() {
-        if (eventStore.get() != null) {
-            RequestEvent startEvent = fetchEvent(EventType.TRACE_START);
-            RequestEvent endEvent = fetchEvent(EventType.TRACE_END);
-            return endEvent.getTimestamp() - startEvent.getTimestamp();
-        }
-        return (long) -1;
+    long getElapsedTime() {
+        return eventStore.get().getElapsedTime();
     }
 
     void flushStore() {
-        if (eventStore != null) {
-            eventStore.remove();
-        }
+        eventStore.set(new RequestTrace());
     }
 
-    List<RequestEvent> getEvents() {
+    String getTraceAsString() {
+        return eventStore.get().toString();
+    }
+    
+    // test methods
+    RequestTrace getTrace() {
         return eventStore.get();
-    }
-
-
-    private RequestEvent fetchEvent(EventType eventType) {
-        if (eventStore.get() == null) {
-            return null;
-        }
-        for (RequestEvent event : eventStore.get()) {
-            if (event.getEventType().equals(eventType)) {
-                return event;
-            }
-        }
-        return null;
     }
 }
