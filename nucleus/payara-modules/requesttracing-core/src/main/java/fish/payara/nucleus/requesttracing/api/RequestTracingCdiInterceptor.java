@@ -44,7 +44,6 @@ public class RequestTracingCdiInterceptor implements Serializable {
         requestEvent.addProperty("TargetClass", ctx.getTarget().getClass().getName());
         requestEvent.addProperty("MethodName", ctx.getMethod().getName());
         requestTracingService.traceRequestEvent(requestEvent);
-
         requestTracingService.endTrace();
         return proceed;
     }
