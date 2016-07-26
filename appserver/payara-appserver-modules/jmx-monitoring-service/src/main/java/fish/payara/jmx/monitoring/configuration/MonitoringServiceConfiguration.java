@@ -27,18 +27,47 @@ import org.jvnet.hk2.config.types.PropertyBag;
 @Configured
 public interface MonitoringServiceConfiguration extends ConfigBeanProxy, ConfigExtension, PropertyBag {
 
+    /**
+     * Boolean value determining if the service is enabled or disabled.
+     *  Default value is false. 
+     * @return 
+     */
     @Attribute(defaultValue="false",dataType=Boolean.class)
     Boolean getEnabled();
     void enabled(String value) throws PropertyVetoException;
-   
-    @Attribute(defaultValue="log",dataType=String.class)
-    String getLogType();
-    void logtype(String value) throws PropertyVetoException;
 
+    /**
+     * Boolean value determining if bootAMX is invoked by the service.
+     *  Default value is false. 
+     * @return 
+     */
+    @Attribute(defaultValue="false",dataType=Boolean.class)
+    Boolean getAmx();
+    void amx(String value) throws PropertyVetoException;
+
+    /**
+     * Frequency of log messages.
+     *  Default value is 15 
+     * @return 
+     */
     @Attribute(defaultValue="15",dataType=Long.class)
     Long getLogFrequency();
     void logfrequency(String value) throws PropertyVetoException;
-   
+
+    /**
+     * TimeUnit for frequency of log messages.
+     *  Default value is TimeUnit.SECONDS 
+     * @return 
+     */
+    @Attribute(defaultValue="SECONDS",dataType=String.class)
+    String getLogFrequencyUnit();
+    void logfrequencyunit(String value) throws PropertyVetoException;
+  
+    /**
+     * Properties listed in the domain.xml.
+     *  Returns a list of properties which are present in the configuration block
+     * @return 
+     */
     @Element
     @Override
     List<Property> getProperty();

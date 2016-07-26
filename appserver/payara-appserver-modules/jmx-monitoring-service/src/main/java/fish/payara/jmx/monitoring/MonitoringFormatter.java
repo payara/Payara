@@ -23,18 +23,32 @@ import javax.management.MBeanServer;
  */
 public class MonitoringFormatter implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
+    private static final String LOGMESSAGE_PREFIX = "PAYARA-MONITORING: ";
 
     private final MBeanServer mBeanServer;
     private final List<MonitoringJob> jobs;
 
+    /**
+     * Constructor for the MonitoringFormatter class.
+     * 
+     * @param mBeanServer The MBeanServer to monitor.
+     * @param jobs List of monitoring jobs to perform.
+     */
     public MonitoringFormatter(MBeanServer mBeanServer,List<MonitoringJob> jobs) {
         this.mBeanServer = mBeanServer;
         this.jobs = jobs;
     }
-    
+   
+    /**
+     * Class runnable method.
+     *  Calls getMonitoringInfo on all MonitoringJobs passing the MBeanServer.
+     *  Uses the results to build a String for the log message.
+     */
     @Override
     public void run() {
         StringBuilder monitoringString = new StringBuilder();
+
+        monitoringString.append(LOGMESSAGE_PREFIX);
 
         for (MonitoringJob job : jobs) {
                 monitoringString.append(job.getMonitoringInfo(mBeanServer));
