@@ -67,6 +67,9 @@ public class MonitoringService implements EventListener {
 
     private ScheduledExecutorService executor;
     private MonitoringFormatter formatter;
+    private boolean enabled;
+    private int amxBootDelay = 10;
+    private int monitoringDelay = amxBootDelay + 15;
 
     @PostConstruct
     public void postConstruct() throws NamingException {
@@ -78,7 +81,8 @@ public class MonitoringService implements EventListener {
         if (event.is(EventTypes.SERVER_SHUTDOWN)) {
             executor.shutdownNow();
         } else if (event.is(EventTypes.SERVER_READY)) {
-            if (configuration != null && configuration.getEnabled()) {
+            if (configuration != null && Boolean.valueOf(configuration.getEnabled())) {
+                enabled = Boolean.valueOf(configuration.getEnabled());
                 bootstrapMonitoringService();
             }
         }
@@ -105,16 +109,19 @@ public class MonitoringService implements EventListener {
 
             formatter = new MonitoringFormatter(server, buildJobs());
 
-            if (configuration.getAmx()) {
-                executor.schedule(new AMXBoot(server), 10, TimeUnit.SECONDS);
-            }
-
-            if (configuration.getEnabled()) {
-                executor.scheduleAtFixedRate(formatter, 20,
-                        configuration.getLogFrequency(),
-                        TimeUnit.valueOf(configuration.getLogFrequencyUnit()));
-            }
-
+            enabled = Boolean.valueOf(configuration.getEnabled());
+            if (enabled) {
+                Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will startup");
+               
+                if (Boolean.valueOf(configuration.getAmx())) {
+                    executor.schedule(new AMXBoot(server), amxBootDelay, TimeUnit.SECONDS);
+                }
+                
+                executor.scheduleAtFixedRate(formatter, monitoringDelay,
+                        TimeUnit.SECONDS.convert(Long.valueOf(configuration.getLogFrequency()), 
+                                TimeUnit.valueOf(configuration.getLogFrequencyUnit())),
+                        TimeUnit.SECONDS);
+            } 
         }
     }
 
@@ -123,7 +130,30 @@ public class MonitoringService implements EventListener {
      */
     public void shutdownMonitoringService() {
         if (executor != null) {
-            executor.shutdown();
+            Logger.getLogger(MonitoringService.class.getName()).log(Level.INFO, "Monitoring Service will shutdown");
+            executor.shutdownNow();
+        }
+    }
+
+    /**
+     * Sets the service to be enabled/disabled.
+     *  Has no effect if there is no change in the value.
+     * @param enabled 
+     */
+    public void setEnabled(Boolean enabled) {
+        amxBootDelay = 0;
+        monitoringDelay = amxBootDelay + 5;
+        
+        if (!this.enabled && enabled) {
+            this.enabled = enabled;
+            bootstrapMonitoringService();
+        } else if (this.enabled && !enabled) {
+            this.enabled = enabled;
+            shutdownMonitoringService();
+        } else if (this.enabled) {
+            this.enabled = enabled;
+            shutdownMonitoringService();
+            bootstrapMonitoringService();
         }
     }
 

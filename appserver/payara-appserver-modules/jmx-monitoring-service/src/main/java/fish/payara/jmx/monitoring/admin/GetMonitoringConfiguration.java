@@ -83,8 +83,8 @@ public class GetMonitoringConfiguration implements AdminCommand {
 
         MonitoringServiceConfiguration monitoringConfig = config.getExtensionByType(MonitoringServiceConfiguration.class);
 
-        actionReport.appendMessage("Monitoring Service Configuration is enabled? " + prettyBool(monitoringConfig.getEnabled()) + "\n");
-        actionReport.appendMessage("Monitoring Service Configuration has AMX enabled? " + prettyBool(monitoringConfig.getAmx()) + "\n");
+        actionReport.appendMessage("Monitoring Service Configuration is enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getEnabled())) + "\n");
+        actionReport.appendMessage("Monitoring Service Configuration has AMX enabled? " + prettyBool(Boolean.valueOf(monitoringConfig.getAmx())) + "\n");
         actionReport.appendMessage("Monitoring Service Configuration log frequency? " + monitoringConfig.getLogFrequency() + " " + monitoringConfig.getLogFrequencyUnit());
         actionReport.appendMessage(StringUtils.EOL);
 
