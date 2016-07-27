@@ -103,6 +103,7 @@ public class PayaraMicro {
     private boolean generateLogo = false;
     private boolean logToFile = false;
     private boolean propsFile = false;
+    private String userPropFile = "";
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
@@ -271,6 +272,8 @@ public class PayaraMicro {
     public PayaraMicro setPropFile(File fileName) {
         System.setProperty("java.util.logging.config.file", fileName.getAbsolutePath());
         propsFile = true;
+        userPropFile = fileName.getAbsolutePath();
+        userPropFileName = fileName.getName();
         return this;
     }
 
@@ -1516,19 +1519,81 @@ public class PayaraMicro {
     private void installFiles(GlassFishProperties gfproperties) {
         // make directories
         File configDir = new File(rootDir.getAbsolutePath(), "config");
+        String[] configFiles;
+        PrintWriter writer;
+        String sCurrentLine;
+        BufferedReader bufferedReader = null;
         new File(rootDir.getAbsolutePath(), "docroot").mkdirs();
         configDir.mkdirs();
-        String[] configFiles = new String[]{"config/keyfile",
-            "config/server.policy",
-            "config/cacerts.jks",
-            "config/keystore.jks",
-            "config/login.conf",
-            "config/logging.properties",
-            "config/loggingToFile.properties",
-            "config/admin-keyfile",
-            "config/default-web.xml",
-            "org/glassfish/embed/domain.xml"
-        };
+        if (propsFile) {
+            File userPropsFile = new File(configDir.getAbsolutePath() + File.separator + userPropFileName);
+            try {
+                if (userPropsFile.exists()) {
+                    userPropsFile.delete();
+                } else {
+                    userPropsFile.createNewFile();
+                }
+            } catch (IOException ex) {
+                 logger.log(Level.SEVERE, null, ex);
+            }
+
+            try {
+                writer = new PrintWriter(userPropsFile.getAbsoluteFile());
+                writer.print("");
+                writer.close();
+            } catch (FileNotFoundException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+
+            try {
+                bufferedReader = new BufferedReader(new FileReader(userPropFile));
+                FileWriter fileWriter = new FileWriter(userPropsFile.getAbsoluteFile());
+                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                while ((sCurrentLine = bufferedReader.readLine()) != null) {
+                    bufferedWriter.append(sCurrentLine);
+                    bufferedWriter.newLine();
+
+                }
+                bufferedWriter.close();
+            } catch (FileNotFoundException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } finally {
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        
+            configFiles = new String[]{"config/keyfile",
+                "config/server.policy",
+                "config/cacerts.jks",
+                "config/keystore.jks",
+                "config/login.conf",
+                "config/logging.properties",
+                "config/loggingToFile.properties",
+                "config/admin-keyfile",
+                "config/"+ userPropFileName,
+                "config/default-web.xml",
+                "org/glassfish/embed/domain.xml"
+            };
+        } else {
+            configFiles = new String[]{"config/keyfile",
+                "config/server.policy",
+                "config/cacerts.jks",
+                "config/keystore.jks",
+                "config/login.conf",
+                "config/logging.properties",
+                "config/loggingToFile.properties",
+                "config/admin-keyfile",
+                "config/default-web.xml",
+                "org/glassfish/embed/domain.xml"
+            };
+        }
 
         /**
          * Copy all the config files from uber jar to the instanceConfigDir
@@ -1799,6 +1864,7 @@ public class PayaraMicro {
     private void packageUberJar() {
         long start = System.currentTimeMillis();
         logger.info("Building Uber Jar... " + uberJar);
+        String entryString;
         try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));) {
             // get the current payara micro jar
             URL url = this.getClass().getClassLoader().getResource("payara-boot.properties");
@@ -1809,13 +1875,18 @@ public class PayaraMicro {
             Enumeration<JarEntry> entries = jFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                InputStream is = jFile.getInputStream(entry);
                 jos.putNextEntry(new JarEntry(entry.getName()));
+                InputStream is = jFile.getInputStream(entry);
+                if (entry.toString().contains("config/logging.properties") &&  propsFile) {
+                   is = new FileInputStream(new File(userPropFile));
+                }
+     
                 byte[] buffer = new byte[4096];
                 int bytesRead = 0;
                 while ((bytesRead = is.read(buffer)) != -1) {
                     jos.write(buffer, 0, bytesRead);
                 }
+                
                 is.close();
                 jos.flush();
                 jos.closeEntry();
