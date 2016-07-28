@@ -841,6 +841,10 @@ public class PayaraMicro {
         GlassFishRuntime gfruntime;
         PortBinder portBinder = new PortBinder();
 
+        if (disablePhoneHome == true) {
+            PhoneHomeCore.setOverrideEnabled(false);
+        }
+
         try {
             gfruntime = GlassFishRuntime.bootstrap(bprops, Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
@@ -1010,12 +1014,6 @@ public class PayaraMicro {
             if (enableHealthCheck) {
                 HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
                 healthCheckService.setEnabled(enableHealthCheck);
-            }
-
-            if (disablePhoneHome) {
-                logger.log(Level.INFO, "Phone Home Service Disabled");
-            } else {
-                gf.getService(PhoneHomeCore.class).start();
             }
 
             long end = System.currentTimeMillis();
