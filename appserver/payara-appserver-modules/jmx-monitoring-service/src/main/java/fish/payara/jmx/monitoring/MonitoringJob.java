@@ -81,6 +81,15 @@ public class MonitoringJob {
     public ObjectName getMBean() {
         return mBean;
     }
+   
+    /**
+     * Returns the list of attributes being monitored.
+     * 
+     * @return The attributes being monitored.
+     */
+    public List<String> getAttributes() {
+        return attributes;
+    }
 
     /**
      * Adds an attribute to be monitored to the job.
@@ -92,6 +101,7 @@ public class MonitoringJob {
             attributes.add(attribute);
         }
     }
+
 
     /**
      * Gets the attribute value as a string.
