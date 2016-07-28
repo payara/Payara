@@ -89,7 +89,15 @@
         </unzip>
 
 	<mkdir dir="${rootdir}/temp"/>
-
+        
+        <!-- Massage Bean Validation -->
+        <mkdir dir="${rootdir}/beanvtemp" />
+        <unzip dest="${rootdir}/beanvtemp">
+            <fileset file="${modulesdir}/bean-validator.jar"/>
+        </unzip>
+        <delete file="${modulesdir}/bean-validator.jar"/>
+        <delete dir="${rootdir}/beanvtemp/org/jboss/logging"/>
+        <jar basedir="${rootdir}/beanvtemp" destfile="${modulesdir}/bean-validator.jar"/>
      </target>
 
      <target name="removeJarsNotNeeded">

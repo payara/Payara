@@ -77,6 +77,15 @@
         </unzip>
 
 	<mkdir dir="${rootdir}/temp"/>
+        
+        <!-- Massage Bean Validation -->
+        <mkdir dir="${rootdir}/beanvtemp" />
+        <unzip dest="${rootdir}/beanvtemp">
+            <fileset file="${modulesdir}/bean-validator.jar"/>
+        </unzip>
+        <delete file="${modulesdir}/bean-validator.jar"/>
+        <delete dir="${rootdir}/beanvtemp/org/jboss/logging"/>
+        <jar basedir="${rootdir}/beanvtemp" destfile="${modulesdir}/bean-validator.jar"/>
 
      </target>
 
@@ -126,7 +135,7 @@
            <manifest>
                 <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
                 <attribute name="Main-Class" value="fish.payara.micro.PayaraMicro"/>
-            </manifest>
+           </manifest>
             <zipgroupfileset dir="${jardir}" includes="**/*.jar"/>
             <fileset dir="${rootdir}/temp" includes="*.rar, *.war"/>
         </rejar>
