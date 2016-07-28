@@ -15,15 +15,18 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-
 package fish.payara.nucleus.notification.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -40,6 +43,8 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 
@@ -65,6 +70,9 @@ public class GetNotificationConfiguration implements AdminCommand {
     @Inject
     private Target targetUtil;
 
+    @Inject
+    ServiceLocator habitat;
+
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
@@ -78,21 +86,34 @@ public class GetNotificationConfiguration implements AdminCommand {
         }
         ActionReport mainActionReport = context.getActionReport();
         final NotificationServiceConfiguration notificationServiceConfiguration = config.getExtensionByType(NotificationServiceConfiguration.class);
-        
-        String headers[] = {"Enabled"};
+        NotificationServiceConfiguration configuration = config.getExtensionByType(NotificationServiceConfiguration.class);
+        List<ServiceHandle<BaseNotifierService>> allServiceHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
+
+        String headers[] = {"Enabled", "Notifier Enabled", "Notifier Name"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[1];
+        Object values[] = new Object[3];
         values[0] = notificationServiceConfiguration.getEnabled();
+
+        for (ServiceHandle<BaseNotifierService> serviceHandle : allServiceHandles) {
+
+            NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(serviceHandle.getService().getNotifierConfigType());
+            LogNotifierConfiguration logNotifierConfiguration = (LogNotifierConfiguration) notifierConfiguration;
+
+            values[1] = logNotifierConfiguration.getEnabled();
+            values[2] = serviceHandle.getActiveDescriptor().getName();
+        }
         columnFormatter.addRow(values);
 
-        Map<String, Object> map = new HashMap<String, Object>(1);
+        Map<String, Object> map = new HashMap<String, Object>(3);
         Properties extraProps = new Properties();
         map.put("enabled", values[0]);
+        map.put("notifierEnabled", values[1]);
+        map.put("notifierName", values[2]);
+
         extraProps.put("getNotificationConfiguration", map);
         mainActionReport.setExtraProperties(extraProps);
         mainActionReport.setMessage(columnFormatter.toString());
-        
+
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
-
 }
