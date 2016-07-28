@@ -37,14 +37,16 @@ public class RequestTracingCdiInterceptor implements Serializable {
 
     @AroundInvoke
     public Object traceCdiCall(InvocationContext ctx) throws Exception {
-        RequestTracingService requestTracingService = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        requestTracingService.startTrace();
         Object proceed = ctx.proceed();
-        RequestEvent requestEvent = new RequestEvent("InterceptedCdiRequest");
-        requestEvent.addProperty("TargetClass", ctx.getTarget().getClass().getName());
-        requestEvent.addProperty("MethodName", ctx.getMethod().getName());
-        requestTracingService.traceRequestEvent(requestEvent);
-        requestTracingService.endTrace();
+
+        RequestTracingService requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = new RequestEvent("InterceptedCdiRequest");
+            requestEvent.addProperty("TargetClass", ctx.getTarget().getClass().getName());
+            requestEvent.addProperty("MethodName", ctx.getMethod().getName());
+            requestTracing.traceRequestEvent(requestEvent);
+        }
+
         return proceed;
     }
 }
