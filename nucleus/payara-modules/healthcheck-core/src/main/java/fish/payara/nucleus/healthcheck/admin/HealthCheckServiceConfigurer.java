@@ -40,7 +40,6 @@ import org.jvnet.hk2.config.*;
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 

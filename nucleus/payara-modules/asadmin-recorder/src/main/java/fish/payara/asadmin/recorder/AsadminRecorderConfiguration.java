@@ -30,11 +30,11 @@ import org.jvnet.hk2.config.Configured;
 public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExtension
 {
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    public Boolean isEnabled();
+    public String isEnabled();
     public void setEnabled(Boolean enabled);
     
     @Attribute(defaultValue = "true", dataType = Boolean.class)
-    public Boolean filterCommands();
+    public String filterCommands();
     public void setFilterCommands(Boolean filterCommands);
     
     @Attribute(defaultValue = 

@@ -80,7 +80,7 @@ public class AsadminRecorderEnabled implements AdminCommand
         
         Properties extraProps = new Properties();
         
-        if (asadminRecorderConfiguration.isEnabled()) {
+        if (Boolean.parseBoolean(asadminRecorderConfiguration.isEnabled())) {
             extraProps.put("asadminRecorderEnabled", true);
             actionReport.setMessage("Asadmin Recorder Service is enabled");
         } else {

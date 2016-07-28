@@ -28,12 +28,12 @@ public interface HoggingThreadsChecker extends Checker {
     String getName();
     void setName(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "95")
-    Long getThresholdPercentage();
+    @Attribute(defaultValue = "95", dataType = Long.class)
+    String getThresholdPercentage();
     void setThresholdPercentage(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "3")
-    int getRetryCount();
+    @Attribute(defaultValue = "3", dataType = Integer.class)
+    String getRetryCount();
     void setRetryCount(String value) throws PropertyVetoException;
 
 }

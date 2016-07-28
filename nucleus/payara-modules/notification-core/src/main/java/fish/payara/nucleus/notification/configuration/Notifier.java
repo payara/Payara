@@ -28,6 +28,6 @@ import java.beans.PropertyVetoException;
 public interface Notifier extends ConfigBeanProxy {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    Boolean getEnabled();
-    void enabled(Boolean value) throws PropertyVetoException;
+    String getEnabled();
+    void enabled(String value) throws PropertyVetoException;
 }

@@ -28,7 +28,7 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
     public HealthCheckWithThresholdExecutionOptions constructThresholdOptions(ThresholdDiagnosticsChecker checker) {
         return new HealthCheckWithThresholdExecutionOptions(
                 Boolean.valueOf(checker.getEnabled()),
-                checker.getTime(),
+                Long.parseLong(checker.getTime()),
                 asTimeUnit(checker.getUnit()),
                 checker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
                 checker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),

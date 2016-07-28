@@ -68,7 +68,7 @@ public class DisableAsadminRecorder implements AdminCommand {
                         asadminRecorderConfigurationProxy) 
                         throws PropertyVetoException, TransactionFailure {
                     
-                    if (asadminRecorderConfiguration.isEnabled()) {
+                    if (Boolean.parseBoolean(asadminRecorderConfiguration.isEnabled())) {
                         asadminRecorderConfigurationProxy.setEnabled(false);
                         Logger.getLogger(DisableAsadminRecorder.class.getName())
                                 .log(Level.INFO, 

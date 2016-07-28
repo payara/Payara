@@ -24,7 +24,6 @@ import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -41,7 +40,6 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;

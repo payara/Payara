@@ -68,7 +68,7 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     protected HealthCheckExecutionOptions constructBaseOptions(Checker checker) {
         return new HealthCheckExecutionOptions(
                 Boolean.valueOf(checker.getEnabled()),
-                checker.getTime(),
+                Long.parseLong(checker.getTime()),
                 asTimeUnit(checker.getUnit()));
     }
 

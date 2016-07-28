@@ -30,7 +30,6 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
-import org.jboss.logging.Logger;
 import org.jvnet.hk2.annotations.Service;
 
 /**

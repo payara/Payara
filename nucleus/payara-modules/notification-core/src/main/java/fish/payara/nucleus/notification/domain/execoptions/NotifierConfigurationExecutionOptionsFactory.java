@@ -31,7 +31,7 @@ public class NotifierConfigurationExecutionOptionsFactory {
     public NotifierConfigurationExecutionOptions build(NotifierConfiguration notifierConfiguration) {
         if (notifierConfiguration instanceof LogNotifierConfiguration) {
             LogNotifierConfigurationExecutionOptions executionOptions = new LogNotifierConfigurationExecutionOptions();
-            executionOptions.setEnabled(notifierConfiguration.getEnabled());
+            executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
             return executionOptions;
         }
         return null;
