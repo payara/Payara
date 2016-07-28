@@ -44,6 +44,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 /**
+ * Asadmin command to set the monitoring service's configuration.
  *
  * @author savage
  */
@@ -129,7 +130,13 @@ public class SetMonitoringConfiguration implements AdminCommand {
         }
 
     }
-    
+
+    /**
+     * Updates the configuration attributes for the MonitoringServiceConfiguration given to it.
+     *
+     * @param monitoringConfig
+     * @throws PropertyVetoException
+     */
     private void updateConfiguration(MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException {
          
         if (null != enabled) {
@@ -146,6 +153,14 @@ public class SetMonitoringConfiguration implements AdminCommand {
         }
     }
 
+    /**
+     * Updates monitoring attributes through adding a new property and/or deleting an existing one.
+     *
+     * @param actionReport
+     * @param monitoringConfig
+     * @throws PropertyVetoException
+     * @throws TransactionFailure
+     */
     private void updateAttributes(ActionReport actionReport, MonitoringServiceConfiguration monitoringConfig) throws PropertyVetoException, TransactionFailure {
         List<Property> attributes = monitoringConfig.getProperty();
 

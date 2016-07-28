@@ -18,6 +18,7 @@ import java.util.logging.Logger;
 import javax.management.MBeanServer;
 
 /**
+ * The runnable class which gathers monitoring info from a list of MonitoringJob objects and builds a log string from it.
  *
  * @author savage
  */

@@ -37,6 +37,7 @@ import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.types.Property;
 
 /**
+ * Asadmin command to get the monitoring service's current configuration and pretty print it to the shell.
  *
  * @author savage
  */
@@ -54,7 +55,7 @@ import org.jvnet.hk2.config.types.Property;
 })
 public class GetMonitoringConfiguration implements AdminCommand {
 
-    final static String ATTRIBUTE_HEADERS[] = {"|Name", "|Value", "|Description"};
+    final static String ATTRIBUTE_HEADERS[] = {"|Name|", "|Value|", "|Description|"};
 
     @Inject
     private Target targetUtil;

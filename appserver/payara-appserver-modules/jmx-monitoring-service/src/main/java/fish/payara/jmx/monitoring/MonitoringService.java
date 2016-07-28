@@ -46,6 +46,7 @@ import javax.management.ReflectionException;
 import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 
 /**
+ * Service which monitors a set of MBeans and their attributes while logging the data as a series of key-value pairs.
  *
  * @author savage
  */

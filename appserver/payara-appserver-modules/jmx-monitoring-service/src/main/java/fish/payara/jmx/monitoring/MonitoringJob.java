@@ -26,6 +26,7 @@ import javax.management.ReflectionException;
 import javax.management.openmbean.CompositeDataSupport;
 
 /**
+ * Class which gathers and returns monitoring information for a single MBean and a specified list of its attributes.
  *
  * @author savage
  */
