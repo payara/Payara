@@ -50,8 +50,9 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
 
     @Override
     public HealthCheckHoggingThreadsExecutionOptions constructOptions(HoggingThreadsChecker checker) {
-        return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(),
-                asTimeUnit(checker.getUnit()), checker.getThresholdPercentage(), checker.getRetryCount());
+        return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()),
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), checker.getThresholdPercentage(), 
+                checker.getRetryCount());
     }
 
     @Override

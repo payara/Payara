@@ -203,7 +203,7 @@ public interface AccessLog extends ConfigBeanProxy, PropertyBag {
      * @return true if logging to console
      */
     @Attribute (defaultValue="false", dataType=Boolean.class)
-    boolean getLogToConsoleEnabled();
+    String getLogToConsoleEnabled();
     /**
      * specifies whether to display access logs to console
      * 

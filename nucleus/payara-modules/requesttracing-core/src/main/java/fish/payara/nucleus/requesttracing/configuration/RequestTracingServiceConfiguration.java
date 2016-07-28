@@ -29,11 +29,11 @@ import java.util.List;
 public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    Boolean getEnabled();
+    String getEnabled();
     void enabled(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "3")
-    Long getThresholdValue();
+    @Attribute(defaultValue = "3", dataType = Long.class)
+    String getThresholdValue();
     void setThresholdValue(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "MINUTES")

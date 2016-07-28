@@ -69,7 +69,7 @@ public class NotificationService implements EventListener {
     @PostConstruct
     void postConstruct() {
         if (configuration != null) {
-            executionOptions.setEnabled(configuration.getEnabled());
+            executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
             for (NotifierConfiguration notifierConfiguration : configuration.getNotifierConfigurationList()) {
                 executionOptions.addNotifierConfigurationExecutionOption(executionOptionsFactory.build(notifierConfiguration));
             }
