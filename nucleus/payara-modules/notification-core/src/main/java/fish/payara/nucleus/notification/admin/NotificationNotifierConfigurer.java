@@ -21,6 +21,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.notification.NotificationEventBus;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
@@ -85,6 +86,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Inject
     private NotifierConfigurationExecutionOptionsFactory factory;
 
+    @Inject
+    private NotificationEventBus eventBus;
+
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
@@ -109,7 +113,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
         Config config = targetUtil.getConfig(target);
 
         final BaseNotifierService notifierService = habitat.getService(BaseNotifierService.class, notifierName);
-        if (service == null) {
+        if (notifierService == null) {
             actionReport.appendMessage(strings.getLocalString("requesttracing.notifier.configure.status.error",
                     "Notifier with name {0} could not be found.", notifierName));
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -138,11 +142,13 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                             notifierConfigList.add(createdNotifier[0]);
                             if (dynamic) {
                                 service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
                             }
                         } else {
                             notifierConfigList.remove(createdNotifier[0]);
                             if (dynamic) {
                                 service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
                             }
                         }
 
@@ -163,8 +169,10 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                             NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
                             if (notifierEnabled) {
                                 service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
                             } else {
                                 service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
                             }
                         }
 
