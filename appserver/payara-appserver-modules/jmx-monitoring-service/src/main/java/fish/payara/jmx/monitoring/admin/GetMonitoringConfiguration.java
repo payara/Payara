@@ -107,14 +107,14 @@ public class GetMonitoringConfiguration implements AdminCommand {
     }
 
     /**
-     * Converts a boolean value into a UTF-8 tick or cross character. 
+     * Converts a boolean value into a UTF-8 tick or cross character if the pretty param has been passed. 
      *
-     * @param ugly
+     * @param plain 
      * @return 
      */
-    private String prettyBool(boolean ugly) {
+    private String prettyBool(boolean plain) {
         if (pretty = false) {
-            return String.valueOf(ugly);
+            return String.valueOf(plain);
         }
         else if (ugly) {
             return "✓";
