@@ -59,7 +59,11 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -98,6 +102,8 @@ public class PayaraMicro {
     private boolean liteMember = false;
     private boolean generateLogo = false;
     private boolean logToFile = false;
+    private boolean logPropertiesFile = false;
+    private String userLogPropertiesFile = "";
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
@@ -113,8 +119,9 @@ public class PayaraMicro {
     private final short defaultHttpsPort = 8181;
     private String loggingPropertiesFileName = "logging.properties";
     private String loggingToFilePropertiesFileName = "loggingToFile.properties";
-    private String userLogFile="payara-server%u.log";
-    
+    private String userLogFile = "payara-server%u.log";
+    private String userPropertiesFileName = "";
+
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -141,6 +148,7 @@ public class PayaraMicro {
      * --enableHealthCheck enables/disables Health Check Service<br/>
      * --disablePhomeHome disables Phone Home Service<br/>
      * --logToFile outputs all the Log entries to a user defined file<br/>
+     * --logProperties Allows user to set their own logging properties file <br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -153,8 +161,8 @@ public class PayaraMicro {
         } else {
             main.bootStrap();
         }
-      }
-	  
+    }
+
     /**
      * Obtains the static singleton instance of the Payara Micro Server. If it
      * does not exist it will be create.
@@ -238,32 +246,37 @@ public class PayaraMicro {
         generateLogo = generate;
         return this;
     }
-    
-    /**
-     * Set whether the Log entries can be sent to a file
-     *
-     * @param log
-     * @return
-     */
-    public PayaraMicro setLogToFile(boolean log) {
-        logToFile = log;
-        return this;
-    }
 
     /**
      * Set user defined file for the Log entries
      *
      * @param fileName
+     * @return
      */
-    public void setUserLogFile(String fileName) {
+    public PayaraMicro setUserLogFile(String fileName) {
         if (!fileName.endsWith("/")) {
             this.userLogFile = fileName;
         } else {
             this.userLogFile = fileName + userLogFile;
         }
         logToFile = true;
+        return this;
     }
-    
+
+    /**
+     * Set user defined properties file for logging
+     *
+     * @param fileName
+     * @return
+     */
+    public PayaraMicro setLogPropertiesFile(File fileName) {
+        System.setProperty("java.util.logging.config.file", fileName.getAbsolutePath());
+        logPropertiesFile = true;
+        userLogPropertiesFile = fileName.getAbsolutePath();
+        userPropertiesFileName = fileName.getName();
+        return this;
+    }
+
     /**
      * Gets the cluster multicast port used for cluster communications
      *
@@ -923,7 +936,7 @@ public class PayaraMicro {
 
                     throw new GlassFishException("Could not bind SSL port");
                 }
-            }           
+            }
 
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
@@ -985,7 +998,7 @@ public class PayaraMicro {
                     logger.log(Level.SEVERE, null, ex);
                 }
             }
-            
+
             File loggingProperties = new File(configDir.getAbsolutePath(), loggingPropertiesFileName);
             if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
                 if (System.getProperty("java.util.logging.config.file") == null) {
@@ -1368,13 +1381,21 @@ public class PayaraMicro {
                                 + "  --disablePhoneHome Disables sending of usage tracking information\n"
                                 + "  --version Displays the version information\n"
                                 + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
+                                + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logToFile":
                         setUserLogFile(args[i + 1]);
                         break;
-
+                    case "--logProperties":
+                        File logPropertiesFile = new File(args[i + 1]);
+                        if (!logPropertiesFile.exists() || !logPropertiesFile.canRead() || logPropertiesFile.isDirectory() ) {
+                            logger.log(Level.SEVERE, "{0} is not a valid properties file path and will be ignored", logPropertiesFile.getAbsolutePath());
+                        } else {
+                            setLogPropertiesFile(logPropertiesFile);
+                        }
+                        break;
                     case "--logo":
                         generateLogo = true;
                         break;
@@ -1494,23 +1515,85 @@ public class PayaraMicro {
             }
         });
     }
-    
+
     private void installFiles(GlassFishProperties gfproperties) {
         // make directories
         File configDir = new File(rootDir.getAbsolutePath(), "config");
+        String[] configFiles;
+        PrintWriter writer;
+        String sCurrentLine;
+        BufferedReader bufferedReader = null;
         new File(rootDir.getAbsolutePath(), "docroot").mkdirs();
         configDir.mkdirs();
-        String[] configFiles = new String[]{"config/keyfile",
-            "config/server.policy",
-            "config/cacerts.jks",
-            "config/keystore.jks",
-            "config/login.conf",
-            "config/logging.properties",
-            "config/loggingToFile.properties",       
-            "config/admin-keyfile",
-            "config/default-web.xml",
-            "org/glassfish/embed/domain.xml"
-        };
+        if (logPropertiesFile) {
+            File userLogPropsFile = new File(configDir.getAbsolutePath() + File.separator + userPropertiesFileName);
+            try {
+                if (userLogPropsFile.exists()) {
+                   userLogPropsFile.delete();
+                } else {
+                    userLogPropsFile.createNewFile();
+                }
+            } catch (IOException ex) {
+                 logger.log(Level.SEVERE, null, ex);
+            }
+
+            try {
+                writer = new PrintWriter(userLogPropsFile.getAbsoluteFile());
+                writer.print("");
+                writer.close();
+            } catch (FileNotFoundException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+
+            try {
+                bufferedReader = new BufferedReader(new FileReader(userLogPropertiesFile ));
+                FileWriter fileWriter = new FileWriter(userLogPropsFile.getAbsoluteFile());
+                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+                while ((sCurrentLine = bufferedReader.readLine()) != null) {
+                    bufferedWriter.append(sCurrentLine);
+                    bufferedWriter.newLine();
+
+                }
+                bufferedWriter.close();
+            } catch (FileNotFoundException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            } finally {
+                if (bufferedReader != null) {
+                    try {
+                        bufferedReader.close();
+                    } catch (IOException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
+            }
+        
+            configFiles = new String[]{"config/keyfile",
+                "config/server.policy",
+                "config/cacerts.jks",
+                "config/keystore.jks",
+                "config/login.conf",
+                "config/logging.properties",
+                "config/loggingToFile.properties",
+                "config/admin-keyfile",
+                "config/"+ userPropertiesFileName,
+                "config/default-web.xml",
+                "org/glassfish/embed/domain.xml"
+            };
+        } else {
+            configFiles = new String[]{"config/keyfile",
+                "config/server.policy",
+                "config/cacerts.jks",
+                "config/keystore.jks",
+                "config/login.conf",
+                "config/logging.properties",
+                "config/loggingToFile.properties",
+                "config/admin-keyfile",
+                "config/default-web.xml",
+                "org/glassfish/embed/domain.xml"
+            };
+        }
 
         /**
          * Copy all the config files from uber jar to the instanceConfigDir
@@ -1529,7 +1612,7 @@ public class PayaraMicro {
         if (brandingUrl != null) {
             copy(brandingUrl, new File(configDir.getAbsolutePath(), "branding/glassfish-version.properties"), false);
         }
-        
+
         //Copy in the relevant domain.xml
         String configFileURI = gfproperties.getConfigFileURI();
         try {
@@ -1752,6 +1835,7 @@ public class PayaraMicro {
         autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
         generateLogo = Boolean.getBoolean("payaramicro.logo");
         logToFile = Boolean.getBoolean("payaramicro.logToFile");
+        logPropertiesFile = Boolean.getBoolean("payaramicro.logPropertiesFile");
         enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
         httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
@@ -1780,6 +1864,7 @@ public class PayaraMicro {
     private void packageUberJar() {
         long start = System.currentTimeMillis();
         logger.info("Building Uber Jar... " + uberJar);
+        String entryString;
         try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));) {
             // get the current payara micro jar
             URL url = this.getClass().getClassLoader().getResource("payara-boot.properties");
@@ -1790,13 +1875,18 @@ public class PayaraMicro {
             Enumeration<JarEntry> entries = jFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                InputStream is = jFile.getInputStream(entry);
                 jos.putNextEntry(new JarEntry(entry.getName()));
+                InputStream is = jFile.getInputStream(entry);
+                if (entry.toString().contains("config/logging.properties") &&  logPropertiesFile) {
+                   is = new FileInputStream(new File(userLogPropertiesFile ));
+                }
+     
                 byte[] buffer = new byte[4096];
                 int bytesRead = 0;
                 while ((bytesRead = is.read(buffer)) != -1) {
                     jos.write(buffer, 0, bytesRead);
                 }
+                
                 is.close();
                 jos.flush();
                 jos.closeEntry();
@@ -1924,6 +2014,7 @@ public class PayaraMicro {
             props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
             props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
             props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
+            props.setProperty("payaramicro.logPropertiesFile", Boolean.toString(logPropertiesFile));
             props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
             props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
@@ -2013,5 +2104,5 @@ public class PayaraMicro {
             System.setProperty("javax.net.ssl.trustStore",new File(configDir.getAbsolutePath(),"cacerts.jks").getAbsolutePath());
         }
     }
-    
+
 }
