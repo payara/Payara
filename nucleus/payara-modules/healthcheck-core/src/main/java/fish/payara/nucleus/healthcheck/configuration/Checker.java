@@ -19,6 +19,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
+import javax.validation.constraints.Min;
 
 /**
  * @author mertcaliskan
@@ -34,6 +35,7 @@ public interface Checker extends ConfigBeanProxy, ConfigExtension {
     void setEnabled(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "5", dataType = Long.class)
+    @Min(value = 0)
     String getTime();
     void setTime(String value) throws PropertyVetoException;
 
