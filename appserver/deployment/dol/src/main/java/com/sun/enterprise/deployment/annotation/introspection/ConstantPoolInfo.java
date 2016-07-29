@@ -122,6 +122,17 @@ public class ConstantPoolInfo {
                     buffer.getShort();
                     buffer.getShort();
                     break;
+                case METHODHANDLE:
+                    buffer.get();
+                    buffer.getShort();
+                    break;
+                case METHODTYPE:
+                    buffer.getShort();
+                    break;
+                case INVOKEDYNAMIC:
+                    buffer.getShort();
+                    buffer.getShort();
+                    break;
                 default:
                     DOLUtils.getDefaultLogger().severe("Unknow type constant pool " + type + " at position" + i);
                     break;
@@ -142,5 +153,8 @@ public class ConstantPoolInfo {
     public static final int INTERFACEMETHODREF = 11;
     public static final int NAMEANDTYPE = 12;
     public static final int ASCIZ = 1;
-    public static final int UNICODE = 2;    
+    public static final int UNICODE = 2;
+    public static final int METHODHANDLE = 15;
+    public static final int METHODTYPE = 16;
+    public static final int INVOKEDYNAMIC = 18;
 }
