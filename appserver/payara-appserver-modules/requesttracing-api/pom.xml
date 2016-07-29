@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -16,41 +16,24 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>fish.payara.payara-modules</groupId>
-        <artifactId>payara-nucleus-modules</artifactId>
+        <groupId>org.glassfish.main</groupId>
+        <artifactId>payara-appserver-modules</artifactId>
         <version>4.1.1.163-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>requesttracing-core</artifactId>
-    <packaging>glassfish-jar</packaging>
-    <name>Request Tracing Core services</name>
-    <description>Request Tracing Core Services</description>
-    <developers>
-        <developer>
-            <id>mcaliskan</id>
-            <name>Mert Caliskan</name>
-            <url>http://www.payara.fish</url>
-            <organization>Payara Services Ltd.</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-        </developer>
-    </developers>
+    <groupId>fish.payara.appserver</groupId>
+    <artifactId>requesttracing-api</artifactId>
+    <name>Request Tracing CDI API</name>
+    <description>Request Tracing CDI API</description>
 
     <build>
         <resources>
             <resource>
-                <directory>src/main/java</directory>
-                <includes>
-                    <include>**/*.properties</include>
-                </includes>
+                <directory>src/main/resources</directory>
             </resource>
         </resources>
-
         <plugins>
             <plugin>
                 <groupId>org.apache.felix</groupId>
@@ -65,9 +48,7 @@
                         <configuration>
                             <instructions>
                                 <Export-Package>
-                                    fish.payara.nucleus.requesttracing,
-                                    fish.payara.nucleus.requesttracing.domain,
-                                    fish.payara.nucleus.requesttracing.configuration
+                                    fish.payara.nucleus.requesttracing.api
                                 </Export-Package>
                             </instructions>
                         </configuration>
@@ -76,23 +57,27 @@
             </plugin>
         </plugins>
     </build>
+
     <dependencies>
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
-            <artifactId>notification-core</artifactId>
+            <artifactId>requesttracing-core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>javax.json</artifactId>
-            <version>1.0.4</version>
-            <scope>test</scope>
+            <groupId>javax.interceptor</groupId>
+            <artifactId>javax.interceptor-api</artifactId>
+            <version>1.2</version>
         </dependency>
         <dependency>
-            <groupId>javax</groupId>
-            <artifactId>javaee-api</artifactId>
-            <version>7.0</version>
-            <scope>test</scope>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>javax.annotation</groupId>
+            <artifactId>javax.annotation-api</artifactId>
+            <version>1.2</version>
         </dependency>
     </dependencies>
 </project>
