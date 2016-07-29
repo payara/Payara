@@ -116,7 +116,7 @@ public class GetMonitoringConfiguration implements AdminCommand {
         if (pretty = false) {
             return String.valueOf(plain);
         }
-        else if (ugly) {
+        else if (plain) {
             return "✓";
         } else {
             return "✗";
