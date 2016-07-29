@@ -102,8 +102,8 @@ public class PayaraMicro {
     private boolean liteMember = false;
     private boolean generateLogo = false;
     private boolean logToFile = false;
-    private boolean propsFile = false;
-    private String userPropFile = "";
+    private boolean logPropertiesFile = false;
+    private String userLogPropertiesFile = "";
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
@@ -120,7 +120,7 @@ public class PayaraMicro {
     private String loggingPropertiesFileName = "logging.properties";
     private String loggingToFilePropertiesFileName = "loggingToFile.properties";
     private String userLogFile = "payara-server%u.log";
-    private String userPropFileName = "";
+    private String userPropertiesFileName = "";
 
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -148,7 +148,7 @@ public class PayaraMicro {
      * --enableHealthCheck enables/disables Health Check Service<br/>
      * --disablePhomeHome disables Phone Home Service<br/>
      * --logToFile outputs all the Log entries to a user defined file<br/>
-     * --propFile Allows user to set their own logging properties file <br/>
+     * --logProperties Allows user to set their own logging properties file <br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -269,11 +269,11 @@ public class PayaraMicro {
      * @param fileName
      * @return
      */
-    public PayaraMicro setPropFile(File fileName) {
+    public PayaraMicro setLogPropertiesFile(File fileName) {
         System.setProperty("java.util.logging.config.file", fileName.getAbsolutePath());
-        propsFile = true;
-        userPropFile = fileName.getAbsolutePath();
-        userPropFileName = fileName.getName();
+        logPropertiesFile = true;
+        userLogPropertiesFile = fileName.getAbsolutePath();
+        userPropertiesFileName = fileName.getName();
         return this;
     }
 
@@ -1381,19 +1381,19 @@ public class PayaraMicro {
                                 + "  --disablePhoneHome Disables sending of usage tracking information\n"
                                 + "  --version Displays the version information\n"
                                 + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
-                                + "  --propFile <file-path> Allows user to set their own logging properties file\n"
+                                + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logToFile":
                         setUserLogFile(args[i + 1]);
                         break;
-                    case "--propFile":
-                        File userLoggingPropsFile = new File(args[i + 1]);
-                        if (!userLoggingPropsFile.exists() || !userLoggingPropsFile.canRead() || userLoggingPropsFile.isDirectory() ) {
-                            logger.log(Level.SEVERE, "{0} is not a valid properties file path and will be ignored", userLoggingPropsFile.getAbsolutePath());
+                    case "--logProperties":
+                        File logPropertiesFile = new File(args[i + 1]);
+                        if (!logPropertiesFile.exists() || !logPropertiesFile.canRead() || logPropertiesFile.isDirectory() ) {
+                            logger.log(Level.SEVERE, "{0} is not a valid properties file path and will be ignored", logPropertiesFile.getAbsolutePath());
                         } else {
-                            setPropFile(userLoggingPropsFile);
+                            setLogPropertiesFile(logPropertiesFile);
                         }
                         break;
                     case "--logo":
@@ -1525,20 +1525,20 @@ public class PayaraMicro {
         BufferedReader bufferedReader = null;
         new File(rootDir.getAbsolutePath(), "docroot").mkdirs();
         configDir.mkdirs();
-        if (propsFile) {
-            File userPropsFile = new File(configDir.getAbsolutePath() + File.separator + userPropFileName);
+        if (logPropertiesFile) {
+            File userLogPropsFile = new File(configDir.getAbsolutePath() + File.separator + userPropertiesFileName);
             try {
-                if (userPropsFile.exists()) {
-                    userPropsFile.delete();
+                if (userLogPropsFile.exists()) {
+                   userLogPropsFile.delete();
                 } else {
-                    userPropsFile.createNewFile();
+                    userLogPropsFile.createNewFile();
                 }
             } catch (IOException ex) {
                  logger.log(Level.SEVERE, null, ex);
             }
 
             try {
-                writer = new PrintWriter(userPropsFile.getAbsoluteFile());
+                writer = new PrintWriter(userLogPropsFile.getAbsoluteFile());
                 writer.print("");
                 writer.close();
             } catch (FileNotFoundException ex) {
@@ -1546,8 +1546,8 @@ public class PayaraMicro {
             }
 
             try {
-                bufferedReader = new BufferedReader(new FileReader(userPropFile));
-                FileWriter fileWriter = new FileWriter(userPropsFile.getAbsoluteFile());
+                bufferedReader = new BufferedReader(new FileReader(userLogPropertiesFile ));
+                FileWriter fileWriter = new FileWriter(userLogPropsFile.getAbsoluteFile());
                 BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
                 while ((sCurrentLine = bufferedReader.readLine()) != null) {
                     bufferedWriter.append(sCurrentLine);
@@ -1577,7 +1577,7 @@ public class PayaraMicro {
                 "config/logging.properties",
                 "config/loggingToFile.properties",
                 "config/admin-keyfile",
-                "config/"+ userPropFileName,
+                "config/"+ userPropertiesFileName,
                 "config/default-web.xml",
                 "org/glassfish/embed/domain.xml"
             };
@@ -1835,7 +1835,7 @@ public class PayaraMicro {
         autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
         generateLogo = Boolean.getBoolean("payaramicro.logo");
         logToFile = Boolean.getBoolean("payaramicro.logToFile");
-        propsFile = Boolean.getBoolean("payaramicro.propsFile");
+        logPropertiesFile = Boolean.getBoolean("payaramicro.logPropertiesFile");
         enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
         httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
@@ -1877,8 +1877,8 @@ public class PayaraMicro {
                 JarEntry entry = entries.nextElement();
                 jos.putNextEntry(new JarEntry(entry.getName()));
                 InputStream is = jFile.getInputStream(entry);
-                if (entry.toString().contains("config/logging.properties") &&  propsFile) {
-                   is = new FileInputStream(new File(userPropFile));
+                if (entry.toString().contains("config/logging.properties") &&  logPropertiesFile) {
+                   is = new FileInputStream(new File(userLogPropertiesFile ));
                 }
      
                 byte[] buffer = new byte[4096];
@@ -2014,7 +2014,7 @@ public class PayaraMicro {
             props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
             props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
             props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
-            props.setProperty("payaramicro.propsFile", Boolean.toString(propsFile));
+            props.setProperty("payaramicro.logPropertiesFile", Boolean.toString(logPropertiesFile));
             props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
             props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
