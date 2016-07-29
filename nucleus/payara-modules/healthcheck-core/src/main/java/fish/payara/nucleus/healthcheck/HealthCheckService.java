@@ -79,7 +79,7 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        if (configuration != null && configuration.getEnabled()) {
+        if (configuration != null && Boolean.parseBoolean(configuration.getEnabled())) {
             enabled = true;
             bootstrapHealthCheck();
         }

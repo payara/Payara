@@ -103,7 +103,7 @@ public class AsadminRecorderService implements EventListener {
                             + "found, it is likely missing from the domain.xml."
                             + " Setting enabled to default of false");
         } else {
-            enabled = asadminRecorderConfiguration.isEnabled();
+            enabled = Boolean.parseBoolean(asadminRecorderConfiguration.isEnabled());
         }
         return enabled;
     }
@@ -123,7 +123,7 @@ public class AsadminRecorderService implements EventListener {
             splitFilteredCommands();
         }
         
-        if (asadminRecorderConfiguration.filterCommands()) {
+        if (Boolean.parseBoolean(asadminRecorderConfiguration.filterCommands())) {
             if (!(filteredCommands.contains(commandName))) {
                 boolean regexMatched = false;
                 

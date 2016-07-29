@@ -27,7 +27,7 @@ import java.util.List;
 public interface NotificationServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    Boolean getEnabled();
+    String getEnabled();
     void enabled(String value) throws PropertyVetoException;
 
     @Element("*")

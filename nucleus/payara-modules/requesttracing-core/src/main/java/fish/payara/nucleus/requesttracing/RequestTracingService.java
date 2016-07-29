@@ -80,8 +80,8 @@ public class RequestTracingService implements EventListener {
     @PostConstruct
     void postConstruct() {
         if (configuration != null) {
-            executionOptions.setEnabled(configuration.getEnabled());
-            executionOptions.setThresholdValue(configuration.getThresholdValue());
+            executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
+            executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
 
             for (Notifier notifier : configuration.getNotifierList()) {
