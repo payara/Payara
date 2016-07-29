@@ -60,6 +60,10 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
 import java.io.FileNotFoundException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -98,6 +102,8 @@ public class PayaraMicro {
     private boolean liteMember = false;
     private boolean generateLogo = false;
     private boolean logToFile = false;
+    private boolean enableAccessLog = false;
+    private boolean enableAccessLogFormat = false;
     private int autoBindRange = 5;
     private String bootImage = "boot.txt";
     private String applicationDomainXml;
@@ -113,8 +119,10 @@ public class PayaraMicro {
     private final short defaultHttpsPort = 8181;
     private String loggingPropertiesFileName = "logging.properties";
     private String loggingToFilePropertiesFileName = "loggingToFile.properties";
-    private String userLogFile="payara-server%u.log";
-    
+    private String domainFileName = "domain.xml";
+    private String userLogFile = "payara-server%u.log";
+    private String userAccessLogDirectory = "";
+    private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -141,6 +149,8 @@ public class PayaraMicro {
      * --enableHealthCheck enables/disables Health Check Service<br/>
      * --disablePhomeHome disables Phone Home Service<br/>
      * --logToFile outputs all the Log entries to a user defined file<br/>
+     * --accessLog Sets user defined directory path for the access log<br/>
+     * --accessLogFormat Sets user defined a log format for access log<br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
@@ -264,6 +274,30 @@ public class PayaraMicro {
         logToFile = true;
     }
     
+    /**
+     * Set user defined file directory for the access log
+     *
+     * @param filePath
+     */
+    public void setAccessLogDir(String filePath) {
+        if (!filePath.endsWith("/")) {
+
+        } else {
+            this.userAccessLogDirectory = filePath;
+        }
+        enableAccessLog = true;
+    }
+
+    /**
+     * Set user defined formatting for the access log
+     *
+     * @param format
+     */
+    public void setAccessLogFormat(String format) {
+        this.accessLogFormat = format;
+        this.enableAccessLogFormat = true;
+    }
+
     /**
      * Gets the cluster multicast port used for cluster communications
      *
@@ -923,8 +957,8 @@ public class PayaraMicro {
 
                     throw new GlassFishException("Could not bind SSL port");
                 }
-            }           
-
+            } 
+            
             if (alternateDomainXML != null) {
                 gfproperties.setConfigFileReadOnly(false);
                 gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
@@ -944,10 +978,10 @@ public class PayaraMicro {
                     installFiles(gfproperties);
                 } else {
                     if (alternateDomainXML ==null) {
-                    String absolutePath = rootDir.getAbsolutePath();
-                    absolutePath = absolutePath.replace('\\', '/');
-                    gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
-                    gfproperties.setConfigFileReadOnly(false);
+                        String absolutePath = rootDir.getAbsolutePath();
+                        absolutePath = absolutePath.replace('\\', '/');
+                        gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
+                        gfproperties.setConfigFileReadOnly(false);
                 }
                 }
 
@@ -960,14 +994,39 @@ public class PayaraMicro {
             if (this.minHttpThreads != Integer.MIN_VALUE) {
                 gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.min-thread-pool-size", Integer.toString(minHttpThreads));
             }
-
+            
+            if (enableAccessLog) {
+                gfproperties.setProperty("embedded-glassfish-config.server.http-service.access-logging-enabled", "true");
+                gfproperties.setProperty("embedded-glassfish-config.server.http-service.virtual-server.server.access-logging-enabled", "true");
+                gfproperties.setProperty("embedded-glassfish-config.server.http-service.virtual-server.server.access-log", userAccessLogDirectory);
+                if (enableAccessLogFormat) {
+                    gfproperties.setProperty("embedded-glassfish-config.server.http-service.access-log.format", accessLogFormat);
+                }
+            }
             gf = gfruntime.newGlassFish(gfproperties);
 
             // reset logger.
-            // reset the Log Manager     
+            // reset the Log Manager 
             String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
             File configDir = new File(instanceRootStr, "config");
             File loggingToFileProperties = new File(configDir.getAbsolutePath(), loggingToFilePropertiesFileName);
+            Path domainFile = Paths.get(configDir.getAbsolutePath() + File.separator + domainFileName);
+
+            if (enableAccessLog) {
+                Charset charset = StandardCharsets.UTF_8;
+                try {
+                    String content = new String(Files.readAllBytes(domainFile), charset);
+                    content = content.replaceAll("access-logging-enabled=\"false\"", "access-logging-enabled=\"true\"");
+                    content = content.replace("access-log=\"\"", "access-log=\"" + userAccessLogDirectory + "\"");
+                    if (enableAccessLogFormat) {
+                        content = content.replace("access-log format=\"%client.name% %auth-user-name% %datetime% %request% %status% %response.length%\"",
+                                "access-log format=\"" + accessLogFormat + "\"");
+                    }
+                    Files.write(domainFile, content.getBytes(charset));
+                } catch (IOException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
             if (logToFile) {
                 loggingPropertiesFileName = loggingToFilePropertiesFileName;
                 Properties props = new Properties();
@@ -1368,13 +1427,19 @@ public class PayaraMicro {
                                 + "  --disablePhoneHome Disables sending of usage tracking information\n"
                                 + "  --version Displays the version information\n"
                                 + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
+                                + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
+                                + "  --accessLogFormat Sets user defined a log format for access log\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logToFile":
                         setUserLogFile(args[i + 1]);
                         break;
-
+                    case "--accessLog":
+                        setAccessLogDir(args[i + 1]);
+                    case "--accessLogFormat":
+                        setAccessLogFormat(args[i + 1]);
+                        break;
                     case "--logo":
                         generateLogo = true;
                         break;
@@ -1752,6 +1817,8 @@ public class PayaraMicro {
         autoBindSsl = Boolean.getBoolean("payaramicro.autoBindSsl");
         generateLogo = Boolean.getBoolean("payaramicro.logo");
         logToFile = Boolean.getBoolean("payaramicro.logToFile");
+        enableAccessLog = Boolean.getBoolean("payaramicro.enableAccessLog");
+        enableAccessLogFormat = Boolean.getBoolean("payaramicro.enableAccessLogFormat");
         enableHealthCheck = Boolean.getBoolean("payaramicro.enableHealthCheck");
         httpPort = Integer.getInteger("payaramicro.port", Integer.MIN_VALUE);
         hzMulticastGroup = System.getProperty("payaramicro.mcAddress");
@@ -1924,6 +1991,8 @@ public class PayaraMicro {
             props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
             props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
             props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
+            props.setProperty("payaramicro.enableAccessLog", Boolean.toString(enableAccessLog));
+            props.setProperty("payaramicro.enableAccessLogFormat", Boolean.toString(enableAccessLogFormat));
             props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
             props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
 
