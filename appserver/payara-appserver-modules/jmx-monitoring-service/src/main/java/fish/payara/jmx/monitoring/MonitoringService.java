@@ -54,7 +54,7 @@ import static java.lang.management.ManagementFactory.getPlatformMBeanServer;
 @RunLevel(StartupRunLevel.VAL)
 public class MonitoringService implements EventListener {
 
-    private static final String PREFIX = "payara-monitoring-service(";
+    private final String PREFIX = "payara-monitoring-service(";
 
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
@@ -201,8 +201,8 @@ public class MonitoringService implements EventListener {
      */
     private static class AMXBoot implements Runnable {
 
-        private static final String BOOT_AMX_MBEAN_NAME = "amx-support:type=boot-amx";
-        private static final String BOOT_AMX_OPERATION_NAME = "bootAMX";
+        private final String BOOT_AMX_MBEAN_NAME = "amx-support:type=boot-amx";
+        private final String BOOT_AMX_OPERATION_NAME = "bootAMX";
 
         private final MBeanServer server;
 

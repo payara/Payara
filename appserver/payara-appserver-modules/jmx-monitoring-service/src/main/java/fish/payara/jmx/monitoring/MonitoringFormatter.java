@@ -24,7 +24,7 @@ import javax.management.MBeanServer;
  */
 public class MonitoringFormatter implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(MonitoringFormatter.class.getCanonicalName());
-    private static final String LOGMESSAGE_PREFIX = "PAYARA-MONITORING: ";
+    private final String LOGMESSAGE_PREFIX = "PAYARA-MONITORING: ";
 
     private final MBeanServer mBeanServer;
     private final List<MonitoringJob> jobs;

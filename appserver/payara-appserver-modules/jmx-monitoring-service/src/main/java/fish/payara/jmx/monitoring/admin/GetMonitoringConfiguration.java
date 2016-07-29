@@ -55,10 +55,13 @@ import org.jvnet.hk2.config.types.Property;
 })
 public class GetMonitoringConfiguration implements AdminCommand {
 
-    final static String ATTRIBUTE_HEADERS[] = {"|Name|", "|Value|", "|Description|"};
+    private final String ATTRIBUTE_HEADERS[] = {"|Name|", "|Value|", "|Description|"};
 
     @Inject
     private Target targetUtil;
+
+    @Param(name = "pretty", defaultValue = "false", optional = true)
+    private Boolean pretty;
 
     @Param(name = "target", defaultValue = "server", optional = true)
     private String target;
@@ -109,11 +112,14 @@ public class GetMonitoringConfiguration implements AdminCommand {
      * @param ugly
      * @return 
      */
-    private char prettyBool(boolean ugly) {
-        if (ugly) {
-            return '✓';
+    private String prettyBool(boolean ugly) {
+        if (pretty = false) {
+            return String.valueOf(ugly);
+        }
+        else if (ugly) {
+            return "✓";
         } else {
-            return '✗';
+            return "✗";
         }
     }
 
