@@ -77,10 +77,10 @@ Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
                 <hogging-threads-checker unit="MINUTES" name="HT" time="5" enabled="true" />
                 <garbage-collector-checker unit="MINUTES" name="GC" time="5" enabled="true" />
             </health-check-service-configuration>
-            <http-service>
+            <http-service access-logging-enabled="false">
+                <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%"></access-log>
                 <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
-                <virtual-server id="server" network-listeners="http-listener, https-listener">
-                </virtual-server>
+                <virtual-server id="server" access-logging-enabled="false" access-log="" network-listeners="http-listener, https-listener"></virtual-server>
             </http-service>
             <iiop-service>
                 <orb use-thread-pool-ids="thread-pool-1"></orb>
