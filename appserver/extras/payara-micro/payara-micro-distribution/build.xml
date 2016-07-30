@@ -57,6 +57,7 @@
 	<antcall target="addDtds"/>
    	<antcall target="addRars"/>
         <antcall target="rejar"/>
+        <antcall target="shrinkJar"/>
         <attachArtifact file="${finaljar}"/>
      </target>
 
@@ -153,6 +154,80 @@
   		</fileset>
         </copy>
    <!--     <jar jarfile="${finaljar}" update="true" basedir="${jardir}" includes="__cp_jdbc_ra.rar, __ds_jdbc_ra.rar, __dm_jdbc_ra.rar, __xa_jdbc_ra.rar"/>  -->
+    </target>
+    
+    <!-- Default Payara Micro contains a lot of rubbish which expands the jar file
+    This target removes it all post-build -->
+    <target name="shrinkJar">
+        <mkdir dir="${rootdir}/shrinktemp" />
+        <unzip dest="${rootdir}/shrinktemp">
+            <fileset file="${finaljar}"/>
+        </unzip>
+        <delete dir="${rootdir}/shrinktemp/META-INF/client"/>
+        <delete dir="${rootdir}/shrinktemp/META-INF/maven"/>
+        <delete dir="${rootdir}/shrinktemp/lib"/>
+        <delete dir="${rootdir}/shrinktemp/doc-files"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/920"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/1.0"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/10.0"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/10.3"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/90"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/910"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/deployment-plan"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/domain"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/jdbc-data-source"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/persistence-configuration"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/security"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/servers"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-application"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-application-client"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-connector"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-diagnostics"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-diagnostics-image"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-ejb-jar"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-interception"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-javaee"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-jms"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-pubsub"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-rdbms-jar"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-sca"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-sca-binding"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-web-app"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-webservices"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-wsee-clienthandlerchain"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-wsee-databinding"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/weblogic-wsee-standaloneclient"/>
+        <delete dir="${rootdir}/shrinktemp/schemas/webservice-policy-ref"/>
+        <delete dir="${rootdir}/shrinktemp/dtds/wls810"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-config-3.5.xsd"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-config-3.4.xsd"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-config-3.3.xsd"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-config-3.2.xsd"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-config-3.1.xsd"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-config-3.0.xsd"/>
+        <delete file="${rootdir}/shrinktemp/libsolsparcauth.so"/>
+        <delete file="${rootdir}/shrinktemp/libsolx86auth.so"/>
+        <delete file="${rootdir}/shrinktemp/release_notes.txt"/>
+        <delete file="${rootdir}/shrinktemp/license.html"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-common-config-3.1.xsd"/>
+        <delete file="${rootdir}/shrinktemp/hazelcast-common-config-3.0.xsd"/>
+        <delete file="${rootdir}/shrinktemp/changelog.txt"/>
+        <delete file="${rootdir}/shrinktemp/supported-legacy-command-names"/>
+        <delete file="${rootdir}/shrinktemp/unsupported-legacy-command-names"/>
+        <delete file="${rootdir}/shrinktemp/schemadoc.css"/>
+        <delete file="${rootdir}/shrinktemp/about.html"/>
+        <delete file="${rootdir}/shrinktemp/index.html"/>
+        <delete file="${rootdir}/shrinktemp/package.html"/>
+        <delete file="${rootdir}/shrinktemp/readme.html"/>
+        <delete file="${finaljar}"/>
+        <copyfile src="${rootdir}/../LICENSE.txt" dest="${rootdir}/shrinktemp/LICENSE.txt"/>
+
+        <jar basedir="${rootdir}/shrinktemp" destfile="${finaljar}" compress="true">
+           <manifest>
+                <attribute name="Bundle-SymbolicName" value="${bundlename}"/>
+                <attribute name="Main-Class" value="fish.payara.micro.PayaraMicro"/>
+           </manifest>
+        </jar>       
     </target>
 
 </project>
