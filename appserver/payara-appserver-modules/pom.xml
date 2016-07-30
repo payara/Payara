@@ -32,5 +32,6 @@
         <module>jsr107-repackaged</module>
         <module>hazelcast-ejb-timer</module>
         <module>requesttracing-api</module>
+        <module>jmx-monitoring-service</module>
     </modules>
 </project>

@@ -163,6 +163,7 @@
         <module>phonehome</module>
         <module>requesttracing</module>
         <module>asadmin-recorder</module>
+        <module>JMX-Monitoring</module>
     </modules>
 
     <build>
