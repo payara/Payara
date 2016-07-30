@@ -104,7 +104,9 @@ public class HttpUtils {
         StringBuilder sb = new StringBuilder();
         sb.append("<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" ");
         sb.append("\"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">");
-        sb.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>GlassFish v4 - Error report</title><style type=\"");
+        sb.append("<html xmlns=\"http://www.w3.org/1999/xhtml\"><head><title>");
+        sb.append(serverName);
+        sb.append("- Error report</title><style type=\"");
         sb.append("text/css\"><!--H1 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:22px;}");
         sb.append(" H2 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:16px;}");
         sb.append(" H3 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:14px;}");
@@ -113,7 +115,7 @@ public class HttpUtils {
         sb.append("{font-family:Tahoma,Arial,sans-serif;background:white;color:black;font-size:12px;}A");
         sb.append(" {color : black;}HR {color : #525D76;}--></style> </head><body><h1>HTTP Status ");
         sb.append(errorCode).append(" - ");
-        sb.append("</h1><hr/><p><b>type</b> Status report</p><p><b>message</b></p><p><b>description</b>");
+        sb.append("</h1><hr/><p><b>type</b> Status report </p><p><b>message </b></p><p><b>description </b>");
         sb.append(message).append("</p><hr/><h3>");
         sb.append(serverName).append("</h3></body></html>");
         return sb.toString();
