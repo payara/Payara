@@ -79,8 +79,8 @@ public class MonitoringService implements EventListener {
 
     @Override
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
-            executor.shutdownNow();
+        if (event.is(EventTypes.SERVER_SHUTDOWN) ) {
+            shutdownMonitoringService();
         } else if (event.is(EventTypes.SERVER_READY)) {
             if (configuration != null && Boolean.valueOf(configuration.getEnabled())) {
                 enabled = Boolean.valueOf(configuration.getEnabled());
