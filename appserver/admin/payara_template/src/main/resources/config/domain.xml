@@ -84,6 +84,7 @@
         <property value="/admin" name="adminConsoleContextRoot" />
         <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
         <property value="${com.sun.aas.installRoot}/.." name="ipsRoot" />
+        <das-config dynamic-reload-enabled="false" autodeploy-enabled="false"/>
       </admin-service>
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
@@ -241,6 +242,7 @@
              <jmx-connector address="0.0.0.0" auth-realm-name="admin-realm" name="system" port="${JMX_SYSTEM_CONNECTOR_PORT}" protocol="rmi_jrmp" security-enabled="false"/>
              <!-- JSR 160  "system-jmx-connector" -->
              <property value="${com.sun.aas.installRoot}/lib/install/applications/admingui.war" name="adminConsoleDownloadLocation" />
+             <das-config dynamic-reload-enabled="false" autodeploy-enabled="false"/>
          </admin-service>
          <web-container>
              <session-config>

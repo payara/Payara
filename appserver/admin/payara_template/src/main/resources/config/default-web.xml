@@ -283,6 +283,14 @@
       <param-value>false</param-value>
     </init-param>
     <init-param>
+        <param-name>reload-interval</param-name>
+        <param-value>-1</param-value>
+    </init-param>
+    <init-param>
+        <param-name>development</param-name>
+        <param-value>false</param-value>
+    </init-param>
+    <init-param>
       <param-name>httpMethods</param-name>
       <param-value>GET,POST,HEAD</param-value>
     </init-param>
