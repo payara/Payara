@@ -265,10 +265,15 @@ public class PayaraMicro {
      * @return
      */
     public PayaraMicro setUserLogFile(String fileName) {
-        if (!fileName.endsWith("/")) {
-            this.userLogFile = fileName;
+        File file = new File(fileName);
+        if (file.isDirectory()) {
+            if (!file.exists() || !file.canWrite()) {
+                logger.log(Level.SEVERE, "{0} is not a valid directory for storing logs as it must exist and be writable", file.getAbsolutePath());                            
+                throw new IllegalArgumentException();
+            }
+            this.userLogFile = file.getAbsolutePath() + File.separator + userLogFile;
         } else {
-            this.userLogFile = fileName + userLogFile;
+            userLogFile = fileName;
         }
         logToFile = true;
         return this;
