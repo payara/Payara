@@ -294,11 +294,7 @@ public class PayaraMicro {
      * @param filePath
      */
     public void setAccessLogDir(String filePath) {
-        if (!filePath.endsWith("/")) {
-
-        } else {
-            this.userAccessLogDirectory = filePath;
-        }
+        this.userAccessLogDirectory = filePath;
         enableAccessLog = true;
     }
 
@@ -1443,15 +1439,20 @@ public class PayaraMicro {
                                 + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
                                 + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
-                                + "  --accessLogFormat Sets user defined a log format for access log\n"
+                                + "  --accessLogFormat Sets user defined log format for the access log\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logToFile":
-                        setUserLogFile(args[i + 1]);
+                         setUserLogFile(args[i + 1]);
                         break;
                     case "--accessLog":
-                        setAccessLogDir(args[i + 1]);
+                        File file = new File(args[i + 1]);
+                        if (!file.exists() || !file.isDirectory() || !file.canWrite()) {
+                            logger.log(Level.SEVERE, "{0} is not a valid directory for storing access logs as it must exist and be writable", file.getAbsolutePath());                            
+                            throw new IllegalArgumentException();
+                        }
+                        setAccessLogDir(file.getAbsolutePath());
 			break;
                     case "--accessLogFormat":
                         setAccessLogFormat(args[i + 1]);
@@ -1459,7 +1460,8 @@ public class PayaraMicro {
                     case "--logProperties":
                         File logPropertiesFile = new File(args[i + 1]);
                         if (!logPropertiesFile.exists() || !logPropertiesFile.canRead() || logPropertiesFile.isDirectory() ) {
-                            logger.log(Level.SEVERE, "{0} is not a valid properties file path and will be ignored", logPropertiesFile.getAbsolutePath());
+                            logger.log(Level.SEVERE, "{0} is not a valid properties file path", logPropertiesFile.getAbsolutePath());
+                            throw new IllegalArgumentException();
                         } else {
                             setLogPropertiesFile(logPropertiesFile);
                         }
