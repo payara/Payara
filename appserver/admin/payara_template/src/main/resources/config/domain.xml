@@ -90,6 +90,9 @@
       </connector-service>
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+       <ejb-container max-pool-size="128">
+         <ejb-timer-service />
+       </ejb-container>
        <asadmin-recorder-configuration></asadmin-recorder-configuration>
        <request-tracing-service-configuration>
          <log-notifier></log-notifier>
@@ -253,7 +256,7 @@
                  <session-properties />
              </session-config>
          </web-container>
-         <ejb-container session-store="${com.sun.aas.instanceRoot}/session-store">
+         <ejb-container max-pool-size="128" session-store="${com.sun.aas.instanceRoot}/session-store">
              <ejb-timer-service />
          </ejb-container>
          <mdb-container />
