@@ -88,7 +88,9 @@
       </admin-service>
       <connector-service shutdown-timeout-in-seconds="30">
       </connector-service>
-       <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
+       <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" timeout-in-seconds="300">
+         <property name="xaresource-txn-timeout" value="300"/>
+       </transaction-service>
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <ejb-container max-pool-size="128">
          <ejb-timer-service />
@@ -321,7 +323,9 @@
                  </provider-config>
              </message-security-config>
          </security-service>
-         <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
+         <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" timeout-in-seconds="300">
+           <property name="xaresource-txn-timeout" value="300"/>
+         </transaction-service>
          <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
          <request-tracing-service-configuration>
              <log-notifier></log-notifier>
