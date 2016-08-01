@@ -158,7 +158,7 @@ public class PayaraMicro {
      * --disablePhomeHome disables Phone Home Service<br/>
      * --logToFile outputs all the Log entries to a user defined file<br/>
      * --accessLog Sets user defined directory path for the access log<br/>
-     * --accessLogFormat Sets user defined a log format for access log<br/>
+     * --accessLogFormat Sets user defined log format for the access log<br/>
      * --logProperties Allows user to set their own logging properties file <br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
