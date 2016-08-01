@@ -164,8 +164,9 @@
 	<property value="SHA-256" name="default-digest-algorithm" />
       </security-service>
       <java-config classpath-suffix="" system-classpath="" debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=%%%JAVA_DEBUGGER_PORT%%%">
-        <jvm-options>-XX:MaxPermSize=512m</jvm-options>
         <jvm-options>-server</jvm-options>
+        <jvm-options>-XX:+UseG1GC</jvm-options>
+        <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
@@ -330,8 +331,9 @@
          </notification-service-configuration>
          <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
-        <jvm-options>-XX:MaxPermSize=512m</jvm-options>
         <jvm-options>-server</jvm-options>
+        <jvm-options>-XX:+UseG1GC</jvm-options>
+        <jvm-options>-XX:+UseStringDeduplication</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
         <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
