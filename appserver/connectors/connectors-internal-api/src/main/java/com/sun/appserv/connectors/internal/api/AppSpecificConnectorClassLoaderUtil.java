@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited]
 
 package com.sun.appserv.connectors.internal.api;
 
@@ -298,6 +299,9 @@ public class AppSpecificConnectorClassLoaderUtil {
                         (com.sun.enterprise.config.serverbeans.Application) itr.next();
                         String appName = application.getName();
                         ApplicationInfo appInfo = appRegistry.get(appName);
+                        if (appInfo == null) {
+                            continue; // the app is not deployed on this node
+                        }
                         Application dolApp = appInfo.getMetaData(Application.class);
                         Collection<ConnectorDescriptor> rarDescriptors = dolApp.getBundleDescriptors(ConnectorDescriptor.class);
                         for (ConnectorDescriptor desc : rarDescriptors) {
