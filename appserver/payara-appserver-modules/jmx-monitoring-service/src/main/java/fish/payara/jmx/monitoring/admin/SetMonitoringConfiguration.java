@@ -168,6 +168,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
             for (Property attribute : attributes) {
                 if (attribute.getName().equals(delproperty)) {
                    attributes.remove(attribute); 
+                   break;
                 }
             }
         }
