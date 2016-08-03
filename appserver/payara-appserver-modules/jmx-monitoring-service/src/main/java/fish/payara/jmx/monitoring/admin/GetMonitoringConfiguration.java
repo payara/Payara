@@ -113,7 +113,7 @@ public class GetMonitoringConfiguration implements AdminCommand {
      * @return 
      */
     private String prettyBool(boolean plain) {
-        if (pretty = false) {
+        if (pretty == false) {
             return String.valueOf(plain);
         }
         else if (plain) {
