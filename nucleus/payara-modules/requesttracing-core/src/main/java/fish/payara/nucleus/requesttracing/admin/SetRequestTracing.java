@@ -20,6 +20,7 @@ package fish.payara.nucleus.requesttracing.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -57,6 +58,9 @@ import org.jvnet.hk2.annotations.Service;
             description = "Set Request Tracing Services Configuration")
 })
 public class SetRequestTracing implements AdminCommand {
+    
+    @Inject
+    protected Logger logger;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -93,6 +97,10 @@ public class SetRequestTracing implements AdminCommand {
         if (extraProperties == null) {
             extraProperties = new Properties();
             actionReport.setExtraProperties(extraProperties);
+        }
+
+        if (!validate(actionReport)) {
+            return;
         }
 
         if (dynamic || enabled) {
@@ -149,5 +157,24 @@ public class SetRequestTracing implements AdminCommand {
         if (subReport.hasWarnings()) {
             subReport.setMessage("");
         }
+    }
+
+    private boolean validate(ActionReport actionReport) {
+        boolean result = false;
+        if (value != null) {
+            try {
+                int thresholdValue = Integer.parseInt(value);
+                if (thresholdValue <= 0 || thresholdValue > Short.MAX_VALUE * 2) {
+                    actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {
+                actionReport.failure(logger, "Threshold Value is not a valid integer", nfe);
+                return result;
+            }
+
+        }
+
+        return true;
     }
 }

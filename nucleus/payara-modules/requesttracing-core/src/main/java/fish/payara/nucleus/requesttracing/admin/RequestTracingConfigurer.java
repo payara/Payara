@@ -164,8 +164,8 @@ public class RequestTracingConfigurer implements AdminCommand {
         boolean result = false;
         if (value != null) {
             try {
-                int port = Integer.parseInt(value);
-                if (port < 0 || port > Short.MAX_VALUE * 2) {
+                int thresholdValue = Integer.parseInt(value);
+                if (thresholdValue < 0 || thresholdValue > Short.MAX_VALUE * 2) {
                     actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
                     return result;
                 }
