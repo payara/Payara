@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates] 
 
 package com.sun.enterprise.security.acl;
 
@@ -59,10 +60,17 @@ import org.glassfish.security.common.Role;
 import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.config.serverbeans.SecurityService;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.logging.*;
+import java.util.List;
 import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.internal.data.ApplicationInfo;
+import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.security.common.Group;
 
 
@@ -114,6 +122,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     // store roles that have a conflict so they are not re-mapped
     private Set<Role> conflictedRoles;
     /* End conflict detection objects */
+    private Boolean appDefaultMapping;
     private static final Logger _logger =
             LogDomains.getLogger(RoleMapper.class, LogDomains.SECURITY_LOGGER);
 
@@ -148,6 +157,40 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
             }
             defaultRole = new Role(defaultRoleName);
         }
+    }
+    
+    private boolean getAppDefaultRoleMapping() {
+        if(appDefaultMapping != null) {
+            return appDefaultMapping;
+        }
+        appDefaultMapping = false;
+        if(secService != null) {
+            appDefaultMapping = Boolean.parseBoolean(secService.getActivateDefaultPrincipalToRoleMapping());
+        }
+        
+        ApplicationRegistry appRegistry = Globals.getDefaultHabitat().getService(ApplicationRegistry.class);
+        ApplicationInfo appInfo = appRegistry.get(appName);
+        if(appInfo == null) {
+            return appDefaultMapping;
+        }
+        Application app = appInfo.getMetaData(Application.class);
+        BundleDescriptor bd = app.getModuleByUri(appName);
+        if (bd instanceof WebBundleDescriptor) {
+            WebBundleDescriptor wbd = (WebBundleDescriptor) bd;
+            Descriptor desc = (Descriptor) wbd.getSunDescriptor();
+            @SuppressWarnings("unchecked")
+            List<Descriptor> wp = (List<Descriptor>) desc.getExtraAttribute("WebProperty");
+            if(wp == null) {
+                return appDefaultMapping;
+            }
+            for (Descriptor d : wp) {
+                if ("default-role-mapping".equals(d.getExtraAttribute("name"))) {
+                    appDefaultMapping = Boolean.parseBoolean((String) d.getExtraAttribute("value"));
+                    break;
+                }
+            }
+        }
+        return appDefaultMapping;
     }
 
     /**
@@ -218,9 +261,9 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
     }
 
     // @return true or false depending on activation of
-    // the mapping via domain.xml.
+    // the mapping via domain.xml or property in the glassfish descriptor
     boolean isDefaultRTSMActivated() {
-        return (defaultP2RMappingClassName != null);
+        return (defaultP2RMappingClassName != null) && getAppDefaultRoleMapping();
     }
 
     /**
@@ -400,11 +443,11 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
      private String getDefaultP2RMappingClassName() {
         String className = null;
          try {
-             if (secService != null && Boolean.parseBoolean(secService.getActivateDefaultPrincipalToRoleMapping())) {
+             if(secService != null) {
                  className = secService.getMappedPrincipalClass();
-                 if (className == null || "".equals(className)) {
-                     className = Group.class.getName();
-                 }
+             }
+             if (className == null || "".equals(className)) {
+                 className = Group.class.getName();
              }
 
              if (className == null) {
