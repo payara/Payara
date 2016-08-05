@@ -61,6 +61,7 @@ import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.BundleDescriptor;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.logging.*;
 import org.glassfish.api.admin.ServerEnvironment;
@@ -169,7 +170,9 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
         if(appInfo == null) {
             return appDefaultMapping;
         }
-        appDefaultMapping = appInfo.getMetaData(Application.class).getModuleByUri(appName).isDefaultGroupPrincipalMapping();
+        Application app = appInfo.getMetaData(Application.class);
+        BundleDescriptor bd = app.getModuleByUri(appName);
+        appDefaultMapping = bd == null? app.isDefaultGroupPrincipalMapping() : app.getModuleByUri(appName).isDefaultGroupPrincipalMapping();
         return appDefaultMapping;
     }
 
