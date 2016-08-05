@@ -61,13 +61,9 @@ import org.glassfish.security.common.PrincipalImpl;
 import org.glassfish.deployment.common.SecurityRoleMapper;
 import com.sun.enterprise.config.serverbeans.SecurityService;
 import com.sun.enterprise.deployment.Application;
-import com.sun.enterprise.deployment.BundleDescriptor;
-import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.common.AppservAccessController;
 import com.sun.logging.*;
-import java.util.List;
 import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.deployment.common.Descriptor;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
@@ -173,23 +169,7 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
         if(appInfo == null) {
             return appDefaultMapping;
         }
-        Application app = appInfo.getMetaData(Application.class);
-        BundleDescriptor bd = app.getModuleByUri(appName);
-        if (bd instanceof WebBundleDescriptor) {
-            WebBundleDescriptor wbd = (WebBundleDescriptor) bd;
-            Descriptor desc = (Descriptor) wbd.getSunDescriptor();
-            @SuppressWarnings("unchecked")
-            List<Descriptor> wp = (List<Descriptor>) desc.getExtraAttribute("WebProperty");
-            if(wp == null) {
-                return appDefaultMapping;
-            }
-            for (Descriptor d : wp) {
-                if ("default-role-mapping".equals(d.getExtraAttribute("name"))) {
-                    appDefaultMapping = Boolean.parseBoolean((String) d.getExtraAttribute("value"));
-                    break;
-                }
-            }
-        }
+        appDefaultMapping = appInfo.getMetaData(Application.class).getModuleByUri(appName).isDefaultGroupPrincipalMapping();
         return appDefaultMapping;
     }
 
