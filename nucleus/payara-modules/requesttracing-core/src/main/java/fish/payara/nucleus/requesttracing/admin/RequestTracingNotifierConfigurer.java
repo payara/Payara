@@ -137,12 +137,12 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled) {
                             notifierList.add(createdNotifier[0]);
                             if (dynamic) {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().add(executionOptions);
+                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
                             }
                         } else {
                             notifierList.remove(createdNotifier[0]);
                             if (dynamic) {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().remove(executionOptions);
+                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
                             }
                         }
 
@@ -162,9 +162,9 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                         if (dynamic) {
                             NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
                             if (notifierEnabled) {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().add(executionOptions);
+                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
                             } else {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().remove(executionOptions);
+                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
                             }
                         }
 

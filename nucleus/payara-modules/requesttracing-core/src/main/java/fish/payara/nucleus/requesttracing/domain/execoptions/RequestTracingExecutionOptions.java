@@ -13,8 +13,10 @@
  */
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
-import java.util.HashSet;
-import java.util.Set;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -28,10 +30,13 @@ public class RequestTracingExecutionOptions {
     private boolean enabled;
     private Long thresholdValue;
     private TimeUnit thresholdUnit;
-    private Set<NotifierExecutionOptions> notifierExecutionOptionsList = new HashSet<NotifierExecutionOptions>();
+    private Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = new HashMap<NotifierType, NotifierExecutionOptions>();
 
     public void addNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
-        getNotifierExecutionOptionsList().add(notifierExecutionOptions);
+        getNotifierExecutionOptionsList().put(notifierExecutionOptions.getNotifierType(), notifierExecutionOptions);
+    }
+    public void removeNotifierExecutionOption(NotifierExecutionOptions notifierExecutionOptions) {
+        getNotifierExecutionOptionsList().remove(notifierExecutionOptions.getNotifierType());
     }
 
     public boolean isEnabled() {
@@ -58,7 +63,7 @@ public class RequestTracingExecutionOptions {
         this.thresholdUnit = thresholdUnit;
     }
 
-    public Set<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
+    public Map<NotifierType, NotifierExecutionOptions> getNotifierExecutionOptionsList() {
         return notifierExecutionOptionsList;
     }
 

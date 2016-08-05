@@ -130,7 +130,7 @@ public class RequestTracingService implements EventListener {
 
         long elapsedTime = requestEventStore.getElapsedTime();
         if ( elapsedTime > thresholdValueInMillis) {
-            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList()) {
+            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
                     notificationService.notify(eventFactory.build(elapsedTime, notifierExecutionOptions.getNotifierType()));
                 }
