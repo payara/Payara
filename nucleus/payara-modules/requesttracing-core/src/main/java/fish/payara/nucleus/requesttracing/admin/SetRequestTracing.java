@@ -20,6 +20,7 @@ package fish.payara.nucleus.requesttracing.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -44,8 +45,8 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "set-requesttracing")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
@@ -57,6 +58,9 @@ import org.jvnet.hk2.annotations.Service;
             description = "Set Request Tracing Services Configuration")
 })
 public class SetRequestTracing implements AdminCommand {
+
+    @Inject
+    protected Logger logger;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -76,7 +80,7 @@ public class SetRequestTracing implements AdminCommand {
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
     private Boolean notifierDynamic;
 
-    @Param(name = "notifierEnabled", optional = false)
+    @Param(name = "notifierEnabled", optional = true, defaultValue = "false")
     private Boolean notifierEnabled;
 
     @Param(name = "notifierName", optional = true, defaultValue = "service-log")
@@ -84,6 +88,8 @@ public class SetRequestTracing implements AdminCommand {
 
     @Inject
     ServiceLocator serviceLocator;
+
+    CommandRunner.CommandInvocation inv;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -95,14 +101,22 @@ public class SetRequestTracing implements AdminCommand {
             actionReport.setExtraProperties(extraProperties);
         }
 
+        if (!validate(actionReport)) {
+            return;
+        }
+
         if (dynamic || enabled) {
-            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
             if (dynamic) {
                 notifierDynamic = true;
+            } else {
+                notifierDynamic = false;
             }
             if (enabled) {
                 notifierEnabled = true;
+            } else {
+                notifierEnabled = false;
             }
+            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         }
 
         if (notifierDynamic || notifierEnabled) {
@@ -113,9 +127,12 @@ public class SetRequestTracing implements AdminCommand {
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
-        inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("requesttracing-configure-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
+        }
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
@@ -132,11 +149,15 @@ public class SetRequestTracing implements AdminCommand {
     }
 
     private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
-        inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("requesttracing-configure-notifier-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+        }
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
@@ -149,5 +170,24 @@ public class SetRequestTracing implements AdminCommand {
         if (subReport.hasWarnings()) {
             subReport.setMessage("");
         }
+    }
+
+    private boolean validate(ActionReport actionReport) {
+        boolean result = false;
+        if (value != null) {
+            try {
+                int thresholdValue = Integer.parseInt(value);
+                if (thresholdValue <= 0 || thresholdValue > Short.MAX_VALUE * 2) {
+                    actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {
+                actionReport.failure(logger, "Threshold Value is not a valid integer", nfe);
+                return result;
+            }
+
+        }
+
+        return true;
     }
 }
