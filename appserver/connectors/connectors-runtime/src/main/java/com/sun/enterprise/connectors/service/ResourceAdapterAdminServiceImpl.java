@@ -236,6 +236,7 @@ public class ResourceAdapterAdminServiceImpl extends ConnectorService {
 
                     activeResourceAdapter.setup();
 
+               if (System.getSecurityManager() != null) {
                     String securityWarningMessage=
                         connectorRuntime.getSecurityPermissionSpec(moduleName);
                     // To i18N.
@@ -243,6 +244,7 @@ public class ResourceAdapterAdminServiceImpl extends ConnectorService {
                         _logger.log(Level.WARNING, securityWarningMessage);
                     }
                 }
+              }
 
             } catch (NullPointerException npEx) {
                 ConnectorRuntimeException cre =

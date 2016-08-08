@@ -90,6 +90,12 @@
        <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" />
        <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
        <asadmin-recorder-configuration></asadmin-recorder-configuration>
+       <request-tracing-service-configuration>
+         <log-notifier></log-notifier>
+       </request-tracing-service-configuration>
+       <notification-service-configuration>
+         <log-notifier-configuration></log-notifier-configuration>
+       </notification-service-configuration>
        <batch-runtime-configuration data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
        <diagnostic-service />
       <security-service>
@@ -157,6 +163,8 @@
         <jvm-options>-server</jvm-options>
         <jvm-options>-Djava.awt.headless=true</jvm-options>
         <jvm-options>-Djdk.corba.allowOutputStreamSubclass=true</jvm-options>
+        <jvm-options>-Djavax.xml.accessExternalSchema=all</jvm-options>
+        <jvm-options>-XX:+UnlockDiagnosticVMOptions</jvm-options>
         <jvm-options>-Djava.endorsed.dirs=${com.sun.aas.installRoot}/modules/endorsed${path.separator}${com.sun.aas.installRoot}/lib/endorsed</jvm-options>
         <jvm-options>-Djava.security.policy=${com.sun.aas.instanceRoot}/config/server.policy</jvm-options>
         <jvm-options>-Djava.security.auth.login.config=${com.sun.aas.instanceRoot}/config/login.conf</jvm-options>
@@ -204,7 +212,7 @@
       <thread-pools>
         <thread-pool max-thread-pool-size="50" name="http-thread-pool"></thread-pool>
         <thread-pool max-thread-pool-size="200" name="thread-pool-1"></thread-pool>
-        <thread-pool name="admin-thread-pool" max-thread-pool-size="50" max-queue-size="256"></thread-pool>
+        <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
       </thread-pools>
     </config>
      <config name="default-config" dynamic-reconfiguration-enabled="true" >
@@ -305,6 +313,12 @@
          </security-service>
          <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" automatic-recovery="true" />
          <hazelcast-runtime-configuration></hazelcast-runtime-configuration>
+         <request-tracing-service-configuration>
+             <log-notifier></log-notifier>
+         </request-tracing-service-configuration>
+         <notification-service-configuration>
+             <log-notifier-configuration></log-notifier-configuration>
+         </notification-service-configuration>
          <diagnostic-service />
       <java-config debug-options="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=${JAVA_DEBUGGER_PORT}" system-classpath="" classpath-suffix="">
         <jvm-options>-server</jvm-options>
@@ -368,7 +382,7 @@
              <network-listeners>
                  <network-listener address="0.0.0.0" port="${HTTP_LISTENER_PORT}" protocol="http-listener-1" transport="tcp" name="http-listener-1" thread-pool="http-thread-pool" />
                  <network-listener address="0.0.0.0" port="${HTTP_SSL_LISTENER_PORT}" protocol="http-listener-2" transport="tcp" name="http-listener-2" thread-pool="http-thread-pool" />
-                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="http-thread-pool" />
+                 <network-listener port="${ASADMIN_LISTENER_PORT}" protocol="pu-protocol" transport="tcp" name="admin-listener" thread-pool="admin-thread-pool" />
              </network-listeners>
              <transports>
                  <transport name="tcp" />
@@ -377,6 +391,7 @@
          <thread-pools>
              <thread-pool name="http-thread-pool" />
              <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+	     <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
          </thread-pools>
          <group-management-service/>
          <!--%%%DEFAULT_TOKENS_HERE%%%-->

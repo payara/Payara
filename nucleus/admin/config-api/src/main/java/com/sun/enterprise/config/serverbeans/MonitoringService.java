@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates]
+
 package com.sun.enterprise.config.serverbeans;
 
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -350,12 +352,19 @@ public interface MonitoringService extends ConfigExtension, PropertyBag {
                 }
             }
 
-
-            if (!isLevelUpdated) {
+            if (!isLevelUpdated) {              
                 // container-monitoring
                 for (ContainerMonitoring cm : ms.getContainerMonitoring()) {
+                    // Needs to be done using transaction semantics
+                    Transaction tx = Transaction.getTransaction(ms); 
+                    if (tx == null) {
+                        throw new TransactionFailure(localStrings.getLocalString(
+                        "noTransaction", "Internal Error - Cannot obtain transaction object"));
+                    }
+                    
                     if (cm.getName().equals(name)) {
-                        cm.setLevel(level);
+                        ContainerMonitoring containerMonitoring = tx.enroll(cm);
+                        containerMonitoring.setLevel(level);
                         isLevelUpdated = true;
                     }
                 }

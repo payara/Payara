@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2014-2016 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -145,9 +145,11 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
         Annotation annotations[][] = getMethod().getParameterAnnotations();
         Object values[] = ctx.getParameters();
         CacheInvocationParameter result[] = new CacheInvocationParameter[parameters.length];
-        for (int i = 0; i < values.length; i++) {
-            Object value = values[i];
-            result[i] = new PayaraCacheInvocationParameter(parameters[i], annotations[i], value, i);
+        if (values != null) {
+            for (int i = 0; i < values.length; i++) {
+                Object value = values[i];
+                result[i] = new PayaraCacheInvocationParameter(parameters[i], annotations[i], value, i);
+            }
         }
         return result;
     }
@@ -200,10 +202,12 @@ public class PayaraCacheKeyInvocationContext<A extends Annotation> implements Ca
             Object params[] = ctx.getParameters();
             StringBuilder cacheName = new StringBuilder(targetClassName);
             cacheName.append('.').append(methodName).append('(');
-            for (int i = 0; i < params.length; i++) {
-                cacheName.append(params[i].getClass().getName());
-                if (i != params.length - 1) {
-                    cacheName.append(',');
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    cacheName.append(params[i].getClass().getName());
+                    if (i != params.length - 1) {
+                        cacheName.append(',');
+                    }
                 }
             }
             cacheName.append(')');

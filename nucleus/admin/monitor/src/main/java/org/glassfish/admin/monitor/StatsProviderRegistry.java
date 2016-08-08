@@ -40,12 +40,9 @@
 
 package org.glassfish.admin.monitor;
 
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.flashlight.MonitoringRuntimeDataRegistry;
 import org.glassfish.flashlight.client.ProbeClientMethodHandle;
 import org.glassfish.gmbal.ManagedObjectManager;

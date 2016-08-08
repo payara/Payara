@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 package com.sun.ejb.containers;
 
 import java.io.Serializable;
@@ -75,6 +75,9 @@ import org.glassfish.ejb.deployment.descriptor.EjbDescriptor;
 import org.glassfish.ejb.deployment.descriptor.ScheduledTimerDescriptor;
 import org.glassfish.server.ServerEnvironmentImpl;
 import com.sun.ejb.PersistentTimerService;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import org.glassfish.internal.api.Globals;
 
 /*
  * EJBTimerService is the central controller of the EJB timer service.  
@@ -89,10 +92,10 @@ import com.sun.ejb.PersistentTimerService;
 public class EJBTimerService {
 
     protected EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
-
+    
     private long nextTimerIdMillis_ = 0;
     private long nextTimerIdCounter_ = 0;
-    private String domainName_;
+    protected String domainName_;
 
     protected boolean isDas;
 
@@ -110,6 +113,8 @@ public class EJBTimerService {
     protected TimerCache timerCache_;
 
     private boolean shutdown_;
+    
+    private RequestTracingService requestTracing;
 
     // Total number of ejb components initialized as timed objects between the
     // start and end of a single server instance.  This value is used during
@@ -170,6 +175,8 @@ public class EJBTimerService {
         ownerIdOfThisServer_ = env.getInstanceName();
         domainName_ = env.getDomainName();
         isDas = env.isDas() || env.isEmbedded();
+        
+        requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
 
         initProperties();
     }
@@ -216,9 +223,9 @@ public class EJBTimerService {
 
     private static synchronized void initEJBTimerService(String target, boolean force) {
         if (_timerService == null) {
-            PersistentTimerService persistentTS = 
-                    EjbContainerUtilImpl.getInstance().getServices().getService(PersistentTimerService.class);
-            if (persistentTS == null) {
+            List<PersistentTimerService> persistentTSList = 
+                    EjbContainerUtilImpl.getInstance().getServices().getAllServices(PersistentTimerService.class);
+            if (persistentTSList.isEmpty()) {
                 try {
                     _timerService = new EJBTimerService();
                     _timerServiceVerified = true;
@@ -227,7 +234,25 @@ public class EJBTimerService {
                 }
             } else {
                 synchronized (lock) {
-                    persistentTS.initPersistentTimerService(target);
+                    // choose service based on the configuration setting
+                    EjbContainerUtil ejbContainerUtil = EjbContainerUtilImpl.getInstance();
+                    String serviceType = ejbContainerUtil.getEjbContainer().getEjbTimerService().getEJBTimerService();
+                    PersistentTimerService persistentTS = null;
+                    for (PersistentTimerService pts : persistentTSList) {
+                        if (pts.getClass().getSimpleName().startsWith(serviceType)) {
+                            persistentTS = pts;
+                            break;
+                        }
+                    }
+                    if (persistentTS != null) {
+                        persistentTS.initPersistentTimerService(target);
+                    } else { // Fall back to the non-persistent service
+                        try {
+                            _timerService = new EJBTimerService();
+                        } catch (Exception e) {
+                            logger.log (Level.WARNING, "Cannot start EJBTimerService: ", e);
+                        }
+                    }
                     _timerServiceVerified = true;
                 }
 
@@ -1417,7 +1442,7 @@ public class EJBTimerService {
                            "Adding work pool task for timer " + timerId);
                     }
 
-                    TaskExpiredWork work = new TaskExpiredWork(this, timerId);
+                    TaskExpiredWork work = new TaskExpiredWork(this, timerId,requestTracing);
                     ejbContainerUtil.addWork(work);
                 } else {
                     logger.log(Level.FINE, "Timer " + timerId + 
@@ -1907,16 +1932,31 @@ public class EJBTimerService {
     private static class TaskExpiredWork implements Runnable {
         private EJBTimerService timerService_;
         private TimerPrimaryKey timerId_;
+        private RequestTracingService requestTracing;
 
         public TaskExpiredWork(EJBTimerService timerService, 
-                               TimerPrimaryKey timerId) {
+                               TimerPrimaryKey timerId,
+                               RequestTracingService rt) {
             timerService_ = timerService;
             timerId_ = timerId;
+            requestTracing = rt;
         }
 
         public void run() {
             // Delegate to Timer Service.
-            timerService_.deliverTimeout(timerId_);
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()){
+                requestTracing.startTrace();
+                RequestEvent re = new RequestEvent("EJBTimer-FIRE");
+                re.addProperty("TimerID", timerId_.toString());
+                requestTracing.traceRequestEvent(re);
+            }
+            try {
+                timerService_.deliverTimeout(timerId_);
+            }finally {
+                if (requestTracing != null && requestTracing.isRequestTracingEnabled() ){
+                    requestTracing.endTrace();
+                }
+            }
         } 
 
     } // TaskExpiredWork

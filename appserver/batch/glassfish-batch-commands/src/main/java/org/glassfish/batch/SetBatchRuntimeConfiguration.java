@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited] 
+// Portions Copyright [2015-2016] [C2B2 Consulting Limited and/or its affiliates]
 package org.glassfish.batch;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.util.SystemPropertyConstants;
 
 
 import org.glassfish.api.ActionReport;
@@ -81,7 +82,7 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.batch.runtime.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.POST,
@@ -97,7 +98,7 @@ public class SetBatchRuntimeConfiguration
     @Inject
     protected Logger logger;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
+    @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     protected String target;
 
     @Inject

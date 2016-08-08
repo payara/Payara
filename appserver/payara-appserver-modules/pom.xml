@@ -23,7 +23,6 @@
         <artifactId>glassfish-parent</artifactId>
         <version>4.1.1.163-SNAPSHOT</version>
     </parent>
-    <groupId>org.glassfish.main</groupId>
     <artifactId>payara-appserver-modules</artifactId>
     <name>Payara Appserver Modules</name>
     <description>Payara Appserver modules</description>
@@ -31,6 +30,8 @@
     <modules>
         <module>payara-jsr107</module>
         <module>jsr107-repackaged</module>
-        <module>payara-micro-cdi</module>
+        <module>hazelcast-ejb-timer</module>
+        <module>requesttracing-api</module>
+        <module>jmx-monitoring-service</module>
     </modules>
 </project>

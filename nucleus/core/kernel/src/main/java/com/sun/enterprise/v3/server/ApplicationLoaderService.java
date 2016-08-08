@@ -231,7 +231,7 @@ public class ApplicationLoaderService implements org.glassfish.hk2.api.PreDestro
             // and always (partially) load on DAS when application is 
             // referenced by non-DAS target so the application
             // information is available on DAS
-            if (deployment.isAppEnabled(app) || loadAppOnDAS(app.getName())) {
+            if (Boolean.valueOf(app.getEnabled()) || loadAppOnDAS(app.getName())) {
               DeploymentOrder.addApplicationDeployment(new ApplicationOrderInfo(app, appOrderInfoMap.get(app.getName()).intValue()));
             }
         }

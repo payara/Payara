@@ -43,7 +43,7 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
         } else if (percentage >= options.getThresholdGood()) {
             return HealthCheckResultStatus.GOOD;
         } else {
-            return HealthCheckResultStatus.CHECK_ERROR;
+            return HealthCheckResultStatus.FINE;
         }
     }
 

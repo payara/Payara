@@ -192,7 +192,7 @@
         <stax-api.version>1.0-2</stax-api.version>
         <management-api.version>1.1-rev-1</management-api.version>
         <servlet-api.version>3.1.0</servlet-api.version>
-        <grizzly.version>2.3.24</grizzly.version>
+        <grizzly.version>2.3.25</grizzly.version>
         <saaj-api.version>1.3.4</saaj-api.version>
         <hk2.version>2.4.0</hk2.version>
         <hk2.plugin.version>2.4.0</hk2.plugin.version>
@@ -210,7 +210,7 @@
         <jettison.version>1.3.7</jettison.version>
         <jax-rs-api.spec.version>2.0</jax-rs-api.spec.version>
         <jax-rs-api.impl.version>2.0.1</jax-rs-api.impl.version>
-        <mimepull.version>1.9.4</mimepull.version>
+        <mimepull.version>1.9.6</mimepull.version>
         <jbi.version>1.0</jbi.version>
         <glassfish-management-api.version>3.2.1-b002</glassfish-management-api.version>
         <btrace.version>1.0.5</btrace.version>
@@ -226,7 +226,7 @@
         <logging-annotation-processor.version>1.7</logging-annotation-processor.version>
         <command-security-plugin.version>1.0.7</command-security-plugin.version>
         <command.security.maven.plugin.isFailureFatal>false</command.security.maven.plugin.isFailureFatal>
-        <hazelcast.version>3.6.2</hazelcast.version>
+        <hazelcast.version>3.6.4</hazelcast.version>
         <mail.version>1.5.4</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
         <copyright-plugin.version>1.39</copyright-plugin.version>
@@ -1089,7 +1089,7 @@
             <dependency>
                 <groupId>org.fusesource.hawtjni</groupId>
                 <artifactId>hawtjni-runtime</artifactId>
-                <version>1.5</version>
+                <version>1.13</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish.hk2.external</groupId>
