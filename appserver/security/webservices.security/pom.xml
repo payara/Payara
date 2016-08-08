@@ -114,7 +114,7 @@
         </dependency>
         <dependency>
            <groupId>org.glassfish.metro</groupId>
-            <artifactId>webservices-osgi-aix</artifactId>
+            <artifactId>webservices-osgi</artifactId>
         </dependency>
         <dependency>
            <groupId>org.glassfish.metro</groupId>
