@@ -189,7 +189,11 @@ public class RecoveryManager {
 
         // read the resynch timeout system property
         recoveryResynchTimeout = Integer.getInteger("fish.payara.jts.RecoveryResynchTimeout", recoveryResynchTimeout);
-
+                
+        if (recoveryResynchTimeout < 0){
+            _logger.log(Level.SEVERE,recoveryResynchTimeout+ " is an invalid value for fish.payara.jts.RecoveryResynchTimeout. Using default value of 120 instead." );
+            recoveryResynchTimeout = 120;
+        }
         // Perform recovery/resync if necessary.
 
         if (Configuration.isRecoverable()) {

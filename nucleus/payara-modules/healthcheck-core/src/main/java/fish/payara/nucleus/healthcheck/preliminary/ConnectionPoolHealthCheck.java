@@ -13,7 +13,6 @@
  */
 package fish.payara.nucleus.healthcheck.preliminary;
 
-import com.sun.appserv.connectors.internal.api.ConnectorsUtil;
 import com.sun.enterprise.config.serverbeans.*;
 import com.sun.enterprise.connectors.util.ResourcesUtil;
 import com.sun.enterprise.resource.pool.PoolManager;
@@ -76,7 +75,7 @@ public class ConnectionPoolHealthCheck extends BaseThresholdHealthCheck<HealthCh
         HealthCheckResult result = new HealthCheckResult();
         Collection<JdbcResource> allJdbcResources = getAllJdbcResources();
         for (JdbcResource resource : allJdbcResources) {
-            ResourceInfo resourceInfo = ConnectorsUtil.getResourceInfo(resource);
+            ResourceInfo resourceInfo = ResourceUtil.getResourceInfo(resource);
             JdbcConnectionPool pool = JdbcResourcesUtil.createInstance().getJdbcConnectionPoolOfResource(resourceInfo);
             PoolInfo poolInfo = ResourceUtil.getPoolInfo(pool);
             if (getOptions().getPoolName() != null) {

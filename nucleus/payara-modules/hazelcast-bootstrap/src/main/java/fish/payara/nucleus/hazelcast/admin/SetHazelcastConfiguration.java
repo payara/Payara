@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014,2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2014-2016 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -17,8 +17,11 @@
  */
 package fish.payara.nucleus.hazelcast.admin;
 
+import com.sun.enterprise.config.serverbeans.Clusters;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Servers;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.HazelcastRuntimeConfiguration;
 import java.beans.PropertyVetoException;
@@ -59,7 +62,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.hazelcast.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -74,12 +77,12 @@ public class SetHazelcastConfiguration implements AdminCommand {
     @Inject
     protected HazelcastCore hazelcast;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
-    protected String target;
-
     @Inject
     protected Target targetUtil;
-
+     
+    @Param(name = "target", optional = true, defaultValue = "server")
+    protected String target;
+    
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
 
@@ -106,6 +109,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
 
     @Param(name = "jndiName", shortName = "j", optional = true)
     private String jndiName;
+    
+    @Param(name = "licenseKey", shortName = "lk", optional = true)
+    private String licenseKey;
     
     @Param(name = "lite", optional = true, defaultValue = "false")
     private Boolean lite;
@@ -162,6 +168,9 @@ public class SetHazelcastConfiguration implements AdminCommand {
                         if (hzClusterPassword != null) {
                             hazelcastRuntimeConfigurationProxy.setClusterGroupPassword(hzClusterPassword);
                         }
+                        if (licenseKey != null){
+                            hazelcastRuntimeConfigurationProxy.setLicenseKey(licenseKey);
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return null;
                     }
@@ -185,7 +194,14 @@ public class SetHazelcastConfiguration implements AdminCommand {
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv = runner.getCommandInvocation("__enable-hazelcast-internal", subReport, context.getSubject());
+        CommandRunner.CommandInvocation inv;
+           
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("__enable-hazelcast-internal-on-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("__enable-hazelcast-internal-on-instance", subReport, context.getSubject());
+        }
+
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
         params.add("target", target);

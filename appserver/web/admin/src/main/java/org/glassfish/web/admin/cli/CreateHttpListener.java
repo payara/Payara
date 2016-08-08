@@ -103,6 +103,8 @@ public class CreateHttpListener implements AdminCommand {
     String serverName;
     @Param(name = "xpowered", optional = true, defaultValue = "true")
     Boolean xPoweredBy;
+    @Param(name = "serverHeader", optional = true, defaultValue = "true", alias="serverHeader")
+    Boolean serverHeader;
     @Param(name = "acceptorthreads", optional = true)
     String acceptorThreads;
     @Param(name = "redirectport", optional = true)
@@ -384,6 +386,7 @@ public class CreateHttpListener implements AdminCommand {
         command.protocolName = listenerId;
         command.defaultVirtualServer = defaultVirtualServer;
         command.xPoweredBy = xPoweredBy;
+        command.serverHeader = serverHeader;
         command.serverName = serverName;
         command.target = target;
         command.execute(context);

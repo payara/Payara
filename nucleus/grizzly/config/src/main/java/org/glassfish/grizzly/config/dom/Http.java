@@ -69,8 +69,9 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     boolean UPLOAD_TIMEOUT_ENABLED = true;
     boolean WEBSOCKET_SUPPORT_ENABLED = true;
     boolean XPOWERED_BY = true;
+    boolean SERVER_HEADER = true;
     boolean ALLOW_PAYLOAD_FOR_UNDEFINED_HTTP_METHODS = false;
-    
+
     int COMPRESSION_MIN_SIZE = 2048;
     int CONNECTION_UPLOAD_TIMEOUT = 300000;
     int HEADER_BUFFER_LENGTH = 8192;
@@ -92,7 +93,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String DEFAULT_ADAPTER = "org.glassfish.grizzly.http.server.StaticHttpHandler";
     String URI_ENCODING = "UTF-8";
     String VERSION = "HTTP/1.1";
-    String SCHEME_PATTERN = "http|https";    
+    String SCHEME_PATTERN = "http|https";
 
     @Attribute(defaultValue = DEFAULT_ADAPTER)
     String getAdapter();
@@ -235,7 +236,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
     String getMaxSwallowingInputBytes();
 
     void setMaxSwallowingInputBytes(String max);
-    
+
     @Attribute(dataType = Integer.class)
     String getNoCompressionUserAgents();
 
@@ -305,7 +306,7 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
      */
     @Attribute(defaultValue = "" + WEBSOCKETS_TIMEOUT, dataType = Integer.class)
     String getWebsocketsTimeoutSeconds();
-    
+
     void setWebsocketsTimeoutSeconds(String timeout);
 
     @Attribute(defaultValue = "" + TRACE_ENABLED, dataType = Boolean.class)
@@ -432,6 +433,11 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
 
     void setXpoweredBy(String xpoweredBy);
 
+    @Attribute(defaultValue = "" + SERVER_HEADER, dataType = Boolean.class)
+    String getServerHeader();
+
+    void setServerHeader(String serverHeader);
+
     /**
      * @return <tt>true</tt>, if payload will be allowed for HTTP methods, for
      * which spec doesn't state explicitly if payload allowed or not.
@@ -440,9 +446,9 @@ public interface Http extends ConfigBeanProxy, PropertyBag {
      */
     @Attribute(defaultValue = "" + ALLOW_PAYLOAD_FOR_UNDEFINED_HTTP_METHODS, dataType = Boolean.class)
     String getAllowPayloadForUndefinedHttpMethods();
-    
+
     void setAllowPayloadForUndefinedHttpMethods(String allowPayloadForUndefinedHttpMethods);
-    
+
     @DuckTyped
     Protocol getParent();
 

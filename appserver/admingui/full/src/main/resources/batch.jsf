@@ -1,0 +1,89 @@
+<!--
+
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+
+ Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates. 
+ All rights reserved.
+
+ The contents of this file are subject to the terms of the Common Development
+ and Distribution License("CDDL") (collectively, the "License").  You
+ may not use this file except in compliance with the License.  You can
+ obtain a copy of the License at
+ https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ or packager/legal/LICENSE.txt.  See the License for the specific
+ language governing permissions and limitations under the License.
+
+ When distributing the software, include this License Header Notice in each
+ file and include the License file at packager/legal/LICENSE.txt.
+-->
+<!initPage
+    setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
+    setResourceBundle(key="i18nf" bundle="org.glassfish.full.admingui.Strings");
+    setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings")
+    setResourceBundle(key="help_full" bundle="org.glassfish.full.admingui.Helplinks");
+    />
+<!composition template="/templates/default.layout"  guiTitle="$resource{i18nf.batch.configurationTitle}"  >
+
+<!define name="content">
+<event>
+    <!beforeCreate
+        getRequestValue(key="config" value="#{pageSession.config}");
+
+        createMap(result="#{pageSession.attrsMap}")
+        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.config}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-batch-runtime-configuration?target=#{pageSession.config}"  method="GET" result="#{requestScope.resp}");
+        setPageSessionAttribute(key="valueMap", value="#{requestScope.resp.data.extraProperties.listBatchRuntimeConfiguration}");
+        mapPut(map="#{pageSession.valueMap}" key="target" value="#{pageSession.config}");
+        />
+</event>
+
+<sun:form id="propertyForm">
+#include "/common/shared/alertMsg_1.inc"
+    <sun:title id="propertyContentPage" title="$resource{i18nf.batch.configurationTitle}" helpText="$resource{i18nf.batch.configurationTitleHelp}" >
+        <!facet pageButtonsTop>
+        <sun:panelGroup id="topButtons">
+            <sun:button id="saveButton"  text="$resource{i18n.button.Save}"
+                        onClick="submitAndDisable(this, '$resource{i18n.button.Processing}'); return false;" >
+                <!command
+                    prepareSuccessfulMsg();
+                    gf.restRequest(endpoint="#{sessionScope.REST_URL}/set-batch-runtime-configuration" method="POST" attrs="#{pageSession.valueMap}");
+                    />
+            </sun:button>
+        </sun:panelGroup>
+    </facet>
+</sun:title>
+<sun:propertySheet id="propertySheet">
+#include "/common/shared/configNameSection.inc"
+    <sun:propertySheetSection id="batch">
+        <sun:property id="executorServiceLookupName"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.executorServiceLookupName}" helpText="$resource{i18nf.batch.configuration.executorServiceLookupNameHelp}">
+            <sun:dropDown id="executorServiceLookupName" selected="#{pageSession.valueMap['executorServiceLookupName']}" labels="$pageSession{mesList}"  values="$pageSession{mesList}"  >
+                <!beforeCreate
+                    gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-managed-executor-services", attrs="#{pageSession.attrsMap}"  result="#{pageSession.mesList}");
+                    />
+            </sun:dropDown>
+        </sun:property>
+
+        <sun:property id="poolNameProp"  labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.dataSourceLookupName}"  helpText="$resource{i18nf.batch.configuration.dataSourceLookupNameHelp}">
+            <sun:dropDown id="PoolName" selected="#{pageSession.valueMap['dataSourceLookupName']}" labels="$pageSession{jdbcList}"  values="$pageSession{jdbcList}" >
+                <!beforeCreate
+                    gf.getChildrenNameFromListCmd(endpoint="#{sessionScope.REST_URL}/resources/list-jdbc-resources", attrs="#{pageSession.attrsMap}" result="#{pageSession.jdbcList}");
+                    />
+            </sun:dropDown>
+        </sun:property>
+        <!-- Payara Modifications -->
+        <sun:property id="schemaNameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.schemaName}"  helpText="$resource{i18nf.batch.configuration.schemaNameHelp}">
+            <sun:textField id="schemaName" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['schemaName']}" />
+        </sun:property>
+        <sun:property id="tablePrefixProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.tablePrefix}"  helpText="$resource{i18nf.batch.configuration.tablePrefixHelp}">
+            <sun:textField id="tablePrefix" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['tablePrefix']}" />
+        </sun:property>
+        <sun:property id="tableSuffixProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nf.batch.configuration.tableSuffix}"  helpText="$resource{i18nf.batch.configuration.tableSuffixHelp}">
+            <sun:textField id="tableSuffix" columns="$int{40}" maxLength="30" text="#{pageSession.valueMap['tableSuffix']}" />
+        </sun:property>
+        <!-- End Payara Modifications -->
+    </sun:propertySheetSection>
+</sun:propertySheet>
+<sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
+</sun:form>
+</define>
+</composition>

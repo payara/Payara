@@ -53,6 +53,7 @@ import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
 public class LazyBootPersistenceManager implements IPersistenceManagerService {
     
     private IPersistenceManagerService lazyProxy;
+    private IBatchConfig ibc;
 
     @Override
     public int jobOperatorGetJobInstanceCount(String string) {
@@ -261,12 +262,16 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
 
     @Override
     public void init(IBatchConfig ibc) {
+        this.ibc = ibc;
+        internalInit(ibc);
+ }
+
+    private void internalInit(IBatchConfig ibc1) {
         try {
             // this is the default
-            String dataSourceName = ibc.getDatabaseConfigurationBean().getJndiName();;
+            String dataSourceName = ibc1.getDatabaseConfigurationBean().getJndiName();
             InitialContext ctx = new InitialContext();
             Object object = ctx.lookup(dataSourceName);
-
             //check whether the referenced JNDI entry is a DataSource
             if (object instanceof DataSource) {
                 Connection conn = null;
@@ -276,24 +281,24 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
                     String database = conn.getMetaData().getDatabaseProductName();
                     if (database.contains("Derby")) {
                         lazyProxy = new JBatchJDBCPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("MySQL")) {
                         lazyProxy = new MySqlPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("Oracle")) {
                         lazyProxy = new OraclePersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("PostgreSQL")) {
                         lazyProxy = new PostgresPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("DB2")) {
                         lazyProxy = new DB2PersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     } else if (database.contains("Microsoft SQL Server")) {
                         lazyProxy = new SQLServerPersistenceManager();
-                        lazyProxy.init(ibc);
+                        lazyProxy.init(ibc1);
                     }
-                } catch (SQLException ex) {
+                }catch (SQLException ex) {
                     Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.SEVERE, "Failed to get connecion to determine database type", ex);
                 } finally {
                     if (conn != null) {
@@ -304,17 +309,15 @@ public class LazyBootPersistenceManager implements IPersistenceManagerService {
                         }
                     }
                 }
-            } //else if (object instanceof HazelcastInstance) {
-                //lazyProxy = new HazelcastPersistenceService();
-                //lazyProxy.init(ibc);
-            //}
-        } catch (NamingException ex) {
+            } 
+        }catch (NamingException ex) {
             Logger.getLogger(BatchRuntimeHelper.class.getName()).log(Level.WARNING, "Unable to find JBatch configured DataSource", ex);
-        }    }
+            lazyProxy = new NullPersistenceManager(ibc.getDatabaseConfigurationBean().getJndiName());
+        }
+    }
 
     @Override
     public void shutdown() {
         lazyProxy.shutdown();
     }
-    
 }

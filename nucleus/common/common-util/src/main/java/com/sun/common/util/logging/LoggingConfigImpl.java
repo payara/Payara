@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
+ 
 package com.sun.common.util.logging;
 
 import java.io.BufferedInputStream;
@@ -408,6 +410,11 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (key == null) {
                 key = e.getKey();
             }
+            
+            if (key.contains("\\:")) {
+                key = key.replace("\\:", ":");
+            }
+            
             props.remove(key);
         }
 
@@ -433,6 +440,11 @@ public class LoggingConfigImpl implements LoggingConfig, PostConstruct {
             if (key == null) {
                 key = e.getKey();
             }
+            
+            if (key.contains("\\:")) {
+                key = key.replace("\\:", ":");
+            }
+            
             props.remove(key);
         }
 

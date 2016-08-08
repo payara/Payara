@@ -78,7 +78,7 @@
                 gf.createEntity(endpoint="${newProxy}/#{pageSession.valueMap['Name']}/http"
                         attrs="#{pageSession.httpMap}"
                         convertToFalse={"uploadTimeoutEnabled", "cometSupportEnabled", "dnsLookupEnabled", "rcmSupportEnabled", "traceEnabled", "authPassThroughEnabled", 
-                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "xpoweredBy"},
+                                "chunkingEnabled",  "encodedSlashEnabled", "websocketsSupport", "xpoweredBy", "serverHeader" },
                         skipAttrs="#{pageSession.skipAttrsList}"
                         result => $attribute{newHttp});
 

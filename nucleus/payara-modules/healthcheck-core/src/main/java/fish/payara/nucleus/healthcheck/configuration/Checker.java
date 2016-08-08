@@ -33,11 +33,11 @@ public interface Checker extends ConfigBeanProxy, ConfigExtension {
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 
-    @Attribute
+    @Attribute(defaultValue = "5")
     Long getTime();
     void setTime(String value) throws PropertyVetoException;
 
-    @Attribute()
+    @Attribute(defaultValue = "MINUTES")
     String getUnit();
     void setUnit(String value) throws PropertyVetoException;
 }

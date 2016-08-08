@@ -238,6 +238,8 @@ public class Connector
      * Is generation of X-Powered-By response header enabled/disabled?
      */
     private boolean xpoweredBy;
+    
+    private boolean serverHeader;
 
     /**
      * Descriptive information about this Connector implementation.
@@ -1191,6 +1193,15 @@ public class Connector
     public void setXpoweredBy(boolean xpoweredBy) {
         this.xpoweredBy = xpoweredBy;
         setProperty("xpoweredBy", String.valueOf(xpoweredBy));
+    }
+    
+     public boolean isServerHeader() {
+        return serverHeader;
+    }
+
+    public void setServerHeader(boolean serverHeader) {
+        this.serverHeader = serverHeader;
+        setProperty("serverHeader", String.valueOf(serverHeader));
     }
 
     // BEGIN S1AS 5000999

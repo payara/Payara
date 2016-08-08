@@ -16,7 +16,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
 -->
-<sun:tab id="asadminRecorder" immediate="true" text="Asadmin Recorder" toolTip="$resource{i18nar.asadminRecorder.asadminRecorderTabs}">
+<sun:tab id="asadminRecorder" immediate="true" text="$resource{i18nar.asadminRecorder.asadminRecorderTabs}" toolTip="$resource{i18nar.asadminRecorder.asadminRecorderTabs}">
     <!beforeCreate
         setResourceBundle(key="i18nar" bundle="fish.payara.admingui.extras.Strings");
         setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");

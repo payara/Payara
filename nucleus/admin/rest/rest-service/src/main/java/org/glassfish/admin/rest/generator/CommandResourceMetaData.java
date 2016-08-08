@@ -265,6 +265,7 @@ public class CommandResourceMetaData {
         {"Config", "SystemPropertiesCliResource", "system-properties"},
         {"Domain", "JmxServiceUrlsResource", "jmx-urls"},
         {"Domain", "LogViewerResource", "view-log"},
+        {"Domain", "NotificationLogViewer", "notification-log-view"},
         {"Domain", "SetDomainConfigResource", "set"},
         {"Domain", "SystemPropertiesCliResource", "system-properties"},
         {"NetworkListener", "FindHttpProtocolResource", "find-http-protocol"},

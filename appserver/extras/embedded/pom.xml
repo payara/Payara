@@ -54,6 +54,5 @@
     <modules>
         <module>all</module>
         <module>web</module>
-        <module>payara-micro</module>
     </modules>
 </project>
