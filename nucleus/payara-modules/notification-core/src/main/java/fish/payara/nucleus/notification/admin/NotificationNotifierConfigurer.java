@@ -55,8 +55,8 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn({RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "notification-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup

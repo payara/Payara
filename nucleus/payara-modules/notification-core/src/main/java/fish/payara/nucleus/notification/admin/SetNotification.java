@@ -34,8 +34,8 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "set-notification")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
@@ -69,6 +69,8 @@ public class SetNotification implements AdminCommand {
     @Inject
     ServiceLocator serviceLocator;
 
+    CommandRunner.CommandInvocation inv;
+
     @Override
     public void execute(AdminCommandContext context) {
         final AdminCommandContext theContext = context;
@@ -80,13 +82,17 @@ public class SetNotification implements AdminCommand {
         }
 
         if (dynamic || enabled) {
-            enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
             if (dynamic) {
                 notifierDynamic = true;
+            } else {
+                notifierDynamic = false;
             }
             if (enabled) {
                 notifierEnabled = true;
+            } else {
+                notifierEnabled = false;
             }
+            enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
         }
 
         if (notifierDynamic || notifierEnabled) {
@@ -97,9 +103,12 @@ public class SetNotification implements AdminCommand {
     private void enableNotificationConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
-        inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("notification-configure-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
+        }
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
@@ -116,9 +125,12 @@ public class SetNotification implements AdminCommand {
     private void enableNotificationNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
-        inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("notification-configure-notifier-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
+        }
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
