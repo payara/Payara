@@ -45,7 +45,8 @@ import java.util.logging.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- * Admin command to enable/disable all request tracing services defined in domain.xml.
+ * Admin command to enable/disable all request tracing services defined in
+ * domain.xml.
  *
  * @author mertcaliskan
  */
@@ -86,7 +87,7 @@ public class RequestTracingConfigurerDas implements AdminCommand {
     @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "10")
+    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
     private String value;
 
     @Inject
@@ -173,6 +174,24 @@ public class RequestTracingConfigurerDas implements AdminCommand {
                 return result;
             }
 
+        }
+
+        if (unit != null) {
+            try {
+                if (!unit.equals("NANOSECONDS")
+                        && !unit.equals("MICROSECONDS")
+                        && !unit.equals("MILLISECONDS")
+                        && !unit.equals("SECONDS")
+                        && !unit.equals("MINUTES")
+                        && !unit.equals("HOURS")
+                        && !unit.equals("DAYS")) {
+                    actionReport.failure(logger, unit + " is an invalid time unit");
+                    return result;
+                }
+            } catch (IllegalArgumentException iaf) {
+                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
+                return result;
+            }
         }
 
         return true;

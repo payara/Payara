@@ -158,20 +158,18 @@ public class SetRequestTracing implements AdminCommand {
             inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
         }
 
-            ParameterMap params = new ParameterMap();
-            params.add("dynamic", notifierDynamic.toString());
-            params.add("target", target);
-            params.add("notifierName", notifierName);
-            params.add("notifierEnabled", enabled.toString());
-            inv.parameters(params);
-            inv.execute();
-            // swallow the offline warning as it is not a problem
-            if (subReport.hasWarnings()) {
-                subReport.setMessage("");
-            }
+        ParameterMap params = new ParameterMap();
+        params.add("dynamic", notifierDynamic.toString());
+        params.add("target", target);
+        params.add("notifierName", notifierName);
+        params.add("notifierEnabled", enabled.toString());
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
         }
-
-    
+    }
 
     private boolean validate(ActionReport actionReport) {
         boolean result = false;
@@ -187,6 +185,24 @@ public class SetRequestTracing implements AdminCommand {
                 return result;
             }
 
+        }
+
+        if (unit != null) {
+            try {
+                if (!unit.equals("NANOSECONDS")
+                        && !unit.equals("MICROSECONDS")
+                        && !unit.equals("MILLISECONDS")
+                        && !unit.equals("SECONDS")
+                        && !unit.equals("MINUTES")
+                        && !unit.equals("HOURS")
+                        && !unit.equals("DAYS")) {
+                    actionReport.failure(logger, unit + " is an invalid time unit");
+                    return result;
+                }
+            } catch (IllegalArgumentException iaf) {
+                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
+                return result;
+            }
         }
 
         return true;
