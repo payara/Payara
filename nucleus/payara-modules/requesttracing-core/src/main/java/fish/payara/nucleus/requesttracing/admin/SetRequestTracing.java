@@ -45,8 +45,8 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "set-requesttracing")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
@@ -59,6 +59,9 @@ import org.jvnet.hk2.annotations.Service;
 })
 public class SetRequestTracing implements AdminCommand {
     
+    @Inject
+    protected Logger logger;
+
     @Inject
     protected Logger logger;
 
@@ -80,7 +83,7 @@ public class SetRequestTracing implements AdminCommand {
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
     private Boolean notifierDynamic;
 
-    @Param(name = "notifierEnabled", optional = false)
+    @Param(name = "notifierEnabled", optional = true, defaultValue = "false")
     private Boolean notifierEnabled;
 
     @Param(name = "notifierName", optional = true, defaultValue = "service-log")
@@ -88,6 +91,8 @@ public class SetRequestTracing implements AdminCommand {
 
     @Inject
     ServiceLocator serviceLocator;
+
+    CommandRunner.CommandInvocation inv;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -104,13 +109,17 @@ public class SetRequestTracing implements AdminCommand {
         }
 
         if (dynamic || enabled) {
-            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
             if (dynamic) {
                 notifierDynamic = true;
+            } else {
+                notifierDynamic = false;
             }
             if (enabled) {
                 notifierEnabled = true;
+            } else {
+                notifierEnabled = false;
             }
+            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         }
 
         if (notifierDynamic || notifierEnabled) {
@@ -121,9 +130,12 @@ public class SetRequestTracing implements AdminCommand {
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
-        inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("requesttracing-configure-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
+        }
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
@@ -140,11 +152,15 @@ public class SetRequestTracing implements AdminCommand {
     }
 
     private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
-        inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("requesttracing-configure-notifier-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+        }
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());

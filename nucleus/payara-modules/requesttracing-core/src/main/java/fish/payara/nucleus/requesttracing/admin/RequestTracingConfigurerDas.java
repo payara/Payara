@@ -45,26 +45,27 @@ import java.util.logging.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- * Admin command to enable/disable all request tracing services defined in domain.xml.
+ * Admin command to enable/disable all request tracing services defined in
+ * domain.xml.
  *
  * @author mertcaliskan
  * @author Susan Rai
  */
-@ExecuteOn(RuntimeType.INSTANCE)
+@ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "requesttracing-configure")
+@Service(name = "requesttracing-configure-das")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("requesttracing.configure")
+@I18n("requesttracing.configure.das")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "requesttracing-configure",
+            path = "requesttracing-configure-das",
             description = "Enables/Disables Request Tracing Service")
 })
-public class RequestTracingConfigurer implements AdminCommand {
+public class RequestTracingConfigurerDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingConfigurer.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingConfigurerDas.class);
 
     @Inject
     RequestTracingService service;
