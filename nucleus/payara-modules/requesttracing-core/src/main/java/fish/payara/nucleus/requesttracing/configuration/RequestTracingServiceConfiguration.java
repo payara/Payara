@@ -32,11 +32,11 @@ public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, Con
     Boolean getEnabled();
     void enabled(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "3")
+    @Attribute(defaultValue = "30")
     Long getThresholdValue();
     void setThresholdValue(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "MINUTES")
+    @Attribute(defaultValue = "SECONDS")
     String getThresholdUnit();
     void setThresholdUnit(String value) throws PropertyVetoException;
 

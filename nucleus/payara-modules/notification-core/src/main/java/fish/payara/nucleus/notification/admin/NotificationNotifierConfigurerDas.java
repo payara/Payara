@@ -15,18 +15,19 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.requesttracing.admin;
+package fish.payara.nucleus.notification.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.NotificationEventBus;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
-import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptions;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptionsFactory;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -54,27 +55,24 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "requesttracing-configure-notifier")
+@Service(name = "notification-configure-notifier-das")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("requesttracing.configure.notifier")
+@I18n("notification.configure.notifier.das")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "requesttracing-configure-notifier",
+            path = "notification-configure-notifier-das",
             description = "Enables/Disables Notifier Specified With Name")
 })
-public class RequestTracingNotifierConfigurer implements AdminCommand {
+public class NotificationNotifierConfigurerDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
-
-    @Inject
-    RequestTracingService service;
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationNotifierConfigurerDas.class);
 
     @Inject
-    NotifierExecutionOptionsFactory factory;
+    NotificationService service;
 
     @Inject
     ServiceLocator habitat;
@@ -85,8 +83,14 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
     @Inject
     protected Target targetUtil;
 
+    @Inject
+    private NotifierConfigurationExecutionOptionsFactory factory;
+
+    @Inject
+    private NotificationEventBus eventBus;
+
     @Param(name = "dynamic", optional = true, defaultValue = "false")
-    private Boolean dynamic;
+    protected Boolean dynamic;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -109,62 +113,66 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
         Config config = targetUtil.getConfig(target);
 
         final BaseNotifierService notifierService = habitat.getService(BaseNotifierService.class, notifierName);
-        if (service == null) {
+        if (notifierService == null) {
             actionReport.appendMessage(strings.getLocalString("requesttracing.notifier.configure.status.error",
                     "Notifier with name {0} could not be found.", notifierName));
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
 
-        final RequestTracingServiceConfiguration requestTracingServiceConfiguration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
-        final Notifier notifier = requestTracingServiceConfiguration.getNotifierByType(notifierService.getNotifierType());
+        final NotificationServiceConfiguration notificationServiceConfiguration = config.getExtensionByType(NotificationServiceConfiguration.class);
+        final NotifierConfiguration notifier = notificationServiceConfiguration.getNotifierConfigurationByType(notifierService.getNotifierConfigType());
 
         try {
             if (notifier == null) {
-                final Notifier[] createdNotifier = {null};
-                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
+                final NotifierConfiguration[] createdNotifier = {null};
+                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
                     @Override
-                    public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
+                    public Object run(final NotificationServiceConfiguration notificationServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        Notifier notifierProxy = (Notifier) requestTracingServiceConfigurationProxy.createChild(notifierService.getNotifierType());
+                        NotifierConfiguration notifierProxy = (NotifierConfiguration) notificationServiceConfigurationProxy.createChild(notifierService.getNotifierConfigType());
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
                         createdNotifier[0] = notifierProxy;
 
-                        List<Notifier> notifierList = requestTracingServiceConfigurationProxy.getNotifierList();
-                        NotifierExecutionOptions executionOptions = factory.build(createdNotifier[0]);
+                        List<NotifierConfiguration> notifierConfigList = notificationServiceConfigurationProxy.getNotifierConfigurationList();
+                        NotifierConfigurationExecutionOptions executionOptions = factory.build(createdNotifier[0]);
                         if (notifierEnabled) {
-                            notifierList.add(createdNotifier[0]);
+                            notifierConfigList.add(createdNotifier[0]);
                             if (dynamic) {
-                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
+                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
                             }
                         } else {
-                            notifierList.remove(createdNotifier[0]);
+                            notifierConfigList.remove(createdNotifier[0]);
                             if (dynamic) {
-                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
+                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
                             }
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return requestTracingServiceConfigurationProxy;
+                        return notificationServiceConfigurationProxy;
                     }
-                }, requestTracingServiceConfiguration);
+                }, notificationServiceConfiguration);
             } else {
-                ConfigSupport.apply(new SingleConfigCode<Notifier>() {
+                ConfigSupport.apply(new SingleConfigCode<NotifierConfiguration>() {
                     @Override
-                    public Object run(final Notifier notifierProxy) throws
+                    public Object run(final NotifierConfiguration notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
 
                         if (dynamic) {
-                            NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
+                            NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
                             if (notifierEnabled) {
-                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
+                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
                             } else {
-                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
+                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
                             }
                         }
 
@@ -175,8 +183,8 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
 
             }
 
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.added.configured",
-                    "Request Tracing Notifier with name {0} is registered and set enabled to {1}.", notifierName, notifierEnabled) + "\n");
+            actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",
+                    "Notifier with name {0} is registered and set enabled to {1}.", notifierName, notifierEnabled) + "\n");
         } catch (TransactionFailure ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
