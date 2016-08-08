@@ -55,21 +55,21 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "notification-configure-notifier")
+@Service(name = "notification-configure-notifier-das")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("notification.configure.notifier")
+@I18n("notification.configure.notifier.das")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "notification-configure-notifier",
+            path = "notification-configure-notifier-das",
             description = "Enables/Disables Notifier Specified With Name")
 })
-public class NotificationNotifierConfigurer implements AdminCommand {
+public class NotificationNotifierConfigurerDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationNotifierConfigurer.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationNotifierConfigurerDas.class);
 
     @Inject
     NotificationService service;
