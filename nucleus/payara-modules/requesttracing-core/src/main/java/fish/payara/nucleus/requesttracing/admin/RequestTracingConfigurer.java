@@ -87,7 +87,7 @@ public class RequestTracingConfigurer implements AdminCommand {
     @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "10")
+    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
     private String value;
 
     @Inject
