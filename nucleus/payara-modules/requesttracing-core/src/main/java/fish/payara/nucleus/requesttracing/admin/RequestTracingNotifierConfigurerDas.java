@@ -54,21 +54,21 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "requesttracing-configure-notifier")
+@Service(name = "requesttracing-configure-notifier-das")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("requesttracing.configure.notifier")
+@I18n("requesttracing.configure.notifier.das")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "requesttracing-configure-notifier",
+            path = "requesttracing-configure-notifier-das",
             description = "Enables/Disables Notifier Specified With Name")
 })
-public class RequestTracingNotifierConfigurer implements AdminCommand {
+public class RequestTracingNotifierConfigurerDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurerDas.class);
 
     @Inject
     RequestTracingService service;
