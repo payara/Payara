@@ -47,17 +47,17 @@ import org.jvnet.hk2.annotations.Service;
  */
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "set-requesttracing")
+@Service(name = "set-requesttracing-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.requesttracing")
+@I18n("set.requesttracing.configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-requesttracing",
+            path = "set-requesttracing-configuration",
             description = "Set Request Tracing Services Configuration")
 })
-public class SetRequestTracing implements AdminCommand {
+public class SetRequestTracingConfiguration implements AdminCommand {
 
     @Inject
     protected Logger logger;
