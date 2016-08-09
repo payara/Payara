@@ -83,6 +83,7 @@
             <directory>${temp.dir}/modules</directory>
             <includes>
                 <include>javax.annotation-api.jar</include>
+                <include>resolver.jar</include>
             </includes>
             <outputDirectory>${install.dir.name}/modules/endorsed</outputDirectory>
         </fileSet>
@@ -94,6 +95,7 @@
                 <exclude>modules/flashlight-agent.jar</exclude>
 		<exclude>modules/nucleus-domain.jar</exclude>
                 <exclude>modules/javax.annotation-api.jar</exclude>
+                <exclude>modules/resolver.jar</exclude>
                 <exclude>META-INF/**</exclude>
 		<exclude>bin/**</exclude>
             </excludes>
