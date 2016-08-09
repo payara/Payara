@@ -1,27 +1,16 @@
 /*
-
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
-package fish.payara.nucleus.requesttracing.admin;
+package fish.payara.nucleus.notification.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
 import java.util.Properties;
-import java.util.logging.Logger;
 import javax.inject.Inject;
+import static javax.management.Query.value;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -39,28 +28,26 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+import static javax.management.Query.value;
 
 /**
- * Admin command to set Request Tracing services configuration
+ * Admin command to set notification services configuration
  *
  * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn(value = {RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "set-requesttracing")
+@Service(name = "set-notification-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.requesttracing")
+@I18n("set.notification.configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-requesttracing",
-            description = "Set Request Tracing Services Configuration")
+            path = "set-notification-configuration",
+            description = "Set notification Services Configuration")
 })
-public class SetRequestTracing implements AdminCommand {
-
-    @Inject
-    protected Logger logger;
+public class SetNotificationConfiguration implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -69,16 +56,10 @@ public class SetRequestTracing implements AdminCommand {
     private Boolean enabled;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
-    private Boolean dynamic;
-
-    @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
-    private String unit;
-
-    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
-    private String value;
+    protected Boolean dynamic;
 
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
-    private Boolean notifierDynamic;
+    protected Boolean notifierDynamic;
 
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
@@ -101,10 +82,6 @@ public class SetRequestTracing implements AdminCommand {
             actionReport.setExtraProperties(extraProperties);
         }
 
-        if (!validate(actionReport)) {
-            return;
-        }
-
         if (dynamic || enabled) {
             if (dynamic) {
                 notifierDynamic = true;
@@ -116,30 +93,28 @@ public class SetRequestTracing implements AdminCommand {
             } else {
                 notifierEnabled = false;
             }
-            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
+            enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
         }
 
         if (notifierDynamic || notifierEnabled) {
-            enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
+            enableNotificationNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
         }
     }
 
-    private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+    private void enableNotificationConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
         if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("requesttracing-configure-das", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("notification-configure-das", subReport, context.getSubject());
         } else {
-            inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
         }
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
         params.add("target", target);
         params.add("dynamic", dynamic.toString());
-        params.add("thresholdUnit", unit);
-        params.add("thresholdValue", value);
         inv.parameters(params);
         inv.execute();
         // swallow the offline warning as it is not a problem
@@ -148,14 +123,14 @@ public class SetRequestTracing implements AdminCommand {
         }
     }
 
-    private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+    private void enableNotificationNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
         if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("requesttracing-configure-notifier-das", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("notification-configure-notifier-das", subReport, context.getSubject());
         } else {
-            inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
         }
 
         ParameterMap params = new ParameterMap();
@@ -169,42 +144,5 @@ public class SetRequestTracing implements AdminCommand {
         if (subReport.hasWarnings()) {
             subReport.setMessage("");
         }
-    }
-
-    private boolean validate(ActionReport actionReport) {
-        boolean result = false;
-        if (value != null) {
-            try {
-                int thresholdValue = Integer.parseInt(value);
-                if (thresholdValue <= 0 || thresholdValue > Short.MAX_VALUE * 2) {
-                    actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
-                    return result;
-                }
-            } catch (NumberFormatException nfe) {
-                actionReport.failure(logger, "Threshold Value is not a valid integer", nfe);
-                return result;
-            }
-
-        }
-
-        if (unit != null) {
-            try {
-                if (!unit.equals("NANOSECONDS")
-                        && !unit.equals("MICROSECONDS")
-                        && !unit.equals("MILLISECONDS")
-                        && !unit.equals("SECONDS")
-                        && !unit.equals("MINUTES")
-                        && !unit.equals("HOURS")
-                        && !unit.equals("DAYS")) {
-                    actionReport.failure(logger, unit + " is an invalid time unit");
-                    return result;
-                }
-            } catch (IllegalArgumentException iaf) {
-                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
-                return result;
-            }
-        }
-
-        return true;
     }
 }
