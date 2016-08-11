@@ -52,7 +52,7 @@
 
     <groupId>org.glassfish.main</groupId>
     <artifactId>glassfish-nucleus-parent</artifactId>
-    <version>4.1.1.163-SNAPSHOT</version>
+    <version>4.1.1.163</version>
     <packaging>pom</packaging>
     <name>GlassFish Nucleus Parent Project</name>
 
@@ -60,7 +60,7 @@
         <connection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</connection>
         <developerConnection>scm:svn:https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</developerConnection>
         <url>https://svn.java.net/svn/glassfish~svn/tags/4.1/main/nucleus</url>
-      <tag>payara-server-4.1.1.163-SNAPSHOT</tag>
+      <tag>payara-server-4.1.1.163</tag>
   </scm>
 
     <issueManagement>
