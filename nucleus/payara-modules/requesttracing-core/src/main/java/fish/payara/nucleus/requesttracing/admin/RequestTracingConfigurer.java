@@ -174,6 +174,24 @@ public class RequestTracingConfigurer implements AdminCommand {
             }
 
         }
+     
+        if (unit != null) {
+            try {
+                if (!unit.equals("NANOSECONDS")
+                        && !unit.equals("MICROSECONDS")
+                        && !unit.equals("MILLISECONDS")
+                        && !unit.equals("SECONDS")
+                        && !unit.equals("MINUTES")
+                        && !unit.equals("HOURS")
+                        && !unit.equals("DAYS")) {
+                    actionReport.failure(logger, unit + " is an invalid time unit");
+                    return result;
+                }
+            } catch (IllegalArgumentException iaf) {
+                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
+                return result;
+            }
+        }
 
         return true;
     }
