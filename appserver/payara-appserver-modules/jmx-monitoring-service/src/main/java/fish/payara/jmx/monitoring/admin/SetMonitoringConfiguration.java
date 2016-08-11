@@ -28,7 +28,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -63,7 +65,7 @@ import org.jvnet.hk2.config.types.Property;
 public class SetMonitoringConfiguration implements AdminCommand {
 
     @Inject
-    ServiceLocator habitat;
+    ServiceLocator serviceLocator;
 
     @Inject
     protected Target targetUtil;
@@ -100,7 +102,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
         Config config = targetUtil.getConfig(target);
 
-        final MonitoringService service = habitat.getService(MonitoringService.class);
+        final MonitoringService service = serviceLocator.getService(MonitoringService.class);
         if (service == null) {
             actionReport.appendMessage("Could not find a monitoring service.");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -119,11 +121,9 @@ public class SetMonitoringConfiguration implements AdminCommand {
                 }
             }, monitoringConfig);
                    
-            /*
             if (dynamic) {
-                monitoringService.setEnabled(enabled);
+                enableOnTarget(actionReport, context, enabled);
             }
-            */
 
         } catch (TransactionFailure ex) {
             Logger.getLogger(SetMonitoringConfiguration.class.getName()).log(Level.WARNING, "Exception during command ", ex);
@@ -153,6 +153,25 @@ public class SetMonitoringConfiguration implements AdminCommand {
         if (null != logfrequencyunit) {
             monitoringConfig.setLogFrequencyUnit(logfrequencyunit);
         }
+    }
+
+    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+        CommandRunner.CommandInvocation invocation;
+
+        if (target.equals("server-config")) {
+            invocation = runner.getCommandInvocation("__enable-monitoring-service-on-das", subReport, context.getSubject());
+        } else {
+            invocation = runner.getCommandInvocation("__enable-monitoring-service-on-instance", subReport, context.getSubject());
+        }
+
+        // Build the parameters
+        ParameterMap params = new ParameterMap();
+        params.add("enabled", enabled.toString());
+        params.add("target", target);
+        invocation.parameters(params);
+        invocation.execute();
     }
 
     /**
