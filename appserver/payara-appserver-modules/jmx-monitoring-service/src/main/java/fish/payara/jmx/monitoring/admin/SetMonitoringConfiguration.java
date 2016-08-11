@@ -52,8 +52,8 @@ import org.jvnet.hk2.config.types.Property;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.monitoring.configuration")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -118,10 +118,12 @@ public class SetMonitoringConfiguration implements AdminCommand {
                     return monitoringConfigProxy;
                 }
             }, monitoringConfig);
-                    
+                   
+            /*
             if (dynamic) {
                 monitoringService.setEnabled(enabled);
             }
+            */
 
         } catch (TransactionFailure ex) {
             Logger.getLogger(SetMonitoringConfiguration.class.getName()).log(Level.WARNING, "Exception during command ", ex);

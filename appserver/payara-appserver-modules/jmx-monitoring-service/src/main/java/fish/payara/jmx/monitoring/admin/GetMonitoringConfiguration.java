@@ -17,6 +17,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.StringUtils;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.jmx.monitoring.configuration.MonitoringServiceConfiguration;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -46,7 +47,7 @@ import org.jvnet.hk2.config.types.Property;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.monitoring.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -63,7 +64,7 @@ public class GetMonitoringConfiguration implements AdminCommand {
     @Param(name = "pretty", defaultValue = "false", optional = true)
     private Boolean pretty;
 
-    @Param(name = "target", defaultValue = "server", optional = true)
+    @Param(name = "target", defaultValue = SystemPropertyConstants.DAS_SERVER_NAME, optional = true)
     private String target;
 
     /**
