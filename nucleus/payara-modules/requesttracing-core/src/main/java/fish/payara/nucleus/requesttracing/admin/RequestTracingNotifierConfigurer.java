@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "requesttracing-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)

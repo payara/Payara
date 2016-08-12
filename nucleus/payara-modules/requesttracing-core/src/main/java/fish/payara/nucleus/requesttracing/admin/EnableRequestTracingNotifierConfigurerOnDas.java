@@ -66,9 +66,9 @@ import java.util.logging.Logger;
             path = "requesttracing-configure-notifier-das",
             description = "Enables/Disables Notifier Specified With Name")
 })
-public class RequestTracingNotifierConfigurerDas implements AdminCommand {
+public class EnableRequestTracingNotifierConfigurerOnDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurerDas.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableRequestTracingNotifierConfigurerOnDas.class);
 
     @Inject
     RequestTracingService service;
