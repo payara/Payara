@@ -179,9 +179,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
         CommandRunner.CommandInvocation inv;
 
         if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-requesttracing-configure-notifier-das", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("__enable-notification-configure-notifier-das", subReport, context.getSubject());
         } else {
-            inv = runner.getCommandInvocation("__enable-requesttracing-configure-notifier-instance", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("__enable-notification-configure-notifier-instance", subReport, context.getSubject());
         }
 
         ParameterMap params = new ParameterMap();
