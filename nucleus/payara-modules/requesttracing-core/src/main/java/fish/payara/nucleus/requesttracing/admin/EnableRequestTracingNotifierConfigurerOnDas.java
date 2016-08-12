@@ -50,25 +50,24 @@ import java.util.logging.Logger;
 
 
 /**
- * Admin command to enable/disable specific notifier given with its name
- *
- * @author mertcaliskan
+ * 
+ * @author Susan Rai
  */
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "requesttracing-configure-notifier-das")
+@Service(name = "__enable-requesttracing-configure-notifier-das")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("requesttracing.configure.notifier.das")
+@I18n("__enable-requesttracing-configure-notifier-das")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "requesttracing-configure-notifier-das",
+            path = "__enable-requesttracing-configure-notifier-das",
             description = "Enables/Disables Notifier Specified With Name")
 })
-public class RequestTracingNotifierConfigurerDas implements AdminCommand {
+public class EnableRequestTracingNotifierConfigurerOnDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurerDas.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
 
     @Inject
     RequestTracingService service;
@@ -84,9 +83,6 @@ public class RequestTracingNotifierConfigurerDas implements AdminCommand {
 
     @Inject
     protected Target targetUtil;
-
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    private Boolean dynamic;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -127,23 +123,16 @@ public class RequestTracingNotifierConfigurerDas implements AdminCommand {
                     public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
                         Notifier notifierProxy = (Notifier) requestTracingServiceConfigurationProxy.createChild(notifierService.getNotifierType());
-                        if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
-                        }
                         createdNotifier[0] = notifierProxy;
 
                         List<Notifier> notifierList = requestTracingServiceConfigurationProxy.getNotifierList();
                         NotifierExecutionOptions executionOptions = factory.build(createdNotifier[0]);
                         if (notifierEnabled) {
                             notifierList.add(createdNotifier[0]);
-                            if (dynamic) {
-                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
-                            }
+                            service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
                         } else {
                             notifierList.remove(createdNotifier[0]);
-                            if (dynamic) {
-                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
-                            }
+                            service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -155,17 +144,11 @@ public class RequestTracingNotifierConfigurerDas implements AdminCommand {
                     @Override
                     public Object run(final Notifier notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
-                        }
-
-                        if (dynamic) {
-                            NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
-                            if (notifierEnabled) {
-                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
-                            } else {
-                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
-                            }
+                        NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
+                        if (notifierEnabled) {
+                            service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
+                        } else {
+                            service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

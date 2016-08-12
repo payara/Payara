@@ -128,11 +128,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("requesttracing-configure-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
@@ -152,11 +148,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("requesttracing-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
