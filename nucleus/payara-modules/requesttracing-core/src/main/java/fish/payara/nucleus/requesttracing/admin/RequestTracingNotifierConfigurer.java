@@ -180,7 +180,7 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
         }
 
         ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
+        params.add("notifierEnabled", enabled.toString());
         params.add("target", target);
         params.add("notifierName", notifierName);
         inv.parameters(params);
