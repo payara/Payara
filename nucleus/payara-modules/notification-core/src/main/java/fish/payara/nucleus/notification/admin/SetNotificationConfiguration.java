@@ -105,11 +105,7 @@ public class SetNotificationConfiguration implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("notification-configure-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
