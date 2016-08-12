@@ -50,25 +50,24 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Admin command to enable/disable specific notifier given with its name
  *
- * @author mertcaliskan
+ * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "notification-configure-notifier")
+@Service(name = "__enable-notification-configure-notifier-instance")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("notification.configure.notifier")
+@I18n("__enable-notification-configure-notifier-instance")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "notification-configure-notifier",
+            path = "__enable-notification-configure-notifier-instance",
             description = "Enables/Disables Notifier Specified With Name")
 })
-public class NotificationNotifierConfigurer implements AdminCommand {
+public class EnableNotificationNotifierConfigurerOnInstance implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationNotifierConfigurer.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableNotificationNotifierConfigurerOnInstance.class);
 
     @Inject
     NotificationService service;
@@ -88,9 +87,6 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Inject
     private NotificationEventBus eventBus;
 
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    protected Boolean dynamic;
-
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
@@ -100,13 +96,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
-    @Inject
-    ServiceLocator serviceLocator;
-
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -134,13 +126,20 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                     public Object run(final NotificationServiceConfiguration notificationServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
                         NotifierConfiguration notifierProxy = (NotifierConfiguration) notificationServiceConfigurationProxy.createChild(notifierService.getNotifierConfigType());
-                        if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
+                        createdNotifier[0] = notifierProxy;
+
+                        List<NotifierConfiguration> notifierConfigList = notificationServiceConfigurationProxy.getNotifierConfigurationList();
+                        NotifierConfigurationExecutionOptions executionOptions = factory.build(createdNotifier[0]);
+                        if (notifierEnabled) {
+                            notifierConfigList.add(createdNotifier[0]);
+                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                            eventBus.register(notifierService);
+                        } else {
+                            notifierConfigList.remove(createdNotifier[0]);
+                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                            eventBus.unregister(notifierService);
                         }
 
-                        if (dynamic) {
-                            enableOnTarget(actionReport, theContext, notifierEnabled);
-                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notificationServiceConfigurationProxy;
                     }
@@ -150,13 +149,15 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                     @Override
                     public Object run(final NotifierConfiguration notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
+                        NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
+                        if (notifierEnabled) {
+                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                            eventBus.register(notifierService);
+                        } else {
+                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                            eventBus.unregister(notifierService);
                         }
 
-                        if (dynamic) {
-                            enableOnTarget(actionReport, theContext, notifierEnabled);
-                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;
                     }
@@ -171,29 +172,5 @@ public class NotificationNotifierConfigurer implements AdminCommand {
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-requesttracing-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-requesttracing-configure-notifier-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("notifierEnabled", enabled.toString());
-        params.add("target", target);
-        params.add("notifierName", notifierName);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-
     }
 }
