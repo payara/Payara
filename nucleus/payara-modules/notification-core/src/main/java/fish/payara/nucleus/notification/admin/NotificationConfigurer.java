@@ -134,7 +134,7 @@ public class NotificationConfigurer implements AdminCommand {
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
         if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-notification-configure-instance", subReport, context.getSubject());
+            inv = runner.getCommandInvocation("__enable-notification-configure-das", subReport, context.getSubject());
         } else {
             inv = runner.getCommandInvocation("__enable-notification-configure-instance", subReport, context.getSubject());
         }
