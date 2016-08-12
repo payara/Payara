@@ -41,6 +41,7 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.ServiceLocator;
 
 
 /**
@@ -53,7 +54,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("notification.configure")
-@ExecuteOn({RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
@@ -82,6 +83,11 @@ public class NotificationConfigurer implements AdminCommand {
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
+
+    @Inject
+    ServiceLocator serviceLocator;
+
+    CommandRunner.CommandInvocation inv;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -123,10 +129,24 @@ public class NotificationConfigurer implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        if (enabled != null) {
-            service.getExecutionOptions().setEnabled(enabled);
-            actionReport.appendMessage(strings.getLocalString("notification.configure.status.success",
-                    "Notification service status is set to {0}.", enabled) + "\n");
+
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("__enable-notification-configure-instance", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("__enable-notification-configure-instance", subReport, context.getSubject());
+        }
+
+        ParameterMap params = new ParameterMap();
+        params.add("enabled", enabled.toString());
+        params.add("target", target);
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
         }
     }
 }
