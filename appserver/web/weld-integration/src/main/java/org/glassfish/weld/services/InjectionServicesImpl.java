@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -222,6 +223,9 @@ public class InjectionServicesImpl implements InjectionServices {
             Collection<EjbDescriptor> ejbs = deployment.getDeployedEjbs();
             for ( EjbDescriptor oneEjb : ejbs ) {
                 String jndiName = oneEjb.getJndiName();
+                if(jndiName.isEmpty()) {
+                    jndiName = oneEjb.getName();
+                }
                 if (lookupName.contains(jndiName)) {
                     foundEjb = oneEjb;
                     break;
