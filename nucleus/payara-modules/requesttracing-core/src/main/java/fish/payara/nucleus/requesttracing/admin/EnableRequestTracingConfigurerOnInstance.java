@@ -35,10 +35,9 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 /**
- * Admin command to enable/disable all request tracing services defined in
- * domain.xml.
+ * 
  *
- * @author mertcaliskan
+ * @author Susan Rai
  */
 @ExecuteOn({RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
