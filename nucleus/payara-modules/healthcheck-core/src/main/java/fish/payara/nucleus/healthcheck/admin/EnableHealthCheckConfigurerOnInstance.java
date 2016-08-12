@@ -29,22 +29,20 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Susan Rai
  */
-@Service(name = "__enable-healthcheck-configurer-on-das")
+@Service(name = "__enable-healthcheck-configurer-on-instance")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("__enable-healthcheck-configurer-on-das")
-@ExecuteOn(RuntimeType.DAS)
+@I18n("__enable-healthcheck-configurer-on-instance")
+@ExecuteOn(RuntimeType.INSTANCE)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
-            path = "__enable-healthcheck-configurer-on-das",
-            description = "Enables Healthcheck service on DAS")
+            path = "__enable-healthcheck-configurer-on-instance",
+            description = "Enables Healthcheck service on Instance")
 })
-public class _enableHealthCheckConfigurerOnDas implements AdminCommand {
-
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
-
+public class EnableHealthCheckConfigurerOnInstance implements AdminCommand {
+    
     @Inject
     HealthCheckService service;
 
