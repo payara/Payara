@@ -58,7 +58,7 @@
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-requesttracing" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
         </sun:panelGroup>

@@ -49,12 +49,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  * Admin command to enable/disable specific notifier given with its name
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "notification-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
@@ -100,13 +101,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
-    @Inject
-    ServiceLocator serviceLocator;
-
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -137,6 +134,24 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
+                        createdNotifier[0] = notifierProxy;
+
+                        List<NotifierConfiguration> notifierConfigList = notificationServiceConfigurationProxy.getNotifierConfigurationList();
+                        NotifierConfigurationExecutionOptions executionOptions = factory.build(createdNotifier[0]);
+                        if (notifierEnabled) {
+                            notifierConfigList.add(createdNotifier[0]);
+                            if (dynamic) {
+                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
+                            }
+                        } else {
+                            notifierConfigList.remove(createdNotifier[0]);
+                            if (dynamic) {
+                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
+                            }
+                        }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notificationServiceConfigurationProxy;
                     }
@@ -149,15 +164,23 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
+
+                        if (dynamic) {
+                            NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
+                            if (notifierEnabled) {
+                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
+                            } else {
+                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
+                            }
+                        }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;
                     }
                 }, notifier);
 
-            }
-            
-            if (dynamic) {
-                enableOnTarget(actionReport, theContext, notifierEnabled);
             }
 
             actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",
@@ -167,29 +190,5 @@ public class NotificationNotifierConfigurer implements AdminCommand {
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-notification-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-notification-configure-notifier-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("notifierEnabled", enabled.toString());
-        params.add("target", target);
-        params.add("notifierName", notifierName);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-
     }
 }

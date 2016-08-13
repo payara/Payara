@@ -48,12 +48,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
  * Admin command to enable/disable specific notifier given with its name
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "requesttracing-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
@@ -96,13 +97,9 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
-    @Inject
-    ServiceLocator serviceLocator;
-
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -133,10 +130,22 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
+                        createdNotifier[0] = notifierProxy;
 
-                        if (dynamic) {
-                            enableOnTarget(actionReport, theContext, notifierEnabled);
+                        List<Notifier> notifierList = requestTracingServiceConfigurationProxy.getNotifierList();
+                        NotifierExecutionOptions executionOptions = factory.build(createdNotifier[0]);
+                        if (notifierEnabled) {
+                            notifierList.add(createdNotifier[0]);
+                            if (dynamic) {
+                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
+                            }
+                        } else {
+                            notifierList.remove(createdNotifier[0]);
+                            if (dynamic) {
+                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
+                            }
                         }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return requestTracingServiceConfigurationProxy;
                     }
@@ -149,9 +158,16 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
+
                         if (dynamic) {
-                            enableOnTarget(actionReport, theContext, notifierEnabled);
+                            NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
+                            if (notifierEnabled) {
+                                service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
+                            } else {
+                                service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
+                            }
                         }
+
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;
                     }
@@ -166,29 +182,5 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-requesttracing-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-requesttracing-configure-notifier-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("notifierEnabled", enabled.toString());
-        params.add("target", target);
-        params.add("notifierName", notifierName);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-
     }
 }

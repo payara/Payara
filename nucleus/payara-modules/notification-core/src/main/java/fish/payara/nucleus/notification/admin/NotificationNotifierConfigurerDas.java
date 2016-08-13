@@ -49,19 +49,27 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
+ * Admin command to enable/disable specific notifier given with its name
  *
- * @author Susan Rai
+ * @author mertcaliskan
  */
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "__enable-notification-configure-notifier-das")
+@Service(name = "notification-configure-notifier-das")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("__enable-notification-configure-notifier-das")
-public class EnableNotificationNotifierConfigurerOnDas implements AdminCommand {
+@I18n("notification.configure.notifier.das")
+@RestEndpoints({
+    @RestEndpoint(configBean = Domain.class,
+            opType = RestEndpoint.OpType.POST,
+            path = "notification-configure-notifier-das",
+            description = "Enables/Disables Notifier Specified With Name")
+})
+public class NotificationNotifierConfigurerDas implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableNotificationNotifierConfigurerOnDas.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationNotifierConfigurerDas.class);
 
     @Inject
     NotificationService service;
@@ -80,6 +88,9 @@ public class EnableNotificationNotifierConfigurerOnDas implements AdminCommand {
 
     @Inject
     private NotificationEventBus eventBus;
+
+    @Param(name = "dynamic", optional = true, defaultValue = "false")
+    protected Boolean dynamic;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -120,18 +131,25 @@ public class EnableNotificationNotifierConfigurerOnDas implements AdminCommand {
                     public Object run(final NotificationServiceConfiguration notificationServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
                         NotifierConfiguration notifierProxy = (NotifierConfiguration) notificationServiceConfigurationProxy.createChild(notifierService.getNotifierConfigType());
+                        if (notifierEnabled != null) {
+                            notifierProxy.enabled(notifierEnabled);
+                        }
                         createdNotifier[0] = notifierProxy;
 
                         List<NotifierConfiguration> notifierConfigList = notificationServiceConfigurationProxy.getNotifierConfigurationList();
                         NotifierConfigurationExecutionOptions executionOptions = factory.build(createdNotifier[0]);
                         if (notifierEnabled) {
                             notifierConfigList.add(createdNotifier[0]);
-                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
-                            eventBus.register(notifierService);
+                            if (dynamic) {
+                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
+                            }
                         } else {
                             notifierConfigList.remove(createdNotifier[0]);
-                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
-                            eventBus.unregister(notifierService);
+                            if (dynamic) {
+                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
+                            }
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
@@ -143,13 +161,19 @@ public class EnableNotificationNotifierConfigurerOnDas implements AdminCommand {
                     @Override
                     public Object run(final NotifierConfiguration notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
-                        NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
-                        if (notifierEnabled) {
-                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
-                            eventBus.register(notifierService);
-                        } else {
-                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
-                            eventBus.unregister(notifierService);
+                        if (notifierEnabled != null) {
+                            notifierProxy.enabled(notifierEnabled);
+                        }
+
+                        if (dynamic) {
+                            NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
+                            if (notifierEnabled) {
+                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.register(notifierService);
+                            } else {
+                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
+                                eventBus.unregister(notifierService);
+                            }
                         }
 
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);

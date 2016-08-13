@@ -1,9 +1,8 @@
 /*
+
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
-
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -21,6 +20,7 @@ package fish.payara.nucleus.healthcheck.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -39,14 +39,12 @@ import org.jvnet.hk2.config.*;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Admin command to enable/disable specific health check service given with its
- * name
+ * Admin command to enable/disable specific health check service given with its name
  *
  * @author mertcaliskan
  */
@@ -54,17 +52,18 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure.service")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn(RuntimeType.INSTANCE)
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "healthcheck-configure-service",
-            description = "Enables/Disables Health Check Service Specified With Name")
+        @RestEndpoint(configBean = Domain.class,
+                opType = RestEndpoint.OpType.GET,
+                path = "healthcheck-configure-service",
+                description = "Enables/Disables Health Check Service Specified With Name")
 })
 public class HealthCheckServiceConfigurer implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer
+            .class);
 
     @Inject
     ServiceLocator habitat;
@@ -102,13 +101,6 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
-        final AdminCommandContext theContext = context;
-        Properties extraProperties = actionReport.getExtraProperties();
-        if (extraProperties == null) {
-            extraProperties = new Properties();
-            actionReport.setExtraProperties(extraProperties);
-        }
-
         Config config = targetUtil.getConfig(target);
 
         final BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
@@ -152,7 +144,7 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
             }
 
             if (dynamic) {
-                enableOnTarget(actionReport, theContext, service, createdChecker[0], enabled, time, unit);
+                enableOnTarget(actionReport, service, createdChecker[0], enabled, time, unit);
             }
         }
         catch (TransactionFailure ex) {
@@ -177,28 +169,26 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         }
     }
 
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, BaseHealthCheck service, Checker checker, Boolean enabled, String time, String unit) {
-        CommandRunner runner = habitat.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configure-service-on-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configure-service-on-instance", subReport, context.getSubject());
+    private void enableOnTarget(ActionReport actionReport, BaseHealthCheck service, Checker checker, Boolean enabled, String time, String unit) {
+        if (service.getOptions() == null) {
+            service.setOptions(service.constructOptions(checker));
+            healthCheckService.registerCheck(checker.getName(), service);
         }
 
-        ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
-        params.add("target", target);
-        params.add("time", time);
-        params.add("unit", unit);
-        params.add("serviceName", serviceName);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
+        if (enabled != null) {
+            service.getOptions().setEnabled(enabled);
         }
+        if (time != null) {
+            service.getOptions().setTime(Long.valueOf(time));
+        }
+        if (unit != null) {
+            service.getOptions().setUnit(TimeUnit.valueOf(unit));
+        }
+
+        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.success",
+                "Service status for {0} is set to {1}.", serviceName, enabled));
+
+        healthCheckService.shutdownHealthCheck();
+        healthCheckService.bootstrapHealthCheck();
     }
 }

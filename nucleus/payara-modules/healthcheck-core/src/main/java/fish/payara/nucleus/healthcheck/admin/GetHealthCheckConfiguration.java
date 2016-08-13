@@ -1,9 +1,8 @@
 /*
+
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
-
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -52,7 +51,7 @@ import java.util.List;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.healthcheck.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,

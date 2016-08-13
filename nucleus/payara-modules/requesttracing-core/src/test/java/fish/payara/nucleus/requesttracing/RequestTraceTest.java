@@ -103,14 +103,13 @@ public class RequestTraceTest {
     }
     
     @Test
-    public void testFullStream() throws InterruptedException {
+    public void testFullStream() {
         RequestEvent re = new RequestEvent(EventType.TRACE_START,"Start");
         trace.addEvent(re);
         for (int i = 0; i < 10000; i++) {
             re = new RequestEvent("Event"+i);
             trace.addEvent(re);
         }
-        Thread.currentThread().sleep(1000);
         re = new RequestEvent(EventType.TRACE_END,"TraceEnd");
         trace.addEvent(re);
         assertTrue(trace.isStarted());
