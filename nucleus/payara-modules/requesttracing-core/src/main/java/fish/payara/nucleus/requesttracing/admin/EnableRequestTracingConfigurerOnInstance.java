@@ -20,7 +20,10 @@ package fish.payara.nucleus.requesttracing.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptions;
+import java.util.Map;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -45,12 +48,6 @@ import java.util.concurrent.TimeUnit;
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
 @I18n("__enable-requesttracing-configure-instance")
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "__enable-requesttracing-configure-instance",
-            description = "Enables/Disables Request Tracing Service")
-})
 public class EnableRequestTracingConfigurerOnInstance implements AdminCommand {
 
    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableRequestTracingConfigurerOnInstance.class);
@@ -82,6 +79,14 @@ public class EnableRequestTracingConfigurerOnInstance implements AdminCommand {
 
         if (enabled != null) {
             service.getExecutionOptions().setEnabled(enabled);
+            // also set all notifiers
+            Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = service.getExecutionOptions().getNotifierExecutionOptionsList();
+            if (notifierExecutionOptionsList != null) {
+                for (Map.Entry<NotifierType, NotifierExecutionOptions> entry : notifierExecutionOptionsList.entrySet()) {
+                    NotifierExecutionOptions value1 = entry.getValue();
+                    value1.setEnabled(enabled);
+                }
+            }
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.status.success",
                     "request tracing service status is set to {0}.", enabled) + "\n");
         }

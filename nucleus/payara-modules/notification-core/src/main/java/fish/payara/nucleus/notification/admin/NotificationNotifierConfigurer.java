@@ -137,10 +137,6 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
-
-                        if (dynamic) {
-                            enableOnTarget(actionReport, theContext, notifierEnabled);
-                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notificationServiceConfigurationProxy;
                     }
@@ -153,15 +149,15 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
-
-                        if (dynamic) {
-                            enableOnTarget(actionReport, theContext, notifierEnabled);
-                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;
                     }
                 }, notifier);
 
+            }
+            
+            if (dynamic) {
+                enableOnTarget(actionReport, theContext, notifierEnabled);
             }
 
             actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",
