@@ -47,17 +47,17 @@ import org.jvnet.hk2.annotations.Service;
  */
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "set-requesttracing")
+@Service(name = "set-requesttracing-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.requesttracing")
+@I18n("set.requesttracing.configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-requesttracing",
+            path = "set-requesttracing-configuration",
             description = "Set Request Tracing Services Configuration")
 })
-public class SetRequestTracing implements AdminCommand {
+public class SetRequestTracingConfiguration implements AdminCommand {
 
     @Inject
     protected Logger logger;
@@ -128,11 +128,7 @@ public class SetRequestTracing implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("requesttracing-configure-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
@@ -152,26 +148,20 @@ public class SetRequestTracing implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("requesttracing-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
 
-            ParameterMap params = new ParameterMap();
-            params.add("dynamic", notifierDynamic.toString());
-            params.add("target", target);
-            params.add("notifierName", notifierName);
-            params.add("notifierEnabled", enabled.toString());
-            inv.parameters(params);
-            inv.execute();
-            // swallow the offline warning as it is not a problem
-            if (subReport.hasWarnings()) {
-                subReport.setMessage("");
-            }
+        ParameterMap params = new ParameterMap();
+        params.add("dynamic", notifierDynamic.toString());
+        params.add("target", target);
+        params.add("notifierName", notifierName);
+        params.add("notifierEnabled", enabled.toString());
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
         }
-
-    
+    }
 
     private boolean validate(ActionReport actionReport) {
         boolean result = false;
@@ -187,6 +177,24 @@ public class SetRequestTracing implements AdminCommand {
                 return result;
             }
 
+        }
+
+        if (unit != null) {
+            try {
+                if (!unit.equals("NANOSECONDS")
+                        && !unit.equals("MICROSECONDS")
+                        && !unit.equals("MILLISECONDS")
+                        && !unit.equals("SECONDS")
+                        && !unit.equals("MINUTES")
+                        && !unit.equals("HOURS")
+                        && !unit.equals("DAYS")) {
+                    actionReport.failure(logger, unit + " is an invalid time unit");
+                    return result;
+                }
+            } catch (IllegalArgumentException iaf) {
+                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
+                return result;
+            }
         }
 
         return true;
