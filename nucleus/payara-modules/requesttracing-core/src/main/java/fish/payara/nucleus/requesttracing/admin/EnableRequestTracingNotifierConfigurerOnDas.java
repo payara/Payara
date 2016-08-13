@@ -22,6 +22,7 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
@@ -44,6 +45,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,21 +61,12 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
 @I18n("__enable-requesttracing-configure-notifier-das")
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "__enable-requesttracing-configure-notifier-das",
-            description = "Enables/Disables Notifier Specified With Name")
-})
 public class EnableRequestTracingNotifierConfigurerOnDas implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
 
     @Inject
     RequestTracingService service;
-
-    @Inject
-    NotifierExecutionOptionsFactory factory;
 
     @Inject
     ServiceLocator habitat;
@@ -102,68 +95,10 @@ public class EnableRequestTracingNotifierConfigurerOnDas implements AdminCommand
             actionReport.setExtraProperties(extraProperties);
         }
 
-        Config config = targetUtil.getConfig(target);
-
-        final BaseNotifierService notifierService = habitat.getService(BaseNotifierService.class, notifierName);
-        if (service == null) {
-            actionReport.appendMessage(strings.getLocalString("requesttracing.notifier.configure.status.error",
-                    "Notifier with name {0} could not be found.", notifierName));
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-            return;
-        }
-
-        final RequestTracingServiceConfiguration requestTracingServiceConfiguration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
-        final Notifier notifier = requestTracingServiceConfiguration.getNotifierByType(notifierService.getNotifierType());
-
-        try {
-            if (notifier == null) {
-                final Notifier[] createdNotifier = {null};
-                ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
-                    @Override
-                    public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
-                            PropertyVetoException, TransactionFailure {
-                        Notifier notifierProxy = (Notifier) requestTracingServiceConfigurationProxy.createChild(notifierService.getNotifierType());
-                        createdNotifier[0] = notifierProxy;
-
-                        List<Notifier> notifierList = requestTracingServiceConfigurationProxy.getNotifierList();
-                        NotifierExecutionOptions executionOptions = factory.build(createdNotifier[0]);
-                        if (notifierEnabled) {
-                            notifierList.add(createdNotifier[0]);
-                            service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
-                        } else {
-                            notifierList.remove(createdNotifier[0]);
-                            service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
-                        }
-
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return requestTracingServiceConfigurationProxy;
-                    }
-                }, requestTracingServiceConfiguration);
-            } else {
-                ConfigSupport.apply(new SingleConfigCode<Notifier>() {
-                    @Override
-                    public Object run(final Notifier notifierProxy) throws
-                            PropertyVetoException, TransactionFailure {
-                        NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
-                        if (notifierEnabled) {
-                            service.getExecutionOptions().addNotifierExecutionOption(executionOptions);
-                        } else {
-                            service.getExecutionOptions().removeNotifierExecutionOption(executionOptions);
-                        }
-
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return notifierProxy;
-                    }
-                }, notifier);
-
-            }
-
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.added.configured",
-                    "Request Tracing Notifier with name {0} is registered and set enabled to {1}.", notifierName, notifierEnabled) + "\n");
-        } catch (TransactionFailure ex) {
-            logger.log(Level.WARNING, "Exception during command ", ex);
-            actionReport.setMessage(ex.getCause().getMessage());
-            actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
+        Map<NotifierType, NotifierExecutionOptions> notifierExecutionOptionsList = service.getExecutionOptions().getNotifierExecutionOptionsList();
+        for (Map.Entry<NotifierType, NotifierExecutionOptions> entry : notifierExecutionOptionsList.entrySet()) {
+            NotifierExecutionOptions value = entry.getValue();
+            value.setEnabled(notifierEnabled);
         }
     }
 }
