@@ -46,12 +46,6 @@ import java.util.logging.Logger;
 @I18n("__enable-notification-configure-das")
 @ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "__enable-notification-configure-das",
-            description = "Enables/Disables Notification Service")
-})
 public class EnableNotificationConfigurerOnDas implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableNotificationConfigurerOnDas.class);

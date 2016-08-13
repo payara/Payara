@@ -59,12 +59,6 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
 @I18n("__enable-notification-configure-notifier-das")
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.POST,
-            path = "__enable-notification-configure-notifier-das",
-            description = "Enables/Disables Notifier Specified With Name")
-})
 public class EnableNotificationNotifierConfigurerOnDas implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableNotificationNotifierConfigurerOnDas.class);
