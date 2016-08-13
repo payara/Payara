@@ -28,6 +28,7 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+import static javax.management.Query.value;
 
 /**
  * Admin command to set notification services configuration
@@ -36,17 +37,17 @@ import org.jvnet.hk2.annotations.Service;
  */
 @ExecuteOn(value = {RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "set-notification")
+@Service(name = "set-notification-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.notification")
+@I18n("set.notification.configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-notification",
+            path = "set-notification-configuration",
             description = "Set notification Services Configuration")
 })
-public class SetNotification implements AdminCommand {
+public class SetNotificationConfiguration implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -104,11 +105,7 @@ public class SetNotification implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("notification-configure-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("enabled", enabled.toString());
@@ -126,11 +123,7 @@ public class SetNotification implements AdminCommand {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
 
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("notification-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
-        }
+        inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
 
         ParameterMap params = new ParameterMap();
         params.add("dynamic", notifierDynamic.toString());
