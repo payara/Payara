@@ -134,11 +134,16 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     }
 
     public void sendNotification(Level level, String message, Object[] parameters) {
+        List<Notifier> notifierList = configuration.getNotifierList();
+        for (Notifier notifier : notifierList) {
+            if (notifier instanceof LogNotifier) {
+                LogNotificationEvent notificationEvent = new LogNotificationEvent();
+                notificationEvent.setLevel(level);
+                notificationEvent.setMessage(message);
+                notificationEvent.setParameters(parameters);
 
-        LogNotificationEvent notificationEvent = new LogNotificationEvent();
-        notificationEvent.setLevel(level);
-        notificationEvent.setMessage(message);
-        notificationEvent.setParameters(parameters);
-        notificationService.notify(notificationEvent);
+                notificationService.notify(notificationEvent);
+            }
+        }
     }
 }

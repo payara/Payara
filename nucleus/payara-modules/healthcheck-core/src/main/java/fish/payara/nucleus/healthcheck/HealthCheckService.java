@@ -132,12 +132,4 @@ public class HealthCheckService implements EventListener {
             Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
         }
     }
-
-    public BaseHealthCheck getCheck(String serviceName) {
-        return registeredTasks.get(serviceName).getCheck();
-    }
-    
-    public HealthCheckServiceConfiguration getConfiguration() {
-        return configuration;
-    }
 }

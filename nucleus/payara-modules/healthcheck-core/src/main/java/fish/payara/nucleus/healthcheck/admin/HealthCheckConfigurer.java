@@ -1,9 +1,8 @@
 /*
+
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
-
+ Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -21,9 +20,9 @@ package fish.payara.nucleus.healthcheck.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
-import fish.payara.nucleus.notification.configuration.Notifier;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -40,14 +39,12 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+
 /**
- * Admin command to enable/disable all health check services defined in
- * domain.xml.
+ * Admin command to enable/disable all health check services defined in domain.xml.
  *
  * @author mertcaliskan
  */
@@ -55,7 +52,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn(RuntimeType.INSTANCE)
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
@@ -92,12 +89,6 @@ public class HealthCheckConfigurer implements AdminCommand {
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
 
-        Properties extraProperties = actionReport.getExtraProperties();
-        if (extraProperties == null) {
-            extraProperties = new Properties();
-            actionReport.setExtraProperties(extraProperties);
-        }
-
         Config config = targetUtil.getConfig(target);
         final HealthCheckServiceConfiguration healthCheckServiceConfiguration = config.getExtensionByType(HealthCheckServiceConfiguration.class);
         if (healthCheckServiceConfiguration != null) {
@@ -108,13 +99,14 @@ public class HealthCheckConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         if (enabled != null) {
                             healthCheckServiceConfigurationProxy.enabled(enabled.toString());
-                            }
+                        }
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return healthCheckServiceConfigurationProxy;
                     }
 
                 }, healthCheckServiceConfiguration);
-            } catch (TransactionFailure ex) {
+            }
+            catch(TransactionFailure ex){
                 logger.log(Level.WARNING, "Exception during command ", ex);
                 actionReport.setMessage(ex.getCause().getMessage());
                 actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -128,25 +120,8 @@ public class HealthCheckConfigurer implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configurer-on-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configurer-on-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
-        params.add("target", target);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-
+        service.setEnabled(enabled);
+        actionReport.appendMessage(strings.getLocalString("healthcheck.configure.status.success",
+                "Health Check Service status is set to {0}.", enabled));
     }
 }
