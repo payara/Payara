@@ -225,6 +225,7 @@
         <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
       </thread-pools>
       <system-property name="fish.payara.classloading.delegate" value="false"/>
+      <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
     </config>
      <config name="default-config" dynamic-reconfiguration-enabled="true" >
          <http-service>
@@ -424,6 +425,7 @@
          <system-property name="OSGI_SHELL_TELNET_PORT" value="26666"/>
          <system-property name="JAVA_DEBUGGER_PORT" value="29009"/>
          <system-property name="fish.payara.classloading.delegate" value="false"/>
+         <system-property name="org.jboss.weld.clustering.rollingUpgradesIdDelimiter" value=".."/>
      </config>
   </configs>
   <property name="administrative.domain.name" value="%%%DOMAIN_NAME%%%"/>
