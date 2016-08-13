@@ -17,12 +17,10 @@
  */
 package fish.payara.nucleus.notification.admin;
 
-import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -32,38 +30,31 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.config.ConfigSupport;
-import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
-import java.beans.PropertyVetoException;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 /**
- * Admin command to enable/disable all notification services defined in
- * domain.xml.
  *
- * @author mertcaliskan
+ * @author Susan Rai
  */
-@Service(name = "notification-configure-das")
+@Service(name = "__enable-notification-configure-instance")
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
-@I18n("notification.configure.das")
-@ExecuteOn({RuntimeType.DAS})
+@I18n("__enable-notification-configure-instance")
+@ExecuteOn({RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "notification-configure-das",
+            path = "__enable-notification-configure-instance",
             description = "Enables/Disables Notification Service")
 })
-public class NotificationConfigurerDas implements AdminCommand {
+public class EnableNotificationConfigurerOnInstance implements AdminCommand {
 
-    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(NotificationConfigurerDas.class);
+    final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(EnableNotificationConfigurerOnInstance.class);
 
     @Inject
     NotificationService service;
@@ -73,10 +64,7 @@ public class NotificationConfigurerDas implements AdminCommand {
 
     @Inject
     protected Target targetUtil;
-
-    @Param(name = "dynamic", optional = true, defaultValue = "false")
-    protected Boolean dynamic;
-
+    
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
 
@@ -92,37 +80,6 @@ public class NotificationConfigurerDas implements AdminCommand {
             actionReport.setExtraProperties(extraProperties);
         }
 
-        Config config = targetUtil.getConfig(target);
-        final NotificationServiceConfiguration notificationServiceConfiguration = config.getExtensionByType(NotificationServiceConfiguration.class);
-
-        if (notificationServiceConfiguration != null) {
-            try {
-                ConfigSupport.apply(new SingleConfigCode<NotificationServiceConfiguration>() {
-                    @Override
-                    public Object run(final NotificationServiceConfiguration notificationServiceConfigurationProxy) throws
-                            PropertyVetoException, TransactionFailure {
-                        if (enabled != null) {
-                            notificationServiceConfigurationProxy.enabled(enabled.toString());
-                        }
-                        actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
-                        return notificationServiceConfigurationProxy;
-                    }
-                }, notificationServiceConfiguration);
-            }
-            catch(TransactionFailure ex){
-                logger.log(Level.WARNING, "Exception during command ", ex);
-                actionReport.setMessage(ex.getCause().getMessage());
-                actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
-                return;
-            }
-        }
-
-        if (dynamic) {
-            enableOnTarget(actionReport, context, enabled);
-        }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         if (enabled != null) {
             service.getExecutionOptions().setEnabled(enabled);
             actionReport.appendMessage(strings.getLocalString("notification.configure.status.success",
