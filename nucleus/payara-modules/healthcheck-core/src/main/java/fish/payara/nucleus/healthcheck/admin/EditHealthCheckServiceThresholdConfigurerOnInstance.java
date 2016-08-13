@@ -21,6 +21,7 @@ package fish.payara.nucleus.healthcheck.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
 import java.util.Properties;
 import javax.inject.Inject;
@@ -37,6 +38,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -49,21 +51,16 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("__edit-healthcheck-configure-service-threshold-on-instance")
 @ExecuteOn(RuntimeType.INSTANCE)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "__edit-healthcheck-configure-service-threshold-on-instance",
-            description = "Edit Healthcheck Configure Service Threshold on Instance")
-})
 public class EditHealthCheckServiceThresholdConfigurerOnInstance implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceThresholdConfigurer.class);
 
-    @Inject
-    BaseThresholdHealthCheck service;
     
     @Inject
     HealthCheckService healthCheckService;
+    
+    @Inject
+    ServiceLocator habitat;
 
     @Param(name = "serviceName", optional = false)
     private String serviceName;
@@ -89,6 +86,17 @@ public class EditHealthCheckServiceThresholdConfigurerOnInstance implements Admi
             actionReport.setExtraProperties(extraProperties);
         }
 
+        BaseThresholdHealthCheck service = habitat.getService(BaseThresholdHealthCheck.class, serviceName);
+        if (service == null) {
+            actionReport.appendMessage("No service found with name " + serviceName);
+            return;
+        }
+        
+        if (service.getOptions() == null) {
+            actionReport.appendMessage("Setting the service thresholds for " + serviceName + " will require a server restart");
+            return;            
+        }
+        
         if (thresholdCritical != null) {
             service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
             actionReport.appendMessage(strings.getLocalString(

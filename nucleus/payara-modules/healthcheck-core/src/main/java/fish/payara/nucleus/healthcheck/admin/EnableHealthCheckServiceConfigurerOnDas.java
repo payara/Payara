@@ -39,6 +39,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -51,24 +52,15 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("__enable-healthcheck-configure-service-on-das")
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "__enable-healthcheck-configure-service-on-das",
-            description = "Enables Healthcheck Configure Service on DAS")
-})
 public class EnableHealthCheckServiceConfigurerOnDas implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceConfigurer.class);
 
     @Inject
-    BaseHealthCheck service;
+    ServiceLocator habitat;
 
     @Inject
     HealthCheckService healthCheckService;
-
-    @Inject
-    Checker checker;
 
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
@@ -93,11 +85,18 @@ public class EnableHealthCheckServiceConfigurerOnDas implements AdminCommand {
             extraProperties = new Properties();
             actionReport.setExtraProperties(extraProperties);
         }
+        
+        BaseHealthCheck service = habitat.getService(BaseHealthCheck.class, serviceName);
+        Checker checkerByType = healthCheckService.getConfiguration().getCheckerByType(service.getCheckerType());
         if (service.getOptions() == null) {
-            service.setOptions(service.constructOptions(checker));
-            healthCheckService.registerCheck(checker.getName(), service);
+            if (checkerByType == null) {
+                actionReport.appendMessage("Enabling a new Healthcheck requires a server restart..");
+                return;
+            } else {
+                service.setOptions(service.constructOptions(checkerByType));
+            }
         }
-
+        
         if (enabled != null) {
             service.getOptions().setEnabled(enabled);
         }
@@ -110,8 +109,9 @@ public class EnableHealthCheckServiceConfigurerOnDas implements AdminCommand {
 
         actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.status.success",
                 "Service status for {0} is set to {1}.", serviceName, enabled));
-
+        healthCheckService.registerCheck(checkerByType.getName(), service);
         healthCheckService.shutdownHealthCheck();
         healthCheckService.bootstrapHealthCheck();
+
     }
 }

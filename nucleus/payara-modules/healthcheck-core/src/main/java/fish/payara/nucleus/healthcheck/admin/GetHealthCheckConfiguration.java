@@ -52,7 +52,7 @@ import java.util.List;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.healthcheck.configuration")
 @ExecuteOn(value = {RuntimeType.DAS})
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
                 opType = RestEndpoint.OpType.GET,

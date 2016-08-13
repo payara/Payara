@@ -48,12 +48,6 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("__enable-healthcheck-configurer-on-das")
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "__enable-healthcheck-configurer-on-das",
-            description = "Enables Healthcheck service on DAS")
-})
 public class EnableHealthCheckConfigurerOnDas implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
@@ -78,6 +72,9 @@ public class EnableHealthCheckConfigurerOnDas implements AdminCommand {
         
         service.setEnabled(enabled);
           actionReport.appendMessage("Health Check Service staus set to " + enabled + " on " + target );
+          
+        service.shutdownHealthCheck();
+        service.bootstrapHealthCheck();
     }
 
 }

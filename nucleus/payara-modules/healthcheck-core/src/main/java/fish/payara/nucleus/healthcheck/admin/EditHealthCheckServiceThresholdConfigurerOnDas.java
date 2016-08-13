@@ -37,6 +37,7 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
+import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -49,18 +50,12 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("__edit-healthcheck-configure-service-threshold-on-das")
 @ExecuteOn(RuntimeType.DAS)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "__edit-healthcheck-configure-service-threshold-on-das",
-            description = "Edit Healthcheck Configure Service Threshold on DAS")
-})
 public class EditHealthCheckServiceThresholdConfigurerOnDas implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckServiceThresholdConfigurer.class);
 
     @Inject
-    BaseThresholdHealthCheck service;
+    ServiceLocator habitat;
     
     @Inject
     HealthCheckService healthCheckService;
@@ -89,6 +84,17 @@ public class EditHealthCheckServiceThresholdConfigurerOnDas implements AdminComm
             actionReport.setExtraProperties(extraProperties);
         }
 
+        BaseThresholdHealthCheck service = habitat.getService(BaseThresholdHealthCheck.class, serviceName);
+        if (service == null) {
+            actionReport.appendMessage("No service found with name " + serviceName);
+            return;
+        }
+        
+        if (service.getOptions() == null) {
+            actionReport.appendMessage("Setting the service thresholds for " + serviceName + " will require a server restart");
+            return;            
+        }
+        
         if (thresholdCritical != null) {
             service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
             actionReport.appendMessage(strings.getLocalString(

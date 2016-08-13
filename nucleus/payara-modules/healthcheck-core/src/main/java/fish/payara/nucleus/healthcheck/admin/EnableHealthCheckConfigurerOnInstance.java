@@ -48,12 +48,6 @@ import org.jvnet.hk2.annotations.Service;
 @I18n("__enable-healthcheck-configurer-on-instance")
 @ExecuteOn(RuntimeType.INSTANCE)
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@RestEndpoints({
-    @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
-            path = "__enable-healthcheck-configurer-on-instance",
-            description = "Enables Healthcheck service on Instance")
-})
 public class EnableHealthCheckConfigurerOnInstance implements AdminCommand {
     
     @Inject
@@ -76,6 +70,8 @@ public class EnableHealthCheckConfigurerOnInstance implements AdminCommand {
         
         service.setEnabled(enabled);
           actionReport.appendMessage("Health Check Service staus set to " + enabled + " on " + target );
+        service.shutdownHealthCheck();
+        service.bootstrapHealthCheck();
     }
 
 }

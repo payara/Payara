@@ -99,9 +99,6 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
 
-    @Inject
-    ServiceLocator serviceLocator;
-
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
@@ -181,7 +178,7 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, BaseHealthCheck service, Checker checker, Boolean enabled, String time, String unit) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        CommandRunner runner = habitat.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
         CommandRunner.CommandInvocation inv;
 
