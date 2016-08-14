@@ -583,12 +583,9 @@ public class EarHandler extends AbstractArchiveHandler implements CompositeHandl
 
                 holder = new ApplicationHolder(archivist.createApplication(
                     source, isDirectory));
-                if(context.getAppProps().containsKey(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP) 
-                        == false) { // don't override existing setting (from cmd line, GUI, etc.)
-                    Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
-                    if(cdiEnabled != null) {
-                        context.getAppProps().put(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP, cdiEnabled.toString().toLowerCase());
-                    }
+                Boolean cdiEnabled = new GFApplicationXmlParser(source).isEnableImplicitCDI();
+                if(cdiEnabled != null) {
+                    context.getAppProps().put(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI, cdiEnabled.toString().toLowerCase());
                 }
                 _logger.fine("time to read application.xml " + (System.currentTimeMillis() - start));
             } catch (IOException | XMLStreamException | SAXParseException e) {

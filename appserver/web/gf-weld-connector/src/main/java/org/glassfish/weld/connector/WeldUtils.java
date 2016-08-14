@@ -495,6 +495,10 @@ public class WeldUtils {
             // If implicit discovery is enabled for the server, then check if it's disabled for the
             // deployment of this application.
             Object propValue = context.getAppProps().get(RuntimeTagNames.IMPLICIT_CDI_ENABLED_PROP);
+            Object appPropValue = context.getAppProps().get(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI);
+            if(appPropValue != null) {
+                propValue = appPropValue;
+            }
 
             // If the property is not set, or it's value is true, then implicit discovery is enabled
             result = (propValue == null || Boolean.parseBoolean((String) propValue));
