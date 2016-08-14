@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -79,7 +80,7 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
                                      Collection<EjbDescriptor> ejbs,
                                      DeploymentContext deploymentContext,
                                      String moduleBdaID) {
-        super("root_" + archive.getName(),
+        super("root_" + (moduleBdaID != null? moduleBdaID : archive.getName()),
               Collections.<Class<?>>emptyList(),
               Collections.<URL>emptyList(),
               Collections.<EjbDescriptor>emptyList(),
@@ -91,7 +92,7 @@ public class RootBeanDeploymentArchive extends BeanDeploymentArchiveImpl {
                                  Collection<EjbDescriptor> ejbs,
                                  DeploymentContext deploymentContext,
                                  String bdaId) {
-        moduleBda = new BeanDeploymentArchiveImpl( archive, ejbs, deploymentContext, bdaId );
+        moduleBda = new BeanDeploymentArchiveImpl(archive, ejbs, deploymentContext, bdaId);
 
         // set the bda visibility for the root
         Collection<BeanDeploymentArchive> bdas = moduleBda.getBeanDeploymentArchives();

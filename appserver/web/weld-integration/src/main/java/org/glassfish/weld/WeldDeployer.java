@@ -471,7 +471,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         // Create a Deployment Collecting Information From The ReadableArchive (archive)
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
-            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory);
+            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, appInfo.getName());
 
             // Add services
             TransactionServices transactionServices = new TransactionServicesImpl(services);
@@ -498,7 +498,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
 
 
-        BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archive.getName());
+        BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(appInfo.getName());
         if (bda != null && !bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
 
             WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);

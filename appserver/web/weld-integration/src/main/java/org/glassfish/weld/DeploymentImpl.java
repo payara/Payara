@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -112,7 +113,8 @@ public class DeploymentImpl implements CDI11Deployment {
     public DeploymentImpl(ReadableArchive archive,
                           Collection<EjbDescriptor> ejbs,
                           DeploymentContext context,
-                          ArchiveFactory archiveFactory) {
+                          ArchiveFactory archiveFactory,
+                          String appName) {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.CREATING_DEPLOYMENT_ARCHIVE, new Object[]{ archive.getName()});
         }
@@ -128,14 +130,16 @@ public class DeploymentImpl implements CDI11Deployment {
             return;
         }
 
-        createModuleBda(archive, ejbs, context);
-
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if ((holder != null) && (holder.app != null)) {
-            appName = holder.app.getAppName();
+            this.appName = holder.app.getAppName();
+        } else if(appName != null) {
+            this.appName = appName;
         } else {
-            appName = "CDIApp";
+            this.appName = "CDIApp";
         }
+        
+        createModuleBda(archive, ejbs, context, this.appName);
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -173,7 +177,7 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         this.context = context;
-        createModuleBda(archive, ejbs, context);
+        createModuleBda(archive, ejbs, context, null);
     }
 
     /**
@@ -708,8 +712,9 @@ public class DeploymentImpl implements CDI11Deployment {
 
     private void createModuleBda( ReadableArchive archive,
                                   Collection<EjbDescriptor> ejbs,
-                                  DeploymentContext context) {
-        RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context );
+                                  DeploymentContext context, 
+                                  String appName) {
+        RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context, appName);
 
             BeanDeploymentArchive moduleBda = rootBda.getModuleBda();
             BeansXml moduleBeansXml = moduleBda.getBeansXml();
