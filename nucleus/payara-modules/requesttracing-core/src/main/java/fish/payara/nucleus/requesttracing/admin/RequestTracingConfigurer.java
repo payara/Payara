@@ -45,11 +45,12 @@ import java.util.logging.Logger;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- * Admin command to enable/disable all request tracing services defined in domain.xml.
+ * Admin command to enable/disable all request tracing services defined in
+ * domain.xml.
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.DAS})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "requesttracing-configure")
 @CommandLock(CommandLock.LockType.NONE)
@@ -91,6 +92,8 @@ public class RequestTracingConfigurer implements AdminCommand {
 
     @Inject
     ServiceLocator serviceLocator;
+    
+    CommandRunner.CommandInvocation inv;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -142,20 +145,25 @@ public class RequestTracingConfigurer implements AdminCommand {
     }
 
     private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        if (enabled != null) {
-            service.getExecutionOptions().setEnabled(enabled);
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.status.success",
-                    "request tracing service status is set to {0}.", enabled) + "\n");
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+
+        if (target.equals("server-config")) {
+            inv = runner.getCommandInvocation("__enable-requesttracing-configure-das", subReport, context.getSubject());
+        } else {
+            inv = runner.getCommandInvocation("__enable-requesttracing-configure-instance", subReport, context.getSubject());
         }
-        if (value != null) {
-            service.getExecutionOptions().setThresholdValue(Long.valueOf(value));
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdvalue.success",
-                    "Request Tracing Service Threshold Value is set to {0}.", value) + "\n");
-        }
-        if (unit != null) {
-            service.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(unit));
-            actionReport.appendMessage(strings.getLocalString("requesttracing.configure.thresholdunit.success",
-                    "Request Tracing Service Threshold Unit is set to {0}.", unit) + "\n");
+
+        ParameterMap params = new ParameterMap();
+        params.add("enabled", enabled.toString());
+        params.add("target", target);
+        params.add("thresholdUnit", unit);
+        params.add("thresholdValue", value);
+        inv.parameters(params);
+        inv.execute();
+        // swallow the offline warning as it is not a problem
+        if (subReport.hasWarnings()) {
+            subReport.setMessage("");
         }
     }
 
@@ -174,7 +182,7 @@ public class RequestTracingConfigurer implements AdminCommand {
             }
 
         }
-     
+
         if (unit != null) {
             try {
                 if (!unit.equals("NANOSECONDS")
