@@ -139,7 +139,7 @@ public class DeploymentImpl implements CDI11Deployment {
             this.appName = "CDIApp";
         }
         
-        createModuleBda(archive, ejbs, context, this.appName);
+        createModuleBda(archive, ejbs, context, appName);
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -168,7 +168,7 @@ public class DeploymentImpl implements CDI11Deployment {
      * This method is called for subsequent modules after This <code>Deployment</code> has
      * been created.
      */
-    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context) {
+    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context, String appName) {
         if (libJarRootBdas == null) {
             libJarRootBdas = scanForLibJars(archive, ejbs, context);
             if ((libJarRootBdas != null) && libJarRootBdas.size() > 0) {
@@ -177,7 +177,7 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         this.context = context;
-        createModuleBda(archive, ejbs, context, null);
+        createModuleBda(archive, ejbs, context, appName);
     }
 
     /**

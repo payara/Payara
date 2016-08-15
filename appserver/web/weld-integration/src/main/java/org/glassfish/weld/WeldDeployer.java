@@ -469,9 +469,20 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
 
         // Create a Deployment Collecting Information From The ReadableArchive (archive)
+        // if archive is a composite, or has version numbers per maven conventions, strip it out
+        boolean isSubArchive = archive.getParentArchive() != null;
+        String archiveName = !isSubArchive? appInfo.getName() : archive.getName();
+        int suffixIdx = archiveName.lastIndexOf('-');
+        if(isSubArchive && suffixIdx > 0) {
+            archiveName = archiveName.substring(0, suffixIdx);
+            if(!context.getArchiveHandler().getArchiveType().isEmpty()) {
+                archiveName = String.format("%s.%s", archiveName, context.getArchiveHandler().getArchiveType());
+            }
+        }
+        
         DeploymentImpl deploymentImpl = context.getTransientAppMetaData(WELD_DEPLOYMENT, DeploymentImpl.class);
         if (deploymentImpl == null) {
-            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, appInfo.getName());
+            deploymentImpl = new DeploymentImpl(archive, ejbs, context, archiveFactory, archiveName);
 
             // Add services
             TransactionServices transactionServices = new TransactionServicesImpl(services);
@@ -488,7 +499,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
 
             addWeldListenerToAllWars(context);
         } else {
-            deploymentImpl.scanArchive(archive, ejbs, context);
+            deploymentImpl.scanArchive(archive, ejbs, context, archiveName);
         }
         deploymentImpl.addDeployedEjbs(ejbs);
 
@@ -498,7 +509,7 @@ public class WeldDeployer extends SimpleDeployer<WeldContainer, WeldApplicationC
         }
 
 
-        BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(appInfo.getName());
+        BeanDeploymentArchive bda = deploymentImpl.getBeanDeploymentArchiveForArchive(archiveName);
         if (bda != null && !bda.getBeansXml().getBeanDiscoveryMode().equals(BeanDiscoveryMode.NONE)) {
 
             WebBundleDescriptor wDesc = context.getModuleMetaData(WebBundleDescriptor.class);
