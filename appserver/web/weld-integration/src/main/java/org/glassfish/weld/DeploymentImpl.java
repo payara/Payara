@@ -114,7 +114,7 @@ public class DeploymentImpl implements CDI11Deployment {
                           Collection<EjbDescriptor> ejbs,
                           DeploymentContext context,
                           ArchiveFactory archiveFactory,
-                          String appName) {
+                          String moduleName) {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.CREATING_DEPLOYMENT_ARCHIVE, new Object[]{ archive.getName()});
         }
@@ -133,13 +133,13 @@ public class DeploymentImpl implements CDI11Deployment {
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if ((holder != null) && (holder.app != null)) {
             this.appName = holder.app.getAppName();
-        } else if(appName != null) {
-            this.appName = appName;
+        } else if(moduleName != null) {
+            this.appName = moduleName;
         } else {
             this.appName = "CDIApp";
         }
         
-        createModuleBda(archive, ejbs, context, appName);
+        createModuleBda(archive, ejbs, context, moduleName);
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -168,7 +168,7 @@ public class DeploymentImpl implements CDI11Deployment {
      * This method is called for subsequent modules after This <code>Deployment</code> has
      * been created.
      */
-    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context, String appName) {
+    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context, String moduleName) {
         if (libJarRootBdas == null) {
             libJarRootBdas = scanForLibJars(archive, ejbs, context);
             if ((libJarRootBdas != null) && libJarRootBdas.size() > 0) {
@@ -177,7 +177,7 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         this.context = context;
-        createModuleBda(archive, ejbs, context, appName);
+        createModuleBda(archive, ejbs, context, moduleName);
     }
 
     /**
@@ -713,8 +713,8 @@ public class DeploymentImpl implements CDI11Deployment {
     private void createModuleBda( ReadableArchive archive,
                                   Collection<EjbDescriptor> ejbs,
                                   DeploymentContext context, 
-                                  String appName) {
-        RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context, appName);
+                                  String moduleName) {
+        RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context, moduleName);
 
             BeanDeploymentArchive moduleBda = rootBda.getModuleBda();
             BeansXml moduleBeansXml = moduleBda.getBeansXml();
