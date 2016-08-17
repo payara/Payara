@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 <!-- deploymentWeb.jsf -->
 <!-- This is the plugin property sheet for deploying web apps.
      id of the property sheet has to be the same as the plugin options for the Type dropdown in the deployment page.

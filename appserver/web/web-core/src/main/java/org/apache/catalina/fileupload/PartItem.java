@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;

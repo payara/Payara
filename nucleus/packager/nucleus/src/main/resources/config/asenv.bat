@@ -37,7 +37,7 @@ REM  and therefore, elected the GPL Version 2 license, then the option applies
 REM  only if the new code is made subject to such option by the copyright
 REM  holder.
 REM
-REM  Portions Copyright [2016] C2B2 Consulting Limited and/or its affiliates
+REM  Portions Copyright [2016] Payara Foundation and/or its affiliates
 REM
 REM                       * * *    N O T E     * * *
 REM

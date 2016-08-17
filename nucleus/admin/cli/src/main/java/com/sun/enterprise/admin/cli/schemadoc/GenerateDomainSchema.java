@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2016] [C2B2 Consulting Limited]
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.enterprise.admin.cli.schemadoc;
 
 import java.io.File;
