@@ -36,5 +36,6 @@
         <module>requesttracing-core</module>
         <module>notification-core</module>
         <module>asadmin-recorder</module>
+        <module>service-exemplar</module>
     </modules>
 </project>
