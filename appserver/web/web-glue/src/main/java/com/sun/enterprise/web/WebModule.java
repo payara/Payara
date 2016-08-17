@@ -1566,6 +1566,8 @@ public class WebModule extends PwcWebModule implements Context {
                     setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
                 } else if("useBundledJsf".equalsIgnoreCase(name)) {
                     setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
+                } else if("default-role-mapping".equalsIgnoreCase(name)) {
+                    wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
                 } else if(name.startsWith("alternatedocroot_")) {
                     parseAlternateDocBase(name, value);
                 } else if(name.startsWith("valve_") ||
