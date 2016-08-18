@@ -7,7 +7,7 @@ For us to accept pull requests please download the contributor agreement https:/
 Also as a condition of the upstream Oracle CDDL license you must add the comment below to each changed file for the pull request to be accepted.
 
 ```java
-Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 ```
 
 Thanks

@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 <sun:tab id="consoleStandaloneInst" immediate="true" text="$resource{i18nc.osgi.console}" toolTip="$resource{i18nc.osgi.console}">
     <!beforeCreate
         setResourceBundle(key="i18nc" bundle="org.glassfish.osgi.admingui.Strings");
