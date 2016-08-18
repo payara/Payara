@@ -2006,7 +2006,6 @@ public abstract class BaseContainer
         if ( inv.ejb != null ) {
             // counterpart of invocationManager.preInvoke
             if (! inv.useFastPath) {
-                invocationManager.postInvoke(inv);
                 delistExtendedEntityManagers(inv.context);
             } else {
                 doTxProcessing = doTxProcessing && (inv.exception != null);
@@ -2023,7 +2022,9 @@ public abstract class BaseContainer
                 else
                     inv.exception = new EJBException(ex);
             }
-            
+            if (! inv.useFastPath) {
+                invocationManager.postInvoke(inv);
+            }
             releaseContext(inv);
         }
 
