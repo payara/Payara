@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.healthcheck;
 
+import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import org.glassfish.api.StartupRunLevel;
@@ -29,6 +30,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,6 +38,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * @author steve
@@ -57,6 +60,9 @@ public class HealthCheckService implements EventListener {
 
     @Inject
     private Events events;
+    
+    @Inject
+    ServerContext server;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -125,6 +131,16 @@ public class HealthCheckService implements EventListener {
             bootstrapHealthCheck();
         }
     }
+    
+    public void reboot() {
+        shutdownHealthCheck();
+        if (configuration == null) {
+            configuration = server.getConfigBean().getConfig().getExtensionByType(HealthCheckServiceConfiguration.class);
+        }
+        if (configuration.getEnabled()) {
+            bootstrapHealthCheck();
+        }
+    }
 
     public void shutdownHealthCheck() {
         if (executor != null) {
@@ -139,5 +155,9 @@ public class HealthCheckService implements EventListener {
     
     public HealthCheckServiceConfiguration getConfiguration() {
         return configuration;
+    }
+    
+    public void setConfiguration(HealthCheckServiceConfiguration configuration) {
+        this.configuration = configuration;
     }
 }

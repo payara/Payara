@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure.service")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
@@ -96,8 +96,11 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
+    @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
+    
+    @Inject
+    ServerEnvironment server;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -152,7 +155,21 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
             }
 
             if (dynamic) {
-                enableOnTarget(actionReport, theContext, service, createdChecker[0], enabled, time, unit);
+                if (server.isDas()) {
+                    if (targetUtil.getConfig(target).isDas()) {
+                        Checker checkerByType = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
+                        service.setOptions(service.constructOptions(checkerByType));
+                        healthCheckService.registerCheck(checkerByType.getName(), service);
+                        healthCheckService.reboot();
+                    }
+                } else {
+                    // it implicitly targetted to us as we are not the DAS
+                    // restart the service
+                    Checker checkerByType = healthCheckServiceConfiguration.getCheckerByType(service.getCheckerType());
+                    service.setOptions(service.constructOptions(checkerByType));
+                    healthCheckService.registerCheck(checkerByType.getName(), service);
+                    healthCheckService.reboot();
+                }
             }
         }
         catch (TransactionFailure ex) {
@@ -174,31 +191,6 @@ public class HealthCheckServiceConfigurer implements AdminCommand {
         }
         if (name != null) {
             checkerProxy.setName(name);
-        }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, BaseHealthCheck service, Checker checker, Boolean enabled, String time, String unit) {
-        CommandRunner runner = habitat.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configure-service-on-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configure-service-on-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
-        params.add("target", target);
-        params.add("time", time);
-        params.add("unit", unit);
-        params.add("serviceName", serviceName);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
         }
     }
 }
