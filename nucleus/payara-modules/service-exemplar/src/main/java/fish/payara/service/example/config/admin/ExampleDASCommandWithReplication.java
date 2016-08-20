@@ -38,13 +38,13 @@ import org.jvnet.hk2.annotations.Service;
  * something and then runs an additional command on a number of instances.
  * 
  * The use case is you need to perhaps update something on the DAS or in the DAS config
- * then do somework on a remote instance. 
+ * then do some work on a remote instance. 
  *
  * @author steve
  */
 @Service(name = "example-das-command") // the name of the service is the asadmin command name
 @PerLookup // this means one instance is created every time the command is run
-@ExecuteOn(RuntimeType.DAS) // this means the command can run on any node
+@ExecuteOn(RuntimeType.DAS) // this means the command can run only on the DAS
 @RestEndpoints({  // creates a REST endpoint needed for integration with the admin interface
     @RestEndpoint(configBean = ExampleServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update

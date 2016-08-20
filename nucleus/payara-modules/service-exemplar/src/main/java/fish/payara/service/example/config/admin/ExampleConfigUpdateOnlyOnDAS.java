@@ -6,11 +6,11 @@
  * may not use this file except in compliance with the License.  You can
  * obtain a copy of the License at
  * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- * or packager/legal/LICENSE.txt.  See the License for the specific
+ * or LICENSE.txt.  See the License for the specific
  * language governing permissions and limitations under the License.
  *
  * When distributing the software, include this License Header Notice in each
- * file and include the License file at packager/legal/LICENSE.txt.
+ * file and include the License file LICENSE.txt.
   */
 package fish.payara.service.example.config.admin;
 
@@ -25,6 +25,8 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
+import org.glassfish.config.support.CommandTarget;
+import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
@@ -32,52 +34,38 @@ import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
-import fish.payara.service.example.ExampleService;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.hk2.api.ServiceLocator;
-
 /**
- * Exemplar command for configuration updates.
+ *  Example command that updates the correct configuration but runs ONLY on the DAS
+ *  You can do this style of command if you only want to update the configuration
+ *  and you don't care about updating the service dynamically in other running instances
  * 
- * Example command that updates the configuration in the domain.xml
- * Execution of the command will happen on all targeted instances and ALWAYS on the DAS.
- * If the service is a ConfigListener it will be triggered to reconfigure itself from the config change on all targeted instances
- * the service must be a ConfigListener and register itself for the config node it is interested in
+ *  NOTE: If the service is a ConfigListener it will still be notified on the DAS that
+ *  the configuration has changed
  * @author steve
  */
-@Service(name = "set-example-service-message") // the name of the service is the asadmin command name
-@PerLookup // this means one instance is created every time the command is run
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE}) // this means the command can run on any node so will run on all nodes
+@Service(name = "example-das-command") // the name of the service is the asadmin command name
+@PerLookup // this means one instance is created every time the command is run it is mandatory for admin commands
+@ExecuteOn(value=RuntimeType.DAS) // this means the command can ONLY run on the DAS
+@TargetType(value = {CommandTarget.CONFIG}) // says the target can only be a named configuration
 @RestEndpoints({  // creates a REST endpoint needed for integration with the admin interface
     @RestEndpoint(configBean = ExampleServiceConfiguration.class,
             opType = RestEndpoint.OpType.POST, // must be POST as it is doing an update
-            path = "set-example-service-message",
-            description = "Sets the Service Configuration")
+            path = "example-das-command",
+            description = "Updates the configuration only on the DAS but for any configuration")
 })
-public class SetExampleServiceMessage implements AdminCommand {
-    
-    // a useful service to get at the configuration based on the target parameter
+public class ExampleConfigUpdateOnlyOnDAS implements AdminCommand {
+
     @Inject
     private Target targetUtil;
-       
-    @Inject
-    ServiceLocator habitat;
-    
-    @Inject
-    ServerEnvironment server;
-    
-    @Inject
-    ExampleService service;
     
     @Param(optional=false)
     String message;
     
     @Param(optional=true, defaultValue = "server-config")
-    String target;
+    String target;    
     
     @Override
     public void execute(AdminCommandContext context) {
-
         // obtain the correct configuration
         Config configVal = targetUtil.getConfig(target);
         ExampleServiceConfiguration serviceConfig = configVal.getExtensionByType(ExampleServiceConfiguration.class);
@@ -96,26 +84,9 @@ public class SetExampleServiceMessage implements AdminCommand {
                 // set failure
                 context.getActionReport().failure(Logger.getLogger(SetExampleServiceMessage.class.getName()), "Failed to update message", ex);
             }
+        } else {
+            context.getActionReport().failure(Logger.getLogger(this.getClass().getCanonicalName()), "No configuration with name " + target);
         }
-        
-        // Below is example code you can use to also manipulate the service directly
-        // NOTE: if the Service is a ConfigListener then it will also be notified directly if
-        // the config changes therefore this is not always necessary
-        // As this command is always executed on the DAS you can check whether the DAS
-        // was targetted explicitly via the following code
-        if (server.isDas()) {
-            // this command is executing on the DAS now check whether you are explicitly the target
-            // you would need to do this if you now want to manipulate the service based on the command parameters
-            if (targetUtil.getConfig(target).isDas()) { // this command was also targetted at the DAS
-                service.doSomethingDirectly("Set message command was targetted at the DAS");
-                // as below you can now directly manipulate the service as needed
-            }           
-        } else {  // if you are not the DAS then impoicitly this command was targeted to this instance
-            service.doSomethingDirectly("Set config command targeted at the instance");
-            // you can now directly manipulate the service remember though 
-            // if it is a config listener it has already been notified of the config change
-            // however if it is not a config listener you can manipulate the service now
-        }
-        
     }
+    
 }

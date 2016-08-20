@@ -33,6 +33,9 @@ import org.jvnet.hk2.annotations.Service;
  * Example Command that does not operate on the configuration but wants to 
  * interact directly with the service running in an instance. 
  * 
+ * From the ExecuteOn below this command will ONLY run on targeted instances
+ * The command will NOT run on the DAS unless targeted explicitly.
+ * 
  * If a target parameter is specified this command will be executed on all instances
  * that meet the target specification i.e. if a config all instances referencing the config
  * if a cluster all instances in the cluster if an instance name that specific instance.
@@ -40,8 +43,8 @@ import org.jvnet.hk2.annotations.Service;
  * @author steve
  */
 @Service(name = "example-instance-command") // the name of the service is the asadmin command name
-@PerLookup // this means one instance is created every time the command is run
-@ExecuteOn(value ={RuntimeType.INSTANCE, RuntimeType.DAS}) // this means the command can run on any node
+@PerLookup // this means one instance is created every time the command is run it is mandatory for admin commands
+@ExecuteOn(value=RuntimeType.INSTANCE) // this means the command can run on any node
 @TargetType(value = {CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG, CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE})
 @RestEndpoints({  // creates a REST endpoint needed for integration with the admin interface
     @RestEndpoint(configBean = ExampleServiceConfiguration.class,
