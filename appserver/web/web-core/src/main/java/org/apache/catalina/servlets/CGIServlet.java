@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2016] [Payara Foundation]
 package org.apache.catalina.servlets;
 
 import java.io.BufferedOutputStream;
@@ -1130,7 +1130,8 @@ public final class CGIServlet extends HttpServlet {
                 //REMIND: change character set
                 //REMIND: I forgot what the previous REMIND means
                 if ("AUTHORIZATION".equalsIgnoreCase(header) ||
-                    "PROXY_AUTHORIZATION".equalsIgnoreCase(header)) {
+                    "PROXY_AUTHORIZATION".equalsIgnoreCase(header) ||
+                    "PROXY".equalsIgnoreCase(header)) {
                     //NOOP per CGI specification section 11.2
                 } else {
                     envp.put("HTTP_" + header.replace('-', '_'),
