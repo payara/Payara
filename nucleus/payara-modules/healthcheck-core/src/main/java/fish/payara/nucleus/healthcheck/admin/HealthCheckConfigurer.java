@@ -20,6 +20,7 @@ package fish.payara.nucleus.healthcheck.admin;
 
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
+import com.sun.enterprise.config.serverbeans.Server;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -55,7 +56,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
@@ -66,6 +67,9 @@ import java.util.logging.Logger;
 public class HealthCheckConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(HealthCheckConfigurer.class);
+    
+    @Inject
+    ServerEnvironment server;
 
     @Inject
     protected Logger logger;
@@ -82,7 +86,7 @@ public class HealthCheckConfigurer implements AdminCommand {
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
 
-    @Param(name = "target", optional = true, defaultValue = "server")
+    @Param(name = "target", optional = true, defaultValue = "server-config")
     protected String target;
 
     @Param(name = "enabled", optional = false)
@@ -123,30 +127,14 @@ public class HealthCheckConfigurer implements AdminCommand {
         }
 
         if (dynamic) {
-            enableOnTarget(actionReport, context, enabled);
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    service.setEnabled(enabled);
+                }
+            } else {
+                // apply as not the DAS so implicitly it is for us
+                service.setEnabled(enabled);
+            }
         }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configurer-on-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-healthcheck-configurer-on-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("enabled", enabled.toString());
-        params.add("target", target);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-
     }
 }

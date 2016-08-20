@@ -17,8 +17,6 @@ import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.LogNotifier;
-import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.domain.LogNotificationEvent;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Contract;
@@ -26,7 +24,6 @@ import org.jvnet.hk2.annotations.Optional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
