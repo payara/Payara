@@ -271,6 +271,15 @@
 	    <type>zip</type>
 	    <optional>true</optional>
 	</dependency>
+
+        <!-- Request Tracing Package -->
+        <dependency>
+           <groupId>fish.payara.packager</groupId>
+           <artifactId>requesttracing-package</artifactId>
+           <version>${project.version}</version>
+           <type>zip</type>
+           <optional>true</optional>
+       </dependency>
     </dependencies>
 
     <profiles>
