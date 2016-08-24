@@ -3,6 +3,15 @@
 #Payara 5
 This is an experimental branch for including the changes and upcoming modules due to debut with GlassFish 5. The main Payara project continues to exist on the _master_ branch.
 
+## Included upcoming JSR modules
+
+- JSF 2.3 (JSR 372) - Mojarra 2.3
+- MVC 1.0 (JSR 371) - Ozark
+- CDI 2.0 (JSR 365) - Weld 3
+- Java EE Security (JSR 375) - Soteria
+
+For specific versions of the implementations included, look into [appserver/pom.xml](appserver/pom.xml).
+
 #Payara Server
 
 Payara Server is a patched, enhanced and supported application server derived from GlassFish Server Open Source Edition 4.x.
