@@ -63,6 +63,7 @@ import java.util.logging.Logger;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import java.lang.reflect.InvocationTargetException;
 import org.glassfish.internal.api.Globals;
 
 public class ContextSetupProviderImpl implements ContextSetupProvider {
@@ -92,7 +93,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         this.deployment = deployment;
         this.applications = applications;
         this.transactionManager = transactionManager;
-        this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        
+        try {
+            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException");
+        }
+        
         for (CONTEXT_TYPE contextType: contextTypes) {
             switch(contextType) {
                 case CLASSLOADING:
@@ -174,7 +182,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             transactionManager.clearThreadTx();
         }
         
-        if (requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             RequestEvent requestEvent = constructConcurrentContextEvent(invocation);
             requestTracing.traceRequestEvent(requestEvent);
         }
@@ -231,7 +239,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
           transactionManager.clearThreadTx();
         }
         
-        if (requestTracing.isRequestTracingEnabled()) {
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
             requestTracing.endTrace();
         }
     }
