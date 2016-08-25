@@ -183,7 +183,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </network-config>
             <thread-pools>
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
-                <thread-pool name="thread-pool-1" min-thread-pool-size="1" max-thread-pool-size="200"/>
+                <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
             </thread-pools>
         </config> 
     </configs>
