@@ -131,7 +131,7 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                             PropertyVetoException, TransactionFailure {
                         Notifier notifierProxy = (Notifier) requestTracingServiceConfigurationProxy.createChild(notifierService.getNotifierType());
                         if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
+                            notifierProxy.enabled(String.valueOf(notifierEnabled));
                         }
 
                         if (dynamic) {
@@ -147,7 +147,7 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                     public Object run(final Notifier notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
                         if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
+                            notifierProxy.enabled(String.valueOf(notifierEnabled));
                         }
                         if (dynamic) {
                             enableOnTarget(actionReport, theContext, notifierEnabled);

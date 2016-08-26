@@ -960,7 +960,7 @@ public final class PEAccessLogValve
         }
         
         // log to console
-        accessLogToConsole = accessLogConfig.getLogToConsoleEnabled();
+        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
     }
 
 
