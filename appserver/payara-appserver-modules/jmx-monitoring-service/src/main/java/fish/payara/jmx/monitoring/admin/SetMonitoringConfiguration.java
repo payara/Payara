@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -28,7 +28,9 @@ import org.glassfish.api.Param;
 import org.glassfish.api.admin.AdminCommand;
 import org.glassfish.api.admin.AdminCommandContext;
 import org.glassfish.api.admin.CommandLock;
+import org.glassfish.api.admin.CommandRunner;
 import org.glassfish.api.admin.ExecuteOn;
+import org.glassfish.api.admin.ParameterMap;
 import org.glassfish.api.admin.RestEndpoint;
 import org.glassfish.api.admin.RestEndpoints;
 import org.glassfish.api.admin.RuntimeType;
@@ -52,8 +54,8 @@ import org.jvnet.hk2.config.types.Property;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("set.monitoring.configuration")
-@ExecuteOn(RuntimeType.INSTANCE)
-@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER})
+@ExecuteOn(RuntimeType.DAS)
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -63,7 +65,7 @@ import org.jvnet.hk2.config.types.Property;
 public class SetMonitoringConfiguration implements AdminCommand {
 
     @Inject
-    ServiceLocator habitat;
+    ServiceLocator serviceLocator;
 
     @Inject
     protected Target targetUtil;
@@ -100,7 +102,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
         final ActionReport actionReport = context.getActionReport();
         Config config = targetUtil.getConfig(target);
 
-        final MonitoringService service = habitat.getService(MonitoringService.class);
+        final MonitoringService service = serviceLocator.getService(MonitoringService.class);
         if (service == null) {
             actionReport.appendMessage("Could not find a monitoring service.");
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -118,9 +120,9 @@ public class SetMonitoringConfiguration implements AdminCommand {
                     return monitoringConfigProxy;
                 }
             }, monitoringConfig);
-                    
+                   
             if (dynamic) {
-                monitoringService.setEnabled(enabled);
+                enableOnTarget(actionReport, context, enabled);
             }
 
         } catch (TransactionFailure ex) {
@@ -153,6 +155,25 @@ public class SetMonitoringConfiguration implements AdminCommand {
         }
     }
 
+    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
+        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
+        ActionReport subReport = context.getActionReport().addSubActionsReport();
+        CommandRunner.CommandInvocation invocation;
+
+        if (target.equals("server-config")) {
+            invocation = runner.getCommandInvocation("__enable-monitoring-service-on-das", subReport, context.getSubject());
+        } else {
+            invocation = runner.getCommandInvocation("__enable-monitoring-service-on-instance", subReport, context.getSubject());
+        }
+
+        // Build the parameters
+        ParameterMap params = new ParameterMap();
+        params.add("enabled", enabled.toString());
+        params.add("target", target);
+        invocation.parameters(params);
+        invocation.execute();
+    }
+
     /**
      * Updates monitoring attributes through adding a new property and/or deleting an existing one.
      *
@@ -168,6 +189,7 @@ public class SetMonitoringConfiguration implements AdminCommand {
             for (Property attribute : attributes) {
                 if (attribute.getName().equals(delproperty)) {
                    attributes.remove(attribute); 
+                   break;
                 }
             }
         }

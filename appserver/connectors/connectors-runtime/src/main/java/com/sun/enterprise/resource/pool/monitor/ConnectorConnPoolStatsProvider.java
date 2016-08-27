@@ -38,7 +38,7 @@
  * holder.
  *
 */
-// Portions Copyright [2014] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.resource.pool.monitor;
 

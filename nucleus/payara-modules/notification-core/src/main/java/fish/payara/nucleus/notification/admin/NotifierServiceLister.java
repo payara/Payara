@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -41,7 +41,7 @@ import java.util.List;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("notifier.list.services")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
+@ExecuteOn({RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,

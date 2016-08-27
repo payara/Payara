@@ -34,5 +34,5 @@ We take GlassFish, support it, add fixes, add enhancements and we release it as 
 
 
 GlassFish is a trademark of Oracle Corporation.
-Payara is a trademark of Zenthis Limited.
+Payara is a trademark of Payara Foundation.
 

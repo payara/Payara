@@ -98,7 +98,7 @@ import static org.apache.catalina.InstanceEvent.EventType.*;
  * @author Remy Maucherat
  * @version $Revision: 1.12.2.1 $ $Date: 2008/04/17 18:37:09 $
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 public class StandardWrapper
         extends ContainerBase
         implements ServletConfig, Wrapper {

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -1566,6 +1566,8 @@ public class WebModule extends PwcWebModule implements Context {
                     setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
                 } else if("useBundledJsf".equalsIgnoreCase(name)) {
                     setUseMyFaces(ConfigBeansUtilities.toBoolean(value));
+                } else if("default-role-mapping".equalsIgnoreCase(name)) {
+                    wmInfo.getDescriptor().setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(value));
                 } else if(name.startsWith("alternatedocroot_")) {
                     parseAlternateDocBase(name, value);
                 } else if(name.startsWith("valve_") ||

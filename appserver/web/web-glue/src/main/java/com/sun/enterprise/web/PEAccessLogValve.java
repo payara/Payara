@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014-2016] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package com.sun.enterprise.web;
 
@@ -960,7 +960,7 @@ public final class PEAccessLogValve
         }
         
         // log to console
-        accessLogToConsole = accessLogConfig.getLogToConsoleEnabled();
+        accessLogToConsole = Boolean.parseBoolean(accessLogConfig.getLogToConsoleEnabled());
     }
 
 

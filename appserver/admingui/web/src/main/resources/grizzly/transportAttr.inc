@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 
 <!-- grizzly/transportAttr.inc -->
 

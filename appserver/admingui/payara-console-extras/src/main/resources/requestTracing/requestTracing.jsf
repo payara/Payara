@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates. 
+ Copyright (c) 2016 Payara Foundation and/or its affiliates. 
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -58,7 +58,7 @@
                     mapPut(map="#{pageSession.valueMap}" key="dynamic" value="#{pageSession.dynamic}");
                     mapPut(map="#{pageSession.valueMap}" key="notifierDynamic" value="#{pageSession.notifierDynamic}");
                     prepareSuccessfulMsg();
-                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-requesttracing" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
+                    gf.updateEntity(endpoint="#{sessionScope.REST_URL}/set-requesttracing-configuration" attrs="#{pageSession.valueMap}" convertToFalse="#{pageSession.convertToFalseList}");
                     />
             </sun:button>
         </sun:panelGroup>

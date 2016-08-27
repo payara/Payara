@@ -40,7 +40,7 @@
 
 -->
 
-<!-- Portions Copyright [2015] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 
 <!-- applications/uploadButtons.inc -->
 

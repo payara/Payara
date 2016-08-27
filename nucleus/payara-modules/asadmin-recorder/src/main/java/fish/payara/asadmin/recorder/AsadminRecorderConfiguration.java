@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates.
  * All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
@@ -30,11 +30,11 @@ import org.jvnet.hk2.config.Configured;
 public interface AsadminRecorderConfiguration extends ConfigBeanProxy, ConfigExtension
 {
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    public Boolean isEnabled();
+    public String isEnabled();
     public void setEnabled(Boolean enabled);
     
     @Attribute(defaultValue = "true", dataType = Boolean.class)
-    public Boolean filterCommands();
+    public String filterCommands();
     public void setFilterCommands(Boolean filterCommands);
     
     @Attribute(defaultValue = 

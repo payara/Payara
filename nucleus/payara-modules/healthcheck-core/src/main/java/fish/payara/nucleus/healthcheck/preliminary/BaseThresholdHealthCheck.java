@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -28,7 +28,7 @@ public abstract class BaseThresholdHealthCheck<O extends HealthCheckWithThreshol
     public HealthCheckWithThresholdExecutionOptions constructThresholdOptions(ThresholdDiagnosticsChecker checker) {
         return new HealthCheckWithThresholdExecutionOptions(
                 Boolean.valueOf(checker.getEnabled()),
-                checker.getTime(),
+                Long.parseLong(checker.getTime()),
                 asTimeUnit(checker.getUnit()),
                 checker.getPropertyValue(THRESHOLD_CRITICAL, THRESHOLD_DEFAULTVAL_CRITICAL),
                 checker.getPropertyValue(THRESHOLD_WARNING, THRESHOLD_DEFAULTVAL_WARNING),

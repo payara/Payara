@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates.
  * All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
@@ -80,7 +80,7 @@ public class AsadminRecorderEnabled implements AdminCommand
         
         Properties extraProps = new Properties();
         
-        if (asadminRecorderConfiguration.isEnabled()) {
+        if (Boolean.parseBoolean(asadminRecorderConfiguration.isEnabled())) {
             extraProps.put("asadminRecorderEnabled", true);
             actionReport.setMessage("Asadmin Recorder Service is enabled");
         } else {

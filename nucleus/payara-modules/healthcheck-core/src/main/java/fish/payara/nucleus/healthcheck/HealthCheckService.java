@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -36,6 +36,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.ServerContext;
 
 /**
  * @author steve
@@ -57,6 +58,9 @@ public class HealthCheckService implements EventListener {
 
     @Inject
     private Events events;
+    
+    @Inject
+    ServerContext server;
 
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -79,7 +83,7 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        if (configuration != null && configuration.getEnabled()) {
+        if (configuration != null && Boolean.parseBoolean(configuration.getEnabled())) {
             enabled = true;
             bootstrapHealthCheck();
         }
@@ -125,11 +129,33 @@ public class HealthCheckService implements EventListener {
             bootstrapHealthCheck();
         }
     }
+    
+    public void reboot() {
+        shutdownHealthCheck();
+        if (configuration == null) {
+            configuration = server.getConfigBean().getConfig().getExtensionByType(HealthCheckServiceConfiguration.class);
+        }
+        if (Boolean.valueOf(configuration.getEnabled())) {
+            bootstrapHealthCheck();
+        }
+    }
 
     public void shutdownHealthCheck() {
         if (executor != null) {
             executor.shutdown();
             Logger.getLogger(HealthCheckService.class.getName()).log(Level.INFO, "Payara Health Check Service is shutdown.");
         }
+    }
+
+    public BaseHealthCheck getCheck(String serviceName) {
+        return registeredTasks.get(serviceName).getCheck();
+    }
+    
+    public HealthCheckServiceConfiguration getConfiguration() {
+        return configuration;
+    }
+    
+    public void setConfiguration(HealthCheckServiceConfiguration configuration) {
+        this.configuration = configuration;
     }
 }

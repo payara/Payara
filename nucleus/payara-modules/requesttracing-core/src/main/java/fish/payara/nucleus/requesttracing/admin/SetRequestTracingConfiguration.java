@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -20,6 +20,7 @@ package fish.payara.nucleus.requesttracing.admin;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import java.util.Properties;
+import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -44,19 +45,22 @@ import org.jvnet.hk2.annotations.Service;
  *
  * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "set-requesttracing")
+@ExecuteOn({RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@Service(name = "set-requesttracing-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.requesttracing")
+@I18n("set.requesttracing.configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-requesttracing",
+            path = "set-requesttracing-configuration",
             description = "Set Request Tracing Services Configuration")
 })
-public class SetRequestTracing implements AdminCommand {
+public class SetRequestTracingConfiguration implements AdminCommand {
+
+    @Inject
+    protected Logger logger;
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -70,7 +74,7 @@ public class SetRequestTracing implements AdminCommand {
     @Param(name = "thresholdUnit", optional = true, defaultValue = "SECONDS")
     private String unit;
 
-    @Param(name = "thresholdValue", optional = true, defaultValue = "10")
+    @Param(name = "thresholdValue", optional = true, defaultValue = "30")
     private String value;
 
     @Param(name = "notifierDynamic", optional = true, defaultValue = "false")
@@ -85,6 +89,8 @@ public class SetRequestTracing implements AdminCommand {
     @Inject
     ServiceLocator serviceLocator;
 
+    CommandRunner.CommandInvocation inv;
+
     @Override
     public void execute(AdminCommandContext context) {
         final AdminCommandContext theContext = context;
@@ -95,14 +101,22 @@ public class SetRequestTracing implements AdminCommand {
             actionReport.setExtraProperties(extraProperties);
         }
 
+        if (!validate(actionReport)) {
+            return;
+        }
+
         if (dynamic || enabled) {
-            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
             if (dynamic) {
                 notifierDynamic = true;
+            } else {
+                notifierDynamic = false;
             }
             if (enabled) {
                 notifierEnabled = true;
+            } else {
+                notifierEnabled = false;
             }
+            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         }
 
         if (notifierDynamic || notifierEnabled) {
@@ -113,7 +127,6 @@ public class SetRequestTracing implements AdminCommand {
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
         inv = runner.getCommandInvocation("requesttracing-configure", subReport, context.getSubject());
 
@@ -134,7 +147,6 @@ public class SetRequestTracing implements AdminCommand {
     private void enableRequestTracingNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
         inv = runner.getCommandInvocation("requesttracing-configure-notifier", subReport, context.getSubject());
 
@@ -149,5 +161,42 @@ public class SetRequestTracing implements AdminCommand {
         if (subReport.hasWarnings()) {
             subReport.setMessage("");
         }
+    }
+
+    private boolean validate(ActionReport actionReport) {
+        boolean result = false;
+        if (value != null) {
+            try {
+                int thresholdValue = Integer.parseInt(value);
+                if (thresholdValue <= 0 || thresholdValue > Short.MAX_VALUE * 2) {
+                    actionReport.failure(logger, "Threshold Value must be greater than zero or less than " + Short.MAX_VALUE * 2 + 1);
+                    return result;
+                }
+            } catch (NumberFormatException nfe) {
+                actionReport.failure(logger, "Threshold Value is not a valid integer", nfe);
+                return result;
+            }
+
+        }
+
+        if (unit != null) {
+            try {
+                if (!unit.equals("NANOSECONDS")
+                        && !unit.equals("MICROSECONDS")
+                        && !unit.equals("MILLISECONDS")
+                        && !unit.equals("SECONDS")
+                        && !unit.equals("MINUTES")
+                        && !unit.equals("HOURS")
+                        && !unit.equals("DAYS")) {
+                    actionReport.failure(logger, unit + " is an invalid time unit");
+                    return result;
+                }
+            } catch (IllegalArgumentException iaf) {
+                actionReport.failure(logger, unit + " is an invalid time unit", iaf);
+                return result;
+            }
+        }
+
+        return true;
     }
 }

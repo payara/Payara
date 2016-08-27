@@ -1,7 +1,7 @@
 /**
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates.
  * All rights reserved.
  *
  * The contents of this file are subject to the terms of the Common Development
@@ -103,7 +103,7 @@ public class AsadminRecorderService implements EventListener {
                             + "found, it is likely missing from the domain.xml."
                             + " Setting enabled to default of false");
         } else {
-            enabled = asadminRecorderConfiguration.isEnabled();
+            enabled = Boolean.parseBoolean(asadminRecorderConfiguration.isEnabled());
         }
         return enabled;
     }
@@ -123,7 +123,7 @@ public class AsadminRecorderService implements EventListener {
             splitFilteredCommands();
         }
         
-        if (asadminRecorderConfiguration.filterCommands()) {
+        if (Boolean.parseBoolean(asadminRecorderConfiguration.filterCommands())) {
             if (!(filteredCommands.contains(commandName))) {
                 boolean regexMatched = false;
                 

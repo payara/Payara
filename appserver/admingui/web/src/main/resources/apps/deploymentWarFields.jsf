@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2014] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 <!-- deploymentWarFields.jsf -->
 
 <sun:property id="nameProp" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18n.deploy.ApplicationName}" visible="#{true}">

@@ -28,25 +28,26 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
+import static javax.management.Query.value;
 
 /**
  * Admin command to set notification services configuration
  *
  * @author Susan Rai
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
-@Service(name = "set-notification")
+@ExecuteOn(value = {RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@Service(name = "set-notification-configuration")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
-@I18n("set.notification")
+@I18n("set.notification.configuration")
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
-            path = "set-notification",
+            path = "set-notification-configuration",
             description = "Set notification Services Configuration")
 })
-public class SetNotification implements AdminCommand {
+public class SetNotificationConfiguration implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = SystemPropertyConstants.DAS_SERVER_NAME)
     String target;
@@ -69,6 +70,8 @@ public class SetNotification implements AdminCommand {
     @Inject
     ServiceLocator serviceLocator;
 
+    CommandRunner.CommandInvocation inv;
+
     @Override
     public void execute(AdminCommandContext context) {
         final AdminCommandContext theContext = context;
@@ -80,13 +83,17 @@ public class SetNotification implements AdminCommand {
         }
 
         if (dynamic || enabled) {
-            enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
             if (dynamic) {
                 notifierDynamic = true;
+            } else {
+                notifierDynamic = false;
             }
             if (enabled) {
                 notifierEnabled = true;
+            } else {
+                notifierEnabled = false;
             }
+            enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
         }
 
         if (notifierDynamic || notifierEnabled) {
@@ -97,7 +104,6 @@ public class SetNotification implements AdminCommand {
     private void enableNotificationConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
         inv = runner.getCommandInvocation("notification-configure", subReport, context.getSubject());
 
@@ -116,7 +122,6 @@ public class SetNotification implements AdminCommand {
     private void enableNotificationNotifierConfigurerOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
         CommandRunner runner = serviceLocator.getService(CommandRunner.class);
         ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
 
         inv = runner.getCommandInvocation("notification-configure-notifier", subReport, context.getSubject());
 

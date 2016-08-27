@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates. 
+ Copyright (c) 2016 Payara Foundation and/or its affiliates. 
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -23,7 +23,7 @@
     <parent>
         <groupId>org.glassfish.main.packager</groupId>
         <artifactId>nucleus-packages</artifactId>
-        <version>4.1.1.163-SNAPSHOT</version>
+        <version>4.1.1.164-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.packager</groupId>
     <artifactId>phonehome-package</artifactId>

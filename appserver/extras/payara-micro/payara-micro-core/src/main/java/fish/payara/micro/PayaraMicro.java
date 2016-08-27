@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2015-2016 C2B2 Consulting Limited and/or its affiliates.
+ Copyright (c) 2016 Payara Foundation and/or its affiliates.
  All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
@@ -158,7 +158,7 @@ public class PayaraMicro {
      * --disablePhomeHome disables Phone Home Service<br/>
      * --logToFile outputs all the Log entries to a user defined file<br/>
      * --accessLog Sets user defined directory path for the access log<br/>
-     * --accessLogFormat Sets user defined a log format for access log<br/>
+     * --accessLogFormat Sets user defined log format for the access log<br/>
      * --logProperties Allows user to set their own logging properties file <br/>
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
@@ -265,10 +265,15 @@ public class PayaraMicro {
      * @return
      */
     public PayaraMicro setUserLogFile(String fileName) {
-        if (!fileName.endsWith("/")) {
-            this.userLogFile = fileName;
+        File file = new File(fileName);
+        if (file.isDirectory()) {
+            if (!file.exists() || !file.canWrite()) {
+                logger.log(Level.SEVERE, "{0} is not a valid directory for storing logs as it must exist and be writable", file.getAbsolutePath());                            
+                throw new IllegalArgumentException();
+            }
+            this.userLogFile = file.getAbsolutePath() + File.separator + userLogFile;
         } else {
-            this.userLogFile = fileName + userLogFile;
+            userLogFile = fileName;
         }
         logToFile = true;
         return this;
@@ -294,11 +299,7 @@ public class PayaraMicro {
      * @param filePath
      */
     public void setAccessLogDir(String filePath) {
-        if (!filePath.endsWith("/")) {
-
-        } else {
-            this.userAccessLogDirectory = filePath;
-        }
+        this.userAccessLogDirectory = filePath;
         enableAccessLog = true;
     }
 
@@ -889,6 +890,10 @@ public class PayaraMicro {
         GlassFishRuntime gfruntime;
         PortBinder portBinder = new PortBinder();
 
+        if (disablePhoneHome == true) {
+            PhoneHomeCore.setOverrideEnabled(false);
+        }
+
         try {
             gfruntime = GlassFishRuntime.bootstrap(bprops, Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
@@ -1083,12 +1088,6 @@ public class PayaraMicro {
             if (enableHealthCheck) {
                 HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
                 healthCheckService.setEnabled(enableHealthCheck);
-            }
-
-            if (disablePhoneHome) {
-                logger.log(Level.INFO, "Phone Home Service Disabled");
-            } else {
-                gf.getService(PhoneHomeCore.class).start();
             }
 
             long end = System.currentTimeMillis();
@@ -1443,15 +1442,20 @@ public class PayaraMicro {
                                 + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
                                 + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
-                                + "  --accessLogFormat Sets user defined a log format for access log\n"
+                                + "  --accessLogFormat Sets user defined log format for the access log\n"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
                     case "--logToFile":
-                        setUserLogFile(args[i + 1]);
+                         setUserLogFile(args[i + 1]);
                         break;
                     case "--accessLog":
-                        setAccessLogDir(args[i + 1]);
+                        File file = new File(args[i + 1]);
+                        if (!file.exists() || !file.isDirectory() || !file.canWrite()) {
+                            logger.log(Level.SEVERE, "{0} is not a valid directory for storing access logs as it must exist and be writable", file.getAbsolutePath());                            
+                            throw new IllegalArgumentException();
+                        }
+                        setAccessLogDir(file.getAbsolutePath());
 			break;
                     case "--accessLogFormat":
                         setAccessLogFormat(args[i + 1]);
@@ -1459,7 +1463,8 @@ public class PayaraMicro {
                     case "--logProperties":
                         File logPropertiesFile = new File(args[i + 1]);
                         if (!logPropertiesFile.exists() || !logPropertiesFile.canRead() || logPropertiesFile.isDirectory() ) {
-                            logger.log(Level.SEVERE, "{0} is not a valid properties file path and will be ignored", logPropertiesFile.getAbsolutePath());
+                            logger.log(Level.SEVERE, "{0} is not a valid properties file path", logPropertiesFile.getAbsolutePath());
+                            throw new IllegalArgumentException();
                         } else {
                             setLogPropertiesFile(logPropertiesFile);
                         }

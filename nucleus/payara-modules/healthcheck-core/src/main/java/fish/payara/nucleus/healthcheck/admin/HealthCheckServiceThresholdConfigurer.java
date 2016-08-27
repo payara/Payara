@@ -1,8 +1,9 @@
 /*
-
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
+
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -20,9 +21,9 @@ package fish.payara.nucleus.healthcheck.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
+import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.ThresholdDiagnosticsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.BaseThresholdHealthCheck;
@@ -38,12 +39,12 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,7 +57,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure.service.threshold")
-@ExecuteOn(RuntimeType.INSTANCE)
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
@@ -98,10 +99,23 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
 
     @Param(name = "target", optional = true, defaultValue = "server")
     protected String target;
+    
+    @Inject
+    ServiceLocator serviceLocator;
+    
+    @Inject
+    ServerEnvironment server;
 
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
+        final AdminCommandContext theContext = context;
+        Properties extraProperties = actionReport.getExtraProperties();
+        if (extraProperties == null) {
+            extraProperties = new Properties();
+            actionReport.setExtraProperties(extraProperties);
+        }
+
         final BaseThresholdHealthCheck service = habitat.getService(BaseThresholdHealthCheck.class, serviceName);
         Config config = targetUtil.getConfig(target);
 
@@ -137,7 +151,56 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
         }
 
         if (dynamic) {
-            enableOnTarget(actionReport, service, thresholdCritical, thresholdWarning, thresholdGood);
+                if (service.getOptions() == null) {
+                    service.setOptions(service.constructOptions(checker));
+                }
+                if (server.isDas()) {
+                    if (targetUtil.getConfig(target).isDas()) {      
+                        if (thresholdCritical != null) {
+                            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+                            actionReport.appendMessage(strings.getLocalString(
+                                    "healthcheck.service.configure.threshold.critical.success",
+                                    "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
+                            actionReport.appendMessage("\n");
+                        }
+                        if (thresholdWarning != null) {
+                            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+                            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
+                                    "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
+                            actionReport.appendMessage("\n");
+                        }
+                        if (thresholdGood != null) {
+                            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+                            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
+                                    "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
+                            actionReport.appendMessage("\n");
+                        }
+                        healthCheckService.reboot();
+                    }
+                } else {
+                    // it implicitly targetted to us as we are not the DAS
+                    // restart the service
+                    if (thresholdCritical != null) {
+                        service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+                        actionReport.appendMessage(strings.getLocalString(
+                                "healthcheck.service.configure.threshold.critical.success",
+                                "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
+                        actionReport.appendMessage("\n");
+                    }
+                    if (thresholdWarning != null) {
+                        service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+                        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
+                                "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
+                        actionReport.appendMessage("\n");
+                    }
+                    if (thresholdGood != null) {
+                        service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+                        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
+                                "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
+                        actionReport.appendMessage("\n");
+                    }
+                    healthCheckService.reboot();
+                }
         }
     }
 
@@ -174,32 +237,5 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
             propertyProxy.setName(name);
             propertyProxy.setValue(value);
         }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, BaseThresholdHealthCheck service, String
-            thresholdCritical, String thresholdWarning, String thresholdGood) {
-
-        if (thresholdCritical != null) {
-            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
-            actionReport.appendMessage(strings.getLocalString(
-                    "healthcheck.service.configure.threshold.critical.success",
-                    "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
-            actionReport.appendMessage("\n");
-        }
-        if (thresholdWarning != null) {
-            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
-            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
-                    "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
-            actionReport.appendMessage("\n");
-        }
-        if (thresholdGood != null) {
-            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
-            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
-                    "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
-            actionReport.appendMessage("\n");
-        }
-
-        healthCheckService.shutdownHealthCheck();
-        healthCheckService.bootstrapHealthCheck();
     }
 }
