@@ -98,8 +98,11 @@ public class GetNotificationConfiguration implements AdminCommand {
 
             NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(serviceHandle.getService().getNotifierConfigType());
             LogNotifierConfiguration logNotifierConfiguration = (LogNotifierConfiguration) notifierConfiguration;
-
-            values[1] = logNotifierConfiguration.getEnabled();
+            if (logNotifierConfiguration == null) {
+                values[1] = "true";
+            } else {
+                values[1] = logNotifierConfiguration.getEnabled();
+            }
             values[2] = serviceHandle.getActiveDescriptor().getName();
         }
         columnFormatter.addRow(values);
