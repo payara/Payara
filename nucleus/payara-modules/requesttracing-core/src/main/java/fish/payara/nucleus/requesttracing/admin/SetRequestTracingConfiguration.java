@@ -105,6 +105,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             return;
         }
 
+        enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         if (dynamic || enabled) {
             if (dynamic) {
                 notifierDynamic = true;
@@ -116,12 +117,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             } else {
                 notifierEnabled = false;
             }
-            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         }
 
-        if (notifierDynamic || notifierEnabled) {
-            enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
-        }
+        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
     }
 
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {

@@ -25,6 +25,7 @@ import fish.payara.nucleus.notification.NotificationEventBus;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
 import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
@@ -44,7 +45,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -54,7 +55,7 @@ import java.util.logging.Logger;
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS})
+@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
 @TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "notification-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
@@ -72,6 +73,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
 
     @Inject
     NotificationService service;
+
+    @Inject
+    ServerEnvironment server;
 
     @Inject
     ServiceLocator habitat;
@@ -137,6 +141,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
+                        notificationServiceConfigurationProxy.getNotifierConfigurationList().add(notifierProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notificationServiceConfigurationProxy;
                     }
@@ -157,7 +162,29 @@ public class NotificationNotifierConfigurer implements AdminCommand {
             }
             
             if (dynamic) {
-                enableOnTarget(actionReport, theContext, notifierEnabled);
+                NotifierConfiguration dynamicNotifier = notificationServiceConfiguration.getNotifierConfigurationByType(notifierService.getNotifierConfigType());
+                NotifierConfigurationExecutionOptions build = factory.build(dynamicNotifier);
+                if (server.isDas()) {
+                    if (targetUtil.getConfig(target).isDas()) {
+                        if (notifierEnabled) {
+                            build.setEnabled(true);
+                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(build);
+                            eventBus.register(notifierService);
+                        } else {
+                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(build);
+                            eventBus.unregister(notifierService);
+                        }                       
+                    }
+                } else {
+                        if (notifierEnabled) {
+                            build.setEnabled(true);
+                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(build);
+                            eventBus.register(notifierService);
+                        } else {
+                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(build);
+                            eventBus.unregister(notifierService);
+                        }                       
+                }
             }
 
             actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",
@@ -167,29 +194,5 @@ public class NotificationNotifierConfigurer implements AdminCommand {
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__enable-notification-configure-notifier-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__enable-notification-configure-notifier-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("notifierEnabled", enabled.toString());
-        params.add("target", target);
-        params.add("notifierName", notifierName);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
-        }
-
     }
 }
