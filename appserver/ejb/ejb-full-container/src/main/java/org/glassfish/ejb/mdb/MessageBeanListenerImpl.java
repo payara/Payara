@@ -40,10 +40,18 @@
 
 package org.glassfish.ejb.mdb;
 
-import java.lang.reflect.Method;
 import com.sun.appserv.connectors.internal.api.ResourceHandle;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import java.lang.reflect.Method;
+import java.util.UUID;
+import javax.jms.Destination;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.Topic;
 import org.glassfish.ejb.api.MessageBeanListener;
 import org.glassfish.ejb.mdb.MessageBeanContainer.MessageDeliveryType;
+import org.glassfish.internal.api.Globals;
 
 
 /**
@@ -53,8 +61,9 @@ import org.glassfish.ejb.mdb.MessageBeanContainer.MessageDeliveryType;
  */
 public class MessageBeanListenerImpl implements MessageBeanListener {
 
-    private MessageBeanContainer container_;
+    private final MessageBeanContainer container_;
     private ResourceHandle resourceHandle_;
+    private final RequestTracingService requestTracing;
 
     MessageBeanListenerImpl(MessageBeanContainer container, 
                             ResourceHandle handle) {
@@ -62,31 +71,85 @@ public class MessageBeanListenerImpl implements MessageBeanListener {
 
         // can be null
         resourceHandle_ = handle;
+        
+        // get the request tracing service
+        requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
     }
 
+    @Override
     public void setResourceHandle(ResourceHandle handle) {
         resourceHandle_ = handle;
     }
 
+    @Override
     public ResourceHandle getResourceHandle() {
         return resourceHandle_;
     }
 
+    @Override
     public void beforeMessageDelivery(Method method, boolean txImported) {
         container_.onEnteringContainer();   //Notify Callflow Agent
         container_.beforeMessageDelivery(method, MessageDeliveryType.Message, txImported, resourceHandle_);
     }
     
+    @Override
     public Object deliverMessage(Object[] params) throws Throwable {
-        return container_.deliverMessage(params);
+        if (requestTracing!= null && requestTracing.isRequestTracingEnabled()) {
+            requestTracing.startTrace();
+            RequestEvent re = new RequestEvent("MDB START Delivery");
+            re.addProperty("MDB Class", container_.getEjbDescriptor().getEjbClassName());
+            re.addProperty("Message Count", Long.toString(container_.getMessageCount()));
+            re.addProperty("JNDI", container_.getEjbDescriptor().getJndiName());
+            try {
+                javax.jms.Message msg = (javax.jms.Message) params[0];
+                 re.addProperty("JMS Type",msg.getJMSType());               
+                 re.addProperty("JMS CorrelationID",msg.getJMSCorrelationID());               
+                 re.addProperty("JMS MessageID",msg.getJMSMessageID());               
+                 re.addProperty("JMS Destination",getDestinationName(msg.getJMSDestination()));
+                 re.addProperty("JMS ReplyTo", getDestinationName(msg.getJMSReplyTo()));
+                 // check RT conversation ID
+                 UUID conversationID = (UUID) msg.getObjectProperty("#BAF-CID");
+                 if (conversationID !=  null) {
+                     // reset the conversation ID to match the received ID to 
+                     // propagate the conversation across the message send
+                     requestTracing.setConversationID(conversationID);
+                 }
+            }catch (ClassCastException cce){}
+            requestTracing.traceRequestEvent(re);
+        }
+        try {
+            return container_.deliverMessage(params);
+        }finally {
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+                RequestEvent re = new RequestEvent("MDB END Delivery");
+                re.addProperty("MDB Class", container_.getEjbDescriptor().getEjbClassName());
+                re.addProperty("Message Count", Long.toString(container_.getMessageCount()));
+                re.addProperty("JNDI", container_.getEjbDescriptor().getJndiName());
+                requestTracing.traceRequestEvent(re);
+                requestTracing.endTrace();
+            }
+        }
     }
 
+    @Override
     public void afterMessageDelivery() {
         try {
             container_.afterMessageDelivery(resourceHandle_);
         } finally {
             container_.onLeavingContainer();    //Notify Callflow Agent
         }
+    }
+
+    private String getDestinationName(Destination jmsDestination) {
+        String result = null;
+        try {
+        if (jmsDestination instanceof Queue) {
+            result = ((Queue) jmsDestination).getQueueName();
+        } else if (jmsDestination instanceof Topic) {
+            result = ((Topic) jmsDestination).getTopicName();
+        }
+        }catch (JMSException jmse){}
+        return result;
     }
 
 }
