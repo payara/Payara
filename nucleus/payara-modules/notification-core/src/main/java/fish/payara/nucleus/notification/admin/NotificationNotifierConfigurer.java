@@ -169,16 +169,20 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled) {
                             build.setEnabled(true);
                             service.getExecutionOptions().addNotifierConfigurationExecutionOption(build);
+                            eventBus.register(notifierService);
                         } else {
                             service.getExecutionOptions().removeNotifierConfigurationExecutionOption(build);
+                            eventBus.unregister(notifierService);
                         }                       
                     }
                 } else {
                         if (notifierEnabled) {
                             build.setEnabled(true);
                             service.getExecutionOptions().addNotifierConfigurationExecutionOption(build);
+                            eventBus.register(notifierService);
                         } else {
                             service.getExecutionOptions().removeNotifierConfigurationExecutionOption(build);
+                            eventBus.unregister(notifierService);
                         }                       
                 }
             }
