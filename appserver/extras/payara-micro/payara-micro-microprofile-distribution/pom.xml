@@ -260,13 +260,6 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.docs</groupId>
-            <artifactId>basedocs</artifactId>
-            <version>4.1.payara-p3</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.external</groupId>
             <artifactId>management-api</artifactId>
             <optional>true</optional>
@@ -288,13 +281,7 @@
             <artifactId>flashlight-extra-jdk-packages</artifactId>
             <version>${project.version}</version>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.admin</groupId>
-            <artifactId>nucleus-domain</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>        
+        </dependency>    
         <dependency>
             <groupId>org.glassfish.main.admin</groupId>
             <artifactId>server-mgmt</artifactId>
@@ -380,16 +367,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
-            <artifactId>javamail-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.resources</groupId>
-            <artifactId>javamail-runtime</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.connectors</groupId>
             <artifactId>connectors-runtime</artifactId>
             <version>${project.version}</version>
@@ -402,11 +379,6 @@
         <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-ee-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.jdbc</groupId>
-            <artifactId>jdbc-config</artifactId>
             <version>${project.version}</version>
         </dependency>
         
@@ -424,20 +396,6 @@
             <version>${project.version}</version>
             <optional>true</optional>
         </dependency>
-        <!-- gms-bootstrap module -->
-        <dependency>
-            <groupId>org.glassfish.main.cluster</groupId>
-            <artifactId>gms-bootstrap</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>nucleus-dtds</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>nucleus-schemas</artifactId>
@@ -451,12 +409,6 @@
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>glassfish-naming</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>dtds</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
@@ -586,11 +538,6 @@
             <type>zip</type>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.loadbalancer</groupId>
-            <artifactId>gf-load-balancer-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>inmemory.jacc.provider</artifactId>
             <version>${project.version}</version>
@@ -637,10 +584,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.mail</groupId>
-            <artifactId>javax.mail</artifactId>
-        </dependency>
-        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
@@ -666,26 +609,6 @@
         <dependency>
             <groupId>org.glassfish.main.web</groupId>
             <artifactId>gf-web-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.web</groupId>
-            <artifactId>jsf-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.web</groupId>
-            <artifactId>jspcaching-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.web</groupId>
-            <artifactId>jstl-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.web</groupId>
-            <artifactId>jersey-mvc-connector</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -748,43 +671,7 @@
         <dependency>
             <groupId>org.glassfish.web</groupId>
             <artifactId>javax.servlet.jsp.jstl</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.websocket</groupId>
-            <artifactId>javax.websocket-api</artifactId>
-        </dependency>       
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-core</artifactId>
-        </dependency>        
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-server</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-spi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-servlet</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-grizzly-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-glassfish-cdi</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.tyrus</groupId>
-            <artifactId>tyrus-container-glassfish-ejb</artifactId>
-        </dependency>
+        </dependency>      
         <dependency>
             <groupId>org.glassfish.main.security</groupId>
             <artifactId>websecurity</artifactId>
@@ -932,10 +819,6 @@
             <artifactId>jersey-cdi1x-transaction</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.jersey.containers.glassfish</groupId>
-            <artifactId>jersey-gf-ejb</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.containers</groupId>
             <artifactId>jersey-container-servlet</artifactId>
         </dependency>
@@ -949,15 +832,7 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-mvc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
             <artifactId>jersey-entity-filtering</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.jersey.ext</groupId>
-            <artifactId>jersey-mvc-jsp</artifactId>
         </dependency>
         
                     
