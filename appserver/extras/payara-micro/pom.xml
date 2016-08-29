@@ -15,5 +15,6 @@
         <module>payara-micro-service</module>
         <module>payara-micro-distribution</module>
         <module>payara-micro-core</module>
+        <module>payara-micro-microprofile-distribution</module>
     </modules>
 </project>
