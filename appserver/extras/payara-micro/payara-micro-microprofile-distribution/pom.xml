@@ -920,10 +920,6 @@
         
         <!-- GlassFish Jersey -->
         <dependency>
-            <groupId>org.glassfish.jersey.media</groupId>
-            <artifactId>jersey-media-moxy</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.jersey.ext.cdi</groupId>
             <artifactId>jersey-cdi1x</artifactId>
         </dependency>
@@ -975,11 +971,6 @@
             <groupId>org.glassfish</groupId>
             <artifactId>jsonp-jaxrs</artifactId>
             <optional>true</optional>
-        </dependency>
-      
-        <dependency>
-            <groupId>org.eclipse.persistence</groupId>
-            <artifactId>org.eclipse.persistence.moxy</artifactId>
         </dependency>
         <!-- hazelcast package -->
         <dependency>
