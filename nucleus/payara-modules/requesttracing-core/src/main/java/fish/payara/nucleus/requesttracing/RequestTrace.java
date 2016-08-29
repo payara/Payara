@@ -48,6 +48,7 @@ public class RequestTrace {
                 requestEvent.setConversationId(requestEvent.getId());
                 trace.add(requestEvent);
                 started = true;
+                completed = false;
                 break;
             case REQUEST_EVENT:{
                 if (!started) {
@@ -106,5 +107,24 @@ public class RequestTrace {
 
     long getStartTime() {
         return startTime;
+    }
+
+    void setConversationID(UUID newID) {
+        for (RequestEvent requestEvent : trace) {
+            requestEvent.setConversationId(newID);
+        }
+    }
+
+    UUID getConversationID() {
+        UUID result = null;
+        RequestEvent re = trace.getFirst();
+        if (re != null) {
+            result = re.getConversationId();
+        }
+        return result;
+    }
+
+    boolean isCompleted() {
+        return completed;
     }
 }

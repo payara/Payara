@@ -103,6 +103,28 @@ public class RequestTracingService implements EventListener {
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
         }
     }
+    
+    /**
+     * Retrieves the current Conversation ID
+     * @return 
+     */
+    public UUID getConversationID() {
+        return requestEventStore.getConversationID();
+    }
+    
+    /**
+     * Reset the conversation ID
+     * This is especially useful for trace propagation across threads when
+     * the event tracer can receive the conversation ID propagated to it
+     * @param newID 
+     */
+    public void setConversationID(UUID newID) {
+        requestEventStore.setConverstationID(newID);
+    }
+    
+    public boolean isTraceInProgress() {
+        return requestEventStore.isTraceInProgress();
+    }
 
     public UUID startTrace() {
         if (!isRequestTracingEnabled()) {
