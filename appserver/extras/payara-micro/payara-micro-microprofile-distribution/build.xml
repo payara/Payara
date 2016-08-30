@@ -120,8 +120,10 @@
 
     <target name="addDtds" >
         <echo message="adding dtds"/>
+        <!--
         <jar jarfile="${jardir}/dtds.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="dtds/**/*"/>
 	<jar jarfile="${jardir}/schemas.jar" basedir="${jardir}/${install.dir.name}/glassfish/lib" includes="schemas/**/*"/>
+        -->
     </target>
     
     <target name="rejar">
@@ -219,8 +221,14 @@
         <delete file="${rootdir}/shrinktemp/index.html"/>
         <delete file="${rootdir}/shrinktemp/package.html"/>
         <delete file="${rootdir}/shrinktemp/readme.html"/>
+        <delete file="${rootdir}/shrinktemp/microdomain.xml"/>
+        <delete file="${rootdir}/shrinktemp/microdomain-nocluster.xml"/>
+        <delete dir="${rootdir}/shrinktemp/config/branding"/>
         <delete file="${finaljar}"/>
-        <copyfile src="${rootdir}/../LICENSE.txt" dest="${rootdir}/shrinktemp/LICENSE.txt"/>
+        <copy file="${rootdir}/../LICENSE.txt" todir="${rootdir}/shrinktemp/" />
+        <copy todir="${rootdir}/shrinktemp/">
+            <fileset dir="${rootdir}/../src/main/resources/" />
+        </copy>
 
         <jar basedir="${rootdir}/shrinktemp" destfile="${finaljar}" compress="true">
            <manifest>

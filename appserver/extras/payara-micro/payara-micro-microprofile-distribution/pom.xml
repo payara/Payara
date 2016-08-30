@@ -126,7 +126,6 @@
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
-            <version>${javassist.version}</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.hk2.external</groupId>
@@ -208,19 +207,8 @@
         </dependency>
         <dependency>
             <groupId>org.glassfish.main.deployment</groupId>
-            <artifactId>deployment-autodeploy</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.deployment</groupId>
             <artifactId>deployment-common</artifactId>
             <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.gmbal</groupId>
-            <artifactId>gmbal</artifactId>
             <optional>true</optional>
         </dependency>
         <dependency>
@@ -324,24 +312,6 @@
         </dependency>
         
         <!-- JMX apis -->
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>glassfish-mbeanserver</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>amx-core</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.external</groupId>
-            <artifactId>jmxremote_optional-repackaged</artifactId>
-            <version>${project.version}</version>
-            <optional>true</optional>
-        </dependency>
         
         
         <!-- JCA apis -->
@@ -428,15 +398,6 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.sun.pkg</groupId>
-            <artifactId>pkg-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.common</groupId>
-            <artifactId>amx-javaee</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.main.common</groupId>
             <artifactId>annotation-framework</artifactId>
             <version>${project.version}</version>
@@ -487,32 +448,11 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
-            <artifactId>orb-connector</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.glassfish.main.orb</groupId>
-            <artifactId>orb-enabler</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.glassfish.ha</groupId>
             <artifactId>ha-api</artifactId>
         </dependency>    
         <!-- TODO: move to glassfish-nucleus after nucleus distro build moves
-        to its own workspace -->
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>appserver-base</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-        </dependency>
-        <!-- schema2beans - both CMP and LB admin now depend on it -->
-        <dependency>
-            <groupId>org.glassfish.external</groupId>
-            <artifactId>schema2beans-repackaged</artifactId>
-        </dependency>          
+        to its own workspace -->      
         <dependency>
             <groupId>org.glassfish.main.extras</groupId>
             <artifactId>javaee-frag</artifactId>
