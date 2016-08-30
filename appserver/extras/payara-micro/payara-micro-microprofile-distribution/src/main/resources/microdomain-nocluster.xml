@@ -121,7 +121,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                     <network-listener port="0" protocol="https-listener" transport="tcp" name="https-listener" thread-pool="http-thread-pool" enabled="false" />
                 </network-listeners>
                 <transports>
-                    <transport byte-buffer-type="POOLED" name="tcp" acceptor-threads="-1"></transport>
+                    <transport byte-buffer-type="HEAP" name="tcp" acceptor-threads="-1"></transport>
                 </transports>
             </network-config>
             <thread-pools>

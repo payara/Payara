@@ -39,6 +39,7 @@
  */
 package com.sun.enterprise.v3.admin;
 
+import com.sun.appserv.server.util.Version;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.ManagedJobConfig;
 import com.sun.enterprise.util.LocalStringManagerImpl;
@@ -63,6 +64,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.api.admin.ProcessEnvironment;
 
 /**
  *
@@ -78,7 +80,10 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
 
     @Inject
     Domain domain;
-
+    
+    @Inject
+    private ProcessEnvironment processEnv;
+    
     private ManagedJobConfig managedJobConfig;
 
     private final static Logger logger = KernelLoggerInfo.getLogger();
@@ -95,10 +100,6 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
     public void postConstruct() {
         logger.log(Level.FINE,KernelLoggerInfo.initializingJobCleanup);
 
-        managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
-        ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
-        logger.fine(KernelLoggerInfo.initializingManagedConfigBean);
-        bean.addListener(this);
 
 
         scheduler = Executors.newScheduledThreadPool(10, new ThreadFactory() {
@@ -109,6 +110,17 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
                 return result;
             }
         });
+        
+        if (Version.getFullVersion().contains("Micro")) {
+            //if Micro we don't have any jobs to cleanup
+            return;
+        }
+
+        managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
+        ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
+        logger.fine(KernelLoggerInfo.initializingManagedConfigBean);
+        bean.addListener(this);
+
 
 
         scheduleCleanUp();
@@ -120,6 +132,12 @@ public class JobCleanUpService implements PostConstruct,ConfigListener {
      */
     private void scheduleCleanUp() {
 
+        if (managedJobConfig == null) {
+            managedJobConfig = domain.getExtensionByType(ManagedJobConfig.class);
+            ObservableBean bean = (ObservableBean) ConfigSupport.getImpl(managedJobConfig);
+            logger.fine(KernelLoggerInfo.initializingManagedConfigBean);
+            bean.addListener(this);   
+        }
 
         logger.fine(KernelLoggerInfo.schedulingCleanup);
         //default values to 20 minutes for delayBetweenRuns and initialDelay
