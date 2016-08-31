@@ -504,11 +504,15 @@ public final class AMXConfigLoader
 
             //System.out.println( "AMXConfigLoader.createAndRegister(): REGISTERED: " + objectName + " at " + System.currentTimeMillis() );
             //System.out.println( JMXUtil.toString( mServer.getMBeanInfo(objectName) ) );
+        } catch (InstanceAlreadyExistsException ex) {
+            mLogger.log(Level.FINE, ExceptionUtil.toString(ex));
+            
+            objectName = null;
         } catch (final JMException e) {
             debug(ExceptionUtil.toString(e));
 
             objectName = null;
-        }
+        } 
         return objectName;
     }
 
