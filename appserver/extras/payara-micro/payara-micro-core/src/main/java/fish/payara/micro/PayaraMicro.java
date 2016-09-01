@@ -1484,7 +1484,7 @@ public class PayaraMicro {
         if (deployments != null) {
             for (File war : deployments) {
                 if (war.exists() && war.canRead()) {
-                    deployer.deploy(war, "--availabilityenabled=true");
+                    deployer.deploy(war, "--availabilityenabled=true", "--force=true");
                     deploymentCount++;
                 } else {
                     logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
@@ -1497,7 +1497,7 @@ public class PayaraMicro {
             for (File war : deploymentRoot.listFiles()) {
                 String warPath = war.getAbsolutePath();
                 if (war.isFile() && war.canRead() && (warPath.endsWith(".war") || warPath.endsWith(".ear") || warPath.endsWith(".jar") || warPath.endsWith(".rar"))) {
-                    deployer.deploy(war, "--availabilityenabled=true");
+                    deployer.deploy(war, "--availabilityenabled=true", "--force=true");
                     deploymentCount++;
                 }
             }
@@ -1516,7 +1516,7 @@ public class PayaraMicro {
 
                         deployer.deploy(artefactURI, "--availabilityenabled",
                                 "true", "--contextroot",
-                                deploymentMapEntry.getKey());
+                                deploymentMapEntry.getKey(), "--force=true");
 
                         deploymentCount++;
                     } catch (URISyntaxException ex) {
@@ -1559,7 +1559,7 @@ public class PayaraMicro {
 
                     deployer.deploy(this.getClass().getClassLoader().getResourceAsStream(entry), "--availabilityenabled",
                             "true", "--contextroot",
-                            contextRoot, "--name", file.getName());
+                            contextRoot, "--name", file.getName(), "--force=true");
                     deploymentCount++;
                 }
             } catch (IOException ioe) {
