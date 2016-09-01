@@ -76,10 +76,10 @@
         
         <!-- Profile to build Embedded and Micro distributions -->
         <profile>
-            <id>FullBuild</id>
+            <id>BuildExtras</id>
             <activation>
                 <property>
-                    <name>FullBuild</name>
+                    <name>BuildExtras</name>
                 </property>
             </activation>
             <modules>
