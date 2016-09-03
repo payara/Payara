@@ -378,7 +378,14 @@ public final class ApplicationDispatcher
      */
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
-        dispatch(request, response, DispatcherType.FORWARD);
+        // store previous forward
+        Object prevForward = request.getAttribute("fish.payara.servlet.dispatchPath");
+        request.setAttribute("fish.payara.servlet.dispatchPath", this.servletPath);
+        try {
+            dispatch(request, response, DispatcherType.FORWARD);
+        }finally {
+            request.setAttribute("fish.payara.servlet.dispatchPath",prevForward);
+        }
     }
 
     /**
