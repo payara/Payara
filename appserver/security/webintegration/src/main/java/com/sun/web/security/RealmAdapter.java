@@ -1492,7 +1492,12 @@ public class RealmAdapter extends RealmBase implements RealmInitializer, PostCon
                 if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
                     RequestEvent re = new RequestEvent("AFTER JASPIC AUTH");
                     re.addProperty("AuthResult", Boolean.toString(result));
-                    re.addProperty("Principal",rf.getPrincipal().getName());
+                    Principal p = rf.getPrincipal();
+                    String pName = "null";
+                    if (p != null) {
+                        pName = p.getName();
+                    }
+                    re.addProperty("Principal",pName);
                     requestTracing.traceRequestEvent(re);
                 }
             } finally {
