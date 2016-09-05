@@ -22,7 +22,6 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
-import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.configuration.HoggingThreadsChecker;
 import fish.payara.nucleus.healthcheck.preliminary.HoggingThreadsHealthCheck;
@@ -30,6 +29,8 @@ import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -87,17 +88,21 @@ public class HoggingThreadsConfigurer implements AdminCommand {
     private Boolean enabled;
 
     @Param(name = "time", optional = true)
+    @Min(value = 1, message = "Time period must be 1 or more")
     private String time;
 
-    @Param(name = "unit", optional = true)
+    @Param(name = "unit", optional = true, defaultValue = "SECONDS", acceptableValues = "DAYS,HOURS,MICROSECONDS,MILLISECONDS,MINUTES,NANOSECONDS,SECONDS")
     private String unit;
     
     @Param(name = "name", optional = true)
     private String name;
     
     @Param(name = "threshold-percentage", defaultValue = "95")
+    @Min(value = 0, message = "Threshold is a percentage so must be greater than zero")
+    @Max(value = 100, message ="Threshold is a percentage so must be less than 100")
     private String threshold;
 
+    @Min(value = 1, message = "Retry count must be 1 or more")
     @Param(name = "retry-count", defaultValue = "3")
     private String retryCount;
 
