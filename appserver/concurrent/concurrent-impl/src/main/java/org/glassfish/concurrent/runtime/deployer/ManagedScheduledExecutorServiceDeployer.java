@@ -78,6 +78,9 @@ public class ManagedScheduledExecutorServiceDeployer implements ResourceDeployer
 
     @Inject
     ConcurrentRuntime concurrentRuntime;
+    
+    // Monitoring provider
+    private ManagedScheduledExecutorServiceStatsProvider managedScheduledExecutorServiceProbeListener;
 
     // logger for this deployer
     private static Logger _logger = LogFacade.getLogger();
@@ -191,13 +194,22 @@ public class ManagedScheduledExecutorServiceDeployer implements ResourceDeployer
         // do nothing
     }
     
-    protected void registerMonitorableComponent(ManagedScheduledExecutorService 
-            managedScheduledExecutorService) {
-        ManagedScheduledExecutorServiceStatsProvider 
-                managedScheduledExecutorServiceProbeListener = new 
-                        ManagedScheduledExecutorServiceStatsProvider(
-                                managedScheduledExecutorService);
+    /**
+     * Registers a ManagedScheduledExecutorService for monitoring.
+     * @param managedScheduledExecutorService The ManagedScheduledExecutorService to register for monitoring.
+     */
+    private void registerMonitorableComponent(ManagedScheduledExecutorService managedScheduledExecutorService) {
+        managedScheduledExecutorServiceProbeListener = 
+                new ManagedScheduledExecutorServiceStatsProvider(managedScheduledExecutorService);
         
         managedScheduledExecutorServiceProbeListener.register();
+    }
+    
+    /**
+     * Unregisters a ManagedScheduledExecutorService defined by the 
+     * managedScheduledExecutorServiceProbeListener from the monitoring tree.
+     */
+    private void unregisterMonitableComponent() {
+        managedScheduledExecutorServiceProbeListener.unregister();
     }
 }
