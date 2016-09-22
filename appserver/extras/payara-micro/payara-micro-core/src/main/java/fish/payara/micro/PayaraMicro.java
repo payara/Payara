@@ -59,6 +59,8 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
@@ -68,6 +70,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -130,7 +133,10 @@ public class PayaraMicro {
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
     private String userPropertiesFileName = "";
-
+    private boolean enableRequestTracing = false;
+    private TimeUnit requestTracingThresholdUnit = TimeUnit.SECONDS;
+    private long requestTracingThresholdValue = 30;
+    
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -1089,7 +1095,27 @@ public class PayaraMicro {
                 HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
                 healthCheckService.setEnabled(enableHealthCheck);
             }
-
+           
+            if (enableRequestTracing) {
+                RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
+                NotificationService notifications = gf.getService(NotificationService.class);
+                requestTracing.getExecutionOptions().setEnabled(true);
+                notifications.getExecutionOptions().setEnabled(true);
+            }
+            
+            if (requestTracingThresholdUnit != TimeUnit.SECONDS) {
+                RequestTracingService requestTracing = gf.getService(RequestTracingService.class);   
+                requestTracing.getExecutionOptions().setThresholdUnit(requestTracingThresholdUnit);
+            }
+            
+            if (requestTracingThresholdValue != 30) {
+                RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
+                requestTracing.getExecutionOptions().setThresholdValue(requestTracingThresholdValue);              
+            }
+            
+            
+            
+            
             long end = System.currentTimeMillis();
             logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
@@ -1410,6 +1436,39 @@ public class PayaraMicro {
                     case "--disablePhoneHome":
                         disablePhoneHome = true;
                         break;
+                    case "--enableRequestTracing":
+                        enableRequestTracing = true;
+                        break;
+                    case "--requestTracingThresholdUnit":
+                        switch (args[i + 1]) {
+                            case "NANOSECONDS":
+                                requestTracingThresholdUnit = TimeUnit.NANOSECONDS;
+                                break;
+                            case "MICROSECONDS":
+                                requestTracingThresholdUnit = TimeUnit.MICROSECONDS;
+                                break;
+                            case "MILLISECONDS":
+                                requestTracingThresholdUnit = TimeUnit.MILLISECONDS;
+                                break;
+                            case "SECONDS":
+                                requestTracingThresholdUnit = TimeUnit.SECONDS;
+                                break;
+                            case "MINUTES":
+                                requestTracingThresholdUnit = TimeUnit.MINUTES;
+                                break;
+                            case "HOURS":
+                                requestTracingThresholdUnit = TimeUnit.HOURS;
+                                break;
+                            case "DAYS":
+                                requestTracingThresholdUnit = TimeUnit.DAYS;
+                                break;
+                        }
+                        i++;
+                        break;
+                    case "--requestTracingThresholdValue":
+                        requestTracingThresholdValue = Long.parseLong(args[i + 1]);
+                        i++;
+                        break;
                     case "--help":
                         System.err.println("Usage:\n  --noCluster  Disables clustering\n"
                                 + "  --port <http-port-number> sets the http port\n"
@@ -1443,6 +1502,7 @@ public class PayaraMicro {
                                 + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
                                 + "  --accessLogFormat Sets user defined log format for the access log\n"
+                                + "  --enableRequestTracing Enables the Request Tracing Service"
                                 + "  --help Shows this message and exits\n");
                         System.exit(1);
                         break;
