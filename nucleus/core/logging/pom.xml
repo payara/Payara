@@ -83,13 +83,16 @@
         <artifactId>logging-annotation-processor</artifactId>
         <optional>true</optional>
       </dependency>
-
       <dependency>
         <groupId>org.glassfish.main.common</groupId>
         <artifactId>common-util</artifactId>
 	<version>${project.version}</version>
       </dependency>
-
+        <dependency>
+            <groupId>org.codehaus.jettison</groupId>
+            <artifactId>jettison</artifactId>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
