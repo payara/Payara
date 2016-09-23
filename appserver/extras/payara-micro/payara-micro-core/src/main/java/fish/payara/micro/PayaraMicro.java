@@ -59,7 +59,6 @@ import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
-import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -134,7 +133,7 @@ public class PayaraMicro {
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
     private String userPropertiesFileName = "";
     private boolean enableRequestTracing = false;
-    private TimeUnit requestTracingThresholdUnit = TimeUnit.SECONDS;
+    private String requestTracingThresholdUnit = "SECONDS";
     private long requestTracingThresholdValue = 30;
     
     /**
@@ -1098,23 +1097,16 @@ public class PayaraMicro {
            
             if (enableRequestTracing) {
                 RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
-                NotificationService notifications = gf.getService(NotificationService.class);
                 requestTracing.getExecutionOptions().setEnabled(true);
-                notifications.getExecutionOptions().setEnabled(true);
+                
+                if (!requestTracingThresholdUnit.equals("SECONDS")) {  
+                    requestTracing.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(requestTracingThresholdUnit));
+                }
+
+                if (requestTracingThresholdValue != 30) {
+                    requestTracing.getExecutionOptions().setThresholdValue(requestTracingThresholdValue);              
+                } 
             }
-            
-            if (requestTracingThresholdUnit != TimeUnit.SECONDS) {
-                RequestTracingService requestTracing = gf.getService(RequestTracingService.class);   
-                requestTracing.getExecutionOptions().setThresholdUnit(requestTracingThresholdUnit);
-            }
-            
-            if (requestTracingThresholdValue != 30) {
-                RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
-                requestTracing.getExecutionOptions().setThresholdValue(requestTracingThresholdValue);              
-            }
-            
-            
-            
             
             long end = System.currentTimeMillis();
             logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
@@ -1440,29 +1432,7 @@ public class PayaraMicro {
                         enableRequestTracing = true;
                         break;
                     case "--requestTracingThresholdUnit":
-                        switch (args[i + 1]) {
-                            case "NANOSECONDS":
-                                requestTracingThresholdUnit = TimeUnit.NANOSECONDS;
-                                break;
-                            case "MICROSECONDS":
-                                requestTracingThresholdUnit = TimeUnit.MICROSECONDS;
-                                break;
-                            case "MILLISECONDS":
-                                requestTracingThresholdUnit = TimeUnit.MILLISECONDS;
-                                break;
-                            case "SECONDS":
-                                requestTracingThresholdUnit = TimeUnit.SECONDS;
-                                break;
-                            case "MINUTES":
-                                requestTracingThresholdUnit = TimeUnit.MINUTES;
-                                break;
-                            case "HOURS":
-                                requestTracingThresholdUnit = TimeUnit.HOURS;
-                                break;
-                            case "DAYS":
-                                requestTracingThresholdUnit = TimeUnit.DAYS;
-                                break;
-                        }
+                        requestTracingThresholdUnit = args[i + 1];
                         i++;
                         break;
                     case "--requestTracingThresholdValue":
@@ -1983,7 +1953,10 @@ public class PayaraMicro {
         minHttpThreads = Integer.getInteger("payaramicro.minHttpThreads", Integer.MIN_VALUE);
         noCluster = Boolean.getBoolean("payaramicro.noCluster");
         disablePhoneHome = Boolean.getBoolean("payaramicro.disablePhoneHome");
-
+        enableRequestTracing = Boolean.getBoolean("payaramicro.enableRequestTracing");
+        requestTracingThresholdUnit = System.getProperty("payaramicro.requestTracingThresholdUnit", "SECONDS");
+        requestTracingThresholdValue = Long.getLong("payaramicro.requestTracingThresholdValue", 30);
+        
         // Set the rootDir file
         String rootDirFileStr = System.getProperty("payaramicro.rootDir");
         if (rootDirFileStr != null && !rootDirFileStr.isEmpty()) {
@@ -2162,7 +2135,19 @@ public class PayaraMicro {
             if (sslPort != Integer.MIN_VALUE) {
                 props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
             }
+            
+            if (enableRequestTracing) {
+                props.setProperty("payaramicro.enableRequestTracing", Boolean.toString(enableRequestTracing));
+            }
+            
+            if (!requestTracingThresholdUnit.equals("SECONDS")) {  
+                props.setProperty("payaramicro.requestTracingThresholdUnit", requestTracingThresholdUnit);
+            }
 
+            if (requestTracingThresholdValue != 30) {
+                props.setProperty("payaramicro.requestTracingThresholdValue", Long.toString(requestTracingThresholdValue));             
+            } 
+            
             // write all user defined system properties
             if (userSystemProperties != null) {
                 Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
