@@ -32,6 +32,19 @@ git remote add origin https://github.com/<YourUsername>/Payara
 ```
 
 You are now free to start working on Payara issues, adding new features, or tinkering with the codebase.
+
+## Building Payara
+Payara uses maven to build the server, you can use either JDK 7 or JDK 8 to build Payara Server, we distribute Payara built with JDK7 for backwards compatibility with GlassFish.
+To build Payara from the root of the cloned source code tree execute;
+```
+mvn -DskipTests clean package
+```
+When finished the Payara distribution zip file will be available in the directory;
+```
+appserver\distributions\payara\target\payara.zip
+```
+
+
 ## Updating your fork
 As Payara is under continuous development, our upstream branch is regularly updated with dev and community commits. It is worth synchronising your repository with the upstream repo you added previously.
 
