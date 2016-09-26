@@ -91,7 +91,6 @@ import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.admin.ProcessEnvironment;
 import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.internal.api.Globals;
-import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  * Implementation of javax.transaction.TransactionManager interface.
