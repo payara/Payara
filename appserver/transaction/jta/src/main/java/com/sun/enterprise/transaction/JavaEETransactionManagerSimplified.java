@@ -88,7 +88,10 @@ import org.glassfish.external.probe.provider.StatsProviderManager;
 import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
 import org.glassfish.internal.api.Globals;
+import org.glassfish.server.ServerEnvironmentImpl;
 
 /**
  * Implementation of javax.transaction.TransactionManager interface.
@@ -163,22 +166,28 @@ public class JavaEETransactionManagerSimplified
     
     private RequestTracingService requestTracing;
     
+    @Inject
+    private ProcessEnvironment processEnvironment;
+    
     public JavaEETransactionManagerSimplified() {
         transactions = new ThreadLocal<JavaEETransaction>();
         localCallCounter = new ThreadLocal();
         delegates = new ThreadLocal<JavaEETransactionManagerDelegate>();
-        
-        try {
-            requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-        } catch (NullPointerException ex) {
-            _logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of JavaEETransactionManagerSimplified - NullPointerException");
-        }
-    }
-
+    }      
+    
     public void postConstruct() {
         initDelegates();
         initProperties();
+        
+        if (processEnvironment.getProcessType() == ProcessType.Server) {
+            try {
+                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            } catch (NullPointerException ex) {
+                _logger.log(Level.INFO, "Error retrieving Request Tracing "
+                        + "service during initialisation of "
+                        + "JavaEETransactionManagerSimplified - NullPointerException");
+            }
+        }      
     }
 
     private void initProperties() {
