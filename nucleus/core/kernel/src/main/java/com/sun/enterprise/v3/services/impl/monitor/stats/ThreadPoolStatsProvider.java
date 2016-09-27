@@ -158,7 +158,7 @@ public class ThreadPoolStatsProvider implements StatsProvider {
             @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("threadId") long threadId) {
 
-        if (name.equals(monitoringId)) {
+        if (name.equals(monitoringId) && currentThreadCount.getCount() != 0) {
             currentThreadCount.decrement();
         }
     }
@@ -182,7 +182,9 @@ public class ThreadPoolStatsProvider implements StatsProvider {
 
         if (name.equals(monitoringId)) {
             totalExecutedTasksCount.increment();
-            currentThreadsBusy.decrement();
+            if (currentThreadsBusy.getCount() != 0) {
+                currentThreadsBusy.decrement();
+            }  
         }
     }
 

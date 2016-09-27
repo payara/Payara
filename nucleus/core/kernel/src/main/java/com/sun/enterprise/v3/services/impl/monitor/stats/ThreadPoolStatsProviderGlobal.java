@@ -59,8 +59,9 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     public ThreadPoolStatsProviderGlobal(String name) {
         super(name);
     }
-
+    
     @ProbeListener("glassfish:kernel:thread-pool:setMaxThreadsEvent")
+    @Override
     public void setMaxThreadsEvent(
             @ProbeParam("monitoringId") String monitoringId,
             @ProbeParam("threadPoolName") String threadPoolName,
@@ -70,6 +71,7 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:thread-pool:setCoreThreadsEvent")
+    @Override
     public void setCoreThreadsEvent(
             @ProbeParam("monitoringId") String monitoringId,
             @ProbeParam("threadPoolName") String threadPoolName,
@@ -79,6 +81,7 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:thread-pool:threadAllocatedEvent")
+    @Override
     public void threadAllocatedEvent(
             @ProbeParam("monitoringId") String monitoringId,
             @ProbeParam("threadPoolName") String threadPoolName,
@@ -88,15 +91,19 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:thread-pool:threadReleasedEvent")
+    @Override
     public void threadReleasedEvent(
             @ProbeParam("monitoringId") String monitoringId,
             @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("threadId") long threadId) {
-
-        currentThreadCount.decrement();
+        
+        if (currentThreadCount.getCount() != 0) {
+            currentThreadCount.decrement();
+        }
     }
 
     @ProbeListener("glassfish:kernel:thread-pool:threadDispatchedFromPoolEvent")
+    @Override
     public void threadDispatchedFromPoolEvent(
             @ProbeParam("monitoringId") String monitoringId,
             @ProbeParam("threadPoolName") String threadPoolName,
@@ -106,13 +113,16 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     }
 
     @ProbeListener("glassfish:kernel:thread-pool:threadReturnedToPoolEvent")
+    @Override
     public void threadReturnedToPoolEvent(
             @ProbeParam("monitoringId") String monitoringId,
             @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("threadId") long threadId) {
 
         totalExecutedTasksCount.increment();
-        currentThreadsBusy.decrement();
+        if (currentThreadsBusy.getCount() != 0) {
+            currentThreadsBusy.decrement();
+        }
     }
     
 }

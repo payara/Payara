@@ -147,6 +147,7 @@ public class GrizzlyMonitoring {
         
         StatsProviderManager.register(CONFIG_ELEMENT, PluginPoint.SERVER,
                 subtreePrefix(name) + "/thread-pool", threadPoolStatsProvider);
+        updateGlobalThreadPoolStatsProvider();
     }
 
     /**
@@ -159,6 +160,73 @@ public class GrizzlyMonitoring {
                 threadPoolStatsProvidersMap.remove(name);
         if (threadPoolStatsProvider != null) {
             StatsProviderManager.unregister(threadPoolStatsProvider);
+            updateGlobalThreadPoolStatsProvider();
+        }
+    }
+    
+    /**
+     * Updates the global thread pool stats provider with the most current
+     * total values.
+     */
+    private void updateGlobalThreadPoolStatsProvider() {
+        final ThreadPoolStatsProvider globalThreadPoolStatsProvider = 
+                threadPoolStatsProvidersMap.get("");
+        
+        // Exit method if global stats provider not registered
+        if (globalThreadPoolStatsProvider == null) {
+            return;
+        }
+        
+        int coreThreadTotal = 0;
+        int maxThreadTotal = 0;
+        int busyThreadTotal = 0;
+        int currentThreadTotal = 0;       
+        
+        // Calculate the totals for each of the metrics
+        for (Map.Entry<String, ThreadPoolStatsProvider> threadPoolStatsProvider : 
+                threadPoolStatsProvidersMap.entrySet()) {
+            if (!threadPoolStatsProvider.getKey().equals("")) {               
+                // Safe to cast from long to int, as the values cannot actually 
+                // be higher than max int.
+                coreThreadTotal += (int) (long) threadPoolStatsProvider
+                        .getValue().getCoreThreadsCount().getCount();
+                maxThreadTotal += (int) (long) threadPoolStatsProvider
+                        .getValue().getMaxThreadsCount().getCount();
+                busyThreadTotal += (int) (long) threadPoolStatsProvider
+                        .getValue().getCurrentThreadsBusy().getCount();
+                currentThreadTotal += (int) (long) threadPoolStatsProvider
+                        .getValue().getCurrentThreadCount().getCount();
+            }
+        }
+        
+        // Set the core and max values
+        globalThreadPoolStatsProvider.setCoreThreadsEvent("", "", 
+                coreThreadTotal);
+        globalThreadPoolStatsProvider.setMaxThreadsEvent("", "", 
+                maxThreadTotal);
+        
+        // If the total busy or current threads value differ from those held
+        // by the global stats provider, increment or decrement them till
+        // they match
+        while ((int) (long) globalThreadPoolStatsProvider
+                .getCurrentThreadsBusy().getCount() < busyThreadTotal) {
+            globalThreadPoolStatsProvider.threadDispatchedFromPoolEvent("", "", 
+                    0);
+        }
+        
+        while ((int) (long) globalThreadPoolStatsProvider
+                .getCurrentThreadsBusy().getCount() > busyThreadTotal) {
+            globalThreadPoolStatsProvider.threadReturnedToPoolEvent("", "", 0);
+        }
+        
+        while ((int) (long) globalThreadPoolStatsProvider
+                .getCurrentThreadCount().getCount() < currentThreadTotal) {
+            globalThreadPoolStatsProvider.threadAllocatedEvent("", "", 0);
+        }
+        
+        while ((int) (long) globalThreadPoolStatsProvider
+                .getCurrentThreadCount().getCount() > currentThreadTotal) {
+            globalThreadPoolStatsProvider.threadReleasedEvent("", "", 0);
         }
     }
 
@@ -268,7 +336,9 @@ public class GrizzlyMonitoring {
         }
 
         StatsProviderManager.register(CONFIG_ELEMENT, PluginPoint.SERVER,
-                subtreePrefix(name) + "/thread-pool", threadPoolStatsProvider);
+                subtreePrefix(name) + "/global-thread-pool-stats", threadPoolStatsProvider);
+        
+        updateGlobalThreadPoolStatsProvider();
     }
 
     /**
