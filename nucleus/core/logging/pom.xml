@@ -109,9 +109,9 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.glassfish.docs.man</groupId>
+                                    <groupId>fish.payara.docs.man</groupId>
                                     <artifactId>logging-manpage</artifactId>
-                                    <version>${v3-docs.version}</version>
+                                    <version>4.1.1.164</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>

@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
 
 package com.sun.enterprise.server.logging;
 
@@ -90,6 +89,9 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import java.io.FileInputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -128,6 +130,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
     private static final String LOGS_DIR = "logs";
     private static final String LOG_FILE_NAME = "server.log";
+    
+    private static final String ZIP_EXTENSION = ".zip";
     
     private String absoluteServerLogName = null;
 
@@ -171,6 +175,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Thread pump;
 
     boolean dayBasedFileRotation = false;
+    boolean compressLogs = false;
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -449,7 +454,15 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         
         if (maxHistoryFiles < 0)
             maxHistoryFiles = 10;
-
+        
+        propValue = manager.getProperty(cname + ".compressOnRotation");
+        boolean compressionOnRotation = false;
+        if (propValue != null) {
+            compressionOnRotation = Boolean.parseBoolean(propValue);
+        }
+        if (compressionOnRotation) {
+            compressLogs = true;
+        }
     }
 
     Formatter findFormatterService(String formatterName) {
@@ -803,6 +816,20 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                         LogRotationTimer.getInstance()
                                                 .restartTimer();
                                     }
+                                    
+                                    if (compressLogs) {
+                                        boolean compressed = zipFile(rotatedFile);
+                                        if (compressed) {
+                                            boolean deleted = rotatedFile.delete();
+                                            if (!deleted) {
+                                                 throw new IOException("Could not delete uncompressed log file: "
+                                                        + rotatedFile.getAbsolutePath());
+                                            }
+                                        } else {
+                                            throw new IOException("Could not compress log file: "
+                                                    + rotatedFile.getAbsolutePath());
+                                        }
+                                    }
 
                                     cleanUpHistoryLogFiles();                                    
                                 }
@@ -929,6 +956,45 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             listener.messageLogged(logEvent);
         }
     }
+    
+    private boolean zipFile(File infile) {
+        
+        boolean status = false;
 
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        ZipOutputStream zos = null;
+
+        try {
+
+            fos = new FileOutputStream(infile.getCanonicalPath() + ZIP_EXTENSION);
+            zos = new ZipOutputStream(fos);
+
+            ZipEntry ze = new ZipEntry(infile.getName());
+            zos.putNextEntry(ze);
+
+            fis = new FileInputStream(infile);
+
+            byte[] buffer = new byte[1024];
+            int len;
+            while ( (len = fis.read(buffer)) > 0 ) {
+                zos.write(buffer, 0, len);
+            }
+
+            zos.closeEntry();
+            
+            status = true;
+
+        } catch (IOException ix) {
+            new ErrorManager().error("Error zipping log file", ix, ErrorManager.GENERIC_FAILURE);
+        
+        } finally {
+            try {fis.close();} catch (IOException ix) {}
+            try {zos.close();} catch (IOException ix) {}
+            try {fos.close();} catch (IOException ix) {}
+        }
+        
+        return status;
+    }
 }
 
