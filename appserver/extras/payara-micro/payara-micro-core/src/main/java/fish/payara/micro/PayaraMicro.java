@@ -1439,9 +1439,9 @@ public class PayaraMicro {
                                     args[i + 1].toUpperCase();
                         } catch (IllegalArgumentException e) {
                             logger.log(Level.WARNING, "{0} is not a valid value"
-                                    + " for --requestTracingThresholdUnit, "
-                                    + "defaulting to SECONDS", 
+                                    + " for --requestTracingThresholdUnit", 
                                     requestTracingThresholdUnit);
+                            throw e;
                         }
                         i++;
                         break;
@@ -1451,9 +1451,9 @@ public class PayaraMicro {
                                     Long.parseLong(args[i + 1]);
                         } catch (NumberFormatException e) {
                             logger.log(Level.WARNING, "{0} is not a valid value"
-                                    + " for --requestTracingThresholdValue, "
-                                    + "defaulting to 30", 
+                                    + " for --requestTracingThresholdValue", 
                                     args[i + 1]);
+                            throw e;
                         }
                         i++;
                         break;
