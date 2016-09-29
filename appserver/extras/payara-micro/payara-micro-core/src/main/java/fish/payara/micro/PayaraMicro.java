@@ -1100,7 +1100,8 @@ public class PayaraMicro {
                 requestTracing.getExecutionOptions().setEnabled(true);
                 
                 if (!requestTracingThresholdUnit.equals("SECONDS")) {  
-                    requestTracing.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(requestTracingThresholdUnit));
+                    requestTracing.getExecutionOptions().setThresholdUnit(
+                            TimeUnit.valueOf(requestTracingThresholdUnit));
                 }
 
                 if (requestTracingThresholdValue != 30) {
@@ -1432,11 +1433,28 @@ public class PayaraMicro {
                         enableRequestTracing = true;
                         break;
                     case "--requestTracingThresholdUnit":
-                        requestTracingThresholdUnit = args[i + 1];
+                        try {
+                            TimeUnit.valueOf(args[i + 1].toUpperCase());
+                            requestTracingThresholdUnit = 
+                                    args[i + 1].toUpperCase();
+                        } catch (IllegalArgumentException e) {
+                            logger.log(Level.WARNING, "{0} is not a valid value"
+                                    + " for --requestTracingThresholdUnit, "
+                                    + "defaulting to SECONDS", 
+                                    requestTracingThresholdUnit);
+                        }
                         i++;
                         break;
                     case "--requestTracingThresholdValue":
-                        requestTracingThresholdValue = Long.parseLong(args[i + 1]);
+                        try {
+                            requestTracingThresholdValue = 
+                                    Long.parseLong(args[i + 1]);
+                        } catch (NumberFormatException e) {
+                            logger.log(Level.WARNING, "{0} is not a valid value"
+                                    + " for --requestTracingThresholdValue, "
+                                    + "defaulting to 30", 
+                                    args[i + 1]);
+                        }
                         i++;
                         break;
                     case "--help":
