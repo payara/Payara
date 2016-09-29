@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
+
 package com.sun.enterprise.transaction;
 
 import java.util.*;
@@ -84,6 +86,11 @@ import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 
 import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import org.glassfish.api.admin.ProcessEnvironment;
+import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
+import org.glassfish.internal.api.Globals;
 
 /**
  * Implementation of javax.transaction.TransactionManager interface.
@@ -155,15 +162,31 @@ public class JavaEETransactionManagerSimplified
         statusMap.put(Status.STATUS_ROLLING_BACK, "RollingBack");
 
     }
+    
+    private RequestTracingService requestTracing;
+    
+    @Inject
+    private ProcessEnvironment processEnvironment;
+    
     public JavaEETransactionManagerSimplified() {
         transactions = new ThreadLocal<JavaEETransaction>();
         localCallCounter = new ThreadLocal();
         delegates = new ThreadLocal<JavaEETransactionManagerDelegate>();
-    }
-
+    }      
+    
     public void postConstruct() {
         initDelegates();
         initProperties();
+        
+        if (processEnvironment.getProcessType() == ProcessType.Server) {
+            try {
+                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            } catch (NullPointerException ex) {
+                _logger.log(Level.INFO, "Error retrieving Request Tracing "
+                        + "service during initialisation of "
+                        + "JavaEETransactionManagerSimplified - NullPointerException");
+            }
+        }      
     }
 
     private void initProperties() {
@@ -581,6 +604,12 @@ public class JavaEETransactionManagerSimplified
             tx = new JavaEETransactionImpl(this);
 
         setCurrentTransaction(tx);
+        
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructJTABeginEvent(tx);
+            requestTracing.traceRequestEvent(requestEvent);
+        }
+        
         return tx;
     }
 
@@ -863,7 +892,11 @@ public class JavaEETransactionManagerSimplified
                     }
                 }
             }
-
+            
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+                RequestEvent requestEvent = constructJTAEndEvent(tx);
+                requestTracing.traceRequestEvent(requestEvent);
+            }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
@@ -897,6 +930,10 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
+            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+                RequestEvent requestEvent = constructJTAEndEvent(tx);
+                requestTracing.traceRequestEvent(requestEvent);
+            }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
             delegates.set(null);
@@ -1576,6 +1613,40 @@ public class JavaEETransactionManagerSimplified
         }
 
         return tx;
+    }
+    
+    private RequestEvent constructJTABeginEvent(JavaEETransactionImpl transaction) {
+        RequestEvent requestEvent = new RequestEvent("JTAContextBeginEvent");
+        
+        requestEvent.addProperty("Transaction ID", transaction.getTransactionId());   
+        requestEvent.addProperty("Remaining Timeout", Integer.toString(transaction.getRemainingTimeout()));    
+        
+        return requestEvent;
+    }
+    
+    private RequestEvent constructJTAEndEvent(JavaEETransaction transaction) throws SystemException {
+        RequestEvent requestEvent = new RequestEvent("JTAContextEndEvent");
+
+        if (transaction.getClass().equals(JavaEETransactionImpl.class)) {
+            JavaEETransactionImpl tx = (JavaEETransactionImpl) transaction;
+            requestEvent.addProperty("Transaction ID", (tx.getTransactionId()));
+        }
+        
+        // Check if transaction was rolled back or committed
+        int status = transaction.getStatus();
+        switch (status) {
+            case 3:
+                requestEvent.addProperty("Status", "Committed");
+                break;
+            case 4:
+                requestEvent.addProperty("Status", "Rolled Back");
+                break;
+            default:
+                requestEvent.addProperty("Status", Integer.toString(status));
+                break;
+        }
+        
+        return requestEvent;
     }
 
 /****************************************************************************/

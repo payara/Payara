@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package com.sun.enterprise.admin.servermgmt.domain;
 
 import java.util.Properties;
@@ -47,6 +48,7 @@ import com.sun.enterprise.admin.servermgmt.DomainConfig;
 import com.sun.enterprise.admin.servermgmt.DomainException;
 import com.sun.enterprise.admin.servermgmt.SLogger;
 import com.sun.enterprise.admin.servermgmt.domain.SubstitutableTokens;
+import com.sun.enterprise.config.util.PortConstants;
 import com.sun.enterprise.universal.i18n.LocalStringsImpl;
 import com.sun.enterprise.util.net.NetUtils;
 
@@ -96,6 +98,7 @@ public class DomainPortValidator {
                     _defaultProps.getProperty(SubstitutableTokens.JMS_PROVIDER_PORT_TOKEN_NAME),
                     "JMS");
             _domainConfig.add(DomainConfig.K_JMS_PORT, jmsPort);
+            domainProperties.setProperty(PortConstants.JMS, jmsPort.toString());
 
             final Integer orbPort = getPort(domainProperties,
                     DomainConfig.K_ORB_LISTENER_PORT,
