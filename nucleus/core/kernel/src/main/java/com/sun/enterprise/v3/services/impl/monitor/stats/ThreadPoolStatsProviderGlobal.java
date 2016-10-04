@@ -61,7 +61,7 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
     public ThreadPoolStatsProviderGlobal(String name) {
         super(name);
     }
-    
+
     @ProbeListener("glassfish:kernel:thread-pool:setMaxThreadsEvent")
     @Override
     public void setMaxThreadsEvent(
