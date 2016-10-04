@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.enterprise.v3.services.impl.monitor.stats;
 
 import org.glassfish.external.probe.provider.annotations.ProbeListener;
@@ -97,7 +99,7 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
             @ProbeParam("threadPoolName") String threadPoolName,
             @ProbeParam("threadId") long threadId) {
         
-        if (currentThreadCount.getCount() != 0) {
+        if (currentThreadCount.getCount() > 0) {
             currentThreadCount.decrement();
         }
     }
@@ -120,9 +122,8 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
             @ProbeParam("threadId") long threadId) {
 
         totalExecutedTasksCount.increment();
-        if (currentThreadsBusy.getCount() != 0) {
+        if (currentThreadsBusy.getCount() > 0) {
             currentThreadsBusy.decrement();
         }
     }
-    
 }
