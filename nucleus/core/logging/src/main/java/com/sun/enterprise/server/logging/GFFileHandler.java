@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -90,8 +90,7 @@ import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
 import java.io.FileInputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -131,8 +130,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private static final String LOGS_DIR = "logs";
     private static final String LOG_FILE_NAME = "server.log";
     
-    private static final String ZIP_EXTENSION = ".zip";
-    
+    private static final String GZIP_EXTENSION = ".gz";
+
     private String absoluteServerLogName = null;
 
     private File absoluteFile = null;
@@ -454,7 +453,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         
         if (maxHistoryFiles < 0)
             maxHistoryFiles = 10;
-        
+
         propValue = manager.getProperty(cname + ".compressOnRotation");
         boolean compressionOnRotation = false;
         if (propValue != null) {
@@ -816,9 +815,9 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                         LogRotationTimer.getInstance()
                                                 .restartTimer();
                                     }
-                                    
+
                                     if (compressLogs) {
-                                        boolean compressed = zipFile(rotatedFile);
+                                        boolean compressed = gzipFile(rotatedFile);
                                         if (compressed) {
                                             boolean deleted = rotatedFile.delete();
                                             if (!deleted) {
@@ -956,44 +955,39 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
             listener.messageLogged(logEvent);
         }
     }
-    
-    private boolean zipFile(File infile) {
-        
+
+    private boolean gzipFile(File infile) {
+
         boolean status = false;
 
         FileInputStream fis = null;
         FileOutputStream fos = null;
-        ZipOutputStream zos = null;
+        GZIPOutputStream gzos = null;
 
         try {
-
-            fos = new FileOutputStream(infile.getCanonicalPath() + ZIP_EXTENSION);
-            zos = new ZipOutputStream(fos);
-
-            ZipEntry ze = new ZipEntry(infile.getName());
-            zos.putNextEntry(ze);
-
             fis = new FileInputStream(infile);
+            fos = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
+            gzos = new GZIPOutputStream(fos);
 
             byte[] buffer = new byte[1024];
             int len;
-            while ( (len = fis.read(buffer)) > 0 ) {
-                zos.write(buffer, 0, len);
+            while ((len=fis.read(buffer)) != -1 ) {
+                gzos.write(buffer, 0, len);
             }
 
-            zos.closeEntry();
-            
+            gzos.finish();
+
             status = true;
 
         } catch (IOException ix) {
-            new ErrorManager().error("Error zipping log file", ix, ErrorManager.GENERIC_FAILURE);
-        
+            new ErrorManager().error("Error gzipping log file", ix, ErrorManager.GENERIC_FAILURE);
+
         } finally {
-            try {fis.close();} catch (IOException ix) {}
-            try {zos.close();} catch (IOException ix) {}
-            try {fos.close();} catch (IOException ix) {}
+            try {if (gzos != null) {gzos.close();}} catch (IOException e) {}
+            try {if (fos != null)  {fos.close();}}  catch (IOException e) {}
+            try {if (fis != null)  {fis.close();}}  catch (IOException e) {}
         }
-        
+
         return status;
     }
 }
