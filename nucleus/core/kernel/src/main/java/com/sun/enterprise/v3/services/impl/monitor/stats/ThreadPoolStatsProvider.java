@@ -75,7 +75,11 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     protected final CountStatisticImpl currentThreadsBusy = new CountStatisticImpl("CurrentThreadsBusy", "count", "Provides the number of request processing threads currently in use in the listener thread pool serving requests");
 
     protected volatile ThreadPoolConfig threadPoolConfig;
-
+    
+    // We need to keep track of the thread pool names for calculating the
+    // global values
+    protected volatile static List<String> threadPoolNames = new ArrayList<>();
+    
     public ThreadPoolStatsProvider(String name) {
         this.name = name;
     }
@@ -89,6 +93,11 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     public void setStatsObject(Object object) {
         if (object instanceof ThreadPoolConfig) {
             threadPoolConfig = (ThreadPoolConfig) object;
+            
+            // We don't want to add the global thread pool
+            if (!threadPoolConfig.getPoolName().equals("")) {
+                threadPoolNames.add(threadPoolConfig.getPoolName());
+            }
         } else {
             threadPoolConfig = null;
         }
@@ -116,7 +125,7 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     @Description("Provides the number of request processing threads currently in the listener thread pool")
     public CountStatistic getCurrentThreadCount() {
         if (threadPoolConfig != null) {
-            countThreadsinThreadPool(threadPoolConfig.getPoolName());
+            countThreadsInThreadPool(threadPoolConfig.getPoolName());
         }
         return currentThreadCount;
     }
@@ -125,7 +134,7 @@ public class ThreadPoolStatsProvider implements StatsProvider {
     @Description("Provides the number of request processing threads currently in use in the listener thread pool serving requests.")
     public CountStatistic getCurrentThreadsBusy() {
         if (threadPoolConfig != null) {
-            countThreadsinThreadPool(threadPoolConfig.getPoolName());
+            countThreadsInThreadPool(threadPoolConfig.getPoolName());
         }
         return currentThreadsBusy;
     }
@@ -216,7 +225,7 @@ public class ThreadPoolStatsProvider implements StatsProvider {
      * counts the number of threads that are running.
      * @param threadPoolName The name of the thread pool to count the threads of
      */
-    private void countThreadsinThreadPool(String threadPoolName) {     
+    private void countThreadsInThreadPool(String threadPoolName) {     
         // Set to 0 as we want to reset them
         currentThreadCount.setCount(0);
         currentThreadsBusy.setCount(0);

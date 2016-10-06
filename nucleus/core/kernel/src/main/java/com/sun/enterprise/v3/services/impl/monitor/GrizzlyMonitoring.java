@@ -54,10 +54,15 @@ import com.sun.enterprise.v3.services.impl.monitor.stats.KeepAliveStatsProvider;
 import com.sun.enterprise.v3.services.impl.monitor.stats.KeepAliveStatsProviderGlobal;
 import com.sun.enterprise.v3.services.impl.monitor.stats.ThreadPoolStatsProvider;
 import com.sun.enterprise.v3.services.impl.monitor.stats.ThreadPoolStatsProviderGlobal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
 
 /**
  * Grizzly monitoring manager, which is responsible for registering, unregistering
@@ -184,20 +189,41 @@ public class GrizzlyMonitoring {
         int busyThreadTotal = 0;
         int currentThreadTotal = 0;       
         
+        // If multiple listeners use the same thread pool, we don't want to
+        // count the threads twice, so we'll store the names of those we've
+        // already counted in here
+        List<String> countedThreadPoolNames = new ArrayList<>();
+        
         // Calculate the totals for each of the metrics
-        for (Map.Entry<String, ThreadPoolStatsProvider> threadPoolStatsProvider : 
-                threadPoolStatsProvidersMap.entrySet()) {
-            if (!threadPoolStatsProvider.getKey().equals("")) {               
-                // Safe to cast from long to int, as the values cannot actually 
-                // be higher than max int.
-                coreThreadTotal += (int) (long) threadPoolStatsProvider
-                        .getValue().getCoreThreadsCount().getCount();
-                maxThreadTotal += (int) (long) threadPoolStatsProvider
-                        .getValue().getMaxThreadsCount().getCount();
-                busyThreadTotal += (int) (long) threadPoolStatsProvider
-                        .getValue().getCurrentThreadsBusy().getCount();
-                currentThreadTotal += (int) (long) threadPoolStatsProvider
-                        .getValue().getCurrentThreadCount().getCount();
+        for (Map.Entry<String, ThreadPoolStatsProvider> threadPoolStatsProvider
+                : threadPoolStatsProvidersMap.entrySet()) {
+            if (!threadPoolStatsProvider.getKey().equals("")) {  
+                // Get the pool config so we can check the thread pool name
+                ThreadPoolConfig threadPoolConfig = (ThreadPoolConfig) 
+                        threadPoolStatsProvider.getValue().getStatsObject();
+                if (threadPoolConfig != null) {
+                    String threadPoolName = threadPoolConfig.getPoolName();
+                    
+                    // Check we haven't already counted the threads in this 
+                    // thread pool
+                    if (!countedThreadPoolNames.contains(threadPoolName)) {
+                        // Safe to cast from long to int, as the values cannot 
+                        // actually be higher than max int.
+                        coreThreadTotal += (int) (long) threadPoolStatsProvider
+                                .getValue().getCoreThreadsCount().getCount();
+                        maxThreadTotal += (int) (long) threadPoolStatsProvider
+                                .getValue().getMaxThreadsCount().getCount();
+                        busyThreadTotal += (int) (long) threadPoolStatsProvider
+                                .getValue().getCurrentThreadsBusy().getCount();
+                        currentThreadTotal += (int) (long) 
+                                threadPoolStatsProvider.getValue()
+                                        .getCurrentThreadCount().getCount();
+
+                        // Add to the list of counted thread pools so we don't
+                        // count the threads twice
+                        countedThreadPoolNames.add(threadPoolName);
+                    }
+                }
             }
         }
         
