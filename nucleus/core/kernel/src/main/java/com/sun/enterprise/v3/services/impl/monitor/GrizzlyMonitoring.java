@@ -58,8 +58,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.glassfish.external.probe.provider.PluginPoint;
 import org.glassfish.external.probe.provider.StatsProviderManager;
 import org.glassfish.grizzly.threadpool.ThreadPoolConfig;
@@ -185,9 +183,7 @@ public class GrizzlyMonitoring {
         }
         
         int coreThreadTotal = 0;
-        int maxThreadTotal = 0;
-        int busyThreadTotal = 0;
-        int currentThreadTotal = 0;       
+        int maxThreadTotal = 0;    
         
         // If multiple listeners use the same thread pool, we don't want to
         // count the threads twice, so we'll store the names of those we've
@@ -213,11 +209,6 @@ public class GrizzlyMonitoring {
                                 .getValue().getCoreThreadsCount().getCount();
                         maxThreadTotal += (int) (long) threadPoolStatsProvider
                                 .getValue().getMaxThreadsCount().getCount();
-                        busyThreadTotal += (int) (long) threadPoolStatsProvider
-                                .getValue().getCurrentThreadsBusy().getCount();
-                        currentThreadTotal += (int) (long) 
-                                threadPoolStatsProvider.getValue()
-                                        .getCurrentThreadCount().getCount();
 
                         // Add to the list of counted thread pools so we don't
                         // count the threads twice
@@ -227,35 +218,11 @@ public class GrizzlyMonitoring {
             }
         }
         
-        // Set the core and max values
+        // Now that we've calculated the global core and max values, set them
         globalThreadPoolStatsProvider.setCoreThreadsEvent("", "", 
                 coreThreadTotal);
         globalThreadPoolStatsProvider.setMaxThreadsEvent("", "", 
                 maxThreadTotal);
-        
-        // If the total busy or current threads value differ from those held
-        // by the global stats provider, increment or decrement them till
-        // they match
-        while ((int) (long) globalThreadPoolStatsProvider
-                .getCurrentThreadsBusy().getCount() < busyThreadTotal) {
-            globalThreadPoolStatsProvider.threadDispatchedFromPoolEvent("", "", 
-                    0);
-        }
-        
-        while ((int) (long) globalThreadPoolStatsProvider
-                .getCurrentThreadsBusy().getCount() > busyThreadTotal) {
-            globalThreadPoolStatsProvider.threadReturnedToPoolEvent("", "", 0);
-        }
-        
-        while ((int) (long) globalThreadPoolStatsProvider
-                .getCurrentThreadCount().getCount() < currentThreadTotal) {
-            globalThreadPoolStatsProvider.threadAllocatedEvent("", "", 0);
-        }
-        
-        while ((int) (long) globalThreadPoolStatsProvider
-                .getCurrentThreadCount().getCount() > currentThreadTotal) {
-            globalThreadPoolStatsProvider.threadReleasedEvent("", "", 0);
-        }
     }
 
     /**

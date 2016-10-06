@@ -103,38 +103,6 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
         coreThreadsCount.setCount(coreNumberOfThreads);
     }
 
-    @ProbeListener("glassfish:kernel:thread-pool:threadAllocatedEvent")
-    @Override
-    public void threadAllocatedEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
-            @ProbeParam("threadId") long threadId) {
-
-        currentThreadCount.increment();
-    }
-
-    @ProbeListener("glassfish:kernel:thread-pool:threadReleasedEvent")
-    @Override
-    public void threadReleasedEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
-            @ProbeParam("threadId") long threadId) {
-        
-        if (currentThreadCount.getCount() > 0) {
-            currentThreadCount.decrement();
-        }
-    }
-
-    @ProbeListener("glassfish:kernel:thread-pool:threadDispatchedFromPoolEvent")
-    @Override
-    public void threadDispatchedFromPoolEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
-            @ProbeParam("threadId") long threadId) {
-
-        currentThreadsBusy.increment();
-    }
-
     @ProbeListener("glassfish:kernel:thread-pool:threadReturnedToPoolEvent")
     @Override
     public void threadReturnedToPoolEvent(
@@ -143,13 +111,10 @@ public class ThreadPoolStatsProviderGlobal extends ThreadPoolStatsProvider {
             @ProbeParam("threadId") long threadId) {
 
         totalExecutedTasksCount.increment();
-        if (currentThreadsBusy.getCount() > 0) {
-            currentThreadsBusy.decrement();
-        }
     }
     
     /**
-     * Counts the threads in the all thread pools by querying the JVM. Also 
+     * Counts the threads in all thread pools by querying the JVM. Also 
      * counts the number of threads that are running.
      */
     private void countThreadsInThreadPools() {     

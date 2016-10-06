@@ -161,39 +161,6 @@ public class ThreadPoolStatsProvider implements StatsProvider {
         }
     }
 
-    @ProbeListener("glassfish:kernel:thread-pool:threadAllocatedEvent")
-    public void threadAllocatedEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
-            @ProbeParam("threadId") long threadId) {
-
-        if (name.equals(monitoringId)) {
-            currentThreadCount.increment();
-        }
-    }
-
-    @ProbeListener("glassfish:kernel:thread-pool:threadReleasedEvent")
-    public void threadReleasedEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
-            @ProbeParam("threadId") long threadId) {
-
-        if (name.equals(monitoringId) && currentThreadCount.getCount() > 0) {
-            currentThreadCount.decrement();
-        }
-    }
-
-    @ProbeListener("glassfish:kernel:thread-pool:threadDispatchedFromPoolEvent")
-    public void threadDispatchedFromPoolEvent(
-            @ProbeParam("monitoringId") String monitoringId,
-            @ProbeParam("threadPoolName") String threadPoolName,
-            @ProbeParam("threadId") long threadId) {
-
-        if (name.equals(monitoringId)) {
-            currentThreadsBusy.increment();
-        }
-    }
-
     @ProbeListener("glassfish:kernel:thread-pool:threadReturnedToPoolEvent")
     public void threadReturnedToPoolEvent(
             @ProbeParam("monitoringId") String monitoringId,
@@ -202,9 +169,6 @@ public class ThreadPoolStatsProvider implements StatsProvider {
 
         if (name.equals(monitoringId)) {
             totalExecutedTasksCount.increment();
-            if (currentThreadsBusy.getCount() > 0) {
-                currentThreadsBusy.decrement();
-            }  
         }
     }
 
@@ -213,8 +177,6 @@ public class ThreadPoolStatsProvider implements StatsProvider {
         if (threadPoolConfig != null) {
             maxThreadsCount.setCount(threadPoolConfig.getMaxPoolSize());
             coreThreadsCount.setCount(threadPoolConfig.getCorePoolSize());
-            currentThreadCount.setCount(0);
-            currentThreadsBusy.setCount(0);
         }
 
         totalExecutedTasksCount.setCount(0);
