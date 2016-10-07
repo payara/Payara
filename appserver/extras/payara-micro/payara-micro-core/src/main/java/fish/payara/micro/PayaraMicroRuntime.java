@@ -17,12 +17,12 @@
  */
 package fish.payara.micro;
 
-import fish.payara.micro.services.CDIEventListener;
-import fish.payara.micro.services.PayaraClusterListener;
-import fish.payara.micro.services.PayaraClusteredCDIEvent;
-import fish.payara.micro.services.PayaraMicroInstance;
-import fish.payara.micro.services.command.ClusterCommandResult;
-import fish.payara.micro.services.data.InstanceDescriptor;
+import fish.payara.appserver.micro.services.CDIEventListener;
+import fish.payara.appserver.micro.services.PayaraClusterListener;
+import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
+import fish.payara.appserver.micro.services.PayaraMicroInstance;
+import fish.payara.appserver.micro.services.command.ClusterCommandResult;
+import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;

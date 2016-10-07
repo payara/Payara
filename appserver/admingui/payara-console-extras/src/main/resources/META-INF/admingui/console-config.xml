@@ -19,11 +19,19 @@ file and include the License file at packager/legal/LICENSE.txt.
 -->
 <console-config id="payaraExtras">
     <integration-point
+        id="domainHazelcast"
+        type="org.glassfish.admingui:domainTab"
+        priority="30"
+        parentId="domainTabs"
+        content="hazelcast/hazelcastTabs.jsf"
+    />
+        
+    <integration-point
         id="serverHazelcast"
         type="org.glassfish.admingui:serverInstTab"
         priority="30"
         parentId="serverInstTabs"
-        content="hazelcast/hazelcastTabs.jsf"
+        content="hazelcast/hazelcastTabsServer.jsf"
     />
     <integration-point
         id="clusterHazelcast"

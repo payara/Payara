@@ -15,34 +15,39 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro;
+package fish.payara.appserver.micro.services;
 
-import fish.payara.appserver.micro.services.PayaraClusterListener;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
+import java.io.Serializable;
 
 /**
- * Package level class that adapts the PayaraMicroRuntime so that callback methods
- * are not publically cisible
+ *
  * @author steve
  */
-class BootstrapListener implements PayaraClusterListener {
+public class PayaraInternalEvent implements Serializable {
+    private static final long serialVersionUID = 1L;
+    
+    
+    private final MESSAGE messageType;
+    private final InstanceDescriptor id;
 
-    private final PayaraMicroRuntime runtime;
     
-    public BootstrapListener(PayaraMicroRuntime runtime) {
-        this.runtime = runtime;
-    }
-    
-    
-
-    @Override
-    public void memberAdded(InstanceDescriptor id) {
-        runtime.memberAdded(id);
+    public PayaraInternalEvent(MESSAGE message, InstanceDescriptor id) {
+        this.messageType = message;
+        this.id = id;
     }
 
-    @Override
-    public void memberRemoved(InstanceDescriptor id) {
-        runtime.memberRemoved(id);
+    public MESSAGE getMessageType() {
+        return messageType;
+    }
+    
+    public InstanceDescriptor getId() {
+        return id;
+    }
+
+    public enum MESSAGE {
+
+        ADDED, REMOVED
     }
     
 }

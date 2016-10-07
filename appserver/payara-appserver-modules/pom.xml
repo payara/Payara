@@ -33,5 +33,6 @@
         <module>hazelcast-ejb-timer</module>
         <module>requesttracing-api</module>
         <module>jmx-monitoring-service</module>
+        <module>payara-micro-service</module>
     </modules>
 </project>

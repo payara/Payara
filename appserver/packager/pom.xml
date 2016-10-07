@@ -164,6 +164,7 @@
         <module>requesttracing</module>
         <module>asadmin-recorder</module>
         <module>JMX-Monitoring</module>
+        <module>payara-micro</module>
     </modules>
 
     <build>

@@ -18,8 +18,8 @@
 package fish.payara.micro.cdi;
 
 import fish.payara.micro.PayaraMicroRuntime;
-import fish.payara.micro.services.CDIEventListener;
-import fish.payara.micro.services.PayaraClusteredCDIEvent;
+import fish.payara.appserver.micro.services.CDIEventListener;
+import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.logging.Level;
