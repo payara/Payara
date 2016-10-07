@@ -58,14 +58,18 @@ public class RequestTracingListener implements SQLTraceListener {
 
     private RequestTracingService requestTracing;
     
-    private static final Logger logger = LogDomains.getLogger(SQLTraceLogger.class, LogDomains.SQL_TRACE_LOGGER);
+    private static final Logger logger = 
+            LogDomains.getLogger(SQLTraceLogger.class, 
+                    LogDomains.SQL_TRACE_LOGGER);
     
     public RequestTracingListener() {
         try {
-            requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            requestTracing = Globals.getDefaultHabitat().getService(
+                    RequestTracingService.class);
         } catch (NullPointerException ex) {
             logger.log(Level.INFO, "Error retrieving Request Tracing service "
-                    + "during initialisation of RequestTracingListener - NullPointerException");
+                    + "during initialisation of RequestTracingListener - "
+                    + "NullPointerException");
         }
     }
     
@@ -73,7 +77,9 @@ public class RequestTracingListener implements SQLTraceListener {
     public void sqlTrace(SQLTraceRecord record) {
         // Construct request event and trace
         RequestEvent requestEvent = constructJDBCEvent(record);
-        requestTracing.traceRequestEvent(requestEvent);
+        if (requestTracing != null) {
+            requestTracing.traceRequestEvent(requestEvent);
+        } 
     }
     
     /**
@@ -85,11 +91,14 @@ public class RequestTracingListener implements SQLTraceListener {
         RequestEvent requestEvent = new RequestEvent("JDBCContextTrace");
         
         requestEvent.addProperty("Method Name", record.getMethodName());
-        requestEvent.addProperty("Parameters", Arrays.toString(record.getParams()));
+        requestEvent.addProperty("Parameters", 
+                Arrays.toString(record.getParams()));
         requestEvent.addProperty("Pool Name", record.getPoolName());
-        requestEvent.addProperty("Thread ID", Long.toString(record.getThreadID()));
+        requestEvent.addProperty("Thread ID", 
+                Long.toString(record.getThreadID()));
         requestEvent.addProperty("Thread Name", record.getThreadName());
-        requestEvent.addProperty("Execution Time", Long.toString(record.getExecutionTime()));
+        requestEvent.addProperty("Execution Time", 
+                Long.toString(record.getExecutionTime()));
              
         return requestEvent;
     }

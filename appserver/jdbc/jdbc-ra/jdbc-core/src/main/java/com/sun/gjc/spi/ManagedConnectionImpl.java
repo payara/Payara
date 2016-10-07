@@ -484,21 +484,28 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
          * enabling/disabling.
          */
         if (sqlTraceDelegator == null) {
-            if (requestTracing.isRequestTracingEnabled()) {
-                sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(), spiMCF.getApplicationName(), spiMCF.getModuleName());
-                // This method will only register a request tracing listener if one doesn't already exist
-                sqlTraceDelegator.registerSQLTraceListener(new RequestTracingListener());
+            if (requestTracing != null && 
+                    requestTracing.isRequestTracingEnabled()) {
+                sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(), 
+                        spiMCF.getApplicationName(), spiMCF.getModuleName());
+                // This method will only register a request tracing listener 
+                // if one doesn't already exist
+                sqlTraceDelegator.registerSQLTraceListener(
+                        new RequestTracingListener());
             }
         } else {
-            if (requestTracing.isRequestTracingEnabled()) {
-                sqlTraceDelegator.registerSQLTraceListener(new RequestTracingListener());
+            if (requestTracing != null && 
+                    requestTracing.isRequestTracingEnabled()) {
+                sqlTraceDelegator.registerSQLTraceListener(
+                        new RequestTracingListener());
             } else { 
                 /** 
                  * If request tracing is not enabled, but there is a SQL trace
                  * delegator, deregister the request tracing listener if one is 
                  * registered.
                  */
-                sqlTraceDelegator.deregisterSQLTraceListener(RequestTracingListener.class);
+                sqlTraceDelegator.deregisterSQLTraceListener(
+                        RequestTracingListener.class);
                 
                 /**
                  * If there are no longer any listeners registered, set the 
