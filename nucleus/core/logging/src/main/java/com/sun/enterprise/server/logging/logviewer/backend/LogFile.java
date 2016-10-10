@@ -247,10 +247,9 @@ public class LogFile implements java.io.Serializable {
      * the specified filePosition.
      */
     protected BufferedReader getLogFileReader(long fromFilePosition) {
-        //FileInputStream file = null;
         InputStream file = null;
         try {
-            if (isCompressedLogFile()) {
+            if (LogFormatHelper.isCompressedFile(getLogFileName())) {
                 file = new GZIPInputStream(new FileInputStream(getLogFileName()));
             } else {
                 file = new FileInputStream(getLogFileName());
@@ -278,13 +277,6 @@ public class LogFile implements java.io.Serializable {
             }            
         } 
         return null;
-    }
-    
-    /**
-     * 
-     */
-    private boolean isCompressedLogFile() {
-        return LogFormatHelper.isCompressedFile(getLogFileName());
     }
 
     /**
