@@ -1431,7 +1431,7 @@ public class PayaraMicro {
                     case "--disablePhoneHome":
                         disablePhoneHome = true;
                         break;
-                    case "--requestTracing":
+                    case "--enableRequestTracing":
                         enableRequestTracing = true;
                         // Check if a value has actually been given
                         if (args.length > i + 1 && 
@@ -1507,9 +1507,6 @@ public class PayaraMicro {
                             }        
                         }
                         break;
-                    case "--enableRequestTracing":
-                        enableRequestTracing = true;
-                        break;
                     case "--requestTracingThresholdUnit":
                         try {
                             String parsedUnit = 
@@ -1570,8 +1567,7 @@ public class PayaraMicro {
                                 + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
                                 + "  --accessLogFormat Sets user defined log format for the access log\n"
-                                + "  --requestTracing Enables the Request Tracing Service and optionally sets the threshold unit and/or value\n"
-                                + "  --enableRequestTracing Enables the Request Tracing Service\n"
+                                + "  --enableRequestTracing Enables the Request Tracing Service and optionally sets the threshold unit and/or value\n"
                                 + "  --requestTracingThresholdUnit Sets the time unit for the requestTracingThresholdValue option\n"
                                 + "  --requestTracingThresholdValue Sets the threshold time before a request is traced\n"
                                 + "  --help Shows this message and exits\n");
