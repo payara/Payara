@@ -1572,6 +1572,7 @@ public class PayaraMicro {
                                 + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
                                 + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
                                 + "  --accessLogFormat Sets user defined log format for the access log\n"
+                                + "  --requestTracing Enables the Request Tracing Service and optionally sets the threshold unit and/or value\n"
                                 + "  --enableRequestTracing Enables the Request Tracing Service\n"
                                 + "  --requestTracingThresholdUnit Sets the time unit for the requestTracingThresholdValue option\n"
                                 + "  --requestTracingThresholdValue Sets the threshold time before a request is traced\n"
