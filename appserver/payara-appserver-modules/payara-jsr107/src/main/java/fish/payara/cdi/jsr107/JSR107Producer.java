@@ -22,12 +22,14 @@ import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.annotation.CacheDefaults;
 import javax.cache.configuration.Factory;
 import javax.cache.configuration.FactoryBuilder;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
@@ -123,6 +125,17 @@ public class JSR107Producer {
                 result = manager.createCache(cacheName, config);                
             }
         } else {  // configure a "raw" cache
+            Bean<?> bean = ip.getBean();
+            if (bean != null) {
+                Class<?> beanClass = bean.getBeanClass();
+                CacheDefaults defaults = beanClass.getAnnotation(CacheDefaults.class);
+                if (defaults != null) {
+                    String cacheNameFromAnnotation = defaults.cacheName();
+                    if (!"".equals(cacheNameFromAnnotation)) {
+                        cacheName = cacheNameFromAnnotation;
+                    }
+                }
+            }
             result = manager.getCache(cacheName);
             if (result == null) {
                 MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
