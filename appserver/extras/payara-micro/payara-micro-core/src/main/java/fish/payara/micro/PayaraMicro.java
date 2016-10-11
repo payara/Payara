@@ -1102,8 +1102,7 @@ public class PayaraMicro {
                 requestTracing.getExecutionOptions().setEnabled(true);
                 
                 if (!requestTracingThresholdUnit.equals("SECONDS")) {  
-                    requestTracing.getExecutionOptions().setThresholdUnit(
-                            TimeUnit.valueOf(requestTracingThresholdUnit));
+                    requestTracing.getExecutionOptions().setThresholdUnit(TimeUnit.valueOf(requestTracingThresholdUnit));
                 }
 
                 if (requestTracingThresholdValue != 30) {
@@ -1434,67 +1433,46 @@ public class PayaraMicro {
                     case "--enableRequestTracing":
                         enableRequestTracing = true;
                         // Check if a value has actually been given
-                        if (args.length > i + 1 && 
-                                !args[i + 1].contains("--")) {
+                        if (args.length > i + 1 && !args[i + 1].contains("--")) {
                             // Split strings from numbers
-                            String[] requestTracing = args[i + 1].split(
-                                    "(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
+                            String[] requestTracing = args[i + 1].split("(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
                             // If valid, there should be no more than 2 entries
                             if (requestTracing.length <= 2) {
                                 // If the first entry is a number
                                 if (requestTracing[0].matches("\\d+")) {
                                     try {
-                                        requestTracingThresholdValue = 
-                                        Long.parseLong(requestTracing[0]);
+                                        requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
                                     } catch (NumberFormatException e) {
-                                        logger.log(Level.WARNING, "{0} is not "
-                                                + "a valid request tracing "
-                                                + "threshold value", 
-                                                requestTracing[0]);
+                                        logger.log(Level.WARNING, "{0} is not a valid request tracing "
+                                                + "threshold value", requestTracing[0]);
                                         throw e;
                                     }
-                                    // If there is a second entry, and it's a
-                                    // String
-                                    if (requestTracing.length == 2 && 
-                                            requestTracing[1].matches("\\D+")) {
-                                        String parsedUnit = 
-                                                parseRequestTracingUnit(
-                                                        requestTracing[1]);
+                                    // If there is a second entry, and it's a String
+                                    if (requestTracing.length == 2 && requestTracing[1].matches("\\D+")) {
+                                        String parsedUnit = parseRequestTracingUnit(requestTracing[1]);
                                         try {    
-                                            TimeUnit.valueOf(parsedUnit.
-                                                    toUpperCase());
-                                            requestTracingThresholdUnit = 
-                                                    parsedUnit.toUpperCase();
+                                            TimeUnit.valueOf(parsedUnit.toUpperCase());
+                                            requestTracingThresholdUnit = parsedUnit.toUpperCase();
                                         } catch (IllegalArgumentException e) {
-                                            logger.log(Level.WARNING, "{0} is "
-                                                    + "not a valid request "
-                                                    + "tracing threshold unit", 
-                                                    requestTracing[1]);
+                                            logger.log(Level.WARNING, "{0} is not a valid request "
+                                                    + "tracing threshold unit", requestTracing[1]);
                                             throw e;
                                         }
                                     } 
-                                    // If there is a second entry, and it's not 
-                                    // a String
-                                    else if (requestTracing.length == 2 && 
-                                            !requestTracing[1].matches(
-                                                    "\\D+")) {
+                                    // If there is a second entry, and it's not a String
+                                    else if (requestTracing.length == 2 && !requestTracing[1].matches("\\D+")) {
                                         throw new IllegalArgumentException();
                                     }
                                 } 
                                 // If the first entry is a String
                                 else if (requestTracing[0].matches("\\D+")) {
-                                    String parsedUnit = parseRequestTracingUnit(
-                                                        requestTracing[0]);
+                                    String parsedUnit = parseRequestTracingUnit(requestTracing[0]);
                                     try {
-                                        TimeUnit.valueOf(parsedUnit.
-                                                toUpperCase());
-                                        requestTracingThresholdUnit = 
-                                                parsedUnit.toUpperCase();
+                                        TimeUnit.valueOf(parsedUnit.toUpperCase());
+                                        requestTracingThresholdUnit = parsedUnit.toUpperCase();
                                         } catch (IllegalArgumentException e) {
-                                            logger.log(Level.WARNING, "{0} is "
-                                                    + "not a valid request "
-                                                    + "tracing threshold unit", 
-                                                    requestTracing[0]);
+                                            logger.log(Level.WARNING, "{0} is not a valid request "
+                                                    + "tracing threshold unit", requestTracing[0]);
                                             throw e;
                                         }
                                     // There shouldn't be a second entry
@@ -1509,14 +1487,11 @@ public class PayaraMicro {
                         break;
                     case "--requestTracingThresholdUnit":
                         try {
-                            String parsedUnit = 
-                                    parseRequestTracingUnit(args[i + 1]);
+                            String parsedUnit = parseRequestTracingUnit(args[i + 1]);
                             TimeUnit.valueOf(parsedUnit.toUpperCase());
-                            requestTracingThresholdUnit = 
-                                    parsedUnit.toUpperCase();
+                            requestTracingThresholdUnit = parsedUnit.toUpperCase();
                         } catch (IllegalArgumentException e) {
-                            logger.log(Level.WARNING, "{0} is not a valid value"
-                                    + " for --requestTracingThresholdUnit", 
+                            logger.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdUnit", 
                                     args[i + 1]);
                             throw e;
                         }
@@ -1524,11 +1499,9 @@ public class PayaraMicro {
                         break;
                     case "--requestTracingThresholdValue":
                         try {
-                            requestTracingThresholdValue = 
-                                    Long.parseLong(args[i + 1]);
+                            requestTracingThresholdValue = Long.parseLong(args[i + 1]);
                         } catch (NumberFormatException e) {
-                            logger.log(Level.WARNING, "{0} is not a valid value"
-                                    + " for --requestTracingThresholdValue", 
+                            logger.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdValue", 
                                     args[i + 1]);
                             throw e;
                         }
