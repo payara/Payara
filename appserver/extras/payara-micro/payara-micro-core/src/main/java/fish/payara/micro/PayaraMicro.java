@@ -2349,6 +2349,7 @@ public class PayaraMicro {
             case "s":
                 returnValue = "SECONDS";
                 break;
+            case "m":
             case "minute":
             case "min":
             case "mins":
