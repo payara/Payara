@@ -75,9 +75,8 @@ public class JSR107Producer {
      * @return 
      */
     @Produces
-    @SuppressWarnings("unchecked")
-    public Cache createCache(InjectionPoint ip) {
-        Cache result = null;
+    public <K,V> Cache<K, V> createCache(InjectionPoint ip) {
+        Cache<K, V> result;
 
         //determine the cache name first start with the default name
         String cacheName = ip.getMember().getDeclaringClass().getCanonicalName();
@@ -94,7 +93,7 @@ public class JSR107Producer {
             Class valueClass = ncqualifier.valueClass();           
             result = manager.getCache(cacheName, keyClass, valueClass);
             if (result == null) {
-                MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+                MutableConfiguration<K, V> config = new MutableConfiguration<>();
                 config.setTypes(keyClass, valueClass);
                 
                 // determine the expiry policy
@@ -138,7 +137,7 @@ public class JSR107Producer {
             }
             result = manager.getCache(cacheName);
             if (result == null) {
-                MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+                MutableConfiguration<K, V> config = new MutableConfiguration<>();
                 config.setManagementEnabled(true);
                 config.setStatisticsEnabled(true);
                 result = manager.createCache(cacheName, config);
