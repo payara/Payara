@@ -70,6 +70,8 @@ import java.nio.file.Paths;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -1429,18 +1431,98 @@ public class PayaraMicro {
                     case "--disablePhoneHome":
                         disablePhoneHome = true;
                         break;
+                    case "--requestTracing":
+                        enableRequestTracing = true;
+                        // Check if a value has actually been given
+                        if (args.length > i + 1 && 
+                                !args[i + 1].contains("--")) {
+                            // Split strings from numbers
+                            String[] requestTracing = args[i + 1].split(
+                                    "(?<=\\d)(?=\\D)|(?=\\d)(?<=\\D)");
+                            // If valid, there should be no more than 2 entries
+                            if (requestTracing.length <= 2) {
+                                // If the first entry is a number
+                                if (requestTracing[0].matches("\\d+")) {
+                                    try {
+                                        requestTracingThresholdValue = 
+                                        Long.parseLong(requestTracing[0]);
+                                    } catch (NumberFormatException e) {
+                                        logger.log(Level.WARNING, "{0} is not "
+                                                + "a valid request tracing "
+                                                + "threshold value", 
+                                                requestTracing[0]);
+                                        throw e;
+                                    }
+                                    // If there is a second entry, and it's a
+                                    // String
+                                    if (requestTracing.length == 2 && 
+                                            requestTracing[1].matches("\\D+")) {
+                                        String parsedUnit = 
+                                                parseRequestTracingUnit(
+                                                        requestTracing[1]);
+                                        try {    
+                                            TimeUnit.valueOf(parsedUnit.
+                                                    toUpperCase());
+                                            requestTracingThresholdUnit = 
+                                                    parsedUnit.toUpperCase();
+                                        } catch (IllegalArgumentException e) {
+                                            logger.log(Level.WARNING, "{0} is "
+                                                    + "not a valid request "
+                                                    + "tracing threshold unit", 
+                                                    requestTracing[1]);
+                                            throw e;
+                                        }
+                                    } 
+                                    // If there is a second entry, and it's not 
+                                    // a String
+                                    else if (requestTracing.length == 2 && 
+                                            !requestTracing[1].matches(
+                                                    "\\D+")) {
+                                        throw new IllegalArgumentException();
+                                    }
+                                } 
+                                // If the first entry is a String
+                                else if (requestTracing[0].matches("\\D+")) {
+                                    
+                                    String parsedUnit = 
+                                                parseRequestTracingUnit(
+                                                        requestTracing[0]);
+                                    try {
+                                        TimeUnit.valueOf(parsedUnit.
+                                                toUpperCase());
+                                        requestTracingThresholdUnit = 
+                                                parsedUnit.toUpperCase();
+                                        } catch (IllegalArgumentException e) {
+                                            logger.log(Level.WARNING, "{0} is "
+                                                    + "not a valid request "
+                                                    + "tracing threshold unit", 
+                                                    requestTracing[0]);
+                                            throw e;
+                                        }
+                                    // There shouldn't be a second entry
+                                    if (requestTracing.length == 2) {
+                                        throw new IllegalArgumentException();
+                                    }
+                                }
+                            } else {
+                                throw new IllegalArgumentException();
+                            }        
+                        }
+                        break;
                     case "--enableRequestTracing":
                         enableRequestTracing = true;
                         break;
                     case "--requestTracingThresholdUnit":
                         try {
-                            TimeUnit.valueOf(args[i + 1].toUpperCase());
+                            String parsedUnit = 
+                                    parseRequestTracingUnit(args[i + 1]);
+                            TimeUnit.valueOf(parsedUnit.toUpperCase());
                             requestTracingThresholdUnit = 
-                                    args[i + 1].toUpperCase();
+                                    parsedUnit.toUpperCase();
                         } catch (IllegalArgumentException e) {
                             logger.log(Level.WARNING, "{0} is not a valid value"
                                     + " for --requestTracingThresholdUnit", 
-                                    requestTracingThresholdUnit);
+                                    args[i + 1]);
                             throw e;
                         }
                         i++;
@@ -2247,4 +2329,35 @@ public class PayaraMicro {
         }
     }
 
+    private String parseRequestTracingUnit(String option) {
+        String returnValue = option;
+        
+        switch (option.toLowerCase()) {
+            case "nanosecond":
+            case "ns":
+                returnValue = 
+                        "NANOSECONDS";
+                break;
+            case "microsecond":
+            case "us":
+            case "µs":
+                returnValue = 
+                        "MICROSECONDS";
+                break;
+            case "second":
+            case "s":
+                returnValue = "SECONDS";
+                break;
+            case "hour":
+            case "h":
+                returnValue = "HOURS";
+                break;
+            case "day":
+            case "d":
+                returnValue = "DAYS";
+                break;
+        }
+        
+        return returnValue;
+    }
 }
