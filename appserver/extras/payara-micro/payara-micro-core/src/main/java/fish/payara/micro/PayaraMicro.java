@@ -1483,9 +1483,7 @@ public class PayaraMicro {
                                 } 
                                 // If the first entry is a String
                                 else if (requestTracing[0].matches("\\D+")) {
-                                    
-                                    String parsedUnit = 
-                                                parseRequestTracingUnit(
+                                    String parsedUnit = parseRequestTracingUnit(
                                                         requestTracing[0]);
                                     try {
                                         TimeUnit.valueOf(parsedUnit.
