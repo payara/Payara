@@ -41,6 +41,7 @@
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
+import com.google.common.collect.ImmutableList;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.ResourcePropertyDescriptor;
@@ -191,6 +192,12 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
             // ignore, handled in EarHandler.java
 	} else 
+	if (element.getQName().equals("scanning-exclude")) {
+            descriptor.addScanningExclusions(ImmutableList.of(value));
+	} else
+	if (element.getQName().equals("scanning-include")) {
+            descriptor.addScanningInclusions(ImmutableList.of(value));
+	} else
 	if (element.getQName().equals(RuntimeTagNames.WEB_URI)) {
 	    currentWebUri=value;
 	} else 

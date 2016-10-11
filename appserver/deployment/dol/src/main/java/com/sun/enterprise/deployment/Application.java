@@ -41,6 +41,8 @@
 
 package com.sun.enterprise.deployment;
 
+import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
@@ -56,6 +58,8 @@ import com.sun.enterprise.deployment.util.ApplicationVisitor;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import com.sun.enterprise.util.StringUtils;
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -168,6 +172,8 @@ public class Application extends CommonResourceBundleDescriptor
     private String compatValue;
     
     private String classLoadingDelegate;
+    private final List<Pattern> scanningInclusions = new ArrayList<>();
+    private final List<Pattern> scanningExclusions = new ArrayList<>();
 
     private boolean initializeInOrder = false;
 
@@ -724,6 +730,24 @@ public class Application extends CommonResourceBundleDescriptor
 
     public void setClassLoadingDelegate(String classLoadingDelegate) {
         this.classLoadingDelegate = classLoadingDelegate;
+    }
+
+    public List<Pattern> getScanningExclusions() {
+        return scanningExclusions;
+    }
+
+    public List<Pattern> getScanningInclusions() {
+        return scanningInclusions;
+    }
+
+    public void addScanningInclusions(List<String> inclusions) {
+        this.scanningInclusions.addAll(FluentIterable.from(inclusions)
+                .transform(new WildcardToRegex(getLibraryDirectory())).toList());
+    }
+
+    public void addScanningExclusions(List<String> exclusions) {
+        this.scanningExclusions.addAll(FluentIterable.from(exclusions)
+                .transform(new WildcardToRegex(getLibraryDirectory())).toList());
     }
 
     /**
@@ -1669,5 +1693,24 @@ public class Application extends CommonResourceBundleDescriptor
      */
     public void setKeepStateResolved(String keepStateResolved) {
         this.keepStateResolved = Boolean.valueOf(keepStateResolved);
+    }
+
+
+    private static class WildcardToRegex implements Function<String, Pattern> {
+        public WildcardToRegex(String libDir) {
+            this.libDir = libDir;
+        }
+
+        @Override
+        public Pattern apply(String input) {
+            input = input.replaceAll("(\\?|\\*)", ".$1");
+            input = input.replaceFirst("\\.jar$", "");
+            if(StringUtils.ok(libDir)) {
+                input = String.format("^%s%c%s(-.*)?\\.jar$", libDir, File.separatorChar, input);
+            }
+            return Pattern.compile(input, Pattern.CASE_INSENSITIVE);
+        }
+
+        private final String libDir;
     }
 }
