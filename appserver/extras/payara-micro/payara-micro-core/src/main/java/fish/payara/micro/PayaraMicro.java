@@ -2334,14 +2334,16 @@ public class PayaraMicro {
         switch (option.toLowerCase()) {
             case "nanosecond":
             case "ns":
-                returnValue = 
-                        "NANOSECONDS";
+                returnValue = "NANOSECONDS";
                 break;
             case "microsecond":
             case "us":
             case "µs":
-                returnValue = 
-                        "MICROSECONDS";
+                returnValue = "MICROSECONDS";
+                break;
+            case "millisecond":
+            case "ms":
+                returnValue = "MILLISECONDS";
                 break;
             case "second":
             case "s":
