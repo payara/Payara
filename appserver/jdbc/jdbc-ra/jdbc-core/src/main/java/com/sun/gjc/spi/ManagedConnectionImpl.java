@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
+
 package com.sun.gjc.spi;
 
 import com.sun.appserv.connectors.internal.spi.BadConnectionEventListener;
@@ -49,6 +51,8 @@ import com.sun.gjc.spi.base.datastructure.CacheFactory;
 import com.sun.gjc.util.SQLTraceDelegator;
 import com.sun.gjc.util.StatementLeakDetector;
 import com.sun.logging.LogDomains;
+import fish.payara.jdbc.RequestTracingListener;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
 import org.glassfish.resourcebase.resources.api.PoolInfo;
 
 import javax.resource.NotSupportedException;
@@ -70,6 +74,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.internal.api.Globals;
 
 /**
  * <code>ManagedConnection</code> implementation for Generic JDBC Connector.
@@ -144,6 +149,8 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
     private DatabaseMetaData cachedDatabaseMetaData = null;
     private Boolean isClientInfoSupported = null;
     
+    private RequestTracingService requestTracing;
+    
     /**
      * Constructor for <code>ManagedConnectionImpl</code>. The pooledConn parameter is expected
      * to be null and sqlConn parameter is the actual connection in case where
@@ -201,6 +208,13 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
         ce = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
         tuneStatementCaching(poolInfo, statementCacheSize, statementCacheType);
         tuneStatementLeakTracing(poolInfo, statementLeakTimeout, statementLeakReclaim);
+        
+        try {
+            requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        } catch (NullPointerException ex) {
+            _logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of ManagedConnectionImpl - NullPointerException");
+        }
     }
 
     public StatementLeakDetector getLeakDetector() {
@@ -462,10 +476,53 @@ public class ManagedConnectionImpl implements javax.resource.spi.ManagedConnecti
             }
         }
         
+        /**
+         * Register a RequestTracingListener if request tracing is enabled,
+         * creating a SQLTraceDelegator if one does not already exist.
+         * This check is required here to prevent having to
+         * recreate the connection pool to accommodate dynamic request tracing
+         * enabling/disabling.
+         */
+        if (sqlTraceDelegator == null) {
+            if (requestTracing != null && 
+                    requestTracing.isRequestTracingEnabled()) {
+                sqlTraceDelegator = new SQLTraceDelegator(spiMCF.getPoolName(), 
+                        spiMCF.getApplicationName(), spiMCF.getModuleName());
+                // This method will only register a request tracing listener 
+                // if one doesn't already exist
+                sqlTraceDelegator.registerSQLTraceListener(
+                        new RequestTracingListener());
+            }
+        } else {
+            if (requestTracing != null && 
+                    requestTracing.isRequestTracingEnabled()) {
+                sqlTraceDelegator.registerSQLTraceListener(
+                        new RequestTracingListener());
+            } else { 
+                /** 
+                 * If request tracing is not enabled, but there is a SQL trace
+                 * delegator, deregister the request tracing listener if one is 
+                 * registered.
+                 */
+                sqlTraceDelegator.deregisterSQLTraceListener(
+                        RequestTracingListener.class);
+                
+                /**
+                 * If there are no longer any listeners registered, set the 
+                 * delegator to null to prevent 
+                 * JdbcObjectsFactory().getConnection(...) from using a profiled
+                 * wrapper unnecessarily.
+                 */ 
+                if (!sqlTraceDelegator.listenersRegistered()) {
+                    sqlTraceDelegator = null;
+                }
+            }              
+        }
+        
         myLogicalConnection = spiMCF.getJdbcObjectsFactory().getConnection(
                 actualConnection, this, cxReqInfo, spiMCF.isStatementWrappingEnabled(),
                 sqlTraceDelegator);
-
+        
         //TODO : need to see if this should be executed for every getConnection
         if (!initSqlExecuted) {
             //Check if Initsql is set and execute it
