@@ -960,32 +960,22 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
 
         boolean status = false;
 
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
-        GZIPOutputStream gzos = null;
-
-        try {
-            fis = new FileInputStream(infile);
-            fos = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
-            gzos = new GZIPOutputStream(fos);
-
+        try (
+            FileInputStream  fis  = new FileInputStream(infile);
+            FileOutputStream fos  = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
+            GZIPOutputStream gzos = new GZIPOutputStream(fos);
+        ) {
             byte[] buffer = new byte[1024];
             int len;
             while ((len=fis.read(buffer)) != -1 ) {
                 gzos.write(buffer, 0, len);
             }
-
             gzos.finish();
 
             status = true;
 
         } catch (IOException ix) {
             new ErrorManager().error("Error gzipping log file", ix, ErrorManager.GENERIC_FAILURE);
-
-        } finally {
-            try {if (gzos != null) {gzos.close();}} catch (IOException e) {}
-            try {if (fos != null)  {fos.close();}}  catch (IOException e) {}
-            try {if (fis != null)  {fis.close();}}  catch (IOException e) {}
         }
 
         return status;
