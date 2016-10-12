@@ -53,7 +53,7 @@
 <service>
   <id>%%%NAME%%%</id>
   <name>%%%DISPLAY_NAME%%%</name>
-  <description>GlassFish Server</description>
+  <description>Payara Server</description>
   <executable>%%%AS_ADMIN_PATH%%%</executable>
   <logpath>%%%LOCATION%%%/%%%ENTITY_NAME%%%/bin</logpath>
   <logmode>reset</logmode>
