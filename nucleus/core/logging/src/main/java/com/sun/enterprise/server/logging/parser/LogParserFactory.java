@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging.parser;
 
@@ -49,6 +50,9 @@ import java.util.regex.Pattern;
 
 import com.sun.enterprise.server.logging.LogFormatHelper;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.zip.GZIPInputStream;
 
 public class LogParserFactory {
 
@@ -85,7 +89,11 @@ public class LogParserFactory {
     public LogParser createLogParser(File logFile) throws LogParserException, IOException {
         BufferedReader reader=null;
         try {
-            reader = new BufferedReader(new FileReader(logFile));
+            if (LogFormatHelper.isCompressedFile(logFile.getName())) {
+                reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(logFile))));
+            } else {
+                reader = new BufferedReader(new FileReader(logFile));
+            }
             String line = reader.readLine();
             LogFormat format = detectLogFormat(line);
             if (DEBUG) {

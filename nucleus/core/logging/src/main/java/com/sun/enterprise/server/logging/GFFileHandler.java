@@ -37,8 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -90,6 +89,8 @@ import com.sun.enterprise.module.bootstrap.EarlyLogHandler;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.io.FileUtils;
 import com.sun.enterprise.v3.logging.AgentFormatterDelegate;
+import java.io.FileInputStream;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * GFFileHandler publishes formatted log Messages to a FILE.
@@ -129,6 +130,8 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private static final String LOGS_DIR = "logs";
     private static final String LOG_FILE_NAME = "server.log";
     
+    private static final String GZIP_EXTENSION = ".gz";
+
     private String absoluteServerLogName = null;
 
     private File absoluteFile = null;
@@ -171,6 +174,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
     private Thread pump;
 
     boolean dayBasedFileRotation = false;
+    boolean compressLogs = false;
 
     private String RECORD_BEGIN_MARKER = "[#|";
     private String RECORD_END_MARKER = "|#]";
@@ -450,6 +454,14 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         if (maxHistoryFiles < 0)
             maxHistoryFiles = 10;
 
+        propValue = manager.getProperty(cname + ".compressOnRotation");
+        boolean compressionOnRotation = false;
+        if (propValue != null) {
+            compressionOnRotation = Boolean.parseBoolean(propValue);
+        }
+        if (compressionOnRotation) {
+            compressLogs = true;
+        }
     }
 
     Formatter findFormatterService(String formatterName) {
@@ -804,6 +816,20 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
                                                 .restartTimer();
                                     }
 
+                                    if (compressLogs) {
+                                        boolean compressed = gzipFile(rotatedFile);
+                                        if (compressed) {
+                                            boolean deleted = rotatedFile.delete();
+                                            if (!deleted) {
+                                                 throw new IOException("Could not delete uncompressed log file: "
+                                                        + rotatedFile.getAbsolutePath());
+                                            }
+                                        } else {
+                                            throw new IOException("Could not compress log file: "
+                                                    + rotatedFile.getAbsolutePath());
+                                        }
+                                    }
+
                                     cleanUpHistoryLogFiles();                                    
                                 }
                             } catch (IOException ix) {
@@ -930,5 +956,29 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         }
     }
 
+    private boolean gzipFile(File infile) {
+
+        boolean status = false;
+
+        try (
+            FileInputStream  fis  = new FileInputStream(infile);
+            FileOutputStream fos  = new FileOutputStream(infile.getCanonicalPath() + GZIP_EXTENSION);
+            GZIPOutputStream gzos = new GZIPOutputStream(fos);
+        ) {
+            byte[] buffer = new byte[1024];
+            int len;
+            while ((len=fis.read(buffer)) != -1 ) {
+                gzos.write(buffer, 0, len);
+            }
+            gzos.finish();
+
+            status = true;
+
+        } catch (IOException ix) {
+            new ErrorManager().error("Error gzipping log file", ix, ErrorManager.GENERIC_FAILURE);
+        }
+
+        return status;
+    }
 }
 
