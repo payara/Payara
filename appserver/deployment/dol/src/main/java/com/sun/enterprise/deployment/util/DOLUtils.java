@@ -40,6 +40,8 @@
 
 package com.sun.enterprise.deployment.util;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -102,6 +104,7 @@ import com.sun.enterprise.deployment.io.DescriptorConstants;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.xml.TagNames;
 import com.sun.enterprise.util.LocalStringManagerImpl;
+import java.util.regex.Pattern;
 
 import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.logging.annotation.LoggerInfo;
@@ -158,7 +161,6 @@ public class DOLUtils {
 
     private static final String ID_SEPARATOR = "_";
 
-    
     /** no need to creates new DOLUtils */
     private DOLUtils() {
     }
@@ -182,6 +184,24 @@ public class DOLUtils {
         ModuleDescriptor moduleDesc = ((BundleDescriptor)bundleDesc).getModuleDescriptor();
         Application app = ((BundleDescriptor)moduleDesc.getDescriptor()).getApplication();
         return getLibraryJarURIs(app, archive);
+    }
+
+    public static boolean isScanningAllowed(Application app, String entryName) {
+        boolean included = !FluentIterable.from(app.getScanningExclusions()).anyMatch(new MatchingPredicate(entryName));
+        return included |= FluentIterable.from(app.getScanningInclusions()).anyMatch(new MatchingPredicate(entryName));
+    }
+
+    private static class MatchingPredicate implements Predicate<Pattern> {
+        private final String entryName;
+
+        public MatchingPredicate(String entryName) {
+            this.entryName = entryName;
+        }
+
+        @Override
+        public boolean apply(Pattern input) {
+            return input.matcher(entryName).matches();
+        }
     }
 
     public static List<URI> getLibraryJarURIs(Application app, ReadableArchive archive) throws Exception {

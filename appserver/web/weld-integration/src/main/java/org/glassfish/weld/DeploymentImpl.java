@@ -41,8 +41,6 @@
 
 package org.glassfish.weld;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.FluentIterable;
 import static java.util.logging.Level.FINE;
 import static org.glassfish.weld.connector.WeldUtils.*;
 
@@ -75,7 +73,7 @@ import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
-import java.util.regex.Pattern;
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 /*
  * Represents a deployment of a CDI (Weld) application.
@@ -529,11 +527,9 @@ public class DeploymentImpl implements CDI11Deployment {
                 Enumeration<String> entries = archive.entries(libDir);
                 while (entries.hasMoreElements()) {
                     final String entryName = entries.nextElement();
-                    boolean included = !FluentIterable.from(holder.app.getScanningExclusions()).anyMatch(new MatchingPredicate(entryName));
-                    included |= FluentIterable.from(holder.app.getScanningInclusions()).anyMatch(new MatchingPredicate(entryName));
 
                     // if a jar is directly in lib dir and not WEB-INF/lib/foo/bar.jar
-                    if (included && entryName.endsWith(JAR_SUFFIX) &&
+                    if (DOLUtils.isScanningAllowed(holder.app, entryName) && entryName.endsWith(JAR_SUFFIX) &&
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);
@@ -759,19 +755,5 @@ public class DeploymentImpl implements CDI11Deployment {
             return null;
         }
         return rarRootBdas.iterator();
-    }
-
-
-    private static class MatchingPredicate implements Predicate<Pattern> {
-        private final String entryName;
-
-        public MatchingPredicate(String entryName) {
-            this.entryName = entryName;
-        }
-
-        @Override
-        public boolean apply(Pattern input) {
-            return input.matcher(entryName).matches();
-        }
     }
 }
