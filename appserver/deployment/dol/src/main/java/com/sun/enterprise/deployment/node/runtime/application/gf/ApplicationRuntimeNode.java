@@ -192,10 +192,10 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_ENABLE_IMPLICIT_CDI)) {
             // ignore, handled in EarHandler.java
 	} else 
-	if (element.getQName().equals("scanning-exclude")) {
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_EXCLUDE)) {
             descriptor.addScanningExclusions(ImmutableList.of(value));
 	} else
-	if (element.getQName().equals("scanning-include")) {
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_INCLUDE)) {
             descriptor.addScanningInclusions(ImmutableList.of(value));
 	} else
 	if (element.getQName().equals(RuntimeTagNames.WEB_URI)) {

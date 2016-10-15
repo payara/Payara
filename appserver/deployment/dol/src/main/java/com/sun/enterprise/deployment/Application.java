@@ -741,13 +741,21 @@ public class Application extends CommonResourceBundleDescriptor
     }
 
     public void addScanningInclusions(List<String> inclusions) {
+        addScanningInclusions(inclusions, getLibraryDirectory());
+    }
+
+    public void addScanningInclusions(List<String> inclusions, String libDir) {
         this.scanningInclusions.addAll(FluentIterable.from(inclusions)
-                .transform(new WildcardToRegex(getLibraryDirectory())).toList());
+                .transform(new WildcardToRegex(libDir)).toList());
     }
 
     public void addScanningExclusions(List<String> exclusions) {
+        addScanningExclusions(exclusions, getLibraryDirectory());
+    }
+
+    public void addScanningExclusions(List<String> exclusions, String libDir) {
         this.scanningExclusions.addAll(FluentIterable.from(exclusions)
-                .transform(new WildcardToRegex(getLibraryDirectory())).toList());
+                .transform(new WildcardToRegex(libDir)).toList());
     }
 
     /**

@@ -524,7 +524,7 @@ public abstract class BaseContainer
     protected EJBContainerStateManager containerStateManager;
     protected EJBContainerTransactionManager containerTransactionManager;
     
-    private final JCDIService jcdiService;
+    private JCDIService jcdiService;
 
     /**
      * This constructor is called from ContainerFactoryImpl when an
@@ -1640,6 +1640,11 @@ public abstract class BaseContainer
             
             if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
                 jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
+                if(jcdiCtx == null) {
+                    jcdiService = null;
+                }
+            }
+            if(jcdiCtx != null) {
                 instance = jcdiCtx.getInstance();
             } else {
                 injectEjbInstance(ctx);

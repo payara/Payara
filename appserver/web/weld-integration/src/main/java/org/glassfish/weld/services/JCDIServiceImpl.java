@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.weld.services;
 
@@ -193,6 +194,9 @@ public class JCDIServiceImpl implements JCDIService {
         WeldManager weldManager = bootstrap.getManager(bda);
 
         org.jboss.weld.ejb.spi.EjbDescriptor ejbDesc = weldManager.getEjbDescriptor(ejb.getName());
+        if(ejbDesc == null) {
+            return null;
+        }
 
         // Get an the Bean object
         Bean<?> bean = weldManager.getBean(ejbDesc);
