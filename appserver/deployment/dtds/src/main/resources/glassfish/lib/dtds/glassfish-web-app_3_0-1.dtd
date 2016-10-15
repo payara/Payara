@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 -->
 
 <!--
@@ -58,7 +59,7 @@
                        ejb-ref*, resource-ref*, resource-env-ref*,  service-ref*,
                        message-destination-ref*, cache?, class-loader?,
                        jsp-config?, locale-charset-info?, parameter-encoding?,
-                       property*, valve*, message-destination*, webservice-description*, keep-state?, version-identifier?)>
+                       property*, valve*, message-destination*, webservice-description*, scanning-exclude*, scanning-include*, keep-state?, version-identifier?)>
 <!ATTLIST glassfish-web-app error-url CDATA ""
                       httpservlet-security-provider CDATA #IMPLIED>
 
@@ -832,6 +833,12 @@ of a method parameter.
 Used in: method-params
 -->
 <!ELEMENT method-param (#PCDATA)>
+
+<!--
+Payara flag to include / exclude specific JARs for CDI scanning inside EAR files
+-->
+<!ELEMENT scanning-exclude (#PCDATA)>
+<!ELEMENT scanning-include (#PCDATA)>
 
 <!--
 The keep-state element indicates whether the state information should be
