@@ -66,6 +66,7 @@ import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.Stereotype;
+import javax.faces.view.ViewScoped;
 import javax.inject.Scope;
 import javax.inject.Singleton;
 import javax.interceptor.Interceptor;
@@ -118,6 +119,7 @@ public class WeldUtils {
         cdiScopeAnnotations = new ArrayList<String>();
         cdiScopeAnnotations.add(Scope.class.getName());
         cdiScopeAnnotations.add(NormalScope.class.getName());
+        cdiScopeAnnotations.add(ViewScoped.class.getName());
         cdiScopeAnnotations.add(ApplicationScoped.class.getName());
         cdiScopeAnnotations.add(SessionScoped.class.getName());
         cdiScopeAnnotations.add(RequestScoped.class.getName());

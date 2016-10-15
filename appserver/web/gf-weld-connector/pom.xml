@@ -75,5 +75,10 @@
             <artifactId>cdi-api</artifactId>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.faces</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>
