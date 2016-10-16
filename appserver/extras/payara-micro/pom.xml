@@ -12,6 +12,8 @@
     <name>Payara Micro Parent</name>
     <modules>
         <module>payara-micro-core</module>
+        <module>payara-micro-microprofile-distribution</module>
+        <module>payara-micro-boot</module>
     </modules>
     
     <profiles>

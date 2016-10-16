@@ -61,6 +61,8 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import com.sun.appserv.server.util.Version;
 import fish.payara.micro.util.NameGenerator;
 import fish.payara.nucleus.events.HazelcastEvents;
+import com.sun.enterprise.glassfish.bootstrap.Constants;
+import fish.payara.micro.boot.PayaraMicroRuntimeBuilder;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -176,7 +178,7 @@ public class PayaraMicro {
      * --help Shows this message and exits\n
      * @throws BootstrapException If there is a problem booting the server
      */
-    public static void main(String args[]) throws BootstrapException {
+    public static void main(String args[]) throws Exception {
         PayaraMicro main = getInstance();
         main.scanArgs(args);
 
@@ -920,6 +922,7 @@ public class PayaraMicro {
 
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
+        bprops.setProperty(Constants.BUILDER_NAME_PROPERTY, PayaraMicroRuntimeBuilder.class.getName());
         GlassFishRuntime gfruntime;
         PortBinder portBinder = new PortBinder();
 

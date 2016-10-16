@@ -13,7 +13,7 @@ I. Components
 I. COMPONENTS
 =========================================
 
-In addtion to the software mentioned in 3RD-PARTY-LICENSE.txt
+In addition to the software mentioned in 3RD-PARTY-LICENSE.txt
 
 The following software (or certain identified files distributed with the
 software) may be included in Payara. Unless otherwise specified,
@@ -25,14 +25,15 @@ licensors listed.
 ****************************************
 
 ---------------------------------------------------
-Hazelcast 3.3.x
+Hazelcast 3.x
 minimal-json 0.9.x
 smack 4.1.9
 jxmpp 0.4.2
 xpp3 1.1.4c_7
 snmp4j 2.5.3
+Code from SpringBoot for Launching Executable JARS
 
-Hazelcast License
+Hazelcast and SpringBoot License
 -----------------
 
 
