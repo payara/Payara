@@ -60,7 +60,7 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
                 // check exception cache
                 if (cacheExceptions) {
                     Cache exceptionCache = resolverF.getExceptionCacheResolver(pctx).resolveCache(pctx);
-                    Exception e = (Exception) exceptionCache.get(key);
+                    Throwable e = (Throwable) exceptionCache.get(key);
                     if (e != null) {
                         throw e;
                     }
