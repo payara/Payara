@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.weld;
 
@@ -112,7 +113,8 @@ public class DeploymentImpl implements CDI11Deployment {
     public DeploymentImpl(ReadableArchive archive,
                           Collection<EjbDescriptor> ejbs,
                           DeploymentContext context,
-                          ArchiveFactory archiveFactory) {
+                          ArchiveFactory archiveFactory,
+                          String moduleName) {
         if ( logger.isLoggable( FINE ) ) {
             logger.log(FINE, CDILoggerInfo.CREATING_DEPLOYMENT_ARCHIVE, new Object[]{ archive.getName()});
         }
@@ -128,14 +130,16 @@ public class DeploymentImpl implements CDI11Deployment {
             return;
         }
 
-        createModuleBda(archive, ejbs, context);
-
         ApplicationHolder holder = context.getModuleMetaData(ApplicationHolder.class);
         if ((holder != null) && (holder.app != null)) {
-            appName = holder.app.getAppName();
+            this.appName = holder.app.getAppName();
+        } else if(moduleName != null) {
+            this.appName = moduleName;
         } else {
-            appName = "CDIApp";
+            this.appName = "CDIApp";
         }
+        
+        createModuleBda(archive, ejbs, context, moduleName);
     }
 
     private void addBeanDeploymentArchives(RootBeanDeploymentArchive bda) {
@@ -164,7 +168,7 @@ public class DeploymentImpl implements CDI11Deployment {
      * This method is called for subsequent modules after This <code>Deployment</code> has
      * been created.
      */
-    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context) {
+    public void scanArchive(ReadableArchive archive, Collection<EjbDescriptor> ejbs, DeploymentContext context, String moduleName) {
         if (libJarRootBdas == null) {
             libJarRootBdas = scanForLibJars(archive, ejbs, context);
             if ((libJarRootBdas != null) && libJarRootBdas.size() > 0) {
@@ -173,7 +177,7 @@ public class DeploymentImpl implements CDI11Deployment {
         }
 
         this.context = context;
-        createModuleBda(archive, ejbs, context);
+        createModuleBda(archive, ejbs, context, moduleName);
     }
 
     /**
@@ -708,8 +712,9 @@ public class DeploymentImpl implements CDI11Deployment {
 
     private void createModuleBda( ReadableArchive archive,
                                   Collection<EjbDescriptor> ejbs,
-                                  DeploymentContext context) {
-        RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context );
+                                  DeploymentContext context, 
+                                  String moduleName) {
+        RootBeanDeploymentArchive rootBda = new RootBeanDeploymentArchive(archive, ejbs, context, moduleName);
 
             BeanDeploymentArchive moduleBda = rootBda.getModuleBda();
             BeansXml moduleBeansXml = moduleBda.getBeansXml();

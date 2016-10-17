@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -27,7 +27,6 @@ import javax.annotation.PostConstruct;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
-import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -50,8 +49,10 @@ public class HoggingThreadsHealthCheck extends BaseHealthCheck<HealthCheckHoggin
 
     @Override
     public HealthCheckHoggingThreadsExecutionOptions constructOptions(HoggingThreadsChecker checker) {
-        return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()), checker.getTime(),
-                asTimeUnit(checker.getUnit()), checker.getThresholdPercentage(), checker.getRetryCount());
+        return new HealthCheckHoggingThreadsExecutionOptions(Boolean.valueOf(checker.getEnabled()),
+                Long.parseLong(checker.getTime()), asTimeUnit(checker.getUnit()), 
+                Long.parseLong(checker.getThresholdPercentage()), 
+                Integer.parseInt(checker.getRetryCount()));
     }
 
     @Override

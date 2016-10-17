@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2015 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -19,6 +19,7 @@ import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
+import javax.validation.constraints.Min;
 
 /**
  * @author mertcaliskan
@@ -33,8 +34,9 @@ public interface Checker extends ConfigBeanProxy, ConfigExtension {
     String getEnabled();
     void setEnabled(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "5")
-    Long getTime();
+    @Attribute(defaultValue = "5", dataType = Long.class)
+    @Min(value = 0)
+    String getTime();
     void setTime(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "MINUTES")

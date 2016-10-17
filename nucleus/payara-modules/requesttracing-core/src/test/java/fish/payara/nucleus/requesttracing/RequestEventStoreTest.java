@@ -214,6 +214,49 @@ public class RequestEventStoreTest {
         assertTrue(trace1.getElapsedTime() > 100);
         
     }
+    
+    @Test
+    public void testResettingConversationID() {
+        RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start");
+        eventStore.storeEvent(re);
+        for (int i = 0; i < 10; i++) {
+            re = new RequestEvent("Event-"+i);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RequestEventStoreTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            eventStore.storeEvent(re);
+        }
+        eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
+        
+        UUID oldID = eventStore.getTrace().getTrace().getFirst().getConversationId();
+        UUID newID = UUID.randomUUID();
+        eventStore.setConverstationID(newID);
+        for (RequestEvent event : eventStore.getTrace().getTrace()) {
+            assertEquals(newID, event.getConversationId());
+        }
+        
+    }
+    
+    @Test
+    public void isInProgress() {
+        assertFalse(eventStore.isTraceInProgress());
+        RequestEvent re = new RequestEvent(EventType.TRACE_START, "Start");
+        eventStore.storeEvent(re);
+        for (int i = 0; i < 10; i++) {
+            re = new RequestEvent("Event-"+i);
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(RequestEventStoreTest.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            eventStore.storeEvent(re);
+        }
+        assertTrue(eventStore.isTraceInProgress());
+        eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
+        assertFalse(eventStore.isTraceInProgress());        
+    }
 
 
     

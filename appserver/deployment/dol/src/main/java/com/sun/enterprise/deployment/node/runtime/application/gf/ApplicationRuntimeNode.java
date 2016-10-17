@@ -37,12 +37,15 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment.node.runtime.application.gf;
 
+import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.ResourcePropertyDescriptor;
 import com.sun.enterprise.deployment.node.ApplicationNode;
+import com.sun.enterprise.deployment.node.ResourcePropertyNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.node.runtime.*;
 import com.sun.enterprise.deployment.node.runtime.common.SecurityRoleMappingNode;
@@ -99,6 +102,8 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
              MessageDestinationRuntimeNode.class);
         registerElementHandler(new XMLElement(WebServicesTagNames.SERVICE_REF),
                                ServiceRefNode.class);
+        registerElementHandler(new XMLElement(RuntimeTagNames.PROPERTY),
+                               ResourcePropertyNode.class);
     }
         
    /**
@@ -236,7 +241,13 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
                     }
                 }
             }
-        } 
+        }
+        else if(newDescriptor instanceof ResourcePropertyDescriptor) {
+            ResourcePropertyDescriptor desc = (ResourcePropertyDescriptor)newDescriptor;
+            if("default-role-mapping".equals(desc.getName())) {
+                descriptor.setDefaultGroupPrincipalMapping(ConfigBeansUtilities.toBoolean(desc.getValue()));
+            }
+        }
     } 
     
     /**

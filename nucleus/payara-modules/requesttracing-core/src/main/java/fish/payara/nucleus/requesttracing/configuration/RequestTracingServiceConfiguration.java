@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -19,6 +19,7 @@ import org.jvnet.hk2.config.*;
 
 import java.beans.PropertyVetoException;
 import java.util.List;
+import javax.validation.constraints.Min;
 
 /**
  * @author mertcaliskan
@@ -29,11 +30,12 @@ import java.util.List;
 public interface RequestTracingServiceConfiguration extends ConfigBeanProxy, ConfigExtension {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    Boolean getEnabled();
+    String getEnabled();
     void enabled(String value) throws PropertyVetoException;
 
-    @Attribute(defaultValue = "30")
-    Long getThresholdValue();
+    @Attribute(defaultValue = "30", dataType = Long.class)
+    @Min(value = 0)
+    String getThresholdValue();
     void setThresholdValue(String value) throws PropertyVetoException;
 
     @Attribute(defaultValue = "SECONDS")

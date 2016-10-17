@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -105,6 +105,7 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             return;
         }
 
+        enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         if (dynamic || enabled) {
             if (dynamic) {
                 notifierDynamic = true;
@@ -116,12 +117,9 @@ public class SetRequestTracingConfiguration implements AdminCommand {
             } else {
                 notifierEnabled = false;
             }
-            enableRequestTracingConfigureOnTarget(actionReport, theContext, enabled);
         }
 
-        if (notifierDynamic || notifierEnabled) {
-            enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
-        }
+        enableRequestTracingNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
     }
 
     private void enableRequestTracingConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {

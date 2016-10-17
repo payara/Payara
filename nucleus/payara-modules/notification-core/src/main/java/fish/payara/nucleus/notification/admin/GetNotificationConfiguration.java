@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -98,8 +98,11 @@ public class GetNotificationConfiguration implements AdminCommand {
 
             NotifierConfiguration notifierConfiguration = configuration.getNotifierConfigurationByType(serviceHandle.getService().getNotifierConfigType());
             LogNotifierConfiguration logNotifierConfiguration = (LogNotifierConfiguration) notifierConfiguration;
-
-            values[1] = logNotifierConfiguration.getEnabled();
+            if (logNotifierConfiguration == null) {
+                values[1] = "true";
+            } else {
+                values[1] = logNotifierConfiguration.getEnabled();
+            }
             values[2] = serviceHandle.getActiveDescriptor().getName();
         }
         columnFormatter.addRow(values);

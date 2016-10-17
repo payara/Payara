@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.admin.amx.impl.j2ee;
 
@@ -70,7 +70,7 @@ public class J2EEServerImpl extends J2EELogicalServerImplBase
     }
     /* The vendor information for this server. */
 
-    private static final String serverVendor = "C2B2 Consulting Limited";
+    private static final String serverVendor = "Payara Foundation";
 
     public String[] getjavaVMs()
     {

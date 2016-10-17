@@ -38,6 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
+    Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 -->
 
 <!--
@@ -53,7 +54,7 @@
 <!--
 This is the root element of the ejb module descriptor document.
 -->
-<!ELEMENT glassfish-ejb-jar (security-role-mapping*, enterprise-beans, compatibility?, disable-nonportable-jndi-names?, keep-state?, version-identifier?) >
+<!ELEMENT glassfish-ejb-jar (security-role-mapping*, enterprise-beans, compatibility?, disable-nonportable-jndi-names?, keep-state?, version-identifier?, property*) >
 
 <!-- 
 System unique object id. Automatically generated and updated at deployment/redeployment 
@@ -1184,3 +1185,12 @@ The version-identifier element contains the version information. The value is
  retrieved at deployment.
 -->
 <!ELEMENT version-identifier (#PCDATA)>
+
+<!-- 
+Syntax for supplying properties as name value pairs 
+-->
+<!ELEMENT property (description?)>
+<!ATTLIST property name  CDATA  #REQUIRED
+                   value CDATA  #REQUIRED>
+
+<!ELEMENT description (#PCDATA)>

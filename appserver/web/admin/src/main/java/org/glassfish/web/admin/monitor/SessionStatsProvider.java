@@ -23,7 +23,7 @@
  * Modifications:
  * If applicable, add the following below the License Header, with the fields
  * enclosed by brackets [] replaced by your own identifying information:
- * "Portions Copyright [2015] [C2B2 Consulting Limited]"
+ * "Portions Copyright [2016] [Payara Foundation]"
  *
  * Contributor(s):
  * If you wish your version of this file to be governed by only the CDDL or

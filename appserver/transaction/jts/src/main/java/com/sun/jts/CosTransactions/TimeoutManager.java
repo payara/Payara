@@ -59,7 +59,7 @@
 //   This software contains confidential and proprietary information of
 //   IBM Corp.
 //----------------------------------------------------------------------------
-//Portions Copyright [2015] [C2B2 Consulting Limited]
+//Portions Copyright [2016] [Payara Foundation]
 package com.sun.jts.CosTransactions;
 
 import java.util.*;

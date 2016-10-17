@@ -7,10 +7,8 @@ package fish.payara.nucleus.notification.admin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
 import java.util.Properties;
 import javax.inject.Inject;
-import static javax.management.Query.value;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
 import org.glassfish.api.Param;
@@ -28,7 +26,6 @@ import org.glassfish.config.support.TargetType;
 import org.glassfish.hk2.api.PerLookup;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.jvnet.hk2.annotations.Service;
-import static javax.management.Query.value;
 
 /**
  * Admin command to set notification services configuration
@@ -93,12 +90,11 @@ public class SetNotificationConfiguration implements AdminCommand {
             } else {
                 notifierEnabled = false;
             }
-            enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
         }
+        enableNotificationConfigureOnTarget(actionReport, theContext, enabled);
 
-        if (notifierDynamic || notifierEnabled) {
-            enableNotificationNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
-        }
+        enableNotificationNotifierConfigurerOnTarget(actionReport, theContext, notifierEnabled);
+
     }
 
     private void enableNotificationConfigureOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {

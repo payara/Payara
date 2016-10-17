@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.container.common.impl;
 
@@ -59,7 +60,6 @@ import javax.naming.NamingException;
 
 import com.sun.enterprise.container.common.spi.util.ComponentEnvManager;
 import com.sun.enterprise.container.common.spi.ManagedBeanManager;
-import com.sun.logging.LogDomains;
 
 import javax.naming.*;
 import java.util.logging.Level;
@@ -90,8 +90,7 @@ public class JavaModuleNamingProxy
     private ProcessEnvironment.ProcessType processType;
 
 
-    private static Logger _logger = LogDomains.getLogger(JavaModuleNamingProxy.class,
-            LogDomains.NAMING_LOGGER);
+    private static final Logger _logger = Logger.getLogger(JavaModuleNamingProxy.class.getName());
 
     private InitialContext ic;
 

@@ -2,7 +2,7 @@
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
 
  The contents of this file are subject to the terms of the Common Development
@@ -21,7 +21,6 @@ package fish.payara.nucleus.healthcheck.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
-import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckConstants;
 import fish.payara.nucleus.healthcheck.HealthCheckService;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
@@ -39,7 +38,6 @@ import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
-import org.jvnet.hk2.config.Transaction;
 import org.jvnet.hk2.config.TransactionFailure;
 import org.jvnet.hk2.config.types.Property;
 
@@ -58,7 +56,7 @@ import java.util.logging.Logger;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("healthcheck.configure.service.threshold")
-@ExecuteOn(RuntimeType.DAS)
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
 @TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
         @RestEndpoint(configBean = Domain.class,
@@ -103,6 +101,9 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
     
     @Inject
     ServiceLocator serviceLocator;
+    
+    @Inject
+    ServerEnvironment server;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -149,7 +150,56 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
         }
 
         if (dynamic) {
-            enableOnTarget(actionReport, theContext, service, thresholdCritical, thresholdWarning, thresholdGood);
+                if (service.getOptions() == null) {
+                    service.setOptions(service.constructOptions(checker));
+                }
+                if (server.isDas()) {
+                    if (targetUtil.getConfig(target).isDas()) {      
+                        if (thresholdCritical != null) {
+                            service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+                            actionReport.appendMessage(strings.getLocalString(
+                                    "healthcheck.service.configure.threshold.critical.success",
+                                    "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
+                            actionReport.appendMessage("\n");
+                        }
+                        if (thresholdWarning != null) {
+                            service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+                            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
+                                    "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
+                            actionReport.appendMessage("\n");
+                        }
+                        if (thresholdGood != null) {
+                            service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+                            actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
+                                    "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
+                            actionReport.appendMessage("\n");
+                        }
+                        healthCheckService.reboot();
+                    }
+                } else {
+                    // it implicitly targetted to us as we are not the DAS
+                    // restart the service
+                    if (thresholdCritical != null) {
+                        service.getOptions().setThresholdCritical(Integer.valueOf(thresholdCritical));
+                        actionReport.appendMessage(strings.getLocalString(
+                                "healthcheck.service.configure.threshold.critical.success",
+                                "Critical threshold for {0} service is set with value {1}.", serviceName, thresholdCritical));
+                        actionReport.appendMessage("\n");
+                    }
+                    if (thresholdWarning != null) {
+                        service.getOptions().setThresholdWarning(Integer.valueOf(thresholdWarning));
+                        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.warning.success",
+                                "Warning threshold for {0} service is set with value {1}.", serviceName, thresholdWarning));
+                        actionReport.appendMessage("\n");
+                    }
+                    if (thresholdGood != null) {
+                        service.getOptions().setThresholdGood(Integer.valueOf(thresholdGood));
+                        actionReport.appendMessage(strings.getLocalString("healthcheck.service.configure.threshold.good.success",
+                                "Good threshold for {0} service is set with value {1}.", serviceName, thresholdGood));
+                        actionReport.appendMessage("\n");
+                    }
+                    healthCheckService.reboot();
+                }
         }
     }
 
@@ -185,33 +235,6 @@ public class HealthCheckServiceThresholdConfigurer implements AdminCommand {
         if (value != null) {
             propertyProxy.setName(name);
             propertyProxy.setValue(value);
-        }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, BaseThresholdHealthCheck service, String
-            thresholdCritical, String thresholdWarning, String thresholdGood) {
-        
-        CommandRunner runner = serviceLocator.getService(CommandRunner.class);
-        ActionReport subReport = context.getActionReport().addSubActionsReport();
-        CommandRunner.CommandInvocation inv;
-
-        if (target.equals("server-config")) {
-            inv = runner.getCommandInvocation("__edit-healthcheck-configure-service-threshold-on-das", subReport, context.getSubject());
-        } else {
-            inv = runner.getCommandInvocation("__edit-healthcheck-configure-service-threshold-on-instance", subReport, context.getSubject());
-        }
-
-        ParameterMap params = new ParameterMap();
-        params.add("target", target);
-        params.add("serviceName", serviceName);
-        params.add("thresholdCritical", thresholdCritical);
-        params.add("thresholdWarning", thresholdWarning);
-        params.add("thresholdGood", thresholdGood);
-        inv.parameters(params);
-        inv.execute();
-        // swallow the offline warning as it is not a problem
-        if (subReport.hasWarnings()) {
-            subReport.setMessage("");
         }
     }
 }

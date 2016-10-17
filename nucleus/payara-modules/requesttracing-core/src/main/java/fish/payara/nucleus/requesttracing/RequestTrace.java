@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -48,6 +48,7 @@ public class RequestTrace {
                 requestEvent.setConversationId(requestEvent.getId());
                 trace.add(requestEvent);
                 started = true;
+                completed = false;
                 break;
             case REQUEST_EVENT:{
                 if (!started) {
@@ -106,5 +107,24 @@ public class RequestTrace {
 
     long getStartTime() {
         return startTime;
+    }
+
+    void setConversationID(UUID newID) {
+        for (RequestEvent requestEvent : trace) {
+            requestEvent.setConversationId(newID);
+        }
+    }
+
+    UUID getConversationID() {
+        UUID result = null;
+        RequestEvent re = trace.getFirst();
+        if (re != null) {
+            result = re.getConversationId();
+        }
+        return result;
+    }
+
+    boolean isCompleted() {
+        return completed;
     }
 }

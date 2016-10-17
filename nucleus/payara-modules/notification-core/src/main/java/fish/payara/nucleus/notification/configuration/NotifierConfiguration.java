@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -28,6 +28,6 @@ import java.beans.PropertyVetoException;
 public interface NotifierConfiguration extends ConfigBeanProxy {
 
     @Attribute(defaultValue = "false", dataType = Boolean.class)
-    Boolean getEnabled();
+    String getEnabled();
     void enabled(Boolean value) throws PropertyVetoException;
 }

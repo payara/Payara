@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2014-2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
  
 /*
  * InstanceHandler.java
@@ -208,7 +208,8 @@ public class LoggingHandlers {
                 if ((key.equals("com.sun.enterprise.server.logging.SyslogHandler.useSystemLogging")|| 
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.logtoConsole") ||
                       key.equals("com.sun.enterprise.server.logging.GFFileHandler.multiLineMode") ||
-                     key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ))
+                     key.equals("com.sun.enterprise.server.logging.GFFileHandler.rotationOnDateChange" ) ||
+                        key.equals("com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation"))
                         && (e.getValue() == null)) {
                     attrs.put(key, "false");
                 }

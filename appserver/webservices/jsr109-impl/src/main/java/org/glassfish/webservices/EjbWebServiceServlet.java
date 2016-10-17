@@ -37,14 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.ejb.api.EjbEndpointFacade;
@@ -135,7 +134,7 @@ public class EjbWebServiceServlet extends HttpServlet {
                     sb.append("?");
                     sb.append(query);
                 }
-                hresp.sendRedirect(URLEncoder.encode(sb.toString(), "UTF-8"));
+                hresp.sendRedirect(hresp.encodeRedirectURL(sb.toString()));
             } else {
                 boolean dispatch = true;
                 // check if it is a tester servlet invocation

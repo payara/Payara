@@ -37,7 +37,7 @@
     and therefore, elected the GPL Version 2 license, then the option applies
     only if the new code is made subject to such option by the copyright
     holder.
-Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 -->
 
 <domain log-root="${com.sun.aas.instanceRoot}/logs" application-root="${com.sun.aas.instanceRoot}/applications" version="10.0">
@@ -183,7 +183,7 @@ Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
             </network-config>
             <thread-pools>
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
-                <thread-pool name="thread-pool-1" min-thread-pool-size="1" max-thread-pool-size="200"/>
+                <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
             </thread-pools>
         </config> 
     </configs>

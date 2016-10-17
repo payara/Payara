@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.concurrent.runtime.deployer;
 
@@ -81,6 +81,9 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
 
     // logger for this deployer
     private static Logger _logger = LogFacade.getLogger();
+    
+    // Monitoring provider
+    private ManagedExecutorServiceStatsProvider managedExecutorServiceProbeListener;
 
     @Override
     public void deployResource(Object resource, String applicationName, String moduleName) throws Exception {
@@ -141,6 +144,7 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
         ManagedExecutorService managedExecutorServiceRes = (ManagedExecutorService) resource;
         ResourceInfo resourceInfo = new ResourceInfo(managedExecutorServiceRes.getJndiName(), applicationName, moduleName);
         namingService.unpublishObject(resourceInfo, managedExecutorServiceRes.getJndiName());
+        unregisterMonitorableComponent();
         // stop the runtime object
         concurrentRuntime.shutdownManagedExecutorService(managedExecutorServiceRes.getJndiName());
     }
@@ -191,12 +195,21 @@ public class ManagedExecutorServiceDeployer implements ResourceDeployer {
         // do nothing
     }
     
-    protected void registerMonitorableComponent(ManagedExecutorService 
-            managedExecutorService) {
-        ManagedExecutorServiceStatsProvider managedExecutorServiceProbeListener 
-                = new ManagedExecutorServiceStatsProvider(
-                        managedExecutorService);
+    /**
+     * Registers the ManagedExecutorService for monitoring.
+     * @param managedExecutorService The ManagedExecutorService to register for monitoring
+     */
+    private void registerMonitorableComponent(ManagedExecutorService managedExecutorService) {
+        managedExecutorServiceProbeListener = new ManagedExecutorServiceStatsProvider(managedExecutorService);
         
         managedExecutorServiceProbeListener.register();
+    }
+    
+    /**
+     * Unregisters the ManagedExecutorService defined by the 
+     * managedExecutorServiceProbeLister from the monitoring tree.
+     */
+    private void unregisterMonitorableComponent() {
+        managedExecutorServiceProbeListener.unregister();
     }
 }

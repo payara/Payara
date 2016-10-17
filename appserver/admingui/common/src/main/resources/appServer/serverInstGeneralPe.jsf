@@ -39,7 +39,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2015-2016] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] Payara Foundation -->
 <!-- appServer/serverInstGeneralPe.jsf -->
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings")
