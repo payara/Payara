@@ -75,7 +75,12 @@ public enum RuntimeType {
     /**
      * All instances in the domain
      */
-    ALL;
+    ALL,
+    
+    /**
+     * A Payara Micro Instance
+     */
+    MICRO;
 
     public final boolean isInstance() {
         return this == INSTANCE;
@@ -103,5 +108,9 @@ public enum RuntimeType {
     
     public final static RuntimeType getDefault() {
         return DAS;
+    }
+    
+    public final boolean isMicro() {
+        return this ==  MICRO;
     }
 }

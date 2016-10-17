@@ -158,4 +158,6 @@ public interface ServerEnvironment {
     boolean isInstance();
 
     boolean isDas();
+    
+    boolean isMicro();
 }

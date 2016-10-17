@@ -39,6 +39,8 @@ public class InstanceDescriptor implements Serializable {
     private int httpsPort;
     private InetAddress hostName;
     private Map<String, ApplicationDescriptor> deployedApplications;
+    private boolean liteMember;
+    private boolean microInstance;
 
     public InstanceDescriptor(String UUID) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
@@ -158,6 +160,19 @@ public class InstanceDescriptor implements Serializable {
         return memberUUID.hashCode();
     }
     
+    public boolean isLiteMember() {
+        return liteMember;
+    }
     
+    public void setLiteMember(boolean isLiteMember) {
+        liteMember = isLiteMember;
+    }
     
+    public boolean isMicroInstance() {
+        return microInstance;
+    }
+    
+    public void setMicroInstance(boolean isMicroInstance) {
+        microInstance = isMicroInstance;
+    }
 }

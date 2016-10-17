@@ -7,9 +7,6 @@ package fish.payara.appserver.micro.services.command;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-//import fish.payara.micro.services.PayaraMicroInstance;
-//import fish.payara.micro.services.data.ApplicationDescriptor;
-//import fish.payara.micro.services.data.InstanceDescriptor;
 import fish.payara.appserver.micro.services.PayaraMicroInstance;
 import fish.payara.appserver.micro.services.data.ApplicationDescriptor;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
@@ -68,41 +65,50 @@ public class ListPayaraMicroInstancesCommand implements AdminCommand
             Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
         
             String[] headers = {"Instance Name", "Host Name", "HTTP Port", 
-                "HTTPS Port", "Deployed Applications"};
+                "HTTPS Port", "Lite Member", "Deployed Applications"};
             ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
             List members = new ArrayList();
             Properties extraProps = new Properties();
 
             for (InstanceDescriptor instance : instances) {
-                Object values[] = new Object[5];
-                values[0] = instance.getInstanceName();
-                values[1] = instance.getHostName();
-                values[2] = instance.getHttpPort();
-                values[3] = instance.getHttpsPort();
-
-                List<String> applications = new ArrayList<>();
-                Collection<ApplicationDescriptor> applicationDescriptors = instance.getDeployedApplications();
-                if (applicationDescriptors != null) {
-                    for (ApplicationDescriptor application : applicationDescriptors) {
-                        applications.add(application.getName());
+                // We only want to take note of the Micro instances
+                if (instance.isMicroInstance()) {
+                    Object values[] = new Object[6];
+                    values[0] = instance.getInstanceName();
+                    values[1] = instance.getHostName();
+                    values[2] = instance.getHttpPort();
+                    if (instance.getHttpsPort() == 0) {
+                        values[3] = "Disabled";
+                    } else {
+                        values[3] = instance.getHttpsPort();
                     }
-                    values[4] = Arrays.toString(applications.toArray());
-                } else {
-                    values[4] = "";
-                }
+                    values[4] = instance.isLiteMember();
 
-                columnFormatter.addRow(values);
+                    List<String> applications = new ArrayList<>();
+                    Collection<ApplicationDescriptor> applicationDescriptors = instance.getDeployedApplications();
+                    if (applicationDescriptors != null) {
+                        for (ApplicationDescriptor application : applicationDescriptors) {
+                            applications.add(application.getName());
+                        }
+                        values[5] = Arrays.toString(applications.toArray());
+                    } else {
+                        values[5] = "";
+                    }
 
-                Map<String, Object> map = new HashMap<>(5);
+                    columnFormatter.addRow(values);
 
-                map.put("InstanceName", values[0]);
-                map.put("HostName", values[1]);
-                map.put("HttpPort", values[2]);
-                map.put("HttpsPort", values[3]);
-                map.put("Applications", values[4]);
+                    Map<String, Object> map = new HashMap<>(6);
 
-                members.add(map);          
+                    map.put("InstanceName", values[0]);
+                    map.put("HostName", values[1]);
+                    map.put("HttpPort", values[2]);
+                    map.put("HttpsPort", values[3]);
+                    map.put("LiteMember", values[4]);
+                    map.put("Applications", values[5]);
+
+                    members.add(map);
+                }             
             }
 
             extraProps.put("Members", members);

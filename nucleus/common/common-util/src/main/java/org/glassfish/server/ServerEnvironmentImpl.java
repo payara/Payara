@@ -432,7 +432,12 @@ public class ServerEnvironmentImpl implements ServerEnvironment, PostConstruct {
      */
     @Override
     public boolean isDas() {
-        return serverType == RuntimeType.DAS;
+        return (serverType == RuntimeType.DAS || isMicro());
+    }
+    
+    @Override
+    public boolean isMicro() {
+        return serverType == RuntimeType.MICRO;
     }
 
     public boolean isDebug() {

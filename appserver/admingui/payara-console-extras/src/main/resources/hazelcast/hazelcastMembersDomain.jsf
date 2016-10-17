@@ -20,13 +20,17 @@
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
+    setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
     />
 <!composition template="/templates/default.layout"  guiTitle="Hazelcast Configuration"  >
+
+#include "/cluster/shared/instancesExtraButtons.inc"
+#include "/cluster/shared/handlers.inc"
 
 <!define name="content">
 
 <event>
-    <!beforeCreate
+    <!--<!beforeCreate
         getRequestValue(key="target" value="#{pageSession.target}");
         urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
         getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
@@ -45,26 +49,41 @@
         setSessionAttribute(key="#{pageSession.tabSetName}" value="hazelcastMembers");
         createMap(result="#{pageSession.attrsMap}")
         mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-hazelcast-members?target=#{pageSession.encodedTarget}"  method="GET" result="#{requestScope.resp}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-payara-micro-instances"  method="GET" result="#{requestScope.resp}");
         setPageSessionAttribute(key="members", value="#{requestScope.resp.data.message}");
-        />
+        />-->
+    <!beforeCreate
+        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncs.msg.JS.confirmDeleteInstances}");
+        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/standalone/standaloneInstances.jsf?");
+        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?foo"); //foo is here to ensure editLink works for both cluster and standalone instance.
+        setPageSessionAttribute(key="tableTitle" value="$resource{i18ncs.standaloneInstances.TableTitle}");
+        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/cluster/standalone/standaloneInstanceNew.jsf");
+        setPageSessionAttribute(key="clusterList" value="#{false}" )
+        setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}/servers");
+        setPageSessionAttribute(key="childType" value="server");
+        createMap(result="#{requestScope.listInstanceAttrMap}");
+        mapPut(map="#{requestScope.listInstanceAttrMap}" key="standaloneonly" value="true")
+        gfr.getInstancesStatus();
+        gf.getMapKeys(Map="#{pageSession.instanceStatusMap}" Keys="#{pageSession.standalone}");
+        gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}",
+                includeList="#{pageSession.standalone}"
+                result="#{requestScope.listOfRows}");
+    />
 </event>
 
 <sun:form id="propertyForm">
-
+#include "/common/shared/alertMsg.inc"
 #include "/common/appServer/domainTabs.inc"
 #include "/common/shared/alertMsg_1.inc"
-
-    <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}" helpText="$resource{i18nhc.hazelcast.membersTitleHelp}" >
-    </sun:title>
+<sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}"
+                 helpText="$resource{i18nhc.hazelcast.membersTitleHelp}" >
+</sun:title>
 #include "/common/shared/nameSection.inc"
-<sun:propertySheetSection >
-    <sun:property id="members" labelAlign="left" noWrap="#{true}" overlapLabel="#{false}" label="$resource{i18nhc.hazelcast.members.members}"  helpText="$resource{i18nhc.hazelcast.members.membersHelp}">
-        <sun:staticText id="members" text="#{pageSession.members}" />
-    </sun:property>
-</sun:propertySheetSection>
-
-<sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}" />
+"<br />
+#include "/cluster/shared/instancesTable.inc"
+    <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}"/>
 </sun:form>
+#include "/common/shared/changeButtonsJS.inc"
+
 </define>
-</composition>
+</composition>                

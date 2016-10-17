@@ -101,6 +101,9 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     
     private boolean clustered;
     
+    private boolean liteMember;
+    private boolean microInstance;
+    
     public String getInstanceName() {
         return instanceName;
     }
@@ -285,43 +288,36 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             instanceName = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
                     HazelcastCore.INSTANCE_ATTRIBUTE);
             myCurrentID = hazelcast.getInstance().getCluster().getLocalMember().getUuid();
+            liteMember = hazelcast.getInstance().getCluster().getLocalMember().isLiteMember();
         }
         
-        // Determine Http ports
-        List<NetworkListener> networkListeners = 
-                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener();   
+        // Determine Http port
+        NetworkListener httpListener = 
+                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
         
         int port = 8080;
-        boolean httpPortEnabled = false;
+        boolean httpPortEnabled = true;
         
-        for (NetworkListener networkListener : networkListeners) {
-            if (networkListener.findProtocol().getSecurityEnabled().equals("false")) {
-                port = Integer.parseInt(networkListener.getPort());
-                httpPortEnabled = Boolean.parseBoolean(networkListener.getEnabled());
-                
-                if (networkListener.getName().equals("http-listener-1") || 
-                        networkListener.getName().equals("http-listener")) {
-                    break;
-                }
-            } 
-        } 
+        if (httpListener != null) {
+            port = Integer.parseInt(httpListener.getPort());
+            httpPortEnabled = Boolean.parseBoolean(httpListener.getEnabled());
+        }
         
         // Determine Https Port
         int sslPort = 8181;
         boolean httpsPortEnabled = false;
         
-        for (NetworkListener networkListener : networkListeners) {
-            if (networkListener.findProtocol().getSecurityEnabled().equals("true")) {
-                sslPort = Integer.parseInt(networkListener.getPort());
-                httpsPortEnabled = Boolean.parseBoolean(networkListener.getEnabled());
-                
-                if (networkListener.getName().equals("http-listener-2") || 
-                        networkListener.getName().equals("https-listener")) {
-                    break;
-                }
-            } 
+        NetworkListener httpsListener = 
+                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("https-listener");
+        
+        if (httpsListener != null) {
+            sslPort = Integer.parseInt(httpsListener.getPort());
+            httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
         }
 
+        
+        microInstance = environment.isMicro();
+        
         try {
             me = new InstanceDescriptor(myCurrentID);
             me.setInstanceName(instanceName);
@@ -333,6 +329,9 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             if (httpsPortEnabled) {
                 me.setHttpsPort(sslPort);
             }
+            
+            me.setLiteMember(liteMember);
+            me.setMicroInstance(microInstance);
         } catch (UnknownHostException ex) {
             java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, 
                     "Could not find local hostname", ex);
@@ -348,7 +347,6 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     
     private void updateInstanceDescriptor() {
         if (cluster.isEnabled()) {
-            // If hazelcast has been restarted dynamically, we will need to reinitialise the instance descriptor
             initialiseInstanceDescriptor();
             joinCluster();
         } else {
