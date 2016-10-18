@@ -12,7 +12,6 @@
     <name>Payara Micro Parent</name>
     <modules>
         <module>payara-micro-cdi</module>
-       <!-- <module>payara-micro-service</module>-->
         <module>payara-micro-core</module>
     </modules>
     
