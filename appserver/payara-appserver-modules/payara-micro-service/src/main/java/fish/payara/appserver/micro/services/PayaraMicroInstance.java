@@ -20,13 +20,16 @@ package fish.payara.appserver.micro.services;
 import com.sun.enterprise.deployment.Application;
 import fish.payara.appserver.micro.services.command.AsAdminCallable;
 import fish.payara.appserver.micro.services.command.ClusterCommandResult;
+import fish.payara.appserver.micro.services.data.ApplicationDescriptor;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import fish.payara.nucleus.cluster.PayaraCluster;
 import fish.payara.nucleus.eventbus.ClusterMessage;
 import fish.payara.nucleus.eventbus.MessageReceiver;
+import fish.payara.nucleus.events.HazelcastEvents;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import java.io.Serializable;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -82,7 +85,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
 
     @Inject
     private CommandRunner commandRunner;
-
+    
     private HashSet<PayaraClusterListener> myListeners;
 
     private HashSet<CDIEventListener> myCDIListeners;
@@ -97,12 +100,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     private ServerEnvironment environment;
     
     @Inject
-    HazelcastCore hazelcast;
-    
-    private boolean clustered;
-    
-    private boolean liteMember;
-    private boolean microInstance;
+    private HazelcastCore hazelcast;
     
     public String getInstanceName() {
         return instanceName;
@@ -179,9 +177,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
         
         if (cluster.isEnabled()) {
             joinCluster();
-        } else {
-            clustered = false;
-        }          
+        }       
     }
 
     /**
@@ -218,8 +214,8 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
                     cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), new Long(app.getUniqueId()));
                 }
             }
-
         } 
+        
         // removes the application from the clustered registry of applications
         else if (event.is(Deployment.APPLICATION_UNLOADED)) {
             if (event.hook() != null && event.hook() instanceof ApplicationInfo) {
@@ -233,9 +229,13 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             this.cluster.getClusteredStore().remove(INSTANCE_STORE_NAME, myCurrentID);
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
         }
+        
+        if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
+            updateInstanceDescriptor();
+        }
     }
 
-    public Set<InstanceDescriptor> getClusteredPayaras() {
+    public Set<InstanceDescriptor> getClusteredPayaras() {  
         Set<String> members = cluster.getClusterMembers();
         HashSet<InstanceDescriptor> result = new HashSet<>(members.size());
         for (String member : members) {
@@ -284,54 +284,74 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     }
 
     private void initialiseInstanceDescriptor() {
+        boolean liteMember = false;
+        int hazelcastPort = 5900;
+        
         if (hazelcast.isEnabled()) {
             instanceName = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
                     HazelcastCore.INSTANCE_ATTRIBUTE);
             myCurrentID = hazelcast.getInstance().getCluster().getLocalMember().getUuid();
             liteMember = hazelcast.getInstance().getCluster().getLocalMember().isLiteMember();
+            hazelcastPort = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getPort();
         }
         
-        // Determine Http port
-        NetworkListener httpListener = 
-                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("http-listener");
+        String instanceType = environment.getRuntimeType().toString();
         
-        int port = 8080;
-        boolean httpPortEnabled = true;
-        
-        if (httpListener != null) {
-            port = Integer.parseInt(httpListener.getPort());
-            httpPortEnabled = Boolean.parseBoolean(httpListener.getEnabled());
-        }
-        
-        // Determine Https Port
-        int sslPort = 8181;
-        boolean httpsPortEnabled = false;
-        
-        NetworkListener httpsListener = 
-                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListener("https-listener");
-        
-        if (httpsListener != null) {
-            sslPort = Integer.parseInt(httpsListener.getPort());
-            httpsPortEnabled = Boolean.parseBoolean(httpsListener.getEnabled());
-        }
-
-        
-        microInstance = environment.isMicro();
+        List<Integer> ports = new ArrayList<>();
+        List<Integer> sslPorts = new ArrayList<>();
+        int adminPort = 0;
+        for (NetworkListener networkListener : 
+                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {        
+            if (Boolean.parseBoolean(networkListener.getEnabled())) {
+                if (networkListener.findProtocol().getSecurityEnabled().equals("false")) {
+                    if (networkListener.getName().equals(
+                            context.getConfigBean().getConfig().getAdminListener().getName())) {
+                        if (instanceType.equals("MICRO")) {
+                            ports.add(Integer.parseInt(networkListener.getPort()));
+                        }
+                        adminPort = Integer.parseInt(networkListener.getPort());
+                    } else {
+                        ports.add(Integer.parseInt(networkListener.getPort()));
+                    }
+                } else if (networkListener.findProtocol().getSecurityEnabled().equals("true")) {
+                    if (networkListener.getName().equals(
+                            context.getConfigBean().getConfig().getAdminListener().getName())) {
+                        if (instanceType.equals("MICRO")) {
+                            ports.add(Integer.parseInt(networkListener.getPort()));
+                        }
+                        adminPort = Integer.parseInt(networkListener.getPort());
+                    } else {
+                        sslPorts.add(Integer.parseInt(networkListener.getPort()));
+                    }
+                }
+            }
+        } 
         
         try {
+            Collection<ApplicationDescriptor> deployedApplications = new ArrayList<>();
+            if (me != null) {
+                deployedApplications = me.getDeployedApplications();
+            }
             me = new InstanceDescriptor(myCurrentID);
             me.setInstanceName(instanceName);
-            
-            if (httpPortEnabled) {
-                me.setHttpPort(port);
-            }
-
-            if (httpsPortEnabled) {
-                me.setHttpsPort(sslPort);
+            for (int port : ports) {
+                me.addHttpPort(port);
             }
             
+            for (int sslPort : sslPorts) {
+                me.addHttpsPort(sslPort);
+            }
+            
+            me.setAdminPort(adminPort);
+            me.setHazelcastPort(hazelcastPort);
             me.setLiteMember(liteMember);
-            me.setMicroInstance(microInstance);
+            me.setInstanceType(instanceType);
+            
+            if (!deployedApplications.isEmpty()) {
+                for (ApplicationDescriptor application : deployedApplications) {
+                    me.addApplication(application);
+                }
+            }
         } catch (UnknownHostException ex) {
             java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, 
                     "Could not find local hostname", ex);
@@ -339,7 +359,6 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     }
     
     private void joinCluster() {
-        clustered = true;
         cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
         cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
         cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);   
@@ -348,14 +367,11 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     private void updateInstanceDescriptor() {
         if (cluster.isEnabled()) {
             initialiseInstanceDescriptor();
-            joinCluster();
-        } else {
-            clustered = false;
+            joinCluster(); 
         }
     }
     
     public boolean isClustered() {
-        updateInstanceDescriptor();
-        return clustered;
+        return cluster.isEnabled();
     }
 }

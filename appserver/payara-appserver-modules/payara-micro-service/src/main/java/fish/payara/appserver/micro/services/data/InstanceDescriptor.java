@@ -20,9 +20,11 @@ package fish.payara.appserver.micro.services.data;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import org.glassfish.internal.data.ApplicationInfo;
 
@@ -35,16 +37,20 @@ public class InstanceDescriptor implements Serializable {
     
     private final String memberUUID;
     private String instanceName;
-    private int httpPort;
-    private int httpsPort;
+    private List<Integer> httpPorts;
+    private List<Integer> httpsPorts;
     private InetAddress hostName;
     private Map<String, ApplicationDescriptor> deployedApplications;
     private boolean liteMember;
-    private boolean microInstance;
+    private String instanceType;
+    private int hazelcastPort;
+    private int adminPort;
 
     public InstanceDescriptor(String UUID) throws UnknownHostException {
         hostName = InetAddress.getLocalHost();
         memberUUID = UUID;
+        httpPorts = new ArrayList<>();
+        httpsPorts = new ArrayList<>();
     }
 
     public void addApplication(ApplicationInfo info) {
@@ -54,6 +60,14 @@ public class InstanceDescriptor implements Serializable {
         
         ApplicationDescriptor ad = new ApplicationDescriptor(info);
         deployedApplications.put(ad.getName(), ad);
+    }
+    
+    public void addApplication(ApplicationDescriptor descriptor) {
+        if (deployedApplications == null) {
+            deployedApplications = new HashMap<>(3);
+        }
+        
+        deployedApplications.put(descriptor.getName(), descriptor);
     }
 
     public String getInstanceName() {
@@ -72,22 +86,22 @@ public class InstanceDescriptor implements Serializable {
     }
 
     /**
-     * @return the httpPort
+     * @return the httpPorts
      */
-    public int getHttpPort() {
-        return httpPort;
+    public List<Integer> getHttpPorts() {
+        return httpPorts;
     }
 
     /**
-     * @param httpPort the httpPort to set
+     * @param httpPort the httpPort to add
      */
-    public void setHttpPort(int httpPort) {
-        this.httpPort = httpPort;
+    public void addHttpPort(int httpPort) {
+        httpPorts.add(httpPort);
     }
 
     @Override
     public String toString() {
-        return "InstanceDescriptor{" + "memberUUID=" + memberUUID + ", httpPort=" + httpPort + ", httpsPort=" + httpsPort + ", hostName=" + hostName + ", deployedApplications=" + deployedApplications + '}';
+        return "InstanceDescriptor{" + "memberUUID=" + memberUUID + ", httpPorts=" + httpPorts + ", httpsPorts=" + httpsPorts + ", hostName=" + hostName + ", deployedApplications=" + deployedApplications + '}';
     }
 
     /**
@@ -115,17 +129,17 @@ public class InstanceDescriptor implements Serializable {
     }
 
     /**
-     * @return the httpsPort
+     * @return the httpsPorts
      */
-    public int getHttpsPort() {
-        return httpsPort;
+    public List<Integer> getHttpsPorts() {
+        return httpsPorts;
     }
 
     /**
-     * @param httpsPort the httpsPort to set
+     * @param httpsPort the httpsPort to add
      */
-    public void setHttpsPort(int httpsPort) {
-        this.httpsPort = httpsPort;
+    public void addHttpsPort(int httpsPort) {
+        httpsPorts.add(httpsPort);
     }
 
     public void removeApplication(ApplicationInfo applicationInfo) {
@@ -169,10 +183,34 @@ public class InstanceDescriptor implements Serializable {
     }
     
     public boolean isMicroInstance() {
-        return microInstance;
+        return instanceType.equals("MICRO");
     }
     
-    public void setMicroInstance(boolean isMicroInstance) {
-        microInstance = isMicroInstance;
+    public boolean isPayaraInstance() {
+        return (instanceType.equals("DAS") || instanceType.equals("INSTANCE"));
+    }
+    
+    public void setInstanceType(String instanceType) {
+        this.instanceType = instanceType;
+    }
+    
+    public String getInstanceType() {
+        return instanceType;
+    }
+    
+    public void setHazelcastPort(int hazelcastPort) {
+        this.hazelcastPort = hazelcastPort;
+    }
+    
+    public int getHazelcastPort() {
+        return hazelcastPort;
+    }
+    
+    public void setAdminPort(int adminPort) {
+        this.adminPort = adminPort;
+    }
+    
+    public int getAdminPort() {
+        return adminPort;
     }
 }

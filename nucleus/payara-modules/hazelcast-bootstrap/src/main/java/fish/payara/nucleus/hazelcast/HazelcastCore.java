@@ -25,6 +25,7 @@ import com.hazelcast.config.MulticastConfig;
 import com.hazelcast.config.XmlConfigBuilder;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import fish.payara.nucleus.events.HazelcastEvents;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -75,8 +76,7 @@ public class HazelcastCore implements EventListener {
     @Inject
     @Named(ServerEnvironment.DEFAULT_INSTANCE_NAME)
     HazelcastRuntimeConfiguration configuration;
-
-
+    
     public static HazelcastCore getCore() {
         return theCore;
     }
@@ -90,7 +90,7 @@ public class HazelcastCore implements EventListener {
         theCore = this;
         enabled = Boolean.valueOf(configuration.getEnabled());
         events.register(this);
-
+        
         if ((Boolean.valueOf(configuration.getEnabled()))) {
             bootstrapHazelcast();
         }
@@ -210,6 +210,7 @@ public class HazelcastCore implements EventListener {
             hazelcastCachingProvider.close();
             theInstance.shutdown();
             theInstance = null;
+            events.send(new Event(HazelcastEvents.HAZELCAST_SHUTDOWN_COMPLETE));
             Logger.getLogger(HazelcastCore.class.getName()).log(Level.INFO, "Shutdown Hazelcast");
         }
     }
@@ -222,6 +223,7 @@ public class HazelcastCore implements EventListener {
         }
         theInstance.getCluster().getLocalMember().setStringAttribute(INSTANCE_ATTRIBUTE, memberName);
         hazelcastCachingProvider = HazelcastServerCachingProvider.createCachingProvider(theInstance);
+        events.send(new Event(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE));
     }
 
     private void bindToJNDI() {

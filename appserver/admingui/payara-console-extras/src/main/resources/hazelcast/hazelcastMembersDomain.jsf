@@ -15,75 +15,53 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
 -->
-
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
     setResourceBundle(key="i18ncs" bundle="org.glassfish.cluster.admingui.Strings");
     setResourceBundle(key="help_cluster" bundle="org.glassfish.cluster.admingui.Helplinks");
-    />
+/>
 <!composition template="/templates/default.layout"  guiTitle="Hazelcast Configuration"  >
 
 #include "/cluster/shared/instancesExtraButtons.inc"
 #include "/cluster/shared/handlers.inc"
 
 <!define name="content">
-
-<event>
-    <!--<!beforeCreate
-        getRequestValue(key="target" value="#{pageSession.target}");
-        urlencode(value="#{pageSession.target}" encoding="UTF-8" result="#{pageSession.encodedTarget}");
-        getRequestValue(key="isCluster" value="#{pageSession.isCluster}" default="false");
-        getRequestValue(key="tabSetName" value="#{pageSession.tabSetName}");
-        urlencode(value="#{pageSession.tabSetName}" encoding="UTF-8" result="#{pageSession.encodedTabSetName}");
-
-        if(#{pageSession.isCluster}=true){
-        setPageSessionAttribute(key="clusterName", value="#{pageSession.target}");
-        setPageSessionAttribute(key="encodedClusterName", value="#{pageSession.encodedTarget}");
-        }
-        if(#{pageSession.isCluster}=false){
-        setPageSessionAttribute(key="isCluster", value="false");
-        setPageSessionAttribute(key="instanceName", value="#{pageSession.target}");
-        setPageSessionAttribute(key="encodedInstanceName", value="#{pageSession.encodedTarget}");
-        }
-        setSessionAttribute(key="#{pageSession.tabSetName}" value="hazelcastMembers");
-        createMap(result="#{pageSession.attrsMap}")
-        mapPut(map="#{pageSession.attrsMap}" key="target" value="#{pageSession.encodedTarget}");
-        gf.restRequest(endpoint="#{sessionScope.REST_URL}/list-payara-micro-instances"  method="GET" result="#{requestScope.resp}");
-        setPageSessionAttribute(key="members", value="#{requestScope.resp.data.message}");
-        />-->
+    <event>
     <!beforeCreate
-        setPageSessionAttribute(key="confirmDeleteMsg" value="$resource{i18ncs.msg.JS.confirmDeleteInstances}");
-        setPageSessionAttribute(key="listLink" value="#{request.contextPath}/cluster/standalone/standaloneInstances.jsf?");
-        setPageSessionAttribute(key="editLink" value="#{request.contextPath}/cluster/standalone/standaloneInstanceGeneral.jsf?foo"); //foo is here to ensure editLink works for both cluster and standalone instance.
-        setPageSessionAttribute(key="tableTitle" value="$resource{i18ncs.standaloneInstances.TableTitle}");
-        setPageSessionAttribute(key="createLink" value="#{request.contextPath}/cluster/standalone/standaloneInstanceNew.jsf");
-        setPageSessionAttribute(key="clusterList" value="#{false}" )
-        setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}/servers");
-        setPageSessionAttribute(key="childType" value="server");
-        createMap(result="#{requestScope.listInstanceAttrMap}");
-        mapPut(map="#{requestScope.listInstanceAttrMap}" key="standaloneonly" value="true")
-        gfr.getInstancesStatus();
-        gf.getMapKeys(Map="#{pageSession.instanceStatusMap}" Keys="#{pageSession.standalone}");
-        gf.getChildList(parentEndpoint="#{pageSession.parentUrl}", childType="#{pageSession.childType}",
-                includeList="#{pageSession.standalone}"
-                result="#{requestScope.listOfRows}");
+        setPageSessionAttribute(key="parentUrl" value="#{sessionScope.REST_URL}");
+        gf.restRequest(endpoint="#{sessionScope.REST_URL}/get-hazelcast-configuration?target=server"  method="GET" 
+                result="#{requestScope.resp}");
+        setPageSessionAttribute(key="hazelcastConfiguration", 
+                value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
+        
+        py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", result="#{requestScope.allInstances}");
+        py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="micro", 
+                result="#{requestScope.microInstances}");
+        py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="server", 
+                result="#{requestScope.serverInstances}");
     />
-</event>
-
+    
+    </event>
+        
 <sun:form id="propertyForm">
 #include "/common/shared/alertMsg.inc"
 #include "/common/appServer/domainTabs.inc"
-#include "/common/shared/alertMsg_1.inc"
 <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}"
-                 helpText="$resource{i18nhc.hazelcast.membersTitleHelp}" >
+           helpText="$resource{i18nhc.hazelcast.membersTitleHelp}" >
 </sun:title>
-#include "/common/shared/nameSection.inc"
-"<br />
-#include "/cluster/shared/instancesTable.inc"
-    <sun:hidden id="helpKey" value="$resource{help_full.batchConfiguration}"/>
-</sun:form>
-#include "/common/shared/changeButtonsJS.inc"
 
+"<br />
+<h:outputText value="Hazelcast not enabled on the DAS" rendered="#{pageSession.hazelcastConfiguration['enabled'] == false}"
+              style="padding: 10pt"/>
+"<br />
+#include "allInstancesTable.inc"
+"<br />
+#include "serverInstancesTable.inc"
+"<br />
+#include "microInstancesTable.inc"
+"<br />
+
+</sun:form>
 </define>
 </composition>                
