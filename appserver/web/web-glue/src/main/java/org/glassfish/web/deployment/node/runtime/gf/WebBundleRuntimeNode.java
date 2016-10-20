@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.node.runtime.gf;
 
@@ -338,6 +339,8 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
         } else if (element.getQName().equals(RuntimeTagNames.KEEP_STATE)) {
             descriptor.setKeepState(value);
         } else if (element.getQName().equals(RuntimeTagNames.VERSION_IDENTIFIER)) {
+        } else if (element.getQName().equals("container-initializer-enabled")) {
+            descriptor.setServletInitializersEnabled(Boolean.parseBoolean(value));
         } else
             super.setElementValue(element, value);
     }
