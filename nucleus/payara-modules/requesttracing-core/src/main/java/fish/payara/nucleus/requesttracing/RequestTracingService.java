@@ -148,10 +148,10 @@ public class RequestTracingService implements EventListener {
             return;
         }
         requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "TraceEnd"));
-        Long thresholdValueInMillis = getThresholdValueInMillis();
+        Long thresholdValueInNanos = getThresholdValueInNanos();
 
         long elapsedTime = requestEventStore.getElapsedTime();
-        if ( elapsedTime > thresholdValueInMillis) {
+        if ( elapsedTime - thresholdValueInNanos > 0) {
             for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
                     notificationService.notify(eventFactory.build(elapsedTime, notifierExecutionOptions.getNotifierType()));
@@ -161,9 +161,9 @@ public class RequestTracingService implements EventListener {
         requestEventStore.flushStore();
     }
 
-    public Long getThresholdValueInMillis() {
+    public Long getThresholdValueInNanos() {
         if (executionOptions != null) {
-            return TimeUnit.MILLISECONDS.convert(executionOptions.getThresholdValue(), executionOptions.getThresholdUnit());
+            return TimeUnit.NANOSECONDS.convert(executionOptions.getThresholdValue(), executionOptions.getThresholdUnit());
         }
         return null;
     }
