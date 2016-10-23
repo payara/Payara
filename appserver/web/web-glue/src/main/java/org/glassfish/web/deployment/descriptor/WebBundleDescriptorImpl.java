@@ -137,6 +137,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     private int servletReloadCheckSecs = 1;
 
     private Set<String> conflictedMimeMappingExtensions = null;
+    private boolean servletInitializersEnabled = true;
 
     /**
      * Constrct an empty web app [{0}].
@@ -2224,6 +2225,17 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         }
         return true;
     }
+
+    @Override
+    public boolean getServletInitializersEnabled() {
+        return servletInitializersEnabled;
+    }
+
+    @Override
+    public void setServletInitializersEnabled(boolean tf) {
+        servletInitializersEnabled = tf;
+    }
+
 
     private static final class ServletFilterMappingInfo {
         private ServletFilterMapping servletFilterMapping;

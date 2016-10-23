@@ -17,6 +17,7 @@ import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import java.util.LinkedList;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Class representing a full Request Trace. Stored in a ThreadLocal in the
@@ -68,7 +69,7 @@ public class RequestTrace {
                 requestEvent.setConversationId(startEvent.getConversationId());
                 requestEvent.setTraceTime(requestEvent.getTimestamp() - startTime);
                 trace.add(requestEvent);
-                elapsedTime = requestEvent.getTimestamp() - startTime;
+                elapsedTime = TimeUnit.MILLISECONDS.convert(requestEvent.getTimestamp() - startTime, TimeUnit.NANOSECONDS);
                 completed = true;
                     break;
                 }

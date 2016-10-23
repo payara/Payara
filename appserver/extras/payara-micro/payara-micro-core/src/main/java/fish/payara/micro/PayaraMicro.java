@@ -1281,6 +1281,7 @@ public class PayaraMicro {
                         i++;
                         break;
                     case "--deploymentDir":
+                    case "--deployDir":
                         deploymentRoot = new File(args[i + 1]);
                         if (!deploymentRoot.exists() || !deploymentRoot.isDirectory()) {
                             logger.log(Level.SEVERE, "{0} is not a valid deployment directory and will be ignored", args[i + 1]);

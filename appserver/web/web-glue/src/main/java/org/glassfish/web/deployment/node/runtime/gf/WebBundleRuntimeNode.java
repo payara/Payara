@@ -348,6 +348,8 @@ public class WebBundleRuntimeNode extends RuntimeBundleNode<WebBundleDescriptorI
             if(descriptor.getApplication() != null) {
                 descriptor.getApplication().addScanningExclusions(ImmutableList.of(value), "WEB-INF/lib");
             }
+        } else if (element.getQName().equals("container-initializer-enabled")) {
+            descriptor.setServletInitializersEnabled(Boolean.parseBoolean(value));
         } else
             super.setElementValue(element, value);
     }

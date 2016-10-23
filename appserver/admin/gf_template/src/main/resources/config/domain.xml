@@ -240,6 +240,7 @@
         <jvm-options>-Dcom.ctc.wstx.returnNullForDefaultNamespace=true</jvm-options>
         <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
         <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
+        <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
       </java-config>
       <network-config>
         <protocols>
@@ -431,6 +432,9 @@
              <!-- End of OSGi bundle configurations -->
              <jvm-options>-Djdk.tls.rejectClientInitiatedRenegotiation=true</jvm-options>
              <jvm-options>-Dorg.jboss.weld.serialization.beanIdentifierIndexOptimization=false</jvm-options>
+             <!-- PAYARA-1033 Maintain backwards compatibility to old Grizzly Memeory Manager -->
+             <jvm-options>-Dorg.glassfish.grizzly.DEFAULT_MEMORY_MANAGER=org.glassfish.grizzly.memory.HeapMemoryManager</jvm-options>
+             
         </java-config>
          <availability-service>
              <web-container-availability/>
@@ -484,7 +488,7 @@
          </network-config>
          <thread-pools>
              <thread-pool name="http-thread-pool" />
-             <thread-pool max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
+             <thread-pool min-thread-pool-size="2" max-thread-pool-size="200" idle-thread-timeout-in-seconds="120" name="thread-pool-1" />
 	     <thread-pool name="admin-thread-pool" max-thread-pool-size="15" min-thread-pool-size="1" max-queue-size="256"></thread-pool>
          </thread-pools>
          <group-management-service/>

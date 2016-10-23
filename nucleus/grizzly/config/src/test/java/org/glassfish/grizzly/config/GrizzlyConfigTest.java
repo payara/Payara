@@ -37,11 +37,12 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+
+// Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.grizzly.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -57,6 +58,7 @@ import org.glassfish.grizzly.http.server.Response;
 import org.glassfish.grizzly.memory.ByteBufferManager;
 import org.glassfish.grizzly.memory.HeapMemoryManager;
 import org.glassfish.grizzly.memory.MemoryManager;
+import org.glassfish.grizzly.memory.PooledMemoryManager;
 import org.glassfish.grizzly.nio.NIOTransport;
 import org.glassfish.grizzly.strategies.SameThreadIOStrategy;
 import org.glassfish.grizzly.strategies.WorkerThreadIOStrategy;
@@ -150,7 +152,7 @@ public class GrizzlyConfigTest extends BaseTestGrizzlyConfig {
             GenericGrizzlyListener genericGrizzlyListener =
                     (GenericGrizzlyListener) getListener(grizzlyConfig, "http-listener-1");
             MemoryManager mm = genericGrizzlyListener.getTransport().getMemoryManager();
-            assertEquals(HeapMemoryManager.class.getName(), mm.getClass().getName());
+            assertEquals(PooledMemoryManager.class.getName(), mm.getClass().getName());
         } finally {
             if (grizzlyConfig != null) {
                 grizzlyConfig.shutdownNetwork();

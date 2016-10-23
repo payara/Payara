@@ -294,9 +294,11 @@ public class EjbServicesImpl implements EjbServices {
                             ejbInt.addPostActivateDescriptor(lifecycleDesc);
                             break;
                         case AROUND_INVOKE :
+                            lifecycleDesc.setRequiresInvocationContextArgument(true);
                             ejbInt.addAroundInvokeDescriptor(lifecycleDesc);
                             break;
                         case AROUND_TIMEOUT :
+                            lifecycleDesc.setRequiresInvocationContextArgument(true);
                             ejbInt.addAroundTimeoutDescriptor(lifecycleDesc);
                             break;
                         default :

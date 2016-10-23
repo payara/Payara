@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [Payara Foundation]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.server.logging;
 
@@ -138,6 +138,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     String fileHandlerPatternDetail = "";
     String fileHandlerFormatterDetail = "";
     String logFormatDateFormatDetail = "";
+    String compressOnRotationDetail = "";
 
     private static final String SERVER_LOG_FILE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.file";
     private static final String HANDLER_PROPERTY = "handlers";
@@ -158,6 +159,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
     private static final String FILEHANDLER_PATTERN_PROPERTY = "java.util.logging.FileHandler.pattern";
     private static final String FILEHANDLER_FORMATTER_PROPERTY = "java.util.logging.FileHandler.formatter";
     private static final String LOGFORMAT_DATEFORMAT_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.logFormatDateFormat";
+    private static final String COMPRESS_ON_ROTATION_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.compressOnRotation";
 
     final static String EXCLUDE_FIELDS_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.excludeFields";
     final static String MULTI_LINE_MODE_PROPERTY = "com.sun.enterprise.server.logging.GFFileHandler.multiLineMode";
@@ -394,6 +396,7 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
             fileHandlerPatternDetail = props.get(FILEHANDLER_PATTERN_PROPERTY);
             fileHandlerFormatterDetail = props.get(FILEHANDLER_FORMATTER_PROPERTY);
             logFormatDateFormatDetail = props.get(LOGFORMAT_DATEFORMAT_PROPERTY);
+            compressOnRotationDetail = props.get(COMPRESS_ON_ROTATION_PROPERTY);
 
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, LogFacade.ERROR_APPLYING_CONF, e);
@@ -589,6 +592,10 @@ public class LogManagerService implements PostConstruct, PreDestroy, org.glassfi
                                     String oldVal = Boolean.toString(multiLineMode);
                                     if (!val.equalsIgnoreCase(oldVal)) {
                                         generateAttributeChangeEvent(MULTI_LINE_MODE_PROPERTY, oldVal, props);
+                                    }
+                                } else if (a.equals(COMPRESS_ON_ROTATION_PROPERTY)) {
+                                    if (!val.equals(compressOnRotationDetail)) {
+                                        generateAttributeChangeEvent(COMPRESS_ON_ROTATION_PROPERTY, compressOnRotationDetail, props);
                                     }
                                 }
                             }
