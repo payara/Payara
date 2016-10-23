@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.config.support;
 
 import com.sun.enterprise.security.store.DomainScopedPasswordAliasStore;
-import org.glassfish.api.admin.PasswordAliasStore;
 import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 //import org.glassfish.security.common.RelativePathResolver;
@@ -72,12 +72,21 @@ public class TranslatedConfigView implements ConfigView {
 
     private static final String ALIAS_TOKEN = "ALIAS";
     private static int MAX_SUBSTITUTION_DEPTH = 100;
-    
-    
+    public static final ThreadLocal<Boolean> doSubstitution = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return Boolean.TRUE;
+        }
+    };
+
+
     public static Object getTranslatedValue(Object value) {
         if (value!=null && value instanceof String) {
             String stringValue = value.toString();
             if (stringValue.indexOf('$')==-1) {
+                return value;
+            }
+            if(doSubstitution.get() == false) {
                 return value;
             }
             if (domainPasswordAliasStore() != null) {

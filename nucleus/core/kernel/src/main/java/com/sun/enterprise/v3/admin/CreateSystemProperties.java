@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.v3.admin;
 
@@ -62,6 +63,7 @@ import org.glassfish.api.admin.ExecuteOn;
 import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.config.support.CommandTarget;
 import org.glassfish.config.support.TargetType;
+import org.glassfish.config.support.TranslatedConfigView;
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
@@ -143,9 +145,14 @@ public class CreateSystemProperties implements AdminCommand, AdminCommandSecurit
                     
                 // skip create-system property requests that do not change the
                 // value of an existing property
-                if (spb.containsProperty(sysPropName) && 
-                    spb.getSystemProperty(sysPropName).getValue().equals(properties.getProperty(propName))) {
-                    continue;
+                try {
+                    TranslatedConfigView.doSubstitution.set(Boolean.FALSE);
+                    if (spb.containsProperty(sysPropName) &&
+                        spb.getSystemProperty(sysPropName).getValue().equals(properties.getProperty(propName))) {
+                        continue;
+                    }
+                } finally {
+                    TranslatedConfigView.doSubstitution.set(Boolean.TRUE);
                 }
                 ConfigSupport.apply(new SingleConfigCode<SystemPropertyBag>() {
 
