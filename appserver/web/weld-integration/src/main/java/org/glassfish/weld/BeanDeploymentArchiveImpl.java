@@ -40,6 +40,8 @@
 // Portions Copyright [2016] [Payara Foundation]
 package org.glassfish.weld;
 
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.cdi.CDILoggerInfo;
@@ -149,7 +151,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         this.beanDeploymentArchives = new ArrayList<BeanDeploymentArchive>();
         this.context = ctx;
 
-        populate(ejbs);
+        populate(ejbs, ctx.getModuleMetaData(Application.class));
         populateEJBsForThisBDA(ejbs);
         try {
             this.archive.close();
@@ -360,7 +362,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
         return bdaType;
     }
 
-    private void populate(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs) {
+    private void populate(Collection<com.sun.enterprise.deployment.EjbDescriptor> ejbs, Application app) {
         try {
             boolean webinfbda = false;
             boolean hasBeansXml = false;
@@ -460,7 +462,8 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                     String entry = (String) entries.nextElement();
                     //if directly under WEB-INF/lib
                     if (entry.endsWith(JAR_SUFFIX) &&
-                            entry.indexOf(SEPARATOR_CHAR, WEB_INF_LIB.length() + 1) == -1) {
+                            entry.indexOf(SEPARATOR_CHAR, WEB_INF_LIB.length() + 1) == -1 &&
+                            (app == null || DOLUtils.isScanningAllowed(app, entry))) {
                         ReadableArchive weblibJarArchive = archive.getSubArchive(entry);
                         if (weblibJarArchive.exists(META_INF_BEANS_XML)) {
                             // Parse the descriptor to determine if CDI is disabled
