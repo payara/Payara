@@ -151,8 +151,9 @@ public class RequestTracingService implements EventListener {
         Long thresholdValueInNanos = getThresholdValueInNanos();
 
         long elapsedTime = requestEventStore.getElapsedTime();
-        if ( elapsedTime - thresholdValueInNanos > 0) {
-            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
+        long elapsedTimeInNanos = TimeUnit.NANOSECONDS.convert(elapsedTime, TimeUnit.MILLISECONDS);
+        if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
+            for (NotifierExecutionOptions notifierExecutionOptions : getExecutionOptions().getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
                     notificationService.notify(eventFactory.build(elapsedTime, notifierExecutionOptions.getNotifierType()));
                 }
@@ -162,14 +163,15 @@ public class RequestTracingService implements EventListener {
     }
 
     public Long getThresholdValueInNanos() {
-        if (executionOptions != null) {
-            return TimeUnit.NANOSECONDS.convert(executionOptions.getThresholdValue(), executionOptions.getThresholdUnit());
+        if (getExecutionOptions() != null) {
+            return TimeUnit.NANOSECONDS.convert(getExecutionOptions().getThresholdValue(),
+                    getExecutionOptions().getThresholdUnit());
         }
         return null;
     }
 
     public boolean isRequestTracingEnabled() {
-        return executionOptions != null && executionOptions.isEnabled();
+        return getExecutionOptions() != null && getExecutionOptions().isEnabled();
     }
 
     public RequestTracingExecutionOptions getExecutionOptions() {

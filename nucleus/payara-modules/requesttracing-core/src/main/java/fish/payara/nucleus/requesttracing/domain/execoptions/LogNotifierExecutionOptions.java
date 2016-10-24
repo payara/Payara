@@ -22,9 +22,9 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
  * {@link fish.payara.nucleus.requesttracing.RequestTracingNotificationEventFactory} creates LogNotificationEvent and puts
  * traced data into, according to this notification type.
  */
-class LogNotifierExecutionOptions extends NotifierExecutionOptions {
+public class LogNotifierExecutionOptions extends NotifierExecutionOptions {
 
-    LogNotifierExecutionOptions() {
+    public LogNotifierExecutionOptions() {
         super(NotifierType.LOG);
     }
 }
