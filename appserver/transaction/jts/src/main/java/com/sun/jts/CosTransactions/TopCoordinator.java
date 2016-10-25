@@ -2605,7 +2605,7 @@ public class TopCoordinator extends CoordinatorImpl {
             // messages. If an exception is raised, then mark the transaction
             // rollback-only.
             try {
-                if (!synchronizations.distributeBefore()) {
+                if (!localSyncs.distributeBefore()) {
                     rollbackOnly = true;
                 }
             } catch (RuntimeException ex) {
@@ -2663,7 +2663,7 @@ public class TopCoordinator extends CoordinatorImpl {
             // Tell the RegisteredSyncs to distribute the after completion
             // messages. If an exception occurs, just report it.
             // synchronizations.distributeAfter(get_status());
-            synchronizations.distributeAfter(status);
+            localSyncs.distributeAfter(status);
         }
         
         writeLock.lock();
