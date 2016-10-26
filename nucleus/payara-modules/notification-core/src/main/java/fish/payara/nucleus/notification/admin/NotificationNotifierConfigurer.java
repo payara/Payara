@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -21,9 +21,11 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
+import fish.payara.nucleus.notification.NotificationEventBus;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
 import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
@@ -43,11 +45,10 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 
 /**
  * Admin command to enable/disable specific notifier given with its name
@@ -55,7 +56,7 @@ import java.util.logging.Logger;
  * @author mertcaliskan
  */
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "notification-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
@@ -74,6 +75,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     NotificationService service;
 
     @Inject
+    ServerEnvironment server;
+
+    @Inject
     ServiceLocator habitat;
 
     @Inject
@@ -84,6 +88,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
 
     @Inject
     private NotifierConfigurationExecutionOptionsFactory factory;
+
+    @Inject
+    private NotificationEventBus eventBus;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
     protected Boolean dynamic;
@@ -97,9 +104,13 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
+    @Inject
+    ServiceLocator serviceLocator;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
+        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -109,7 +120,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
         Config config = targetUtil.getConfig(target);
 
         final BaseNotifierService notifierService = habitat.getService(BaseNotifierService.class, notifierName);
-        if (service == null) {
+        if (notifierService == null) {
             actionReport.appendMessage(strings.getLocalString("requesttracing.notifier.configure.status.error",
                     "Notifier with name {0} could not be found.", notifierName));
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
@@ -130,22 +141,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
-                        createdNotifier[0] = notifierProxy;
-
-                        List<NotifierConfiguration> notifierConfigList = notificationServiceConfigurationProxy.getNotifierConfigurationList();
-                        NotifierConfigurationExecutionOptions executionOptions = factory.build(createdNotifier[0]);
-                        if (notifierEnabled) {
-                            notifierConfigList.add(createdNotifier[0]);
-                            if (dynamic) {
-                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
-                            }
-                        } else {
-                            notifierConfigList.remove(createdNotifier[0]);
-                            if (dynamic) {
-                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
-                            }
-                        }
-
+                        notificationServiceConfigurationProxy.getNotifierConfigurationList().add(notifierProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notificationServiceConfigurationProxy;
                     }
@@ -158,21 +154,37 @@ public class NotificationNotifierConfigurer implements AdminCommand {
                         if (notifierEnabled != null) {
                             notifierProxy.enabled(notifierEnabled);
                         }
-
-                        if (dynamic) {
-                            NotifierConfigurationExecutionOptions executionOptions = factory.build(notifierProxy);
-                            if (notifierEnabled) {
-                                service.getExecutionOptions().addNotifierConfigurationExecutionOption(executionOptions);
-                            } else {
-                                service.getExecutionOptions().removeNotifierConfigurationExecutionOption(executionOptions);
-                            }
-                        }
-
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;
                     }
                 }, notifier);
 
+            }
+            
+            if (dynamic) {
+                NotifierConfiguration dynamicNotifier = notificationServiceConfiguration.getNotifierConfigurationByType(notifierService.getNotifierConfigType());
+                NotifierConfigurationExecutionOptions build = factory.build(dynamicNotifier);
+                if (server.isDas()) {
+                    if (targetUtil.getConfig(target).isDas()) {
+                        if (notifierEnabled) {
+                            build.setEnabled(true);
+                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(build);
+                            eventBus.register(notifierService);
+                        } else {
+                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(build);
+                            eventBus.unregister(notifierService);
+                        }                       
+                    }
+                } else {
+                        if (notifierEnabled) {
+                            build.setEnabled(true);
+                            service.getExecutionOptions().addNotifierConfigurationExecutionOption(build);
+                            eventBus.register(notifierService);
+                        } else {
+                            service.getExecutionOptions().removeNotifierConfigurationExecutionOption(build);
+                            eventBus.unregister(notifierService);
+                        }                       
+                }
             }
 
             actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",

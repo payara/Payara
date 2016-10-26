@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -22,12 +22,14 @@ import com.hazelcast.core.HazelcastInstance;
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
+import javax.cache.annotation.CacheDefaults;
 import javax.cache.configuration.Factory;
 import javax.cache.configuration.FactoryBuilder;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 
 /**
@@ -73,9 +75,8 @@ public class JSR107Producer {
      * @return 
      */
     @Produces
-    @SuppressWarnings("unchecked")
-    public Cache createCache(InjectionPoint ip) {
-        Cache result = null;
+    public <K,V> Cache<K, V> createCache(InjectionPoint ip) {
+        Cache<K, V> result;
 
         //determine the cache name first start with the default name
         String cacheName = ip.getMember().getDeclaringClass().getCanonicalName();
@@ -92,7 +93,7 @@ public class JSR107Producer {
             Class valueClass = ncqualifier.valueClass();           
             result = manager.getCache(cacheName, keyClass, valueClass);
             if (result == null) {
-                MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+                MutableConfiguration<K, V> config = new MutableConfiguration<>();
                 config.setTypes(keyClass, valueClass);
                 
                 // determine the expiry policy
@@ -123,9 +124,20 @@ public class JSR107Producer {
                 result = manager.createCache(cacheName, config);                
             }
         } else {  // configure a "raw" cache
+            Bean<?> bean = ip.getBean();
+            if (bean != null) {
+                Class<?> beanClass = bean.getBeanClass();
+                CacheDefaults defaults = beanClass.getAnnotation(CacheDefaults.class);
+                if (defaults != null) {
+                    String cacheNameFromAnnotation = defaults.cacheName();
+                    if (!"".equals(cacheNameFromAnnotation)) {
+                        cacheName = cacheNameFromAnnotation;
+                    }
+                }
+            }
             result = manager.getCache(cacheName);
             if (result == null) {
-                MutableConfiguration<Object, Object> config = new MutableConfiguration<>();
+                MutableConfiguration<K, V> config = new MutableConfiguration<>();
                 config.setManagementEnabled(true);
                 config.setStatisticsEnabled(true);
                 result = manager.createCache(cacheName, config);

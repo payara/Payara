@@ -4,6 +4,8 @@
 
 Payara Server is a patched, enhanced and supported application server derived from GlassFish Server Open Source Edition 4.x.
 
+Payara Server development is coordinated by the Payara Foundation a UK Not for Profit organisation.
+
 Visit [www.payara.fish](http://www.payara.fish) for full 24/7 support and lots of free resources.
 
 Information about the opensource project is on the [GitHub project page](https://payara.github.io/Payara/).
@@ -30,9 +32,6 @@ In summary Payara Server provides;
 * Optimised for production and operations
 * Quarterly Patch Releases / Bug Fixes
 
-We take GlassFish, support it, add fixes, add enhancements and we release it as open source Payara Server.
-
-
 GlassFish is a trademark of Oracle Corporation.
-Payara is a trademark of Zenthis Limited.
+Payara is a trademark of Payara Foundation.
 

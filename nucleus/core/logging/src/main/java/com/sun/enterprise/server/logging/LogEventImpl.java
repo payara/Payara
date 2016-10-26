@@ -142,84 +142,84 @@ public class LogEventImpl implements LogEvent {
     /**
      * @param componentId the componentId to set
      */
-    void setComponentId(String componentId) {
+    public void setComponentId(String componentId) {
         this.componentId = componentId;
     }
 
     /**
      * @param ecId the ecId to set
      */
-    void setECId(String ecId) {
+    public void setECId(String ecId) {
         this.ecId = ecId;
     }
 
     /**
      * @param level the level to set
      */
-    void setLevel(String level) {
+    public void setLevel(String level) {
         this.level = level;
     }
 
     /**
      * @param levelValue the levelValue to set
      */
-    void setLevelValue(int levelValue) {
+    public void setLevelValue(int levelValue) {
         this.levelValue = levelValue;
     }
 
     /**
      * @param logger the logger to set
      */
-    void setLogger(String logger) {
+    public void setLogger(String logger) {
         this.logger = logger;
     }
 
     /**
      * @param message the message to set
      */
-    void setMessage(String message) {
+    public void setMessage(String message) {
         this.message = message;
     }
 
     /**
      * @param messageId the messageId to set
      */
-    void setMessageId(String messageId) {
+    public void setMessageId(String messageId) {
         this.messageId = messageId;
     }
 
     /**
      * @param threadId the threadId to set
      */
-    void setThreadId(long threadId) {
+    public void setThreadId(long threadId) {
         this.threadId = threadId;
     }
 
     /**
      * @param threadName the threadName to set
      */
-    void setThreadName(String threadName) {
+    public void setThreadName(String threadName) {
         this.threadName = threadName;
     }
 
     /**
      * @param timeMillis the timeMillis to set
      */
-    void setTimeMillis(long timeMillis) {
+    public void setTimeMillis(long timeMillis) {
         this.timeMillis = timeMillis;
     }
 
     /**
      * @param timestamp the timestamp to set
      */
-    void setTimestamp(String timestamp) {
+    public void setTimestamp(String timestamp) {
         this.timestamp = timestamp;
     }
 
     /**
      * @param user the user to set
      */
-    void setUser(String user) {
+    public void setUser(String user) {
         this.user = user;
     }
 

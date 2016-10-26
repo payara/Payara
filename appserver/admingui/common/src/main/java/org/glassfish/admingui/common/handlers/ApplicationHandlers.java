@@ -38,7 +38,7 @@
  * holder.
  */
 
-// Portions Copyright [2016] [C2B2 Consulting Ltd and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]]
 
 /*
  * ApplicationHandlers.java

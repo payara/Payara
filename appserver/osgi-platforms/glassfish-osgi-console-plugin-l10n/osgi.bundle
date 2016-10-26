@@ -38,6 +38,6 @@
 # holder.
 #
 
-# "Portions Copyright [2014-2015] [C2B2 Consulting Limited]"
+# "Portions Copyright [2016] [Payara Foundation]"
 
 Fragment-Host: fish.payara.admingui.glassfish-osgi-console-plugin; bundle-version=${project.osgi.version}

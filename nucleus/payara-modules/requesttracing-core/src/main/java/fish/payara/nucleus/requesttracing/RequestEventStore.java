@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -18,8 +18,7 @@ import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.jvnet.hk2.annotations.Service;
 
 import javax.inject.Singleton;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * @author mertcaliskan
@@ -32,53 +31,47 @@ import java.util.List;
 @Singleton
 public class RequestEventStore {
 
-    private ThreadLocal<LinkedList<RequestEvent>> eventStore = new ThreadLocal<LinkedList<RequestEvent>>();
+    private ThreadLocal<RequestTrace> eventStore = new ThreadLocal<RequestTrace>() {
+        @Override
+        protected RequestTrace initialValue() {
+            return new RequestTrace();
+        }      
+    };
 
-    void storeEvent(RequestEvent requestEvent) {
-        if (EventType.TRACE_START.equals(requestEvent.getEventType())) {
-            eventStore.set(new LinkedList<RequestEvent>());
-            eventStore.get().add(requestEvent);
-        }
-        else {
-            //TODO Should we assume that the first event is always a start event?
-            //TODO Maybe after testing the execution with a variety of applications.
-            RequestEvent startEvent = fetchEvent(EventType.TRACE_START);
-            if (startEvent != null) {
-                requestEvent.setConversationId(startEvent.getId());
-                eventStore.get().add(requestEvent);
-            }
-        }
+    void storeEvent(RequestEvent requestEvent) {       
+        RequestTrace currentTrace = eventStore.get();
+        currentTrace.addEvent(requestEvent);
     }
 
-    Long calculateElapsedTime() {
-        if (eventStore.get() != null) {
-            RequestEvent startEvent = fetchEvent(EventType.TRACE_START);
-            RequestEvent endEvent = fetchEvent(EventType.TRACE_END);
-            return endEvent.getTimestamp() - startEvent.getTimestamp();
-        }
-        return (long) -1;
+    long getElapsedTime() {
+        return eventStore.get().getElapsedTime();
     }
 
     void flushStore() {
-        if (eventStore != null) {
-            eventStore.remove();
-        }
+        eventStore.set(new RequestTrace());
     }
 
-    List<RequestEvent> getEvents() {
+    String getTraceAsString() {
+        return eventStore.get().toString();
+    }
+    
+    // test methods
+    RequestTrace getTrace() {
         return eventStore.get();
     }
 
+    void setConverstationID(UUID newID) {
+        RequestTrace rt = eventStore.get();
+        rt.setConversationID(newID);
+    }
 
-    private RequestEvent fetchEvent(EventType eventType) {
-        if (eventStore.get() == null) {
-            return null;
-        }
-        for (RequestEvent event : eventStore.get()) {
-            if (event.getEventType().equals(eventType)) {
-                return event;
-            }
-        }
-        return null;
+    UUID getConversationID() {
+        UUID result = null;
+        RequestTrace rt = eventStore.get();
+        return rt.getConversationID();
+    }
+
+    boolean isTraceInProgress() {
+        return (eventStore.get().isStarted() && !eventStore.get().isCompleted());
     }
 }

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.ejb.deployment.descriptor;
 
@@ -669,7 +669,7 @@ public class EjbBundleDescriptorImpl extends com.sun.enterprise.deployment.EjbBu
         {
             // 2^16 beans max per stand alone module
             long uid = Math.abs(UUID.nameUUIDFromBytes(descs[i].getName().getBytes()).getLeastSignificantBits() % 65536);
-            // in case of an id collision, increment until find empty elot
+            // in case of an id collision, increment until find empty slot
             while(uniqueIds.contains(uid)) {
                 uid = ++uid % 65536;
             }

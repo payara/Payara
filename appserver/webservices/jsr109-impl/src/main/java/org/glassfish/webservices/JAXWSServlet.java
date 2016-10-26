@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 //import com.sun.enterprise.Switch;
@@ -48,7 +48,7 @@ import com.sun.xml.ws.api.server.Adapter;
 import com.sun.xml.ws.transport.http.servlet.ServletAdapter;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.SoapWSRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.webservices.monitoring.Endpoint;
 import org.glassfish.webservices.monitoring.WebServiceEngineImpl;
 import org.glassfish.webservices.monitoring.WebServiceTesterServlet;
@@ -176,13 +176,12 @@ public class JAXWSServlet extends HttpServlet {
         try {
             ServletAdapter targetEndpoint = (ServletAdapter) getEndpointFor(request);
             if (targetEndpoint != null) {
-                targetEndpoint.handle(getServletContext(), request, response);
-
                 if (requestTracing.isRequestTracingEnabled()) {
-                    SoapWSRequestEvent requestEvent = constructWsRequestEvent(request,
-                            targetEndpoint.getAddress(), EventType.WS);
+                    RequestEvent requestEvent = constructWsRequestEvent(request,
+                            targetEndpoint.getAddress());
                     requestTracing.traceRequestEvent(requestEvent);
                 }
+                targetEndpoint.handle(getServletContext(), request, response);
             } else {
                 throw new ServletException("Service not found");
             }
@@ -194,21 +193,18 @@ public class JAXWSServlet extends HttpServlet {
         endedEvent(endpoint.getEndpointAddressPath());
     }
 
-    private SoapWSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
-                                                       URI uri,
-                                                       EventType eventType) {
-        SoapWSRequestEvent requestEvent  = new SoapWSRequestEvent();
-        requestEvent.setUri(uri.toString());
-        requestEvent.setEventType(eventType);
-
-        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
+    private RequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+                                                       URI uri) {
+        RequestEvent requestEvent  = new RequestEvent("SoapWSTrace");
+        requestEvent.addProperty("URI",uri.toString());
+        requestEvent.addProperty("URL",httpServletRequest.getRequestURL().toString());
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.getHeaders().put(headerName, headers);
+            requestEvent.addProperty(headerName, headers.toString());
         }
-        requestEvent.setFormMethod(httpServletRequest.getMethod());
+        requestEvent.addProperty("Method",httpServletRequest.getMethod());
         return requestEvent;
     }
 

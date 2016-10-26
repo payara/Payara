@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -106,6 +107,7 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
     private String compatValue;
 
     private boolean keepState = false; 
+    private boolean defaultGroupPrincipalMapping = false;
 
     protected HashMap<String, RootXMLNode> rootNodes = new HashMap<String, RootXMLNode>();
 
@@ -976,6 +978,14 @@ public abstract class BundleDescriptor extends RootDeploymentDescriptor implemen
         this.keepState = Boolean.valueOf(keepStateVal);
     }
 
+    public boolean isDefaultGroupPrincipalMapping() {
+        return defaultGroupPrincipalMapping;
+    }
+
+    public void setDefaultGroupPrincipalMapping(boolean defaultGroupPrincipalMapping) {
+        this.defaultGroupPrincipalMapping = defaultGroupPrincipalMapping;
+    }
+    
     /**
      * Sets the full flag of the bundle descriptor. Once set, the annotations
      * of the classes contained in the archive described by this bundle

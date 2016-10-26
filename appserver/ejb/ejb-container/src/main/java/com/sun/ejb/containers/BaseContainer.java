@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package com.sun.ejb.containers;
 
 import com.sun.ejb.*;
@@ -69,8 +69,7 @@ import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.Utility;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EjbMethodRequestEvent;
-import fish.payara.nucleus.requesttracing.domain.EventType;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.invocation.ComponentInvocation;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.naming.GlassfishNamingManager;
@@ -110,6 +109,7 @@ import java.util.*;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.enterprise.inject.Vetoed;
 
 /**
  * This class implements part of the com.sun.ejb.Container interface.
@@ -234,7 +234,7 @@ public abstract class BaseContainer
     protected static final String SINGLETON_BEAN_POOL_PROP = "singleton-bean-pool";
 
     protected ClassLoader loader = null;
-    protected Class ejbClass = null;
+    protected Class<?> ejbClass = null;
     protected Class sfsbSerializedClass = null;
     protected Method ejbPassivateMethod = null;
     protected Method ejbActivateMethod = null;
@@ -1638,7 +1638,7 @@ public abstract class BaseContainer
             ejbInv = createEjbInvocation(null, ctx);
             invocationManager.preInvoke(ejbInv);
             
-            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
+            if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
                 jcdiCtx = jcdiService.createJCDIInjectionContext(ejbDescriptor);
                 instance = jcdiCtx.getInstance();
             } else {
@@ -1689,12 +1689,9 @@ public abstract class BaseContainer
 
         Object[] interceptorInstances = null;
 
-        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle)) {
-
-	        jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
-
+        if( (jcdiService != null) && jcdiService.isJCDIEnabled(ejbBundle) && this.ejbClass.getAnnotation(Vetoed.class) == null) {
+	    jcdiService.injectEJBInstance(context.getJCDIInjectionContext());
             Class[] interceptorClasses = interceptorManager.getInterceptorClasses();
-
             interceptorInstances = new Object[interceptorClasses.length];
 
             for(int i = 0; i < interceptorClasses.length; i++) {
@@ -4132,6 +4129,10 @@ public abstract class BaseContainer
                 callFlowInfo.getModuleName(),
                 callFlowInfo.getComponentName(),
                 method_sig);
+        if (requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, true);
+            requestTracing.traceRequestEvent(requestEvent);
+        }
         //callFlowAgent.ejbMethodStart(callFlowInfo);
     }
     
@@ -4142,25 +4143,28 @@ public abstract class BaseContainer
                 callFlowInfo.getComponentName(),
                 th,
                 method_sig);
-
-        if (requestTracing.isRequestTracingEnabled()) {
-            EjbMethodRequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo);
-            requestTracing.traceRequestEvent(requestEvent);
-        }
-
         //callFlowAgent.ejbMethodEnd(callFlowInfo);
+        if (requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructEjbMethodRequestEvent(callFlowInfo, false);
+            requestTracing.traceRequestEvent(requestEvent);
+        }    
     }
 
-    private EjbMethodRequestEvent constructEjbMethodRequestEvent(CallFlowInfo info) {
-        EjbMethodRequestEvent requestEvent = new EjbMethodRequestEvent();
-        requestEvent.setEventType(EventType.EJB_METHOD);
-        requestEvent.setApplicationName(info.getApplicationName());
-        requestEvent.setComponentName(info.getComponentName());
-        requestEvent.setComponentType(info.getComponentType().toString());
-        requestEvent.setModuleName(info.getModuleName());
-        requestEvent.setMethodName(info.getMethod().getName());
-
-        return requestEvent;
+    private RequestEvent constructEjbMethodRequestEvent(CallFlowInfo info, boolean callEnter) {
+        String eventName="EJBMethod-ENTER";
+        if (!callEnter) {
+            eventName="EJBMethod-EXIT";
+        }
+        RequestEvent re = new RequestEvent(eventName);
+        re.addProperty("ApplicationName", info.getApplicationName());
+        re.addProperty("ComponentName", info.getComponentName());
+        re.addProperty("ComponentType",info.getComponentType().toString());
+        re.addProperty("ModuleName",info.getModuleName());
+        re.addProperty("EJBClass", this.ejbClass.getCanonicalName());
+        re.addProperty("EJBMethod", info.getMethod().getName());
+        re.addProperty("CallerPrincipal", info.getCallerPrincipal());
+        re.addProperty("TX-ID", info.getTransactionId());
+        return re;
     }
 
     protected Object invokeTargetBeanMethod(Method beanClassMethod, EjbInvocation inv, Object target,

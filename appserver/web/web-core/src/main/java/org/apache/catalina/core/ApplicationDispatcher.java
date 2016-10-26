@@ -55,12 +55,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.*;
-import fish.payara.nucleus.requesttracing.domain.ServletRequestEvent;
 import org.apache.catalina.*;
 import org.apache.catalina.connector.ClientAbortException;
 import org.apache.catalina.connector.Request;
@@ -77,9 +75,6 @@ import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.MessageFormat;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -383,14 +378,13 @@ public final class ApplicationDispatcher
      */
     public void forward(ServletRequest request, ServletResponse response)
             throws ServletException, IOException {
-
-        dispatch(request, response, DispatcherType.FORWARD);
-
-        if (requestTracing.isRequestTracingEnabled()) {
-            HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-            ServletRequestEvent requestEvent = constructServletRequestEvent(httpServletRequest, EventType.SERVLET_FORWARD,
-                    RequestDispatcher.FORWARD_REQUEST_URI);
-            requestTracing.traceRequestEvent(requestEvent);
+        // store previous forward
+        Object prevForward = request.getAttribute("fish.payara.servlet.dispatchPath");
+        request.setAttribute("fish.payara.servlet.dispatchPath", this.servletPath);
+        try {
+            dispatch(request, response, DispatcherType.FORWARD);
+        }finally {
+            request.setAttribute("fish.payara.servlet.dispatchPath",prevForward);
         }
     }
 
@@ -640,36 +634,8 @@ public final class ApplicationDispatcher
             }
         } else {
             doInclude(request,response);
-
-            if (requestTracing.isRequestTracingEnabled()) {
-                HttpServletRequest httpServletRequest = (HttpServletRequest) request;
-                ServletRequestEvent requestEvent =
-                        constructServletRequestEvent(httpServletRequest, EventType.SERVLET_INCLUDE, RequestDispatcher.INCLUDE_REQUEST_URI);
-
-                requestTracing.traceRequestEvent(requestEvent);
-            }
         }
     }
-
-    private ServletRequestEvent constructServletRequestEvent(HttpServletRequest httpServletRequest, EventType eventType,
-                                                             String uriTypeKey) {
-        ServletRequestEvent requestEvent  = new ServletRequestEvent();
-        requestEvent.setEventType(eventType);
-
-        httpServletRequest.getAttribute(uriTypeKey);
-        //TODO fetching with RequestDispatcher key is not working, needs more investigation
-        // requestEvent.setUrl(String.valueOf(httpServletRequest.getAttribute(uriTypeKey)));
-        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
-        Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String headerName = headerNames.nextElement();
-            List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.getHeaders().put(headerName, headers);
-        }
-        requestEvent.setFormMethod(httpServletRequest.getMethod());
-        return requestEvent;
-    }
-
 
     private void doInclude(ServletRequest request, ServletResponse response)
         throws ServletException, IOException

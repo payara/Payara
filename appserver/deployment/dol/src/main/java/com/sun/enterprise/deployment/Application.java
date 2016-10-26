@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -76,6 +76,7 @@ import java.util.UUID;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javax.inject.Inject;
 import javax.persistence.EntityManagerFactory;
 import org.glassfish.api.deployment.archive.ArchiveType;
@@ -110,6 +111,7 @@ public class Application extends CommonResourceBundleDescriptor
     private static final String LIBRARY_DIRECTORY_DEFAULT_VALUE = "lib";
 
     private static final String PERSISTENCE_UNIT_NAME_SEPARATOR = "#";
+    private static final String ROLLING_UPGRADES_ID_DELIMITER = System.getProperty("org.jboss.weld.clustering.rollingUpgradesIdDelimiter", "..");
 
     /**
      * Store generated XML dir to be able to get the generated WSDL
@@ -1333,9 +1335,9 @@ public class Application extends CommonResourceBundleDescriptor
         for (int i = 0; i < descs.length; i++) {
             // Maximum of 2^16 beans max per application
             String module = descs[i].getEjbBundleDescriptor().getModuleDescriptor().getArchiveUri();
-            long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst("\\..*", "")
+            long uid = Math.abs(UUID.nameUUIDFromBytes((module.replaceFirst(Pattern.quote(ROLLING_UPGRADES_ID_DELIMITER) + ".*$", "")
                     + descs[i].getName()).getBytes()).getLeastSignificantBits() % 65536);
-            // in case of an id collision, increment until find empty elot
+            // in case of an id collision, increment until find empty slot
             while(uniqueIds.contains(uid)) {
                 uid = ++uid % 65536;
             }

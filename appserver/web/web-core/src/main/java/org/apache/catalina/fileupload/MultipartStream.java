@@ -347,11 +347,11 @@ public class MultipartStream {
             byte[] boundary,
             int bufSize,
             ProgressNotifier pNotifier) {
-        this.input = input;
-        this.bufSize = bufSize;
-        this.buffer = new byte[bufSize];
-        this.notifier = pNotifier;
 
+        if (boundary == null) {
+            throw new IllegalArgumentException("boundary may not be null");
+        }
+        
         // We prepend CR/LF to the boundary to chop trailng CR/LF from
         // body-data tokens.
         this.boundaryLength = boundary.length + BOUNDARY_PREFIX.length;
@@ -359,8 +359,15 @@ public class MultipartStream {
             throw new IllegalArgumentException(
                     "The buffer size specified for the MultipartStream is too small");
         }
+        
+        this.input = input;
+        this.bufSize = bufSize;
+        this.buffer = new byte[bufSize];
+        this.notifier = pNotifier;
+        
         this.boundary = new byte[this.boundaryLength];
         this.keepRegion = this.boundary.length;
+        
         System.arraycopy(BOUNDARY_PREFIX, 0, this.boundary, 0,
                 BOUNDARY_PREFIX.length);
         System.arraycopy(boundary, 0, this.boundary, BOUNDARY_PREFIX.length,

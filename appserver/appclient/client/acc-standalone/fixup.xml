@@ -40,7 +40,7 @@
     holder.
 
 -->
-<!-- Portions Copyright [2016] [C2B2 Consulting Limited] -->
+<!-- Portions Copyright [2016] [Payara Foundation] -->
 
 <project name="glassfish v3, app client library fix-up" default="fixup.library" basedir=".">
     <property name="mq.dir.path" value="../../mq"/>

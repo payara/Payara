@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -79,11 +79,9 @@ public class RequestTracingService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
-        System.out.println("class: " + this.getClass().getName()  + " - loader:" + this.getClass().getClassLoader().getClass().getName());
-
         if (configuration != null) {
-            executionOptions.setEnabled(configuration.getEnabled());
-            executionOptions.setThresholdValue(configuration.getThresholdValue());
+            executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
+            executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
 
             for (Notifier notifier : configuration.getNotifierList()) {
@@ -93,6 +91,7 @@ public class RequestTracingService implements EventListener {
         events.register(this);
     }
 
+    @Override
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             bootstrapRequestTracingService();
@@ -100,35 +99,62 @@ public class RequestTracingService implements EventListener {
     }
 
     private void bootstrapRequestTracingService() {
-        if (executionOptions.isEnabled()) {
+        if (executionOptions != null && executionOptions.isEnabled()) {
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
         }
+    }
+    
+    /**
+     * Retrieves the current Conversation ID
+     * @return 
+     */
+    public UUID getConversationID() {
+        return requestEventStore.getConversationID();
+    }
+    
+    /**
+     * Reset the conversation ID
+     * This is especially useful for trace propagation across threads when
+     * the event tracer can receive the conversation ID propagated to it
+     * @param newID 
+     */
+    public void setConversationID(UUID newID) {
+        requestEventStore.setConverstationID(newID);
+    }
+    
+    public boolean isTraceInProgress() {
+        return requestEventStore.isTraceInProgress();
     }
 
     public UUID startTrace() {
         if (!isRequestTracingEnabled()) {
             return null;
         }
-        RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, server.getName(), domain.getName());
+        RequestEvent requestEvent = new RequestEvent(EventType.TRACE_START, "StartTrace");
+        requestEvent.addProperty("Server", server.getName());
+        requestEvent.addProperty("Domain", domain.getName());
         requestEventStore.storeEvent(requestEvent);
         return requestEvent.getId();
     }
 
     public void traceRequestEvent(RequestEvent requestEvent) {
-        requestEventStore.storeEvent(requestEvent);
+        if (isRequestTracingEnabled()) {
+            requestEventStore.storeEvent(requestEvent);
+        }
     }
 
     public void endTrace() {
         if (!isRequestTracingEnabled()) {
             return;
         }
-        requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, server.getName(), domain.getName()));
+        requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "TraceEnd"));
         Long thresholdValueInMillis = getThresholdValueInMillis();
 
-        if (requestEventStore.calculateElapsedTime() > thresholdValueInMillis) {
-            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList()) {
+        long elapsedTime = requestEventStore.getElapsedTime();
+        if ( elapsedTime > thresholdValueInMillis) {
+            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
-                    notificationService.notify(eventFactory.build(notifierExecutionOptions.getNotifierType()));
+                    notificationService.notify(eventFactory.build(elapsedTime, notifierExecutionOptions.getNotifierType()));
                 }
             }
         }

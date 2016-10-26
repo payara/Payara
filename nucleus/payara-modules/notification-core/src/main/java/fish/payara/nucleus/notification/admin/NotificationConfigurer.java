@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -41,6 +41,7 @@ import java.beans.PropertyVetoException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.hk2.api.ServiceLocator;
 
 
 /**
@@ -54,7 +55,7 @@ import java.util.logging.Logger;
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("notification.configure")
 @ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.POST,
@@ -67,7 +68,10 @@ public class NotificationConfigurer implements AdminCommand {
 
     @Inject
     NotificationService service;
-
+    
+    @Inject
+    ServerEnvironment server;
+    
     @Inject
     protected Logger logger;
 
@@ -82,6 +86,11 @@ public class NotificationConfigurer implements AdminCommand {
 
     @Param(name = "enabled", optional = false)
     private Boolean enabled;
+
+    @Inject
+    ServiceLocator serviceLocator;
+
+    CommandRunner.CommandInvocation inv;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -118,15 +127,14 @@ public class NotificationConfigurer implements AdminCommand {
         }
 
         if (dynamic) {
-            enableOnTarget(actionReport, context, enabled);
-        }
-    }
-
-    private void enableOnTarget(ActionReport actionReport, AdminCommandContext context, Boolean enabled) {
-        if (enabled != null) {
-            service.getExecutionOptions().setEnabled(enabled);
-            actionReport.appendMessage(strings.getLocalString("notification.configure.status.success",
-                    "Notification service status is set to {0}.", enabled) + "\n");
+            if (server.isDas()) {
+                if (targetUtil.getConfig(target).isDas()) {
+                    service.getExecutionOptions().setEnabled(enabled);
+                }
+            } else {
+                // apply as not the DAS so implicitly it is for us
+                service.getExecutionOptions().setEnabled(enabled);
+            }
         }
     }
 }

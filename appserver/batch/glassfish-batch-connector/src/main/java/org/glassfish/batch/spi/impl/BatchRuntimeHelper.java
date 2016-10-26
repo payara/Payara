@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2014] [C2B2 Consulting Limited] 
+// Portions Copyright [2016] [Payara Foundation] 
 package org.glassfish.batch.spi.impl;
 
 import com.ibm.jbatch.container.servicesmanager.ServiceTypes;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014 C2B2 Consulting Limited. All rights reserved.
+ * Copyright (c) 2016 Payara Foundation. All rights reserved.
  
  * The contents of this file are subject to the terms of the Common Development
  * and Distribution License("CDDL") (collectively, the "License").  You
@@ -68,7 +68,10 @@ import com.ibm.jbatch.container.status.JobStatus;
 import com.ibm.jbatch.container.status.StepStatus;
 import com.ibm.jbatch.container.util.TCCLObjectInputStream;
 import com.ibm.jbatch.spi.services.IBatchConfig;
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.batch.spi.impl.BatchRuntimeHelper;
+import org.glassfish.internal.api.Globals;
 
 /**
  * 
@@ -99,6 +102,8 @@ public class JBatchJDBCPersistenceManager implements
 	// derby create table strings
 	protected Map<String, String> createDerbyStrings;
 
+        private RequestTracingService requestTracing;
+        
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -109,60 +114,67 @@ public class JBatchJDBCPersistenceManager implements
 	@Override
 	public void init(IBatchConfig batchConfig)
 			throws BatchContainerServiceException {
-		logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
+            logger.config("Entering CLASSNAME.init(), batchConfig =" + batchConfig);
 
-		this.batchConfig = batchConfig;
+            this.batchConfig = batchConfig;
 
-		schema = batchConfig.getDatabaseConfigurationBean().getSchema();
+            schema = batchConfig.getDatabaseConfigurationBean().getSchema();
 
-		jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
-		
-		Context ctx = null;
-		try {
-			ctx = new InitialContext();
-			dataSource = (DataSource) ctx.lookup(jndiName);
+            jndiName = batchConfig.getDatabaseConfigurationBean().getJndiName();
 
-		} catch (NamingException e) {
-			logger.severe("Lookup failed for JNDI name: "
-					+ jndiName
-					+ ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
-			throw new BatchContainerServiceException(e);
-		}
+            Context ctx = null;
+            try {
+                    ctx = new InitialContext();
+                    dataSource = (DataSource) ctx.lookup(jndiName);
+
+            } catch (NamingException e) {
+                    logger.severe("Lookup failed for JNDI name: "
+                                    + jndiName
+                                    + ".  One cause of this could be that the batch runtime is incorrectly configured to EE mode when it should be in SE mode.");
+                    throw new BatchContainerServiceException(e);
+            }
 
 
-		// Load the table names and queries shared between different datstabase
-		// types
+            // Load the table names and queries shared between different datstabase
+            // types
 
-		tableNames = getSharedTableMap(batchConfig);
+            tableNames = getSharedTableMap(batchConfig);
 
-		try {
-			queryStrings = getSharedQueryMap(batchConfig);
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			throw new BatchContainerServiceException(e1);
-		}
-		// put the create table strings into a hashmap
-		// createTableStrings = setCreateTableMap(batchConfig);
+            try {
+                    queryStrings = getSharedQueryMap(batchConfig);
+            } catch (SQLException e1) {
+                    // TODO Auto-generated catch block
+                    throw new BatchContainerServiceException(e1);
+            }
+            // put the create table strings into a hashmap
+            // createTableStrings = setCreateTableMap(batchConfig);
 
-		logger.config("JNDI name = " + jndiName);
+            logger.config("JNDI name = " + jndiName);
 
-		if (jndiName == null || jndiName.equals("")) {
-			throw new BatchContainerServiceException(
-					"JNDI name is not defined.");
-		}
+            if (jndiName == null || jndiName.equals("")) {
+                    throw new BatchContainerServiceException(
+                                    "JNDI name is not defined.");
+            }
 
-		try {
-			if (!isDerbySchemaValid()) {
-				setDefaultSchema();
-			}
-			checkDerbyTables();
+            try {
+                    if (!isDerbySchemaValid()) {
+                            setDefaultSchema();
+                    }
+                    checkDerbyTables();
 
-		} catch (SQLException e) {
-			logger.severe(e.getLocalizedMessage());
-			throw new BatchContainerServiceException(e);
-		}
+            } catch (SQLException e) {
+                    logger.severe(e.getLocalizedMessage());
+                    throw new BatchContainerServiceException(e);
+            }
 
-		logger.config("Exiting CLASSNAME.init()");
+            try {
+                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+            } catch (NullPointerException ex) {
+                logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                        + "during initialisation of JBatchJDBCPersistenceManager - NullPointerException");
+            }
+
+            logger.config("Exiting CLASSNAME.init()");
 	}
 
 	/**
@@ -1837,6 +1849,12 @@ public class JBatchJDBCPersistenceManager implements
 		jobExecution.setBatchStatus(batchStatus.name());
 		jobExecution.setCreateTime(now);
 		jobExecution.setLastUpdateTime(now);
+                
+                if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+                    RequestEvent requestEvent = constructJBatchExecutionEvent(jobExecution);
+                    requestTracing.traceRequestEvent(requestEvent);
+                }
+                
 		return jobExecution;
 	}
 
@@ -2827,5 +2845,25 @@ public class JBatchJDBCPersistenceManager implements
 		return createDerbyStrings;
 
 	}
+        
+    private RequestEvent constructJBatchExecutionEvent(RuntimeJobExecution jobExecution) {
+        RequestEvent requestEvent = new RequestEvent("JBatchExecutionContextEvent");
+        
+        try {
+            requestEvent.addProperty("Execution ID", Long.toString(jobExecution.getExecutionId()));
+            requestEvent.addProperty("Job ID", Long.toString(jobExecution.getInstanceId()));
+            requestEvent.addProperty("Job Name", jobExecution.getJobInstance().getJobName());
+            requestEvent.addProperty("Batch Status", jobExecution.getJobOperatorJobExecution().getBatchStatus().toString());
 
+            if (jobExecution.getJobParameters() != null) {
+                requestEvent.addProperty("Job Parameters", jobExecution.getJobParameters().toString());
+            } else {
+                requestEvent.addProperty("Job Parameters", "null");
+            } 
+        } catch (NullPointerException e) {
+            logger.log(Level.INFO, "NullPointerException when creating request tracing JBatchExecutionContextEvent");
+        }                   
+        
+        return requestEvent;
+    }
 }

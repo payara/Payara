@@ -2,7 +2,7 @@
  * 
  *  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- *  Copyright (c) 2016 C2B2 Consulting Limited and/or its affiliates.
+ *  Copyright (c) 2016 Payara Foundation and/or its affiliates.
  *  All rights reserved.
  * 
  *  The contents of this file are subject to the terms of the Common Development
@@ -25,7 +25,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.glassfish.api.StartupRunLevel;
@@ -47,6 +46,7 @@ public class PhoneHomeCore implements EventListener {
     private static final String THREAD_NAME = "PhoneHomeThread";
     
     private static PhoneHomeCore theCore;
+    private static Boolean overrideEnabled;
     private boolean enabled;
     
     private ScheduledExecutorService executor;
@@ -77,6 +77,9 @@ public class PhoneHomeCore implements EventListener {
                 enabled = Boolean.valueOf(configuration.getEnabled());
             }
             
+            if (overrideEnabled != null) {
+                enabled = overrideEnabled;
+            }
         } else {
             enabled = false;
         }        
@@ -96,7 +99,6 @@ public class PhoneHomeCore implements EventListener {
     }
     
     private void bootstrapPhoneHome() {
-        
         if (enabled) {
             executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
                 @Override
@@ -138,5 +140,9 @@ public class PhoneHomeCore implements EventListener {
             this.enabled = false;
             shutdownPhoneHome();
         }
+    }
+
+    public static void setOverrideEnabled(boolean enabled) {
+        overrideEnabled = enabled;
     }
 }

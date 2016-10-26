@@ -1,6 +1,6 @@
 /*
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
  may not use this file except in compliance with the License.  You can
@@ -13,34 +13,33 @@
  */
 package fish.payara.nucleus.requesttracing.domain;
 
+import java.util.HashMap;
 import java.util.UUID;
 
 /**
  * @author mertcaliskan
  *
- * Base event class that stores traced values with the help of interceptors.
+ * Event class that stores traced values.
  */
 public class RequestEvent implements Comparable<RequestEvent> {
 
-    private UUID id;
+    private final UUID id;
     private UUID conversationId;
-    private String server;
-    private String domain;
-    private long timestamp;
-    private Long elapsedTime;
-    private EventType eventType;
+    private final long timestamp;
+    private long traceTime;
+    private final EventType eventType;
+    private HashMap<String,String> properties;
+    private String eventName;
 
-    RequestEvent() {
-        this.id = UUID.randomUUID();
-        this.timestamp = System.currentTimeMillis();
+    public RequestEvent(String eventName) {
+        this(EventType.REQUEST_EVENT,eventName);
     }
 
-    public RequestEvent(EventType eventType, String domain, String server) {
+    public RequestEvent(EventType eventType, String eventName) {
         this.id = UUID.randomUUID();
         this.timestamp = System.currentTimeMillis();
         this.eventType = eventType;
-        this.domain = domain;
-        this.server = server;
+        this.eventName = eventName;
     }
 
     public UUID getId() {
@@ -55,57 +54,56 @@ public class RequestEvent implements Comparable<RequestEvent> {
         this.conversationId = conversationId;
     }
 
-    public String getServer() {
-        return server;
-    }
-
-    public void setServer(String server) {
-        this.server = server;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public Long getElapsedTime() {
-        return elapsedTime;
-    }
-
-    public void setElapsedTime(Long elapsedTime) {
-        this.elapsedTime = elapsedTime;
-    }
-
     public long getTimestamp() {
         return timestamp;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public long getTraceTime() {
+        return traceTime;
+    }
+
+    public void setTraceTime(long traceTime) {
+        this.traceTime = traceTime;
     }
 
     public EventType getEventType() {
         return eventType;
     }
 
-    public void setEventType(EventType eventType) {
-        this.eventType = eventType;
+    public String getEventName() {
+        return eventName;
     }
 
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+    
+    public void addProperty(String name, String value) {
+        if (properties == null) {
+            properties = new HashMap<>();
+        }
+        properties.put(name, value);
+    }
+    
     @Override
     public String toString() {
-        return "RequestEvent{" +
-                "alarmType=" + eventType +
-                ", id=" + id +
-                ", conversationId=" + conversationId +
-                ", server='" + server + '\'' +
-                ", domain='" + domain + '\'' +
-                ", timestamp=" + timestamp +
-                ", elapsedTime=" + elapsedTime +
-                '}';
+        
+        StringBuilder result = new StringBuilder("\n\"TraceEvent\": {");
+        result.append("\"eventType\": \"").append(eventType).append("\",")
+                .append("\"eventName\":\"").append(eventName).append("\",")
+                .append("\"id=\":\"").append(id).append("\",")
+                .append("\"conversationId=\":\"").append(conversationId).append("\",")
+                .append("\"timestamp=\":\"").append(timestamp).append("\",");
+
+        if (properties != null) {
+            for (String key : properties.keySet()) {
+                result.append("\"").append(key).append("\": \"").append(properties.get(key)).append("\",");
+            }
+        }
+        
+        result.append("\"traceTime=\":\"").append(traceTime).append('"');
+        result.append('}');
+        return result.toString();
     }
 
     /**

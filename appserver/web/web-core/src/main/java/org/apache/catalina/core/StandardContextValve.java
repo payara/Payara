@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -66,8 +67,8 @@ import org.glassfish.web.valve.GlassFishValve;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.glassfish.grizzly.http.util.DataChunk;
-// END GlassFish 1343
+import java.nio.file.Paths;
+import org.glassfish.grizzly.utils.Charsets;
 
 /**
  * Valve that implements the default basic behavior for the
@@ -282,10 +283,10 @@ final class StandardContextValve
         // START CR 6415120
         if (request.getCheckRestrictedResources()) {
         // END CR 6415120
-            DataChunk requestPathDC = hreq.getRequestPathMB();
-            if ((requestPathDC.startsWithIgnoreCase("/META-INF/", 0))
+            String requestPathDC = Paths.get(hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET)).normalize().toString().toUpperCase();
+            if ((requestPathDC.startsWith("/META-INF/", 0))
                     || (requestPathDC.equalsIgnoreCase("/META-INF"))
-                    || (requestPathDC.startsWithIgnoreCase("/WEB-INF/", 0))
+                    || (requestPathDC.startsWith("/WEB-INF/", 0))
                     || (requestPathDC.equalsIgnoreCase("/WEB-INF"))) {
                 notFound((HttpServletResponse) response.getResponse());
                 return null;

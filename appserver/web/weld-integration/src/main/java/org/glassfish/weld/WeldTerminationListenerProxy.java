@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+ * Copyright [2016] [Payara Foundation and/or its affiliates]
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development

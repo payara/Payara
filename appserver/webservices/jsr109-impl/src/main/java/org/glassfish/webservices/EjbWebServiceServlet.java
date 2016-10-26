@@ -37,15 +37,14 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.webservices;
 
 
 import com.sun.enterprise.deployment.Application;
 import com.sun.enterprise.deployment.WebServiceEndpoint;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EventType;
-import fish.payara.nucleus.requesttracing.domain.SoapWSRequestEvent;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.logging.LogHelper;
 import org.glassfish.ejb.api.EjbEndpointFacade;
 import org.glassfish.ejb.spi.WSEjbEndpointRegistry;
@@ -135,7 +134,7 @@ public class EjbWebServiceServlet extends HttpServlet {
                     sb.append("?");
                     sb.append(query);
                 }
-                hresp.sendRedirect(URLEncoder.encode(sb.toString(), "UTF-8"));
+                hresp.sendRedirect(hresp.encodeRedirectURL(sb.toString()));
             } else {
                 boolean dispatch = true;
                 // check if it is a tester servlet invocation
@@ -163,7 +162,7 @@ public class EjbWebServiceServlet extends HttpServlet {
                     dispatchToEjbEndpoint(hreq, hresp, ejbEndpoint);
 
                     if (requestTracing.isRequestTracingEnabled()) {
-                        SoapWSRequestEvent requestEvent = constructWsRequestEvent(hreq, ejbEndpoint, EventType.WS);
+                        RequestEvent requestEvent = constructWsRequestEvent(hreq, ejbEndpoint);
                         requestTracing.traceRequestEvent(requestEvent);
                     }
                 }
@@ -173,21 +172,18 @@ public class EjbWebServiceServlet extends HttpServlet {
         }
     }
 
-    private SoapWSRequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
-                                                        EjbRuntimeEndpointInfo ejbEndpoint,
-                                                        EventType eventType) {
-        SoapWSRequestEvent requestEvent  = new SoapWSRequestEvent();
-        requestEvent.setUri(ejbEndpoint.getEndpoint().getEndpointAddressUri());
-        requestEvent.setEventType(eventType);
-
-        requestEvent.setUrl(httpServletRequest.getRequestURL().toString());
+    private RequestEvent constructWsRequestEvent(HttpServletRequest httpServletRequest,
+                                                        EjbRuntimeEndpointInfo ejbEndpoint) {
+        RequestEvent requestEvent  = new RequestEvent("SOAPWSRequestTrace");
+        requestEvent.addProperty("URI",ejbEndpoint.getEndpoint().getEndpointAddressUri());
+        requestEvent.addProperty("URL",httpServletRequest.getRequestURL().toString());
         Enumeration<String> headerNames = httpServletRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
             List<String> headers = Collections.list(httpServletRequest.getHeaders(headerName));
-            requestEvent.getHeaders().put(headerName, headers);
+            requestEvent.addProperty(headerName, headers.toString());
         }
-        requestEvent.setFormMethod(httpServletRequest.getMethod());
+        requestEvent.addProperty("Method",httpServletRequest.getMethod());
         return requestEvent;
     }
 

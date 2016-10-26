@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -22,6 +22,8 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
@@ -48,14 +50,13 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-
 /**
  * Admin command to enable/disable specific notifier given with its name
  *
  * @author mertcaliskan
  */
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn({RuntimeType.DAS,RuntimeType.INSTANCE})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @Service(name = "requesttracing-configure-notifier")
 @CommandLock(CommandLock.LockType.NONE)
 @PerLookup
@@ -69,6 +70,9 @@ import java.util.logging.Logger;
 public class RequestTracingNotifierConfigurer implements AdminCommand {
 
     final private static LocalStringManagerImpl strings = new LocalStringManagerImpl(RequestTracingNotifierConfigurer.class);
+
+    @Inject
+    ServerEnvironment server;
 
     @Inject
     RequestTracingService service;
@@ -97,9 +101,13 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
     @Param(name = "notifierEnabled", optional = false)
     private Boolean notifierEnabled;
 
+    @Inject
+    ServiceLocator serviceLocator;
+
     @Override
     public void execute(AdminCommandContext context) {
         final ActionReport actionReport = context.getActionReport();
+        final AdminCommandContext theContext = context;
         Properties extraProperties = actionReport.getExtraProperties();
         if (extraProperties == null) {
             extraProperties = new Properties();
@@ -121,31 +129,15 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
 
         try {
             if (notifier == null) {
-                final Notifier[] createdNotifier = {null};
                 ConfigSupport.apply(new SingleConfigCode<RequestTracingServiceConfiguration>() {
                     @Override
                     public Object run(final RequestTracingServiceConfiguration requestTracingServiceConfigurationProxy) throws
                             PropertyVetoException, TransactionFailure {
                         Notifier notifierProxy = (Notifier) requestTracingServiceConfigurationProxy.createChild(notifierService.getNotifierType());
                         if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
+                            notifierProxy.enabled(String.valueOf(notifierEnabled));
                         }
-                        createdNotifier[0] = notifierProxy;
-
-                        List<Notifier> notifierList = requestTracingServiceConfigurationProxy.getNotifierList();
-                        NotifierExecutionOptions executionOptions = factory.build(createdNotifier[0]);
-                        if (notifierEnabled) {
-                            notifierList.add(createdNotifier[0]);
-                            if (dynamic) {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().add(executionOptions);
-                            }
-                        } else {
-                            notifierList.remove(createdNotifier[0]);
-                            if (dynamic) {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().remove(executionOptions);
-                            }
-                        }
-
+                        requestTracingServiceConfigurationProxy.getNotifierList().add(notifierProxy);
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return requestTracingServiceConfigurationProxy;
                     }
@@ -156,23 +148,35 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
                     public Object run(final Notifier notifierProxy) throws
                             PropertyVetoException, TransactionFailure {
                         if (notifierEnabled != null) {
-                            notifierProxy.enabled(notifierEnabled);
+                            notifierProxy.enabled(String.valueOf(notifierEnabled));
                         }
-
-                        if (dynamic) {
-                            NotifierExecutionOptions executionOptions = factory.build(notifierProxy);
-                            if (notifierEnabled) {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().add(executionOptions);
-                            } else {
-                                service.getExecutionOptions().getNotifierExecutionOptionsList().remove(executionOptions);
-                            }
-                        }
-
                         actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
                         return notifierProxy;
                     }
                 }, notifier);
 
+            }
+            
+            if (dynamic) {
+                Notifier dynamicNotifier = requestTracingServiceConfiguration.getNotifierByType(notifierService.getNotifierType());
+                NotifierExecutionOptions build = factory.build(dynamicNotifier);
+                if (server.isDas()) {
+                    if (targetUtil.getConfig(target).isDas()) {
+                        if (notifierEnabled) {
+                            build.setEnabled(notifierEnabled);
+                            service.getExecutionOptions().addNotifierExecutionOption(build);
+                        } else {
+                            service.getExecutionOptions().removeNotifierExecutionOption(build);
+                        }
+                    }
+                } else {
+                    if (notifierEnabled) {
+                        build.setEnabled(notifierEnabled);
+                        service.getExecutionOptions().addNotifierExecutionOption(build);
+                    } else {
+                        service.getExecutionOptions().removeNotifierExecutionOption(build);
+                    }
+                }
             }
 
             actionReport.appendMessage(strings.getLocalString("requesttracing.configure.notifier.added.configured",
@@ -183,4 +187,5 @@ public class RequestTracingNotifierConfigurer implements AdminCommand {
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
         }
     }
+
 }

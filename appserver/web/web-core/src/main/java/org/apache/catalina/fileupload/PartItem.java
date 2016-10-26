@@ -56,7 +56,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.apache.catalina.fileupload;
 
 import org.apache.catalina.Globals;
@@ -739,6 +739,24 @@ class PartItem
             throws IOException, ClassNotFoundException {
         // read values
         in.defaultReadObject();
+        
+        // PAYARA-953 protect against null byte attacks 
+        if (repository != null) {
+            if (repository.getPath().contains("\0")) {
+                throw new IOException("Repository path cannot contain a null byte");
+            }
+            
+            if (!repository.isDirectory()) {
+                throw new IOException("Repository path " + repository.getPath() + " is not a directory ");
+            }
+        }
+        
+        if (dfosFile != null) {
+            if (dfosFile.getPath().contains("\0")) {
+                throw new IOException("File path cannot contain a null byte");
+            }
+        }
+        // END PAYARA-953
 
         OutputStream output = getOutputStream();
         if (cachedContent != null) {

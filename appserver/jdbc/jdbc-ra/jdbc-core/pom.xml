@@ -41,11 +41,13 @@
 
 -->
 
+<!-- Portions Copyright [2016] [Payara Foundation and/or its affiliates] -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
     <artifactId>jdbc-ra</artifactId>
     <groupId>org.glassfish.main.jdbc.jdbc-ra</groupId>
-    <version>4.1.1.163-SNAPSHOT</version>
+    <version>4.1.1.164-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <modelVersion>4.0.0</modelVersion>
@@ -97,6 +99,11 @@
       <dependency>
           <groupId>org.glassfish.gmbal</groupId>
           <artifactId>gmbal</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>fish.payara.payara-modules</groupId>
+          <artifactId>requesttracing-core</artifactId>
+          <version>${project.version}</version>
       </dependency>
   </dependencies>
 </project>

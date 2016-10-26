@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.kernel.javaee;
 
@@ -51,7 +52,6 @@ import org.glassfish.internal.api.InitRunLevel;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.api.naming.GlassfishNamingManager;
 
-import com.sun.logging.LogDomains;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -75,8 +75,7 @@ public class MEJBService implements PostConstruct {
     @Inject 
     Provider<GlassfishNamingManager> gfNamingManagerProvider;
 
-    private static final Logger _logger = LogDomains.getLogger(
-        MEJBService.class, LogDomains.EJB_LOGGER);
+    private static final Logger _logger = Logger.getLogger(MEJBService.class.getName());
   
     public void postConstruct() {
         GlassfishNamingManager gfNamingManager =

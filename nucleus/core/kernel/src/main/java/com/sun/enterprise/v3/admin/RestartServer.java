@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 package com.sun.enterprise.v3.admin;
 
 import com.sun.enterprise.module.ModulesRegistry;
@@ -52,6 +52,8 @@ import org.glassfish.embeddable.GlassFish;
 
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.*;
 
 import javax.inject.Inject;
@@ -70,6 +72,8 @@ import javax.inject.Provider;
 public class RestartServer {
     @Inject
     private Provider<GlassFish> glassfishProvider;
+    
+    private final Lock stopLock = new ReentrantLock();
     
     protected final void setDebug(Boolean b) {
         debug = b;
@@ -112,19 +116,36 @@ public class RestartServer {
                 // do it now while we still have the Logging service running...
                 reincarnate();
             }
+            prepareToExit();
             // else we just return a special int from System.exit()
             gfKernel.stop();
         }
         catch (Exception e) {
             context.getLogger().severe(strings.get("restart.server.failure", e));
+        } finally {
+            stopLock.unlock();
         }
+    }
 
-        int ret = RESTART_NORMAL;
+    private void prepareToExit() {
+        stopLock.lock();
 
-        if (debug != null)
-            ret = debug ? RESTART_DEBUG_ON : RESTART_DEBUG_OFF;
-
-        System.exit(ret);
+        // we need a separate non-deamon thread to perform System.exit, as gfKernel.stop() terminates the only
+        // non-daemon thread in system, and JVM can terminate before executing System.exit
+        Thread exitingThread = new Thread("wait-for-restart") {
+            @Override
+            public void run() {
+                stopLock.lock();
+                int ret = RESTART_NORMAL;
+                
+                if (debug != null)
+                    ret = debug ? RESTART_DEBUG_ON : RESTART_DEBUG_OFF;
+                
+                System.exit(ret);
+            }
+        };
+        exitingThread.setDaemon(false);
+        exitingThread.start();
     }
 
     ////////////////////////////////////////////////////////////////////////////

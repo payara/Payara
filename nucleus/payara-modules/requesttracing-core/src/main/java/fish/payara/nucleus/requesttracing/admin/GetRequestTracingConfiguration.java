@@ -2,7 +2,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -21,7 +21,6 @@ package fish.payara.nucleus.requesttracing.admin;
 import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-import com.sun.enterprise.util.StringUtils;
 import com.sun.enterprise.util.SystemPropertyConstants;
 import fish.payara.nucleus.notification.configuration.LogNotifier;
 import fish.payara.nucleus.notification.configuration.Notifier;
@@ -56,8 +55,8 @@ import java.util.Properties;
 @PerLookup
 @CommandLock(CommandLock.LockType.NONE)
 @I18n("get.requesttracing.configuration")
-@ExecuteOn({RuntimeType.DAS, RuntimeType.INSTANCE})
-@TargetType({CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
+@ExecuteOn({RuntimeType.DAS})
+@TargetType(value = {CommandTarget.DAS, CommandTarget.STANDALONE_INSTANCE, CommandTarget.CLUSTER, CommandTarget.CLUSTERED_INSTANCE, CommandTarget.CONFIG})
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
             opType = RestEndpoint.OpType.GET,
@@ -65,9 +64,6 @@ import java.util.Properties;
             description = "List Request Tracing Configuration")
 })
 public class GetRequestTracingConfiguration implements AdminCommand {
-
-    final static String notifiersHeaders[] = {"Name", "Service Name", "Enabled"};
-
     @Inject
     ServiceLocator habitat;
 
@@ -88,48 +84,40 @@ public class GetRequestTracingConfiguration implements AdminCommand {
         }
 
         ActionReport mainActionReport = context.getActionReport();
-        ActionReport notifiersActionReport = mainActionReport.addSubActionsReport();
-        ColumnFormatter notifiersColumnFormatter = new ColumnFormatter(notifiersHeaders);
+
 
         RequestTracingServiceConfiguration configuration = config.getExtensionByType(RequestTracingServiceConfiguration.class);
         List<ServiceHandle<BaseNotifierService>> allNotifierHandles = habitat.getAllServiceHandles(BaseNotifierService.class);
 
-        String headers[] = {"Enabled", "ThresholdUnit", "ThresholdValue"};
+        String headers[] = {"Enabled", "ThresholdUnit", "ThresholdValue", "Notifier Name", "Notifier Enabled"};
         ColumnFormatter columnFormatter = new ColumnFormatter(headers);
-        Object values[] = new Object[3];
+        Object values[] = new Object[5];
         values[0] = configuration.getEnabled();
         values[1] = configuration.getThresholdUnit();
         values[2] = configuration.getThresholdValue();
-        columnFormatter.addRow(values);
-
-        Map<String, Object> map = new HashMap<String, Object>(3);
-        Properties extraProps = new Properties();
-        map.put("enabled", values[0]);
-        map.put("thresholdUnit", values[1]);
-        map.put("thresholdValue", values[2]);
-        extraProps.put("getRequesttracingConfiguration", map);
-        mainActionReport.setExtraProperties(extraProps);
-        mainActionReport.setMessage(columnFormatter.toString());
-        mainActionReport.appendMessage("\n");
-        mainActionReport.appendMessage("\n" + "Below are the list of notifier details listed by name.");
 
         for (ServiceHandle<BaseNotifierService> notifierHandle : allNotifierHandles) {
             Notifier notifier = configuration.getNotifierByType(notifierHandle.getService().getNotifierType());
 
             if (notifier instanceof LogNotifier) {
                 LogNotifier logNotifier = (LogNotifier) notifier;
-                Object values2[] = new Object[3];
-                values2[0] = notifierHandle.getService().getType().toString();
-                values2[1] = notifierHandle.getActiveDescriptor().getName();
-                values2[2] = logNotifier.getEnabled();
-                notifiersColumnFormatter.addRow(values2);
+                values[3] = notifierHandle.getActiveDescriptor().getName();
+                values[4] = logNotifier.getEnabled();
             }
         }
-        if (!notifiersColumnFormatter.getContent().isEmpty()) {
-            notifiersActionReport.setMessage(notifiersColumnFormatter.toString());
-            notifiersActionReport.appendMessage(StringUtils.EOL);
-        }
+        columnFormatter.addRow(values);
 
+        Map<String, Object> map = new HashMap<String, Object>(5);
+        Properties extraProps = new Properties();
+        map.put("enabled", values[0]);
+        map.put("thresholdUnit", values[1]);
+        map.put("thresholdValue", values[2]);
+        map.put("notifierName", values[3]);
+        map.put("notifierEnabled", values[4]);
+        
+        extraProps.put("getRequesttracingConfiguration", map);
+        mainActionReport.setExtraProperties(extraProps);
+        mainActionReport.setMessage(columnFormatter.toString());
         mainActionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
     }
 }

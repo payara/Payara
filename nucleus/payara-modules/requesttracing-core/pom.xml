@@ -3,7 +3,7 @@
 
  DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
- Copyright (c) 2016 C2B2 Consulting Limited. All rights reserved.
+ Copyright (c) 2016 Payara Foundation. All rights reserved.
 
  The contents of this file are subject to the terms of the Common Development
  and Distribution License("CDDL") (collectively, the "License").  You
@@ -22,7 +22,7 @@
     <parent>
         <groupId>fish.payara.payara-modules</groupId>
         <artifactId>payara-nucleus-modules</artifactId>
-        <version>4.1.1.163-SNAPSHOT</version>
+        <version>4.1.1.164-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <artifactId>requesttracing-core</artifactId>
@@ -33,8 +33,8 @@
         <developer>
             <id>mcaliskan</id>
             <name>Mert Caliskan</name>
-            <url>http://www.payara.co</url>
-            <organization>Payara Inc.</organization>
+            <url>http://www.payara.fish</url>
+            <organization>Payara Services Ltd.</organization>
             <roles>
                 <role>developer</role>
             </roles>
@@ -81,6 +81,18 @@
             <groupId>fish.payara.payara-modules</groupId>
             <artifactId>notification-core</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.json</artifactId>
+            <version>1.0.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

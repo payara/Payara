@@ -55,6 +55,7 @@ public class LifecycleCallbackDescriptor extends Descriptor {
     private String lifecycleCallbackMethod;
     private String defaultLifecycleCallbackClass;
     private MetadataSource metadataSource = MetadataSource.XML;
+    private boolean requiresInvocationContextArgument = false;
 
     public enum CallbackType {
 
@@ -95,6 +96,14 @@ public class LifecycleCallbackDescriptor extends Descriptor {
         return lifecycleCallbackMethod;
     }
 
+    public boolean isRequiresInvocationContextArgument() {
+        return requiresInvocationContextArgument;
+    }
+
+    public void setRequiresInvocationContextArgument(boolean requiresInvocationContextArgument) {
+        this.requiresInvocationContextArgument = requiresInvocationContextArgument;
+    }
+
     /**
      * Given a classloader, find the Method object corresponding to this
      * lifecycle callback.  
@@ -116,8 +125,12 @@ public class LifecycleCallbackDescriptor extends Descriptor {
         while ( method == null && ! clazz.equals( Object.class ) ) {
             for(Method next : clazz.getDeclaredMethods()) {
                 if( next.getName().equals(lifecycleCallbackMethod) ) {
-                    method = next;
-                    break;
+                    if ( !requiresInvocationContextArgument
+                           || (next.getParameterTypes().length == 1 
+                               && "javax.interceptor.InvocationContext".equals(next.getParameterTypes()[0].getName()))) {
+                        method = next;
+                        break;
+                    }
                 }
             }
             if ( method == null ) {

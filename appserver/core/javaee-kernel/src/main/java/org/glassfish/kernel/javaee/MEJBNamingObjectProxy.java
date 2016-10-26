@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 package org.glassfish.kernel.javaee;
 
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.logging.LogDomains;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.deployment.DeployCommandParameters;
@@ -76,8 +76,7 @@ public class MEJBNamingObjectProxy implements NamingObjectProxy {
 
     private ServiceLocator habitat;
 
-    private static final Logger _logger = LogDomains.getLogger(
-            MEJBNamingObjectProxy.class, LogDomains.EJB_LOGGER);
+    private static final Logger _logger = Logger.getLogger(MEJBService.class.getName());
 
 
     public MEJBNamingObjectProxy(ServiceLocator habitat) {

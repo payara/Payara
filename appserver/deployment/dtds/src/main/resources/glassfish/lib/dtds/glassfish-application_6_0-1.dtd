@@ -38,7 +38,7 @@
     only if the new code is made subject to such option by the copyright
     holder.
 
-    Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+    Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 -->
 
 <!--
@@ -54,7 +54,7 @@
 <!--
 This is the root element of the runtime descriptor document.
 -->
-<!ELEMENT glassfish-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?, classloading-delegate?, enable-implicit-cdi?) >
+<!ELEMENT glassfish-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?, classloading-delegate?, enable-implicit-cdi?, property*) >
 
 <!ELEMENT web (web-uri, context-root)>
 <!ELEMENT web-uri (#PCDATA)>
@@ -553,3 +553,12 @@ Payara flag to delegate classloader to parent class or not
 Payara flag to enable / disable implicit CDI for EAR file
 -->
 <!ELEMENT enable-implicit-cdi (#PCDATA)>
+
+<!-- 
+Syntax for supplying properties as name value pairs 
+-->
+<!ELEMENT property (description?)>
+<!ATTLIST property name  CDATA  #REQUIRED
+                   value CDATA  #REQUIRED>
+
+<!ELEMENT description (#PCDATA)>

@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-//Portions Copyright [2015] [C2B2 Consulting Limited and/or its affiliates]
+//Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package com.sun.gjc.util;
 
 import com.sun.gjc.monitoring.JdbcRAConstants;
@@ -68,7 +68,6 @@ public class SQLTraceDelegator implements SQLTraceListener {
     private static final Logger logger = LogDomains.getLogger(SQLTraceLogger.class, LogDomains.SQL_TRACE_LOGGER);
 
     private SQLTraceProbeProvider probeProvider = null;
-    
 
     public SQLTraceProbeProvider getProbeProvider() {
         return probeProvider;
@@ -101,7 +100,7 @@ public class SQLTraceDelegator implements SQLTraceListener {
      */
     public void registerSQLTraceListener(SQLTraceListener listener) {
         if (sqlTraceListenersList == null) {
-            sqlTraceListenersList = new ArrayList<SQLTraceListener>();
+            sqlTraceListenersList = new ArrayList<>();
         }
         // check there isn't already a listener of the specified type
         for (SQLTraceListener test : sqlTraceListenersList) {
@@ -112,6 +111,38 @@ public class SQLTraceDelegator implements SQLTraceListener {
         sqlTraceListenersList.add(listener);
     }
 
+    /**
+     * Removes a listener from the list of SQL trace listeners maintained by
+     * this registry.
+     * @param listener The class of listener to remove
+     */
+    public void deregisterSQLTraceListener(Class listener) {
+        if (sqlTraceListenersList == null) {
+            return;
+        }
+        
+        for (SQLTraceListener registeredListener : sqlTraceListenersList) {
+            if (registeredListener.getClass().equals(listener)) {
+                sqlTraceListenersList.remove(registeredListener);
+                break;
+            }
+        }
+    }
+    
+    /**
+     * Checks whether any SQLTraceListeners are registered to this delegator.
+     * @return true if there are listeners registered.
+     */
+    public boolean listenersRegistered() {
+        boolean listenersRegistered = false;
+        
+        if (!sqlTraceListenersList.isEmpty()) {
+            listenersRegistered = true;
+        }
+        
+        return listenersRegistered;
+    }
+    
     @Override
     public void sqlTrace(SQLTraceRecord record) {
         if (record != null) {
@@ -145,17 +176,17 @@ public class SQLTraceDelegator implements SQLTraceListener {
             }
         }
     }
-
-/**
- * Check if the method name from the sql trace record can be used to retrieve a
- * sql string for caching purpose. Most of the method names do not contain a sql
- * string and hence are unusable for caching the sql strings. These method names
- * are filtered in this method.
- *
- * @param methodName
- * @return true if method name can be used to get a sql string for caching.
- */
-private boolean isMethodValidForCaching(String methodName) {
+    
+    /**
+     * Check if the method name from the sql trace record can be used to retrieve a
+     * sql string for caching purpose. Most of the method names do not contain a sql
+     * string and hence are unusable for caching the sql strings. These method names
+     * are filtered in this method.
+     *
+     * @param methodName
+     * @return true if method name can be used to get a sql string for caching.
+     */
+    private boolean isMethodValidForCaching(String methodName) {
         return JdbcRAConstants.validSqlTracingMethodNames.contains(methodName);
     }
 }

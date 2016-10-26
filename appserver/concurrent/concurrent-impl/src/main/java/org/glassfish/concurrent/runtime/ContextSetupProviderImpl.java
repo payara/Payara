@@ -37,7 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-// Portions Copyright [2015] [C2B2 Consulting Limited]
+// Portions Copyright [2016] [Payara Foundation]
 
 package org.glassfish.concurrent.runtime;
 
@@ -61,6 +61,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import fish.payara.nucleus.requesttracing.RequestTracingService;
+import fish.payara.nucleus.requesttracing.domain.RequestEvent;
+import org.glassfish.internal.api.Globals;
+
 public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private transient InvocationManager invocationManager;
@@ -77,6 +81,7 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
 
     private boolean classloading, security, naming, workArea;
 
+    private RequestTracingService requestTracing;
 
     public ContextSetupProviderImpl(InvocationManager invocationManager,
                                     Deployment deployment,
@@ -87,6 +92,14 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         this.deployment = deployment;
         this.applications = applications;
         this.transactionManager = transactionManager;
+        
+        try {
+            this.requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
+        } catch (NullPointerException ex) {
+            logger.log(Level.INFO, "Error retrieving Request Tracing service "
+                    + "during initialisation of Concurrent Context - NullPointerException");
+        }
+        
         for (CONTEXT_TYPE contextType: contextTypes) {
             switch(contextType) {
                 case CLASSLOADING:
@@ -167,9 +180,29 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
         if (transactionManager != null) {
             transactionManager.clearThreadTx();
         }
+        
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            RequestEvent requestEvent = constructConcurrentContextEvent(invocation);
+            requestTracing.traceRequestEvent(requestEvent);
+        }
+        
         return new InvocationContext(invocation, resetClassLoader, resetSecurityContext, handle.isUseTransactionOfExecutionThread());
     }
 
+    private RequestEvent constructConcurrentContextEvent(ComponentInvocation invocation) {
+        requestTracing.startTrace();
+        
+        RequestEvent requestEvent = new RequestEvent("ConcurrentContextTrace");
+        
+        requestEvent.addProperty("App Name", invocation.getAppName());
+        requestEvent.addProperty("Component ID", invocation.getComponentId());
+        requestEvent.addProperty("Module Name", invocation.getModuleName());
+        requestEvent.addProperty("Class Name", invocation.getInstance().getClass().getName());
+        requestEvent.addProperty("Thread Name", Thread.currentThread().getName());
+        
+        return requestEvent;
+    }
+    
     @Override
     public void reset(ContextHandle contextHandle) {
         if (! (contextHandle instanceof InvocationContext)) {
@@ -204,8 +237,12 @@ public class ContextSetupProviderImpl implements ContextSetupProvider {
             }
           transactionManager.clearThreadTx();
         }
+        
+        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            requestTracing.endTrace();
+        }
     }
-
+    
     private boolean isApplicationEnabled(String appId) {
         boolean result = false;
         if (appId != null) {
