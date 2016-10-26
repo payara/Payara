@@ -148,11 +148,12 @@ public class RequestTracingService implements EventListener {
             return;
         }
         requestEventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "TraceEnd"));
-        Long thresholdValueInMillis = getThresholdValueInMillis();
+        Long thresholdValueInNanos = getThresholdValueInNanos();
 
         long elapsedTime = requestEventStore.getElapsedTime();
-        if ( elapsedTime > thresholdValueInMillis) {
-            for (NotifierExecutionOptions notifierExecutionOptions : executionOptions.getNotifierExecutionOptionsList().values()) {
+        long elapsedTimeInNanos = TimeUnit.NANOSECONDS.convert(elapsedTime, TimeUnit.MILLISECONDS);
+        if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
+            for (NotifierExecutionOptions notifierExecutionOptions : getExecutionOptions().getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
                     notificationService.notify(eventFactory.build(elapsedTime, notifierExecutionOptions.getNotifierType()));
                 }
@@ -161,15 +162,16 @@ public class RequestTracingService implements EventListener {
         requestEventStore.flushStore();
     }
 
-    public Long getThresholdValueInMillis() {
-        if (executionOptions != null) {
-            return TimeUnit.MILLISECONDS.convert(executionOptions.getThresholdValue(), executionOptions.getThresholdUnit());
+    public Long getThresholdValueInNanos() {
+        if (getExecutionOptions() != null) {
+            return TimeUnit.NANOSECONDS.convert(getExecutionOptions().getThresholdValue(),
+                    getExecutionOptions().getThresholdUnit());
         }
         return null;
     }
 
     public boolean isRequestTracingEnabled() {
-        return executionOptions != null && executionOptions.isEnabled();
+        return getExecutionOptions() != null && getExecutionOptions().isEnabled();
     }
 
     public RequestTracingExecutionOptions getExecutionOptions() {
