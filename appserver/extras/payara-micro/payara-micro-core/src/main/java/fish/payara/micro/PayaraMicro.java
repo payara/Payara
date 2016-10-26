@@ -922,7 +922,7 @@ public class PayaraMicro {
 
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
-        bprops.setProperty(Constants.BUILDER_NAME_PROPERTY, PayaraMicroRuntimeBuilder.class.getName());
+        bprops.setProperty(Constants.PLATFORM_PROPERTY_KEY, Constants.Platform.PayaraMicro.toString());
         GlassFishRuntime gfruntime;
         PortBinder portBinder = new PortBinder();
 

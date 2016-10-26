@@ -42,24 +42,29 @@ package fish.payara.micro.boot;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
 import com.sun.enterprise.glassfish.bootstrap.EmbeddedMain;
 import com.sun.enterprise.glassfish.bootstrap.SingleHK2Factory;
-import com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.Main;
-import com.sun.enterprise.module.common_impl.AbstractFactory;
 import com.sun.enterprise.module.single.SingleModulesRegistry;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.security.CodeSource;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.embeddable.spi.RuntimeBuilder;
 
 /**
- * This class is an implementation of the GlassFish Runtime Builder
- * specifically for Payara Micro and Microprofile
+ * This class is an implementation of the GlassFish Runtime Builder specifically
+ * for Payara Micro and Microprofile
+ *
  * @author steve
  */
 public class PayaraMicroRuntimeBuilder implements RuntimeBuilder {
-    
+
     private static final Logger logger = Logger.getLogger(PayaraMicroRuntimeBuilder.class.getName());
 
     @Override
@@ -76,7 +81,7 @@ public class PayaraMicroRuntimeBuilder implements RuntimeBuilder {
 
     @Override
     public boolean handles(BootstrapProperties options) {
-        return this.getClass().getName().equals(options.getProperty(Constants.BUILDER_NAME_PROPERTY));
+        return Constants.Platform.PayaraMicro.toString().equals(options.getProperty(Constants.PLATFORM_PROPERTY_KEY));
     }
-    
+
 }
