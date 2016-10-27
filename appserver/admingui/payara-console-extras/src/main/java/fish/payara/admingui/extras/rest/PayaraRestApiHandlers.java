@@ -36,7 +36,7 @@ public class PayaraRestApiHandlers
      * Gets information about the instances current registered to the Hazelcast cluster.
      * @param handlerCtx 
      */
-    @Handler(id = "py.getHazelcastInstances",
+    @Handler(id = "py.getHazelcastClusterMembers",
             input = {
                 @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
                 @HandlerInput(name = "type", type = String.class)},

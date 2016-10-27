@@ -36,10 +36,10 @@
                 value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
                 
         if(#{pageSession.hazelcastConfiguration['enabled']}=true){
-            py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", result="#{requestScope.allInstances}");
-            py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="micro", 
+            py.getHazelcastClusterMembers(parentEndpoint="#{pageSession.parentUrl}", result="#{requestScope.allInstances}");
+            py.getHazelcastClusterMembers(parentEndpoint="#{pageSession.parentUrl}", type="micro", 
                     result="#{requestScope.microInstances}");
-            py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="server", 
+            py.getHazelcastClusterMembers(parentEndpoint="#{pageSession.parentUrl}", type="server", 
                     result="#{requestScope.serverInstances}");
         }
     />
