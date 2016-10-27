@@ -64,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
 public class ListHazelcastClusterMembersCommand implements AdminCommand
 {
     @Inject
-    private PayaraInstance payaraMicro;
+    private PayaraInstance payaraInstance;
     
     @Param(name = "type", optional = true, acceptableValues = "micro,server")
     private String type;
@@ -75,10 +75,10 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         final ActionReport actionReport = context.getActionReport();
         
         // Check if the DAS is in a Hazelcast cluster
-        if (payaraMicro.isClustered())
+        if (payaraInstance.isClustered())
         {
             // Get the instance descriptors of the cluster members
-            Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
+            Set<InstanceDescriptor> instances = payaraInstance.getClusteredPayaras();
         
             // Create the table headers
             String[] headers = {"Instance Name", "Instance Type", "Host Name", "HTTP Ports", 
