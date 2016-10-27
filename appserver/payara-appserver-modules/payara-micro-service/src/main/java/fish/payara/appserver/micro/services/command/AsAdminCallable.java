@@ -42,7 +42,7 @@ public class AsAdminCallable implements Callable<ClusterCommandResult>, Serializ
     @Override
     public ClusterCommandResult call() throws Exception {
         ServiceLocator locator = Globals.getDefaultBaseServiceLocator();
-        PayaraInstance instance = locator.getService(PayaraInstance.class, "payara-micro-instance");
+        PayaraInstance instance = locator.getService(PayaraInstance.class, "payara-instance");
         return instance.executeLocalAsAdmin(command, args);
     }
     
