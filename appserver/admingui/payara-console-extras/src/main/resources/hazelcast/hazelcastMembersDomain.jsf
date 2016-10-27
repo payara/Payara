@@ -14,7 +14,7 @@
 
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
--->
+ -->
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");
     setResourceBundle(key="i18nhc" bundle="fish.payara.admingui.extras.Strings");
@@ -34,12 +34,14 @@
                 result="#{requestScope.resp}");
         setPageSessionAttribute(key="hazelcastConfiguration", 
                 value="#{requestScope.resp.data.extraProperties.getHazelcastConfiguration}");
-        
-        py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", result="#{requestScope.allInstances}");
-        py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="micro", 
-                result="#{requestScope.microInstances}");
-        py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="server", 
-                result="#{requestScope.serverInstances}");
+                
+        if(#{pageSession.hazelcastConfiguration['enabled']}=true){
+            py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", result="#{requestScope.allInstances}");
+            py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="micro", 
+                    result="#{requestScope.microInstances}");
+            py.getHazelcastInstances(parentEndpoint="#{pageSession.parentUrl}", type="server", 
+                    result="#{requestScope.serverInstances}");
+        }
     />
     
     </event>
@@ -48,7 +50,7 @@
 #include "/common/shared/alertMsg.inc"
 #include "/common/appServer/domainTabs.inc"
 <sun:title id="propertyContentPage" title="$resource{i18nhc.hazelcast.membersTitle}"
-           helpText="$resource{i18nhc.hazelcast.membersTitleHelp}" >
+           helpText="$resource{i18nhc.hazelcast.domainMembersTitleHelp}" >
 </sun:title>
 
 "<br />

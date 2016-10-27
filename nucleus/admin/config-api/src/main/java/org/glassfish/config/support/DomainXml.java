@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Cluster;

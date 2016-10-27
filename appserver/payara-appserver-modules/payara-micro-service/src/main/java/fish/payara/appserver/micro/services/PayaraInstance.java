@@ -56,13 +56,13 @@ import org.jboss.logging.Logger;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * Internal Payara Micro Service
+ * Internal Payara Service for describing instances
  *
  * @author steve
  */
-@Service(name = "payara-micro-instance")
+@Service(name = "payara-instance")
 @RunLevel(StartupRunLevel.VAL)
-public class PayaraMicroInstance implements EventListener, MessageReceiver {
+public class PayaraInstance implements EventListener, MessageReceiver {
 
     public static final String INSTANCE_STORE_NAME = "payara.instance.store";
 
@@ -72,7 +72,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
 
     public static final String APPLICATIONS_STORE_NAME = "payara.micro.applications.store";    
     
-    private static final Logger logger = Logger.getLogger(PayaraMicroInstance.class);
+    private static final Logger logger = Logger.getLogger(PayaraInstance.class);
 
     @Inject
     private PayaraCluster cluster;
@@ -85,7 +85,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
 
     @Inject
     private CommandRunner commandRunner;
-    
+
     private HashSet<PayaraClusterListener> myListeners;
 
     private HashSet<CDIEventListener> myCDIListeners;
@@ -111,8 +111,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
         me.setInstanceName(instanceName);
     }
 
-    public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, 
-            Callable<T> callable) {
+    public <T extends Serializable> Map<String, Future<T>> runCallable(Collection<String> memberUUIDS, Callable<T> callable) {
         return cluster.getExecService().runCallable(memberUUIDS, callable);
     }
 
@@ -130,8 +129,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
         return result;
     }
 
-    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, 
-            String command, String... parameters) {
+    public Map<String, Future<ClusterCommandResult>> executeClusteredASAdmin(Collection<String> memberGUIDs, String command, String... parameters) {
         AsAdminCallable callable = new AsAdminCallable(command, parameters);
         Map<String, Future<ClusterCommandResult>> result = cluster.getExecService().runCallable(memberGUIDs, callable);
         return result;
@@ -171,13 +169,8 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
     void postConstruct() {
         events.register(this);
         myListeners = new HashSet<>(1);
-        myCDIListeners = new HashSet<>(1);
-        
-        initialiseInstanceDescriptor();
-        
-        if (cluster.isEnabled()) {
-            joinCluster();
-        }       
+        myCDIListeners = new HashSet<>(1);       
+        initialiseInstanceDescriptor();   
     }
 
     /**
@@ -230,12 +223,13 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             this.cluster.getEventBus().publish(INTERNAL_EVENTS_NAME, message);
         }
         
+        // When Hazelcast is bootstrapped, update the instance descriptor with any new information
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
-            updateInstanceDescriptor();
+            initialiseInstanceDescriptor();
         }
     }
 
-    public Set<InstanceDescriptor> getClusteredPayaras() {  
+    public Set<InstanceDescriptor> getClusteredPayaras() {
         Set<String> members = cluster.getClusterMembers();
         HashSet<InstanceDescriptor> result = new HashSet<>(members.size());
         for (String member : members) {
@@ -287,6 +281,7 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
         boolean liteMember = false;
         int hazelcastPort = 5900;
         
+        // Get the Hazelcast specific information
         if (hazelcast.isEnabled()) {
             instanceName = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
                     HazelcastCore.INSTANCE_ATTRIBUTE);
@@ -295,39 +290,50 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             hazelcastPort = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getPort();
         }
         
+        // Get this instance's runtime type
         String instanceType = environment.getRuntimeType().toString();
         
+        // Get the ports in use by this instance from its network listener configs
         List<Integer> ports = new ArrayList<>();
         List<Integer> sslPorts = new ArrayList<>();
         int adminPort = 0;
         for (NetworkListener networkListener : 
-                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {        
+                context.getConfigBean().getConfig().getNetworkConfig().getNetworkListeners().getNetworkListener()) {  
+            // Skip the network listener if it isn't enabled
             if (Boolean.parseBoolean(networkListener.getEnabled())) {
+                // Check if this listener is using HTTP or HTTPS
                 if (networkListener.findProtocol().getSecurityEnabled().equals("false")) {
+                    // Check if this listener is the admin listener
                     if (networkListener.getName().equals(
                             context.getConfigBean().getConfig().getAdminListener().getName())) {
+                        // Micro instances can use the admin listener as both an admin and HTTP port
                         if (instanceType.equals("MICRO")) {
                             ports.add(Integer.parseInt(networkListener.getPort()));
                         }
                         adminPort = Integer.parseInt(networkListener.getPort());
                     } else {
+                        // If this listener isn't the admin listener, it must be an HTTP listener
                         ports.add(Integer.parseInt(networkListener.getPort()));
                     }
                 } else if (networkListener.findProtocol().getSecurityEnabled().equals("true")) {
                     if (networkListener.getName().equals(
                             context.getConfigBean().getConfig().getAdminListener().getName())) {
+                        // Micro instances can use the admin listener as both an admin and HTTPS port
                         if (instanceType.equals("MICRO")) {
                             ports.add(Integer.parseInt(networkListener.getPort()));
                         }
                         adminPort = Integer.parseInt(networkListener.getPort());
                     } else {
+                        // If this listener isn't the admin listener, it must be an HTTPS listener
                         sslPorts.add(Integer.parseInt(networkListener.getPort()));
                     }
                 }
             }
         } 
         
+        // Initialise the instance descriptor and set all of its attributes
         try {
+            // If Hazelcast is being rebooted dynamically, we don't want to lose the already registered applications
             Collection<ApplicationDescriptor> deployedApplications = new ArrayList<>();
             if (me != null) {
                 deployedApplications = me.getDeployedApplications();
@@ -347,30 +353,30 @@ public class PayaraMicroInstance implements EventListener, MessageReceiver {
             me.setLiteMember(liteMember);
             me.setInstanceType(instanceType);
             
+            // If there were some deployed applications from the previous instance descriptor, register them with the new 
+            // one
             if (!deployedApplications.isEmpty()) {
                 for (ApplicationDescriptor application : deployedApplications) {
                     me.addApplication(application);
                 }
             }
+            
+            // Register the instance descriptor to the cluster if it's enabled
+            if (cluster.isEnabled()) {
+                cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
+                cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
+                cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);
+            }  
         } catch (UnknownHostException ex) {
-            java.util.logging.Logger.getLogger(PayaraMicroInstance.class.getName()).log(Level.SEVERE, 
+            java.util.logging.Logger.getLogger(PayaraInstance.class.getName()).log(Level.SEVERE, 
                     "Could not find local hostname", ex);
         }
     }
     
-    private void joinCluster() {
-        cluster.getEventBus().addMessageReceiver(INTERNAL_EVENTS_NAME, this);
-        cluster.getEventBus().addMessageReceiver(CDI_EVENTS_NAME, this);
-        cluster.getClusteredStore().set(INSTANCE_STORE_NAME, myCurrentID, me);   
-    }
-    
-    private void updateInstanceDescriptor() {
-        if (cluster.isEnabled()) {
-            initialiseInstanceDescriptor();
-            joinCluster(); 
-        }
-    }
-    
+    /**
+     * Checks whether or not this instance is in a Hazelcast cluster
+     * @return true if this instance is in a Hazelcast cluster
+     */
     public boolean isClustered() {
         return cluster.isEnabled();
     }

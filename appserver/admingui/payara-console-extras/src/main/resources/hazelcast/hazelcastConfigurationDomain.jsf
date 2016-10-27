@@ -14,7 +14,7 @@
 
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
--->
+ -->
 
 <!initPage
     setResourceBundle(key="i18nc" bundle="org.glassfish.common.admingui.Strings");

@@ -1,13 +1,24 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  */
 package fish.payara.appserver.micro.services.asadmin;
 
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
-import fish.payara.appserver.micro.services.PayaraMicroInstance;
+import fish.payara.appserver.micro.services.PayaraInstance;
 import fish.payara.appserver.micro.services.data.ApplicationDescriptor;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import java.util.ArrayList;
@@ -35,7 +46,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Asadmin command to list information about members of the Domain Hazelcast Cluster
  * @author Andrew Pielage
  */
 @Service(name = "list-hazelcast-cluster-members")
@@ -53,7 +64,7 @@ import org.jvnet.hk2.annotations.Service;
 public class ListHazelcastClusterMembersCommand implements AdminCommand
 {
     @Inject
-    private PayaraMicroInstance payaraMicro;
+    private PayaraInstance payaraMicro;
     
     @Param(name = "type", optional = true, acceptableValues = "micro,server")
     private String type;
@@ -63,11 +74,13 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
     {
         final ActionReport actionReport = context.getActionReport();
         
-        // Update the instance descriptor to check if the DAS is in the Hazelcast cluster or not
+        // Check if the DAS is in a Hazelcast cluster
         if (payaraMicro.isClustered())
         {
+            // Get the instance descriptors of the cluster members
             Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
         
+            // Create the table headers
             String[] headers = {"Instance Name", "Instance Type", "Host Name", "HTTP Ports", 
                 "HTTPS Ports", "Admin Port", "Hazelcast Port", "Lite Member", "Deployed Applications"};
             ColumnFormatter columnFormatter = new ColumnFormatter(headers);
@@ -75,6 +88,8 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
             List members = new ArrayList();
             Properties extraProps = new Properties();
 
+            // For each instance descriptor, check if it is of the type requested and add its information to the members
+            // list
             for (InstanceDescriptor instance : instances) {
                 if (type != null && type.equals("micro")) {
                     if (instance.isMicroInstance()) {
@@ -89,11 +104,13 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
                 }         
             }
 
+            // Return the instance information as both a String for console output, and in the action report for REST
             extraProps.put("members", members);
             actionReport.setExtraProperties(extraProps);
             actionReport.setMessage(columnFormatter.toString());
             actionReport.setActionExitCode(ActionReport.ExitCode.SUCCESS);
         } else {
+            // If hazelcast is not enabled, just return a String stating as such
             Properties extraProps = new Properties();
             extraProps.put("members", "Hazelcast is not enabled");
             actionReport.setExtraProperties(extraProps);
@@ -109,6 +126,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         if (instance.getHttpPorts().isEmpty()) {
             values[3] = "Disabled";
         } else {
+            // Remove the bookended braces and add to the values array
             values[3] = instance.getHttpPorts().toString().substring(1, 
                     instance.getHttpPorts().toString().length() - 1);
         }
@@ -116,6 +134,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         if (instance.getHttpsPorts().isEmpty()) {
             values[4] = "Disabled";
         } else {
+            // Remove the bookended braces and add to the values array
             values[4] = instance.getHttpsPorts().toString().substring(1, 
                     instance.getHttpsPorts().toString().length() - 1);
         }
@@ -124,6 +143,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         values[6] = instance.getHazelcastPort();
         values[7] = instance.isLiteMember();
 
+        // Find the deployed applications, remove the bookended braces, and add to the values array
         List<String> applications = new ArrayList<>();
         Collection<ApplicationDescriptor> applicationDescriptors = instance.getDeployedApplications();
         if (applicationDescriptors != null) {
@@ -133,13 +153,15 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
             values[8] = Arrays.toString(applications.toArray()).substring(1, 
                     Arrays.toString(applications.toArray()).length() - 1);
         } else {
+            // Just return nothing if no applications found
             values[8] = "";
         }
 
+        // Add the information to the console output table
         columnFormatter.addRow(values);
 
+        // Add the information to the command output
         Map<String, Object> map = new HashMap<>(7);
-
         map.put("instanceName", values[0]);
         map.put("instanceType", values[1]);
         map.put("hostName", values[2]);

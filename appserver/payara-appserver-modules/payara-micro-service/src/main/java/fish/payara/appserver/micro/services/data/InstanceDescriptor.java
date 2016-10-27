@@ -29,7 +29,7 @@ import java.util.Map;
 import org.glassfish.internal.data.ApplicationInfo;
 
 /**
- *
+ * 
  * @author steve
  */
 public class InstanceDescriptor implements Serializable {
@@ -174,42 +174,82 @@ public class InstanceDescriptor implements Serializable {
         return memberUUID.hashCode();
     }
     
+    /**
+     * Checks whether or not this instance is described as a Lite Hazelcast member
+     * @return true if this instance describes a Hazelcast Lite member
+     */
     public boolean isLiteMember() {
         return liteMember;
     }
     
+    /**
+     * Sets whether or not this descriptor describes a Hazelcast Lite member
+     * @param isLiteMember true if this descriptor describes a Hazelcast Lite member
+     */
     public void setLiteMember(boolean isLiteMember) {
         liteMember = isLiteMember;
     }
     
+    /**
+     * Checks whether or not this descriptor describes a Payara Micro instance
+     * @return true if this descriptor describes a Payara Micro instances
+     */
     public boolean isMicroInstance() {
         return instanceType.equals("MICRO");
     }
     
+    /**
+     * Checks whether or not this descriptor describes a Payara Server instance or the DAS
+     * @return true if this descriptor describes a Payara Server instance or the DAS
+     */
     public boolean isPayaraInstance() {
         return (instanceType.equals("DAS") || instanceType.equals("INSTANCE"));
     }
     
+    /**
+     * Sets what instance type this descriptor describes
+     * @param instanceType the instance type that this descriptor should describe
+     */
     public void setInstanceType(String instanceType) {
         this.instanceType = instanceType;
     }
     
+    /**
+     * Gets the instance type that this descriptor describes
+     * @return the instance type that this descriptor describes
+     */
     public String getInstanceType() {
         return instanceType;
     }
     
+    /**
+     * Sets the Hazelcast port number for this instance descriptor
+     * @param hazelcastPort the port number in use by Hazelcast
+     */
     public void setHazelcastPort(int hazelcastPort) {
         this.hazelcastPort = hazelcastPort;
     }
     
+    /**
+     * Gets the Hazelcast port number of this instance descriptor
+     * @return the port number in use by Hazelcast
+     */
     public int getHazelcastPort() {
         return hazelcastPort;
     }
     
+    /**
+     * Sets the admin port number for this instance descriptor
+     * @param adminPort the admin port number in use by this instance
+     */
     public void setAdminPort(int adminPort) {
         this.adminPort = adminPort;
     }
     
+    /**
+     * Gets the admin port number for this instance descriptor
+     * @return the admin port number in use by this instance
+     */
     public int getAdminPort() {
         return adminPort;
     }

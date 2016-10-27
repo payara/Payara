@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.api.admin;
 
 /**

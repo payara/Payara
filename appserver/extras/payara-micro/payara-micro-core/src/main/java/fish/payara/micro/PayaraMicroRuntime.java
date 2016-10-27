@@ -20,7 +20,7 @@ package fish.payara.micro;
 import fish.payara.appserver.micro.services.CDIEventListener;
 import fish.payara.appserver.micro.services.PayaraClusterListener;
 import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
-import fish.payara.appserver.micro.services.PayaraMicroInstance;
+import fish.payara.appserver.micro.services.PayaraInstance;
 import fish.payara.appserver.micro.services.command.ClusterCommandResult;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import java.io.File;
@@ -52,7 +52,7 @@ public class PayaraMicroRuntime  {
     private static final Logger logger = Logger.getLogger(PayaraMicroRuntime.class.getCanonicalName());
 
     private final GlassFish runtime;
-    private final PayaraMicroInstance instanceService;
+    private final PayaraInstance instanceService;
     private final String instanceName;
     private final HashSet<PayaraClusterListener> listeners;
 
@@ -61,7 +61,7 @@ public class PayaraMicroRuntime  {
         this.instanceName = instanceName;
         this.listeners = new HashSet<>(10);
         try {
-            instanceService = runtime.getService(PayaraMicroInstance.class, "payara-micro-instance");
+            instanceService = runtime.getService(PayaraInstance.class, "payara-instance");
             instanceService.setInstanceName(instanceName);
             instanceService.addBootstrapListener(new BootstrapListener(this));
         } catch (GlassFishException ex) {

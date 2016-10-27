@@ -23,16 +23,9 @@ file and include the License file at packager/legal/LICENSE.txt.
         type="org.glassfish.admingui:domainTab"
         priority="30"
         parentId="domainTabs"
-        content="hazelcast/hazelcastTabs.jsf"
+        content="hazelcast/hazelcastTabsDomain.jsf"
     />
         
-    <integration-point
-        id="serverHazelcast"
-        type="org.glassfish.admingui:serverInstTab"
-        priority="30"
-        parentId="serverInstTabs"
-        content="hazelcast/hazelcastTabsServer.jsf"
-    />
     <integration-point
         id="clusterHazelcast"
         type="org.glassfish.admingui:clusterTab"
@@ -41,22 +34,6 @@ file and include the License file at packager/legal/LICENSE.txt.
         content="hazelcast/hazelcastTabsCluster.jsf"
     />
 
-    <integration-point
-        id="standaloneHazelcast"
-        type="org.glassfish.admingui:standaloneInstTab"
-        priority="40"
-        parentId="standaloneInstanceTabs"
-        content="hazelcast/hazelcastTabsStandalone.jsf"
-    />
-    
-    <integration-point
-        id="asadminRecorder"
-        type="org.glassfish.admingui:serverInstTab"
-        priority="50"
-        parentId="serverInstTabs"
-        content="asadminRecorder/asadminRecorderTabs.jsf"
-    />
-    
     <integration-point
         id="standaloneHazelcast"
         type="org.glassfish.admingui:standaloneInstTab"
