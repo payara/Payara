@@ -88,12 +88,7 @@ public class HazelcastCore implements EventListener {
     @PostConstruct
     public void postConstruct() {
         theCore = this;
-        enabled = Boolean.valueOf(configuration.getEnabled());
         events.register(this);
-        
-        if ((Boolean.valueOf(configuration.getEnabled()))) {
-            bootstrapHazelcast();
-        }
     }
 
     public HazelcastInstance getInstance() {
@@ -115,8 +110,12 @@ public class HazelcastCore implements EventListener {
         } else if (event.is(EventTypes.SERVER_READY)) {
             if (enabled) {
                 bindToJNDI();
+            }    
+        } else if (event.is(EventTypes.SERVER_STARTUP)) {
+            if ((Boolean.valueOf(configuration.getEnabled()))) {
+                enabled = true;
+                bootstrapHazelcast();
             }
-            
         }
     }
 
