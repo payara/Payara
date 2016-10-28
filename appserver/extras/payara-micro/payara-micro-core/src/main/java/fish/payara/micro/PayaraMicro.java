@@ -1862,7 +1862,11 @@ public class PayaraMicro {
                 deploymentURLsMap = new LinkedHashMap<>();
             }
 
-            deploymentURLsMap.put(artefactMapEntry.getKey(),
+            String contextRoot = artefactMapEntry.getKey();
+            if ("ROOT".equals(contextRoot)) {
+                contextRoot = "/";
+            }
+            deploymentURLsMap.put(contextRoot,
                     artefactMapEntry.getValue());
         }
     }
