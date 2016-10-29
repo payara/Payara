@@ -59,7 +59,6 @@
 package org.apache.catalina.core;
 
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.apache.catalina.*;
 import org.apache.catalina.security.SecurityUtil;
@@ -85,6 +84,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import static org.apache.catalina.InstanceEvent.EventType.*;
 // END GlassFish 1343
@@ -106,7 +106,13 @@ public class StandardWrapper
     private static final String[] DEFAULT_SERVLET_METHODS = new String[] {
                                                     "GET", "HEAD", "POST" };
 
-    private RequestTracingService requestTracing;
+    private final RequestTracingService requestTracing;
+    private final ThreadLocal<Boolean> isInSuppressFFNFThread = new ThreadLocal<Boolean>() {
+        @Override
+        protected Boolean initialValue() {
+            return false;
+        }
+    };
 
 
     @LogMessageInfo(
@@ -223,6 +229,10 @@ public class StandardWrapper
         swValve=new StandardWrapperValve();
         pipeline.setBasic(swValve);
         requestTracing = org.glassfish.internal.api.Globals.getDefaultHabitat().getService(RequestTracingService.class);
+
+        // suppress PWC6117 file not found errors
+        java.util.logging.Logger jspLog = java.util.logging.Logger.getLogger("org.apache.jasper.servlet.JspServlet");
+        jspLog.setFilter(new NotFoundErrorSupressionFilter(jspLog.getFilter()));
     }
 
 
@@ -1678,8 +1688,14 @@ public class StandardWrapper
                             requestTracing.traceRequestEvent(constructServletRequestEvent((HttpServletRequest)request, serv));
                         }
                     }
-                    serv.service((HttpServletRequest) request,
-                                 (HttpServletResponse) response);
+                    try {
+                        isInSuppressFFNFThread.set(true);
+                        serv.service((HttpServletRequest) request,
+                                    (HttpServletResponse) response);
+                    }
+                    finally {
+                        isInSuppressFFNFThread.set(false);
+                    }
                 }
             } else {
                 serv.service(request, response);
@@ -2325,6 +2341,24 @@ public class StandardWrapper
     public boolean isStatisticsProvider() {
         return false;
     }
-        
-        
+
+    private class NotFoundErrorSupressionFilter implements java.util.logging.Filter {
+        private final java.util.logging.Filter oldFilter;
+
+        public NotFoundErrorSupressionFilter(java.util.logging.Filter oldFilter) {
+            this.oldFilter = oldFilter;
+        }
+
+        @Override
+        public boolean isLoggable(LogRecord record) {
+            boolean rv = true;
+            if(StandardWrapper.this.isJspServlet && StandardWrapper.this.isInSuppressFFNFThread.get()) {
+                rv = !record.getMessage().startsWith("PWC6117: File");
+            }
+            if(oldFilter != null) {
+                rv &= oldFilter.isLoggable(record);
+            }
+            return rv;
+        }
+    }
 }
