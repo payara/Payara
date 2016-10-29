@@ -117,7 +117,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
         }
         System.setProperty("com.sun.aas.instanceRoot", instanceRoot.getAbsolutePath());
         System.setProperty("com.sun.aas.instanceRootURI",instanceRoot.toURI().toString());
-        
+        new File(instanceRoot, "docroot").mkdirs();
         // create config and
         CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
         if (src != null) {
@@ -129,7 +129,8 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                 JarEntry entry = entries.nextElement();
                 if (entry.getName().startsWith("MICRO-INF/domain/")) {
                     String fileName = entry.getName().substring("MICRO-INF/domain/".length());
-                    File outputFile = new File(instanceRoot, fileName);
+                    File configDir = new File(instanceRoot, "config");
+                    File outputFile = new File(configDir, fileName);
                     System.out.println(outputFile.getAbsolutePath());
                     if (!outputFile.exists()) {
                         if (entry.isDirectory()) {

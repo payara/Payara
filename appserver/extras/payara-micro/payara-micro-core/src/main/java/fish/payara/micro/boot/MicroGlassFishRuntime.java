@@ -40,9 +40,11 @@
 package fish.payara.micro.boot;
 
 import com.sun.enterprise.glassfish.bootstrap.EmbeddedInhabitantsParser;
+import com.sun.enterprise.glassfish.bootstrap.SingleHK2Factory;
 import com.sun.enterprise.module.ModulesRegistry;
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
 import com.sun.enterprise.module.bootstrap.StartupContext;
+import com.sun.enterprise.module.single.SingleModulesRegistry;
 import java.util.Arrays;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
@@ -50,7 +52,6 @@ import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.embeddable.GlassFishRuntime;
 import org.glassfish.hk2.api.DynamicConfiguration;
 import org.glassfish.hk2.api.DynamicConfigurationService;
-import org.glassfish.hk2.api.PopulatorPostProcessor;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.utilities.BuilderHelper;
 import org.glassfish.hk2.utilities.DuplicatePostProcessor;
@@ -64,16 +65,8 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
     ModulesRegistry registry;
     ServiceLocator habitat;
 
-    MicroGlassFishRuntime(ModulesRegistry modulesRegistry) {
-        registry = modulesRegistry;
-        habitat = registry.createServiceLocator();
-        DynamicConfigurationService dcs = habitat.getService(DynamicConfigurationService.class);
-        DynamicConfiguration config = dcs.createDynamicConfiguration();
-        StartupContext context = new StartupContext();
-        config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(context));
-        config.commit();
-        registry.populateServiceLocator("default", habitat, Arrays.asList((PopulatorPostProcessor)new EmbeddedInhabitantsParser(), new DuplicatePostProcessor()));
-    }
+    MicroGlassFishRuntime() {
+     }
 
     @Override
     public void shutdown() throws GlassFishException {
@@ -82,8 +75,26 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
 
     @Override
     public GlassFish newGlassFish(GlassFishProperties glassfishProperties) throws GlassFishException {
+        System.out.println("#################~~" + System.getProperty("com.sun.aas.instanceRoot"));
+        System.setProperty("com.sun.aas.installRoot",System.getProperty("com.sun.aas.instanceRoot"));
+        System.setProperty("com.sun.aas.installRootURI",System.getProperty("com.sun.aas.instanceRootURI"));
+        
+        
+        
+        StartupContext context = new StartupContext(glassfishProperties.getProperties());
+        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
+        SingleHK2Factory.initialize(tccl);
+        registry = new SingleModulesRegistry(tccl);
+        registry.setParentClassLoader(tccl);  
+        habitat = registry.newServiceLocator();
+        DynamicConfigurationService dcs = habitat.getService(DynamicConfigurationService.class);
+        DynamicConfiguration config = dcs.createDynamicConfiguration();
+        config.addActiveDescriptor(BuilderHelper.createConstantDescriptor(context));
+        config.commit();
+        registry.populateServiceLocator("default", habitat, Arrays.asList(new EmbeddedInhabitantsParser(), new DuplicatePostProcessor()));
+        registry.populateConfig(habitat);
         ModuleStartup kernel = habitat.getService(ModuleStartup.class);
-        return new MicroGlassFish(kernel, habitat, glassfishProperties);
+        return new MicroGlassFish(kernel, habitat, glassfishProperties.getProperties());
     }
     
 }

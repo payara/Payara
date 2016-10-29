@@ -69,12 +69,8 @@ public class PayaraMicroRuntimeBuilder implements RuntimeBuilder {
 
     @Override
     public GlassFishRuntime build(BootstrapProperties options) throws GlassFishException {
-        ClassLoader tccl = Thread.currentThread().getContextClassLoader();
-        Main main = new EmbeddedMain(tccl);
-        SingleHK2Factory.initialize(tccl);
-        ModulesRegistry modulesRegistry = new SingleModulesRegistry(tccl);
-        modulesRegistry.setParentClassLoader(tccl);
-        MicroGlassFishRuntime runtime = new MicroGlassFishRuntime(modulesRegistry);
+        System.setProperty("org.glassfish.embeddable.installRoot", options.getInstallRoot());
+        MicroGlassFishRuntime runtime = new MicroGlassFishRuntime();
         logger.info("Built Payara Micro Runtime");
         return runtime;
     }

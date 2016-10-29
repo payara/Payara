@@ -56,8 +56,6 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
             <property name="connectionAttributes" value=";create=true" />
         </jdbc-connection-pool>
-        <connector-connection-pool max-pool-size="250" steady-pool-size="1" name="jms/__defaultConnectionFactory-Connection-Pool" resource-adapter-name="jmsra" connection-definition-name="javax.jms.ConnectionFactory"></connector-connection-pool>
-        <connector-resource pool-name="jms/__defaultConnectionFactory-Connection-Pool" jndi-name="jms/__defaultConnectionFactory" object-type="system-all-req"></connector-resource>
         <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
         <managed-executor-service maximum-pool-size="200" core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
         <managed-scheduled-executor-service core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all"></managed-scheduled-executor-service>

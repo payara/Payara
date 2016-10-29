@@ -40,11 +40,12 @@
 package fish.payara.micro.boot;
 
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
+import java.util.Properties;
+import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.embeddable.GlassFishProperties;
 import org.glassfish.hk2.api.ServiceLocator;
 
 /**
@@ -58,9 +59,25 @@ public class MicroGlassFish  implements GlassFish {
     private Status status = Status.INIT;
     
 
-    MicroGlassFish(ModuleStartup kernel, ServiceLocator habitat, GlassFishProperties glassfishProperties) {
+    MicroGlassFish(ModuleStartup kernel, ServiceLocator habitat, Properties glassfishProperties) throws GlassFishException {
         this.kernel = kernel;
         this.habitat = habitat;
+        CommandRunner commandRunner = null;
+        for (Object obj : glassfishProperties.keySet()) {
+            String key = (String) obj;
+            if (key.startsWith("embedded-glassfish-config.")) {
+                if (commandRunner == null) {
+                    // only create the CommandRunner if needed
+                    commandRunner = habitat.getService(CommandRunner.class);
+                }
+                CommandResult result = commandRunner.run("set",
+                        key.substring("embedded-glassfish-config.".length()) + "=" + glassfishProperties.getProperty(key));
+                if (result.getExitStatus() != CommandResult.ExitStatus.SUCCESS) {
+                    throw new GlassFishException(result.getOutput());
+                }
+            }
+}
+        
     }
 
     @Override

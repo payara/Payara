@@ -922,6 +922,7 @@ public class PayaraMicro {
 
         setSystemProperties();
         BootstrapProperties bprops = new BootstrapProperties();
+        bprops.setInstallRoot(System.getProperty("com.sun.aas.instanceRoot"));
         bprops.setProperty(Constants.PLATFORM_PROPERTY_KEY, Constants.Platform.PayaraMicro.toString());
         GlassFishRuntime gfruntime;
         PortBinder portBinder = new PortBinder();
@@ -1020,10 +1021,10 @@ public class PayaraMicro {
             } else if (applicationDomainXml != null) {
                 gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource(applicationDomainXml).toExternalForm());
             } else if (noCluster) {
-                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain-nocluster.xml").toExternalForm());
+                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/domain/microdomain-nocluster.xml").toExternalForm());
 
             } else {
-                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("microdomain.xml").toExternalForm());
+                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/domain/microdomain.xml").toExternalForm());
             }
 
             if (rootDir != null) {
