@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2013-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -134,11 +134,11 @@ public class ListBatchJobSteps
     private List<StepExecution> findStepExecutions()
         throws JobSecurityException, NoSuchJobExecutionException {
         JobOperator jobOperator = AbstractListCommand.getJobOperatorFromBatchRuntime();
-        JobExecution je = jobOperator.getJobExecution(Long.valueOf(executionId));
+        JobExecution je = jobOperator.getJobExecution(Long.parseLong(executionId));
         if (!glassFishBatchSecurityHelper.isVisibleToThisInstance(((TaggedJobExecution) je).getTagName()))
             throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
 
-        List<StepExecution> stepExecutions = jobOperator.getStepExecutions(Long.valueOf(executionId));
+        List<StepExecution> stepExecutions = jobOperator.getStepExecutions(Long.parseLong(executionId));
         if (stepExecutions == null || stepExecutions.size() == 0)
             throw new NoSuchJobExecutionException("No job execution exists for job execution id: " + executionId);
 

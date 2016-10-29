@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2012-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -100,13 +100,13 @@ public class JdbcConnectionPoolValidator
                         return false;
                     }
                 }
-                if (stmtCacheSize != null && Integer.valueOf(stmtCacheSize) != 0) {
+                if (stmtCacheSize != null && Integer.parseInt(stmtCacheSize) != 0) {
                     if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
                         return false;
                     }
                 }
-                if (stmtLeakTimeout != null && Integer.valueOf(stmtLeakTimeout) != 0) {
-                    if (!Boolean.valueOf(jdbcPool.getWrapJdbcObjects())) {
+                if (stmtLeakTimeout != null && Integer.parseInt(stmtLeakTimeout) != 0) {
+                    if (!Boolean.parseBoolean(jdbcPool.getWrapJdbcObjects())) {
                         return false;
                     }
                 }

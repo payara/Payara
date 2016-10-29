@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -689,8 +689,8 @@ public class AppClientFacade {
             String onesString = versionString.substring(firstDot+1, nextDot);
             int version = -1;
     //        try {
-                int tens = new Integer( tensString ).intValue();
-                int ones = new Integer( onesString ).intValue();
+                int tens = Integer.parseInt(tensString);
+                int ones = Integer.parseInt(onesString);
                 version = (tens*10) + ones;
     //        } catch(NumberFormatException nfe) {
     //

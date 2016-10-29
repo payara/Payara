@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2010-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2010-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Collections;
 import org.glassfish.admin.rest.Constants;
 import org.glassfish.admin.rest.utils.ResourceUtil;
 import org.glassfish.hk2.api.MultiException;
@@ -470,7 +471,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
      * delete-connector-work-security-map delete-node-config delete-node-ssh delete-file-user delete-password-alias
      * delete-http-health-checker delete-http-lb-ref delete-http-redirect delete-instance
      */
-    private static final Map<String, String> configBeanToDELETECommand = new HashMap<String, String>() {
+    private static final Map<String, String> configBeanToDELETECommand = Collections.unmodifiableMap(new HashMap<String, String>() {
 
         {
             put("AdminObjectResource", "delete-admin-object");
@@ -506,9 +507,9 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("VirtualServer", "delete-virtual-server");
             put("WorkSecurityMap", "delete-connector-work-security-map");
         }
-    };
+    }) ;
     //TODO - fetch command name from config bean(RestRedirect annotation).
-    public static final Map<String, String> configBeanToPOSTCommand = new HashMap<String, String>() {
+    public static final Map<String, String> configBeanToPOSTCommand =Collections.unmodifiableMap( new HashMap<String, String>() {
 
         {
             put("Application", "redeploy"); //TODO check : This row is not used
@@ -547,7 +548,7 @@ public abstract class ResourcesGeneratorBase implements ResourcesGenerator {
             put("ProtocolFinder", "create-protocol-finder");
             put("ListSecurityMap", "create-connector-security-map");
         }
-    };
+    });
     //This map is used to generate CollectionLeaf resources.
     //Example: JVM Options. This information will eventually move to config bean-
     //JavaConfig or JvmOptionBag

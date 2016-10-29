@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -226,7 +226,7 @@ public class GuiUtil {
             Map result = RestUtil.restRequest(GuiUtil.getSessionValue("REST_URL")+"/configs/config/server-config/admin-service/das-config", null, "GET", null, false);
             String timeOut = (String)((Map)((Map)((Map)result.get("data")).get("extraProperties")).get("entity")).get("adminSessionTimeoutInMinutes");
             if ((timeOut != null) && (!timeOut.equals(""))) {
-                int time = new Integer(timeOut).intValue();
+                int time = Integer.parseInt(timeOut);
                 if (time == 0) {
                     ((HttpServletRequest) request).getSession().setMaxInactiveInterval(-1);
                 } else {

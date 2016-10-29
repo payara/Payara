@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2009-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2009-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -54,16 +54,16 @@ public final class JDK {
         String[] split = string.split("[\\._\\-]+");
 
         if (split.length > 0) {
-            major = new Integer(split[0]);
+            major = Integer.parseInt(split[0]);
         }
         if (split.length > 1) {
-            minor = new Integer(split[1]);
+            minor = Integer.parseInt(split[1]);
         }
         if (split.length > 2) {
-            subminor = new Integer(split[2]);
+            subminor = Integer.parseInt(split[2]);
         }
         if (split.length > 3) {
-            update = new Integer(split[3]);
+            update = Integer.parseInt(split[3]);
         }
     }
 
