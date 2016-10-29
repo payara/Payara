@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -159,15 +159,15 @@ public class EjbNode extends DeploymentDescriptorNode<EjbDescriptor> {
         } else if (RuntimeTagNames.PASS_BY_REFERENCE.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setPassByReference(Boolean.valueOf(value));
 	} else if (RuntimeTagNames.JMS_MAX_MESSAGES_LOAD.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setJmsMaxMessagesLoad((Integer.valueOf(value)).intValue());
+	    descriptor.getIASEjbExtraDescriptors().setJmsMaxMessagesLoad(Integer.parseInt(value));
 	} else if (RuntimeTagNames.IS_READ_ONLY_BEAN.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setIsReadOnlyBean((Boolean.valueOf(value)).booleanValue());
 	} else if (RuntimeTagNames.REFRESH_PERIOD_IN_SECONDS.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setRefreshPeriodInSeconds((Integer.valueOf(value)).intValue());
+	    descriptor.getIASEjbExtraDescriptors().setRefreshPeriodInSeconds(Integer.parseInt(value));
 	} else if (RuntimeTagNames.COMMIT_OPTION.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setCommitOption(value);
 	} else if (RuntimeTagNames.CMT_TIMEOUT_IN_SECONDS.equals(element.getQName())) {
-	    descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds((Integer.valueOf(value)).intValue());
+	    descriptor.getIASEjbExtraDescriptors().setCmtTimeoutInSeconds(Integer.parseInt(value));
 	} else if (RuntimeTagNames.USE_THREAD_POOL_ID.equals(element.getQName())) {
 	    descriptor.getIASEjbExtraDescriptors().setUseThreadPoolId(value);
 	} else if (RuntimeTagNames.CHECKPOINTED_METHODS.equals(

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -88,19 +88,19 @@ public class JavaVersion {
         String[] split = string.split("[\\._\\-]+");
 
         if (split.length > 0) {
-            major = new Long(split[0]);
+            major = Long.parseLong(split[0]);
         }
         if (split.length > 1) {
-            minor = new Long(split[1]);
+            minor = Long.parseLong(split[1]);
         }
         if (split.length > 2) {
-            micro = new Long(split[2]);
+            micro = Long.parseLong(split[2]);
         }
         if (split.length > 3) {
-            update = new Long(split[3]);
+            update = Long.parseLong(split[3]);
         }
         if (split.length > 4) {
-            build = new Long(split[4]);
+            build = Long.parseLong(split[4]);
         }
     }
 

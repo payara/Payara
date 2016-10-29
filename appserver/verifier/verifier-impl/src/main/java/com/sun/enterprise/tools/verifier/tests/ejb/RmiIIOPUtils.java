@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -439,19 +439,19 @@ public class RmiIIOPUtils {
      */
     public static boolean isValidRmiIIOPValueType(Class RMIIIOPvaluetype) {
 
-	Class c = RMIIIOPvaluetype;
-	boolean validInterface = false;
-	boolean badOne = false;
-	// The class must implement the java.io.Serializable interface, either
-	// directly or indirectly, and must be serializable at run-time. It may
-	// serialize references to other RMI/IDL types, including value types
-	// and remote interfaces.
-	// walk up the class tree
-	if (c.getName().equals("java.lang.Object")) {
-	    //validInterface = true;
-            return true;
-	}
-        /* Buggy Code
+		Class c = RMIIIOPvaluetype;
+		boolean validInterface = false;
+		boolean badOne = false;
+		// The class must implement the java.io.Serializable interface, either
+		// directly or indirectly, and must be serializable at run-time. It may
+		// serialize references to other RMI/IDL types, including value types
+		// and remote interfaces.
+		// walk up the class tree
+		if (c.getName().equals("java.lang.Object")) {
+			//validInterface = true;
+			return true;
+		}
+		/* Buggy Code
 	do {
 	    Class[] interfaces = c.getInterfaces();
 	    for (int i = 0; i < interfaces.length; i++) {
@@ -472,21 +472,21 @@ public class RmiIIOPUtils {
 	    }
 	} while ((((c=c.getSuperclass()) != null) && (validInterface == false)));
         */
-        validInterface = java.io.Serializable.class.isAssignableFrom(c);
+		validInterface = java.io.Serializable.class.isAssignableFrom(c);
 
-	if (validInterface == false) {
-	    return false;
-	} else {
-	    // 2. The class may implement java.io.Externalizable. (This indicates it
-	    // overrides some of the standard serialization machinery.)
-	    // nothing to check for here, since the keyword is "may implement"
- 
+		if (validInterface == false) {
+			return false;
+		} else {
+			// 2. The class may implement java.io.Externalizable. (This indicates it
+			// overrides some of the standard serialization machinery.)
+			// nothing to check for here, since the keyword is "may implement"
 
-	    //  3. If the class is a non-static inner class, then its containing class
-	    //         must also be a conforming RMI/IDL value type.
-	    // don't know if this can be checked statically
 
-	    // reset class c since it may have gotten moved in the above do/while loop
+			//  3. If the class is a non-static inner class, then its containing class
+			//         must also be a conforming RMI/IDL value type.
+			// don't know if this can be checked statically
+
+			// reset class c since it may have gotten moved in the above do/while loop
             /* Buggy Code
 	    c = RMIIIOPvaluetype;
 
@@ -501,34 +501,30 @@ public class RmiIIOPUtils {
 	    } while ((((c=c.getSuperclass()) != null) && (!badOne)));
             */
 
-            badOne = java.rmi.Remote.class.isAssignableFrom(c);
+			badOne = java.rmi.Remote.class.isAssignableFrom(c);
 
-	    if (badOne) {
-		return false;
-	    }
-  
-	    // 5. A value type may implement any interface except for java.rmi.Remote.
-	    // already checked this in step #4 above
+			if (badOne) {
+				return false;
+			}
 
-	    // 6. There are no restrictions on the method signatures for a value type.
-	    // 7. There are no restrictions on static fields for a value type.
-	    // 8. There are no restrictions on transient fields for a value type.
-	    // no checking need be done for these 6, 7, & 8
+			// 5. A value type may implement any interface except for java.rmi.Remote.
+			// already checked this in step #4 above
 
-	    // 9. Method, constant and field names must not cause name collisions when
-	    // mapped to IDL (see "Names that would cause OMG IDL name collisions"
-	    // on page 28-9).
-	    // can't check anything here, since this is an non-exhaustive search and
-	    // compare, don't know all the various combinations that would cause
-	    // name collisions, ask hans to be sure
+			// 6. There are no restrictions on the method signatures for a value type.
+			// 7. There are no restrictions on static fields for a value type.
+			// 8. There are no restrictions on transient fields for a value type.
+			// no checking need be done for these 6, 7, & 8
 
+			// 9. Method, constant and field names must not cause name collisions when
+			// mapped to IDL (see "Names that would cause OMG IDL name collisions"
+			// on page 28-9).
+			// can't check anything here, since this is an non-exhaustive search and
+			// compare, don't know all the various combinations that would cause
+			// name collisions, ask hans to be sure
+			return true;
+
+		}
 	}
-	if (validInterface) {
-	    return true;
-	} else {
-	    return false;
-	}
-    }
 
 
     /** 

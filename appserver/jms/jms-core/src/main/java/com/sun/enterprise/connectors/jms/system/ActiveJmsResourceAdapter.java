@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -1705,7 +1705,7 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         setProperty(cd, envProp2);
 
         //convert to milliseconds
-        int newval = (new Integer(jmsraUtil.getReconnectInterval())).intValue() * 1000;
+        int newval = Integer.parseInt(jmsraUtil.getReconnectInterval()) * 1000;
         val = "" + newval;
         ConnectorConfigProperty  envProp3 = new ConnectorConfigProperty  (
             RECONNECTINTERVAL, val, val, "java.lang.Integer");
