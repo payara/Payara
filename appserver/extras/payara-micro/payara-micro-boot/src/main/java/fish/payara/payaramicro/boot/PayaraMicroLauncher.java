@@ -121,7 +121,6 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
         // create config and
         CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
         if (src != null) {
-            System.out.println(src.getLocation());
             File file = new File(src.getLocation().toURI().getSchemeSpecificPart());
             JarFile jar = new JarFile(file);
             Enumeration<JarEntry> entries = jar.entries();
@@ -131,7 +130,6 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                     String fileName = entry.getName().substring("MICRO-INF/domain/".length());
                     File configDir = new File(instanceRoot, "config");
                     File outputFile = new File(configDir, fileName);
-                    System.out.println(outputFile.getAbsolutePath());
                     if (!outputFile.exists()) {
                         if (entry.isDirectory()) {
                             outputFile.mkdirs();

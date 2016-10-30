@@ -155,6 +155,11 @@ public class APIClassLoaderServiceImpl implements PostConstruct {
     }
 
     private ClassLoader getExtensionClassLoader() {
+        // check for micro boot classloader as it needs to be in the hierachy
+        //if (Thread.currentThread().getContextClassLoader().getClass().getName().contains("LaunchedURLClassLoader")) {
+        //    return Thread.currentThread().getContextClassLoader();
+        //}
+        
         if (System.getSecurityManager() != null) {
             return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
                 public ClassLoader run() {

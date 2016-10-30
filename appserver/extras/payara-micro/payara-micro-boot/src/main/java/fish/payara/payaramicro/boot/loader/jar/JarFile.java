@@ -52,7 +52,7 @@ public class JarFile extends java.util.jar.JarFile {
 
 	private static final String PROTOCOL_HANDLER = "java.protocol.handler.pkgs";
 
-	private static final String HANDLERS_PACKAGE = "fish.payara.extras.payaramicro.loader";
+	private static final String HANDLERS_PACKAGE = "fish.payara.payaramicro.boot.loader";
 
 	private static final AsciiBytes META_INF = new AsciiBytes("META-INF/");
 
@@ -220,7 +220,7 @@ public class JarFile extends java.util.jar.JarFile {
 			return this.entries.getInputStream((JarEntry) ze, access);
 		}
 		return getInputStream(ze == null ? null : ze.getName(), access);
-	}
+            }
 
 	InputStream getInputStream(String name, ResourceAccess access) throws IOException {
 		return this.entries.getInputStream(name, access);

@@ -27,7 +27,6 @@ import java.util.List;
 
 import fish.payara.payaramicro.boot.loader.archive.Archive;
 import fish.payara.payaramicro.boot.loader.archive.JarFileArchive;
-import fish.payara.payaramicro.boot.loader.jar.JarFile;
 
 /**
  * Base class for launchers that can start an application with a fully configured
@@ -45,9 +44,9 @@ public abstract class Launcher {
 	 * @throws Exception if the application fails to launch
 	 */
 	protected void launch(String[] args) throws Exception {
-		JarFile.registerUrlProtocolHandler();
 		ClassLoader classLoader = createClassLoader(getClassPathArchives());
-		launch(args, getMainClass(), classLoader);
+                fish.payara.payaramicro.boot.loader.jar.JarFile.registerUrlProtocolHandler();
+                launch(args, getMainClass(), classLoader);
 	}
 
 	/**

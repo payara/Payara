@@ -75,11 +75,11 @@ public class MicroGlassFishRuntime extends GlassFishRuntime {
 
     @Override
     public GlassFish newGlassFish(GlassFishProperties glassfishProperties) throws GlassFishException {
-        System.out.println("#################~~" + System.getProperty("com.sun.aas.instanceRoot"));
         System.setProperty("com.sun.aas.installRoot",System.getProperty("com.sun.aas.instanceRoot"));
         System.setProperty("com.sun.aas.installRootURI",System.getProperty("com.sun.aas.instanceRootURI"));
         
-        
+        glassfishProperties.setProperty("com.sun.aas.installRoot", System.getProperty("com.sun.aas.instanceRoot"));
+        glassfishProperties.setProperty("com.sun.aas.installRootURI", System.getProperty("com.sun.aas.instanceRootURI"));
         
         StartupContext context = new StartupContext(glassfishProperties.getProperties());
         ClassLoader tccl = Thread.currentThread().getContextClassLoader();
