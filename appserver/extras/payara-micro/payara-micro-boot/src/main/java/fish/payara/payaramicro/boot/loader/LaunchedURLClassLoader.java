@@ -27,9 +27,6 @@ import java.util.Enumeration;
 
 import fish.payara.payaramicro.boot.loader.jar.Handler;
 import fish.payara.payaramicro.boot.loader.jar.JarFile;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * {@link ClassLoader} used by the {@link Launcher}.
@@ -81,7 +78,6 @@ public class LaunchedURLClassLoader extends URLClassLoader {
 			}
 			catch (IllegalArgumentException ex) {
 				// Tolerate race condition due to being parallel capable
-                                ex.printStackTrace();
 				if (getPackage(name) == null) {
 					// This should never happen as the IllegalArgumentException indicates
 					// that the package has already been defined and, therefore,
