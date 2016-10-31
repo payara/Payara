@@ -26,6 +26,30 @@
             </activation>
             <modules>
                 <module>payara-micro-distribution</module>
+            </modules>
+        </profile>
+        <!-- Profile to build Payara MicroProfile -->
+        <profile>
+            <id>BuildMicroProfile</id>
+            <activation>
+                <property>
+                    <name>BuildMicroProfile</name>
+                </property>
+            </activation>
+            <modules>
+                <module>payara-micro-microprofile-distribution</module>
+            </modules>
+        </profile>
+        <!-- Profile to build Embedded and Micro distributions -->
+        <profile>
+            <id>BuildExtras</id>
+            <activation>
+                <property>
+                    <name>BuildExtras</name>
+                </property>
+            </activation>
+            <modules>
+                <module>payara-micro-distribution</module>
                 <module>payara-micro-microprofile-distribution</module>
             </modules>
         </profile>
