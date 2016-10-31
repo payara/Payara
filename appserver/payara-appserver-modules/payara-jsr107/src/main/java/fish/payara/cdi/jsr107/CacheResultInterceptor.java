@@ -74,7 +74,6 @@ public class CacheResultInterceptor extends AbstractJSR107Interceptor {
             result = ctx.proceed();
             cache.put(key, result);
         } catch (Throwable e) {
-            boolean cacheException = false;
             if (cacheExceptions) {
                 Cache exceptionCache = resolverF.getExceptionCacheResolver(pctx).resolveCache(pctx);
                 if (shouldICache(annotation.cachedExceptions(), annotation.nonCachedExceptions(), e, true)) {
