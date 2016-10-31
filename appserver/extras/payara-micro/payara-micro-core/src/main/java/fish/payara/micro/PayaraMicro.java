@@ -1585,7 +1585,11 @@ public class PayaraMicro {
         if (deployments != null) {
             for (File war : deployments) {
                 if (war.exists() && war.canRead()) {
-                    deployer.deploy(war, "--availabilityenabled=true", "--force=true");
+                    if (war.getName().startsWith("ROOT.")) {
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/");
+                    } else {
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true");
+                    }  
                     deploymentCount++;
                 } else {
                     logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
@@ -1598,7 +1602,11 @@ public class PayaraMicro {
             for (File war : deploymentRoot.listFiles()) {
                 String warPath = war.getAbsolutePath();
                 if (war.isFile() && war.canRead() && (warPath.endsWith(".war") || warPath.endsWith(".ear") || warPath.endsWith(".jar") || warPath.endsWith(".rar"))) {
-                    deployer.deploy(war, "--availabilityenabled=true", "--force=true");
+                    if (war.getName().startsWith("ROOT.")) {
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true", "--contextroot=/");
+                    } else {
+                        deployer.deploy(war, "--availabilityenabled=true", "--force=true");
+                    }  
                     deploymentCount++;
                 }
             }
@@ -1854,7 +1862,11 @@ public class PayaraMicro {
                 deploymentURLsMap = new LinkedHashMap<>();
             }
 
-            deploymentURLsMap.put(artefactMapEntry.getKey(),
+            String contextRoot = artefactMapEntry.getKey();
+            if ("ROOT".equals(contextRoot)) {
+                contextRoot = "/";
+            }
+            deploymentURLsMap.put(contextRoot,
                     artefactMapEntry.getValue());
         }
     }
