@@ -1029,6 +1029,9 @@ public class PayaraMicro {
                     gfproperties.setProperty("embedded-glassfish-config.server.http-service.access-log.format", accessLogFormat);
                 }
             }
+            
+            gfproperties.setProperty("-type", "MICRO");
+            
             gf = gfruntime.newGlassFish(gfproperties);
 
             // reset logger.

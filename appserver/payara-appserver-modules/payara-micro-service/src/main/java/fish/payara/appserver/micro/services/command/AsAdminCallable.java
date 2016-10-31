@@ -15,9 +15,9 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro.services.command;
+package fish.payara.appserver.micro.services.command;
 
-import fish.payara.micro.services.PayaraMicroInstance;
+import fish.payara.appserver.micro.services.PayaraInstance;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 import org.glassfish.hk2.api.ServiceLocator;
@@ -42,7 +42,7 @@ public class AsAdminCallable implements Callable<ClusterCommandResult>, Serializ
     @Override
     public ClusterCommandResult call() throws Exception {
         ServiceLocator locator = Globals.getDefaultBaseServiceLocator();
-        PayaraMicroInstance instance = locator.getService(PayaraMicroInstance.class, "payara-micro-instance");
+        PayaraInstance instance = locator.getService(PayaraInstance.class, "payara-instance");
         return instance.executeLocalAsAdmin(command, args);
     }
     

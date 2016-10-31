@@ -15,7 +15,7 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.micro.services.command;
+package fish.payara.appserver.micro.services.command;
 
 import java.io.Serializable;
 import org.glassfish.embeddable.CommandResult;

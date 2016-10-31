@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation Ltd and/or its affiliates]
 package org.glassfish.api.admin;
 
 import com.sun.enterprise.module.bootstrap.StartupContext;
@@ -158,4 +159,6 @@ public interface ServerEnvironment {
     boolean isInstance();
 
     boolean isDas();
+    
+    boolean isMicro();
 }

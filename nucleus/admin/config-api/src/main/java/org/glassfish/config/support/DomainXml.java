@@ -38,6 +38,7 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.glassfish.config.support;
 
 import com.sun.enterprise.config.serverbeans.Cluster;
@@ -240,7 +241,8 @@ public abstract class DomainXml implements Populator {
                 }
             });
 
-            if (env.getRuntimeType() == RuntimeType.DAS || env.getRuntimeType() == RuntimeType.EMBEDDED)
+            if (env.getRuntimeType() == RuntimeType.DAS || env.getRuntimeType() == RuntimeType.EMBEDDED || 
+                    env.getRuntimeType() == RuntimeType.MICRO)
                 xsr = new DasReaderFilter(domainXml, xif);
             else if (env.getRuntimeType() == RuntimeType.INSTANCE)
                 xsr = new InstanceReaderFilter(env.getInstanceName(), domainXml, xif);
