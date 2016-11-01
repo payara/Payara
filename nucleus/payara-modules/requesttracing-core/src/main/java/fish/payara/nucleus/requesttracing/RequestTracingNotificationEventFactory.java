@@ -14,6 +14,7 @@
 package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.HipchatNotificationEvent;
 import fish.payara.nucleus.notification.domain.LogNotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
@@ -41,6 +42,12 @@ class RequestTracingNotificationEventFactory {
             LogNotificationEvent event = new LogNotificationEvent();
             event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
             event.setLevel(Level.INFO);
+            event.setMessage(getRequestEventsAsStr());
+            return event;
+        }
+        if (NotifierType.HIPCHAT.equals(notifierType)) {
+            HipchatNotificationEvent event = new HipchatNotificationEvent();
+            event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
             event.setMessage(getRequestEventsAsStr());
             return event;
         }

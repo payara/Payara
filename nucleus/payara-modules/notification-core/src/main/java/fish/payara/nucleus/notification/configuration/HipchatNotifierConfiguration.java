@@ -13,19 +13,22 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import java.beans.PropertyVetoException;
+
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+@Configured
+public interface HipchatNotifierConfiguration extends NotifierConfiguration {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    @Attribute
+    String getRoomName();
+    void setRoomName(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getToken();
+    void setToken(String value) throws PropertyVetoException;
 }
