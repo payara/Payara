@@ -11,21 +11,30 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain;
+
+import java.util.Arrays;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
+public class HipchatNotificationEvent extends NotificationEvent {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+    private String message;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "HipchatNotificationEvent{" +
+                "message='" + message + '\'' +
+                '}';
+    }
 }

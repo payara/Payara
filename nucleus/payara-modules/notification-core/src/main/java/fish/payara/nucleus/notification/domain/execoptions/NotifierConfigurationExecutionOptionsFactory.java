@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.notification.domain.execoptions;
 
+import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import org.jvnet.hk2.annotations.Service;
@@ -28,11 +29,19 @@ import javax.ejb.Singleton;
 @Singleton
 public class NotifierConfigurationExecutionOptionsFactory {
 
-    public NotifierConfigurationExecutionOptions build(NotifierConfiguration notifierConfiguration) {
+    public <T extends NotifierConfigurationExecutionOptions> T build(NotifierConfiguration notifierConfiguration) {
         if (notifierConfiguration instanceof LogNotifierConfiguration) {
             LogNotifierConfigurationExecutionOptions executionOptions = new LogNotifierConfigurationExecutionOptions();
             executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-            return executionOptions;
+            return (T) executionOptions;
+        }
+        if (notifierConfiguration instanceof HipchatNotifierConfiguration) {
+            HipchatNotifierConfiguration hipchatNotifierConfiguration = (HipchatNotifierConfiguration) notifierConfiguration;
+            HipchatNotifierConfigurationExecutionOptions executionOptions = new HipchatNotifierConfigurationExecutionOptions();
+            executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+            executionOptions.setToken(hipchatNotifierConfiguration.getToken());
+            executionOptions.setRoomName(hipchatNotifierConfiguration.getRoomName());
+            return (T) executionOptions;
         }
         return null;
     }
