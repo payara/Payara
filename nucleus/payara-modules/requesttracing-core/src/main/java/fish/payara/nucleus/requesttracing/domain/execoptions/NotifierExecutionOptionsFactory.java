@@ -13,6 +13,7 @@
  */
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
+import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.LogNotifier;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import org.jvnet.hk2.annotations.Service;
@@ -31,6 +32,11 @@ public class NotifierExecutionOptionsFactory {
     public NotifierExecutionOptions build(Notifier notifier) {
         if (notifier instanceof LogNotifier) {
             LogNotifierExecutionOptions executionOptions = new LogNotifierExecutionOptions();
+            executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+            return executionOptions;
+        }
+        if (notifier instanceof HipchatNotifier) {
+            HipchatNotifierExecutionOptions executionOptions = new HipchatNotifierExecutionOptions();
             executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
             return executionOptions;
         }
