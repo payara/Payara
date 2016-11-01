@@ -13,19 +13,11 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
+import org.jvnet.hk2.config.Configured;
+
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT
-
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-704 - Slack NotifierConfiguration
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
-    // PAYARA-698 - Email NotifierConfiguration
+@Configured
+public interface HipchatNotifier extends Notifier {
 }
