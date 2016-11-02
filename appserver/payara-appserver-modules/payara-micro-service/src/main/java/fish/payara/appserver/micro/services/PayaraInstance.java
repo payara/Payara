@@ -227,6 +227,11 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         if (event.is(HazelcastEvents.HAZELCAST_BOOTSTRAP_COMPLETE)) {
             initialiseInstanceDescriptor();
         }
+        
+        // If the generated name had to be changed, update the instance descriptor with the new information
+        if (event.is(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE)) {
+            initialiseInstanceDescriptor();
+        }
     }
 
     public Set<InstanceDescriptor> getClusteredPayaras() {
