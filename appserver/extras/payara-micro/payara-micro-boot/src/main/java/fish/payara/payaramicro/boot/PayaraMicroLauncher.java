@@ -49,6 +49,7 @@ import java.net.URISyntaxException;
 import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -61,8 +62,20 @@ import java.util.jar.JarFile;
  */
 public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
 
+    private static final String MICRO_MAIN = "fish.payara.micro.PayaraMicro";
+    private static final String INSTANCE_ROOT_PROPERTY = "com.sun.aas.instanceRoot";
+    private static final String INSTANCE_ROOTURI_PROPERTY = "com.sun.aas.instanceRootURI";
+    private static final String INSTALL_ROOT_PROPERTY = "com.sun.aas.installRoot";
+    private static final String INSTALL_ROOTURI_PROPERTY = "com.sun.aas.installRootURI";
+    private static final String JAR_DOMAIN_DIR = "MICRO-INF/domain/";
+    private static final String JAR_MODULES_DIR = "MICRO-INF/runtime";
+    private static final String JAR_CLASSES_DIR = "MICRO-INF/classes";
+    private static final String JAR_LIB_DIR = "MICRO-INF/lib";
+    private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
+
     public static void main(String args[]) throws Exception {
         PayaraMicroLauncher launcher = new PayaraMicroLauncher();
+        launcher.setBootProperties();
         launcher.unPackRuntime(args);
         launcher.launch(args);
     }
@@ -70,9 +83,9 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     @Override
     protected boolean isNestedArchive(Archive.Entry entry) {
         boolean result = false;
-        if (entry.isDirectory() && entry.getName().equals("MICRO-INF/classes/")) {
+        if (entry.isDirectory() && entry.getName().equals(JAR_CLASSES_DIR)) {
             result = true;
-        } else if (entry.getName().startsWith("MICRO-INF/lib/") || entry.getName().startsWith("MICRO-INF/runtime/")) {
+        } else if ((entry.getName().startsWith(JAR_LIB_DIR) || entry.getName().startsWith(JAR_MODULES_DIR)) && !entry.getName().endsWith(".gitkeep")) {
             result = true;
         }
         return result;
@@ -85,40 +98,57 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
 
     @Override
     protected String getMainClass() throws Exception {
-        return "fish.payara.micro.PayaraMicro";
+        return MICRO_MAIN;
     }
 
     private void unPackRuntime(String args[]) throws IOException, URISyntaxException {
 
         String tmpDir = null;
         File instanceRoot = null;
+        // check whether a rootDirectory has been specified
         for (int i = 0; i < args.length; i++) {
             if ("--rootDir".equals(args[i])) {
                 tmpDir = args[i + 1];
                 instanceRoot = new File(tmpDir);
+                if (!instanceRoot.exists() || !instanceRoot.isDirectory()) {
+                    throw new IOException("Specified Root Directory " + instanceRoot.getAbsolutePath() + " Is not writable or not a directory");
+                }
             }
         }
 
         // unpack all the config files
-        if (tmpDir == null) {
-            tmpDir = System.getProperty("glassfish.embedded.tmpdir");
-        }
-
-        if (tmpDir == null) {
-            tmpDir = System.getProperty("java.io.tmpdir");
-        }
-
+        // we need to create a temporary instance root
         if (instanceRoot == null) {
+            if (tmpDir == null) {
+                tmpDir = System.getProperty("glassfish.embedded.tmpdir");
+            }
+
+            if (tmpDir == null) {
+                tmpDir = System.getProperty("java.io.tmpdir");
+            }
             instanceRoot = File.createTempFile("payaramicro-", "tmp", new File(tmpDir));
             if (!instanceRoot.delete() || !instanceRoot.mkdir()) { // convert the file into a directory.
                 throw new IOException("cannot create directory: " + instanceRoot.getAbsolutePath());
             }
-            //instanceRoot.deleteOnExit();
+            instanceRoot.deleteOnExit();
         }
-        System.setProperty("com.sun.aas.instanceRoot", instanceRoot.getAbsolutePath());
-        System.setProperty("com.sun.aas.instanceRootURI",instanceRoot.toURI().toString());
+
+        // Set up system properties now we know where we will be installed
+        System.setProperty(INSTANCE_ROOT_PROPERTY, instanceRoot.getAbsolutePath());
+        System.setProperty(INSTANCE_ROOTURI_PROPERTY, instanceRoot.toURI().toString());
+        System.setProperty(INSTALL_ROOT_PROPERTY, instanceRoot.getAbsolutePath());
+        System.setProperty(INSTALL_ROOTURI_PROPERTY, instanceRoot.toURI().toString());
+
+        // make a docroot here
         new File(instanceRoot, "docroot").mkdirs();
-        // create config and
+
+        // create a config dir and unpack
+        File configDir = new File(instanceRoot, "config");
+        if (!configDir.exists()) {
+            configDir.mkdirs();
+        }
+
+        // Get our configuration files
         CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
         if (src != null) {
             File file = new File(src.getLocation().toURI().getSchemeSpecificPart());
@@ -126,26 +156,44 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                if (entry.getName().startsWith("MICRO-INF/domain/")) {
-                    String fileName = entry.getName().substring("MICRO-INF/domain/".length());
-                    File configDir = new File(instanceRoot, "config");
+                if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
+                    String fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
                     File outputFile = new File(configDir, fileName);
+
+                    // only unpack if an existing file is not there
                     if (!outputFile.exists()) {
                         if (entry.isDirectory()) {
                             outputFile.mkdirs();
                         } else {
-                            FileOutputStream fos = new FileOutputStream(outputFile);
-                            InputStream is = jar.getInputStream(entry);
-                            byte[] buffer = new byte[4096];
-                            int bytesRead = 0;
-                            while ((bytesRead = is.read(buffer)) != -1) {
-                                fos.write(buffer, 0, bytesRead);
+                            // write out the conifugration file
+                            try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+                                InputStream is = jar.getInputStream(entry);
+                                byte[] buffer = new byte[4096];
+                                int bytesRead = 0;
+                                while ((bytesRead = is.read(buffer)) != -1) {
+                                    fos.write(buffer, 0, bytesRead);
+                                }
                             }
                         }
                     }
 
                 }
 
+            }
+        }
+    }
+
+    private void setBootProperties() throws IOException {
+        Properties bootProperties = new Properties();
+        try (InputStream is = this.getClass().getResourceAsStream(BOOT_PROPS_FILE)) {
+            if (is != null) {
+                bootProperties.load(is);
+                for (String key : bootProperties.stringPropertyNames()) {
+                    // do not override an existing system property
+                    if (System.getProperty(key) == null) {
+                        System.setProperty(key, bootProperties.getProperty(key));
+                    }
+                }
             }
         }
     }
