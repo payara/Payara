@@ -38,6 +38,8 @@
 # only if the new code is made subject to such option by the copyright
 # holder.
 #
+# Portions Copyright [2016] [Payara Foundation and/or its affiliates] 
+#
 
 # Linux Platform Services for GlassFish
 # See this blog for more details:
@@ -64,7 +66,7 @@ restart)
 esac
 
 #
-# Example commands that demonstrate how to run GlassFish on the "special" ports < 1024
+# Example commands that demonstrate how to run Payara Server on the "special" ports < 1024
 #
 # iptables -t nat -A PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports 8080
 # iptables -t nat -A PREROUTING -p udp -m udp --dport 80 -j REDIRECT --to-ports 8080

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.deployment;
 
@@ -415,6 +416,9 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract void setExtensionProperty(String key, String value);
 
     public abstract boolean hasExtensionProperty(String key);
+
+    public abstract boolean getServletInitializersEnabled();
+    public abstract void setServletInitializersEnabled(boolean tf);
 
     public boolean isConflictLoginConfig() {
         return conflictLoginConfig;

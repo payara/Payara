@@ -84,7 +84,7 @@ public class GAVConvertor {
      * the provided GAV as Strings
      */
     private Map<String, String> splitGAV(String GAV) throws GlassFishException {
-        final String[] splitGAV = GAV.split(",");
+        final String[] splitGAV = GAV.split(",|:");
         final Map<String, String> GAVMap = new HashMap<>();
         try {
             GAVMap.put("groupId", splitGAV[0].replace('.', '/'));

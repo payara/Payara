@@ -102,13 +102,17 @@ public class ServletContainerInitializerUtil {
      * Given a class loader, check for ServletContainerInitializer
      * implementations in any JAR file in the classpath
      *
+     * @param webFragmentMap
+     * @param absoluteOrderingList
      * @param cl The ClassLoader to be used to find JAR files
+     * @param hasOthers
+     * @param servletInitializersEnabled
      *
      * @return Iterable over all ServletContainerInitializers that were found
      */
     public static Iterable<ServletContainerInitializer> getServletContainerInitializers(
             Map<String, String> webFragmentMap, List<Object> absoluteOrderingList,
-            boolean hasOthers, ClassLoader cl) {
+            boolean hasOthers, ClassLoader cl, boolean servletInitializersEnabled) {
         /*
          * If there is an absoluteOrderingList specified, then make sure that
          * any ServletContainerInitializers included in fragment JARs 
@@ -116,6 +120,21 @@ public class ServletContainerInitializerUtil {
          * For this, we remove any unwanted fragment JARs from the class
          * loader's URL
          */
+
+        if (!servletInitializersEnabled) {
+            try {
+                final URLClassLoader webAppCl = (URLClassLoader) cl;
+                cl = AccessController.doPrivileged(new PrivilegedAction<URLClassLoader>() {
+                    @Override
+                    public URLClassLoader run() {
+                        return new URLClassLoader(new URL[0], webAppCl.getParent());
+                    }
+                });
+            } finally {
+                /* intentionally left blank */
+            }
+        }
+
         if((absoluteOrderingList != null) && !hasOthers) {
             if(!(cl instanceof URLClassLoader)) {
                 log.log(Level.WARNING,

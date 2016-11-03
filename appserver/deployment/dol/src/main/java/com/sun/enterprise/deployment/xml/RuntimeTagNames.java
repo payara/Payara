@@ -68,6 +68,8 @@ public interface RuntimeTagNames extends TagNames {
     
     public final static String PAYARA_CLASSLOADING_DELEGATE = "classloading-delegate";
     public final static String PAYARA_ENABLE_IMPLICIT_CDI = "enable-implicit-cdi";
+    public final static String PAYARA_SCANNING_EXCLUDE = "scanning-exclude";
+    public final static String PAYARA_SCANNING_INCLUDE = "scanning-include";
     // The name of the deployment context property used to disable implicit bean discovery for a
     // particular application deployment.
     public final static String IMPLICIT_CDI_ENABLED_PROP = "implicitCdiEnabled";

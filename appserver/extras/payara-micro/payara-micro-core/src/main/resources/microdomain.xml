@@ -155,6 +155,12 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
+            <request-tracing-service-configuration>
+                <log-notifier enabled="true"></log-notifier>
+            </request-tracing-service-configuration>
+            <notification-service-configuration enabled="true">
+                <log-notifier-configuration enabled="true"></log-notifier-configuration>
+            </notification-service-configuration>
             <availability-service availability-enabled="true" >
                 <web-container-availability availability-enabled="true" persistence-scope="modified-session" sso-failover-enabled="true" persistence-type="hazelcast"></web-container-availability>
                 <ejb-container-availability sfsb-ha-persistence-type="hazelcast" sfsb-persistence-type="hazelcast" ></ejb-container-availability>
