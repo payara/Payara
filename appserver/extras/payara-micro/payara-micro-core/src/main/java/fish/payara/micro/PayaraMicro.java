@@ -74,7 +74,6 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 

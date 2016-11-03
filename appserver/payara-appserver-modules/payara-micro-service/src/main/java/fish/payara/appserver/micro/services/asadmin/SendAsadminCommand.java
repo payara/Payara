@@ -87,13 +87,9 @@ public class SendAsadminCommand implements AdminCommand
                 parameters = new String[]{""};
             }
             
-            // Run the asadmin command against the targets (or all instances if no targets given)
-            Map<String, Future<ClusterCommandResult>> results;
-            if (targets != null) {
-                results = payaraMicro.executeClusteredASAdmin(targetInstanceGuids, command, parameters);
-            } else {
-                results = payaraMicro.executeClusteredASAdmin(command, parameters);
-            }
+            // Run the asadmin command against the targets (or all instances if no targets given)          
+            Map<String, Future<ClusterCommandResult>> results = payaraMicro.executeClusteredASAdmin(targetInstanceGuids, 
+                    command, parameters);
             
             // Check the command results for any failures
             if (results != null) {
