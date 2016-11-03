@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 /**
  * <BR> <I>$Source: /cvs/glassfish/appserv-core/src/java/com/sun/ejb/containers/util/pool/AbstractPool.java,v $</I>
@@ -50,7 +51,6 @@ package com.sun.ejb.containers.util.pool;
 import com.sun.ejb.containers.EjbContainerUtilImpl;
 import com.sun.ejb.monitoring.probes.EjbPoolProbeProvider;
 import com.sun.ejb.monitoring.stats.EjbMonitoringUtils;
-import com.sun.enterprise.util.Utility;
 import org.glassfish.flashlight.provider.ProbeProviderFactory;
 
 import java.util.ArrayList;
@@ -77,7 +77,7 @@ public abstract class AbstractPool
 
     protected static final Logger _logger = EjbContainerUtilImpl.getLogger();
 
-    protected ArrayList	     list;
+    protected final ArrayList<Object> list = new ArrayList<>();
     protected ObjectFactory  factory = null;
     protected int	     waitCount = 0;
     protected int	     createdCount = 0;
@@ -88,8 +88,6 @@ public abstract class AbstractPool
     protected long	     maxWaitTimeInMillis;
     protected int	     idleTimeoutInSeconds;
 
-
-    private AbstractPoolTimerTask  poolTimerTask;
 
     // class loader used as context class loader for asynchronous operations
     protected ClassLoader	   containerClassLoader;
@@ -107,56 +105,6 @@ public abstract class AbstractPool
     protected String ejbName;
 
     protected long beanId;
-
-    protected AbstractPool() {
-    }
-
-    protected AbstractPool(ObjectFactory factory, long beanId, int steadyPoolSize,
-       int resizeQuantity, int maxPoolsize, long maxWaitTimeInMillis, 
-                           int idleTimeoutInSeconds, ClassLoader loader) {
-    	initializePool(factory, beanId, steadyPoolSize, resizeQuantity, maxPoolsize,
-                       maxWaitTimeInMillis, idleTimeoutInSeconds, loader);
-    }
-
-    protected void initializePool(ObjectFactory factory, long beanId, int steadyPoolSize,
-        int resizeQuantity, int maxPoolsize, long maxWaitTimeInMillis, 
-        int idleTimeoutInSeconds, ClassLoader loader) {
-
-        list = new ArrayList();
-        
-        this.factory = factory;
-        this.steadyPoolSize = steadyPoolSize;
-        this.resizeQuantity = resizeQuantity;
-        this.maxPoolSize = maxPoolsize;
-        this.maxWaitTimeInMillis = maxWaitTimeInMillis;
-        this.idleTimeoutInSeconds = idleTimeoutInSeconds;
-
-        this.beanId = beanId;
-
-        if (steadyPoolSize > 0) {
-            for (int i=0; i<steadyPoolSize; i++) {
-                list.add(factory.create(null));
-                poolProbeNotifier.ejbObjectAddedEvent(beanId, appName, modName, ejbName);
-                createdCount++;
-            }
-        }
-        
-        this.containerClassLoader = loader;
-        
-        if (this.idleTimeoutInSeconds > 0) {
-            try {
-                this.poolTimerTask =  new AbstractPoolTimerTask();
-                EjbContainerUtilImpl.getInstance().getTimer().scheduleAtFixedRate
-                    (poolTimerTask, idleTimeoutInSeconds*1000L, 
-                     idleTimeoutInSeconds*1000L);
-            } catch (Throwable th) {
-                _logger.log(Level.WARNING,
-                    "[AbstractPool]: Could not add AbstractPoolTimerTask" + 
-                    " ... Continuing anyway...");
-            }
-        }
-
-    }
     
 
     public void setContainerClassLoader(ClassLoader loader) {
@@ -172,9 +120,9 @@ public abstract class AbstractPool
             String invokerId = EjbMonitoringUtils.getInvokerId(appName, modName, ejbName);
             poolProbeNotifier = probeFactory.getProbeProvider(EjbPoolProbeProvider.class, invokerId);
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, "Got poolProbeNotifier: " + poolProbeNotifier.getClass().getName());
+                _logger.log(Level.FINE, "Got poolProbeNotifier: {0}", poolProbeNotifier.getClass().getName());
             }
-        } catch (Exception ex) {
+        } catch (InstantiationException | IllegalAccessException ex) {
             poolProbeNotifier = new EjbPoolProbeProvider();
             if (_logger.isLoggable(Level.FINE)) {
                 _logger.log(Level.FINE, "Error getting the EjbPoolProbeProvider");
@@ -182,274 +130,28 @@ public abstract class AbstractPool
         }
 
     }
-    
-    /**
-     * Get an object. Application can use pool.getObject() to get an object
-     *	instead of using new XXX().
-     * @param canWait Must be true if the calling thread is willing to 
-     * wait for infinite time to get an object, false if the calling thread 
-     * does not want to wait at all.
-     *	
-     */
+
+    @Override
     public Object getObject(boolean canWait, Object param)
         throws PoolException
     {
         return getObject(param);
     }
 
+    @Override
     public Object getObject(long maxWaitTime, Object param)
         throws PoolException
     {
         return getObject(param);
     }
 
-    public Object getObject(Object param)
-        throws PoolException
-    {
-        long t1=0, totalWaitTime = 0;
-        int size;
 
-        synchronized (list) {
-            while (true) {
-                if ((size = list.size()) > 0) {
-                    poolSuccess++;
-                    return list.remove(size-1);
-                } else if ((createdCount - destroyedCount) < maxPoolSize) {
-                    poolProbeNotifier.ejbObjectAddedEvent(beanId, appName, modName, ejbName);
-                    createdCount++;	//hope that everything will be OK.
-                    break;
-                }
-					
-                if (maxWaitTimeInMillis >= 0) {
-                    waitCount++;
-                    t1 = System.currentTimeMillis();
-                    try {
-                        _logger.log(Level.FINE, "[AbstractPool]: Waiting on" +
-                                    " the pool to get a bean instance...");
-                        list.wait(maxWaitTimeInMillis);
-                    } catch (InterruptedException inEx) {
-                        throw new PoolException("Thread interrupted.", inEx);
-                    }
-                    waitCount--;
-                    totalWaitTime += System.currentTimeMillis() - t1;
-                    if ((size = list.size()) > 0) {
-                        poolSuccess++;
-                        return list.remove(size-1);
-                    } else if (maxWaitTimeInMillis == 0) {
-                        // nothing special to do in this case
-                    } else if (totalWaitTime >= maxWaitTimeInMillis) {
-                        throw new PoolException("Pool Instance not obtained" +
-                           " within given time interval.");
-                    }
-                } else {
-                    throw new PoolException("Pool Instance not obtained" +
-                                            " within given time interval.");
-                }
-            }
-        }
-			
-        try {
-            return factory.create(param);
-        } catch (Exception poolEx) {
-            synchronized (list) {
-                poolProbeNotifier.ejbObjectAddFailedEvent(beanId, appName, modName, ejbName);
-                createdCount--;
-            }
-            throw new RuntimeException("Caught Exception when trying " +
-                                       "to create pool Object ", poolEx);
-        }
-    }
     
-    /**
-     * Return an object back to the pool. An object that is obtained through
-     *	getObject() must always be returned back to the pool using either 
-     *	returnObject(obj) or through destroyObject(obj).
-     */
-    public void returnObject(Object object) {
-    	synchronized (list) {
-            list.add(object);
-            poolReturned++; 
-            if (waitCount > 0) {
-                list.notify();
-            }
-    	}
-    }
-
-    /**
-     * Destroys an Object. Note that applications should not ignore the 
-     * reference to the object that they got from getObject(). An object 
-     * that is obtained through getObject() must always be returned back to 
-     * the pool using either returnObject(obj) or through destroyObject(obj). 
-     * This method tells that the object should be destroyed and cannot 
-     * be reused.
-     */
-    public void destroyObject(Object object) {
-    	synchronized (list) {
-            poolProbeNotifier.ejbObjectDestroyedEvent(beanId, appName, modName, ejbName);
-            destroyedCount++;
-            if (waitCount > 0) {
-                list.notify();
-            }
-    	}
-        try {
-            factory.destroy(object);
-        } catch (Exception ex) {
-            _logger.log(Level.FINE, "Exception in destroyObject()", ex);
-        }
-    }
-    
-    /**
-    * Preload the pool with objects.
-    * @param count the number of objects to be added.
-    */
-    protected void preload(int count) {
-    	
-    	synchronized (list) {
-            for (int i=0; i<count; i++) {
-                try {
-                    list.add(factory.create(null));
-                    poolProbeNotifier.ejbObjectAddedEvent(beanId, appName, modName, ejbName);
-                    createdCount++;
-                } catch (PoolException poolEx) {
-                    _logger.log(Level.FINE, "Exception in preload()", poolEx);
-                }
-            }
-    	}
-    }
-    
-    /**
-    * Close the pool
-    */
-    public void close() {
-        synchronized (list) {
-            if (poolTimerTask != null) {
-                try {
-                    poolTimerTask.cancel();	
-                    _logger.log(Level.WARNING,
-                                "[AbstractPool]: Cancelled pool timer task "
-                                + " at: " + (new java.util.Date()));
-                } catch (Throwable th) {
-                    //Can safely ignore this!!
-                }
-            }
-            _logger.log(Level.FINE,"[AbstractPool]: Destroying "
-                        + list.size() + " beans from the pool...");
-
-            // since we're calling into ejb code, we need to set context
-            // class loader
-            ClassLoader origLoader = 
-                Utility.setContextClassLoader(containerClassLoader);
-
-            Object[] array = list.toArray();
-            for (int i=0; i<array.length; i++) {
-                try {
-                    poolProbeNotifier.ejbObjectDestroyedEvent(beanId, appName, modName, ejbName);
-                    destroyedCount++;
-                    try {
-                        factory.destroy(array[i]);
-                    } catch (Throwable th) {
-                        _logger.log(Level.FINE, "Exception in destroy()", th);
-                    }
-                } catch (Throwable th) {
-                    _logger.log(Level.WARNING,
-                        "[AbstractPool]: Error while destroying: " + th);
-                }
-            }
-            _logger.log(Level.FINE,"[AbstractPool]: Pool closed....");
-            unregisterProbeProvider();
-            Utility.setContextClassLoader(origLoader);
-        }
-        
-
-        // helps garbage collection
-        this.list                  = null;
-        this.factory               = null;
-        this.poolTimerTask         = null;
-        this.containerClassLoader  = null;
-        
-    }
-
-    protected void remove(int count) {
-        ArrayList removeList = new ArrayList();
-        synchronized (list) {
-            int size = list.size();
-            for (int i=0; (i<count) && (size > 0); i++) {
-                removeList.add(list.remove(--size));
-                poolProbeNotifier.ejbObjectDestroyedEvent(beanId, appName, modName, ejbName);
-                destroyedCount++;
-            }
-            
-            list.notifyAll();
-        }
-        
-        for (int i=removeList.size()-1; i >= 0; i--) {
-            factory.destroy(removeList.remove(i));
-            try {
-                factory.destroy(removeList.remove(i));
-            } catch (Throwable th) {
-                _logger.log(Level.FINE, "Exception in destroy()", th);
-            }
-        }
-    }
-
     protected abstract void removeIdleObjects();
-    
-    private class AbstractPoolTimerTask
-        extends java.util.TimerTask
-    {
-        AbstractPoolTimerTask() {}
-        
-        public void run() {
-            //We need to set the context class loader for this (deamon)thread!!
-            final Thread currentThread = Thread.currentThread();
-            final ClassLoader previousClassLoader = 
-                currentThread.getContextClassLoader();
-            final ClassLoader ctxClassLoader = containerClassLoader;
-            
-            try {
-                if(System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(ctxClassLoader);
-                } else {
-                    java.security.AccessController.doPrivileged(
-                            new java.security.PrivilegedAction() {
-                        public java.lang.Object run() {
-                            currentThread.setContextClassLoader(ctxClassLoader);
-                            return null;
-                        }
-                    });
-                }
-
-                try {
-                    if (list.size() > steadyPoolSize) {
-                        _logger.log(Level.FINE,"[AbstractPool]: Removing idle "
-                            + " objects from pool. Current Size: "
-                            + list.size() + "/" + steadyPoolSize
-                            + ". Time: " + (new java.util.Date()));
-                        removeIdleObjects();
-                    }
-                } catch (Throwable th) {
-                    //removeIdleObjects would have logged the error
-                }
-                
-                if(System.getSecurityManager() == null) {
-                    currentThread.setContextClassLoader(previousClassLoader);
-                } else {
-                    java.security.AccessController.doPrivileged(
-                            new java.security.PrivilegedAction() {
-                        public java.lang.Object run() {
-                            currentThread.setContextClassLoader(previousClassLoader);
-                            return null;
-                        }
-                    });
-                }
-            } catch (Throwable th) {
-                _logger.log(Level.FINE, "Exception in run()", th);
-            }
-        }
-    }
-
-    /**************** For Monitoring ***********************/
-    /*******************************************************/
+    abstract public void close();
+   
+    /* *************** For Monitoring ***********************/
+    /* ******************************************************/
     
     public int getCreatedCount() {
         return createdCount;
@@ -531,7 +233,7 @@ public abstract class AbstractPool
     }
 
     public String getAllMonitoredAttrbuteValues() {
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
         synchronized (list) {
             sbuf.append("createdCount=").append(createdCount).append(";")
                 .append("destroyedCount=").append(destroyedCount).append(";")
@@ -543,7 +245,7 @@ public abstract class AbstractPool
     }
     
     public String getAllAttrValues() {
-        StringBuffer sbuf = new StringBuffer();
+        StringBuilder sbuf = new StringBuilder();
         if(null != poolName)
             sbuf.append(":").append(poolName);
         else
@@ -561,13 +263,13 @@ public abstract class AbstractPool
     }
     
     protected void unregisterProbeProvider () {
-            try {
-                ProbeProviderFactory probeFactory = EjbContainerUtilImpl.getInstance().getProbeProviderFactory();
-                probeFactory.unregisterProbeProvider(poolProbeNotifier);
-            } catch (Exception ex) {
-                if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, "Error getting the EjbPoolProbeProvider");
-                }
+        try {
+            ProbeProviderFactory probeFactory = EjbContainerUtilImpl.getInstance().getProbeProviderFactory();
+            probeFactory.unregisterProbeProvider(poolProbeNotifier);
+        } catch (Exception ex) {
+            if (_logger.isLoggable(Level.FINE)) {
+                _logger.log(Level.FINE, "Error getting the EjbPoolProbeProvider");
             }
+        }
     }
 }

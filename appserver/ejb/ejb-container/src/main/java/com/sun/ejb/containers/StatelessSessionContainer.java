@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.ejb.containers;
 
@@ -63,6 +64,7 @@ import org.glassfish.ejb.deployment.descriptor.runtime.IASEjbExtraDescriptors;
 import com.sun.ejb.ComponentContext;
 import com.sun.ejb.EjbInvocation;
 import com.sun.ejb.containers.util.pool.AbstractPool;
+import com.sun.ejb.containers.util.pool.BlockingPool;
 import com.sun.ejb.containers.util.pool.NonBlockingPool;
 import com.sun.ejb.containers.util.pool.ObjectFactory;
 import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
@@ -255,10 +257,19 @@ public class StatelessSessionContainer
 
         poolProp = new PoolProperties(ejbContainer, beanPoolDes);
         String val = ejbDescriptor.getEjbBundleDescriptor().getEnterpriseBeansProperty(SINGLETON_BEAN_POOL_PROP);
-        pool= new NonBlockingPool(getContainerId(), ejbDescriptor.getName(),
-           sessionCtxFactory, poolProp.steadyPoolSize,
-           poolProp.poolResizeQuantity, poolProp.maxPoolSize,
-           poolProp.poolIdleTimeoutInSeconds, loader, Boolean.parseBoolean(val));
+        if(beanPoolDes.getMaxWaitTimeInMillis() != -1) {
+            pool= new BlockingPool(getContainerId(), ejbDescriptor.getName(),
+                sessionCtxFactory, poolProp.steadyPoolSize,
+                poolProp.poolResizeQuantity, poolProp.maxPoolSize,
+                poolProp.poolIdleTimeoutInSeconds, loader, Boolean.parseBoolean(val),
+                beanPoolDes.getMaxWaitTimeInMillis());
+        }
+        else {
+            pool= new NonBlockingPool(getContainerId(), ejbDescriptor.getName(),
+                sessionCtxFactory, poolProp.steadyPoolSize,
+                poolProp.poolResizeQuantity, poolProp.maxPoolSize,
+                poolProp.poolIdleTimeoutInSeconds, loader, Boolean.parseBoolean(val));
+        }
     }
 
     protected void registerMonitorableComponents() {
