@@ -171,7 +171,7 @@ public class SendAsadminCommand implements AdminCommand
             for (InstanceDescriptor instance : instances) {
                 for (String target : splitTargets) {
                     // Just match on the name for now, and only send the command to Micro instances
-                    if (instance.getInstanceName().equals(target) && instance.isMicroInstance()) {
+                    if (instance.getInstanceName().equalsIgnoreCase(target) && instance.isMicroInstance()) {
                         targetInstanceGuids.add(instance.getMemberUUID());
                         break;
                     }
@@ -182,7 +182,6 @@ public class SendAsadminCommand implements AdminCommand
                 // Only send the command to Micro instances
                 if (instance.isMicroInstance()) {
                     targetInstanceGuids.add(instance.getMemberUUID());
-                    break;
                 }
             }
         }
@@ -194,32 +193,38 @@ public class SendAsadminCommand implements AdminCommand
         String primaryParameter = "";
         int primaryParameterIndex = 0;
         
-        for (int i = 0; i < parameters.length - 1; i++) {          
-            // If the parameter does not contain an "=" sign, then this may be the command's primary parameter
+        List<String> parsedParameters = new ArrayList<>();
+        
+        for (int i = 0; i < parameters.length; i++) {          
+            // If the parameter does not contain an "=" sign, then this may be the command's primary parameter, otherwise 
+            // just add it to the list
             if (!parameters[i].contains("=")) {
                 // If it contains "--", then this is not the command's primary parameter
                 if (parameters[i].contains("--")) {
-                    // Append the next parameter to this one to make a complete parameter
-                    parameters[i] = parameters[i] + "=" + parameters[i + 1];
-                    // Set the next parameter to nothing
-                    parameters[i + 1] = "";
-                    // Skip the next, now empty, parameter
+                    // Append the next parameter to this one to make a complete parameter and add it to the List
+                    parsedParameters.add(parameters[i] + "=" + parameters[i + 1]);
+                    // Skip the next parameter as we've already added it
                     i++;
                 } else if (primaryParameter.equals("")) {
-                    // If this is the primary parameter, grab it's index and String for use later
+                    // If this is the primary parameter, grab it for use later
                     primaryParameter = parameters[i];
-                    primaryParameterIndex = i;
                 } else {
                     throw new IllegalArgumentException("Parameter " + parameters[i] + "was not prepended with \"--\", and "
                             + "a primary parameter has already been identified: " + primaryParameter);
                 }
-            } 
+            } else {
+                parsedParameters.add(parameters[i]);
+            }
         }           
-
-        // If we've identified a primary parameter, move it to the end of the array
+        
+        // Convert the parsedParameters to an array, adding the primary parameter to the end if we found one
         if (!primaryParameter.equals("")) {
-            parameters[primaryParameterIndex] = parameters[parameters.length - 1];
+            parameters = new String[parsedParameters.size() + 1];
+            parameters = parsedParameters.toArray(parameters);
             parameters[parameters.length - 1] = primaryParameter;
+        } else {
+            parameters = new String[parsedParameters.size()];
+            parameters = parsedParameters.toArray(parameters);
         }
         
         return parameters;
