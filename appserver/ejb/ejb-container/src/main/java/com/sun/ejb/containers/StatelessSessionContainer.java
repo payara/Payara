@@ -71,8 +71,10 @@ import com.sun.ejb.monitoring.stats.EjbMonitoringStatsProvider;
 import com.sun.ejb.monitoring.stats.EjbPoolStatsProvider;
 import com.sun.ejb.monitoring.stats.StatelessSessionBeanStatsProvider;
 import com.sun.enterprise.admin.monitor.callflow.ComponentType;
+import com.sun.enterprise.deployment.DescriptorConstants;
 import com.sun.enterprise.deployment.LifecycleCallbackDescriptor.CallbackType;
 import com.sun.enterprise.deployment.runtime.BeanPoolDescriptor;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.SecurityManager;
 
 /** This class provides container functionality specific to stateless 
@@ -250,19 +252,19 @@ public class StatelessSessionContainer
     protected void createBeanPool() {
         ObjectFactory sessionCtxFactory = new SessionContextFactory();
 
-                iased = ejbDescriptor.getIASEjbExtraDescriptors();
+        iased = ejbDescriptor.getIASEjbExtraDescriptors();
         if( iased != null) {
             beanPoolDes = iased.getBeanPool();
         }
 
         poolProp = new PoolProperties(ejbContainer, beanPoolDes);
         String val = ejbDescriptor.getEjbBundleDescriptor().getEnterpriseBeansProperty(SINGLETON_BEAN_POOL_PROP);
-        if(beanPoolDes.getMaxWaitTimeInMillis() != -1) {
+        if(poolProp.maxWaitTimeInMillis != -1) {
             pool= new BlockingPool(getContainerId(), ejbDescriptor.getName(),
                 sessionCtxFactory, poolProp.steadyPoolSize,
                 poolProp.poolResizeQuantity, poolProp.maxPoolSize,
                 poolProp.poolIdleTimeoutInSeconds, loader, Boolean.parseBoolean(val),
-                beanPoolDes.getMaxWaitTimeInMillis());
+                poolProp.maxWaitTimeInMillis);
         }
         else {
             pool= new NonBlockingPool(getContainerId(), ejbDescriptor.getName(),
@@ -770,6 +772,8 @@ public class StatelessSessionContainer
 
     private static class PoolProperties {
         int maxPoolSize;
+        int maxWaitTimeInMillis = Integer.getInteger(String.format("fish.payara.ejb-container.%s", RuntimeTagNames.MAX_WAIT_TIME_IN_MILLIS),
+                                                     DescriptorConstants.MAX_WAIT_TIME_DEFAULT);
         int poolIdleTimeoutInSeconds;
         int poolResizeQuantity;
         int steadyPoolSize;
@@ -784,7 +788,7 @@ public class StatelessSessionContainer
             steadyPoolSize = Integer.parseInt(
                 ejbContainer.getSteadyPoolSize());
             if(beanPoolDes != null) {
-                int temp = 0;
+                int temp;
                 if (( temp = beanPoolDes.getMaxPoolSize()) != -1) {
                         maxPoolSize = temp;
                 }
@@ -797,6 +801,9 @@ public class StatelessSessionContainer
                 }
                 if (( temp = beanPoolDes.getSteadyPoolSize()) != -1) {
                         steadyPoolSize = temp;
+                }
+                if (( temp = beanPoolDes.getMaxWaitTimeInMillis()) != -1) {
+                        maxWaitTimeInMillis = temp;
                 }
             }
         }
