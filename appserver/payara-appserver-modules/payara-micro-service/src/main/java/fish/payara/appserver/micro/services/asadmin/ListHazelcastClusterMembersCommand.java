@@ -81,7 +81,7 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
             Set<InstanceDescriptor> instances = payaraInstance.getClusteredPayaras();
         
             // Create the table headers
-            String[] headers = {"Instance Name", "Instance Type", "Host Name", "HTTP Ports", 
+            String[] headers = {"Instance Name", "Instance Group", "Instance Type", "Host Name", "HTTP Ports", 
                 "HTTPS Ports", "Admin Port", "Hazelcast Port", "Lite Member", "Deployed Applications"};
             ColumnFormatter columnFormatter = new ColumnFormatter(headers);
 
@@ -119,29 +119,30 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
     }  
     
     private void populateMembers(List members, InstanceDescriptor instance, ColumnFormatter columnFormatter) {
-        Object values[] = new Object[9];
+        Object values[] = new Object[10];
         values[0] = instance.getInstanceName();
-        values[1] = instance.getInstanceType();
-        values[2] = instance.getHostName();
+        values[1] = instance.getInstanceGroup();
+        values[2] = instance.getInstanceType();
+        values[3] = instance.getHostName();
         if (instance.getHttpPorts().isEmpty()) {
-            values[3] = "Disabled";
+            values[4] = "Disabled";
         } else {
             // Remove the bookended braces and add to the values array
-            values[3] = instance.getHttpPorts().toString().substring(1, 
+            values[4] = instance.getHttpPorts().toString().substring(1, 
                     instance.getHttpPorts().toString().length() - 1);
         }
 
         if (instance.getHttpsPorts().isEmpty()) {
-            values[4] = "Disabled";
+            values[5] = "Disabled";
         } else {
             // Remove the bookended braces and add to the values array
-            values[4] = instance.getHttpsPorts().toString().substring(1, 
+            values[5] = instance.getHttpsPorts().toString().substring(1, 
                     instance.getHttpsPorts().toString().length() - 1);
         }
 
-        values[5] = instance.getAdminPort();
-        values[6] = instance.getHazelcastPort();
-        values[7] = instance.isLiteMember();
+        values[6] = instance.getAdminPort();
+        values[7] = instance.getHazelcastPort();
+        values[8] = instance.isLiteMember();
 
         // Find the deployed applications, remove the bookended braces, and add to the values array
         List<String> applications = new ArrayList<>();
@@ -150,11 +151,11 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
             for (ApplicationDescriptor application : applicationDescriptors) {
                 applications.add(application.getName());
             }
-            values[8] = Arrays.toString(applications.toArray()).substring(1, 
+            values[9] = Arrays.toString(applications.toArray()).substring(1, 
                     Arrays.toString(applications.toArray()).length() - 1);
         } else {
             // Just return nothing if no applications found
-            values[8] = "";
+            values[9] = "";
         }
 
         // Add the information to the console output table
@@ -163,14 +164,15 @@ public class ListHazelcastClusterMembersCommand implements AdminCommand
         // Add the information to the command output
         Map<String, Object> map = new HashMap<>(7);
         map.put("instanceName", values[0]);
-        map.put("instanceType", values[1]);
-        map.put("hostName", values[2]);
-        map.put("httpPorts", values[3]);
-        map.put("httpsPorts", values[4]);
-        map.put("adminPort", values[5]);
-        map.put("hazelcastPort", values[6]);
-        map.put("liteMember", values[7]);
-        map.put("applications", values[8]);
+        map.put("instanceGroup", values[1]);
+        map.put("instanceType", values[2]);
+        map.put("hostName", values[3]);
+        map.put("httpPorts", values[4]);
+        map.put("httpsPorts", values[5]);
+        map.put("adminPort", values[6]);
+        map.put("hazelcastPort", values[7]);
+        map.put("liteMember", values[8]);
+        map.put("applications", values[9]);
 
         members.add(map);
     }

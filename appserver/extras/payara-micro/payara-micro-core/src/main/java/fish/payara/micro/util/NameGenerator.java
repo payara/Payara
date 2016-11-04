@@ -17,7 +17,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class NameGenerator
 {
     private final String[] adjectives = new String[]{"Adorable", "Adventurous", "Aggressive", "Alert", "Beautiful", 
-            "Blue-eyed", "Bloody", "Blushing", "Bright", "Clear", "Cloudy", "Colorful", "Crowded", "Cute", "Dark", 
+            "Blue-eyed", "Bloody", "Blushing", "Bright", "Clear", "Cloudy", "Colourful", "Crowded", "Cute", "Dark", 
             "Drab", "Distinct", "Dull", "Elegant", "Excited", "Fancy", "Filthy", "Glamorous", "Gleaming", "Gorgeous", 
             "Graceful", "Grotesque", "Handsome", "Heavy", "Homely", "Light", "Magnificent", "Misty", "Motionless", "Muddy", 
             "Old-fashioned", "Plain", "Poised", "Precious", "Quaint", "Shiny", "Sparkling", "Spotless", "Stormy", 
