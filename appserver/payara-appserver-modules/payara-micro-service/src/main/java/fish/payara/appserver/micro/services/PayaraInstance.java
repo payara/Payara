@@ -93,6 +93,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
     private String myCurrentID;
 
     private String instanceName;
+    private String instanceGroup;
 
     private InstanceDescriptor me;
     
@@ -292,6 +293,8 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         if (hazelcast.isEnabled()) {
             instanceName = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
                     HazelcastCore.INSTANCE_ATTRIBUTE);
+            instanceGroup = hazelcast.getInstance().getCluster().getLocalMember().getStringAttribute(
+                    HazelcastCore.INSTANCE_GROUP_ATTRIBUTE);
             myCurrentID = hazelcast.getInstance().getCluster().getLocalMember().getUuid();
             liteMember = hazelcast.getInstance().getCluster().getLocalMember().isLiteMember();
             hazelcastPort = hazelcast.getInstance().getCluster().getLocalMember().getSocketAddress().getPort();
@@ -347,6 +350,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
             }
             me = new InstanceDescriptor(myCurrentID);
             me.setInstanceName(instanceName);
+            me.setInstanceGroup(instanceGroup);
             for (int port : ports) {
                 me.addHttpPort(port);
             }

@@ -141,7 +141,9 @@ public class PayaraMicro {
     private boolean enableRequestTracing = false;
     private String requestTracingThresholdUnit = "SECONDS";
     private long requestTracingThresholdValue = 30;
-       
+    private String instanceGroup = "MicroShoal";
+    private boolean nameIsGenerated = true;   
+    
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
      *
@@ -457,6 +459,7 @@ public class PayaraMicro {
         if (isRunning()) {
             throw new IllegalStateException("Payara Micro is already running, setting attributes has no effect");
         }
+        nameIsGenerated = false;
         this.instanceName = instanceName;
         return this;
     }
@@ -851,6 +854,15 @@ public class PayaraMicro {
         return this;
     }
 
+    public String getInstanceGroup() {
+        return instanceGroup;
+    }
+    
+    public PayaraMicro setInstanceGroup(String instanceGroup) {
+        this.instanceGroup = instanceGroup;
+        return this;
+    }
+    
     /**
      * Boots the Payara Micro Server. All parameters are checked at this point
      *
@@ -869,6 +881,7 @@ public class PayaraMicro {
         // check hazelcast cluster overrides
         MulticastConfiguration mc = new MulticastConfiguration();
         mc.setMemberName(instanceName);
+        mc.setMemberGroup(instanceGroup);
         if (hzPort > Integer.MIN_VALUE) {
             mc.setMulticastPort(hzPort);
         }
@@ -1121,25 +1134,29 @@ public class PayaraMicro {
             logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
 
             // Check the generated name is unique
-            HazelcastCore hazelcast = gf.getService(HazelcastCore.class);
-            Set<Member> clusterMembers = hazelcast.getInstance().getCluster().getMembers();
-            List<String> takenNames = new ArrayList<>();
-            for (Member member : clusterMembers) {
-                if (member != hazelcast.getInstance().getCluster().getLocalMember()) {
-                    takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+            if (nameIsGenerated) {
+                HazelcastCore hazelcast = gf.getService(HazelcastCore.class);
+                Set<Member> clusterMembers = hazelcast.getInstance().getCluster().getMembers();
+                List<String> takenNames = new ArrayList<>();
+                for (Member member : clusterMembers) {
+                    if (member != hazelcast.getInstance().getCluster().getLocalMember() && 
+                            member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
+                                    instanceGroup)) {
+                        takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
+                    }
+                }
+
+                if (takenNames.contains(instanceName)) {
+                    NameGenerator nameGenerator = new NameGenerator();
+                    instanceName = nameGenerator.generateUniqueName(takenNames, 
+                            hazelcast.getInstance().getCluster().getLocalMember().getUuid());
+                    hazelcast.getInstance().getCluster().getLocalMember().setStringAttribute(
+                            HazelcastCore.INSTANCE_ATTRIBUTE, instanceName);
+                    Events events = gf.getService(Events.class);
+                    events.send(new EventListener.Event(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE));
                 }
             }
-            
-            if (takenNames.contains(instanceName)) {
-                NameGenerator nameGenerator = new NameGenerator();
-                instanceName = nameGenerator.generateUniqueName(takenNames, 
-                        hazelcast.getInstance().getCluster().getLocalMember().getUuid());
-                hazelcast.getInstance().getCluster().getLocalMember().setStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE, 
-                        instanceName);
-                Events events = gf.getService(Events.class);
-                events.send(new EventListener.Event(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE));
-            }
-            
+
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
@@ -1328,7 +1345,12 @@ public class PayaraMicro {
                         i++;
                         break;
                     case "--name":
+                        nameIsGenerated = false;
                         instanceName = args[i + 1];
+                        i++;
+                        break;
+                    case "--instanceGroup":
+                        instanceGroup = args[i + 1];
                         i++;
                         break;
                     case "--deploymentDir":
@@ -2080,6 +2102,12 @@ public class PayaraMicro {
         String name = System.getProperty("payaramicro.name");
         if (name != null && !name.isEmpty()) {
             instanceName = name;
+            nameIsGenerated = false;
+        }
+        
+        String instanceGroupName = System.getProperty("payaramicro.instanceGroup");
+        if (instanceGroupName != null && !instanceGroupName.isEmpty()) {
+            instanceGroup = instanceGroupName;
         }
     }
 
@@ -2200,6 +2228,7 @@ public class PayaraMicro {
             }
 
             props.setProperty("payaramicro.name", instanceName);
+            props.setProperty("payaramicro.instanceGroup", instanceGroup);
 
             if (rootDir != null) {
                 props.setProperty("payaramicro.rootDir", rootDir.getAbsolutePath());

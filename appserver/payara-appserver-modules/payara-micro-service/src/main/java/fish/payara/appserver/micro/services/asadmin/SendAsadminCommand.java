@@ -80,6 +80,15 @@ public class SendAsadminCommand implements AdminCommand
             // Get the subset of targets if provided, otherwise just get all clustered Micro instances
             List<String> targetInstanceGuids = getTargetGuids(targets);
             
+            // Add any explicit targets to our list of target GUIDS
+            targetInstanceGuids.addAll(getExplicitTargetGUIDS(explicitTargets));
+            
+            if (targetInstanceGuids.isEmpty()) {
+                actionReport.setMessage("No targets match!");
+                actionReport.setActionExitCode(ExitCode.FAILURE);
+                throw new IllegalArgumentException("No targets match!");
+            }
+            
             // Get the command parameters if provided, otherwise initialise to an empty String
             if (parameters != null) {
                 parameters = parseParameters(parameters);
@@ -163,21 +172,66 @@ public class SendAsadminCommand implements AdminCommand
         // Get all of the clustered instances
         Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
         
-        // Get the Micro instances that match the targets if provided, otherwise just get all Micro instances
+        // Get the Micro instances that match the targets if provided, otherwise just get all Micro instances if no 
+        // explicit targets have been defined
         if (targets != null) {
             // Split the targets into an array to separate them out
             String[] splitTargets = targets.split(",");
 
             for (InstanceDescriptor instance : instances) {
                 for (String target : splitTargets) {
-                    // Just match on the name for now, and only send the command to Micro instances
-                    if (instance.getInstanceName().equalsIgnoreCase(target) && instance.isMicroInstance()) {
-                        targetInstanceGuids.add(instance.getMemberUUID());
-                        break;
-                    }
+                    // Split the group from the instance name if a group has been provided, otherwise just match instances
+                    if (target.contains(":")) {
+                        String splitTarget[] = target.split(":");
+                        String targetGroup = splitTarget[0];
+                        String targetInstance = splitTarget[1];
+                        
+                        // Get the target GUIDS, taking into account wildcards
+                        if (targetGroup.equals("*")) {
+                            if (targetInstance.equals(("*"))) {
+                                // Match everything
+                                if (instance.isMicroInstance()) {
+                                    targetInstanceGuids.add(instance.getMemberUUID());
+                                }
+                            } else {
+                                // Match on instance name only
+                                if (instance.getInstanceName().equalsIgnoreCase(target) && instance.isMicroInstance()) {
+                                    targetInstanceGuids.add(instance.getMemberUUID());
+                                    break;
+                                }
+                            }   
+                        } else if (targetInstance.equals(("*"))) {
+                            // Match on group name only
+                            if (instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && instance.isMicroInstance()) {
+                                targetInstanceGuids.add(instance.getMemberUUID());
+                                break;
+                            }   
+                        } else {
+                            // Match on group and instance name
+                            if ((instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && 
+                                    instance.getInstanceName().equalsIgnoreCase(targetInstance)) && 
+                                    instance.isMicroInstance()) {
+                                targetInstanceGuids.add(instance.getMemberUUID());
+                                break;
+                            }
+                        }
+                    } else {
+                        // Match everything
+                        if (target.equals(("*"))) {
+                            if (instance.isMicroInstance()) {
+                                targetInstanceGuids.add(instance.getMemberUUID());
+                            }
+                        } else {
+                            // Match on instance name
+                            if (instance.getInstanceName().equalsIgnoreCase(target) && instance.isMicroInstance()) {
+                                targetInstanceGuids.add(instance.getMemberUUID());
+                                break;
+                            }
+                        } 
+                    }                    
                 }
             }
-        } else {
+        } else if (explicitTargets.length == 0) {
             for (InstanceDescriptor instance : instances) {
                 // Only send the command to Micro instances
                 if (instance.isMicroInstance()) {
@@ -189,9 +243,46 @@ public class SendAsadminCommand implements AdminCommand
         return targetInstanceGuids;
     }
     
+    private List<String> getExplicitTargetGUIDS(String[] explicitTargets) {
+        List<String> targetGuids = new ArrayList<>();
+        
+        // Get all of the clustered instances
+        Set<InstanceDescriptor> instances = payaraMicro.getClusteredPayaras();
+        
+        // Loop through all instances to find any matching targets and add them to the list
+        for (String explicitTarget : explicitTargets) {
+            // Split the target into its individual components
+            String[] explicitTargetComponents = explicitTarget.split(":");
+            if (explicitTargetComponents.length == 3) {
+                String host = explicitTargetComponents[0];
+                String portNumber = explicitTargetComponents[1];
+                String instanceName = explicitTargetComponents[2];
+                
+                for (InstanceDescriptor instance : instances) {
+                    // Check if this instance's host name (or IP address), hazelcast port number, and name match
+                    if ((instance.getHostName().getHostName().equals(host) || 
+                            instance.getHostName().getHostAddress().equals(host)) && 
+                            Integer.toString(instance.getHazelcastPort()).equals(portNumber) && 
+                            instance.getInstanceName().equalsIgnoreCase(instanceName)) {
+                        targetGuids.add(instance.getMemberUUID());
+                        // We've found an instance that matches a target, so remove it from the list and move on to the 
+                        // next target
+                        instances.remove(instance);
+                        break;
+                    }
+                }
+            } else {
+                throw new IllegalArgumentException("Explicit target needs to take the form of: "
+                        + "hostOrIpAddress:hazelcastPort:instanceName"
+                        + "\nMake sure there are exactly 3 colons (\":\")");
+            }
+        }
+        
+        return targetGuids;
+    }
+    
     private String[] parseParameters(String[] parameters) throws IllegalArgumentException {
         String primaryParameter = "";
-        int primaryParameterIndex = 0;
         
         List<String> parsedParameters = new ArrayList<>();
         
