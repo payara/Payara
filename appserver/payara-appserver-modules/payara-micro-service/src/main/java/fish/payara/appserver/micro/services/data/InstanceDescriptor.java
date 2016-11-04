@@ -255,10 +255,18 @@ public class InstanceDescriptor implements Serializable {
         return adminPort;
     }
     
+    /**
+     * Gets the instance group name
+     * @return The instance group name
+     */
     public String getInstanceGroup() {
         return instanceGroup;
     }
     
+    /**
+     * Sets the instance group name
+     * @param instanceGroup The instance group name
+     */
     public void setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
     }

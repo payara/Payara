@@ -1,7 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ * 
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
+ * or packager/legal/LICENSE.txt.  See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at packager/legal/LICENSE.txt.
  */
 package fish.payara.appserver.micro.services.asadmin;
 
@@ -37,7 +48,7 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- *
+ * Sends an asadmin command to members of the Domain Hazelcast Cluster
  * @author Andrew Pielage
  */
 @Service(name = "send-asadmin-command")
@@ -83,9 +94,8 @@ public class SendAsadminCommand implements AdminCommand
             // Add any explicit targets to our list of target GUIDS
             targetInstanceGuids.addAll(getExplicitTargetGUIDS(explicitTargets));
             
+            // If no targets have been found, throw an exception and fail out
             if (targetInstanceGuids.isEmpty()) {
-                actionReport.setMessage("No targets match!");
-                actionReport.setActionExitCode(ExitCode.FAILURE);
                 throw new IllegalArgumentException("No targets match!");
             }
             
@@ -166,6 +176,11 @@ public class SendAsadminCommand implements AdminCommand
         }
     }  
     
+    /**
+     * Gets the GUIDs of the instances in the cluster that match the targets specified by the --targets option
+     * @param targets The targets to match
+     * @return A list containing the GUIDS of all matching instances
+     */
     private List<String> getTargetGuids(String targets) {
         List<String> targetInstanceGuids = new ArrayList<>();
         
@@ -243,6 +258,11 @@ public class SendAsadminCommand implements AdminCommand
         return targetInstanceGuids;
     }
     
+    /**
+     * Gets the GUIDs of the instances in the cluster that match the targets specified by the --explicitTarget option
+     * @param explicitTargets The explicit targets
+     * @return A list containing the GUIDs of the matched targets
+     */
     private List<String> getExplicitTargetGUIDS(String[] explicitTargets) {
         List<String> targetGuids = new ArrayList<>();
         
@@ -281,11 +301,16 @@ public class SendAsadminCommand implements AdminCommand
         return targetGuids;
     }
     
-    private String[] parseParameters(String[] parameters) throws IllegalArgumentException {
+    /**
+     * Helper method to parse the parameters into a usable format
+     * @param parameters The parameters to parse
+     * @return A String array containing the parsed parameters in a usable format
+     */
+    private String[] parseParameters(String[] parameters) {
         String primaryParameter = "";
-        
         List<String> parsedParameters = new ArrayList<>();
         
+        // Loop through all provided parameters and parse them
         for (int i = 0; i < parameters.length; i++) {          
             // If the parameter does not contain an "=" sign, then this may be the command's primary parameter, otherwise 
             // just add it to the list
@@ -300,6 +325,7 @@ public class SendAsadminCommand implements AdminCommand
                     // If this is the primary parameter, grab it for use later
                     primaryParameter = parameters[i];
                 } else {
+                    // If we've reached here, that means a primary parameter has already been found, so fail out
                     throw new IllegalArgumentException("Parameter " + parameters[i] + "was not prepended with \"--\", and "
                             + "a primary parameter has already been identified: " + primaryParameter);
                 }

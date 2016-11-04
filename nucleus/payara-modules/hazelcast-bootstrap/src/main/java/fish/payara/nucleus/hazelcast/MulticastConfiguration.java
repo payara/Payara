@@ -17,7 +17,6 @@
  */
 package fish.payara.nucleus.hazelcast;
 
-import java.io.File;
 import java.net.URI;
 
 /**
