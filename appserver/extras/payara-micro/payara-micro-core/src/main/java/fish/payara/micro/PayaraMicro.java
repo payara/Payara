@@ -854,10 +854,19 @@ public class PayaraMicro {
         return this;
     }
 
+    /**
+     * Gets the name of the instance group
+     * @return The name of the instance group
+     */
     public String getInstanceGroup() {
         return instanceGroup;
     }
     
+    /**
+     * Sets the instance group name
+     * @param instanceGroup The instance group name
+     * @return 
+     */
     public PayaraMicro setInstanceGroup(String instanceGroup) {
         this.instanceGroup = instanceGroup;
         return this;
@@ -1137,6 +1146,9 @@ public class PayaraMicro {
             if (nameIsGenerated) {
                 HazelcastCore hazelcast = gf.getService(HazelcastCore.class);
                 Set<Member> clusterMembers = hazelcast.getInstance().getCluster().getMembers();
+                
+                // If the instance name was generated, we need to compile a list of all the instance names in use within 
+                // the instance group, excluding this local instance
                 List<String> takenNames = new ArrayList<>();
                 for (Member member : clusterMembers) {
                     if (member != hazelcast.getInstance().getCluster().getLocalMember() && 
@@ -1146,12 +1158,15 @@ public class PayaraMicro {
                     }
                 }
 
+                // If our generated name is already in use within the instance group, either generate a new one or set the 
+                // name to this instance's UUID if there are no more unique generated options left
                 if (takenNames.contains(instanceName)) {
                     NameGenerator nameGenerator = new NameGenerator();
                     instanceName = nameGenerator.generateUniqueName(takenNames, 
                             hazelcast.getInstance().getCluster().getLocalMember().getUuid());
                     hazelcast.getInstance().getCluster().getLocalMember().setStringAttribute(
                             HazelcastCore.INSTANCE_ATTRIBUTE, instanceName);
+                    // Fire off an event so that the instance descriptor in the Payara Micro Service can update itself
                     Events events = gf.getService(Events.class);
                     events.send(new EventListener.Event(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE));
                 }
@@ -1571,6 +1586,7 @@ public class PayaraMicro {
                                 + "  --clusterPassword <cluster-password> sets the Cluster Group Password\n"
                                 + "  --startPort <cluster-start-port-number> sets the cluster start port number\n"
                                 + "  --name <instance-name> sets the instance name\n"
+                                + "  --instanceGroup <instance-group-name> Sets the name of the instance group\n"
                                 + "  --rootDir <directory-path> Sets the root configuration directory and saves the configuration across restarts\n"
                                 + "  --deploymentDir <directory-path> if set to a valid directory all war files in this directory will be deployed\n"
                                 + "  --deploy <file-path> specifies a war file to deploy\n"
