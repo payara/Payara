@@ -112,7 +112,6 @@ public class SendAsadminCommand implements AdminCommand
             
             // Check the command results for any failures
             if (results != null) {
-                List<String> successMessages = new ArrayList<>();
                 List<String> warningMessages = new ArrayList<>();
                 List<String> failureMessages = new ArrayList<>();
                 for (Future<ClusterCommandResult> result : results.values()) {
@@ -121,38 +120,29 @@ public class SendAsadminCommand implements AdminCommand
                         CommandResult commandResult = result.get();
                         switch (commandResult.getExitStatus())
                         {
-                            case SUCCESS:
-                                successMessages.add(commandResult.getOutput());
-                                break;
                             case WARNING:
                                 // If one of the commands has not already failed, set the exit code as WARNING
                                 if (actionReport.getActionExitCode() != ExitCode.FAILURE) {
                                     actionReport.setActionExitCode(ExitCode.WARNING);
                                 }
-                                warningMessages.add(commandResult.getOutput());
+                                // We only want to get the message, not the formatter name or exit code
+                                String warningMessage = commandResult.getOutput().split("WARNING")[1];
+                                failureMessages.add(warningMessage);
                                 break;
                             case FAILURE:
                                 actionReport.setActionExitCode(ExitCode.FAILURE);
-                                failureMessages.add(commandResult.getOutput());
+                                // We only want to get the message, not the formatter name or exit code
+                                String failureMessage = commandResult.getOutput().split("FAILURE")[1];
+                                failureMessages.add(failureMessage);
                                 break;
                         }
                     }
                     catch (InterruptedException | ExecutionException ex)
                     {
-                        Logger.getLogger(SendAsadminCommand.class.getName()).log(Level.SEVERE, null, ex);
+                        actionReport.setActionExitCode(ExitCode.FAILURE);
+                        actionReport.failure(Logger.getLogger(SendAsadminCommand.class.getName()), 
+                                "Ran into an exception during execution: \n", ex);
                     }
-                }
-                
-                for (String successMessage : successMessages) {
-                    System.out.println(successMessage);
-                }
-                
-                for (String warningMessage : warningMessages) {
-                    System.out.println(warningMessage);
-                }
-                
-                for (String failureMessage : failureMessages) {
-                    System.out.println(failureMessage);
                 }
                 
                 switch (actionReport.getActionExitCode()) {
@@ -160,11 +150,16 @@ public class SendAsadminCommand implements AdminCommand
                         actionReport.setMessage("Command executed successfully");
                         break;
                     case WARNING:
-                        actionReport.setMessage("Command completed with warnings: " + 
-                                Arrays.toString(warningMessages.toArray()));
+                        actionReport.setMessage("Command completed with warnings: ");
+                        for (String warningMessage : warningMessages) {
+                            actionReport.appendMessage("\n" + warningMessage);
+                        }
                         break;
                     case FAILURE:
-                        actionReport.setMessage("Failures reported: " + Arrays.toString(failureMessages.toArray()));
+                        actionReport.setMessage("Failures reported: ");
+                        for (String failureMessage : failureMessages) {
+                            actionReport.appendMessage("\n" + failureMessage);
+                        }
                         break;
                 }
             } else {
