@@ -153,7 +153,7 @@ public class RequestEventStoreTest {
         eventStore.storeEvent(new RequestEvent("Test"));
         eventStore.storeEvent(new RequestEvent(EventType.TRACE_END, "End"));
         assertEquals(3, eventStore.getTrace().getTrace().size());
-        assertTrue(eventStore.getElapsedTime() >= 100);
+        assertTrue(eventStore.getElapsedTime() >= 90);
     }
     
     

@@ -283,7 +283,12 @@ final class StandardContextValve
         // START CR 6415120
         if (request.getCheckRestrictedResources()) {
         // END CR 6415120
-            String requestPathDC = Paths.get(hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET)).normalize().toString().toUpperCase();
+            // PAYARA-989 Help Windows find index.jsf by removing the double slash
+            String requestPath = hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET);
+            if (requestPath.equals("//index.jsf")) {
+                requestPath = requestPath.replace("//", "/");
+            }
+            String requestPathDC = Paths.get(requestPath).normalize().toString().toUpperCase();
             if ((requestPathDC.startsWith("/META-INF/", 0))
                     || (requestPathDC.equalsIgnoreCase("/META-INF"))
                     || (requestPathDC.startsWith("/WEB-INF/", 0))
