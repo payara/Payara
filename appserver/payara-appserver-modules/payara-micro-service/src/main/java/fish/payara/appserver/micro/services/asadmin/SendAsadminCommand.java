@@ -21,13 +21,11 @@ import fish.payara.appserver.micro.services.PayaraInstance;
 import fish.payara.appserver.micro.services.command.ClusterCommandResult;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.inject.Inject;
 import org.glassfish.api.ActionReport;
@@ -193,37 +191,45 @@ public class SendAsadminCommand implements AdminCommand
                     // Split the group from the instance name if a group has been provided, otherwise just match instances
                     if (target.contains(":")) {
                         String splitTarget[] = target.split(":");
-                        String targetGroup = splitTarget[0];
-                        String targetInstance = splitTarget[1];
-                        
-                        // Get the target GUIDS, taking into account wildcards
-                        if (targetGroup.equals("*")) {
-                            if (targetInstance.equals(("*"))) {
-                                // Match everything
-                                if (instance.isMicroInstance()) {
+                        // Make sure it's in the correct format
+                        if (splitTarget.length == 2) {
+                            String targetGroup = splitTarget[0];
+                            String targetInstance = splitTarget[1];
+
+                            // Get the target GUIDS, taking into account wildcards
+                            if (targetGroup.equals("*")) {
+                                if (targetInstance.equals(("*"))) {
+                                    // Match everything
+                                    if (instance.isMicroInstance()) {
+                                        targetInstanceGuids.add(instance.getMemberUUID());
+                                    }
+                                } else {
+                                    // Match on instance name only
+                                    if (instance.getInstanceName().equalsIgnoreCase(target) && 
+                                            instance.isMicroInstance()) {
+                                        targetInstanceGuids.add(instance.getMemberUUID());
+                                        break;
+                                    }
+                                }   
+                            } else if (targetInstance.equals(("*"))) {
+                                // Match on group name only
+                                if (instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && 
+                                        instance.isMicroInstance()) {
                                     targetInstanceGuids.add(instance.getMemberUUID());
-                                }
+                                    break;
+                                }   
                             } else {
-                                // Match on instance name only
-                                if (instance.getInstanceName().equalsIgnoreCase(target) && instance.isMicroInstance()) {
+                                // Match on group and instance name
+                                if ((instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && 
+                                        instance.getInstanceName().equalsIgnoreCase(targetInstance)) && 
+                                        instance.isMicroInstance()) {
                                     targetInstanceGuids.add(instance.getMemberUUID());
                                     break;
                                 }
-                            }   
-                        } else if (targetInstance.equals(("*"))) {
-                            // Match on group name only
-                            if (instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && instance.isMicroInstance()) {
-                                targetInstanceGuids.add(instance.getMemberUUID());
-                                break;
-                            }   
-                        } else {
-                            // Match on group and instance name
-                            if ((instance.getInstanceGroup().equalsIgnoreCase(targetGroup) && 
-                                    instance.getInstanceName().equalsIgnoreCase(targetInstance)) && 
-                                    instance.isMicroInstance()) {
-                                targetInstanceGuids.add(instance.getMemberUUID());
-                                break;
                             }
+                        } else {
+                            throw new IllegalArgumentException("Target contains more than one colon \":\", "
+                                    + "this is not allowed");
                         }
                     } else {
                         // Match everything
@@ -237,8 +243,8 @@ public class SendAsadminCommand implements AdminCommand
                                 targetInstanceGuids.add(instance.getMemberUUID());
                                 break;
                             }
-                        } 
-                    }                    
+                        }
+                    }
                 }
             }
         } else if (explicitTargets.length == 0) {
