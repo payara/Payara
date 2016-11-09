@@ -25,9 +25,9 @@ import fish.payara.nucleus.notification.NotificationEventBus;
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotificationServiceConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
-import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactory;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.ActionReport;
 import org.glassfish.api.I18n;
@@ -40,12 +40,12 @@ import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.internal.api.Target;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 import org.jvnet.hk2.config.SingleConfigCode;
 import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
-import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -87,9 +87,6 @@ public class NotificationNotifierConfigurer implements AdminCommand {
     protected Target targetUtil;
 
     @Inject
-    private NotifierConfigurationExecutionOptionsFactory factory;
-
-    @Inject
     private NotificationEventBus eventBus;
 
     @Param(name = "dynamic", optional = true, defaultValue = "false")
@@ -106,6 +103,9 @@ public class NotificationNotifierConfigurer implements AdminCommand {
 
     @Inject
     ServiceLocator serviceLocator;
+
+    @Inject
+    NotifierConfigurationExecutionOptionsFactoryStore factoryStore;
 
     @Override
     public void execute(AdminCommandContext context) {
@@ -163,7 +163,10 @@ public class NotificationNotifierConfigurer implements AdminCommand {
             
             if (dynamic) {
                 NotifierConfiguration dynamicNotifier = notificationServiceConfiguration.getNotifierConfigurationByType(notifierService.getNotifierConfigType());
-                NotifierConfigurationExecutionOptions build = factory.build(dynamicNotifier);
+                ConfigView view = ConfigSupport.getImpl(dynamicNotifier);
+                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                NotifierConfigurationExecutionOptions build = factoryStore.get(annotation.type()).build(dynamicNotifier);
+
                 if (server.isDas()) {
                     if (targetUtil.getConfig(target).isDas()) {
                         if (notifierEnabled) {

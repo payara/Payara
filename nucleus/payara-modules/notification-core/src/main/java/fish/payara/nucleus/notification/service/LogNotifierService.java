@@ -19,10 +19,10 @@ import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.LogNotificationEvent;
 import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
 import java.text.MessageFormat;
 import java.util.logging.Logger;
 
@@ -35,9 +35,10 @@ public class LogNotifierService extends BaseNotifierService<LogNotificationEvent
 
     private Logger logger = Logger.getLogger(LogNotifierService.class.getCanonicalName());
 
-    @PostConstruct
-    void postConstruct() {
-        register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class, this);
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            register(NotifierType.LOG, LogNotifier.class, LogNotifierConfiguration.class, this);
+        }
     }
 
     @Override

@@ -36,28 +36,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.LogNotificationEvent;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import javax.annotation.PostConstruct;
+import java.util.logging.Level;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class LogNotificationEventFactory extends NotificationEventFactory<LogNotificationEvent> {
 
-    @Attribute
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.LOG, this);
+    }
 
-    @Attribute
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    public LogNotificationEvent buildNotificationEvent(long elapsedTime, String requestEventStr) {
+        LogNotificationEvent event = new LogNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setLevel(Level.INFO);
+        event.setMessage(requestEventStr);
+
+        return event;
+    }
 }
