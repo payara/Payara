@@ -38,26 +38,13 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import java.lang.annotation.*;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
- * @author mertcaliskan
+ * Created by mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
-
-    @Attribute
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
-
-    @Attribute
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface NotifierConfigurationType {
+    NotifierType type();
 }

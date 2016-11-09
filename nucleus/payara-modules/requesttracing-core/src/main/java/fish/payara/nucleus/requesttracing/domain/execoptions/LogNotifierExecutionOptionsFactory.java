@@ -13,26 +13,29 @@
  */
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.LogNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.annotations.Contract;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import javax.inject.Inject;
+import javax.annotation.PostConstruct;
 
 /**
- * Factory class that translates notifier configurations into notifier execution options.
- *
  * @author mertcaliskan
  */
-@Contract
-public abstract class NotifierExecutionOptionsFactory<N extends Notifier> {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class LogNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<LogNotifier> {
 
-    @Inject
-    private NotifierExecutionOptionsFactoryStore store;
-
-    public void register(NotifierType notifierType, NotifierExecutionOptionsFactory notifierExecutionOptionsFactory) {
-        store.register(notifierType, notifierExecutionOptionsFactory);
+    @PostConstruct
+    void postConstruct() {
+        register(NotifierType.LOG, this);
     }
 
-    public abstract NotifierExecutionOptions build(N n);
+    public NotifierExecutionOptions build(LogNotifier notifier) {
+        LogNotifierExecutionOptions executionOptions = new LogNotifierExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        return executionOptions;
+    }
 }
