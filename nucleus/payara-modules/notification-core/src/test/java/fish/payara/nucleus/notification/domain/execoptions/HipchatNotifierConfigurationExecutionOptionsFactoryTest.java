@@ -13,15 +13,18 @@
  */
 package fish.payara.nucleus.notification.domain.execoptions;
 
+import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -29,20 +32,11 @@ import static org.mockito.Mockito.when;
  * @author mertcaliskan
  */
 @RunWith(MockitoJUnitRunner.class)
-public class NotifierConfigurationExecutionOptionsFactoryTest {
+public class HipchatNotifierConfigurationExecutionOptionsFactoryTest {
 
-    NotifierConfigurationExecutionOptionsFactory factory = new NotifierConfigurationExecutionOptionsFactory();
-
-    @Test
-    public void notifierConfigurationExecutionOptionBuildsSuccessfullyForLog() {
-        LogNotifierConfiguration logNotifierConfiguration = mock(LogNotifierConfiguration.class);
-        when(logNotifierConfiguration.getEnabled()).thenReturn("true");
-
-        LogNotifierConfigurationExecutionOptions executionOptions = factory.build(logNotifierConfiguration);
-
-        assertThat(executionOptions.getNotifierType(), is(NotifierType.LOG));
-        assertThat(executionOptions.isEnabled(), is(true));
-    }
+    @InjectMocks
+    HipchatNotifierConfigurationExecutionOptionsFactoryMock factory =
+            new HipchatNotifierConfigurationExecutionOptionsFactoryMock();
 
     @Test
     public void notifierConfigurationExecutionOptionBuildsSuccessfullyForHipchat() {
@@ -57,5 +51,12 @@ public class NotifierConfigurationExecutionOptionsFactoryTest {
         assertThat(executionOptions.isEnabled(), is(true));
         assertThat(executionOptions.getRoomName(), is("room1"));
         assertThat(executionOptions.getToken(), is("token1"));
+    }
+}
+
+class HipchatNotifierConfigurationExecutionOptionsFactoryMock extends HipchatNotifierConfigurationExecutionOptionsFactory {
+
+    public NotifierConfigurationExecutionOptionsFactoryStore getStore() {
+        return mock(NotifierConfigurationExecutionOptionsFactoryStore.class);
     }
 }

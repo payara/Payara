@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,28 +37,30 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import org.jvnet.hk2.annotations.Contract;
 
-import java.beans.PropertyVetoException;
+import javax.inject.Inject;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@Contract
+public abstract class NotificationEventFactory<E extends NotificationEvent> {
 
-    @Attribute
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    @Inject
+    NotificationEventFactoryStore store;
 
-    @Attribute
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    protected void registerEventFactory(NotifierType type, NotificationEventFactory notificationEventFactory) {
+        getStore().register(type, notificationEventFactory);
+    }
+
+    public abstract E buildNotificationEvent(long elapsedTime, String requestEventStr);
+
+    public NotificationEventFactoryStore getStore() {
+        return store;
+    }
 }
