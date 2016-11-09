@@ -39,55 +39,80 @@
  */
 package fish.payara.nucleus.notification.service;
 
-import com.google.common.eventbus.Subscribe;
-import fish.payara.nucleus.notification.configuration.HipchatNotifier;
-import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.HipchatNotificationEvent;
 import fish.payara.nucleus.notification.domain.execoptions.HipchatNotifierConfigurationExecutionOptions;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
-@Service(name = "service-hipchat")
-@RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierService extends BaseNotifierService<HipchatNotificationEvent, HipchatNotifier, HipchatNotifierConfiguration> {
+public class HipchatNotificationRunnable implements Runnable {
 
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
-    private String PREFIX = "hipchat-notification-";
+    private Logger logger = Logger.getLogger(HipchatNotifierService.class.getCanonicalName());
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
-        }
+    private static final String HTTP_PROTOCOL = "POST";
+    private static final String ACCEPT_TYPE = "text/plain";
+    private static final String ENDPOINT = "https://api.hipchat.com";
+    private static final String RESOURCE = "/v2/room/{0}/notification?auth_token={1}";
+
+    private HipchatNotifierConfigurationExecutionOptions executionOptions;
+    private String userMessage;
+    private String message;
+
+    HipchatNotificationRunnable(HipchatNotifierConfigurationExecutionOptions executionOptions,
+                                String userMessage,
+                                String message) {
+
+        this.executionOptions = executionOptions;
+        this.userMessage = userMessage;
+        this.message = message;
     }
 
     @Override
-    @Subscribe
-    public void handleNotification(HipchatNotificationEvent event) {
-        HipchatNotifierConfigurationExecutionOptions executionOptions =
-                (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        new Thread(new HipchatNotificationRunnable(executionOptions,
-                        event.getUserMessage(),
-                        event.getMessage()), PREFIX + threadNumber.getAndIncrement())
-                .start();
+    public void run() {
+        String urlStr = MessageFormat.format(RESOURCE, executionOptions.getRoomName(), executionOptions.getToken());
+        try {
+            URL url = new URL(concatenateEndpoint(urlStr));
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod(HTTP_PROTOCOL);
+            conn.setRequestProperty("Content-Type", ACCEPT_TYPE);
+            conn.connect();
+
+            try(OutputStream outputStream = conn.getOutputStream()) {
+                outputStream.write((userMessage + " - " + message).getBytes());
+                outputStream.flush();
+
+                if (conn.getResponseCode() != 204) {
+                    logger.log(Level.SEVERE,
+                            "Error occurred while connecting HipChat. Check your room name and token. http response code",
+                            conn.getResponseCode());
+                }
+            }
+
+        }
+        catch (MalformedURLException e) {
+            logger.log(Level.SEVERE, "Error occurred while accessing URL: " + concatenateEndpoint(urlStr), e);
+        }
+        catch (ProtocolException e) {
+            logger.log(Level.SEVERE, "Specified URL is not accepting protocol defined: " + HTTP_PROTOCOL, e);
+        }
+        catch (IOException e) {
+            logger.log(Level.SEVERE, "IO Error while accessing URL: " + concatenateEndpoint(urlStr), e);
+        }
     }
+
+
+    private String concatenateEndpoint(String urlStr) {
+        return ENDPOINT + urlStr;
+    }
+
 }
