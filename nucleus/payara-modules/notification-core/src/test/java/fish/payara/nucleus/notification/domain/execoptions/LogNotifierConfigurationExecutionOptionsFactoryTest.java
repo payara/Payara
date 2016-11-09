@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,28 +37,49 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain.execoptions;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.NotificationService;
+import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
-import java.beans.PropertyVetoException;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@RunWith(MockitoJUnitRunner.class)
+public class LogNotifierConfigurationExecutionOptionsFactoryTest {
 
-    @Attribute
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    @Mock
+    NotifierConfigurationExecutionOptionsFactoryStore factoryStore;
 
-    @Attribute
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    @InjectMocks
+    LogNotifierConfigurationExecutionOptionsFactoryMock factory = new LogNotifierConfigurationExecutionOptionsFactoryMock();
+
+    @Test
+    public void notifierConfigurationExecutionOptionBuildsSuccessfullyForLog() {
+        LogNotifierConfiguration logNotifierConfiguration = mock(LogNotifierConfiguration.class);
+        when(logNotifierConfiguration.getEnabled()).thenReturn("true");
+
+        LogNotifierConfigurationExecutionOptions executionOptions = factory.build(logNotifierConfiguration);
+
+        assertThat(executionOptions.getNotifierType(), is(NotifierType.LOG));
+        assertThat(executionOptions.isEnabled(), is(true));
+    }
+}
+
+class LogNotifierConfigurationExecutionOptionsFactoryMock extends LogNotifierConfigurationExecutionOptionsFactory {
+
+    public NotifierConfigurationExecutionOptionsFactoryStore getStore() {
+        return mock(NotifierConfigurationExecutionOptionsFactoryStore.class);
+    }
 }

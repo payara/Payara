@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,28 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing.domain.execoptions;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class NotifierExecutionOptionsFactoryStore {
 
-    @Attribute
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    private Map<NotifierType, NotifierExecutionOptionsFactory> execOptionsFactoryStore =
+            new HashMap<NotifierType, NotifierExecutionOptionsFactory>();
 
-    @Attribute
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    public NotifierExecutionOptionsFactory<Notifier> get(NotifierType type) {
+        return execOptionsFactoryStore.get(type);
+    }
+
+    public void register(NotifierType notifierType, NotifierExecutionOptionsFactory executionOptionsFactory) {
+        execOptionsFactoryStore.put(notifierType, executionOptionsFactory);
+    }
 }

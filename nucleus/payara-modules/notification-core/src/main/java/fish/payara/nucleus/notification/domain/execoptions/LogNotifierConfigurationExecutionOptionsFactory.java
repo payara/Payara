@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,28 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain.execoptions;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.api.Rank;
+import org.glassfish.hk2.api.ServiceHandle;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.glassfish.hk2.runlevel.Sorter;
+import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import javax.annotation.PostConstruct;
+import java.util.List;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class LogNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<LogNotifierConfiguration, LogNotifierConfigurationExecutionOptions> {
 
-    @Attribute
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.LOG, this);
+    }
 
-    @Attribute
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    @Override
+    public LogNotifierConfigurationExecutionOptions build(LogNotifierConfiguration notifierConfiguration) {
+        LogNotifierConfigurationExecutionOptions executionOptions = new LogNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+
+        return executionOptions;
+    }
 }
