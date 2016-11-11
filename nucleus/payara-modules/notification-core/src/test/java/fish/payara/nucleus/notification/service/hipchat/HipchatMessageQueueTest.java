@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,40 +36,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.domain.execoptions;
+package fish.payara.nucleus.notification.service.hipchat;
 
-import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.grizzly.utils.Charsets;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import org.junit.Before;
+import org.junit.Test;
 
-import javax.annotation.PostConstruct;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import java.util.NoSuchElementException;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierConfigurationExecutionOptionsFactory
-        extends NotifierConfigurationExecutionOptionsFactory<HipchatNotifierConfiguration, HipchatNotifierConfigurationExecutionOptions> {
+public class HipchatMessageQueueTest {
 
-    @PostConstruct
-    void postConstruct() {
-        registerExecutionOptions(NotifierType.HIPCHAT, this);
+    HipchatMessageQueue queue;
+
+    @Before
+    public void setup() {
+        queue = new HipchatMessageQueue();
     }
 
-    @Override
-    public HipchatNotifierConfigurationExecutionOptions build(HipchatNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
-        HipchatNotifierConfigurationExecutionOptions executionOptions = new HipchatNotifierConfigurationExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-        String roomName = notifierConfiguration.getRoomName();
-        executionOptions.setRoomName(URLDecoder.decode(roomName, Charsets.UTF8_CHARSET.displayName()));
-        executionOptions.setToken(notifierConfiguration.getToken());
+    @Test
+    public void messageSentToQueueSuccessfully() {
+        queue.addHipchatMessage(new HipchatMessage("hello world"));
 
-        return executionOptions;
+        assertThat(queue.size(), is(1));
     }
+    @Test
+    public void messageSentAndRetrievedSuccessfully() {
+        queue.addHipchatMessage(new HipchatMessage("hello world"));
+        HipchatMessage message = queue.getHipchatMessage();
+
+        assertThat(message.getMessage(), is("hello world"));
+        assertThat(queue.size(), is(0));
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void emptyQueueThrowsException() {
+        assertThat(queue.size(), is(0));
+        queue.getHipchatMessage();
+    }
+
 }
