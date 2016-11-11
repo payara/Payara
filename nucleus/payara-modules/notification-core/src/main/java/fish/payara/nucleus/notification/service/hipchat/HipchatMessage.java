@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,40 +36,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.domain.execoptions;
-
-import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.grizzly.utils.Charsets;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+package fish.payara.nucleus.notification.service.hipchat;
 
 /**
- * @author mertcaliskan
+ * Created by mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierConfigurationExecutionOptionsFactory
-        extends NotifierConfigurationExecutionOptionsFactory<HipchatNotifierConfiguration, HipchatNotifierConfigurationExecutionOptions> {
+public class HipchatMessage {
 
-    @PostConstruct
-    void postConstruct() {
-        registerExecutionOptions(NotifierType.HIPCHAT, this);
+    private String message;
+
+    public HipchatMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
     }
 
     @Override
-    public HipchatNotifierConfigurationExecutionOptions build(HipchatNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
-        HipchatNotifierConfigurationExecutionOptions executionOptions = new HipchatNotifierConfigurationExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-        String roomName = notifierConfiguration.getRoomName();
-        executionOptions.setRoomName(URLDecoder.decode(roomName, Charsets.UTF8_CHARSET.displayName()));
-        executionOptions.setToken(notifierConfiguration.getToken());
-
-        return executionOptions;
+    public String toString() {
+        return "HipchatMessage{" +
+                "message='" + message + '\'' +
+                '}';
     }
 }
