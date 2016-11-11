@@ -45,6 +45,7 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
 import org.jvnet.hk2.annotations.Contract;
 
 import javax.inject.Inject;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author mertcaliskan
@@ -56,7 +57,7 @@ public abstract class NotifierConfigurationExecutionOptionsFactory<NC extends No
     @Inject
     protected NotifierConfigurationExecutionOptionsFactoryStore store;
 
-    public abstract EO build(NC nc);
+    public abstract EO build(NC nc) throws UnsupportedEncodingException;
 
     protected void registerExecutionOptions(NotifierType notifierType,
                                             NotifierConfigurationExecutionOptionsFactory executionOptionsFactory) {

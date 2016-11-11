@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,57 +36,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.notification.service.hipchat;
 
-import com.google.common.eventbus.Subscribe;
-import fish.payara.nucleus.notification.configuration.HipchatNotifier;
-import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.HipchatNotificationEvent;
-import fish.payara.nucleus.notification.domain.execoptions.HipchatNotifierConfigurationExecutionOptions;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
- * @author mertcaliskan
+ * Created by mertcaliskan
  */
-@Service(name = "service-hipchat")
+@Service
 @RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierService extends BaseNotifierService<HipchatNotificationEvent, HipchatNotifier, HipchatNotifierConfiguration> {
+public class HipchatMessageQueue {
 
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
-    private String PREFIX = "hipchat-notification-";
+    private Queue<HipchatMessage> messageQueue = new LinkedList<>();
 
-    public void event(Event event) {
-        if (event.is(EventTypes.SERVER_READY)) {
-            register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
-        }
+    public void addHipchatMessage(HipchatMessage message) {
+        messageQueue.add(message);
     }
 
-    @Override
-    @Subscribe
-    public void handleNotification(HipchatNotificationEvent event) {
-        HipchatNotifierConfigurationExecutionOptions executionOptions =
-                (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
-        new Thread(new HipchatNotificationRunnable(executionOptions,
-                        event.getUserMessage(),
-                        event.getMessage()), PREFIX + threadNumber.getAndIncrement())
-                .start();
+    public HipchatMessage getHipchatMessage() {
+        return messageQueue.remove();
+    }
+
+    public int size() {
+        return messageQueue.size();
     }
 }

@@ -82,7 +82,7 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
         events.register(this);
     }
 
-    void register(NotifierType type, Class<C> notifierType, Class<NC> notifierConfigType, BaseNotifierService service) {
+    protected void register(NotifierType type, Class<C> notifierType, Class<NC> notifierConfigType, BaseNotifierService service) {
         this.type = type;
         this.notifierType = notifierType;
         this.notifierConfigType = notifierConfigType;
@@ -105,7 +105,7 @@ public abstract class BaseNotifierService<E extends NotificationEvent,
         return type;
     }
 
-    protected NotifierConfigurationExecutionOptions getNotifierConfigurationExecutionOptions() {
+    public NotifierConfigurationExecutionOptions getNotifierConfigurationExecutionOptions() {
         return notificationService.getExecutionOptions().getNotifierConfigurationExecutionOptionsList().get(type);
     }
 }
