@@ -4,7 +4,7 @@
     <parent>
         <groupId>fish.payara.extras.payara-micro</groupId>
         <artifactId>payara-micro-parent</artifactId>
-        <version>4.1.1.164-SNAPSHOT</version>
+        <version>4.1.1.164</version>
     </parent>
     <artifactId>payara-microprofile-distribution</artifactId>
     <name>Payara MicroProfile Distribution</name>    
@@ -831,7 +831,7 @@
         </dependency>
         <!-- Add Payara Micro Services -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.appserver.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

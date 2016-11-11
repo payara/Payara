@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.featuresets</groupId>
         <artifactId>featuresets</artifactId>
-        <version>4.1.1.164-SNAPSHOT</version>
+        <version>4.1.1.164</version>
     </parent>
     <artifactId>payara-web</artifactId>
     <name>Payara Web Featureset</name>
@@ -169,6 +169,13 @@
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>jmx-monitoring-package</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+        <!-- payara micro -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>payara-micro</artifactId>
             <version>${project.version}</version>
             <type>zip</type>
         </dependency>

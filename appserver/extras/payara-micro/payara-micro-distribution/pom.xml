@@ -47,11 +47,11 @@
   <parent>
     <groupId>fish.payara.extras.payara-micro</groupId>
     <artifactId>payara-micro-parent</artifactId>
-    <version>4.1.1.164-SNAPSHOT</version>
+    <version>4.1.1.164</version>
   </parent>
   
   <artifactId>payara-micro-distribution</artifactId>
-  <version>4.1.1.164-SNAPSHOT</version>
+  <version>4.1.1.164</version>
   <name>Payara Micro Distribution</name>
   <packaging>jar</packaging>
 
@@ -333,7 +333,7 @@
         </dependency>
         <!-- Add Payara Micro Services -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.appserver.micro</groupId>
             <artifactId>payara-micro-service</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
@@ -394,6 +394,12 @@
             <artifactId>hazelcast-ejb-timer</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <!-- PAYARA-1081 -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
       </dependencies>
     <profiles>

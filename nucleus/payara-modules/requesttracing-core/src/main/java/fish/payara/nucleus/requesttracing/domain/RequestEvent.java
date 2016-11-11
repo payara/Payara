@@ -21,7 +21,7 @@ import java.util.UUID;
  *
  * Event class that stores traced values.
  */
-public class RequestEvent implements Comparable<RequestEvent> {
+public class RequestEvent {
 
     private final UUID id;
     private UUID conversationId;
@@ -37,7 +37,7 @@ public class RequestEvent implements Comparable<RequestEvent> {
 
     public RequestEvent(EventType eventType, String eventName) {
         this.id = UUID.randomUUID();
-        this.timestamp = System.currentTimeMillis();
+        this.timestamp = System.nanoTime();
         this.eventType = eventType;
         this.eventName = eventName;
     }
@@ -104,16 +104,5 @@ public class RequestEvent implements Comparable<RequestEvent> {
         result.append("\"traceTime=\":\"").append(traceTime).append('"');
         result.append('}');
         return result.toString();
-    }
-
-    /**
-     * sort request traces in descending order according to the timestamp.
-     * it means that the latest occurring trace will be on top.
-     *
-     * @param o
-     * @return
-     */
-    public int compareTo(RequestEvent o) {
-        return this.timestamp > o.timestamp ? 1 : -1;
     }
 }

@@ -71,6 +71,8 @@ import javax.resource.ResourceException;
  */
 public class ConnectionHolder40 extends ConnectionHolder {
 
+    private static final String NUM_SERVERS = "numServers";
+
     // this class uses LogStrings.properties of the jdbc-core library.
     private static final Logger _logger = LogDomains.getLogger(ConnectionHolder40.class, LogDomains.RSR_LOGGER,
             ConnectionHolder.class.getClassLoader());
@@ -329,7 +331,18 @@ public class ConnectionHolder40 extends ConnectionHolder {
             sce.setStackTrace(sqe.getStackTrace());
             throw sce;
         }
-        con.setClientInfo(properties);
+        // PAYARA-1127
+        // Starting With h2 version 1.4.192, numServers property is treated as internal property
+        // and it should not be set through client info.
+        if (properties.containsKey(NUM_SERVERS)) {
+            Properties propertiesWithoutNumServers = new Properties();
+            propertiesWithoutNumServers.putAll(properties);
+            propertiesWithoutNumServers.remove(NUM_SERVERS);
+            con.setClientInfo(propertiesWithoutNumServers);
+        }
+        else {
+            con.setClientInfo(properties);
+        }
     }
 
     /**

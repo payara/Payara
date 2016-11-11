@@ -73,6 +73,7 @@ import org.jboss.weld.bootstrap.spi.CDI11Deployment;
 import org.jboss.weld.bootstrap.spi.Metadata;
 
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.util.DOLUtils;
 
 /*
  * Represents a deployment of a CDI (Weld) application.
@@ -525,9 +526,10 @@ public class DeploymentImpl implements CDI11Deployment {
             if (libDir != null && !libDir.isEmpty()) {
                 Enumeration<String> entries = archive.entries(libDir);
                 while (entries.hasMoreElements()) {
-                    String entryName = entries.nextElement();
+                    final String entryName = entries.nextElement();
+
                     // if a jar is directly in lib dir and not WEB-INF/lib/foo/bar.jar
-                    if (entryName.endsWith(JAR_SUFFIX) &&
+                    if (DOLUtils.isScanningAllowed(holder.app, entryName) && entryName.endsWith(JAR_SUFFIX) &&
                         entryName.indexOf(SEPARATOR_CHAR, libDir.length() + 1 ) == -1 ) {
                         try {
                             ReadableArchive jarInLib = archive.getSubArchive(entryName);

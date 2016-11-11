@@ -675,7 +675,7 @@ public class WebModule extends PwcWebModule implements Context {
         Iterable<ServletContainerInitializer> allInitializers =
             ServletContainerInitializerUtil.getServletContainerInitializers(
                 webFragmentMap, orderingList, hasOthers,
-                wmInfo.getAppClassLoader());
+                wmInfo.getAppClassLoader(), webBundleDescriptor.getServletInitializersEnabled());
         setServletContainerInitializerInterestList(allInitializers);
 
         DeploymentContext dc = getWebModuleConfig().getDeploymentContext();

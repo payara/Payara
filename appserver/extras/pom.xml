@@ -46,7 +46,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.164-SNAPSHOT</version>
+        <version>4.1.1.164</version>
     </parent>
     <groupId>org.glassfish.main.extras</groupId>
     <artifactId>extras</artifactId>
@@ -57,6 +57,7 @@
         <!--module>embedded-shell</module-->
         <module>javaee</module>
         <module>appserv-rt</module>
+        <module>payara-micro</module>
     </modules>
 
     <profiles>
@@ -85,19 +86,6 @@
             <modules>
                 <module>payara-micro</module>
                 <module>embedded</module>
-            </modules>
-        </profile>
-       
-        <!-- Profile to build Payara Micro -->
-        <profile>
-            <id>BuildMicro</id>
-            <activation>
-                <property>
-                    <name>BuildMicro</name>
-                </property>
-            </activation>
-            <modules>
-                <module>payara-micro</module>
             </modules>
         </profile>
     </profiles>

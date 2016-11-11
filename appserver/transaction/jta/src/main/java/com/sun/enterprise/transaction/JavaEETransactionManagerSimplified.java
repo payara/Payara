@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+//Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
 
 // Portions Copyright [2016] [Payara Foundation and/or its affiliates.]
 
@@ -549,7 +550,7 @@ public class JavaEETransactionManagerSimplified
             try {
                 h.getXAResource().end(tx.getLocalXid(), flag);
             } catch ( XAException ex ) {
-                throw new RuntimeException(sm.getString("enterprise_distributedtx.xaresource_end_excep", ex));
+                throw new RuntimeException(sm.getString("enterprise_distributedtx.xaresource_end_excep", ex),ex);
             }
             return true;
         }
