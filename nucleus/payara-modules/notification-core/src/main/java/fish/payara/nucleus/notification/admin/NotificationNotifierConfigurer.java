@@ -46,6 +46,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 
 import javax.inject.Inject;
 import java.beans.PropertyVetoException;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -192,7 +193,7 @@ public class NotificationNotifierConfigurer implements AdminCommand {
 
             actionReport.appendMessage(strings.getLocalString("notification.configure.notifier.added.configured",
                     "Notifier with name {0} is registered and set enabled to {1}.", notifierName, notifierEnabled) + "\n");
-        } catch (TransactionFailure ex) {
+        } catch (TransactionFailure | UnsupportedEncodingException ex) {
             logger.log(Level.WARNING, "Exception during command ", ex);
             actionReport.setMessage(ex.getCause().getMessage());
             actionReport.setActionExitCode(ActionReport.ExitCode.FAILURE);
