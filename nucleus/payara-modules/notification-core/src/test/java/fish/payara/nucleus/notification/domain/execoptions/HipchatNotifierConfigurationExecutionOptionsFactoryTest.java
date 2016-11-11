@@ -22,6 +22,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.io.UnsupportedEncodingException;
+
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -39,7 +41,7 @@ public class HipchatNotifierConfigurationExecutionOptionsFactoryTest {
             new HipchatNotifierConfigurationExecutionOptionsFactoryMock();
 
     @Test
-    public void notifierConfigurationExecutionOptionBuildsSuccessfullyForHipchat() {
+    public void notifierConfigurationExecutionOptionBuildsSuccessfullyForHipchat() throws UnsupportedEncodingException {
         HipchatNotifierConfiguration hipchatNotifierConfiguration = mock(HipchatNotifierConfiguration.class);
         when(hipchatNotifierConfiguration.getEnabled()).thenReturn("true");
         when(hipchatNotifierConfiguration.getRoomName()).thenReturn("room1");

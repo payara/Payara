@@ -37,40 +37,62 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.domain.execoptions;
+package fish.payara.nucleus.notification.service.hipchat;
 
+import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.HipchatNotificationEvent;
+import fish.payara.nucleus.notification.domain.execoptions.HipchatNotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.service.BaseNotifierService;
 import org.glassfish.api.StartupRunLevel;
-import org.glassfish.grizzly.utils.Charsets;
+import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import javax.annotation.PostConstruct;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
+import javax.inject.Inject;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
-@Service
+@Service(name = "service-hipchat")
 @RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierConfigurationExecutionOptionsFactory
-        extends NotifierConfigurationExecutionOptionsFactory<HipchatNotifierConfiguration, HipchatNotifierConfigurationExecutionOptions> {
+public class HipchatNotifierService extends BaseNotifierService<HipchatNotificationEvent, HipchatNotifier, HipchatNotifierConfiguration> {
 
-    @PostConstruct
-    void postConstruct() {
-        registerExecutionOptions(NotifierType.HIPCHAT, this);
+    private static final String PREFIX = "hipchat-message-consumer-";
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    ScheduledExecutorService executor;
+    @Inject
+    private HipchatMessageQueue queue;
+
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
+
+            executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+                public Thread newThread(Runnable r) {
+                    return new Thread(r, PREFIX + threadNumber.getAndIncrement());
+                }
+            });
+            executor.scheduleWithFixedDelay(new HipchatNotificationRunnable(queue,
+                    (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()),
+                    0,
+                    500,
+                    TimeUnit.MILLISECONDS);
+        }
     }
 
     @Override
-    public HipchatNotifierConfigurationExecutionOptions build(HipchatNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
-        HipchatNotifierConfigurationExecutionOptions executionOptions = new HipchatNotifierConfigurationExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
-        String roomName = notifierConfiguration.getRoomName();
-        executionOptions.setRoomName(URLDecoder.decode(roomName, Charsets.UTF8_CHARSET.displayName()));
-        executionOptions.setToken(notifierConfiguration.getToken());
-
-        return executionOptions;
+    @Subscribe
+    public void handleNotification(HipchatNotificationEvent event) {
+        HipchatMessage message = new HipchatMessage(event.getUserMessage() + "\n" + event.getMessage());
+        queue.addHipchatMessage(message);
     }
 }
