@@ -166,6 +166,7 @@ public class SendAsadminCommand implements AdminCommand
             }
         } else {
             actionReport.setMessage("Hazelcast not enabled");
+            actionReport.setActionExitCode(ExitCode.FAILURE);
         }
     }  
     
@@ -205,7 +206,7 @@ public class SendAsadminCommand implements AdminCommand
                                     }
                                 } else {
                                     // Match on instance name only
-                                    if (instance.getInstanceName().equalsIgnoreCase(target) && 
+                                    if (instance.getInstanceName().equalsIgnoreCase(targetInstance) && 
                                             instance.isMicroInstance()) {
                                         targetInstanceGuids.add(instance.getMemberUUID());
                                         break;
