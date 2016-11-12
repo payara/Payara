@@ -36,7 +36,9 @@
  * and therefore, elected the GPL Version 2 license, then the option applies
  * only if the new code is made subject to such option by the copyright
  * holder.
- */package com.sun.enterprise.glassfish.web;
+ */
+
+package com.sun.enterprise.glassfish.web;
 
 import com.google.common.collect.ImmutableSet;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
