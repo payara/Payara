@@ -26,6 +26,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Resource;
+import javax.enterprise.concurrent.ManagedExecutorService;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
@@ -38,55 +40,64 @@ import javax.inject.Inject;
  */
 @ApplicationScoped
 public class ClusteredCDIEventBus implements CDIEventListener {
-    
+
     @Inject
     PayaraMicroRuntime runtime;
-    
+
     @Inject
     BeanManager bm;
-      
+
     @Inject
     @Inbound
     Event<Serializable> clusterEvent;
-    
+
+    @Resource
+    ManagedExecutorService managedExecutorService;
+
     ClassLoader capturedClassLoader;
 
     @Override
-    public void eventReceived(PayaraClusteredCDIEvent event) {
-        ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(capturedClassLoader);
-            Serializable eventPayload = event.getPayload();
-            clusterEvent.fire(eventPayload);
-        } catch (IOException | ClassNotFoundException ex) {
-            Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.FINE, "Received event which could not be deserialized", ex);
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldTCCL);
-        }
+    public void eventReceived(final PayaraClusteredCDIEvent event) {
+        final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+        managedExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+
+                    Thread.currentThread().setContextClassLoader(capturedClassLoader);
+                    Serializable eventPayload = event.getPayload();
+                    clusterEvent.fire(eventPayload);
+                } catch (IOException | ClassNotFoundException ex) {
+                    Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.FINE, "Received event which could not be deserialized", ex);
+                } finally {
+                    Thread.currentThread().setContextClassLoader(oldTCCL);
+                }
+            }
+        });
     }
-    
+
     public void initialize() {
         Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
     }
-    
+
     void onOutboundEvent(@Observes @Outbound Serializable event) {
         PayaraClusteredCDIEvent clusteredEvent;
         try {
-            clusteredEvent = new PayaraClusteredCDIEvent(runtime.getLocalDescriptor(),event);
+            clusteredEvent = new PayaraClusteredCDIEvent(runtime.getLocalDescriptor(), event);
             runtime.publishCDIEvent(clusteredEvent);
         } catch (IOException ex) {
         }
     }
-    
+
     @PostConstruct
     void postConstruct() {
         runtime.addCDIEventListener(this);
         capturedClassLoader = Thread.currentThread().getContextClassLoader();
     }
-    
+
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIEventListener(this);
     }
-    
+
 }
