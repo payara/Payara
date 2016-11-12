@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,24 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.requesttracing;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.SlackNotificationEvent;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import javax.annotation.PostConstruct;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface Notifier extends ConfigBeanProxy {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class SlackNotificationEventFactory extends NotificationEventFactory<SlackNotificationEvent> {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.SLACK, this);
+    }
+
+    public SlackNotificationEvent buildNotificationEvent(long elapsedTime, String requestEventStr) {
+        SlackNotificationEvent event = new SlackNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setMessage(requestEventStr);
+
+        return event;
+    }
 }

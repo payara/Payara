@@ -39,21 +39,29 @@
 package fish.payara.nucleus.notification.configuration;
 
 import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
 import java.beans.PropertyVetoException;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
+ * Configuration class with the aim to configure slack notification specific parameters.
+ * This configuration is only being used by notification services.
  *
  * @author mertcaliskan
  */
 @Configured
-public interface Notifier extends ConfigBeanProxy {
+@NotifierConfigurationType(type = NotifierType.SLACK)
+public interface SlackNotifierConfiguration extends NotifierConfiguration {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    @Attribute
+    String getToken1();
+    void setToken1(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getToken2();
+    void setToken2(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getToken3();
+    void setToken3(String value) throws PropertyVetoException;
 }

@@ -60,14 +60,14 @@ public class HipchatMessageQueueTest {
 
     @Test
     public void messageSentToQueueSuccessfully() {
-        queue.addHipchatMessage(new HipchatMessage("hello world"));
+        queue.addMessage(new HipchatMessage("hello world"));
 
         assertThat(queue.size(), is(1));
     }
     @Test
     public void messageSentAndRetrievedSuccessfully() {
-        queue.addHipchatMessage(new HipchatMessage("hello world"));
-        HipchatMessage message = queue.getHipchatMessage();
+        queue.addMessage(new HipchatMessage("hello world"));
+        HipchatMessage message = queue.getMessage();
 
         assertThat(message.getMessage(), is("hello world"));
         assertThat(queue.size(), is(0));
@@ -76,7 +76,7 @@ public class HipchatMessageQueueTest {
     @Test(expected = NoSuchElementException.class)
     public void emptyQueueThrowsException() {
         assertThat(queue.size(), is(0));
-        queue.getHipchatMessage();
+        queue.getMessage();
     }
 
 }

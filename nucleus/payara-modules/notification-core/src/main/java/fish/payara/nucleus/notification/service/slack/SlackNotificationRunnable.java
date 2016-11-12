@@ -37,11 +37,11 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service.hipchat;
+package fish.payara.nucleus.notification.service.slack;
 
-import fish.payara.nucleus.notification.domain.execoptions.HipchatNotifierConfigurationExecutionOptions;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import fish.payara.nucleus.notification.domain.execoptions.SlackNotifierConfigurationExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationRunnable;
-import org.glassfish.grizzly.utils.Charsets;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -53,11 +53,11 @@ import java.util.logging.Logger;
 /**
  * @author mertcaliskan
  */
-public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMessageQueue, HipchatNotifierConfigurationExecutionOptions> {
+public class SlackNotificationRunnable extends NotificationRunnable<SlackMessageQueue, SlackNotifierConfigurationExecutionOptions> {
 
-    private static Logger logger = Logger.getLogger(HipchatNotificationRunnable.class.getCanonicalName());
+    private static Logger logger = Logger.getLogger(SlackNotificationRunnable.class.getCanonicalName());
 
-    HipchatNotificationRunnable(HipchatMessageQueue queue, HipchatNotifierConfigurationExecutionOptions executionOptions) {
+    public SlackNotificationRunnable(SlackMessageQueue queue, SlackNotifierConfigurationExecutionOptions executionOptions) {
         this.queue = queue;
         this.executionOptions = executionOptions;
     }
@@ -65,18 +65,22 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
     @Override
     public void run() {
         while (queue.size() > 0) {
-            String formattedURL = MessageFormat.format(HIPCHAT_RESOURCE, executionOptions.getRoomName(), executionOptions.getToken());
-            String fullURL = HIPCHAT_ENDPOINT + formattedURL;
+            String formattedURL = MessageFormat.format(SLACK_RESOURCE, executionOptions.getToken1(),
+                    executionOptions.getToken2(),
+                    executionOptions.getToken3());
+            String fullURL = SLACK_ENDPOINT + formattedURL;
             try {
                 URL url = new URL(fullURL);
-                HttpURLConnection connection = createConnection(url, ACCEPT_TYPE_TEXT_PLAIN);
+                HttpURLConnection connection = createConnection(url, ACCEPT_TYPE_JSON);
 
-                HipchatMessage message = queue.getMessage();
-                try (OutputStream outputStream = connection.getOutputStream()) {
-                    outputStream.write((message.getMessage().getBytes(Charsets.UTF8_CHARSET)));
-                    if (connection.getResponseCode() != 204) {
+                SlackMessage message = queue.getMessage();
+                try(OutputStream outputStream = connection.getOutputStream()) {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.writeValue(outputStream, message);
+
+                    if (connection.getResponseCode() != 200) {
                         logger.log(Level.SEVERE,
-                                "Error occurred while connecting Hipchat. Check your room name and token. HTTP response code",
+                                "Error occurred while connecting Slack. Check your tokens. HTTP response code:",
                                 connection.getResponseCode());
                     }
                 }
@@ -98,6 +102,6 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
 
     @Override
     public void uncaughtException(Thread t, Throwable e) {
-        logger.log(Level.SEVERE, "Error occurred consuming hipchat messages from queue", e);
+        logger.log(Level.SEVERE, "Error occurred consuming slack messages from queue", e);
     }
 }
