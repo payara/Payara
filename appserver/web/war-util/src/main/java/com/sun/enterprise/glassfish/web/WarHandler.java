@@ -46,6 +46,7 @@ import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.deployment.xml.RuntimeTagNames;
 import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.util.StringUtils;
@@ -642,7 +643,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         }
                     } else if ("version-identifier".equals(name)) {
                         versionIdentifier = parser.getElementText();
-                    } else if ("whitelist-package".equals(name)) {
+                    } else if (RuntimeTagNames.PAYARA_WHITELIST_PACKAGE.equals(name)) {
                         wbd.addWhitelistPackage(parser.getElementText());
                     } else {
                         skipSubTree(name);
