@@ -36,24 +36,39 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
 
-import java.beans.PropertyVetoException;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface Notifier extends ConfigBeanProxy {
+public abstract class NotificationRunnable<MQ extends MessageQueue, EO extends NotifierConfigurationExecutionOptions>
+        implements Runnable, Thread.UncaughtExceptionHandler {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    protected static final String HTTP_METHOD_POST = "POST";
+    protected static final String ACCEPT_TYPE_JSON = "application/json";
+    protected static final String ACCEPT_TYPE_TEXT_PLAIN = "text/plain";
+
+    protected static final String HIPCHAT_ENDPOINT = "https://api.hipchat.com";
+    protected static final String HIPCHAT_RESOURCE = "/v2/room/{0}/notification?auth_token={1}";
+
+    protected static final String SLACK_ENDPOINT = "https://hooks.slack.com/services";
+    protected static final String SLACK_RESOURCE = "/{0}/{1}/{2}";
+
+    protected MQ queue;
+    protected EO executionOptions;
+
+    protected HttpURLConnection createConnection(URL url, String contentType) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setRequestMethod(HTTP_METHOD_POST);
+        connection.setRequestProperty("Content-Type", contentType);
+        connection.connect();
+        return connection;
+    }
 }

@@ -38,22 +38,15 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
 
-import java.beans.PropertyVetoException;
-
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
+ * Configuration class for attaching slack notification mechanism into.
+ * Health check and Request tracing services enables the use of slack notification mechanism with this notifier configuration.
  *
  * @author mertcaliskan
  */
 @Configured
-public interface Notifier extends ConfigBeanProxy {
-
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+@NotifierConfigurationType(type = NotifierType.SLACK)
+public interface SlackNotifier extends Notifier {
 }
