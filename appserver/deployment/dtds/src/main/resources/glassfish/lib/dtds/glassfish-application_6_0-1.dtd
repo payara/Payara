@@ -54,7 +54,7 @@
 <!--
 This is the root element of the runtime descriptor document.
 -->
-<!ELEMENT glassfish-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?, classloading-delegate?, enable-implicit-cdi?, scanning-exclude*, scanning-include*, property*) >
+<!ELEMENT glassfish-application (web*, pass-by-reference?, unique-id?, security-role-mapping*, realm?, ejb-ref*, resource-ref*, resource-env-ref*, service-ref*, message-destination-ref*, message-destination*, archive-name?, compatibility?, keep-state?, version-identifier?, classloading-delegate?, enable-implicit-cdi?, scanning-exclude*, scanning-include*, whitelist-package*, property*) >
 
 <!ELEMENT web (web-uri, context-root)>
 <!ELEMENT web-uri (#PCDATA)>
@@ -559,6 +559,11 @@ Payara flag to include / exclude specific JARs for CDI scanning inside EAR files
 -->
 <!ELEMENT scanning-exclude (#PCDATA)>
 <!ELEMENT scanning-include (#PCDATA)>
+
+<!--
+Payara flag to enable / specify whitelist for extreme ClassLoader isolation
+-->
+<!ELEMENT whitelist-package (#PCDATA)>
 
 <!-- 
 Syntax for supplying properties as name value pairs 
