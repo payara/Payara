@@ -41,6 +41,7 @@
 
 package org.glassfish.web.deployment.descriptor;
 
+import com.google.common.collect.ImmutableSet;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.types.EjbReference;
@@ -138,6 +139,7 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private Set<String> conflictedMimeMappingExtensions = null;
     private boolean servletInitializersEnabled = true;
+    private final Set<String> whitelistPackages = new HashSet<>();
 
     /**
      * Constrct an empty web app [{0}].
@@ -2234,6 +2236,21 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     @Override
     public void setServletInitializersEnabled(boolean tf) {
         servletInitializersEnabled = tf;
+    }
+
+    @Override
+    public boolean isWhitelistEnabled() {
+        return !whitelistPackages.isEmpty();
+    }
+
+    @Override
+    public Set<String> getWhitelistPackages() {
+        return ImmutableSet.copyOf(whitelistPackages);
+    }
+
+    @Override
+    public void addWhitelistPackage(String aPackage) {
+        whitelistPackages.add(aPackage);
     }
 
 

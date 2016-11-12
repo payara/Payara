@@ -56,11 +56,15 @@
  * limitations under the License.
  */
 // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.loader;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.sun.appserv.BytecodePreprocessor;
 import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -553,14 +557,21 @@ public class WebappClassLoader
      */
     private Class<?> jdbcLeakPreventionResourceClass = null;
 
+    private final WebBundleDescriptor wbd;
+    private static final Set<String> SYSTEM_PACKAGES =
+            ImmutableSet.of("com.sun", "org.glassfish", "org.apache.jasper", "fish.payara", "com.ibm.jbatch",
+                            "org.hibernate.validator", "org.jboss.weld", "com.ctc.wstx");
+
     // ----------------------------------------------------------- Constructors
 
     /**
      * Construct a new ClassLoader with no defined repositories and no
      * parent ClassLoader.
+     * @param wbd
      */
-    public WebappClassLoader() {
+    public WebappClassLoader(WebBundleDescriptor wbd) {
         super(new URL[0]);
+        this.wbd = wbd;
         init();
     }
 
@@ -568,9 +579,12 @@ public class WebappClassLoader
     /**
      * Construct a new ClassLoader with the given parent ClassLoader,
      * but no defined repositories.
+     * @param parent
+     * @param wbd
      */
-    public WebappClassLoader(ClassLoader parent) {
+    public WebappClassLoader(ClassLoader parent, WebBundleDescriptor wbd) {
         super(new URL[0], parent);
+        this.wbd = wbd;
         init();
     }
 
@@ -578,9 +592,13 @@ public class WebappClassLoader
     /**
      * Construct a new ClassLoader with the given parent ClassLoader
      * and defined repositories.
+     * @param urls
+     * @param parent
+     * @param wbd
      */
-    public WebappClassLoader(URL[] urls, ClassLoader parent) {
+    public WebappClassLoader(URL[] urls, ClassLoader parent, WebBundleDescriptor wbd) {
         super(new URL[0], parent);
+        this.wbd = wbd;
 
         if (urls != null && urls.length > 0) {
             for (URL url : urls) {
@@ -591,6 +609,14 @@ public class WebappClassLoader
         init();
     }
 
+    private boolean isWhiteListed(String name) {
+        for(String packageName : Iterables.concat(wbd.getWhitelistPackages(), SYSTEM_PACKAGES)) {
+            if(name.startsWith(packageName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     // ------------------------------------------------------------- Properties
 
@@ -1731,7 +1757,8 @@ public class WebappClassLoader
             delegateLoader = system;
         }
 
-        boolean delegateLoad = delegate || filter(name);
+        boolean isWhitelisted = wbd.isWhitelistEnabled() && isWhiteListed(name);
+        boolean delegateLoad = (delegate && (wbd.isWhitelistEnabled()? isWhitelisted : true)) || filter(name);
 
         // (1) Delegate to our parent if requested
         if (delegateLoad) {
@@ -1774,7 +1801,7 @@ public class WebappClassLoader
         }
 
         // (3) Delegate if class was not found locally
-        if (!delegateLoad) {
+        if (wbd.isWhitelistEnabled()? isWhitelisted : true && !delegateLoad) {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "  Delegating to classloader " + delegateLoader);
             }
@@ -1792,7 +1819,9 @@ public class WebappClassLoader
                 // Ignore
             }
         }
-
+        else if(wbd.isWhitelistEnabled() && !isWhitelisted) {
+            throw new ClassNotFoundException(String.format("Whitelist enabled, but class [%s] is not whitelisted", name));
+        }
         throw new ClassNotFoundException(name);
     }
 

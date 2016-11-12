@@ -45,6 +45,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.HttpService;
 import com.sun.enterprise.config.serverbeans.VirtualServer;
 import com.sun.enterprise.deploy.shared.AbstractArchiveHandler;
+import com.sun.enterprise.deployment.WebBundleDescriptor;
 import com.sun.enterprise.security.perms.SMGlobalPolicyUtil;
 import com.sun.enterprise.security.perms.PermsArchiveDelegate;
 import com.sun.enterprise.util.StringUtils;
@@ -161,7 +162,7 @@ public class WarHandler extends AbstractArchiveHandler {
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifierValue = null;
         try {
-            WebXmlParser webXmlParser = getWebXmlParser(archive);
+            WebXmlParser webXmlParser = getWebXmlParser(archive, new DummyWebBundleDescriptor());
             versionIdentifierValue = webXmlParser.getVersionIdentifier();
         } catch (XMLStreamException e) {
             logger.log(Level.SEVERE, e.getMessage());
@@ -177,11 +178,13 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     @Override
-    public ClassLoader getClassLoader(final ClassLoader parent, DeploymentContext context) {
+    public ClassLoader getClassLoader(final ClassLoader parent, final DeploymentContext context) {
+        WebBundleDescriptor contextWbd = context.getModuleMetaData(WebBundleDescriptor.class);
+        final WebBundleDescriptor wbd = contextWbd == null? new DummyWebBundleDescriptor() : contextWbd;
         WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
             @Override
             public WebappClassLoader run() {
-                return new WebappClassLoader(parent);
+                return new WebappClassLoader(parent, wbd);
             }
         });
         try {
@@ -203,7 +206,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 cloader.addRepository(url.toString());
             }
 
-            WebXmlParser webXmlParser = getWebXmlParser(context.getSource());
+            WebXmlParser webXmlParser = getWebXmlParser(context.getSource(), wbd);
             configureLoaderAttributes(cloader, webXmlParser, base);
             configureLoaderProperties(cloader, webXmlParser, base);
             
@@ -239,7 +242,7 @@ public class WarHandler extends AbstractArchiveHandler {
         return cloader;
     }
 
-    protected WebXmlParser getWebXmlParser(ReadableArchive archive)
+    protected WebXmlParser getWebXmlParser(ReadableArchive archive, WebBundleDescriptor wbd)
             throws XMLStreamException, IOException {
 
         WebXmlParser webXmlParser = null;
@@ -249,18 +252,18 @@ public class WarHandler extends AbstractArchiveHandler {
         if (runtimeAltDDFile != null &&
                 "glassfish-web.xml".equals(runtimeAltDDFile.getPath()) &&
                 runtimeAltDDFile.isFile()) {
-            webXmlParser = new GlassFishWebXmlParser(archive);
+            webXmlParser = new GlassFishWebXmlParser(archive, wbd);
         } else if (!gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
         } else if (archive.exists(GLASSFISH_WEB_XML)) {
-            webXmlParser = new GlassFishWebXmlParser(archive);
+            webXmlParser = new GlassFishWebXmlParser(archive, wbd);
         } else if (archive.exists(SUN_WEB_XML)) {
-            webXmlParser = new SunWebXmlParser(archive);
+            webXmlParser = new SunWebXmlParser(archive, wbd);
         } else if (gfDDOverWLSDD && !ignoreWLSDD && hasWSLDD) {
             webXmlParser = new WeblogicXmlParser(archive);
         } else { // default
             if (gfDDOverWLSDD || ignoreWLSDD) {
-                webXmlParser = new GlassFishWebXmlParser(archive);
+                webXmlParser = new GlassFishWebXmlParser(archive, wbd);
             } else {
                 webXmlParser = new WeblogicXmlParser(archive);
             }
@@ -494,10 +497,12 @@ public class WarHandler extends AbstractArchiveHandler {
         protected String extraClassPath = null;
 
         protected String versionIdentifier = null;
+        protected final WebBundleDescriptor wbd;
 
-        WebXmlParser(ReadableArchive archive) 
+        WebXmlParser(ReadableArchive archive, WebBundleDescriptor wbd)
                 throws XMLStreamException, IOException {
 
+            this.wbd = wbd;
             if (archive.exists(getXmlFileName())) {
                 try (InputStream is = archive.getEntry(getXmlFileName())) {
                     init(is);
@@ -540,11 +545,10 @@ public class WarHandler extends AbstractArchiveHandler {
          * sun-web-app_2_3-0.dtd, and TRUE in the case of
          * sun-web-app_2_4-0.dtd.
          */
-
-        SunWebXmlParser(ReadableArchive archive)
+        SunWebXmlParser(ReadableArchive archive, WebBundleDescriptor wbd)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, wbd);
         }
 
         @Override
@@ -638,6 +642,8 @@ public class WarHandler extends AbstractArchiveHandler {
                         }
                     } else if ("version-identifier".equals(name)) {
                         versionIdentifier = parser.getElementText();
+                    } else if ("whitelist-package".equals(name)) {
+                        wbd.addWhitelistPackage(parser.getElementText());
                     } else {
                         skipSubTree(name);
                     }
@@ -651,11 +657,10 @@ public class WarHandler extends AbstractArchiveHandler {
     }
 
     protected class GlassFishWebXmlParser extends SunWebXmlParser {
-
-        GlassFishWebXmlParser(ReadableArchive archive)
+        GlassFishWebXmlParser(ReadableArchive archive, WebBundleDescriptor wbd)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, wbd);
         }
 
         @Override
@@ -673,7 +678,7 @@ public class WarHandler extends AbstractArchiveHandler {
         WeblogicXmlParser(ReadableArchive archive)
                 throws XMLStreamException, IOException {
 
-            super(archive);
+            super(archive, new DummyWebBundleDescriptor());
         }
 
         @Override

@@ -59,6 +59,7 @@
 package org.apache.catalina.loader;
 
 
+import com.sun.enterprise.glassfish.web.DummyWebBundleDescriptor;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardServer;
@@ -733,7 +734,7 @@ public class WebappLoader
                 classLoader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                     @Override
                     public WebappClassLoader run() {
-                        return new WebappClassLoader(cl);
+                        return new WebappClassLoader(cl, new DummyWebBundleDescriptor());
                     }
                 });
             }

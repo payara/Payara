@@ -769,7 +769,7 @@ public class VirtualServer extends StandardHost
             	
                 if (contextRoot!=null && location != null) {
                     File docroot = new File(location);
-                    WebBundleDescriptorImpl wbd = webArchivist.getDefaultWebXmlBundleDescriptor();
+                    final WebBundleDescriptorImpl wbd = webArchivist.getDefaultWebXmlBundleDescriptor();
                     wmInfo = new WebModuleConfig();
                     wbd.setName(Constants.DEFAULT_WEB_MODULE_NAME);
                     wbd.setContextRoot(contextRoot);
@@ -779,7 +779,7 @@ public class VirtualServer extends StandardHost
                     WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                         @Override
                         public WebappClassLoader run() {
-                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader());
+                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), wbd);
                         }
                     });
                     wmInfo.setAppClassLoader(cloader);
@@ -818,7 +818,7 @@ public class VirtualServer extends StandardHost
         if (getDefaultWebModuleID() == null && findChild("") == null
                 && docroot != null) {
 
-            WebBundleDescriptorImpl wbd =
+            final WebBundleDescriptorImpl wbd =
                 webArchivist.getDefaultWebXmlBundleDescriptor();
             wmInfo = new WebModuleConfig();
             wbd.setModuleID(Constants.DEFAULT_WEB_MODULE_NAME);
@@ -830,7 +830,7 @@ public class VirtualServer extends StandardHost
             WebappClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                 @Override
                 public WebappClassLoader run() {
-                    return new WebappClassLoader(serverContext.getCommonClassLoader());
+                    return new WebappClassLoader(serverContext.getCommonClassLoader(), wbd);
                 }
             });
             loader.start();            
@@ -911,7 +911,7 @@ public class VirtualServer extends StandardHost
                     return wmInfo;
                 }
 
-                WebBundleDescriptorImpl wbd = app.getModuleByTypeAndUri(WebBundleDescriptorImpl.class, moduleID);
+                final WebBundleDescriptorImpl wbd = app.getModuleByTypeAndUri(WebBundleDescriptorImpl.class, moduleID);
                 String webUri = wbd.getModuleDescriptor().getArchiveUri();
                 String contextRoot = wbd.getModuleDescriptor().getContextRoot();
                 if (moduleID.equals(webUri)) {
@@ -928,7 +928,7 @@ public class VirtualServer extends StandardHost
                     WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                         @Override
                         public WebappClassLoader run() {
-                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader());
+                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), wbd);
                         }
                     });
                     wmInfo.setAppClassLoader(cloader);
