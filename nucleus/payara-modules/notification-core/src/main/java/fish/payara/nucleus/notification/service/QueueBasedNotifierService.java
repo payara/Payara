@@ -36,24 +36,52 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import org.jvnet.hk2.annotations.Contract;
 
-import java.beans.PropertyVetoException;
+import javax.inject.Inject;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface Notifier extends ConfigBeanProxy {
+@Contract
+public abstract class QueueBasedNotifierService<E extends NotificationEvent,
+        C extends Notifier,
+        NC extends NotifierConfiguration,
+        MQ extends MessageQueue> extends BaseNotifierService<E, C, NC> {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    @Inject
+    protected MQ queue;
+
+    private final String prefix;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private ScheduledExecutorService executor;
+
+    public QueueBasedNotifierService(String prefix) {
+        this.prefix = prefix;
+    }
+
+    protected void initializeExeutor() {
+        executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
+            public Thread newThread(Runnable r) {
+                return new Thread(r, prefix + threadNumber.getAndIncrement());
+            }
+        });
+    }
+
+    protected void scheduleExecutor(NotificationRunnable notificationRunnable) {
+        executor.scheduleWithFixedDelay(notificationRunnable,
+                0,
+                500,
+                TimeUnit.MILLISECONDS);
+    }
 }

@@ -36,24 +36,53 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain.execoptions;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.notification.configuration.NotifierType;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface Notifier extends ConfigBeanProxy {
+public class SlackNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    private String token1;
+    private String token2;
+    private String token3;
+
+    SlackNotifierConfigurationExecutionOptions() {
+        super(NotifierType.SLACK);
+    }
+
+    public String getToken1() {
+        return token1;
+    }
+
+    public void setToken1(String token1) {
+        this.token1 = token1;
+    }
+
+    public String getToken2() {
+        return token2;
+    }
+
+    public void setToken2(String token2) {
+        this.token2 = token2;
+    }
+
+    public String getToken3() {
+        return token3;
+    }
+
+    public void setToken3(String token3) {
+        this.token3 = token3;
+    }
+
+    @Override
+    public String toString() {
+        return "SlackNotifierConfigurationExecutionOptions{" +
+                "token1='" + token1 + '\'' +
+                ", token2='" + token2 + '\'' +
+                ", token3='" + token3 + '\'' +
+                '}';
+    }
 }

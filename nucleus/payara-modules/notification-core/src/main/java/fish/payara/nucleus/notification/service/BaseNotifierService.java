@@ -55,9 +55,9 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
- * @author mertcaliskan
- *
  * Base contract for all notifier services.
+ *
+ * @author mertcaliskan
  */
 @Contract
 public abstract class BaseNotifierService<E extends NotificationEvent,
