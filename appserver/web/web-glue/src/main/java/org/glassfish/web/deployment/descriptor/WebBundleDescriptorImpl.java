@@ -41,7 +41,6 @@
 
 package org.glassfish.web.deployment.descriptor;
 
-import com.google.common.collect.ImmutableSet;
 import com.sun.enterprise.deployment.*;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
 import com.sun.enterprise.deployment.types.EjbReference;
@@ -49,6 +48,7 @@ import com.sun.enterprise.deployment.util.ComponentPostVisitor;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.*;
+import com.sun.enterprise.glassfish.web.WhitelistWebBundleDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
@@ -71,7 +71,7 @@ import java.util.*;
  * class as its implementation.
  */
 
-public class WebBundleDescriptorImpl extends WebBundleDescriptor {
+public class WebBundleDescriptorImpl extends WhitelistWebBundleDescriptor {
 
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
 
@@ -139,7 +139,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private Set<String> conflictedMimeMappingExtensions = null;
     private boolean servletInitializersEnabled = true;
-    private final Set<String> whitelistPackages = new HashSet<>();
 
     /**
      * Constrct an empty web app [{0}].
@@ -2237,22 +2236,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
     public void setServletInitializersEnabled(boolean tf) {
         servletInitializersEnabled = tf;
     }
-
-    @Override
-    public boolean isWhitelistEnabled() {
-        return !whitelistPackages.isEmpty();
-    }
-
-    @Override
-    public Set<String> getWhitelistPackages() {
-        return ImmutableSet.copyOf(whitelistPackages);
-    }
-
-    @Override
-    public void addWhitelistPackage(String aPackage) {
-        whitelistPackages.add(aPackage);
-    }
-
 
     private static final class ServletFilterMappingInfo {
         private ServletFilterMapping servletFilterMapping;
