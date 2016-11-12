@@ -90,6 +90,9 @@ public class HipchatNotificationRunnable extends NotificationRunnable<HipchatMes
             catch (UnknownHostException e) {
                 logger.log(Level.SEVERE, "Check your network connection. Cannot access URL: " + fullURL, e);
             }
+            catch (ConnectException e) {
+                logger.log(Level.SEVERE, "Error occurred while connecting URL: " + fullURL, e);
+            }
             catch (IOException e) {
                 logger.log(Level.SEVERE, "IO Error while accessing URL: " + fullURL, e);
             }
