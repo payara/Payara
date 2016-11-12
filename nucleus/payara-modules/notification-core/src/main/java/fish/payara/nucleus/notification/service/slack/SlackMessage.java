@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,24 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service.slack;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.notification.service.Message;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
- *
- * @author mertcaliskan
+ * Created by mertcaliskan
  */
-@Configured
-public interface Notifier extends ConfigBeanProxy {
+public class SlackMessage implements Message {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    private String text;
+
+    public SlackMessage(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
 }
