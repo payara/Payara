@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>payara-appserver-modules</artifactId>
-        <version>4.1.1.164-SNAPSHOT</version>
+        <version>4.1.1.164</version>
     </parent>
     <groupId>fish.payara.appserver.micro</groupId>
     <artifactId>payara-micro-service</artifactId>
