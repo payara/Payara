@@ -48,7 +48,7 @@ import java.util.Set;
  *
  * @author lprimak
  */
-public abstract class WhitelistWebBundleDescriptor extends WebBundleDescriptor {
+public abstract class AbstractWhitelistWebBundleDescriptor extends WebBundleDescriptor {
 
     private static final long serialVersionUID = 1L;
     private final Set<String> whitelistPackages = new HashSet<>();
