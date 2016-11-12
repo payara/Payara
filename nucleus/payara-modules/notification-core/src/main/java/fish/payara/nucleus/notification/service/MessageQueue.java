@@ -36,24 +36,27 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service;
 
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.ConfigBeanProxy;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
- * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
- *
  * @author mertcaliskan
  */
-@Configured
-public interface Notifier extends ConfigBeanProxy {
+public abstract class MessageQueue<M extends Message> {
 
-    @Attribute(defaultValue = "false", dataType = Boolean.class)
-    String getEnabled();
-    void enabled(String value) throws PropertyVetoException;
+    private Queue<M> messageQueue = new LinkedList<>();
+
+    public void addMessage(M message) {
+        messageQueue.add(message);
+    }
+
+    public M getMessage() {
+        return messageQueue.remove();
+    }
+
+    public int size() {
+        return messageQueue.size();
+    }
 }

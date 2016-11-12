@@ -45,47 +45,33 @@ import fish.payara.nucleus.notification.configuration.HipchatNotifierConfigurati
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.HipchatNotificationEvent;
 import fish.payara.nucleus.notification.domain.execoptions.HipchatNotifierConfigurationExecutionOptions;
-import fish.payara.nucleus.notification.service.BaseNotifierService;
+import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.event.EventTypes;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
-
-import javax.inject.Inject;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
 @Service(name = "service-hipchat")
 @RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierService extends BaseNotifierService<HipchatNotificationEvent, HipchatNotifier, HipchatNotifierConfiguration> {
+public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNotificationEvent,
+        HipchatNotifier,
+        HipchatNotifierConfiguration,
+        HipchatMessageQueue> {
 
-    private static final String PREFIX = "hipchat-message-consumer-";
-    private final AtomicInteger threadNumber = new AtomicInteger(1);
-    ScheduledExecutorService executor;
-    @Inject
-    private HipchatMessageQueue queue;
+    HipchatNotifierService() {
+        super("hipchat-message-consumer-");
+    }
 
     public void event(Event event) {
         if (event.is(EventTypes.SERVER_READY)) {
             register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
 
-            executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
-                public Thread newThread(Runnable r) {
-                    return new Thread(r, PREFIX + threadNumber.getAndIncrement());
-                }
-            });
-            executor.scheduleWithFixedDelay(new HipchatNotificationRunnable(queue,
-                    (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()),
-                    0,
-                    500,
-                    TimeUnit.MILLISECONDS);
+            initializeExeutor();
+            scheduleExecutor(new HipchatNotificationRunnable(queue,
+                    (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()));
         }
     }
 
@@ -93,6 +79,6 @@ public class HipchatNotifierService extends BaseNotifierService<HipchatNotificat
     @Subscribe
     public void handleNotification(HipchatNotificationEvent event) {
         HipchatMessage message = new HipchatMessage(event.getUserMessage() + "\n" + event.getMessage());
-        queue.addHipchatMessage(message);
+        queue.addMessage(message);
     }
 }

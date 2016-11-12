@@ -38,10 +38,12 @@
  */
 package fish.payara.nucleus.notification.service.hipchat;
 
+import fish.payara.nucleus.notification.service.Message;
+
 /**
  * Created by mertcaliskan
  */
-public class HipchatMessage {
+public class HipchatMessage implements Message {
 
     private String message;
 
