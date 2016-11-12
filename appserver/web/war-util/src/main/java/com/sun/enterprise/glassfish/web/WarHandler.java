@@ -163,7 +163,7 @@ public class WarHandler extends AbstractArchiveHandler {
     public String getVersionIdentifier(ReadableArchive archive) {
         String versionIdentifierValue = null;
         try {
-            WebXmlParser webXmlParser = getWebXmlParser(archive, new DummyWebBundleDescriptor());
+            WebXmlParser webXmlParser = getWebXmlParser(archive, new WhitelistWebBundleDescriptor());
             versionIdentifierValue = webXmlParser.getVersionIdentifier();
         } catch (XMLStreamException e) {
             logger.log(Level.SEVERE, e.getMessage());
@@ -181,7 +181,7 @@ public class WarHandler extends AbstractArchiveHandler {
     @Override
     public ClassLoader getClassLoader(final ClassLoader parent, final DeploymentContext context) {
         WebBundleDescriptor contextWbd = context.getModuleMetaData(WebBundleDescriptor.class);
-        final WebBundleDescriptor wbd = contextWbd == null? new DummyWebBundleDescriptor() : contextWbd;
+        final WebBundleDescriptor wbd = contextWbd == null? new WhitelistWebBundleDescriptor() : contextWbd;
         WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
             @Override
             public WebappClassLoader run() {
@@ -679,7 +679,7 @@ public class WarHandler extends AbstractArchiveHandler {
         WeblogicXmlParser(ReadableArchive archive)
                 throws XMLStreamException, IOException {
 
-            super(archive, new DummyWebBundleDescriptor());
+            super(archive, new WhitelistWebBundleDescriptor());
         }
 
         @Override

@@ -87,7 +87,7 @@ import org.glassfish.deployment.common.JavaEEResourceType;
  *
  * @author lprimak
  */
-public class DummyWebBundleDescriptor extends WebBundleDescriptor {
+public class WhitelistWebBundleDescriptor extends WebBundleDescriptor {
     private final Set<String> whitelistPackages = new HashSet<>();
 
 
