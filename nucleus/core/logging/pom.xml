@@ -47,7 +47,7 @@
     <parent>
         <groupId>org.glassfish.main.core</groupId>
         <artifactId>nucleus-core</artifactId>
-        <version>4.1.1.164</version>
+        <version>4.1.1.171-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>logging</artifactId>
@@ -111,7 +111,7 @@
                                 <artifactItem>
                                     <groupId>fish.payara.docs.man</groupId>
                                     <artifactId>logging-manpage</artifactId>
-                                    <version>4.1.1.164</version>
+                                    <version>4.1.1.171-SNAPSHOT</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>
