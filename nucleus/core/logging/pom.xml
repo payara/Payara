@@ -111,7 +111,7 @@
                                 <artifactItem>
                                     <groupId>fish.payara.docs.man</groupId>
                                     <artifactId>logging-manpage</artifactId>
-                                    <version>4.1.1.171-SNAPSHOT</version>
+                                    <version>4.1.1.164</version>
                                     <type>zip</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${project.build.outputDirectory}</outputDirectory>
