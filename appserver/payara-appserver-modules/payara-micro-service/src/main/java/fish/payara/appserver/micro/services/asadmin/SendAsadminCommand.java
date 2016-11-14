@@ -57,7 +57,7 @@ import org.jvnet.hk2.annotations.Service;
 @TargetType(value = CommandTarget.DAS)
 @RestEndpoints({
     @RestEndpoint(configBean = Domain.class,
-            opType = RestEndpoint.OpType.GET,
+            opType = RestEndpoint.OpType.POST,
             path = "send-asadmin-command",
             description = "Sends an asadmin command to an instance")
 })
@@ -319,6 +319,11 @@ public class SendAsadminCommand implements AdminCommand
     private String[] parseParameters(String[] parameters) {
         String primaryParameter = "";
         List<String> parsedParameters = new ArrayList<>();
+        
+        // The admin console sends the parameters as one space separated string, so split it if necessary
+        if (parameters.length == 1 && parameters[0].contains(" ")) {
+            parameters = parameters[0].split(" ");
+        }
         
         // Loop through all provided parameters and parse them
         for (int i = 0; i < parameters.length; i++) {          

@@ -21,6 +21,7 @@ import com.sun.jsftemplating.annotation.HandlerInput;
 import com.sun.jsftemplating.annotation.HandlerOutput;
 import com.sun.jsftemplating.layout.descriptors.handler.HandlerContext;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.glassfish.admingui.common.util.GuiUtil;
@@ -76,6 +77,10 @@ public class PayaraRestApiHandlers
                         if (instances == null) {
                             // Re-initialise to empty if members is not found
                             instances = new ArrayList<>();
+                        } else {
+                            for (Map instance : instances) {
+                                instance.put("selected", false);
+                            }
                         }
                     } catch (ClassCastException ex) {
                         // This exception should only be caught if Hazelcast is not enabled, as the command returns a 
@@ -89,5 +94,79 @@ public class PayaraRestApiHandlers
         } catch (Exception ex) {
             GuiUtil.handleException(handlerCtx, ex);
         }
+    }
+    
+    /**
+     * Sends the asadmin command with the parameters provided to the instances selected in the table
+     * @param handlerCtx 
+     */
+    @Handler(id = "py.sendAsadminCommandToSelectedInstances", input = {
+                @HandlerInput(name = "parentEndpoint", type = String.class, required = true),
+                @HandlerInput(name = "rows", type = List.class, required = true),
+                @HandlerInput(name = "command", type = String.class, required = true),
+            })
+    public static void sendAsadminCommandToSelectedInstances(HandlerContext handlerCtx) {
+        String parentEndpoint = (String) handlerCtx.getInputValue("parentEndpoint");
+        String endpoint = parentEndpoint.endsWith("/") ? parentEndpoint + "send-asadmin-command" : parentEndpoint 
+                + "/" + "send-asadmin-command";
+        List<HashMap> rows = (List<HashMap>) handlerCtx.getInputValue("rows");
+        String command = (String) handlerCtx.getInputValue("command");
+
+        // Check that the text box isn't empty
+        if (command != null) {
+            // Get the selected rows
+            List<HashMap> selectedRows = new ArrayList<>();
+            for (HashMap row : rows) {
+                try {
+                    boolean selected = (boolean) row.get("selected");
+                    if (selected) {
+                        selectedRows.add(row);
+                    }
+                } catch (ClassCastException ex) {
+                    // Ignore and move on
+                }
+            }
+
+            // Split the command and parameters
+            String[] splitCommand = command.split(" ");
+            command = splitCommand[0];
+
+            // Convert the parameters into a space-separated string
+            String parameters = "";
+            for (int i = 1; i < splitCommand.length; i++) {
+                parameters += splitCommand[i] + " ";
+            }
+
+            // Remove any trailing spaces
+            parameters = parameters.trim();
+
+            // Get the parameters from each row, and send the asadmin command
+            for (Map row : selectedRows) {
+                String instanceName = (String) row.get("instanceName");
+                String hazelcastPort = Long.toString((Long) row.get("hazelcastPort"));
+                String hostName = (String) row.get("hostName");
+                String ipAddress = hostName.split("/")[1];
+
+                Map attrsMap = new HashMap();
+                attrsMap.put("explicitTarget", ipAddress + ":" + hazelcastPort + ":" + instanceName);
+                attrsMap.put("command", command);
+                attrsMap.put("id", parameters);
+
+                try{
+                    RestUtil.restRequest(endpoint, attrsMap, "POST", handlerCtx, false, true);
+                } catch (Exception ex) {
+                    GuiUtil.handleException(handlerCtx, ex);
+                }
+            }
+        }
+    }
+    
+    /**
+     * Sets the successful command message to be displayed
+     * @param handlerCtx 
+     */
+    @Handler(id="py.prepareSuccessfulCommandMsg")
+    public static void prepareSuccessfulCommandMsg(HandlerContext handlerCtx){
+        GuiUtil.prepareAlert("success", "Command sent successfully", null);
     }
 }
