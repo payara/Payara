@@ -11,31 +11,19 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.nucleus.notification.log;
 
-import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
+ * Holds configuration for server log specific notifier. It instantiates itself with {@link NotifierType#LOG}.
+ *
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class LogNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<LogNotifier> {
+public class LogNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    @PostConstruct
-    void postConstruct() {
-        register(NotifierType.LOG, this);
-    }
-
-    public NotifierExecutionOptions build(LogNotifier notifier) {
-        LogNotifierExecutionOptions executionOptions = new LogNotifierExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
-        return executionOptions;
+    public LogNotifierConfigurationExecutionOptions() {
+        super(NotifierType.LOG);
     }
 }

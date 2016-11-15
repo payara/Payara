@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,15 +37,40 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.hipchat;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.grizzly.utils.Charsets;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class HipchatNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<HipchatNotifierConfiguration, HipchatNotifierConfigurationExecutionOptions> {
+
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.HIPCHAT, this);
+    }
+
+    @Override
+    public HipchatNotifierConfigurationExecutionOptions build(HipchatNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
+        HipchatNotifierConfigurationExecutionOptions executionOptions = new HipchatNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        String roomName = notifierConfiguration.getRoomName();
+        executionOptions.setRoomName(URLDecoder.decode(roomName, Charsets.UTF8_CHARSET.displayName()));
+        executionOptions.setToken(notifierConfiguration.getToken());
+
+        return executionOptions;
+    }
 }
