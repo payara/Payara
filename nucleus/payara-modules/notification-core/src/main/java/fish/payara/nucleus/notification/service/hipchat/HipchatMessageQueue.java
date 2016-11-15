@@ -42,8 +42,8 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * Created by mertcaliskan
@@ -52,7 +52,7 @@ import java.util.Queue;
 @RunLevel(StartupRunLevel.VAL)
 public class HipchatMessageQueue {
 
-    private Queue<HipchatMessage> messageQueue = new LinkedList<>();
+    private Queue<HipchatMessage> messageQueue = new ConcurrentLinkedQueue<>();
 
     public void addHipchatMessage(HipchatMessage message) {
         messageQueue.add(message);
