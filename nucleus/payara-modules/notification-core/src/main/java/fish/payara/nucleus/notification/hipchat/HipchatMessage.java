@@ -36,15 +36,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.hipchat;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.service.Message;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+public class HipchatMessage implements Message {
+
+    private String message;
+
+    public HipchatMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return "HipchatMessage{" +
+                "message='" + message + '\'' +
+                '}';
+    }
 }

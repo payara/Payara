@@ -36,15 +36,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.hipchat;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.service.MessageQueue;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class HipchatMessageQueue extends MessageQueue<HipchatMessage> {
 }

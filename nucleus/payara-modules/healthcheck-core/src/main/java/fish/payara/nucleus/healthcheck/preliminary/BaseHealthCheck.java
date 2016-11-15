@@ -17,7 +17,11 @@ import fish.payara.nucleus.healthcheck.*;
 import fish.payara.nucleus.healthcheck.configuration.Checker;
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.domain.LogNotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import fish.payara.nucleus.notification.log.LogNotificationEvent;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptions;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;
@@ -43,6 +47,9 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
 
     @Inject
     NotificationService notificationService;
+
+    @Inject
+    private NotificationEventFactoryStore eventFactoryStore;
 
     protected O options;
     protected Class<C> checkerType;
@@ -131,11 +138,12 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
     }
 
     public void sendNotification(Level level, String message, Object[] parameters) {
-
-        LogNotificationEvent notificationEvent = new LogNotificationEvent();
-        notificationEvent.setLevel(level);
-        notificationEvent.setMessage(message);
-        notificationEvent.setParameters(parameters);
-        notificationService.notify(notificationEvent);
+        for (NotifierExecutionOptions notifierExecutionOptions : healthCheckService.getNotifierExecutionOptionsList()) {
+            if (notifierExecutionOptions.isEnabled()) {
+                NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
+                NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, message, parameters);
+                notificationService.notify(notificationEvent);
+            }
+        }
     }
 }

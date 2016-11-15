@@ -41,12 +41,11 @@ package fish.payara.nucleus.notification.service;
 
 import fish.payara.nucleus.notification.NotificationEventBus;
 import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.LogNotifier;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
-import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 import org.glassfish.api.event.EventListener;
 import org.glassfish.api.event.Events;
 import org.jvnet.hk2.annotations.Contract;

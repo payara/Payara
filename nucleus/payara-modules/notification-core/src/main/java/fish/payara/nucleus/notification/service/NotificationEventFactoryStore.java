@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,15 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.service;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class NotificationEventFactoryStore {
+
+    private Map<NotifierType, NotificationEventFactory> eventFactoryStore =
+            new HashMap<NotifierType, NotificationEventFactory>();
+
+    public NotificationEventFactory get(NotifierType notifierType) {
+        return eventFactoryStore.get(notifierType);
+    }
+
+    public void register(NotifierType type, NotificationEventFactory notificationEventFactory) {
+        eventFactoryStore.put(type, notificationEventFactory);
+    }
 }

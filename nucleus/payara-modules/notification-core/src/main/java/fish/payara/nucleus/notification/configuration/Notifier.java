@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
+import fish.payara.nucleus.notification.log.LogNotifier;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;
@@ -46,7 +47,8 @@ import java.beans.PropertyVetoException;
 
 /**
  * Main configuration class that is being extended by specific notifier configurations,
- * such as {@link LogNotifier}, {@link HipchatNotifier} and , {@link SlackNotifier}.
+ * such as {@link LogNotifier}, {@link fish.payara.nucleus.notification.hipchat.HipchatNotifier}
+ * and {@link fish.payara.nucleus.notification.slack.SlackNotifier}.
  *
  * @author mertcaliskan
  */

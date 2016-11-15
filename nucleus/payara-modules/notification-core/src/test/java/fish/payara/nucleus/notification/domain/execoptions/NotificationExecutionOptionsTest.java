@@ -14,6 +14,8 @@
 package fish.payara.nucleus.notification.domain.execoptions;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationExecutionOptions;
+import fish.payara.nucleus.notification.log.LogNotifierConfigurationExecutionOptions;
 import org.junit.Before;
 import org.junit.Test;
 

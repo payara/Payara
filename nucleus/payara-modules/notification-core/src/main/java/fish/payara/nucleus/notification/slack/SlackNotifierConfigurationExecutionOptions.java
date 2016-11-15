@@ -36,15 +36,54 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.slack;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+public class SlackNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+
+    private String token1;
+    private String token2;
+    private String token3;
+
+    SlackNotifierConfigurationExecutionOptions() {
+        super(NotifierType.SLACK);
+    }
+
+    public String getToken1() {
+        return token1;
+    }
+
+    public void setToken1(String token1) {
+        this.token1 = token1;
+    }
+
+    public String getToken2() {
+        return token2;
+    }
+
+    public void setToken2(String token2) {
+        this.token2 = token2;
+    }
+
+    public String getToken3() {
+        return token3;
+    }
+
+    public void setToken3(String token3) {
+        this.token3 = token3;
+    }
+
+    @Override
+    public String toString() {
+        return "SlackNotifierConfigurationExecutionOptions{" +
+                "token1='" + token1 + '\'' +
+                ", token2='" + token2 + '\'' +
+                ", token3='" + token3 + '\'' +
+                '}';
+    }
 }
