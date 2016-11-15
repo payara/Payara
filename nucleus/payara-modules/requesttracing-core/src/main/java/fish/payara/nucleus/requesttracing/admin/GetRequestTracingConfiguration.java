@@ -22,7 +22,7 @@ import com.sun.enterprise.config.serverbeans.Config;
 import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.util.ColumnFormatter;
 import com.sun.enterprise.util.SystemPropertyConstants;
-import fish.payara.nucleus.notification.configuration.LogNotifier;
+import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.service.BaseNotifierService;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;

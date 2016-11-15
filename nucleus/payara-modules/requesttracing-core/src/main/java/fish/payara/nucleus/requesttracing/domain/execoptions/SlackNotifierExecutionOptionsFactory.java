@@ -40,7 +40,7 @@
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.configuration.SlackNotifier;
+import fish.payara.nucleus.notification.slack.SlackNotifier;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;

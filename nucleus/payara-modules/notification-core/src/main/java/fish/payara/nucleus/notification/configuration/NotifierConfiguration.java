@@ -38,6 +38,7 @@
  */
 package fish.payara.nucleus.notification.configuration;
 
+import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.ConfigBeanProxy;
 import org.jvnet.hk2.config.Configured;

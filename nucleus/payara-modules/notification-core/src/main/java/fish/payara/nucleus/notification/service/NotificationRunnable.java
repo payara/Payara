@@ -38,7 +38,7 @@
  */
 package fish.payara.nucleus.notification.service;
 
-import fish.payara.nucleus.notification.domain.execoptions.NotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

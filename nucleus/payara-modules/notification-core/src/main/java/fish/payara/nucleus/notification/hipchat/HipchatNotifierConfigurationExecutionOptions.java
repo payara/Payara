@@ -36,15 +36,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.hipchat;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+public class HipchatNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+
+    private String roomName;
+    private String token;
+
+    HipchatNotifierConfigurationExecutionOptions() {
+        super(NotifierType.HIPCHAT);
+    }
+
+    public String getRoomName() {
+        return roomName;
+    }
+
+    public void setRoomName(String roomName) {
+        this.roomName = roomName;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    @Override
+    public String toString() {
+        return "HipchatNotifierConfigurationExecutionOptions{" +
+                "roomName='" + roomName + '\'' +
+                ", token='" + token + '\'' +
+                '}';
+    }
 }

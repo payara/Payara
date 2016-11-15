@@ -39,9 +39,11 @@
  */
 package fish.payara.nucleus.notification.domain.execoptions;
 
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.LogNotifierConfiguration;
+import fish.payara.nucleus.notification.log.LogNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.service.NotifierConfigurationExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.log.LogNotifierConfigurationExecutionOptionsFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;

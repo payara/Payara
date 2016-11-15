@@ -36,15 +36,35 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.slack;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import java.beans.PropertyVetoException;
 
 /**
+ * Configuration class with the aim to configure slack notification specific parameters.
+ * This configuration is only being used by notification services.
+ *
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Configured
+@NotifierConfigurationType(type = NotifierType.SLACK)
+public interface SlackNotifierConfiguration extends NotifierConfiguration {
+
+    @Attribute
+    String getToken1();
+    void setToken1(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getToken2();
+    void setToken2(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getToken3();
+    void setToken3(String value) throws PropertyVetoException;
 }

@@ -36,15 +36,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.hipchat;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Configured;
 
 /**
+ * Configuration class for attaching hipchat notification mechanism into.
+ * Health check and Request tracing services enables the use of hipchat notification mechanism with this notifier configuration.
+ *
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Configured
+@NotifierConfigurationType(type = NotifierType.HIPCHAT)
+public interface HipchatNotifier extends Notifier {
 }

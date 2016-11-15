@@ -36,15 +36,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.log;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class LogNotificationEventFactory extends NotificationEventFactory<LogNotificationEvent> {
+
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.LOG, this);
+    }
+
+    public LogNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+        LogNotificationEvent event = new LogNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setLevel(Level.INFO);
+        event.setMessage(eventAsStr);
+
+        return event;
+    }
+
+    @Override
+    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+        LogNotificationEvent notificationEvent = new LogNotificationEvent();
+        notificationEvent.setLevel(level);
+        notificationEvent.setMessage(message);
+        notificationEvent.setParameters(parameters);
+
+        return notificationEvent;
+    }
 }
