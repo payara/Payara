@@ -38,15 +38,15 @@
  */
 package fish.payara.nucleus.notification.service;
 
-import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author mertcaliskan
  */
 public abstract class MessageQueue<M extends Message> {
 
-    private Queue<M> messageQueue = new LinkedList<>();
+    private Queue<M> messageQueue = new ConcurrentLinkedQueue<>();
 
     public void addMessage(M message) {
         messageQueue.add(message);
