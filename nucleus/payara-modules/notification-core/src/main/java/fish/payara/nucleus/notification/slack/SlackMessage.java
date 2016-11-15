@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,15 +37,22 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.slack;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.service.Message;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+public class SlackMessage implements Message {
+
+    private String text;
+
+    public SlackMessage(String text) {
+        this.text = text;
+    }
+
+    public String getText() {
+        return text;
+    }
 }

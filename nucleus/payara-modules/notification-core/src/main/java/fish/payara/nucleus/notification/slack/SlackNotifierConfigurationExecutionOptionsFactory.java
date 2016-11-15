@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,15 +37,37 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.slack;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class SlackNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<SlackNotifierConfiguration, SlackNotifierConfigurationExecutionOptions> {
+
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.SLACK, this);
+    }
+
+    @Override
+    public SlackNotifierConfigurationExecutionOptions build(SlackNotifierConfiguration notifierConfiguration) {
+        SlackNotifierConfigurationExecutionOptions executionOptions = new SlackNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setToken1(notifierConfiguration.getToken1());
+        executionOptions.setToken2(notifierConfiguration.getToken2());
+        executionOptions.setToken3(notifierConfiguration.getToken3());
+
+        return executionOptions;
+    }
 }

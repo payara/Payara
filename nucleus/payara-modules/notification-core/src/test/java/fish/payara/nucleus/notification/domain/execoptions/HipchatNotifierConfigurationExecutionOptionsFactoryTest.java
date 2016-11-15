@@ -13,13 +13,14 @@
  */
 package fish.payara.nucleus.notification.domain.execoptions;
 
-import fish.payara.nucleus.notification.NotificationService;
-import fish.payara.nucleus.notification.configuration.HipchatNotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.hipchat.HipchatNotifierConfiguration;
+import fish.payara.nucleus.notification.service.NotifierConfigurationExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.hipchat.HipchatNotifierConfigurationExecutionOptions;
+import fish.payara.nucleus.notification.hipchat.HipchatNotifierConfigurationExecutionOptionsFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.UnsupportedEncodingException;

@@ -39,8 +39,8 @@
  */
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
-import fish.payara.nucleus.notification.configuration.HipchatNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.hipchat.HipchatNotifier;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;

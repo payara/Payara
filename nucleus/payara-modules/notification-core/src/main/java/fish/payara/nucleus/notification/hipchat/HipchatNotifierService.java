@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,15 +37,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.hipchat;
 
-import java.lang.annotation.*;
+import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Service(name = "service-hipchat")
+@RunLevel(StartupRunLevel.VAL)
+public class HipchatNotifierService extends QueueBasedNotifierService<HipchatNotificationEvent,
+        HipchatNotifier,
+        HipchatNotifierConfiguration,
+        HipchatMessageQueue> {
+
+    HipchatNotifierService() {
+        super("hipchat-message-consumer-");
+    }
+
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            register(NotifierType.HIPCHAT, HipchatNotifier.class, HipchatNotifierConfiguration.class, this);
+
+            initializeExeutor();
+            scheduleExecutor(new HipchatNotificationRunnable(queue,
+                    (HipchatNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()));
+        }
+    }
+
+    @Override
+    @Subscribe
+    public void handleNotification(HipchatNotificationEvent event) {
+        HipchatMessage message = new HipchatMessage(event.getUserMessage() + "\n" + event.getMessage());
+        queue.addMessage(message);
+    }
 }

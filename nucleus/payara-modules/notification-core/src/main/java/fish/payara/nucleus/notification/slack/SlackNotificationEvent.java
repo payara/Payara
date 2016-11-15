@@ -36,15 +36,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.slack;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+public class SlackNotificationEvent extends NotificationEvent {
+
+    private String message;
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "SlackNotificationEvent{" +
+                "message='" + message + '\'' +
+                '}';
+    }
 }

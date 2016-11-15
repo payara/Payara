@@ -45,6 +45,8 @@ import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.requesttracing.configuration.RequestTracingServiceConfiguration;
 import fish.payara.nucleus.requesttracing.domain.EventType;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
