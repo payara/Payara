@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,15 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.domain;
 
-import java.lang.annotation.*;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import org.jvnet.hk2.annotations.Contract;
+
+import javax.inject.Inject;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
  */
-@Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface NotifierConfigurationType {
-    NotifierType type();
+@Contract
+public abstract class NotificationEventFactory<E extends NotificationEvent> {
+
+    @Inject
+    NotificationEventFactoryStore store;
+
+    protected void registerEventFactory(NotifierType type, NotificationEventFactory notificationEventFactory) {
+        getStore().register(type, notificationEventFactory);
+    }
+
+    public abstract E buildNotificationEvent(long elapsedTime, String eventAsStr);
+
+    public abstract NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters);
+
+    public NotificationEventFactoryStore getStore() {
+        return store;
+    }
 }

@@ -41,7 +41,9 @@ package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.LogNotificationEvent;
+import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
+import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.requesttracing.domain.execoptions.LogNotifierExecutionOptions;
 import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
@@ -51,14 +53,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;

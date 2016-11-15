@@ -38,6 +38,8 @@
  */
 package fish.payara.nucleus.notification.service.hipchat;
 
+import fish.payara.nucleus.notification.hipchat.HipchatMessage;
+import fish.payara.nucleus.notification.hipchat.HipchatMessageQueue;
 import org.junit.Before;
 import org.junit.Test;
 
