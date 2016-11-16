@@ -65,6 +65,7 @@ import com.sun.appserv.BytecodePreprocessor;
 import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
 import com.sun.enterprise.deployment.WebBundleDescriptor;
+import com.sun.enterprise.glassfish.web.WhitelistWebBundleDescriptor;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -586,6 +587,16 @@ public class WebappClassLoader
         super(new URL[0], parent);
         this.wbd = wbd;
         init();
+    }
+
+
+    /**
+     * for use in OSGi loader
+     *
+     * @param parent
+     */
+    public WebappClassLoader(ClassLoader parent) {
+        this(parent, new WhitelistWebBundleDescriptor());
     }
 
 
