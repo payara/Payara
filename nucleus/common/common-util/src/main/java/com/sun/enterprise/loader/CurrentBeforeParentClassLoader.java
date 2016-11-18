@@ -78,7 +78,7 @@ public class CurrentBeforeParentClassLoader extends URLClassLoader {
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         boolean isWhitelisted = isWhitelistEnabled() && isWhiteListed(name);
-        if((!currentBeforeParentEnabled && isWhitelistEnabled()? isWhitelisted : true) || isAlwaysDelegate(name))
+        if((!currentBeforeParentEnabled && (isWhitelistEnabled()? isWhitelisted : true)) || isAlwaysDelegate(name))
         {
             return super.loadClass(name, resolve);
         }

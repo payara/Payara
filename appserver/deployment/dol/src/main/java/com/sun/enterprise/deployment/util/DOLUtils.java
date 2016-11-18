@@ -41,7 +41,9 @@
 
 package com.sun.enterprise.deployment.util;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -164,10 +166,17 @@ public class DOLUtils {
     private static final String IGNORE_WLSDD = "ignore.wlsdd";
 
     private static final String ID_SEPARATOR = "_";
-    private static final Set<String> SYSTEM_PACKAGES =
+    private static final Set<String> SYSTEM_PACKAGES_ =
             ImmutableSet.of("com.sun", "org.glassfish", "org.apache.jasper", "fish.payara", "com.ibm.jbatch",
                             "org.hibernate.validator", "org.jboss.weld", "com.ctc.wstx",
-                            "java");
+                            "java", "javax");
+    private static final Set<String> SYSTEM_PACKAGES = ImmutableSet.copyOf(Collections2.transform(SYSTEM_PACKAGES_,
+            new Function<String, String>() {
+        @Override
+        public String apply(String input) {
+            return input + ".";
+        }
+    }));
 
     /** no need to creates new DOLUtils */
     private DOLUtils() {
