@@ -43,55 +43,50 @@
 
 package com.sun.enterprise.transaction;
 
-import java.util.*;
-import java.util.logging.*;
-import java.rmi.RemoteException;
-
-import javax.transaction.*;
-import javax.transaction.xa.*;
-import javax.resource.spi.XATerminator;
-import javax.resource.spi.work.WorkException;
-
-import com.sun.appserv.util.cache.Cache;
 import com.sun.appserv.util.cache.BaseCache;
-
+import com.sun.appserv.util.cache.Cache;
+import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
 import com.sun.enterprise.transaction.api.JavaEETransaction;
 import com.sun.enterprise.transaction.api.JavaEETransactionManager;
 import com.sun.enterprise.transaction.api.TransactionAdminBean;
 import com.sun.enterprise.transaction.api.XAResourceWrapper;
 import com.sun.enterprise.transaction.config.TransactionService;
-import com.sun.enterprise.transaction.spi.JavaEETransactionManagerDelegate;
-import com.sun.enterprise.transaction.spi.TransactionalResource;
-import com.sun.enterprise.transaction.spi.TransactionInternal;
 import com.sun.enterprise.transaction.monitoring.TransactionServiceProbeProvider;
 import com.sun.enterprise.transaction.monitoring.TransactionServiceStatsProvider;
-
-import com.sun.logging.LogDomains;
+import com.sun.enterprise.transaction.spi.JavaEETransactionManagerDelegate;
+import com.sun.enterprise.transaction.spi.TransactionInternal;
+import com.sun.enterprise.transaction.spi.TransactionalResource;
 import com.sun.enterprise.util.i18n.StringManager;
-
-import javax.inject.Inject;
-import org.jvnet.hk2.annotations.Service;
-import org.jvnet.hk2.annotations.ContractsProvided;
-import org.glassfish.hk2.api.PostConstruct;
-import org.glassfish.hk2.api.Rank;
-import org.glassfish.hk2.api.ServiceLocator;
-
-import org.glassfish.api.invocation.ComponentInvocation;
-import org.glassfish.api.invocation.InvocationManager;
-import org.glassfish.api.invocation.InvocationException;
-import org.glassfish.api.invocation.ResourceHandler;
-import org.glassfish.api.admin.ServerEnvironment;
-import org.glassfish.common.util.Constants;
-
-import org.glassfish.external.probe.provider.PluginPoint;
-import org.glassfish.external.probe.provider.StatsProviderManager;
-
-import com.sun.enterprise.config.serverbeans.ModuleMonitoringLevels;
+import com.sun.logging.LogDomains;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import fish.payara.nucleus.requesttracing.domain.RequestEvent;
 import org.glassfish.api.admin.ProcessEnvironment;
-import org.glassfish.api.admin.ProcessEnvironment.ProcessType;
-import org.glassfish.internal.api.Globals;
+import org.glassfish.api.admin.ServerEnvironment;
+import org.glassfish.api.invocation.ComponentInvocation;
+import org.glassfish.api.invocation.InvocationException;
+import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.api.invocation.ResourceHandler;
+import org.glassfish.common.util.Constants;
+import org.glassfish.external.probe.provider.PluginPoint;
+import org.glassfish.external.probe.provider.StatsProviderManager;
+import org.glassfish.hk2.api.PostConstruct;
+import org.glassfish.hk2.api.Rank;
+import org.glassfish.hk2.api.ServiceLocator;
+import org.jvnet.hk2.annotations.ContractsProvided;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.resource.spi.XATerminator;
+import javax.resource.spi.work.WorkException;
+import javax.transaction.*;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+import java.rmi.RemoteException;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Implementation of javax.transaction.TransactionManager interface.
@@ -113,6 +108,8 @@ public class JavaEETransactionManagerSimplified
     @Inject private ServiceLocator habitat;
 
     @Inject protected InvocationManager invMgr;
+
+    @Inject private Provider<RequestTracingService> requestTracing;
     
     private JavaEETransactionManagerDelegate delegate;
 
@@ -164,8 +161,6 @@ public class JavaEETransactionManagerSimplified
 
     }
     
-    private RequestTracingService requestTracing;
-    
     @Inject
     private ProcessEnvironment processEnvironment;
     
@@ -178,16 +173,16 @@ public class JavaEETransactionManagerSimplified
     public void postConstruct() {
         initDelegates();
         initProperties();
-        
-        if (processEnvironment.getProcessType() == ProcessType.Server) {
-            try {
-                requestTracing = Globals.getDefaultHabitat().getService(RequestTracingService.class);
-            } catch (NullPointerException ex) {
-                _logger.log(Level.INFO, "Error retrieving Request Tracing "
-                        + "service during initialisation of "
-                        + "JavaEETransactionManagerSimplified - NullPointerException");
-            }
-        }      
+    }
+
+    private RequestTracingService getRequestTracing() {
+        RequestTracingService requestTracingService = requestTracing.get();
+        if (requestTracingService == null) {
+            _logger.log(Level.INFO, "Error retrieving Request Tracing "
+                    + "service during initialisation of "
+                    + "JavaEETransactionManagerSimplified - NullPointerException");
+        }
+        return requestTracingService;
     }
 
     private void initProperties() {
@@ -605,10 +600,10 @@ public class JavaEETransactionManagerSimplified
             tx = new JavaEETransactionImpl(this);
 
         setCurrentTransaction(tx);
-        
-        if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+
+        if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
             RequestEvent requestEvent = constructJTABeginEvent(tx);
-            requestTracing.traceRequestEvent(requestEvent);
+            getRequestTracing().traceRequestEvent(requestEvent);
         }
         
         return tx;
@@ -893,10 +888,10 @@ public class JavaEETransactionManagerSimplified
                     }
                 }
             }
-            
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+
+            if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
                 RequestEvent requestEvent = constructJTAEndEvent(tx);
-                requestTracing.traceRequestEvent(requestEvent);
+                getRequestTracing().traceRequestEvent(requestEvent);
             }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
@@ -931,9 +926,9 @@ public class JavaEETransactionManagerSimplified
                 }
             }
 
-            if (requestTracing != null && requestTracing.isRequestTracingEnabled()) {
+            if (requestTracing != null && getRequestTracing().isRequestTracingEnabled()) {
                 RequestEvent requestEvent = constructJTAEndEvent(tx);
-                requestTracing.traceRequestEvent(requestEvent);
+                getRequestTracing().traceRequestEvent(requestEvent);
             }
         } finally {
             setCurrentTransaction(null); // clear current thread's tx
