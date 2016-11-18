@@ -779,7 +779,7 @@ public class VirtualServer extends StandardHost
                     WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                         @Override
                         public WebappClassLoader run() {
-                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), wbd);
+                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), wbd.getApplication());
                         }
                     });
                     wmInfo.setAppClassLoader(cloader);
@@ -827,20 +827,20 @@ public class VirtualServer extends StandardHost
             wmInfo.setDescriptor(wbd);
             wmInfo.setParentLoader(
                 serverContext.getCommonClassLoader());
-            WebappClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
-                @Override
-                public WebappClassLoader run() {
-                    return new WebappClassLoader(serverContext.getCommonClassLoader(), wbd);
-                }
-            });
-            loader.start();            
-            wmInfo.setAppClassLoader(loader);
             if ( wbd.getApplication() == null ) {
                 Application application = Application.createApplication();
                 application.setVirtual(true);
                 application.setName(Constants.DEFAULT_WEB_MODULE_NAME);
                 wbd.setApplication(application);
             }
+            WebappClassLoader loader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
+                @Override
+                public WebappClassLoader run() {
+                    return new WebappClassLoader(serverContext.getCommonClassLoader(), wbd.getApplication());
+                }
+            });
+            loader.start();            
+            wmInfo.setAppClassLoader(loader);
         }
 
         return wmInfo;
@@ -900,10 +900,8 @@ public class VirtualServer extends StandardHost
                                                             location, moduleID);
 
                 ApplicationInfo appInfo = appRegistry.get(appID);
-                Application app = null;
-                if (appInfo != null) {
-                    app = appInfo.getMetaData(Application.class);
-                } else {
+                final Application app = appInfo != null? appInfo.getMetaData(Application.class) : null;
+                if (appInfo == null) {
                     // XXX ApplicaionInfo is NULL after restart
                     Object[] params = { id, getID() };
                     _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
@@ -928,7 +926,7 @@ public class VirtualServer extends StandardHost
                     WebappClassLoader cloader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                         @Override
                         public WebappClassLoader run() {
-                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), wbd);
+                            return new WebappClassLoader(EmbeddedWebContainer.class.getClassLoader(), app);
                         }
                     });
                     wmInfo.setAppClassLoader(cloader);

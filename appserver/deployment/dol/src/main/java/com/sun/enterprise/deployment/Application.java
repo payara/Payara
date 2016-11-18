@@ -43,6 +43,7 @@ package com.sun.enterprise.deployment;
 
 import com.google.common.base.Function;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableSet;
 import com.sun.enterprise.deployment.node.ApplicationNode;
 import com.sun.enterprise.deployment.runtime.application.wls.ApplicationParam;
 import com.sun.enterprise.deployment.runtime.common.SecurityRoleMapping;
@@ -174,6 +175,8 @@ public class Application extends CommonResourceBundleDescriptor
     private String classLoadingDelegate;
     private final List<Pattern> scanningInclusions = new ArrayList<>();
     private final List<Pattern> scanningExclusions = new ArrayList<>();
+    private final Set<String> whitelistPackages = new HashSet<>();
+
 
     private boolean initializeInOrder = false;
 
@@ -756,6 +759,18 @@ public class Application extends CommonResourceBundleDescriptor
     public void addScanningExclusions(List<String> exclusions, String libDir) {
         this.scanningExclusions.addAll(FluentIterable.from(exclusions)
                 .transform(new WildcardToRegex(libDir)).toList());
+    }
+
+    public boolean isWhitelistEnabled() {
+        return !whitelistPackages.isEmpty();
+    }
+
+    public Set<String> getWhitelistPackages() {
+        return ImmutableSet.copyOf(whitelistPackages);
+    }
+
+    public void addWhitelistPackage(String aPackage) {
+        whitelistPackages.add(aPackage);
     }
 
     /**

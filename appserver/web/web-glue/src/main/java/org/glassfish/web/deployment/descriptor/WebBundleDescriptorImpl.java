@@ -48,7 +48,6 @@ import com.sun.enterprise.deployment.util.ComponentPostVisitor;
 import com.sun.enterprise.deployment.util.ComponentVisitor;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.deployment.web.*;
-import com.sun.enterprise.glassfish.web.AbstractWhitelistWebBundleDescriptor;
 import com.sun.enterprise.util.LocalStringManagerImpl;
 import org.glassfish.api.deployment.archive.ArchiveType;
 import org.glassfish.deployment.common.Descriptor;
@@ -71,7 +70,7 @@ import java.util.*;
  * class as its implementation.
  */
 
-public class WebBundleDescriptorImpl extends AbstractWhitelistWebBundleDescriptor {
+public class WebBundleDescriptorImpl extends WebBundleDescriptor {
 
     private final static String DEPLOYMENT_DESCRIPTOR_DIR = "WEB-INF";
 

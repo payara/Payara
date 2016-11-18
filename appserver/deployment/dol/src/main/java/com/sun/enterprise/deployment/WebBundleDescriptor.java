@@ -420,10 +420,6 @@ public abstract class WebBundleDescriptor extends CommonResourceBundleDescriptor
     public abstract boolean getServletInitializersEnabled();
     public abstract void setServletInitializersEnabled(boolean tf);
 
-    public abstract boolean isWhitelistEnabled();
-    public abstract Set<String> getWhitelistPackages();
-    public abstract void addWhitelistPackage(String aPackage);
-
     public boolean isConflictLoginConfig() {
         return conflictLoginConfig;
     }

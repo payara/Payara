@@ -60,7 +60,7 @@
 package org.apache.catalina.loader;
 
 
-import com.sun.enterprise.glassfish.web.WhitelistWebBundleDescriptor;
+import com.sun.enterprise.deployment.Application;
 import org.apache.catalina.*;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardServer;
@@ -735,7 +735,7 @@ public class WebappLoader
                 classLoader = AccessController.doPrivileged(new PrivilegedAction<WebappClassLoader>() {
                     @Override
                     public WebappClassLoader run() {
-                        return new WebappClassLoader(cl, new WhitelistWebBundleDescriptor());
+                        return new WebappClassLoader(cl, Application.createApplication());
                     }
                 });
             }
