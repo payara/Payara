@@ -1797,7 +1797,7 @@ public class WebappClassLoader
         }
 
         // (3) Delegate if class was not found locally
-        if (application.isWhitelistEnabled()? isWhitelisted : true && !delegateLoad) {
+        if ((application.isWhitelistEnabled()? isWhitelisted : true) && !delegateLoad) {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "  Delegating to classloader " + delegateLoader);
             }
