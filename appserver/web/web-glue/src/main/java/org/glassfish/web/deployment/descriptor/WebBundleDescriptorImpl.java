@@ -2236,7 +2236,6 @@ public class WebBundleDescriptorImpl extends WebBundleDescriptor {
         servletInitializersEnabled = tf;
     }
 
-
     private static final class ServletFilterMappingInfo {
         private ServletFilterMapping servletFilterMapping;
         private boolean hasMapping = false;

@@ -56,11 +56,14 @@
  * limitations under the License.
  */
 // Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.loader;
 
 import com.sun.appserv.BytecodePreprocessor;
 import com.sun.appserv.ClassLoaderUtil;
 import com.sun.appserv.server.util.PreprocessorUtil;
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.io.FileUtils;
 import org.apache.naming.JndiPermission;
 import org.apache.naming.resources.DirContextURLStreamHandler;
@@ -553,14 +556,17 @@ public class WebappClassLoader
      */
     private Class<?> jdbcLeakPreventionResourceClass = null;
 
+    private final Application application;
     // ----------------------------------------------------------- Constructors
 
     /**
      * Construct a new ClassLoader with no defined repositories and no
      * parent ClassLoader.
+     * @param application
      */
-    public WebappClassLoader() {
+    public WebappClassLoader(Application application) {
         super(new URL[0]);
+        this.application = application;
         init();
     }
 
@@ -568,19 +574,36 @@ public class WebappClassLoader
     /**
      * Construct a new ClassLoader with the given parent ClassLoader,
      * but no defined repositories.
+     * @param parent
+     * @param application
+     */
+    public WebappClassLoader(ClassLoader parent, Application application) {
+        super(new URL[0], parent);
+        this.application = application;
+        init();
+    }
+
+
+    /**
+     * for use in OSGi loader
+     *
+     * @param parent
      */
     public WebappClassLoader(ClassLoader parent) {
-        super(new URL[0], parent);
-        init();
+        this(parent, Application.createApplication());
     }
 
 
     /**
      * Construct a new ClassLoader with the given parent ClassLoader
      * and defined repositories.
+     * @param urls
+     * @param parent
+     * @param application
      */
-    public WebappClassLoader(URL[] urls, ClassLoader parent) {
+    public WebappClassLoader(URL[] urls, ClassLoader parent, Application application) {
         super(new URL[0], parent);
+        this.application = application;
 
         if (urls != null && urls.length > 0) {
             for (URL url : urls) {
@@ -590,7 +613,6 @@ public class WebappClassLoader
 
         init();
     }
-
 
     // ------------------------------------------------------------- Properties
 
@@ -1731,7 +1753,8 @@ public class WebappClassLoader
             delegateLoader = system;
         }
 
-        boolean delegateLoad = delegate || filter(name);
+        boolean isWhitelisted = application.isWhitelistEnabled() && DOLUtils.isWhiteListed(application, name);
+        boolean delegateLoad = (delegate && (application.isWhitelistEnabled()? isWhitelisted : true)) || filter(name);
 
         // (1) Delegate to our parent if requested
         if (delegateLoad) {
@@ -1774,7 +1797,7 @@ public class WebappClassLoader
         }
 
         // (3) Delegate if class was not found locally
-        if (!delegateLoad) {
+        if ((application.isWhitelistEnabled()? isWhitelisted : true) && !delegateLoad) {
             if (logger.isLoggable(Level.FINER)) {
                 logger.log(Level.FINER, "  Delegating to classloader " + delegateLoader);
             }
@@ -1792,7 +1815,9 @@ public class WebappClassLoader
                 // Ignore
             }
         }
-
+        else if(application.isWhitelistEnabled() && !isWhitelisted) {
+            throw new ClassNotFoundException(String.format("Whitelist enabled, but class [%s] is not whitelisted", name));
+        }
         throw new ClassNotFoundException(name);
     }
 

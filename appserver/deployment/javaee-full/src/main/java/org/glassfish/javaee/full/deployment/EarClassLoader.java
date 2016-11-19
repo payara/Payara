@@ -37,12 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.javaee.full.deployment;
 
+import com.sun.enterprise.deployment.Application;
+import com.sun.enterprise.deployment.util.DOLUtils;
 import java.util.*;
 
 import com.sun.enterprise.loader.ASURLClassLoader;
+import java.util.logging.Logger;
 import org.glassfish.internal.api.DelegatingClassLoader;
 import org.glassfish.hk2.api.PreDestroy;
 
@@ -54,12 +58,14 @@ import org.glassfish.hk2.api.PreDestroy;
  */
 public class EarClassLoader extends ASURLClassLoader
 {
-
-    private List<ClassLoaderHolder> moduleClassLoaders = new LinkedList<ClassLoaderHolder>();
+    private List<ClassLoaderHolder> moduleClassLoaders = new LinkedList<>();
     boolean isPreDestroyCalled = false;
+    private static final Logger log = Logger.getLogger(EarClassLoader.class.getName());
+    private final Application application;
 
-    public EarClassLoader(ClassLoader classLoader) {
-        super(classLoader); 
+    public EarClassLoader(ClassLoader classLoader, Application application) {
+        super(classLoader);
+        this.application = application;
     }
 
     public void addModuleClassLoader(String moduleName, ClassLoader cl) {
@@ -142,5 +148,15 @@ public class EarClassLoader extends ASURLClassLoader
     @Override
     protected String getClassLoaderName() {
         return "EarClassLoader";
+    }
+
+    @Override
+    protected boolean isWhitelistEnabled() {
+        return application.isWhitelistEnabled();
+    }
+
+    @Override
+    protected boolean isWhiteListed(String className) {
+        return DOLUtils.isWhiteListed(application, className);
     }
 }
