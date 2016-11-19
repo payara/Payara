@@ -34,6 +34,7 @@
         <module>requesttracing-api</module>
         <module>jmx-monitoring-service</module>
         <module>payara-micro-service</module>
+        <module>payara-micro-cdi</module>
         <module>jaspic-servlet-utils</module>
     </modules>
 </project>

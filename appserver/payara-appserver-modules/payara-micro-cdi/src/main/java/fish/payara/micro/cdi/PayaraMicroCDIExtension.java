@@ -37,14 +37,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.appserver.micro.services;
+package fish.payara.micro.cdi;
+
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Extension;
 
 /**
+ * A CDI Extension for integrating with Payara Micro
  *
  * @author steve
  */
-public interface CDIEventListener {
-    
-    public void eventReceived(PayaraClusteredCDIEvent event);
-    
+public class PayaraMicroCDIExtension implements Extension {
+
+    void beforeBeanDiscovery(@Observes BeforeBeanDiscovery bbd, BeanManager bm) {
+
+        AnnotatedType<PayaraMicroProducer> at = bm.createAnnotatedType(PayaraMicroProducer.class);
+        bbd.addAnnotatedType(at);
+        
+        AnnotatedType<ClusteredCDIEventBus> at3 = bm.createAnnotatedType(ClusteredCDIEventBus.class);
+        bbd.addAnnotatedType(at3);
+
+    }
+
 }

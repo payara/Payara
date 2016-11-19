@@ -37,14 +37,23 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.appserver.micro.services;
+package fish.payara.micro.cdi;
+
+import static java.lang.annotation.ElementType.FIELD;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.PARAMETER;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import javax.inject.Qualifier;
 
 /**
- *
+ * Annotation to be applied to a Cache @Inject point to define the cache configuration
+ * for the Producer to configure the cache
  * @author steve
  */
-public interface CDIEventListener {
-    
-    public void eventReceived(PayaraClusteredCDIEvent event);
-    
+@Retention(RetentionPolicy.RUNTIME)
+@Qualifier
+@Target({METHOD, FIELD, PARAMETER})
+public @interface Inbound {
 }

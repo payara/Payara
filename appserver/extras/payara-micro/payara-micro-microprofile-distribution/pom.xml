@@ -838,11 +838,33 @@
         </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.appserver.micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
+        <!-- Add Concurrency -->
+        <dependency>
+            <groupId>javax.enterprise.concurrent</groupId>
+            <artifactId>javax.enterprise.concurrent-api</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.enterprise.concurrent</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.main.concurrent</groupId>
+            <artifactId>concurrent-connector</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.glassfish.main.concurrent</groupId>
+            <artifactId>concurrent-impl</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency> 
     </dependencies>
     <profiles>
         <profile>

@@ -188,7 +188,7 @@
        <!-- The following dependencies is for JSR236.  Including this in glassfish-common-full is a temporary solution.  This will be moved
             to its own package when GLASSFISH-19604 is being worked on.
          -->
-       <dependency>
+        <dependency>
            <groupId>fish.payara.admingui</groupId>
 	   <artifactId>console-concurrent-plugin</artifactId>
            <version>${project.version}</version>
