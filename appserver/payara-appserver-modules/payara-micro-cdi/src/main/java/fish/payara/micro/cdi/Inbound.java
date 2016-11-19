@@ -56,4 +56,5 @@ import javax.inject.Qualifier;
 @Qualifier
 @Target({METHOD, FIELD, PARAMETER})
 public @interface Inbound {
+    String eventName() default "";
 }

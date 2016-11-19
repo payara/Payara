@@ -45,6 +45,7 @@ import static java.lang.annotation.ElementType.PARAMETER;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import javax.enterprise.util.Nonbinding;
 import javax.inject.Qualifier;
 
 /**
@@ -56,4 +57,30 @@ import javax.inject.Qualifier;
 @Qualifier
 @Target({METHOD, FIELD, PARAMETER})
 public @interface Outbound {
+    
+    /**
+     * Provides a further level of filtering. Specify an eventname to restrict
+     * event callbacks to events with the specific name
+     * @return 
+     */
+    @Nonbinding
+    String eventName() default "";
+    
+    /**
+     * Property to set whether the message should also fire on the same instance as well
+     * default is false it won't be fired as an Inbound message on the same instance
+     * @return 
+     */
+    @Nonbinding
+    boolean loopBack() default false;
+    
+    /**
+     * Property to restrict the outbound event to specific named server or micro instances
+     * default is to fire on all server and micro instances.
+     * Set a comma separated list of instance names to restruct the event to firing only
+     * on the specified instances.
+     * @return 
+     */
+    @Nonbinding
+    String instanceName() default "";
 }

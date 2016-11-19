@@ -44,6 +44,7 @@ import fish.payara.appserver.micro.services.PayaraClusteredCDIEvent;
 import fish.payara.appserver.micro.services.PayaraInstance;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.PostConstruct;
@@ -54,6 +55,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.EventMetadata;
+import javax.enterprise.util.AnnotationLiteral;
 import javax.inject.Inject;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -74,10 +77,6 @@ public class ClusteredCDIEventBus implements CDIEventListener {
     @Inject
     private BeanManager bm;
 
-    @Inject
-    @Inbound
-    private Event<Serializable> clusterEvent;
-
     @Resource
     private ManagedExecutorService managedExecutorService;
 
@@ -86,51 +85,11 @@ public class ClusteredCDIEventBus implements CDIEventListener {
     private InvocationManager im;
 
     private ClassLoader capturedClassLoader;
-
-    @Override
-    public void eventReceived(final PayaraClusteredCDIEvent event) {
-
-        // as we are on the hazelcast thread we need to establish the invocation manager
-        ComponentInvocation newInvocation = new ComponentInvocation(capturedInvocation.getComponentId(),
-                capturedInvocation.getInvocationType(),
-                capturedInvocation.getContainer(),
-                capturedInvocation.getAppName(),
-                capturedInvocation.getModuleName());
-        final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
-        try {
-            Thread.currentThread().setContextClassLoader(capturedClassLoader);
-            im.preInvoke(newInvocation);
-
-            managedExecutorService.submit(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Serializable eventPayload = event.getPayload();
-                        clusterEvent.fire(eventPayload);
-                    } catch (IOException | ClassNotFoundException ex) {
-                        Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.FINE, "Received event which could not be deserialized", ex);
-                    }
-                }
-            });
-        } finally {
-            Thread.currentThread().setContextClassLoader(oldTCCL);
-            im.postInvoke(newInvocation);
-        }
-    }
-
-    public void initialize() {
-        Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
-    }
-
-    void onOutboundEvent(@Observes @Outbound Serializable event) {
-        PayaraClusteredCDIEvent clusteredEvent;
-        try {
-            clusteredEvent = new PayaraClusteredCDIEvent(runtime.getLocalDescriptor(), event);
-            runtime.publishCDIEvent(clusteredEvent);
-        } catch (IOException ex) {
-        }
-    }
-
+    
+    private final static String INSTANCE_PROPERTY = "InstanceName";
+    
+    private final static String EVENT_PROPERTY = "EventName";
+    
     @PostConstruct
     void postConstruct() {
         runtime.addCDIListener(this);
@@ -151,6 +110,94 @@ public class ClusteredCDIEventBus implements CDIEventListener {
     @PreDestroy
     void preDestroy() {
         runtime.removeCDIListener(this);
+    }
+    
+    public void initialize() {
+        Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.INFO, "Clustered CDI Event bus initialized");
+    }
+
+    @Override
+    public void eventReceived(final PayaraClusteredCDIEvent event) {
+        
+        // first check if the event is targetted at a specific instance
+        String instanceName = event.getProperty(INSTANCE_PROPERTY);
+        if (!(instanceName == null) && !(instanceName.length() == 0) ) {
+            // there is an instance name filter
+            String names[] = instanceName.split(",");
+            boolean forUs = false;
+            String thisInstance = runtime.getInstanceName();
+            for (String name : names) {
+                if (name.equals(thisInstance)) {
+                    forUs = true;
+                    break;
+                }
+            }
+            if (!forUs)
+                return;
+        }
+
+        // as we are on the hazelcast thread we need to establish the invocation manager
+        ComponentInvocation newInvocation = new ComponentInvocation(capturedInvocation.getComponentId(),
+                capturedInvocation.getInvocationType(),
+                capturedInvocation.getContainer(),
+                capturedInvocation.getAppName(),
+                capturedInvocation.getModuleName());
+        final ClassLoader oldTCCL = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(capturedClassLoader);
+            im.preInvoke(newInvocation);
+
+            managedExecutorService.submit(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        Serializable eventPayload = event.getPayload();
+                        Inbound inbound = new Inbound() {
+                            @Override
+                            public String eventName() {
+                                return event.getProperty(EVENT_PROPERTY);
+                            }
+
+                            @Override
+                            public Class<? extends Annotation> annotationType() {
+                                return Inbound.class;
+                            }
+                        };
+                        bm.fireEvent(eventPayload,inbound);
+                    } catch (IOException | ClassNotFoundException ex) {
+                        Logger.getLogger(ClusteredCDIEventBus.class.getName()).log(Level.FINE, "Received event which could not be deserialized", ex);
+                    }
+                }
+            });
+        } finally {
+            Thread.currentThread().setContextClassLoader(oldTCCL);
+            im.postInvoke(newInvocation);
+        }
+    }
+
+    void onOutboundEvent(@Observes @Outbound Serializable event, EventMetadata meta) {
+        PayaraClusteredCDIEvent clusteredEvent;
+        
+        // read the metadata on the Outbound Annotation to set data into the event
+        try {
+            boolean loopBack = false;
+            String eventName = "";
+            String instanceName = "";
+            for (Annotation annotation : meta.getQualifiers()) {
+                if (annotation instanceof Outbound) {
+                    Outbound outboundattn = (Outbound)annotation;
+                    eventName = outboundattn.eventName();
+                    loopBack = outboundattn.loopBack();
+                    instanceName = outboundattn.instanceName();
+                }
+            }
+            clusteredEvent = new PayaraClusteredCDIEvent(runtime.getLocalDescriptor(), event);
+            clusteredEvent.setLoopBack(loopBack);
+            clusteredEvent.setProperty(EVENT_PROPERTY, eventName);
+            clusteredEvent.setProperty(INSTANCE_PROPERTY, instanceName);
+            runtime.publishCDIEvent(clusteredEvent);
+        } catch (IOException ex) {
+        }
     }
 
 }
