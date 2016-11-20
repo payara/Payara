@@ -60,7 +60,7 @@ public class SimpleSAMConfig implements ServerAuthConfig {
     private final String appContext;
     private final CallbackHandler handler;
     private final Map constructedProperties;
-    private ServerAuthModule sam;
+    private volatile ServerAuthModule sam;
     private Class samClass;
 
 
@@ -78,10 +78,11 @@ public class SimpleSAMConfig implements ServerAuthConfig {
         // combine constructed properties with passed in properties
         if (constructedProperties != null)
             properties.putAll(constructedProperties);
-        
-        if (sam == null) {
+
+        ServerAuthModule localSam = sam;
+        if (localSam == null || properties.containsKey(JASPICWebListenerHelper.SAM_PER_REQUEST_PROPERTY)) {
             try {
-                sam = (ServerAuthModule)samClass.newInstance();
+                localSam = (ServerAuthModule)samClass.newInstance();
             } catch (InstantiationException | IllegalAccessException ex) {
                 Logger.getLogger(SimpleSAMConfig.class.getName()).log(Level.SEVERE, null, ex);
                 AuthException ae = new AuthException("Unable to instantiate an instance of the provided SAM class");
@@ -89,7 +90,13 @@ public class SimpleSAMConfig implements ServerAuthConfig {
                 throw ae;
             }
         }
-        return new SimpleSAMAuthContext(authContextID, serviceSubject, properties, handler, sam);
+        ServerAuthModule sam = this.sam;     
+        if (sam == null) {
+            synchronized (this) {
+                this.sam = localSam;
+            }
+        }
+        return new SimpleSAMAuthContext(authContextID, serviceSubject, properties, handler, localSam);
     }
 
     @Override
