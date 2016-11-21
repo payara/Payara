@@ -53,13 +53,13 @@ import javax.security.auth.message.module.ServerAuthModule;
  *
  * @author steve
  */
-public class SimpleSAMAuthContext implements ServerAuthContext {
+class SimpleSAMAuthContext implements ServerAuthContext {
 
     ServerAuthModule sam;
     CallbackHandler handler;
-    Map options;
+    Map<String,String> options;
 
-    SimpleSAMAuthContext(String authContextID, Subject serviceSubject, Map properties,CallbackHandler handler, ServerAuthModule sam) throws AuthException {
+    SimpleSAMAuthContext(String authContextID, Subject serviceSubject, Map<String,String> properties, CallbackHandler handler, ServerAuthModule sam) throws AuthException {
         this.sam = sam;
         this.handler = handler;
         this.options = properties;

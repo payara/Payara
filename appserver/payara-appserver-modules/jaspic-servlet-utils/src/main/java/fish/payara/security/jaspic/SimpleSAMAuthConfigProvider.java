@@ -51,12 +51,12 @@ import javax.security.auth.message.config.ServerAuthConfig;
  *
  * @author steve
  */
-public class SimpleSAMAuthConfigProvider implements AuthConfigProvider {
+class SimpleSAMAuthConfigProvider implements AuthConfigProvider {
     
-    private final Map properties;
+    private final Map<String,String> properties;
     private Class samClass;
     
-    public SimpleSAMAuthConfigProvider(Map properties, AuthConfigFactory factory, Class samClass) {
+    SimpleSAMAuthConfigProvider(Map<String,String> properties, AuthConfigFactory factory, Class samClass) {
         this.properties = properties;
         this.samClass = samClass;
         if (factory != null) {

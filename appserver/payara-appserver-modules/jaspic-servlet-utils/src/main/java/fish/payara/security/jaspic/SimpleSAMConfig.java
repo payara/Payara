@@ -59,12 +59,12 @@ public class SimpleSAMConfig implements ServerAuthConfig {
     private final String layer;
     private final String appContext;
     private final CallbackHandler handler;
-    private final Map constructedProperties;
+    private final Map<String,String> constructedProperties;
     private volatile ServerAuthModule sam;
     private Class samClass;
 
 
-    SimpleSAMConfig(String layer, String appContext, CallbackHandler handler, Map properties, Class samClass) {
+    SimpleSAMConfig(String layer, String appContext, CallbackHandler handler, Map<String,String> properties, Class samClass) {
         this.layer = layer;
         this.appContext = appContext;
         this.handler = handler;
