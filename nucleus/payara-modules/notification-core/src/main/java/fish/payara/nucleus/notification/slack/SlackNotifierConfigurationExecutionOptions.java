@@ -84,6 +84,6 @@ public class SlackNotifierConfigurationExecutionOptions extends NotifierConfigur
                 "token1='" + token1 + '\'' +
                 ", token2='" + token2 + '\'' +
                 ", token3='" + token3 + '\'' +
-                '}';
+                "} " + super.toString();
     }
 }

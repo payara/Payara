@@ -45,8 +45,8 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mertcaliskan
@@ -56,7 +56,7 @@ import java.util.Map;
 public class NotificationEventFactoryStore {
 
     private Map<NotifierType, NotificationEventFactory> eventFactoryStore =
-            new HashMap<NotifierType, NotificationEventFactory>();
+            new ConcurrentHashMap<>();
 
     public NotificationEventFactory get(NotifierType notifierType) {
         return eventFactoryStore.get(notifierType);

@@ -20,21 +20,34 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.glassfish.main</groupId>
-        <artifactId>glassfish-parent</artifactId>
+        <artifactId>payara-appserver-modules</artifactId>
         <version>4.1.1.171-SNAPSHOT</version>
     </parent>
-    <artifactId>payara-appserver-modules</artifactId>
-    <name>Payara Appserver Modules</name>
-    <description>Payara Appserver modules</description>
-    <packaging>pom</packaging>
-    <modules>
-        <module>payara-jsr107</module>
-        <module>jsr107-repackaged</module>
-        <module>hazelcast-ejb-timer</module>
-        <module>requesttracing-api</module>
-        <module>jmx-monitoring-service</module>
-        <module>payara-micro-service</module>
-        <module>jaspic-servlet-utils</module>
-        <module>notification-jms-core</module>
-    </modules>
+    <groupId>fish.payara.appserver</groupId>
+    <artifactId>notification-jms-core</artifactId>
+    <packaging>glassfish-jar</packaging>
+    <name>JMS Notification Implementation</name>
+    <description>JMS Notification Implementation</description>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>notification-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>

@@ -37,33 +37,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.notification.domain;
 
+import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mertcaliskan
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+public class NotifierExecutionOptionsFactoryStore {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
+    private Map<NotifierType, NotifierExecutionOptionsFactory> execOptionsFactoryStore =
+            new HashMap<NotifierType, NotifierExecutionOptionsFactory>();
 
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
+    public NotifierExecutionOptionsFactory<Notifier> get(NotifierType type) {
+        return execOptionsFactoryStore.get(type);
     }
 
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
+    public void register(NotifierType notifierType, NotifierExecutionOptionsFactory executionOptionsFactory) {
+        execOptionsFactoryStore.put(notifierType, executionOptionsFactory);
+    }
+
+    public Map<NotifierType, NotifierExecutionOptionsFactory> getExecOptionsFactoryStore() {
+        return execOptionsFactoryStore;
     }
 }

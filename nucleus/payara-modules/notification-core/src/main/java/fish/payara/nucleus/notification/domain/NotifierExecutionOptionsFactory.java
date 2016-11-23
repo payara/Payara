@@ -11,20 +11,28 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.nucleus.notification.domain;
 
+import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.annotations.Contract;
+
+import javax.inject.Inject;
 
 /**
- * @author mertcaliskan
+ * Factory class that translates notifier configurations into notifier execution options.
  *
- * Holds configuration for server log specific notifier. It instantiates itself with {@link NotifierType#LOG}.
- * {@link fish.payara.nucleus.requesttracing.RequestTracingNotificationEventFactory} creates LogNotificationEvent and puts
- * traced data into, according to this notification type.
+ * @author mertcaliskan
  */
-public class LogNotifierExecutionOptions extends NotifierExecutionOptions {
+@Contract
+public abstract class NotifierExecutionOptionsFactory<N extends Notifier> {
 
-    public LogNotifierExecutionOptions() {
-        super(NotifierType.LOG);
+    @Inject
+    private NotifierExecutionOptionsFactoryStore store;
+
+    public void register(NotifierType notifierType, NotifierExecutionOptionsFactory notifierExecutionOptionsFactory) {
+        store.register(notifierType, notifierExecutionOptionsFactory);
     }
+
+    public abstract NotifierExecutionOptions build(N n);
 }
