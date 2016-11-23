@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,31 +36,84 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.notification.jms;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.hipchat.HipchatNotifier;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import javax.annotation.PostConstruct;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class HipchatNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<HipchatNotifier> {
+public class JmsNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    @PostConstruct
-    void postConstruct() {
-        register(NotifierType.HIPCHAT, this);
+    private String contextFactoryClass;
+    private String connectionFactoryName;
+    private String queueName;
+    private String url;
+    private String username;
+    private String password;
+
+    JmsNotifierConfigurationExecutionOptions() {
+        super(NotifierType.JMS);
     }
 
-    public NotifierExecutionOptions build(HipchatNotifier notifier) {
-        HipchatNotifierExecutionOptions executionOptions = new HipchatNotifierExecutionOptions();
-        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
-        return executionOptions;
+    public String getContextFactoryClass() {
+        return contextFactoryClass;
+    }
+
+    public void setContextFactoryClass(String contextFactoryClass) {
+        this.contextFactoryClass = contextFactoryClass;
+    }
+
+    public String getConnectionFactoryName() {
+        return connectionFactoryName;
+    }
+
+    public void setConnectionFactoryName(String connectionFactoryName) {
+        this.connectionFactoryName = connectionFactoryName;
+    }
+
+    public String getQueueName() {
+        return queueName;
+    }
+
+    public void setQueueName(String queueName) {
+        this.queueName = queueName;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Override
+    public String toString() {
+        return "JmsNotifierConfigurationExecutionOptions{" +
+                "contextFactoryClass='" + contextFactoryClass + '\'' +
+                ", connectionFactoryName='" + connectionFactoryName + '\'' +
+                ", queueName='" + queueName + '\'' +
+                ", url='" + url + '\'' +
+                ", username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                "} " + super.toString();
     }
 }

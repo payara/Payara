@@ -37,16 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.notification.jms;
 
-import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.service.NotificationRunnable;
+
+import javax.jms.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author mertcaliskan
  */
-public class SlackNotifierExecutionOptions extends NotifierExecutionOptions {
+public class JmsNotificationRunnable extends NotificationRunnable<JmsMessageQueue, JmsNotifierConfigurationExecutionOptions> {
 
-    public SlackNotifierExecutionOptions() {
-        super(NotifierType.SLACK);
+    private static Logger logger = Logger.getLogger(JmsNotificationRunnable.class.getCanonicalName());
+
+    JmsNotifierConfigurationExecutionOptions executionOptions;
+    private Connection connection;
+
+    public JmsNotificationRunnable(JmsMessageQueue queue, JmsNotifierConfigurationExecutionOptions executionOptions, Connection connection) {
+        this.queue = queue;
+        this.executionOptions = executionOptions;
+        this.connection = connection;
+    }
+
+    @Override
+    public void run() {
+        while (queue.size() > 0) {
+            try (Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
+                Queue jmsQueue = session.createQueue(executionOptions.getQueueName());
+                MessageProducer producer = session.createProducer(jmsQueue);
+                TextMessage message = session.createTextMessage();
+                message.setText(queue.getMessage().getText());
+                producer.send(message);
+            } catch (JMSException e) {
+                logger.log(Level.SEVERE, "Error occurred while creating session", e);
+            }
+        }
+    }
+
+    @Override
+    public void uncaughtException(Thread t, Throwable e) {
+        logger.log(Level.SEVERE, "Error occurred consuming JMS messages from queue", e);
     }
 }

@@ -37,32 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.nucleus.notification.hipchat;
 
-import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.annotation.PostConstruct;
 
 /**
  * @author mertcaliskan
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class NotifierExecutionOptionsFactoryStore {
+public class HipchatNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<HipchatNotifier> {
 
-    private Map<NotifierType, NotifierExecutionOptionsFactory> execOptionsFactoryStore =
-            new HashMap<NotifierType, NotifierExecutionOptionsFactory>();
-
-    public NotifierExecutionOptionsFactory<Notifier> get(NotifierType type) {
-        return execOptionsFactoryStore.get(type);
+    @PostConstruct
+    void postConstruct() {
+        register(NotifierType.HIPCHAT, this);
     }
 
-    public void register(NotifierType notifierType, NotifierExecutionOptionsFactory executionOptionsFactory) {
-        execOptionsFactoryStore.put(notifierType, executionOptionsFactory);
+    public NotifierExecutionOptions build(HipchatNotifier notifier) {
+        HipchatNotifierExecutionOptions executionOptions = new HipchatNotifierExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        return executionOptions;
     }
 }

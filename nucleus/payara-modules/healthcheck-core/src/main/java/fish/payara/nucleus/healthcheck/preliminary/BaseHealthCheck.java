@@ -19,9 +19,8 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
-import fish.payara.nucleus.notification.log.LogNotificationEvent;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptions;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.jvnet.hk2.annotations.Contract;
 import org.jvnet.hk2.annotations.Optional;

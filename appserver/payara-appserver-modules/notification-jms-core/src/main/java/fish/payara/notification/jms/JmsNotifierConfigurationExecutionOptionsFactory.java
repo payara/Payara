@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,7 +36,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.jms;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
 import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
@@ -45,25 +44,32 @@ import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PostConstruct;
 
 /**
  * @author mertcaliskan
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+public class JmsNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<JmsNotifierConfiguration, JmsNotifierConfigurationExecutionOptions> {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
-
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.JMS, this);
     }
 
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
+    @Override
+    public JmsNotifierConfigurationExecutionOptions build(JmsNotifierConfiguration notifierConfiguration) {
+        JmsNotifierConfigurationExecutionOptions executionOptions = new JmsNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setContextFactoryClass(notifierConfiguration.getContextFactoryClass());
+        executionOptions.setConnectionFactoryName(notifierConfiguration.getConnectionFactoryName());
+        executionOptions.setQueueName(notifierConfiguration.getQueueName());
+        executionOptions.setUrl(notifierConfiguration.getUrl());
+        executionOptions.setUsername(notifierConfiguration.getUsername());
+        executionOptions.setPassword(notifierConfiguration.getPassword());
+
+        return executionOptions;
     }
 }
