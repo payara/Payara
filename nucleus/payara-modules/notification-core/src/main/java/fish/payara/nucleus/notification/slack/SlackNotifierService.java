@@ -65,7 +65,7 @@ public class SlackNotifierService extends QueueBasedNotifierService<SlackNotific
         if (event.is(EventTypes.SERVER_READY)) {
             register(NotifierType.SLACK, SlackNotifier.class, SlackNotifierConfiguration.class, this);
 
-            initializeExeutor();
+            initializeExecutor();
             scheduleExecutor(new SlackNotificationRunnable(queue,
                     (SlackNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions()));
         }

@@ -74,6 +74,6 @@ public class HipchatNotifierConfigurationExecutionOptions extends NotifierConfig
         return "HipchatNotifierConfigurationExecutionOptions{" +
                 "roomName='" + roomName + '\'' +
                 ", token='" + token + '\'' +
-                '}';
+                "} " + super.toString();
     }
 }

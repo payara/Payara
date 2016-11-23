@@ -37,33 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.notification.slack;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PostConstruct;
 
 /**
  * @author mertcaliskan
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+public class SlackNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<SlackNotifier> {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
-
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
+    @PostConstruct
+    void postConstruct() {
+        register(NotifierType.SLACK, this);
     }
 
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
+    public NotifierExecutionOptions build(SlackNotifier notifier) {
+        SlackNotifierExecutionOptions executionOptions = new SlackNotifierExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        return executionOptions;
     }
 }

@@ -46,9 +46,9 @@ import org.jvnet.hk2.config.Configured;
 import java.beans.PropertyVetoException;
 
 /**
- * @author mertcaliskan
- *
  * Main configuration class that is being extended by specific notifier configurations, such as {@link LogNotifierConfiguration}.
+ *
+ * @author mertcaliskan
  */
 @Configured
 public interface NotifierConfiguration extends ConfigBeanProxy {

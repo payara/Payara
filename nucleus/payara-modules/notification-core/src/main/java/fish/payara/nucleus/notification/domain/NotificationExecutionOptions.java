@@ -17,6 +17,7 @@ import fish.payara.nucleus.notification.configuration.NotifierType;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author mertcaliskan
@@ -27,7 +28,7 @@ public class NotificationExecutionOptions {
 
     private boolean enabled;
     private Map<NotifierType, NotifierConfigurationExecutionOptions> notifierConfigurationExecutionOptionsList =
-            new HashMap<NotifierType, NotifierConfigurationExecutionOptions>();
+            new ConcurrentHashMap<>();
 
     public void addNotifierConfigurationExecutionOption(NotifierConfigurationExecutionOptions executionOptions) {
         notifierConfigurationExecutionOptionsList.put(executionOptions.getNotifierType(), executionOptions);

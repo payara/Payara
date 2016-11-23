@@ -1,5 +1,4 @@
 /*
- * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -37,33 +36,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.jms;
 
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+@Configured
+@NotifierConfigurationType(type = NotifierType.JMS)
+public interface JmsNotifierConfiguration extends NotifierConfiguration {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
+    @Attribute(required = true)
+    String getContextFactoryClass();
+    void setContextFactoryClass(String value) throws PropertyVetoException;
 
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
-    }
+    @Attribute(required = true)
+    String getConnectionFactoryName();
+    void setConnectionFactoryName(String value) throws PropertyVetoException;
 
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
-    }
+    @Attribute(required = true)
+    String getQueueName();
+    void setQueueName(String value) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getUrl();
+    void setUrl(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getUsername();
+    void setUsername(String value) throws PropertyVetoException;
+
+    @Attribute
+    String getPassword();
+    void setPassword(String value) throws PropertyVetoException;
 }

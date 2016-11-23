@@ -37,33 +37,46 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.jms;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PostConstruct;
+import java.text.MessageFormat;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
  */
 @Service
 @RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+public class JmsNotificationEventFactory extends NotificationEventFactory<JmsNotificationEvent> {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
-
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.JMS, this);
     }
 
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
+    public JmsNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+        JmsNotificationEvent event = new JmsNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setMessage(eventAsStr);
+
+        return event;
+    }
+
+    @Override
+    public JmsNotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+        JmsNotificationEvent event = new JmsNotificationEvent();
+        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        if (parameters != null && parameters.length > 0) {
+            message = MessageFormat.format(message, parameters);
+        }
+        event.setMessage(message);
+        return event;
     }
 }

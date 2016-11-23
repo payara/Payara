@@ -41,11 +41,11 @@ package fish.payara.nucleus.requesttracing;
 
 import fish.payara.nucleus.notification.NotificationService;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import fish.payara.nucleus.notification.log.LogNotificationEventFactory;
 import fish.payara.nucleus.notification.log.LogNotificationEvent;
-import fish.payara.nucleus.requesttracing.domain.execoptions.LogNotifierExecutionOptions;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import fish.payara.nucleus.requesttracing.domain.execoptions.RequestTracingExecutionOptions;
 import org.junit.Test;
 import org.junit.runner.RunWith;

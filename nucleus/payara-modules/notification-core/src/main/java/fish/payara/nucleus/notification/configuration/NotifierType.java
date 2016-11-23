@@ -46,11 +46,11 @@ package fish.payara.nucleus.notification.configuration;
 public enum NotifierType {
     LOG,
     HIPCHAT,
-    SLACK
+    SLACK,
+    JMS
 
     // More types will be here soon! Things we have in mind:
     // PAYARA-702 - XMPP NotifierConfiguration
     // PAYARA-701 - SNMP NotifierConfiguration
-    // PAYARA-700 - JMS NotifierConfiguration
     // PAYARA-698 - Email NotifierConfiguration
 }

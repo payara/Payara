@@ -37,33 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.nucleus.notification.hipchat;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
-import org.glassfish.api.StartupRunLevel;
-import org.glassfish.hk2.runlevel.RunLevel;
-import org.jvnet.hk2.annotations.Service;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-@Service
-@RunLevel(StartupRunLevel.VAL)
-public class NotifierConfigurationExecutionOptionsFactoryStore {
+public class HipchatNotifierExecutionOptions extends NotifierExecutionOptions {
 
-    private Map<NotifierType, NotifierConfigurationExecutionOptionsFactory> factoryStore =
-            new ConcurrentHashMap<>();
-
-    public NotifierConfigurationExecutionOptionsFactory get(NotifierType type) {
-        return factoryStore.get(type);
-    }
-
-    public void register(NotifierType type, NotifierConfigurationExecutionOptionsFactory factory) {
-        factoryStore.put(type, factory);
+    public HipchatNotifierExecutionOptions() {
+        super(NotifierType.HIPCHAT);
     }
 }

@@ -11,10 +11,11 @@
  When distributing the software, include this License Header Notice in each
  file and include the License file at packager/legal/LICENSE.txt.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.nucleus.notification.log;
 
-import fish.payara.nucleus.notification.log.LogNotifier;
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
