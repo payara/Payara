@@ -37,16 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.requesttracing.domain.execoptions;
+package fish.payara.notification.jms;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-public class HipchatNotifierExecutionOptions extends NotifierExecutionOptions {
+public class JmsNotifierExecutionOptions extends NotifierExecutionOptions {
 
-    public HipchatNotifierExecutionOptions() {
-        super(NotifierType.HIPCHAT);
+    public JmsNotifierExecutionOptions() {
+        super(NotifierType.JMS);
     }
 }

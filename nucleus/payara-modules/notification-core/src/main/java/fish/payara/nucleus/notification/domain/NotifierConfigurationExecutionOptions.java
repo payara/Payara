@@ -16,9 +16,9 @@ package fish.payara.nucleus.notification.domain;
 import fish.payara.nucleus.notification.configuration.NotifierType;
 
 /**
- * @author mertcaliskan
- *
  * Base class for all notifier configurations.
+ *
+ * @author mertcaliskan
  */
 public abstract class NotifierConfigurationExecutionOptions {
 

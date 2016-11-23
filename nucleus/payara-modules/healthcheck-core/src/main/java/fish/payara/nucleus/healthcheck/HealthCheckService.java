@@ -17,9 +17,9 @@ import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfigura
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
 import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.requesttracing.domain.execoptions.LogNotifierExecutionOptions;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptions;
-import fish.payara.nucleus.requesttracing.domain.execoptions.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -83,7 +83,7 @@ public class HealthCheckService implements EventListener {
     private boolean enabled;
 
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        if (event.is(EventTypes.SERVER_SHUTDOWN) && executor != null) {
             executor.shutdownNow();
         }
         else if (event.is(EventTypes.SERVER_READY)) {
@@ -97,22 +97,21 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
+        events.register(this);
+
+        configuration = habitat.getService(HealthCheckServiceConfiguration.class);
         if (configuration != null && Boolean.parseBoolean(configuration.getEnabled())) {
             enabled = true;
-            bootstrapHealthCheck();
         }
     }
 
     public void bootstrapHealthCheck() {
-        HealthCheckServiceConfiguration configuration = habitat.getService(HealthCheckServiceConfiguration.class);
         if (configuration != null) {
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     return new Thread(r, PREFIX + threadNumber.getAndIncrement());
                 }
             });
-
-            events.register(this);
             if (enabled) {
                 logger.info("Payara Health Check Service Started.");
                 executeTasks();

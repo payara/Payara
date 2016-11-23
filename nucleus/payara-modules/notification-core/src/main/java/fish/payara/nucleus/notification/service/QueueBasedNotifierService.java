@@ -70,7 +70,7 @@ public abstract class QueueBasedNotifierService<E extends NotificationEvent,
         this.prefix = prefix;
     }
 
-    protected void initializeExeutor() {
+    protected void initializeExecutor() {
         executor = Executors.newScheduledThreadPool(1, new ThreadFactory() {
             public Thread newThread(Runnable r) {
                 return new Thread(r, prefix + threadNumber.getAndIncrement());
