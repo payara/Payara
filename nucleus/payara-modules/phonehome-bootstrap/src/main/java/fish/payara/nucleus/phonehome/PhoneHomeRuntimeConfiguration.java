@@ -36,4 +36,7 @@ public interface PhoneHomeRuntimeConfiguration
     String getEnabled();
     public void setEnabled(String value);
     
+    @Attribute(dataType = String.class)
+    String getPhoneHomeId();
+    public void setPhoneHomeId(String id);
 }
