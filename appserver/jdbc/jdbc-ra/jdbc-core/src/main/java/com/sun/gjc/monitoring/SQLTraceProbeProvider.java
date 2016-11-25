@@ -61,10 +61,11 @@ public class SQLTraceProbeProvider {
      * @param sql sql query that should be cached
      */
     @Probe(name=JdbcRAConstants.TRACE_SQL)
-    public void traceSQLEvent(@ProbeParam("poolName") String poolName,
-                                   @ProbeParam("appName") String appName,
-                                   @ProbeParam("moduleName") String moduleName,
-            @ProbeParam("sql") String sql) {
+    public void traceSQLEvent(@ProbeParam("poolName") String poolName, 
+            @ProbeParam("appName") String appName,
+            @ProbeParam("moduleName") String moduleName, 
+            @ProbeParam("sql") String sql, 
+            @ProbeParam("executionTime") long executionTime) {
 
     }
 }
