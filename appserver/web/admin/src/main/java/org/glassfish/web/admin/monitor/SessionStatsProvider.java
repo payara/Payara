@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.web.admin.monitor;
 
 import java.util.HashMap;
