@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,38 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.email;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.UnsupportedEncodingException;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EmailNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<EmailNotifierConfiguration, EmailNotifierConfigurationExecutionOptions> {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.EMAIL, this);
+    }
+
+    @Override
+    public EmailNotifierConfigurationExecutionOptions build(EmailNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
+        EmailNotifierConfigurationExecutionOptions executionOptions = new EmailNotifierConfigurationExecutionOptions();
+
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+        executionOptions.setJndiName(notifierConfiguration.getJndiName());
+        executionOptions.setTo(notifierConfiguration.getTo());
+
+        return executionOptions;
+    }
 }

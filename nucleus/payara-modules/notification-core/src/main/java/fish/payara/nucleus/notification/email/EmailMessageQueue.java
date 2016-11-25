@@ -36,21 +36,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.email;
+
+import fish.payara.nucleus.notification.service.MessageQueue;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL
-
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EmailMessageQueue extends MessageQueue<EmailMessage> {
 }
