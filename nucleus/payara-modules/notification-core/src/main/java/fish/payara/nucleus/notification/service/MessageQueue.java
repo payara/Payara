@@ -38,25 +38,37 @@
  */
 package fish.payara.nucleus.notification.service;
 
+import com.google.common.collect.EvictingQueue;
+import fish.payara.nucleus.notification.NotificationService;
+import org.jvnet.hk2.annotations.Contract;
+
+import javax.inject.Inject;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author mertcaliskan
  */
+@Contract
 public abstract class MessageQueue<M extends Message> {
 
-    private Queue<M> messageQueue = new ConcurrentLinkedQueue<>();
+    @Inject
+    private NotificationService notificationService;
 
-    public void addMessage(M message) {
+    private Queue<M> messageQueue = EvictingQueue.create(200);
+
+    public synchronized void addMessage(M message) {
         messageQueue.add(message);
     }
 
-    public M getMessage() {
+    public synchronized M getMessage() {
         return messageQueue.remove();
     }
 
-    public int size() {
+    public synchronized int size() {
         return messageQueue.size();
+    }
+
+    protected NotificationService getNotificationService() {
+        return notificationService;
     }
 }
