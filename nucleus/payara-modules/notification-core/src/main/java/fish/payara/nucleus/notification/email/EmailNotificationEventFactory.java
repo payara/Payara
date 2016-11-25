@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.email;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.text.MessageFormat;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EmailNotificationEventFactory extends NotificationEventFactory<EmailNotificationEvent> {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.EMAIL, this);
+    }
+
+    public EmailNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+        EmailNotificationEvent event = new EmailNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setMessage(eventAsStr);
+
+        return event;
+    }
+
+    @Override
+    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+        EmailNotificationEvent event = new EmailNotificationEvent();
+        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        if (parameters != null && parameters.length > 0) {
+            message = MessageFormat.format(message, parameters);
+        }
+        event.setMessage(message);
+        return event;
+    }
 }

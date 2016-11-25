@@ -36,21 +36,44 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.nucleus.notification.email;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
- *
- * The type of notifer types that notification service supports.
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL
+public class EmailNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-702 - XMPP NotifierConfiguration
-    // PAYARA-701 - SNMP NotifierConfiguration
+    private String jndiName;
+    private String to;
+
+    EmailNotifierConfigurationExecutionOptions() {
+        super(NotifierType.EMAIL);
+    }
+
+    public String getJndiName() {
+        return jndiName;
+    }
+
+    public void setJndiName(String jndiName) {
+        this.jndiName = jndiName;
+    }
+
+    public String getTo() {
+        return to;
+    }
+
+    public void setTo(String to) {
+        this.to = to;
+    }
+
+    @Override
+    public String toString() {
+        return "EmailNotifierConfigurationExecutionOptions{" +
+                "jndiName='" + jndiName + '\'' +
+                ", to='" + to + '\'' +
+                "} " + super.toString();
+    }
 }
