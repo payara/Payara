@@ -98,7 +98,7 @@ public class JDBCConnectionPoolManager implements ResourceManager {
     private String connectionCreationRetryAttempts = "0";
     private String connectionCreationRetryInterval = "10";
     private String driverclassname = null;
-    private String sqltracelisteners = null;
+    private String sqltracelisteners = "fish.payara.jdbc.SilentSqlTraceListener";
     private String statementTimeout = "-1";
     private String statementcachesize = "0";
     private String lazyConnectionEnlistment = Boolean.FALSE.toString();

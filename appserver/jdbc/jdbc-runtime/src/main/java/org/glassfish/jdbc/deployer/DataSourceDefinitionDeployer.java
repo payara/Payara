@@ -1133,6 +1133,26 @@ public class DataSourceDefinitionDeployer implements ResourceDeployer {
         @Override
         public void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException {
         }
+        
+        @Override
+        public String getSlowQueryFrequencyMonitoringRange() {
+            return getPropertyValue("fish.payara.slow-query-frequency-monitoring-range", "0");
+        }
+        
+        @Override
+        public void setSlowQueryFrequencyMonitoringRange(String value) throws PropertyVetoException {
+            // Do nothing
+        }
+        
+        @Override
+        public String getSlowQueryTimeMonitoringRange() {
+            return getPropertyValue("fish.payara.slow-query-time-monitoring-range", "0");
+        }
+        
+        @Override
+        public void setSlowQueryTimeMonitoringRange(String value) throws PropertyVetoException {
+            // Do nothing
+        }
 
         @Override
         public String getLogJdbcCalls() {

@@ -40,6 +40,8 @@
 
 package com.sun.gjc.util;
 
+import java.util.Comparator;
+
 /**
  * Store the sql queries executed by applications along with the number of
  * times executed and the time stamp of the last usage.
@@ -137,7 +139,7 @@ public class SQLTrace implements Comparable {
     }
 
     /**
-     * Generate hash code for this obejct using all the fields.
+     * Generate hash code for this object using all the fields.
      * @return
      */
     @Override
@@ -152,30 +154,42 @@ public class SQLTrace implements Comparable {
         if (!(o instanceof SQLTrace)) {
             throw new ClassCastException("SqlTraceCache object is expected");
         }
-        int number = ((SQLTrace) o).numExecutions;
-        long t = ((SQLTrace) o).getLastUsageTime();
-
+        
         int compare = 0;
-        if (number == this.numExecutions) {
-            compare = 0;
-        } else if (number < this.numExecutions) {
-            compare = -1;
-        } else {
+        if (!equals(o)) {
             compare = 1;
         }
-        if (compare == 0) {
-            //same number of executions. Hence compare based on time.
-            long timeCompare = this.getLastUsageTime() - t;
-            if(timeCompare == 0) {
-                compare = 0;
-            } else if(timeCompare < 0) {
-                //compare = -1;
-                compare = 1;
-            } else {
-                //compare = 1;
-                compare = -1;
-            }
-        }
+        
         return compare;
     }
+    
+    public static Comparator<SQLTrace> SQLTraceFrequencyComparator = new Comparator<SQLTrace>() {
+        
+        @Override
+        public int compare(SQLTrace sqlTrace1, SQLTrace sqlTrace2) {
+            final int sqlTrace1Frequency = sqlTrace1.getNumExecutions();
+            final int sqlTrace2Frequency = sqlTrace2.getNumExecutions();
+            
+            
+            int compare = 0;
+            if (sqlTrace1Frequency < sqlTrace2Frequency) {
+                compare = 1;
+            } else if (sqlTrace1Frequency > sqlTrace2Frequency) {
+                compare = -1;
+            }
+            
+            if (compare == 0) {
+                final long sqlTrace1LastUsageTime = sqlTrace1.getLastUsageTime();
+                final long sqlTrace2LastUsageTime = sqlTrace2.getLastUsageTime();
+                
+                if (sqlTrace1LastUsageTime < sqlTrace2LastUsageTime) {
+                    compare = 1;
+                } else if (sqlTrace1LastUsageTime > sqlTrace2LastUsageTime) {
+                    compare = -1;
+                }
+            }
+            
+            return compare;
+        }
+    };
 }
