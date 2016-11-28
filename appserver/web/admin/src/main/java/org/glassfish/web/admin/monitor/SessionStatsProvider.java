@@ -42,7 +42,11 @@
 
 package org.glassfish.web.admin.monitor;
 
-import java.util.HashMap;
+import com.google.common.collect.EvictingQueue;
+import com.google.common.collect.Queues;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.external.statistics.CountStatistic;
@@ -93,12 +97,12 @@ public class SessionStatsProvider{
     private CountStatisticImpl persistedSessionsTotal;
     private CountStatisticImpl passivatedSessionsTotal;
     private CountStatisticImpl activatedSessionsTotal;
-    private CircularFifoBuffer buffer; 
-    private HashMap<String,Long> sessionTimestamps; 
+    private Queue<Map<String,Long>> sessionIdAndTimeQueue; 
         
     public SessionStatsProvider(String moduleName, String vsName) {
-        buffer = new CircularFifoBuffer(10);
-        sessionTimestamps = new HashMap<>();
+        EvictingQueue<Map<String,Long>> evictingQueue = EvictingQueue.create(10);
+        sessionIdAndTimeQueue = Queues.synchronizedQueue(evictingQueue);
+        
         this.moduleName = moduleName;
         this.vsName = vsName;
         long curTime = System.currentTimeMillis();
@@ -172,8 +176,9 @@ public class SessionStatsProvider{
             @ProbeParam("appName") String appName,
             @ProbeParam("hostName") String hostName){
         
-        buffer.add(sessionId);
-        sessionTimestamps.put(sessionId, System.currentTimeMillis());
+        Map<String, Long> sessionIdAndTime = new LinkedHashMap<>(1);
+        sessionIdAndTime.put(sessionId, System.currentTimeMillis());
+        sessionIdAndTimeQueue.add(sessionIdAndTime);
         
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionCreatedEvent received - session = " + 
@@ -198,8 +203,9 @@ public class SessionStatsProvider{
                           ": hostName = " + hostName);
         }
         
-        buffer.remove(sessionId);
-        sessionTimestamps.remove(sessionId);
+        Map<String, Long> sessionIdAndTime = new LinkedHashMap<>(1);
+        sessionIdAndTime.put(sessionId, System.currentTimeMillis());
+        sessionIdAndTimeQueue.remove(sessionIdAndTime);
         if (isValidEvent(appName, hostName)) {
             decrementActiveSessions();
         }
@@ -292,18 +298,20 @@ public class SessionStatsProvider{
         }
         
         if (isValidEvent(appName, hostName)) {
-            
-            if (buffer.contains(sessionId)) {
-                // check timestamp of the session id to fix PAYARA-486 
-                Long timestamp = sessionTimestamps.get(sessionId);
-                if (timestamp != null) {
-                    long currentTime = System.currentTimeMillis();
-                    if ((currentTime - timestamp < 100)) {
-                        // this is a failed over session see PAYARA-486
-                        decrementActiveSessions();
+            for (Map<String, Long> sessionIdAndTime : sessionIdAndTimeQueue) {
+                if (sessionIdAndTime.containsKey(sessionId)) {
+                    // Check timestamp of the session id to check if it's only just been created, rebalancing the count 
+                    // if it has - see PAYARA-486 
+                    Long timestamp = sessionIdAndTime.get(sessionId);
+                    if (timestamp != null) {
+                        long currentTime = System.currentTimeMillis();
+                        if ((currentTime - timestamp < 100)) {
+                            decrementActiveSessions();
+                        }
                     }
                 }
             }
+
             incrementActiveSessions();               
             activatedSessionsTotal.increment();
         }
