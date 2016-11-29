@@ -44,10 +44,10 @@
         <version>4.1.1.171-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
-    <artifactId>notification-jms-core</artifactId>
+    <artifactId>notification-hipchat-core</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>JMS Notification Implementation</name>
-    <description>JMS Notification Implementation</description>
+    <name>Hipchat Notification Implementation</name>
+    <description>Hipchat Notification Implementation</description>
 
     <dependencies>
         <dependency>
@@ -60,6 +60,13 @@
             <artifactId>javaee-api</artifactId>
             <version>7.0</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>2.2.6</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>
