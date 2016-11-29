@@ -44,10 +44,10 @@
         <version>4.1.1.171-SNAPSHOT</version>
     </parent>
     <groupId>fish.payara.appserver</groupId>
-    <artifactId>notification-jms-core</artifactId>
+    <artifactId>notification-email-core</artifactId>
     <packaging>glassfish-jar</packaging>
-    <name>JMS Notification Implementation</name>
-    <description>JMS Notification Implementation</description>
+    <name>Email Notification Implementation</name>
+    <description>Email Notification Implementation</description>
 
     <dependencies>
         <dependency>
