@@ -99,7 +99,7 @@ public class RequestTraceTest {
         trace.addEvent(new RequestEvent(EventType.TRACE_START,"Start"));
         Thread.currentThread().sleep(1000);
         trace.addEvent(new RequestEvent(EventType.TRACE_END,"Finish"));
-        assertTrue((900 < trace.getElapsedTime() && trace.getElapsedTime() < 1100));
+        assertTrue((900 < trace.getElapsedTime() && trace.getElapsedTime() < 1500));
     }
     
     @Test
