@@ -108,6 +108,8 @@ import com.sun.enterprise.util.i18n.StringManager;
 import com.sun.enterprise.v3.services.impl.DummyNetworkListener;
 import com.sun.enterprise.v3.services.impl.GrizzlyService;
 import com.sun.logging.LogDomains;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import java.text.MessageFormat;
 import java.util.concurrent.ExecutionException;
@@ -139,6 +141,7 @@ import org.glassfish.hk2.api.ServiceLocator;
 
 import javax.inject.Singleton;
 import org.glassfish.api.invocation.InvocationManager;
+import org.glassfish.internal.api.ORBLocator;
 import org.jvnet.hk2.config.types.Property;
 
 //import com.sun.messaging.jmq.util.service.PortMapperClientHandler;
@@ -1426,6 +1429,36 @@ public class ActiveJmsResourceAdapter extends ActiveInboundResourceAdapterImpl i
         if (_logger.isLoggable(Level.FINE))
             logFine("In Appclient container!!!");
         ConnectorDescriptor cd = super.getDescriptor();
+
+        // if the CONNECTION_URL is localhost, in JMSRA,
+        // use the ORB hostname so multi-homed connections work properly
+        ORBLocator orbHelper = habitat.getService(ORBLocator.class);
+        if(orbHelper != null && orbHelper.getORB() != null) {
+            String jmsHost = null;
+            String orbHost = orbHelper.getORBHost(orbHelper.getORB());
+            String jmsPort = "7676";
+            Set<?> props = cd.getConfigProperties();
+            for (Object prop_ : props) {
+                if (prop_ instanceof ConnectorConfigProperty) {
+                    final ConnectorConfigProperty prop = (ConnectorConfigProperty) prop_;
+                    if (prop.getName().equals(CONNECTION_URL)) {
+                        try {
+                            URI url = new URI(prop.getValue());
+                            jmsPort = Integer.toString(url.getPort());
+                            if("localhost".equalsIgnoreCase(url.getHost())) {
+                                jmsHost = orbHost;
+                            }
+                        } catch (URISyntaxException ex) {
+                            _logger.fine(String.format("Invalid Connection URL: %s", prop.getValue()));
+                        }
+                    }
+                }
+            }
+            if(jmsHost != null) {
+                setProperty(cd, new ConnectorConfigProperty(CONNECTION_URL, String.format("mq://%s:%s", orbHost, jmsPort),
+                        "ORB Address List", "java.lang.String"));
+            }
+        }
         ConnectorConfigProperty  envProp1 = new ConnectorConfigProperty  (
                         BROKERTYPE, REMOTE, "Broker Type", "java.lang.String");
                 setProperty(cd, envProp1);
