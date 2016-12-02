@@ -42,11 +42,6 @@
 
 package org.glassfish.web.admin.monitor;
 
-import com.google.common.collect.EvictingQueue;
-import com.google.common.collect.Queues;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Queue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.external.statistics.CountStatistic;
@@ -97,15 +92,13 @@ public class SessionStatsProvider{
     private CountStatisticImpl persistedSessionsTotal;
     private CountStatisticImpl passivatedSessionsTotal;
     private CountStatisticImpl activatedSessionsTotal;
-    private Queue<Map<String,Long>> sessionIdAndTimeQueue; 
+    private ThreadLocal<String> sessionIdThreadLocal;
         
-    public SessionStatsProvider(String moduleName, String vsName) {
-        EvictingQueue<Map<String,Long>> evictingQueue = EvictingQueue.create(10);
-        sessionIdAndTimeQueue = Queues.synchronizedQueue(evictingQueue);
-        
+    public SessionStatsProvider(String moduleName, String vsName) {      
         this.moduleName = moduleName;
         this.vsName = vsName;
         long curTime = System.currentTimeMillis();
+        sessionIdThreadLocal = new ThreadLocal();
         activeSessionsCount = new RangeStatisticImpl(
                 0L, 0L, 0L, "ActiveSessions", StatisticImpl.UNIT_COUNT,
                 ACTIVE_SESSIONS_DESCRIPTION, curTime, curTime);
@@ -176,16 +169,13 @@ public class SessionStatsProvider{
             @ProbeParam("appName") String appName,
             @ProbeParam("hostName") String hostName){
         
-        Map<String, Long> sessionIdAndTime = new LinkedHashMap<>(1);
-        sessionIdAndTime.put(sessionId, System.currentTimeMillis());
-        sessionIdAndTimeQueue.add(sessionIdAndTime);
-        
         if (logger.isLoggable(Level.FINEST)) {
             logger.finest("[TM]sessionCreatedEvent received - session = " + 
                           sessionId + ": appname = " + appName + 
                           ": hostName = " + hostName);
         }
         if (isValidEvent(appName, hostName)) {
+            sessionIdThreadLocal.set(sessionId);
             incrementActiveSessions();
             sessionsTotal.increment();
         }        
@@ -203,11 +193,9 @@ public class SessionStatsProvider{
                           ": hostName = " + hostName);
         }
         
-        Map<String, Long> sessionIdAndTime = new LinkedHashMap<>(1);
-        sessionIdAndTime.put(sessionId, System.currentTimeMillis());
-        sessionIdAndTimeQueue.remove(sessionIdAndTime);
         if (isValidEvent(appName, hostName)) {
             decrementActiveSessions();
+            sessionIdThreadLocal.remove();
         }
     }
 
@@ -298,21 +286,11 @@ public class SessionStatsProvider{
         }
         
         if (isValidEvent(appName, hostName)) {
-            for (Map<String, Long> sessionIdAndTime : sessionIdAndTimeQueue) {
-                if (sessionIdAndTime.containsKey(sessionId)) {
-                    // Check timestamp of the session id to check if it's only just been created, rebalancing the count 
-                    // if it has - see PAYARA-486 
-                    Long timestamp = sessionIdAndTime.get(sessionId);
-                    if (timestamp != null) {
-                        long currentTime = System.currentTimeMillis();
-                        if ((currentTime - timestamp < 100)) {
-                            decrementActiveSessions();
-                        }
-                    }
-                }
+            if (sessionIdThreadLocal.get() != null && sessionIdThreadLocal.get().equals(sessionId)) {
+                decrementActiveSessions();
             }
-
-            incrementActiveSessions();               
+            
+            incrementActiveSessions();
             activatedSessionsTotal.increment();
         }
     }
