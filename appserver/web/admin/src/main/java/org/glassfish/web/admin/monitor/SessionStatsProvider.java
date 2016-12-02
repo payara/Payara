@@ -195,7 +195,9 @@ public class SessionStatsProvider{
         
         if (isValidEvent(appName, hostName)) {
             decrementActiveSessions();
-            sessionIdThreadLocal.remove();
+            if (sessionIdThreadLocal.get() != null) {
+                sessionIdThreadLocal.remove();
+            }
         }
     }
 
@@ -289,6 +291,7 @@ public class SessionStatsProvider{
             incrementActiveSessions();
             activatedSessionsTotal.increment();
             
+            // PAYARA-486 & PAYARA-1224 Correct the incorrect incrementation - needs further looking at
             if (sessionIdThreadLocal.get() != null && sessionIdThreadLocal.get().equals(sessionId)) {
                 decrementActiveSessions();
             }
