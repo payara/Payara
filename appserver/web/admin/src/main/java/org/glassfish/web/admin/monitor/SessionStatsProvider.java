@@ -175,9 +175,9 @@ public class SessionStatsProvider{
                           ": hostName = " + hostName);
         }
         if (isValidEvent(appName, hostName)) {
-            sessionIdThreadLocal.set(sessionId);
             incrementActiveSessions();
             sessionsTotal.increment();
+            sessionIdThreadLocal.set(sessionId);
         }        
     }
 
@@ -286,12 +286,12 @@ public class SessionStatsProvider{
         }
         
         if (isValidEvent(appName, hostName)) {
+            incrementActiveSessions();
+            activatedSessionsTotal.increment();
+            
             if (sessionIdThreadLocal.get() != null && sessionIdThreadLocal.get().equals(sessionId)) {
                 decrementActiveSessions();
             }
-            
-            incrementActiveSessions();
-            activatedSessionsTotal.increment();
         }
     }
 
