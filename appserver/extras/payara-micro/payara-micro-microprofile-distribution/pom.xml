@@ -43,7 +43,7 @@
                         </goals>
                         <configuration>
                             <tasks>
-                                <ant dir="." antfile="build.xml" target="create.distribution">
+                                <ant dir="." antfile="build.xml" target="new.create">
                                     <property name="bundlename" value="fish.payara.micro" />
                                     <property name="finaljar" value="${project.build.directory}/payara-microprofile.jar" />
                                     <property name="install.dir.name" value="${install.dir.name}" />                            
@@ -837,6 +837,13 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
+        <!-- Add Boot classes -->
+        <dependency>
+            <groupId>fish.payara.extras.payara-micro</groupId>
+            <artifactId>payara-micro-boot</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>            
+        </dependency>  
         <!-- Add Payara Micro Services -->
         <dependency>
             <groupId>fish.payara.appserver.micro</groupId>
@@ -851,6 +858,15 @@
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
+        
+        <!-- Payara Domain will be deleted during assembly -->
+        <dependency>
+            <groupId>org.glassfish.main.admin</groupId>
+            <artifactId>payara-domain</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+        
         <!-- Add Concurrency -->
         <dependency>
             <groupId>javax.enterprise.concurrent</groupId>

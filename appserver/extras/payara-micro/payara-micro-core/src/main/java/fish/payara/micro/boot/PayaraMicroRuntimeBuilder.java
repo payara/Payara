@@ -40,18 +40,7 @@
 package fish.payara.micro.boot;
 
 import com.sun.enterprise.glassfish.bootstrap.Constants;
-import com.sun.enterprise.glassfish.bootstrap.EmbeddedMain;
-import com.sun.enterprise.glassfish.bootstrap.SingleHK2Factory;
-import com.sun.enterprise.module.ModulesRegistry;
-import com.sun.enterprise.module.bootstrap.Main;
-import com.sun.enterprise.module.single.SingleModulesRegistry;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.security.CodeSource;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 import org.glassfish.embeddable.BootstrapProperties;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishRuntime;

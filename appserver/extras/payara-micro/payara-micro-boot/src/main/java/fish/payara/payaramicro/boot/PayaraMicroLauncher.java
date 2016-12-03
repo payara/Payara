@@ -46,6 +46,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.List;
@@ -147,7 +148,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
         if (!configDir.exists()) {
             configDir.mkdirs();
         }
-
+              
         // Get our configuration files
         CodeSource src = this.getClass().getProtectionDomain().getCodeSource();
         if (src != null) {
@@ -176,9 +177,7 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
                             }
                         }
                     }
-
                 }
-
             }
         }
     }

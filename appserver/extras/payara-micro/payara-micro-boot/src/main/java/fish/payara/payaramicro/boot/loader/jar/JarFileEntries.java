@@ -300,6 +300,11 @@ class JarFileEntries implements CentralDirectoryVisitor, Iterable<JarEntry> {
 			this.index++;
 			return getEntry(entryIndex, JarEntry.class, true);
 		}
+                
+                @Override
+                public void remove() {
+                    throw new UnsupportedOperationException();
+                }
 
 	}
 
