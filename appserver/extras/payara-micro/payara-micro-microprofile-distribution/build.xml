@@ -58,7 +58,6 @@
         <antcall target="makeDirs"/>
         <antcall target="dumpRuntime"/>
         <antcall target="addSchemas"/>
-        <antcall target="addRARs"/>
         <antcall target="addKeystores"/>
         <antcall target="tidyRuntimeJars"/>
         <antcall target="sortOutBootClasses"/>
@@ -117,7 +116,7 @@
 	  <fileset dir="${runtimedir}" includes="console-**-plugin.jar"/>
 	  <!-- skip the domain creation template jar files viz., nucleus-domain.jar, appserver-domain.jar -->
 	  <fileset dir="${runtimedir}" includes="**/appserver-domain.jar"/>
-	  <fileset dir="${runtimedir}" includes="**/payara-domain.jar"/>
+	  <fileset dir="${runtimedir}" includes="**/payara-domain*.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/nucleus-domain.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-se-core.jar"/>
 	  <fileset dir="${runtimedir}" includes="**/weld-environment-common.jar"/>
@@ -150,21 +149,42 @@
      
     <target name="addSchemas" >
         <echo message="adding schemas"/>
-        <jar jarfile="${runtimedir}/dtds.jar" basedir="${runtimedir}/glassfish/lib" includes="dtds/**/*"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/920"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/1.0"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/10.0"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/10.3"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/90"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/910"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/deployment-plan"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/domain"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/jdbc-data-source"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/persistence-configuration"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/security"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/servers"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-application"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-application-client"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-connector"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-diagnostics"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-diagnostics-image"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-ejb-jar"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-interception"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-javaee"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-jms"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-pubsub"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-rdbms-jar"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-sca"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-sca-binding"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-web-app"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-webservices"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-wsee-clienthandlerchain"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-wsee-databinding"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/weblogic-wsee-standaloneclient"/>
+        <delete dir="${runtimedir}/glassfish/lib/schemas/webservice-policy-ref"/>        <jar jarfile="${runtimedir}/dtds.jar" basedir="${runtimedir}/glassfish/lib" includes="dtds/**/*"/>
 	<jar jarfile="${runtimedir}/schemas.jar" basedir="${runtimedir}/glassfish/lib" includes="schemas/**/*"/>
         <delete dir="${runtimedir}/glassfish/lib/dtds" />
         <delete dir="${runtimedir}/glassfish/lib/schemas" />
     </target>
-    
-    <target name="addRARs">
-        <echo message="adding rars"/>
-        <jar jarfile="${runtimedir}/__cp_jdbc_ra.rar" basedir="${runtimedir}/${install.dir.name}/glassfish" includes="lib/install/applications/__cp_jdbc_ra/**/*"/>
-        <jar jarfile="${runtimedir}/__ds_jdbc_ra.rar" basedir="${runtimedir}/${install.dir.name}/glassfish" includes="lib/install/applications/__ds_jdbc_ra/**/*"/>
-        <jar jarfile="${runtimedir}/__dm_jdbc_ra.rar" basedir="${runtimedir}/${install.dir.name}/glassfish" includes="lib/install/applications/__dm_jdbc_ra/**/*"/>
-        <jar jarfile="${runtimedir}/__xa_jdbc_ra.rar" basedir="${runtimedir}/${install.dir.name}/glassfish" includes="lib/install/applications/__xa_jdbc_ra/**/*"/>
-        <delete dir="${runtimedir}/${install.dir.name}/glassfish/lib/install/applications" />
-    </target> 
-    
+       
     <target name="addKeystores">
         <unzip dest="${tempdir}">
             <fileset dir="${runtimedir}">
@@ -180,6 +200,7 @@
       
     
     <target name="finalClean">
+        <delete dir="${runtimedir}/payara41"/>
         <delete dir="${runtimedir}/glassfish"/>
         <delete dir="${runtimedir}/lib"/>
     </target>   
