@@ -163,6 +163,10 @@ public class RoleMapper implements Serializable, SecurityRoleMapper {
         appDefaultMapping = false;
         if(secService != null) {
             appDefaultMapping = Boolean.parseBoolean(secService.getActivateDefaultPrincipalToRoleMapping());
+            if (appDefaultMapping) {
+                // if set explicitly in the security service allow default mapping
+                return appDefaultMapping;
+            }
         }
         
         ApplicationRegistry appRegistry = Globals.getDefaultHabitat().getService(ApplicationRegistry.class);
