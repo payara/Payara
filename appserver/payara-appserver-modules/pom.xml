@@ -40,5 +40,6 @@
         <module>notification-hipchat-core</module>
         <module>notification-slack-core</module>
         <module>notification-email-core</module>
+        <module>notification-xmpp-core</module>
     </modules>
 </project>

@@ -36,21 +36,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.xmpp;
+
+import fish.payara.nucleus.notification.service.Message;
 
 /**
- * The type of notifer types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP
+public class XmppMessage implements Message {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
+    private String message;
+
+    public XmppMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    @Override
+    public String toString() {
+        return "XmppMessage{" +
+                "message='" + message + '\'' +
+                '}';
+    }
 }
