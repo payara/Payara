@@ -36,21 +36,50 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.xmpp;
+
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
+
+import java.beans.PropertyVetoException;
 
 /**
- * The type of notifer types that notification service supports.
+ * Configuration class with the aim to configure XMPP notification specific parameters.
+ * This configuration is only being used by notification services.
  *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP
+@Configured
+@NotifierConfigurationType(type = NotifierType.XMPP)
+public interface XmppNotifierConfiguration extends NotifierConfiguration {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
-}
+    @Attribute(required = true)
+    String getHost();
+    void host(String host) throws PropertyVetoException;
+
+    @Attribute(dataType = Integer.class, defaultValue = "5222")
+    Integer getPort();
+    void port(String port) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getServiceName();
+    void serviceName(String serviceName) throws PropertyVetoException;
+
+    @Attribute()
+    String getUsername();
+    void username(String username) throws PropertyVetoException;
+
+    @Attribute()
+    String getPassword();
+    void password(String password) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "false")
+    Boolean getSecurityDisabled();
+    void securityDisabled(String securityDisabled) throws PropertyVetoException;
+
+    @Attribute(required = true)
+    String getRoomName();
+    void roomName(String roomName) throws PropertyVetoException;}

@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,43 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.xmpp;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.io.UnsupportedEncodingException;
 
 /**
- * The type of notifer types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class XmppNotifierConfigurationExecutionOptionsFactory
+        extends NotifierConfigurationExecutionOptionsFactory<XmppNotifierConfiguration, XmppNotifierConfigurationExecutionOptions> {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
+    @PostConstruct
+    void postConstruct() {
+        registerExecutionOptions(NotifierType.XMPP, this);
+    }
+
+    @Override
+    public XmppNotifierConfigurationExecutionOptions build(XmppNotifierConfiguration notifierConfiguration) throws UnsupportedEncodingException {
+        XmppNotifierConfigurationExecutionOptions executionOptions = new XmppNotifierConfigurationExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifierConfiguration.getEnabled()));
+
+        executionOptions.setHost(notifierConfiguration.getHost());
+        executionOptions.setPort(notifierConfiguration.getPort());
+        executionOptions.setServiceName(notifierConfiguration.getServiceName());
+        executionOptions.setUsername(notifierConfiguration.getUsername());
+        executionOptions.setPassword(notifierConfiguration.getPassword());
+        executionOptions.setSecurityDisabled(notifierConfiguration.getSecurityDisabled());
+        executionOptions.setRoomName(notifierConfiguration.getRoomName());
+
+        return executionOptions;
+    }
 }
