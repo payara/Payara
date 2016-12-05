@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.xmpp;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
+
+import javax.annotation.PostConstruct;
+import java.text.MessageFormat;
+import java.util.logging.Level;
 
 /**
- * The type of notifer types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class XmppNotificationEventFactory extends NotificationEventFactory<XmppNotificationEvent> {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.XMPP, this);
+    }
+
+    public XmppNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+        XmppNotificationEvent event = new XmppNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setMessage(eventAsStr);
+
+        return event;
+    }
+
+    @Override
+    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+        XmppNotificationEvent event = new XmppNotificationEvent();
+        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        if (parameters != null && parameters.length > 0) {
+            message = MessageFormat.format(message, parameters);
+        }
+        event.setMessage(message);
+        return event;
+    }
 }

@@ -36,21 +36,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.xmpp;
+
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Configured;
 
 /**
- * The type of notifer types that notification service supports.
+ * Configuration class for attaching XMPP notification mechanism into.
+ * Health check and Request tracing services enables the use of XMPP notification mechanism with this notifier configuration.
  *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP
-
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
+@Configured
+@NotifierConfigurationType(type = NotifierType.XMPP)
+public interface XmppNotifier extends Notifier {
 }

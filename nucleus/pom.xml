@@ -229,6 +229,10 @@
         <hazelcast.version>3.7.1</hazelcast.version>
         <mail.version>1.5.6</mail.version>
         <javax.annotation-api.version>1.2</javax.annotation-api.version>
+        <smack.version>4.1.9</smack.version>
+        <jxmpp.version>0.4.2</jxmpp.version>
+        <xpp3.version>1.1.4c_7</xpp3.version>
+
         <copyright-plugin.version>1.39</copyright-plugin.version>
         <jdk.version>1.7.0-09</jdk.version>
         <nucleus.install.dir.name>nucleus</nucleus.install.dir.name>

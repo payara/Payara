@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,21 +37,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.configuration;
+package fish.payara.notification.xmpp;
+
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 
 /**
- * The type of notifer types that notification service supports.
- *
  * @author mertcaliskan
  */
-public enum NotifierType {
-    LOG,
-    HIPCHAT,
-    SLACK,
-    JMS,
-    EMAIL,
-    XMPP
+public class XmppNotifierExecutionOptions extends NotifierExecutionOptions {
 
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
+    public XmppNotifierExecutionOptions() {
+        super(NotifierType.XMPP);
+    }
 }
