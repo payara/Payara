@@ -88,6 +88,11 @@
             <version>${smack.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.igniterealtime.smack</groupId>
+            <artifactId>smack-im</artifactId>
+            <version>${smack.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.jxmpp</groupId>
             <artifactId>jxmpp-core</artifactId>
             <version>${jxmpp.version}</version>
