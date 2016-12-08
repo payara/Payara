@@ -79,15 +79,14 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
         if (event.is(EventTypes.SERVER_READY)) {
             register(NotifierType.JMS, JmsNotifier.class, JmsNotifierConfiguration.class, this);
 
-            initializeExecutor();
-
             try {
                 JmsNotifierConfigurationExecutionOptions executionOptions =
                         (JmsNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-                final Properties env = new Properties();
-
                 if (executionOptions != null) {
+                    initializeExecutor();
+
+                    final Properties env = new Properties();
                     if (!Strings.isNullOrEmpty(executionOptions.getContextFactoryClass())) {
                         env.put(Context.INITIAL_CONTEXT_FACTORY, executionOptions.getContextFactoryClass());
                     }
@@ -120,9 +119,6 @@ public class JmsNotifierService extends QueueBasedNotifierService<JmsNotificatio
                             }
                         }
                     }
-                }
-                else {
-                    logger.log(Level.SEVERE, "Execution options for JMS Configuration cannot be read");
                 }
             }
             catch (NamingException e) {
