@@ -76,17 +76,18 @@ public class EmailNotifierService extends QueueBasedNotifierService<EmailNotific
             register(NotifierType.EMAIL, EmailNotifier.class, EmailNotifierConfiguration.class, this);
 
             executionOptions = (EmailNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+            if(executionOptions != null) {
+                initializeExecutor();
 
-            initializeExecutor();
-
-            try {
-                InitialContext context = new InitialContext();
-                Session session = (Session) context.lookup(executionOptions.getJndiName());
-                scheduleExecutor(new EmailNotificationRunnable(queue, session, executionOptions));
-            }
-            catch (NamingException e) {
-                logger.log(Level.SEVERE, "Cannot lookup Java Mail session with given JNDI name: "
-                        + executionOptions.getJndiName(), e);
+                try {
+                    InitialContext context = new InitialContext();
+                    Session session = (Session) context.lookup(executionOptions.getJndiName());
+                    scheduleExecutor(new EmailNotificationRunnable(queue, session, executionOptions));
+                }
+                catch (NamingException e) {
+                    logger.log(Level.SEVERE, "Cannot lookup Java Mail session with given JNDI name: "
+                            + executionOptions.getJndiName(), e);
+                }
             }
         }
     }

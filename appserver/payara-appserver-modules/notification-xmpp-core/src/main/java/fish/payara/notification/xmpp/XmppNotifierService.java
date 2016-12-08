@@ -77,30 +77,30 @@ public class XmppNotifierService extends QueueBasedNotifierService<XmppNotificat
         if (event.is(EventTypes.SERVER_READY)) {
             register(NotifierType.XMPP, XmppNotifier.class, XmppNotifierConfiguration.class, this);
 
-            initializeExecutor();
-
             try {
                 XmppNotifierConfigurationExecutionOptions executionOptions =
                         (XmppNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
 
-                XMPPTCPConnectionConfiguration configuration =  XMPPTCPConnectionConfiguration.builder()
-                        .setSecurityMode(executionOptions.getSecurityDisabled() ?
-                                ConnectionConfiguration.SecurityMode.disabled :
-                                ConnectionConfiguration.SecurityMode.required)
-                        .setServiceName(executionOptions.getServiceName())
-                        .setHost(executionOptions.getHost())
-                        .setPort(executionOptions.getPort())
-                        .build();
-                connection = new XMPPTCPConnection(configuration);
-                connection.connect();
-                if (executionOptions.getUsername() != null && executionOptions.getPassword() != null) {
-                    connection.login(executionOptions.getUsername(), executionOptions.getPassword());
-                }
-                else {
-                    connection.login();
-                }
+                if (executionOptions != null) {
+                    initializeExecutor();
 
-                scheduleExecutor(new XmppNotificationRunnable(queue, executionOptions, connection));
+                    XMPPTCPConnectionConfiguration configuration = XMPPTCPConnectionConfiguration.builder()
+                            .setSecurityMode(executionOptions.getSecurityDisabled() ?
+                                    ConnectionConfiguration.SecurityMode.disabled :
+                                    ConnectionConfiguration.SecurityMode.required)
+                            .setServiceName(executionOptions.getServiceName())
+                            .setHost(executionOptions.getHost())
+                            .setPort(executionOptions.getPort())
+                            .build();
+                    connection = new XMPPTCPConnection(configuration);
+                    connection.connect();
+                    if (executionOptions.getUsername() != null && executionOptions.getPassword() != null) {
+                        connection.login(executionOptions.getUsername(), executionOptions.getPassword());
+                    } else {
+                        connection.login();
+                    }
+                    scheduleExecutor(new XmppNotificationRunnable(queue, executionOptions, connection));
+                }
             }
             catch (XMPPException e) {
                 logger.log(Level.SEVERE, "Error occurred on XMPP protocol level while connecting host", e);
