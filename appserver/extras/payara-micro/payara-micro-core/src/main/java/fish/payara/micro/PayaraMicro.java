@@ -1711,7 +1711,7 @@ public class PayaraMicro {
 
         // search META-INF/deploy for deployments
         // if there is a deployment called ROOT deploy to the root context /
-        URL url = this.getClass().getClassLoader().getResource("META-INF/deploy");
+        URL url = this.getClass().getClassLoader().getResource("MICRO-INF/deploy");
         if (url != null) {
             String entryName = "";
             try {
@@ -2136,7 +2136,7 @@ public class PayaraMicro {
         String entryString;
         try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));) {
             // get the current payara micro jar
-            URL url = this.getClass().getClassLoader().getResource("payara-boot.properties");
+            URL url = this.getClass().getClassLoader().getResource("MICRO-INF/payara-boot.properties");
             JarURLConnection urlcon = (JarURLConnection) url.openConnection();
 
             // copy all entries from the existing jar file
@@ -2144,9 +2144,14 @@ public class PayaraMicro {
             Enumeration<JarEntry> entries = jFile.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                jos.putNextEntry(new JarEntry(entry.getName()));
+                JarEntry newEntry = new JarEntry(entry.getName());
+                newEntry.setMethod(JarEntry.STORED);
+                newEntry.setSize(entry.getSize());
+                newEntry.setCrc(entry.getCrc());
+                newEntry.setCompressedSize(entry.getCompressedSize());
+                jos.putNextEntry(newEntry);
                 InputStream is = jFile.getInputStream(entry);
-                if (entry.toString().contains("config/logging.properties") &&  logPropertiesFile) {
+                if (entry.toString().contains("MICRO-INF/domain/logging.properties") &&  logPropertiesFile) {
                    is = new FileInputStream(new File(userLogPropertiesFile ));
                 }
      
@@ -2161,14 +2166,9 @@ public class PayaraMicro {
                 jos.closeEntry();
             }
 
-            // create the directory entry
-            JarEntry deploymentDir = new JarEntry("META-INF/deploy/");
-            jos.putNextEntry(deploymentDir);
-            jos.flush();
-            jos.closeEntry();
             if (deployments != null) {
                 for (File deployment : deployments) {
-                    JarEntry deploymentEntry = new JarEntry("META-INF/deploy/" + deployment.getName());
+                    JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
                     jos.putNextEntry(deploymentEntry);
                     try (FileInputStream fis = new FileInputStream(deployment)) {
                         byte[] buffer = new byte[4096];
@@ -2187,7 +2187,7 @@ public class PayaraMicro {
             if (deploymentRoot != null) {
                 for (File deployment : deploymentRoot.listFiles()) {
                     if (deployment.isFile()) {
-                        JarEntry deploymentEntry = new JarEntry("META-INF/deploy/" + deployment.getName());
+                        JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
                         jos.putNextEntry(deploymentEntry);
                         try (FileInputStream fis = new FileInputStream(deployment)) {
                             byte[] buffer = new byte[4096];
@@ -2212,7 +2212,7 @@ public class PayaraMicro {
                         URL deployment = deploymentMapEntry.getValue();
                         String name = deploymentMapEntry.getKey();
                         try (InputStream is = deployment.openStream()) {
-                            JarEntry deploymentEntry = new JarEntry("META-INF/deploy/" + name);
+                            JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + name);
                             jos.putNextEntry(deploymentEntry);
                             byte[] buffer = new byte[4096];
                             int bytesRead = 0;
@@ -2231,7 +2231,7 @@ public class PayaraMicro {
             }
 
             // write the system properties file
-            JarEntry je = new JarEntry("META-INF/deploy/payaramicro.properties");
+            JarEntry je = new JarEntry("MICRO-INF/deploy/payaramicro.properties");
             jos.putNextEntry(je);
             Properties props = new Properties();
             if (hzMulticastGroup != null) {
@@ -2254,7 +2254,7 @@ public class PayaraMicro {
             }
 
             if (alternateDomainXML != null) {
-                props.setProperty("payaramicro.domainConfig", "META-INF/deploy/domain.xml");
+                props.setProperty("payaramicro.domainConfig", "MICRO-INF/domain/domain.xml");
             }
 
             if (minHttpThreads != Integer.MIN_VALUE) {
@@ -2266,7 +2266,7 @@ public class PayaraMicro {
             }
 
             if (alternateHZConfigFile != null) {
-                props.setProperty("payaramicro.hzConfigFile", "META-INF/deploy/hzconfig.xml");
+                props.setProperty("payaramicro.hzConfigFile", "MICRO-INF/domain/hzconfig.xml");
             }
 
             if (hzClusterName != null) {
@@ -2326,7 +2326,7 @@ public class PayaraMicro {
             // add the alternate domain.xml file if present
             if (alternateDomainXML != null && alternateDomainXML.isFile() && alternateDomainXML.canRead()) {
                 try (InputStream is = new FileInputStream(alternateDomainXML)) {
-                    JarEntry domainXml = new JarEntry("META-INF/deploy/domain.xml");
+                    JarEntry domainXml = new JarEntry("MICRO-INF/domain/domain.xml");
                     jos.putNextEntry(domainXml);
                     byte[] buffer = new byte[4096];
                     int bytesRead = 0;
@@ -2343,7 +2343,7 @@ public class PayaraMicro {
             // add the alternate hazelcast config to the uberJar
             if (alternateHZConfigFile != null) {
                 try (InputStream is = alternateHZConfigFile.toURL().openStream()) {
-                    JarEntry domainXml = new JarEntry("META-INF/deploy/hzconfig.xml");
+                    JarEntry domainXml = new JarEntry("MICRO-INF/domain/hzconfig.xml");
                     jos.putNextEntry(domainXml);
                     byte[] buffer = new byte[4096];
                     int bytesRead = 0;

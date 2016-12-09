@@ -161,23 +161,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-<!--
-        <dependency>
-            <groupId>org.glassfish.main.packager</groupId>
-            <artifactId>glassfish-cluster</artifactId>
-            <version>${project.version}</version>
-            <type>zip</type>
-            <optional>true</optional>
-        </dependency>
-
-                <dependency>
-                    <groupId>org.glassfish.main.packager</groupId>
-                    <artifactId>glassfish-management</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                    <optional>true</optional>
-                </dependency>
-        -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
             <artifactId>glassfish-common-web</artifactId>
@@ -276,14 +259,6 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
-        <!--        <dependency>
-                    <groupId>org.glassfish.main.packager</groupId>
-                    <artifactId>shoal</artifactId>
-                    <version>${project.version}</version>
-                    <type>zip</type>
-                    <optional>true</optional>
-                </dependency>
-        -->
         <!-- hazelcast package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
