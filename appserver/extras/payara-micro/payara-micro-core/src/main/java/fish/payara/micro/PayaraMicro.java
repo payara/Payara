@@ -1709,7 +1709,7 @@ public class PayaraMicro {
             }
         }
 
-        // search META-INF/deploy for deployments
+        // search MICRO-INF/deploy for deployments
         // if there is a deployment called ROOT deploy to the root context /
         URL url = this.getClass().getClassLoader().getResource("MICRO-INF/deploy");
         if (url != null) {
@@ -1722,7 +1722,7 @@ public class PayaraMicro {
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
                     entryName = entry.getName();
-                    if (!entry.isDirectory() && !entry.getName().endsWith(".properties") && !entry.getName().endsWith(".xml") && entry.getName().startsWith("META-INF/deploy")) {
+                    if (!entry.isDirectory() && !entry.getName().endsWith(".properties") && !entry.getName().endsWith(".xml") && !entry.getName().endsWith(".gitkeep") && entry.getName().startsWith("MICRO-INF/deploy")) {
                         entriesToDeploy.add(entry.getName());
                     }
                 }
@@ -2059,7 +2059,7 @@ public class PayaraMicro {
     private void setArgumentsFromSystemProperties() {
 
         // load all from the resource
-        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("META-INF/deploy/payaramicro.properties")) {
+        try (InputStream is = this.getClass().getClassLoader().getResourceAsStream("MICRO-INF/deploy/payaramicro.properties")) {
             if (is != null) {
                 Properties props = new Properties();
                 props.load(is);
