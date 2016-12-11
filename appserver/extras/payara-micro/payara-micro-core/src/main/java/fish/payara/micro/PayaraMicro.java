@@ -18,8 +18,11 @@
  */
 package fish.payara.micro;
 
+<<<<<<< d6211f10e723f06624c060b7c306cec789731ce5
 import com.hazelcast.core.Member;
 import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
+=======
+>>>>>>> PAYARA-1053 add post boot and pre boot command files
 import fish.payara.nucleus.hazelcast.HazelcastCore;
 import fish.payara.nucleus.hazelcast.MulticastConfiguration;
 import fish.payara.nucleus.phonehome.PhoneHomeCore;
@@ -62,9 +65,8 @@ import com.sun.appserv.server.util.Version;
 import fish.payara.micro.util.NameGenerator;
 import fish.payara.nucleus.events.HazelcastEvents;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
+import fish.payara.micro.boot.MicroGlassFish;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -144,6 +146,8 @@ public class PayaraMicro {
     private long requestTracingThresholdValue = 30;
     private String instanceGroup = "MicroShoal";
     private boolean nameIsGenerated = true;   
+    private String preBootFileName;
+    private String postBootFileName;
     
     /**
      * Runs a Payara Micro server used via java -jar payara-micro.jar
@@ -916,7 +920,6 @@ public class PayaraMicro {
         if (hzClusterPassword != null) {
             mc.setClusterGroupPassword(hzClusterPassword);
         }
-
         HazelcastCore.setMulticastOverride(mc);
 
         setSystemProperties();
@@ -1014,32 +1017,8 @@ public class PayaraMicro {
                 }
             } 
 
-            if (alternateDomainXML != null) {
-                gfproperties.setConfigFileReadOnly(false);
-                gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
-            } else if (applicationDomainXml != null) {
-                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource(applicationDomainXml).toExternalForm());
-            } else if (noCluster) {
-                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/domain/microdomain-nocluster.xml").toExternalForm());
-
-            } else {
-                gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/domain/microdomain.xml").toExternalForm());
-            }
-
             if (rootDir != null) {
-                gfproperties.setInstanceRoot(rootDir.getAbsolutePath());
-                File configFile = new File(rootDir.getAbsolutePath() + File.separator + "config" + File.separator + "domain.xml");
-                if (!configFile.exists()) {
-                    installFiles(gfproperties);
-                } else {
-                    if (alternateDomainXML ==null) {
-                        String absolutePath = rootDir.getAbsolutePath();
-                        absolutePath = absolutePath.replace('\\', '/');
-                        gfproperties.setConfigFileURI("file:///" + absolutePath + "/config/domain.xml");
-                        gfproperties.setConfigFileReadOnly(false);
-                }
-                }
-
+                buildRootDir(gfproperties);
             }
 
             if (this.maxHttpThreads != Integer.MIN_VALUE) {
@@ -1061,8 +1040,16 @@ public class PayaraMicro {
             
             gfproperties.setProperty("-type", "MICRO");
             
+            if (postBootFileName != null) {
+                gfproperties.setProperty(MicroGlassFish.POSTBOOT_FILE_PROP, postBootFileName);
+            }
+            
+            if (preBootFileName != null) {
+                 gfproperties.setProperty(MicroGlassFish.PREBOOT_FILE_PROP, preBootFileName);               
+            }
+                
             gf = gfruntime.newGlassFish(gfproperties);
-
+            
             // reset logger.
             // reset the Log Manager 
             String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
@@ -1178,7 +1165,43 @@ public class PayaraMicro {
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
+        } 
+    }
+
+    // method to set up the contents of the root directory
+    private void buildRootDir(GlassFishProperties gfproperties) throws BootstrapException {
+        
+        if (alternateDomainXML != null) {
+            gfproperties.setConfigFileReadOnly(false);
+            gfproperties.setConfigFileURI("file:///" + alternateDomainXML.getAbsolutePath().replace('\\', '/'));
+        } else if (applicationDomainXml != null) {
+            gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource(applicationDomainXml).toExternalForm());
+        } else if (noCluster) {
+            gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/domain/microdomain-nocluster.xml").toExternalForm());
+
+        } else {
+            gfproperties.setConfigFileURI(Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/domain/microdomain.xml").toExternalForm());
         }
+        
+        gfproperties.setInstanceRoot(rootDir.getAbsolutePath());
+        if (alternateDomainXML == null) {
+            String absolutePath = rootDir.getAbsolutePath();
+            absolutePath = absolutePath.replace('\\', '/');
+            File domainXML = new File(new File(absolutePath),"/config/domain.xml");
+            if (!domainXML.exists()) {
+                try {
+                    // we need to copy in the configured domain.xml
+                    URI domainXMLURI = new URI(gfproperties.getConfigFileURI());
+                    try (InputStream is = domainXMLURI.toURL().openStream()) {
+                        Files.copy(is, domainXML.toPath());
+                    }
+                } catch (URISyntaxException | IOException ex) {
+                    throw new BootstrapException("Unable ot build Root Dir", ex);
+                }
+            }
+            gfproperties.setConfigFileURI(domainXML.toURI().toString());
+        }
+        gfproperties.setConfigFileReadOnly(false);
     }
 
     /**
@@ -1257,41 +1280,7 @@ public class PayaraMicro {
                         break;
                     }
                     case "--version": {
-                        String deployments = System.getProperty("user.dir");
-                        System.err.println("deployments " + deployments);
-                        try {
-                            Properties props = new Properties();
-                            InputStream input = PayaraMicro.class.getResourceAsStream("/config/branding/glassfish-version.properties");
-                            props.load(input);
-                            StringBuilder output = new StringBuilder();
-                            if (props.getProperty("product_name").isEmpty() == false){
-                                output.append(props.getProperty("product_name")+" ");
-                            }
-                            if (props.getProperty("major_version").isEmpty() == false){
-                                output.append(props.getProperty("major_version")+".");
-                            }
-                            if (props.getProperty("minor_version").isEmpty() == false){
-                                output.append(props.getProperty("minor_version")+".");
-                            }
-                            if (props.getProperty("update_version").isEmpty() == false){
-                                output.append(props.getProperty("update_version")+".");
-                            }
-                            if (props.getProperty("payara_version").isEmpty() == false){
-                                output.append(props.getProperty("payara_version"));
-                            }
-                            if (props.getProperty("payara_update_version").isEmpty() == false){
-                                output.append("." + props.getProperty("payara_update_version"));
-                            }
-                            if (props.getProperty("build_id").isEmpty() == false){
-                                output.append(" Build Number " + props.getProperty("build_id"));
-                            }
-
-                            System.err.println(output.toString());
-                        } catch (FileNotFoundException ex) {
-                            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
-                        } catch (IOException io){
-                            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, io);
-                        }
+                        printVersion();
                         System.exit(1);
                         break;
                     }
@@ -1580,43 +1569,7 @@ public class PayaraMicro {
                         i++;
                         break;
                     case "--help":
-                        System.err.println("Usage:\n  --noCluster  Disables clustering\n"
-                                + "  --port <http-port-number> sets the http port\n"
-                                + "  --sslPort <ssl-port-number> sets the https port number\n"
-                                + "  --mcAddress <muticast-address> sets the cluster multicast group\n"
-                                + "  --mcPort <multicast-port-number> sets the cluster multicast port\n"
-                                + "  --clusterName <cluster-name> sets the Cluster Group Name\n"
-                                + "  --clusterPassword <cluster-password> sets the Cluster Group Password\n"
-                                + "  --startPort <cluster-start-port-number> sets the cluster start port number\n"
-                                + "  --name <instance-name> sets the instance name\n"
-                                + "  --instanceGroup <instance-group-name> Sets the name of the instance group\n"
-                                + "  --rootDir <directory-path> Sets the root configuration directory and saves the configuration across restarts\n"
-                                + "  --deploymentDir <directory-path> if set to a valid directory all war files in this directory will be deployed\n"
-                                + "  --deploy <file-path> specifies a war file to deploy\n"
-                                + "  --domainConfig <file-path> overrides the complete server configuration with an alternative domain.xml file\n"
-                                + "  --minHttpThreads <threads-number> the minimum number of threads in the HTTP thread pool\n"
-                                + "  --maxHttpThreads <threads-number> the maximum number of threads in the HTTP thread pool\n"
-                                + "  --hzConfigFile <file-path> the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
-                                + "  --autoBindHttp sets autobinding of the http port to a non-bound port\n"
-                                + "  --autoBindSsl sets autobinding of the https port to a non-bound port\n"
-                                + "  --autoBindRange <number-of-ports> sets the maximum number of ports to look at for port autobinding\n"
-                                + "  --lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
-                                + "  --enableHealthCheck <boolean> enables/disables Health Check Service (disabled by default).\n"
-                                + "  --logo reveal the #BadAssFish\n"
-                                + "  --deployFromGAV <list-of-artefacts> specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
-                                + "  --additionalRepository <repo-url> specifies an additional repository to search for deployable artefacts in\n"
-                                + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
-                                + "  --systemProperties <file-path> Reads system properties from a file\n"
-                                + "  --disablePhoneHome Disables sending of usage tracking information\n"
-                                + "  --version Displays the version information\n"
-                                + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
-                                + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
-                                + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
-                                + "  --accessLogFormat Sets user defined log format for the access log\n"
-                                + "  --enableRequestTracing Enables the Request Tracing Service and optionally sets the threshold unit and/or value\n"
-                                + "  --requestTracingThresholdUnit Sets the time unit for the requestTracingThresholdValue option\n"
-                                + "  --requestTracingThresholdValue Sets the threshold time before a request is traced\n"
-                                + "  --help Shows this message and exits\n");
+                        printHelp();
                         System.exit(1);
                         break;
                     case "--logToFile":
@@ -1644,6 +1597,12 @@ public class PayaraMicro {
                         break;
                     case "--logo":
                         generateLogo = true;
+                        break;
+                    case "--postbootCommandFile":
+                        postBootFileName = args[i+1];
+                        break;
+                    case "--prebootCommandFile":
+                        preBootFileName = args[i+1];
                         break;
                 }
             }
@@ -1768,113 +1727,6 @@ public class PayaraMicro {
                 }
             }
         });
-    }
-
-    private void installFiles(GlassFishProperties gfproperties) {
-        // make directories
-        File configDir = new File(rootDir.getAbsolutePath(), "config");
-        String[] configFiles;
-        PrintWriter writer;
-        String sCurrentLine;
-        BufferedReader bufferedReader = null;
-        new File(rootDir.getAbsolutePath(), "docroot").mkdirs();
-        configDir.mkdirs();
-        if (logPropertiesFile) {
-            File userLogPropsFile = new File(configDir.getAbsolutePath() + File.separator + userPropertiesFileName);
-            try {
-                if (userLogPropsFile.exists()) {
-                   userLogPropsFile.delete();
-                } else {
-                    userLogPropsFile.createNewFile();
-                }
-            } catch (IOException ex) {
-                 logger.log(Level.SEVERE, null, ex);
-            }
-
-            try {
-                writer = new PrintWriter(userLogPropsFile.getAbsoluteFile());
-                writer.print("");
-                writer.close();
-            } catch (FileNotFoundException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
-
-            try {
-                bufferedReader = new BufferedReader(new FileReader(userLogPropertiesFile ));
-                FileWriter fileWriter = new FileWriter(userLogPropsFile.getAbsoluteFile());
-                BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
-                while ((sCurrentLine = bufferedReader.readLine()) != null) {
-                    bufferedWriter.append(sCurrentLine);
-                    bufferedWriter.newLine();
-
-                }
-                bufferedWriter.close();
-            } catch (FileNotFoundException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            } finally {
-                if (bufferedReader != null) {
-                    try {
-                        bufferedReader.close();
-                    } catch (IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
-                    }
-                }
-            }
-        
-            configFiles = new String[]{"config/keyfile",
-                "config/server.policy",
-                "config/cacerts.jks",
-                "config/keystore.jks",
-                "config/login.conf",
-                "config/logging.properties",
-                "config/loggingToFile.properties",
-                "config/admin-keyfile",
-                "config/"+ userPropertiesFileName,
-                "config/default-web.xml",
-                "org/glassfish/embed/domain.xml"
-            };
-        } else {
-            configFiles = new String[]{"config/keyfile",
-                "config/server.policy",
-                "config/cacerts.jks",
-                "config/keystore.jks",
-                "config/login.conf",
-                "config/logging.properties",
-                "config/loggingToFile.properties",
-                "config/admin-keyfile",
-                "config/default-web.xml",
-                "org/glassfish/embed/domain.xml"
-            };
-        }
-
-        /**
-         * Copy all the config files from uber jar to the instanceConfigDir
-         */
-        ClassLoader cl = getClass().getClassLoader();
-        for (String configFile : configFiles) {
-            URL url = cl.getResource(configFile);
-            if (url != null) {
-                copy(url, new File(configDir.getAbsoluteFile(),
-                        configFile.substring(configFile.lastIndexOf('/') + 1)), false);
-            }
-        }
-
-        // copy branding file if available
-        URL brandingUrl = cl.getResource("config/branding/glassfish-version.properties");
-        if (brandingUrl != null) {
-            copy(brandingUrl, new File(configDir.getAbsolutePath(), "branding/glassfish-version.properties"), false);
-        }
-
-        //Copy in the relevant domain.xml
-        String configFileURI = gfproperties.getConfigFileURI();
-        try {
-            copy(URI.create(configFileURI).toURL(),
-                    new File(configDir.getAbsolutePath(), "domain.xml"), true);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
 
     private void setSystemProperties() {
@@ -2427,5 +2279,84 @@ public class PayaraMicro {
         }
         
         return returnValue;
+    }
+    
+    
+    private void printVersion() {
+        try {
+            Properties props = new Properties();
+            InputStream input = PayaraMicro.class.getResourceAsStream("/MICRO-INF/domain/branding/glassfish-version.properties");
+            props.load(input);
+            StringBuilder output = new StringBuilder();
+            if (props.getProperty("product_name").isEmpty() == false){
+                output.append(props.getProperty("product_name")+" ");
+            }
+            if (props.getProperty("major_version").isEmpty() == false){
+                output.append(props.getProperty("major_version")+".");
+            }
+            if (props.getProperty("minor_version").isEmpty() == false){
+                output.append(props.getProperty("minor_version")+".");
+            }
+            if (props.getProperty("update_version").isEmpty() == false){
+                output.append(props.getProperty("update_version")+".");
+            }
+            if (props.getProperty("payara_version").isEmpty() == false){
+                output.append(props.getProperty("payara_version"));
+            }
+            if (props.getProperty("payara_update_version").isEmpty() == false){
+                output.append("." + props.getProperty("payara_update_version"));
+            }
+            if (props.getProperty("build_id").isEmpty() == false){
+                output.append(" Build Number " + props.getProperty("build_id"));
+            }
+            
+            System.err.println(output.toString());
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException io){
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, io);
+        }
+    }
+
+    private void printHelp() {
+        System.err.println("Usage:\n  --noCluster  Disables clustering\n"
+                + "  --port <http-port-number> sets the http port\n"
+                + "  --sslPort <ssl-port-number> sets the https port number\n"
+                + "  --mcAddress <muticast-address> sets the cluster multicast group\n"
+                + "  --mcPort <multicast-port-number> sets the cluster multicast port\n"
+                + "  --clusterName <cluster-name> sets the Cluster Group Name\n"
+                + "  --clusterPassword <cluster-password> sets the Cluster Group Password\n"
+                + "  --startPort <cluster-start-port-number> sets the cluster start port number\n"
+                + "  --name <instance-name> sets the instance name\n"
+                + "  --instanceGroup <instance-group-name> Sets the name of the instance group\n"
+                + "  --rootDir <directory-path> Sets the root configuration directory and saves the configuration across restarts\n"
+                + "  --deploymentDir <directory-path> if set to a valid directory all war files in this directory will be deployed\n"
+                + "  --deploy <file-path> specifies a war file to deploy\n"
+                + "  --domainConfig <file-path> overrides the complete server configuration with an alternative domain.xml file\n"
+                + "  --minHttpThreads <threads-number> the minimum number of threads in the HTTP thread pool\n"
+                + "  --maxHttpThreads <threads-number> the maximum number of threads in the HTTP thread pool\n"
+                + "  --hzConfigFile <file-path> the hazelcast-configuration file to use to override the in-built hazelcast cluster configuration\n"
+                + "  --autoBindHttp sets autobinding of the http port to a non-bound port\n"
+                + "  --autoBindSsl sets autobinding of the https port to a non-bound port\n"
+                + "  --autoBindRange <number-of-ports> sets the maximum number of ports to look at for port autobinding\n"
+                + "  --lite sets the micro container to lite mode which means it clusters with other Payara Micro instances but does not store any cluster data\n"
+                + "  --enableHealthCheck <boolean> enables/disables Health Check Service (disabled by default).\n"
+                + "  --logo reveal the #BadAssFish\n"
+                + "  --deployFromGAV <list-of-artefacts> specifies a comma separated groupId,artifactId,versionNumber of an artefact to deploy from a repository\n"
+                + "  --additionalRepository <repo-url> specifies an additional repository to search for deployable artefacts in\n"
+                + "  --outputUberJar <file-path> packages up an uber jar at the specified path based on the command line arguments and exits\n"
+                + "  --systemProperties <file-path> Reads system properties from a file\n"
+                + "  --disablePhoneHome Disables sending of usage tracking information\n"
+                + "  --version Displays the version information\n"
+                + "  --logToFile <file-path> outputs all the Log entries to a user defined file\n"
+                + "  --logProperties <file-path> Allows user to set their own logging properties file\n"
+                + "  --accessLog <directory-path> Sets user defined directory path for the access log\n"
+                + "  --accessLogFormat Sets user defined log format for the access log\n"
+                + "  --enableRequestTracing Enables the Request Tracing Service and optionally sets the threshold unit and/or value\n"
+                + "  --requestTracingThresholdUnit Sets the time unit for the requestTracingThresholdValue option\n"
+                + "  --requestTracingThresholdValue Sets the threshold time before a request is traced\n"
+                + "  --prebootCommandFile Provides a file of asadmin commands to run before booting the server\n"
+                + "  --postbootCommandFile Provides a file of asadmin commands to run after booting the server\n"
+                + "  --help Shows this message and exits\n");
     }
 }

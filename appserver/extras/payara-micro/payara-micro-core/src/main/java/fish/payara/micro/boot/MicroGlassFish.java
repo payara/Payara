@@ -40,7 +40,19 @@
 package fish.payara.micro.boot;
 
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.glassfish.embeddable.CommandResult;
 import org.glassfish.embeddable.CommandRunner;
 import org.glassfish.embeddable.Deployer;
@@ -52,16 +64,33 @@ import org.glassfish.hk2.api.ServiceLocator;
  *
  * @author steve
  */
-public class MicroGlassFish  implements GlassFish {
+public class MicroGlassFish implements GlassFish {
     
+    public static final String PREBOOT_FILE_PROP="micro.preboot.command.file";
+    public static final String POSTBOOT_FILE_PROP="micro.postboot.command.file";
+    
+
     private ModuleStartup kernel;
     private ServiceLocator habitat;
     private Status status = Status.INIT;
-    
+    private File preBootFile;
+    private File postBootFile;
 
     MicroGlassFish(ModuleStartup kernel, ServiceLocator habitat, Properties glassfishProperties) throws GlassFishException {
         this.kernel = kernel;
         this.habitat = habitat;
+        
+        // get preboot and postboot files
+        String preBootFilename = glassfishProperties.getProperty(PREBOOT_FILE_PROP);
+        if (preBootFilename != null) {
+            this.preBootFile = new File(preBootFilename);
+        }
+        
+        String postBootFilename = glassfishProperties.getProperty(POSTBOOT_FILE_PROP);
+        if (postBootFilename != null) {
+            this.postBootFile = new File(postBootFilename);
+        }
+        
         CommandRunner commandRunner = null;
         for (Object obj : glassfishProperties.keySet()) {
             String key = (String) obj;
@@ -76,15 +105,16 @@ public class MicroGlassFish  implements GlassFish {
                     throw new GlassFishException(result.getOutput());
                 }
             }
-}
-        
+        }
     }
 
     @Override
     public void start() throws GlassFishException {
+        runPreBootCommands();
         status = Status.STARTING;
         kernel.start();
         status = Status.STARTED;
+        runPostBootCommands();
     }
 
     @Override
@@ -123,5 +153,63 @@ public class MicroGlassFish  implements GlassFish {
     public CommandRunner getCommandRunner() throws GlassFishException {
         return getService(CommandRunner.class);
     }
-    
+
+    private void runPreBootCommands() {
+        URL scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/pre-boot-commands.txt");
+        if (scriptURL != null) {
+            runCommandScript(scriptURL);
+        }
+        
+        // run preboot file 
+        if (preBootFile != null && preBootFile.canRead()) {
+            try {
+                runCommandScript(preBootFile.toURI().toURL());
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(MicroGlassFish.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void runPostBootCommands() {
+        URL scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/post-boot-commands.txt");
+        if (scriptURL != null) {
+            runCommandScript(scriptURL);
+        }
+        
+        // run boot file 
+        if (postBootFile != null && postBootFile.canRead()) {
+            try {
+                runCommandScript(postBootFile.toURI().toURL());
+            } catch (MalformedURLException ex) {
+                Logger.getLogger(MicroGlassFish.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }
+
+    private void runCommandScript(URL scriptURL) {
+        try (InputStream scriptStream = scriptURL.openStream()) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(scriptStream));
+
+            String commandStr = br.readLine();
+            while (commandStr != null) {
+                // # is a comment
+                if (!commandStr.startsWith("#")) {
+                    String command[] = commandStr.split(" ");
+                    if (command.length > 1) {
+                        CommandRunner cr = getCommandRunner();
+                        CommandResult result = cr.run(command[0], Arrays.copyOfRange(command, 1, command.length));
+                        Logger.getLogger(MicroGlassFish.class.getName()).log(Level.INFO, result.getOutput());
+                    } else if (command.length == 1) {
+                        CommandRunner cr = getCommandRunner();
+                        CommandResult result = cr.run(command[0]);
+                        Logger.getLogger(MicroGlassFish.class.getName()).log(Level.INFO, result.getOutput());
+                    }
+                }
+                commandStr = br.readLine();
+            }
+        } catch (IOException | GlassFishException ex) {
+            Logger.getLogger(MicroGlassFish.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }
