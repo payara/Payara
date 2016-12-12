@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2014-2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.node;
 
@@ -240,13 +241,13 @@ public abstract class WebCommonNode<T extends WebBundleDescriptorImpl> extends A
                     String servletName = keys.next();
                     Vector<String> mappings = servletMappings.get(servletName);
                     WebComponentDescriptor servlet= descriptor.getWebComponentByCanonicalName(servletName);
-                    if (servlet!=null) {
-                        for (Iterator<String> mapping = mappings.iterator();mapping.hasNext();) {
-                            servlet.addUrlPattern(mapping.next());
-                        }
-                    } else {
-                        throw new RuntimeException("There is no web component by the name of " + servletName + " here.");                    
-                    } 
+                    if(servlet == null) {
+                        servlet = new WebComponentDescriptorStub(servletName);
+                        descriptor.getWebComponentDescriptors().add(servlet);
+                    }
+                    for (Iterator<String> mapping = mappings.iterator(); mapping.hasNext();) {
+                        servlet.addUrlPattern(mapping.next());
+                    }
                 }
             }
             return allDone;
