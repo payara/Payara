@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2015 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,6 +52,7 @@ import org.glassfish.gmbal.AMXMetadata;
 import org.glassfish.gmbal.Description;
 import org.glassfish.gmbal.ManagedAttribute;
 import org.glassfish.gmbal.ManagedObject;
+import org.glassfish.web.admin.LogFacade;
 
 /**
  * Provides the monitoring data at the Web container level
@@ -63,7 +64,7 @@ import org.glassfish.gmbal.ManagedObject;
 @Description("Web Container Servlet Instance Statistics")
 public class ServletInstanceStatsProvider {
 
-    private static final Logger logger = HttpServiceStatsProviderBootstrap.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final String ERROR_COUNT_DESCRIPTION = "Number of error responses (that is, responses with a status code greater than or equal to 400)";
 
