@@ -325,7 +325,7 @@ public class PayaraMicroRuntime  {
     }
 
     public void publishCDIEvent(PayaraClusteredCDIEvent event) {
-        this.instanceService.pubishCDIEvent(event);
+        this.instanceService.publishCDIEvent(event);
     }
     
     public void addCDIEventListener(CDIEventListener listener) {
@@ -337,7 +337,7 @@ public class PayaraMicroRuntime  {
     }
 
     public void removeCDIEventListener(CDIEventListener listener) {
-        this.instanceService.removeCDIListenr(listener);
+        this.instanceService.removeCDIListener(listener);
     }
 
     private void checkState() {

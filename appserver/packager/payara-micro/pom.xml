@@ -105,6 +105,13 @@
             <type>glassfish-jar</type>
             <optional>true</optional>
         </dependency>   
+        <dependency>
+            <groupId>fish.payara.appserver.micro</groupId>
+            <artifactId>payara-micro-cdi</artifactId>
+            <version>${project.version}</version>
+            <type>glassfish-jar</type>
+            <optional>true</optional>
+        </dependency> 
     </dependencies>
 </project>
 

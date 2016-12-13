@@ -340,7 +340,7 @@
         </dependency>
         <!-- Add Payara Micro CDI Integration -->
         <dependency>
-            <groupId>fish.payara.extras.payara-micro</groupId>
+            <groupId>fish.payara.appserver.micro</groupId>
             <artifactId>payara-micro-cdi</artifactId>
             <version>${project.version}</version>
             <type>jar</type>

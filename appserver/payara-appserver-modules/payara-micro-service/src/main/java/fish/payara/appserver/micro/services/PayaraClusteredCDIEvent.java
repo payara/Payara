@@ -21,6 +21,7 @@ import fish.payara.cdi.jsr107.impl.PayaraValueHolder;
 import fish.payara.appserver.micro.services.data.InstanceDescriptor;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Properties;
 
 /**
  *
@@ -32,6 +33,7 @@ public class PayaraClusteredCDIEvent implements Serializable {
     private InstanceDescriptor id;
     private boolean loopBack = false;
     private PayaraValueHolder payload;
+    private Properties props;
 
     public PayaraClusteredCDIEvent(InstanceDescriptor id, Serializable payload) throws IOException {
         this.id = id;
@@ -72,6 +74,35 @@ public class PayaraClusteredCDIEvent implements Serializable {
     public void setLoopBack(boolean loopBack) {
         this.loopBack = loopBack;
     }
+
+    public Properties getProperties() {
+        return props;
+    }
+    
+    public void setProperty(String name, String value) {
+        if (props == null) {
+            props = new Properties();
+        }
+        props.setProperty(name, value);
+    }
+    
+    public String getProperty(String name) {
+        String result = null;
+        if (props!= null) {
+            result = props.getProperty(name);
+        }
+        return result;
+    }
+
+    public String getProperty(String name, String defaultValue) {
+        String result = null;
+        if (props!= null) {
+            result = props.getProperty(name, defaultValue);
+        }
+        return result;
+    }
+     
+    
     
     
 }

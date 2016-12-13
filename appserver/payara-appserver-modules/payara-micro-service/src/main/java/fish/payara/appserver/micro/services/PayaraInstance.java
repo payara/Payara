@@ -243,7 +243,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         return result;
     }
 
-    public void pubishCDIEvent(PayaraClusteredCDIEvent event) {
+    public void publishCDIEvent(PayaraClusteredCDIEvent event) {
         if (event.getInstanceDescriptor() == null) {
             event.setInstanceDescriptor(me);
         }
@@ -251,7 +251,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         cluster.getEventBus().publish(CDI_EVENTS_NAME, message);
     }
 
-    public void removeBootstrapListenr(PayaraClusterListener listener) {
+    public void removeBootstrapListener(PayaraClusterListener listener) {
         myListeners.remove(listener);
     }
 
@@ -259,7 +259,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         myListeners.add(listener);
     }
 
-    public void removeCDIListenr(CDIEventListener listener) {
+    public void removeCDIListener(CDIEventListener listener) {
         myCDIListeners.remove(listener);
     }
 

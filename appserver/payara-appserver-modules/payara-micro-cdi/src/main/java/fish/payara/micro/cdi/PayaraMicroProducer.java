@@ -37,14 +37,26 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.appserver.micro.services;
+package fish.payara.micro.cdi;
+
+import fish.payara.appserver.micro.services.PayaraInstance;
+import javax.enterprise.inject.Produces;
+import org.glassfish.internal.api.Globals;
 
 /**
  *
  * @author steve
  */
-public interface CDIEventListener {
+public class PayaraMicroProducer {
     
-    public void eventReceived(PayaraClusteredCDIEvent event);
+    private final PayaraInstance runtime;
     
+    PayaraMicroProducer() {
+        runtime = Globals.getDefaultHabitat().getService(PayaraInstance.class);
+    }
+    
+    @Produces
+    PayaraInstance getRuntime() {
+        return runtime;
+    }
 }
