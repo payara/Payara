@@ -48,6 +48,7 @@ import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
+import org.glassfish.web.ha.LogFacade;
 import org.glassfish.web.ha.session.management.HAStoreBase;
 
 import java.io.*;
@@ -59,7 +60,7 @@ import java.util.logging.Logger;
  * @author Shing Wai Chan
  */
 public class HASingleSignOnEntry extends SingleSignOnEntry {
-    private static final Logger logger = HAStoreBase._logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     protected long maxIdleTime;
 
