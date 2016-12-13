@@ -47,6 +47,7 @@ import org.apache.catalina.Session;
 import org.apache.catalina.authenticator.SingleSignOnEntry;
 import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
+import org.glassfish.web.ha.LogFacade;
 import org.glassfish.web.ha.session.management.HAStoreBase;
 
 import java.util.logging.Logger;
@@ -57,7 +58,7 @@ import java.security.Principal;
  * @author Shing Wai Chan
  */
 public class HASingleSignOn extends GlassFishSingleSignOn {
-    private static final Logger logger = HAStoreBase._logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private BackingStore<String, HASingleSignOnEntryMetadata> ssoEntryMetadataBackingStore = null;
 

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@ import org.glassfish.ha.store.api.BackingStore;
 import org.glassfish.ha.store.api.BackingStoreException;
 import org.glassfish.ha.store.api.Storeable;
 import org.glassfish.ha.store.util.SimpleMetadata;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.ha.LogFacade;
 
 import java.io.*;
 import java.util.logging.Level;
@@ -71,31 +71,6 @@ import org.apache.catalina.core.StandardContext;
  * @author Rajiv Mordani
  */
 public class ReplicationStore extends HAStoreBase {
-
-    @LogMessageInfo(
-            message = "Exception during removing synchronized from backing store",
-            level = "WARNING")
-    public static final String EXCEPTION_REMOVING_SYNCHRONIZED = "AS-WEB-HA-00001";
-
-    @LogMessageInfo(
-            message = "Exception during removing expired session from backing store",
-            level = "WARNING")
-    public static final String EXCEPTION_REMOVING_EXPIRED_SESSION = "AS-WEB-HA-00002";
-
-    @LogMessageInfo(
-            message = "Error creating inputstream",
-            level = "WARNING")
-    public static final String ERROR_CREATING_INPUT_STREAM = "AS-WEB-HA-00003";
-
-    @LogMessageInfo(
-            message = "Exception during deserializing the session",
-            level = "WARNING")
-    public static final String EXCEPTION_DESERIALIZING_SESSION = "AS-WEB-HA-00004";
-
-    @LogMessageInfo(
-            message = "Exception occurred in getSession",
-            level = "WARNING")
-    public static final String EXCEPTION_GET_SESSION = "AS-WEB-HA-00005";
 
     /**
      * Creates a new instance of ReplicationStore
@@ -327,7 +302,7 @@ public class ReplicationStore extends HAStoreBase {
             }
             replicator.remove(id);
         } catch (BackingStoreException ex) {
-            _logger.log(Level.WARNING, EXCEPTION_REMOVING_SYNCHRONIZED, ex);
+            _logger.log(Level.WARNING, LogFacade.EXCEPTION_REMOVING_SYNCHRONIZED, ex);
         }
     }     
     
@@ -351,7 +326,7 @@ public class ReplicationStore extends HAStoreBase {
             }
             replicator.remove(id);
         } catch (BackingStoreException ex) {
-            _logger.log(Level.WARNING, EXCEPTION_REMOVING_SYNCHRONIZED, ex);
+            _logger.log(Level.WARNING, LogFacade.EXCEPTION_REMOVING_SYNCHRONIZED, ex);
         }
     }
     
@@ -384,7 +359,7 @@ public class ReplicationStore extends HAStoreBase {
             try {
                 result = backingStore.removeExpired(mgr.getMaxInactiveInterval());
             } catch (BackingStoreException ex) {
-                _logger.log(Level.WARNING, EXCEPTION_REMOVING_EXPIRED_SESSION, ex);
+                _logger.log(Level.WARNING, LogFacade.EXCEPTION_REMOVING_EXPIRED_SESSION, ex);
             }
         }
         if(_logger.isLoggable(Level.FINE)) {
@@ -579,7 +554,7 @@ public class ReplicationStore extends HAStoreBase {
                 try {
                     ois = ioUtils.createObjectInputStream(is, true, classLoader, getUniqueId());
                 } catch (Exception ex) {
-                    _logger.log(Level.WARNING, ERROR_CREATING_INPUT_STREAM, ex);
+                    _logger.log(Level.WARNING, LogFacade.ERROR_CREATING_INPUT_STREAM, ex);
                 }
             }
             
@@ -602,13 +577,13 @@ public class ReplicationStore extends HAStoreBase {
             }
         } catch(ClassNotFoundException e) {
             IOException ex1 = (IOException) new IOException(
-                    _logger.getResourceBundle().getString(EXCEPTION_DESERIALIZING_SESSION) + e.getMessage()).initCause(e);
-            _logger.log(Level.WARNING, EXCEPTION_DESERIALIZING_SESSION, ex1);
+                    _logger.getResourceBundle().getString(LogFacade.EXCEPTION_DESERIALIZING_SESSION) + e.getMessage()).initCause(e);
+            _logger.log(Level.WARNING, LogFacade.EXCEPTION_DESERIALIZING_SESSION, ex1);
             throw ex1;
         }
         catch(IOException e) {
             if (_logger.isLoggable(Level.WARNING)) {
-                _logger.log(Level.WARNING, EXCEPTION_GET_SESSION, e);
+                _logger.log(Level.WARNING, LogFacade.EXCEPTION_GET_SESSION, e);
             }
             throw e;
         }
