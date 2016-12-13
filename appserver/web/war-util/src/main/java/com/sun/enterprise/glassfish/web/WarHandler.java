@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2008-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2008-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@ import org.glassfish.api.deployment.DeploymentContext;
 import org.glassfish.api.deployment.archive.ArchiveDetector;
 import org.glassfish.api.deployment.archive.ReadableArchive;
 import org.glassfish.deployment.common.DeploymentProperties;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.loader.LogFacade;
 import org.glassfish.web.loader.WebappClassLoader;
 import org.glassfish.web.sniffer.WarDetector;
 import org.glassfish.loader.util.ASClassLoaderUtil;
@@ -99,47 +99,10 @@ public class WarHandler extends AbstractArchiveHandler {
     private static final String WEBLOGIC_XML = "WEB-INF/weblogic.xml";
     private static final String WAR_CONTEXT_XML = "META-INF/context.xml";
     private static final String DEFAULT_CONTEXT_XML = "config/context.xml";
-    private static final Logger logger = WebappClassLoader.logger;
+    private static final Logger logger = LogFacade.getLogger();
     private static final ResourceBundle rb = logger.getResourceBundle();
     private static final LocalStringManagerImpl localStrings = new LocalStringManagerImpl(WarHandler.class);
 
-
-    @LogMessageInfo(
-            message = "extra-class-path component [{0}] is not a valid pathname",
-            level = "SEVERE",
-            cause = "A naming exception is encountered",
-            action = "Check the list of resources")
-    public static final String CLASSPATH_ERROR = "AS-WEB-UTIL-00027";
-
-    @LogMessageInfo(
-            message = "The clearReferencesStatic is not consistent in context.xml for virtual servers",
-            level = "WARNING")
-    public static final String INCONSISTENT_CLEAR_REFERENCE_STATIC = "AS-WEB-UTIL-00028";
-
-    @LogMessageInfo(
-            message = "class-loader attribute dynamic-reload-interval in sun-web.xml not supported",
-            level = "WARNING")
-    public static final String DYNAMIC_RELOAD_INTERVAL = "AS-WEB-UTIL-00029";
-
-    @LogMessageInfo(
-            message = "Property element in sun-web.xml has null 'name' or 'value'",
-            level = "WARNING")
-    public static final String NULL_WEB_PROPERTY = "AS-WEB-UTIL-00030";
-
-    @LogMessageInfo(
-            message = "Ignoring invalid property [{0}] = [{1}]",
-            level = "WARNING")
-    public static final String INVALID_PROPERTY = "AS-WEB-UTIL-00031";
-
-    @LogMessageInfo(
-            message = "The xml element should be [{0}] rather than [{1}]",
-            level = "INFO")
-    public static final String UNEXPECTED_XML_ELEMENT = "AS-WEB-UTIL-00032";
-
-    @LogMessageInfo(
-            message = "This is an unexpected end of document",
-            level = "WARNING")
-    public static final String UNEXPECTED_END_DOCUMENT = "AS-WEB-UTIL-00033";
 
     //the following two system properties need to be in sync with DOLUtils
     private static final boolean gfDDOverWLSDD = Boolean.valueOf(System.getProperty("gfdd.over.wlsdd"));
@@ -314,7 +277,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         URL url = file.toURI().toURL();
                         cloader.addRepository(url.toString());
                     } catch (MalformedURLException mue2) {
-                        String msg = rb.getString(CLASSPATH_ERROR);
+                        String msg = rb.getString(LogFacade.CLASSPATH_ERROR);
                         Object[] params = { path };
                         msg = MessageFormat.format(msg, params);
                         logger.log(Level.SEVERE, msg, mue2);
@@ -429,7 +392,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 cloader.setClearReferencesStatic(value);
             }
         } else if (logger.isLoggable(Level.WARNING)) {
-            logger.log(Level.WARNING, INCONSISTENT_CLEAR_REFERENCE_STATIC);
+            logger.log(Level.WARNING, LogFacade.INCONSISTENT_CLEAR_REFERENCE_STATIC);
         }
     }
     
@@ -468,7 +431,7 @@ public class WarHandler extends AbstractArchiveHandler {
                 if (event == START_ELEMENT) {
                     String localName = parser.getLocalName();
                     if (!name.equals(localName)) {
-                        String msg = rb.getString(UNEXPECTED_XML_ELEMENT);
+                        String msg = rb.getString(LogFacade.UNEXPECTED_XML_ELEMENT);
                         msg = MessageFormat.format(msg, new Object[] { name, localName }); 
                         throw new XMLStreamException(msg);
                     }
@@ -481,7 +444,7 @@ public class WarHandler extends AbstractArchiveHandler {
             while (true) {
                 int event = parser.next();
                 if (event == END_DOCUMENT) {
-                    throw new XMLStreamException(rb.getString(UNEXPECTED_END_DOCUMENT));
+                    throw new XMLStreamException(rb.getString(LogFacade.UNEXPECTED_END_DOCUMENT));
                 } else if (event == END_ELEMENT && name.equals(parser.getLocalName())) {
                     return;
                 }
@@ -585,7 +548,7 @@ public class WarHandler extends AbstractArchiveHandler {
                                     // Log warning if dynamic-reload-interval is specified
                                     // in sun-web.xml since it is not supported
                                     if (logger.isLoggable(Level.WARNING)) {
-                                        logger.log(Level.WARNING, DYNAMIC_RELOAD_INTERVAL);
+                                        logger.log(Level.WARNING, LogFacade.DYNAMIC_RELOAD_INTERVAL);
                                     }
                                 }
                             }
@@ -606,7 +569,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
                         if (propName == null || value == null) {
                             throw new IllegalArgumentException(
-                                rb.getString(NULL_WEB_PROPERTY));
+                                rb.getString(LogFacade.NULL_WEB_PROPERTY));
                         }
 
                         if ("ignoreHiddenJarFiles".equals(propName)) {
@@ -614,7 +577,7 @@ public class WarHandler extends AbstractArchiveHandler {
                         } else {
                             Object[] params = { propName, value };
                             if (logger.isLoggable(Level.WARNING)) {
-                                logger.log(Level.WARNING, INVALID_PROPERTY,
+                                logger.log(Level.WARNING, LogFacade.INVALID_PROPERTY,
                                            params);
                             }
                         }
@@ -633,7 +596,7 @@ public class WarHandler extends AbstractArchiveHandler {
 
                         if (propName == null || value == null) {
                             throw new IllegalArgumentException(
-                                rb.getString(NULL_WEB_PROPERTY));
+                                rb.getString(LogFacade.NULL_WEB_PROPERTY));
                         }
 
                         if("useMyFaces".equalsIgnoreCase(propName)) {
