@@ -1469,7 +1469,7 @@ public abstract class ManagedConnectionFactoryImpl implements javax.resource.spi
                 (sqlTraceListeners != null && !sqlTraceListeners.equals("null")) ||
                 statementLeakTimeout > 0) {
             jdbcStatsProvider = new JdbcStatsProvider(getPoolName(), getApplicationName(), getModuleName(),
-                    sqlTraceCacheSize, timeToKeepQueries, true);
+                    sqlTraceCacheSize, timeToKeepQueries);
             //get the poolname and use it to initialize the stats provider n register
             StatsProviderManager.register(
                     "jdbc-connection-pool",

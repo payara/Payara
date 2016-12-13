@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.monitoring;
 
 import com.sun.gjc.util.SQLTrace;
@@ -94,18 +96,7 @@ public class JdbcStatsProvider {
         poolInfo = new PoolInfo(poolName, appName, moduleName);
         if(sqlTraceCacheSize > 0) {
             this.freqSqlTraceCache = new FrequentSQLTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
-        }
-    }
-    
-    public JdbcStatsProvider(String poolName, String appName, String moduleName, int sqlTraceCacheSize,
-            long timeToKeepQueries, boolean slowSqlLoggingEnabled) {
-        poolInfo = new PoolInfo(poolName, appName, moduleName);
-        if(sqlTraceCacheSize > 0) {
-            this.freqSqlTraceCache = new FrequentSQLTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
-            
-            if (slowSqlLoggingEnabled) {
-                this.slowSqlTraceCache = new SlowSqlTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
-            }
+            this.slowSqlTraceCache = new SlowSqlTraceCache(poolName, sqlTraceCacheSize, timeToKeepQueries);
         }
     }
 
@@ -145,7 +136,7 @@ public class JdbcStatsProvider {
      * Whenever a sql statement that is traced is to be cache for monitoring
      * purpose, the SQLTrace object is created for the specified sql and
      * updated in the SQLTraceCache. This is used to update the
-     * frequently used sql queries.
+     * frequently used and slowest sql queries.
      *
      * @param poolName
      * @param appName
@@ -165,12 +156,13 @@ public class JdbcStatsProvider {
         if(this.poolInfo.equals(poolInfo)){
             if(freqSqlTraceCache != null) {
                 if (sql != null) {
-                    SQLTrace cacheObj = new SQLTrace(sql, 1,
-                            System.currentTimeMillis());
+                    SQLTrace cacheObj = new SQLTrace(sql, 1, System.currentTimeMillis());
                     freqSqlTraceCache.checkAndUpdateCache(cacheObj);
                 }
             }
             
+            // If the slowSqlTraceCache has been initialised, create a new SlowSqlTrace object and add it to or update 
+            // the cache
             if (slowSqlTraceCache != null && sql != null) {
                 SQLTrace cacheObj = new SlowSqlTrace(sql, 1, System.currentTimeMillis(), executionTime);
                 slowSqlTraceCache.checkAndUpdateCache(cacheObj);
@@ -229,17 +221,17 @@ public class JdbcStatsProvider {
     }
     
     /**
-     * Get the SQLTraceCache associated with this stats provider.
-     * @return SQLTraceCache
-     */    
-    /**
-     * Get the SQLTraceCache associated with this stats provider.
-     * @return SQLTraceCache
+     * Get the FrequentSQLTraceCache associated with this stats provider.
+     * @return FrequentSQLTraceCache The FrequentSQLTraceCache associated with this stats provider
      */
     public FrequentSQLTraceCache getFreqSqlTraceCache() {
         return freqSqlTraceCache;
     }
     
+    /**
+     * Get the SlowSqlTraceCache associated with this stats provider.
+     * @return SlowSqlTraceCache The SlowSqlTraceCache associated with this stats provider
+     */
     public SlowSqlTraceCache getSlowSqlTraceCache() {
         return slowSqlTraceCache;
     }

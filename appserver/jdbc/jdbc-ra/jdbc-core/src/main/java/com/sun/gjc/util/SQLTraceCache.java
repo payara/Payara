@@ -52,9 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Maintains the Sql Tracing Cache used to store SQL statements used by the
- * applications. This is used by the JDBCRA monitoring to display the most
- * frequently used queries by applications.
+ * Base class for Sql Tracing Caches used to store SQL statements used by applications.
  *
  * @author Shalini M
  */
@@ -141,7 +139,6 @@ public abstract class SQLTraceCache {
      * If the query is a new one, it is added to the list.
      * 
      * @param cacheObj
-     * @return
      */
     public abstract void checkAndUpdateCache(SQLTrace cacheObj);
 
@@ -161,16 +158,5 @@ public abstract class SQLTraceCache {
             sqlTraceList.remove(sqlTrace);
             elementCount --;
         }
-
-//        Iterator i = cache..keySet().descendingIterator();
-//        int elementCount = cache.size(); // avoid using size in the loop as expensive in time
-//        while (i.hasNext() && elementCount > numTopQueriesToReport) {
-//            SQLTrace cacheObj = (SQLTrace) i.next();
-//            if(_logger.isLoggable(Level.FINEST)) {
-//                _logger.finest("removing sql=" + cacheObj.getQueryName());
-//            }
-//            i.remove();
-//            elementCount--;
-//        }
     }
 }
