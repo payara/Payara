@@ -45,6 +45,7 @@ import com.sun.enterprise.deployment.Application;
 import org.glassfish.deployment.common.RootDeploymentDescriptor;
 import com.sun.enterprise.deployment.EjbBundleDescriptor;
 import com.sun.enterprise.deployment.EjbDescriptor;
+import com.sun.enterprise.deployment.WebComponentDescriptor;
 import com.sun.enterprise.deployment.annotation.impl.ModuleScanner;
 import org.glassfish.web.deployment.annotation.impl.WarScanner;
 import com.sun.enterprise.deployment.archivist.Archivist;
@@ -365,6 +366,13 @@ public class WebArchivist extends Archivist<WebBundleDescriptorImpl> {
                 descriptor.setDistributable(false);
             }
             descriptor.addWebBundleDescriptor(mergedWebFragment);
+
+            // if there any mapping stubs left, there is something invalid referenced from web.xml
+            for(WebComponentDescriptor desc : descriptor.getWebComponentDescriptors()) {
+                if(desc instanceof WebComponentDescriptorStub) {
+                    throw new RuntimeException(String.format("There is no web component by the name of %s here.", desc.getName()));
+                }
+            }
         }
 
         // apply default from default-web.xml to web.xml
