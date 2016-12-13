@@ -63,7 +63,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.beans.PropertyVetoException;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Defines configuration used to create and manage a pool physical database
@@ -655,18 +654,6 @@ public interface JdbcConnectionPool extends ConfigBeanProxy, Resource, ResourceP
      *              {@link String }
      */
     void setSlowQueryThresholdInSeconds(String value) throws PropertyVetoException;
-    
-    @Attribute (defaultValue="0", dataType=String.class)
-    @Min(value=0)
-    String getSlowQueryFrequencyMonitoringRange();
-    
-    void setSlowQueryFrequencyMonitoringRange(String value) throws PropertyVetoException;
-
-    @Attribute (defaultValue="0", dataType=String.class)
-    @Min(value=0)
-    String getSlowQueryTimeMonitoringRange();
-    
-    void setSlowQueryTimeMonitoringRange(String value) throws PropertyVetoException;
     
     /**
      * Gets the value of the lazyConnectionEnlistment property.

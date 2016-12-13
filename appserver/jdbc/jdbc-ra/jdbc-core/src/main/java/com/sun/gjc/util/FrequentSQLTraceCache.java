@@ -66,7 +66,6 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
      * If the query is a new one, it is added to the list.
      * 
      * @param cacheObj
-     * @return
      */
     @Override
     public void checkAndUpdateCache(SQLTrace cacheObj) {
@@ -74,8 +73,6 @@ public class FrequentSQLTraceCache extends SQLTraceCache {
             SQLTrace trace = cache.get(cacheObj.getQueryName());
             if (trace != null) {
                 //If already found in the cache
-                //equals is invoked here and hence comparison based on query name is done
-                //Get the object at the index to update the numExecutions
                 trace.setNumExecutions(trace.getNumExecutions() + 1);
                 trace.setLastUsageTime(System.currentTimeMillis());
             } else {

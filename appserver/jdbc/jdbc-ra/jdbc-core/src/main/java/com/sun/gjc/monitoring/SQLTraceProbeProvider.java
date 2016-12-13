@@ -38,6 +38,8 @@
  * holder.
  */
 
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package com.sun.gjc.monitoring;
 
 import org.glassfish.external.probe.provider.annotations.Probe;
@@ -58,7 +60,10 @@ public class SQLTraceProbeProvider {
      * <code>poolName</code>has got an event to cache a sql query
      *
      * @param poolName for which sql query should be cached
+     * @param appName
+     * @param moduleName
      * @param sql sql query that should be cached
+     * @param executionTime the sql query execution time
      */
     @Probe(name=JdbcRAConstants.TRACE_SQL)
     public void traceSQLEvent(@ProbeParam("poolName") String poolName, 
