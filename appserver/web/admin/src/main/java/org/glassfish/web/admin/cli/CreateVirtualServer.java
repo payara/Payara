@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -63,11 +63,10 @@ import org.glassfish.api.admin.RuntimeType;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.config.support.TargetType;
 import org.glassfish.config.support.CommandTarget;
+import org.glassfish.web.admin.LogFacade;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.web.admin.monitor.HttpServiceStatsProviderBootstrap;
 import org.jvnet.hk2.annotations.Service;
 import org.glassfish.hk2.api.ServiceLocator;
 import org.glassfish.hk2.api.PerLookup;
@@ -86,22 +85,7 @@ import org.jvnet.hk2.config.types.Property;
 @TargetType({CommandTarget.DAS,CommandTarget.STANDALONE_INSTANCE,CommandTarget.CLUSTER,CommandTarget.CONFIG})
 public class CreateVirtualServer implements AdminCommand {
 
-    private static final ResourceBundle rb = HttpServiceStatsProviderBootstrap.rb;
-
-    @LogMessageInfo(
-            message = "Please use only networklisteners.",
-            level = "INFO")
-    protected static final String CREATE_VIRTUAL_SERVER_BOTH_HTTP_NETWORK = "AS-WEB-ADMIN-00024";
-
-    @LogMessageInfo(
-            message = "Virtual Server named {0} already exists.",
-            level = "INFO")
-    protected static final String CREATE_VIRTUAL_SERVER_DUPLICATE = "AS-WEB-ADMIN-00025";
-
-    @LogMessageInfo(
-            message = "{0} create failed.",
-            level = "INFO")
-    protected static final String CREATE_VIRTUAL_SERVER_FAIL = "AS-WEB-ADMIN-00026";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Param(name = "hosts", defaultValue = "${com.sun.aas.hostName}")
     String hosts;
@@ -143,7 +127,7 @@ public class CreateVirtualServer implements AdminCommand {
         }
         final ActionReport report = context.getActionReport();
         if (networkListeners != null && httpListeners != null) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_VIRTUAL_SERVER_BOTH_HTTP_NETWORK), virtualServerId));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_VIRTUAL_SERVER_BOTH_HTTP_NETWORK), virtualServerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -155,7 +139,7 @@ public class CreateVirtualServer implements AdminCommand {
         // ensure we don't already have one of this name
         for (VirtualServer virtualServer : httpService.getVirtualServer()) {
             if (virtualServer.getId().equals(virtualServerId)) {
-                report.setMessage(MessageFormat.format(rb.getString(CREATE_VIRTUAL_SERVER_DUPLICATE), virtualServerId));
+                report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_VIRTUAL_SERVER_DUPLICATE), virtualServerId));
                 report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                 return;
             }
@@ -204,7 +188,7 @@ public class CreateVirtualServer implements AdminCommand {
             }, httpService);
 
         } catch (TransactionFailure e) {
-            report.setMessage(MessageFormat.format(rb.getString(CREATE_VIRTUAL_SERVER_FAIL), virtualServerId));
+            report.setMessage(MessageFormat.format(rb.getString(LogFacade.CREATE_VIRTUAL_SERVER_FAIL), virtualServerId));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             report.setFailureCause(e);
         }
