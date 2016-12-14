@@ -38,6 +38,7 @@
  * holder.
  */
 // Portions Copyright [2016] [Payara Foundation]
+
 package org.glassfish.weld;
 
 import com.sun.enterprise.deployment.Application;
@@ -510,7 +511,7 @@ public class BeanDeploymentArchiveImpl implements BeanDeploymentArchive {
                             new BeanDeploymentArchiveImpl(libJarArchive,
                                                           ejbs,
                                                           context,
-                                                          WEB_INF_LIB + SEPARATOR_CHAR + libJarArchive.getName() /* Use WEB-INF/lib/jarName as BDA Id*/);
+                                                          friendlyId + SEPARATOR_CHAR + WEB_INF_LIB + SEPARATOR_CHAR + libJarArchive.getName() /* Use war-name.war/WEB-INF/lib/jarName as BDA Id*/);
                         this.beanDeploymentArchives.add(wlbda); //add to list of BDAs for this WAR
                         webLibBDAs.add(wlbda);
                     }
