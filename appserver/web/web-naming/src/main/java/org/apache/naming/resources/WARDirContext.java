@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -82,10 +82,10 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.apache.naming.LogFacade;
 import org.apache.naming.NamingEntry;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 /**
  * WAR Directory Context implementation.
@@ -96,24 +96,9 @@ import org.glassfish.logging.annotation.LogMessageInfo;
 
 public class WARDirContext extends BaseDirContext {
 
-    private static final Logger log = org.apache.naming.resources.FileDirContext.logger;
+    private static final Logger log = LogFacade.getLogger();
 
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Exception closing WAR File {0}",
-            level = "WARNING")
-    private static final String EXCEPTION_CLOSING_WAR = "AS-WEB-NAMING-00026";
-
-    @LogMessageInfo(
-            message = "Doc base must point to a WAR file",
-            level = "INFO")
-    private static final String NOT_WAR = "AS-WEB-NAMING-00027";
-
-    @LogMessageInfo(
-            message = "Invalid or unreadable WAR file : {0}",
-            level = "INFO")
-    private static final String INVALID_WAR = "AS-WEB-NAMING-00028";
 
 
     // ----------------------------------------------------------- Constructors
@@ -177,10 +162,10 @@ public class WARDirContext extends BaseDirContext {
 	// Validate the format of the proposed document root
 	if (docBase == null)
 	    throw new IllegalArgumentException
-                (rb.getString(FileDirContext.RESOURCES_NULL));
+                (rb.getString(LogFacade.RESOURCES_NULL));
 	if (!(docBase.endsWith(".war")))
 	    throw new IllegalArgumentException
-                (rb.getString(NOT_WAR));
+                (rb.getString(LogFacade.NOT_WAR));
 
 	// Calculate a File object referencing this document base directory
 	File base = new File(docBase);
@@ -188,12 +173,12 @@ public class WARDirContext extends BaseDirContext {
 	// Validate that the document base is an existing directory
 	if (!base.exists() || !base.canRead() || base.isDirectory())
 	    throw new IllegalArgumentException
-                (rb.getString(NOT_WAR));
+                (rb.getString(LogFacade.NOT_WAR));
         try {
             this.base = new ZipFile(base);
         } catch (Exception e) {
 	    throw new IllegalArgumentException
-                (MessageFormat.format(rb.getString(INVALID_WAR), e.getMessage()));
+                (MessageFormat.format(rb.getString(LogFacade.INVALID_WAR), e.getMessage()));
         }
         super.setDocBase(docBase);
 
@@ -215,7 +200,7 @@ public class WARDirContext extends BaseDirContext {
             try {
                 base.close();
             } catch (IOException e) {
-                String msg = MessageFormat.format(EXCEPTION_CLOSING_WAR, base.getName());
+                String msg = MessageFormat.format(LogFacade.EXCEPTION_CLOSING_WAR, base.getName());
                 log.log(Level.WARNING, msg, e);
             }
         }
@@ -258,7 +243,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
         ZipEntry zipEntry = entry.getEntry();
         if (zipEntry.isDirectory())
             return new WARDirContext(base, entry);
@@ -343,7 +328,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
         return new NamingContextEnumeration(list(entry).iterator());
     }
 
@@ -387,7 +372,7 @@ public class WARDirContext extends BaseDirContext {
         Entry entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
         return new NamingContextBindingsEnumeration(list(entry).iterator(), this);
     }
 
@@ -502,7 +487,7 @@ public class WARDirContext extends BaseDirContext {
             entry = treeLookup(name);
         if (entry == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(FileDirContext.RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
 
         ZipEntry zipEntry = entry.getEntry();
 

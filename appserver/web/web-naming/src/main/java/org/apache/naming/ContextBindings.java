@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,9 +64,6 @@ import java.util.ResourceBundle;
 import javax.naming.NamingException;
 import javax.naming.Context;
 
-import org.apache.naming.resources.FileDirContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
 /**
  * Handles the associations :
  * <ul>
@@ -84,25 +81,7 @@ public class ContextBindings {
     // -------------------------------------------------------------- Variables
 
 
-    private static final ResourceBundle rb = FileDirContext.logger.getResourceBundle();
-
-
-    @LogMessageInfo(
-            message = "Unknown context name : {0}",
-            level = "INFO")
-    private static final String UNKNOWN_CONTEXT = "AS-WEB-NAMING-00014";
-
-
-    @LogMessageInfo(
-            message = "No naming context bound to this thread",
-            level = "INFO")
-    private static final String NO_CONTEXT_BOUND_TO_THREAD = "AS-WEB-NAMING-00015";
-
-
-    @LogMessageInfo(
-            message = "No naming context bound to this class loader",
-            level = "INFO")
-    private static final String NO_CONTEXT_BOUND_TO_CL = "AS-WEB-NAMING-00016";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
 
     /**
@@ -224,7 +203,7 @@ public class ContextBindings {
             if (context == null)
                 throw new NamingException(
                         rb.getString(
-                                MessageFormat.format(UNKNOWN_CONTEXT, name)));
+                                MessageFormat.format(LogFacade.UNKNOWN_CONTEXT, name)));
             threadBindings.put(Thread.currentThread(), context);
             threadNameBindings.put(Thread.currentThread(), name);
         }
@@ -263,7 +242,7 @@ public class ContextBindings {
         Context context = threadBindings.get(Thread.currentThread());
         if (context == null)
             throw new NamingException(
-                    rb.getString(NO_CONTEXT_BOUND_TO_THREAD));
+                    rb.getString(LogFacade.NO_CONTEXT_BOUND_TO_THREAD));
         return context;
     }
 
@@ -276,7 +255,7 @@ public class ContextBindings {
         Object name = threadNameBindings.get(Thread.currentThread());
         if (name == null)
             throw new NamingException(
-                    rb.getString(NO_CONTEXT_BOUND_TO_CL));
+                    rb.getString(LogFacade.NO_CONTEXT_BOUND_TO_CL));
         return name;
     }
 
@@ -327,7 +306,7 @@ public class ContextBindings {
             if (context == null)
                 throw new NamingException(
                         rb.getString(
-                                MessageFormat.format(UNKNOWN_CONTEXT, name)));
+                                MessageFormat.format(LogFacade.UNKNOWN_CONTEXT, name)));
             clBindings.put(classLoader, context);
             clNameBindings.put(classLoader, name);
         }
@@ -389,7 +368,7 @@ public class ContextBindings {
             }
         } while ((cl = cl.getParent()) != null);
         throw new NamingException(
-                rb.getString(NO_CONTEXT_BOUND_TO_CL));
+                rb.getString(LogFacade.NO_CONTEXT_BOUND_TO_CL));
     }
 
 
@@ -407,7 +386,7 @@ public class ContextBindings {
             }
         } while ((cl = cl.getParent()) != null);
         throw new NamingException(
-                rb.getString(NO_CONTEXT_BOUND_TO_CL));
+                rb.getString(LogFacade.NO_CONTEXT_BOUND_TO_CL));
     }
 
 
