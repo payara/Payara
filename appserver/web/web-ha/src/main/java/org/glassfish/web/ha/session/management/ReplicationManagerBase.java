@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.ha.session.management;
 
@@ -74,7 +75,7 @@ public abstract class ReplicationManagerBase<T extends Storeable> extends Persis
             level = "INFO")
     public static final String REQUIRED_VERSION_NFE = "AS-WEB-HA-00007";
 
-    protected boolean relaxCacheVersionSemantics = false;
+    protected boolean relaxCacheVersionSemantics = true;
     protected boolean disableJreplica = false;
 
     public BackingStore<String, T> getBackingStore() {
