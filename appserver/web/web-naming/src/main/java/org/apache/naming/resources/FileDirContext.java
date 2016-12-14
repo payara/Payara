@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -81,14 +81,11 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import org.apache.naming.LogFacade;
 import org.apache.naming.NamingEntry;
 import org.apache.naming.NamingContextBindingsEnumeration;
 import org.apache.naming.NamingContextEnumeration;
 import org.apache.naming.Util;
-
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Filesystem Directory Context implementation helper class.
@@ -98,85 +95,9 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
  */
 
 public class FileDirContext extends BaseDirContext {
+    private static final Logger logger = LogFacade.getLogger();
 
-    @LogMessagesResourceBundle
-    public static final String SHARED_LOGMESSAGE_RESOURCE =
-            "org.apache.naming.resources.LogMessages";
-
-    @LoggerInfo(subsystem="WEB", description="WEB Naming Logger", publish=true)
-    public static final String WEB_NAMING_LOGGER = "javax.enterprise.web.naming";
-
-    public static final Logger logger =
-            Logger.getLogger(WEB_NAMING_LOGGER, SHARED_LOGMESSAGE_RESOURCE);
-
-    public static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Canonical Pathname cannot be null",
-            level = "FINE")
-    private static final String FILE_RESOURCES_NULL_CANONICAL_PATH = "AS-WEB-NAMING-00001";
-
-    @LogMessageInfo(
-            message = "Outside webapp not allowed {0} {1} {2}",
-            level = "FINE")
-    private static final String FILE_RESOURCES_NOT_ALLOWED = "AS-WEB-NAMING-00002";
-
-    @LogMessageInfo(
-            message = "Absolute Pathname cannot be null {0} {1}",
-            level = "FINE")
-    private static final String FILE_RESOURCES_NULL_ABS_PATH = "AS-WEB-NAMING-00003";
-
-    @LogMessageInfo(
-            message = "Canonical pathname {0} equals to absolute pathname {1} {2}",
-            level = "FINE")
-    private static final String FILE_RESOURCES_PATH_EQUALS_ABS_PATH = "AS-WEB-NAMING-00004";
-
-    @LogMessageInfo(
-            message = "File cannot be read {0}",
-            level = "FINE")
-    private static final String FILE_RESOURCES_NOT_EXIST = "AS-WEB-NAMING-00005";
-
-    @LogMessageInfo(
-            message = "Could not get dir listing for {0}",
-            level = "WARNING",
-            cause = "Some IO error occurred such as bad file permissions",
-            action = "Verify the file descriptors")
-    private static final String FILE_RESOURCES_LISTING_NULL = "AS-WEB-NAMING-00006";
-
-    @LogMessageInfo(
-            message = "Document base {0} does not exist or is not a readable directory",
-            level = "INFO")
-    private static final String FILE_RESOURCES_BASE = "AS-WEB-NAMING-00007";
-
-    @LogMessageInfo(
-            message = "Document base cannot be null",
-            level = "INFO")
-    protected static final String RESOURCES_NULL = "AS-WEB-NAMING-00008";
-
-    @LogMessageInfo(
-            message = "Resource {0} not found",
-            level = "INFO")
-    protected static final String RESOURCES_NOT_FOUND = "AS-WEB-NAMING-00009";
-
-    @LogMessageInfo(
-            message = "Name {0} is already bound in this Context",
-            level = "INFO")
-    private static final String RESOURCES_ALREADY_BOUND = "AS-WEB-NAMING-00010";
-
-    @LogMessageInfo(
-            message = "Bind failed: {0}",
-            level = "INFO")
-    private static final String RESOURCES_BIND_FAILED = "AS-WEB-NAMING-00011";
-
-    @LogMessageInfo(
-            message = "Unbind failed: {0}",
-            level = "INFO")
-    private static final String RESOURCES_UNBIND_FAILED = "AS-WEB-NAMING-00012";
-
-    @LogMessageInfo(
-            message = "Failed to rename [{0}] to [{1}]",
-            level = "INFO")
-    private static final String RESOURCES_RENAME_FAIL = "AS-WEB-NAMING-00013";
+    protected static final ResourceBundle rb = logger.getResourceBundle();
 
 
     // -------------------------------------------------------------- Constants
@@ -268,7 +189,7 @@ public class FileDirContext extends BaseDirContext {
         // Validate the format of the proposed document root
         if (docBase == null)
             throw new IllegalArgumentException
-            (rb.getString(RESOURCES_NULL));
+            (rb.getString(LogFacade.RESOURCES_NULL));
 
         // START S1AS8PE 4965170
         base = docBaseFileCache.get(docBase);
@@ -289,7 +210,7 @@ public class FileDirContext extends BaseDirContext {
         // Validate that the document base is an existing directory
         if (!base.exists() || !base.isDirectory() || !base.canRead())
             throw new IllegalArgumentException
-                    (MessageFormat.format(rb.getString(FILE_RESOURCES_BASE), docBase));
+                    (MessageFormat.format(rb.getString(LogFacade.FILE_RESOURCES_BASE), docBase));
         this.absoluteBase = base.getAbsolutePath();
         super.setDocBase(docBase);
 
@@ -362,7 +283,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
         if (file.isDirectory()) {
             FileDirContext tempContext = new FileDirContext(env);
             tempContext.setDocBase(file.getPath());
@@ -399,14 +320,14 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NameNotFoundException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
 
         // START S1AS8PE 4965170
         fileCache.remove(name);
         // END S1AS8PE 4965170
         if (!file.delete())
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
 
     }
 
@@ -429,7 +350,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), oldName));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), oldName));
 
         // START S1AS8PE 4965170
         File newFile = fileCache.get(newName);
@@ -440,7 +361,7 @@ public class FileDirContext extends BaseDirContext {
         
         if (!file.renameTo(newFile)) {
             throw new NamingException(
-                    MessageFormat.format(rb.getString(RESOURCES_RENAME_FAIL), oldName, newName));
+                    MessageFormat.format(rb.getString(LogFacade.RESOURCES_RENAME_FAIL), oldName, newName));
         }
     }
 
@@ -465,7 +386,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
 
         return new NamingContextEnumeration(list(file).iterator());
 
@@ -492,7 +413,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
 
         return new NamingContextBindingsEnumeration(list(file).iterator(),
                 this);
@@ -594,7 +515,7 @@ public class FileDirContext extends BaseDirContext {
 
         if (file == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_NOT_FOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_NOT_FOUND), name));
 
         return new FileResourceAttributes(file);
 
@@ -664,7 +585,7 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                    (MessageFormat.format(rb.getString(RESOURCES_ALREADY_BOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_ALREADY_BOUND), name));
 
         rebind(file, obj, attrs);
         
@@ -715,15 +636,15 @@ public class FileDirContext extends BaseDirContext {
             if (file.exists()) {
                 if (!file.delete())
                     throw new NamingException
-                            (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
+                            (MessageFormat.format(rb.getString(LogFacade.RESOURCES_BIND_FAILED), name));
             }
             if (!file.mkdir())
                 throw new NamingException
-                        (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
+                        (MessageFormat.format(rb.getString(LogFacade.RESOURCES_BIND_FAILED), name));
         }
         if (is == null)
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_BIND_FAILED), name));
 
         // Open os
         
@@ -746,7 +667,7 @@ public class FileDirContext extends BaseDirContext {
             }
         } catch (IOException e) {
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), e));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_BIND_FAILED), e));
         }
         
     }
@@ -775,10 +696,10 @@ public class FileDirContext extends BaseDirContext {
         File file = new File(base, name);
         if (file.exists())
             throw new NameAlreadyBoundException
-                    (MessageFormat.format(rb.getString(RESOURCES_ALREADY_BOUND), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_ALREADY_BOUND), name));
         if (!file.mkdir())
             throw new NamingException
-                    (MessageFormat.format(rb.getString(RESOURCES_BIND_FAILED), name));
+                    (MessageFormat.format(rb.getString(LogFacade.RESOURCES_BIND_FAILED), name));
         return (DirContext) lookup(name);
         
     }
@@ -980,7 +901,7 @@ public class FileDirContext extends BaseDirContext {
             }
             if (canPath == null) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, FILE_RESOURCES_NULL_CANONICAL_PATH);
+                    logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_CANONICAL_PATH);
                 }
                 return null;
             }
@@ -988,7 +909,7 @@ public class FileDirContext extends BaseDirContext {
             // Check to see if going outside of the web application root
             if ((!allowLinking) && (!canPath.startsWith(absoluteBase))) {
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, FILE_RESOURCES_NOT_ALLOWED, new Object[]{allowLinking,canPath,absoluteBase});
+                    logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NOT_ALLOWED, new Object[]{allowLinking,canPath,absoluteBase});
                 }
                 return null;
             }
@@ -1007,7 +928,7 @@ public class FileDirContext extends BaseDirContext {
                 canPath = normalize(canPath);
                 if ((canPath == null) || (absPath == null)) {
                     if (logger.isLoggable(Level.FINE)) {
-                        logger.log(Level.FINE, FILE_RESOURCES_NULL_ABS_PATH,
+                        logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NULL_ABS_PATH,
                                 new Object[]{canPath,absPath});
                     }
                     return null;
@@ -1028,7 +949,7 @@ public class FileDirContext extends BaseDirContext {
                         if (canPath.equalsIgnoreCase(absPath)
                                 || !allowLinking) {
                             if (logger.isLoggable(Level.FINE)) {
-                                logger.log(Level.FINE, FILE_RESOURCES_PATH_EQUALS_ABS_PATH,
+                                logger.log(Level.FINE, LogFacade.FILE_RESOURCES_PATH_EQUALS_ABS_PATH,
                                     new Object[]{canPath,absPath,allowLinking});
                             }
                             return null;
@@ -1040,7 +961,7 @@ public class FileDirContext extends BaseDirContext {
 
         } else {
             if (logger.isLoggable(Level.FINE)) {
-                logger.log(Level.FINE, FILE_RESOURCES_NOT_EXIST,
+                logger.log(Level.FINE, LogFacade.FILE_RESOURCES_NOT_EXIST,
                         file.getAbsolutePath());
             }
             return null;
@@ -1069,7 +990,7 @@ public class FileDirContext extends BaseDirContext {
             /* Some IO error occurred such as bad file permissions,
              * lack of file descriptors.
              * Prevent a NPE with Arrays.sort(names) */
-            logger.log(Level.WARNING, FILE_RESOURCES_LISTING_NULL,
+            logger.log(Level.WARNING, LogFacade.FILE_RESOURCES_LISTING_NULL,
                                   file.getAbsolutePath());
             return entries;
         }

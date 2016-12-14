@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,9 +58,6 @@
 
 package org.apache.naming;
 
-import org.apache.naming.resources.FileDirContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
-
 import java.text.MessageFormat;
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -94,44 +91,9 @@ public class NamingContext implements Context {
 
     // -------------------------------------------------------------- Constants
 
-    private static final Logger logger = FileDirContext.logger;
+    private static final Logger logger = LogFacade.getLogger();
 
     private static final ResourceBundle rb = logger.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Name is not bound to a Context",
-            level = "INFO")
-    private static final String CONTEXT_EXPECTED = "AS-WEB-NAMING-00017";
-
-    @LogMessageInfo(
-            message = "Name is not bound to a Context",
-            level = "WARNING")
-    private static final String FAIL_RESOLVING_REFERENCE = "AS-WEB-NAMING-00018";
-
-    @LogMessageInfo(
-            message = "Name is not bound to a Context",
-            level = "INF")
-    private static final String NAME_NOT_BOUND = "AS-WEB-NAMING-00019";
-
-    @LogMessageInfo(
-            message = "Context is read only",
-            level = "INFO")
-    private static final String READ_ONLY = "AS-WEB-NAMING-00020";
-
-    @LogMessageInfo(
-            message = "Name is not valid",
-            level = "INFO")
-    private static final String INVALID_NAME = "AS-WEB-NAMING-00021";
-
-    @LogMessageInfo(
-            message = "Name {0} is already bound in this Context",
-            level = "INFO")
-    private static final String ALREADY_BOUND = "AS-WEB-NAMING-00022";
-
-    @LogMessageInfo(
-            message = "Can't generate an absolute name for this namespace",
-            level = "INFO")
-    private static final String NO_ABSOLUTE_NAME = "AS-WEB-NAMING-00023";
 
     /**
      * Name parser for this context.
@@ -320,13 +282,13 @@ public class NamingContext implements Context {
 	    name = name.getSuffix(1);
         if (name.isEmpty())
             throw new NamingException(
-                    rb.getString(INVALID_NAME));
+                    rb.getString(LogFacade.INVALID_NAME));
         
         NamingEntry entry = bindings.get(name.get(0));
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
+                    MessageFormat.format(rb.getString(LogFacade.NAME_NOT_BOUND), name.get(0)));
         }
         
         if (name.size() > 1) {
@@ -334,7 +296,7 @@ public class NamingContext implements Context {
                 ((Context) entry.value).unbind(name.getSuffix(1));
             } else {
                 throw new NamingException(
-                        rb.getString(CONTEXT_EXPECTED));
+                        rb.getString(LogFacade.CONTEXT_EXPECTED));
             }
         } else {
             bindings.remove(name.get(0));
@@ -417,12 +379,12 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
+                    MessageFormat.format(rb.getString(LogFacade.NAME_NOT_BOUND), name.get(0)));
         }
         
         if (entry.type != NamingEntry.CONTEXT) {
             throw new NamingException(
-                    rb.getString(CONTEXT_EXPECTED));
+                    rb.getString(LogFacade.CONTEXT_EXPECTED));
         }
         return ((Context) entry.value).list(name.getSuffix(1));
     }
@@ -469,12 +431,12 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
+                    MessageFormat.format(rb.getString(LogFacade.NAME_NOT_BOUND), name.get(0)));
         }
         
         if (entry.type != NamingEntry.CONTEXT) {
             throw new NamingException(
-                    rb.getString(CONTEXT_EXPECTED));
+                    rb.getString(LogFacade.CONTEXT_EXPECTED));
         }
         return ((Context) entry.value).listBindings(name.getSuffix(1));
     }
@@ -529,13 +491,13 @@ public class NamingContext implements Context {
 	    name = name.getSuffix(1);
         if (name.isEmpty())
             throw new NamingException(
-                    rb.getString(INVALID_NAME));
+                    rb.getString(LogFacade.INVALID_NAME));
         
         NamingEntry entry = bindings.get(name.get(0));
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
+                    MessageFormat.format(rb.getString(LogFacade.NAME_NOT_BOUND), name.get(0)));
         }
         
         if (name.size() > 1) {
@@ -543,7 +505,7 @@ public class NamingContext implements Context {
                 ((Context) entry.value).destroySubcontext(name.getSuffix(1));
             } else {
                 throw new NamingException(
-                        rb.getString(CONTEXT_EXPECTED));
+                        rb.getString(LogFacade.CONTEXT_EXPECTED));
             }
         } else {
             if (entry.type == NamingEntry.CONTEXT) {
@@ -551,7 +513,7 @@ public class NamingContext implements Context {
                 bindings.remove(name.get(0));
             } else {
                 throw new NotContextException(
-                        rb.getString(CONTEXT_EXPECTED));
+                        rb.getString(LogFacade.CONTEXT_EXPECTED));
             }
         }
         
@@ -672,7 +634,7 @@ public class NamingContext implements Context {
                 return ((Context) obj).getNameParser(name.getSuffix(1));
             } else {
                 throw new NotContextException(
-                        rb.getString(CONTEXT_EXPECTED));
+                        rb.getString(LogFacade.CONTEXT_EXPECTED));
             }
         }
 
@@ -811,7 +773,7 @@ public class NamingContext implements Context {
     public String getNameInNamespace()
         throws NamingException {
         throw  new OperationNotSupportedException(
-                rb.getString(NO_ABSOLUTE_NAME));
+                rb.getString(LogFacade.NO_ABSOLUTE_NAME));
         //FIXME ?
     }
 
@@ -842,7 +804,7 @@ public class NamingContext implements Context {
         
         if (entry == null) {
             throw new NameNotFoundException(
-                    MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
+                    MessageFormat.format(rb.getString(LogFacade.NAME_NOT_BOUND), name.get(0)));
         }
         
         if (name.size() > 1) {
@@ -850,7 +812,7 @@ public class NamingContext implements Context {
             // number of subcontexts.
             if (entry.type != NamingEntry.CONTEXT) {
                 throw new NamingException(
-                        rb.getString(CONTEXT_EXPECTED));
+                        rb.getString(LogFacade.CONTEXT_EXPECTED));
             }
             return ((Context) entry.value).lookup(name.getSuffix(1));
         } else {
@@ -875,7 +837,7 @@ public class NamingContext implements Context {
                     throw e;
                 } catch (Exception e) {
                     logger.log(Level.WARNING,
-                            FAIL_RESOLVING_REFERENCE,
+                            LogFacade.FAIL_RESOLVING_REFERENCE,
                             e);
                     throw new NamingException(e.getMessage());
                 }
@@ -909,14 +871,14 @@ public class NamingContext implements Context {
 	    name = name.getSuffix(1);
         if (name.isEmpty())
             throw new NamingException(
-                    rb.getString(INVALID_NAME));
+                    rb.getString(LogFacade.INVALID_NAME));
         
         NamingEntry entry = (NamingEntry) bindings.get(name.get(0));
         
         if (name.size() > 1) {
             if (entry == null) {
                 throw new NameNotFoundException(
-                        MessageFormat.format(rb.getString(NAME_NOT_BOUND), name.get(0)));
+                        MessageFormat.format(rb.getString(LogFacade.NAME_NOT_BOUND), name.get(0)));
             }
             if (entry.type == NamingEntry.CONTEXT) {
                 if (rebind) {
@@ -926,12 +888,12 @@ public class NamingContext implements Context {
                 }
             } else {
                 throw new NamingException(
-                        rb.getString(CONTEXT_EXPECTED));
+                        rb.getString(LogFacade.CONTEXT_EXPECTED));
             }
         } else {
             if ((!rebind) && (entry != null)) {
                 throw new NamingException(
-                        MessageFormat.format(rb.getString(ALREADY_BOUND), name.get(0)));
+                        MessageFormat.format(rb.getString(LogFacade.ALREADY_BOUND), name.get(0)));
             } else {
                 // Getting the type of the object and wrapping it within a new
                 // NamingEntry
@@ -975,7 +937,7 @@ public class NamingContext implements Context {
     protected void checkWritable() 
         throws NamingException {
         if (!isWritable())
-            throw new NamingException(rb.getString(READ_ONLY));
+            throw new NamingException(rb.getString(LogFacade.READ_ONLY));
     }
 
 
