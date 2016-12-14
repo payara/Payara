@@ -94,12 +94,10 @@ public class HASSOFactory implements SSOFactory {
      */
     @Override
     public GlassFishSingleSignOn createSingleSignOnValve(String virtualServerName) {
-        String persistenceType = serverConfigLookup.getPersistenceTypeFromConfig().getType();
-        if(persistenceType == null) {
-            persistenceType = PersistenceType.REPLICATED.getType();
-        }
+        PersistenceType persistenceType = serverConfigLookup.getPersistenceTypeFromConfig();
+        String persistenceTypeStr = persistenceType != null? persistenceType.getType() : PersistenceType.REPLICATED.getType();
         return new HASingleSignOn(ioUtils,
-                getSsoEntryMetadataBackingStore(persistenceType, STORE_NAME, services));
+                getSsoEntryMetadataBackingStore(persistenceTypeStr, STORE_NAME, services));
     }   
     
     protected static synchronized BackingStore<String, HASingleSignOnEntryMetadata>
