@@ -256,6 +256,11 @@ public class WebappClassLoader
     protected final Object jarFilesLock = new Object();
 
     /**
+     * Lock to synchronize closing and opening of jar
+     */
+    protected final Object jarFilesLock = new Object();
+
+    /**
      * The list of JARs, in the order they should be searched
      * for locally loaded classes or resources.
      */
