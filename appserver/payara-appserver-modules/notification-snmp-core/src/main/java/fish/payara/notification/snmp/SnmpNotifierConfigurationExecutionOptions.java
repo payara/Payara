@@ -36,31 +36,74 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.snmp;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+public class SnmpNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
 
-    @Attribute(required = true)
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    private String community;
+    private String oid;
+    private String version;
+    private String host;
+    private Integer port;
 
-    @Attribute(required = true)
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    SnmpNotifierConfigurationExecutionOptions() {
+        super(NotifierType.SNMP);
+    }
+
+    public String getCommunity() {
+        return community;
+    }
+
+    public void setCommunity(String community) {
+        this.community = community;
+    }
+
+    public String getOid() {
+        return oid;
+    }
+
+    public void setOid(String oid) {
+        this.oid = oid;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    @Override
+    public String toString() {
+        return "SnmpNotifierConfigurationExecutionOptions{" +
+                "COMMUNITY='" + community + '\'' +
+                ", oid='" + oid + '\'' +
+                ", version='" + version + '\'' +
+                ", host='" + host + '\'' +
+                ", PORT=" + port +
+                "} " + super.toString();
+    }
 }

@@ -36,7 +36,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.snmp;
 
 import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
@@ -47,20 +47,33 @@ import org.jvnet.hk2.config.Configured;
 import java.beans.PropertyVetoException;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
+ * Configuration class with the aim to configure SNMP notification specific parameters.
  * This configuration is only being used by notification services.
  *
  * @author mertcaliskan
  */
 @Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@NotifierConfigurationType(type = NotifierType.SNMP)
+public interface SnmpNotifierConfiguration extends NotifierConfiguration {
+
+    @Attribute(defaultValue = "public")
+    String getCommunity();
+    void setCommunity(String value) throws PropertyVetoException;
+
+    // SNMP Trap for sysLocation
+    @Attribute(defaultValue = ".1.3.6.1.2.1.1.8")
+    String getOid();
+    void setOid(String value) throws PropertyVetoException;
+
+    @Attribute(defaultValue = "v2c")
+    String getVersion();
+    void setVersion(String value) throws PropertyVetoException;
 
     @Attribute(required = true)
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    String getHost();
+    void setHost(String value) throws PropertyVetoException;
 
-    @Attribute(required = true)
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    @Attribute(defaultValue = "162")
+    Integer getPort();
+    void setPort(String value) throws PropertyVetoException;
 }

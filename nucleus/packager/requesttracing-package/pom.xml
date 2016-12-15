@@ -107,6 +107,16 @@
             <artifactId>org.apache.servicemix.bundles.xpp3</artifactId>
             <version>${xpp3.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.appserver</groupId>
+            <artifactId>notification-snmp-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.snmp4j</groupId>
+            <artifactId>snmp4j</artifactId>
+            <version>${snmp4j.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>fish.payara.payara-modules</groupId>
