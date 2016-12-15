@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,6 +58,9 @@
 // Portions Copyright [2016] [Payara Foundation] 
 package org.apache.catalina.authenticator;
 
+import org.apache.catalina.LogFacade;
+import org.apache.catalina.Session;
+
 import java.security.Principal;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +76,7 @@ import org.apache.catalina.core.StandardServer;
  */
 public class SingleSignOnEntry {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
 
     protected final String id;
 

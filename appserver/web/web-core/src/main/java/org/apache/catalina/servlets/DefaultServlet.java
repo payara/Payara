@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2014 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -101,8 +101,8 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.core.ContextsAdapterUtility;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.ServerInfo;
 import org.apache.catalina.util.URLEncoder;
 import org.apache.naming.resources.CacheEntry;
@@ -112,7 +112,6 @@ import org.apache.naming.resources.ResourceAttributes;
 import org.apache.tomcat.util.security.PrivilegedGetTccl;
 import org.apache.tomcat.util.security.PrivilegedSetTccl;
 import org.glassfish.grizzly.http.server.util.AlternateDocBase;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.util.HtmlEntityEncoder;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
@@ -166,67 +165,7 @@ import org.xml.sax.ext.EntityResolver2;
 public class DefaultServlet
     extends HttpServlet {
 
-    protected static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Only skipped [{0}] bytes when [{1}] were requested",
-            level = "WARNING"
-    )
-    public static final String SKIP_BYTES_EXCEPTION = "AS-WEB-CORE-00323";
-
-    @LogMessageInfo(
-            message = "Directory Listing For {0}",
-            level = "INFO"
-    )
-    public static final String DIR_TITLE_INFO = "AS-WEB-CORE-00324";
-
-    @LogMessageInfo(
-            message = "Up To {0}",
-            level = "INFO"
-    )
-    public static final String DIR_PARENT_INFO = "AS-WEB-CORE-00325";
-
-    @LogMessageInfo(
-            message = "Filename",
-            level = "INFO"
-    )
-    public static final String DIR_FILENAME_INFO = "AS-WEB-CORE-00326";
-
-    @LogMessageInfo(
-            message = "Size",
-            level = "INFO"
-    )
-    public static final String DIR_SIZE_INFO = "AS-WEB-CORE-00327";
-
-    @LogMessageInfo(
-            message = "Last Modified",
-            level = "INFO"
-    )
-    public static final String DIR_LAST_MODIFIED_INFO = "AS-WEB-CORE-00328";
-
-    @LogMessageInfo(
-            message = "Blocked access to external entity with publicId [{0}] and systemId [{0}]",
-            level = "WARNING"
-    )
-    public static final String BLOCK_EXTERNAL_ENTITY = "AS-WEB-CORE-00540";
-
-    @LogMessageInfo(
-            message = "Blocked access to external entity with name [{0}], publicId [{1}], baseURI [{2}] and systemId [{3}]",
-            level = "WARNING"
-    )
-    public static final String BLOCK_EXTERNAL_ENTITY2 = "AS-WEB-CORE-00541";
-
-    @LogMessageInfo(
-            message = "Blocked access to external subset with name [{0}] and baseURI [{1}]",
-            level = "WARNING"
-    )
-    public static final String BLOCK_EXTERNAL_SUBSET = "AS-WEB-CORE-00542";
-
-    @LogMessageInfo(
-            message = "Fail to read file [{0}]",
-            level = "WARNING"
-    )
-    public static final String READ_FILE_EXCEPTION = "AS-WEB-CORE-00543";
+    protected static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     private static final DocumentBuilderFactory factory;
 
@@ -1592,7 +1531,7 @@ public class DefaultServlet
         // rewriteUrl(contextPath) is expensive. cache result for later reuse
         String rewrittenContextPath =  rewriteUrl(contextPath);
 
-        String dirTitle = MessageFormat.format(rb.getString(DIR_TITLE_INFO), name);
+        String dirTitle = MessageFormat.format(rb.getString(LogFacade.DIR_TITLE_INFO), name);
 
         // Render the page header
         sb.append("<html>\r\n");
@@ -1618,7 +1557,7 @@ public class DefaultServlet
         int slash = parentDirectory.lastIndexOf('/');
         if (slash >= 0) {
             String parent = name.substring(0, slash);
-            String dirParent = MessageFormat.format(rb.getString(DIR_PARENT_INFO), parent);
+            String dirParent = MessageFormat.format(rb.getString(LogFacade.DIR_PARENT_INFO), parent);
             sb.append(" - <a href=\"");
             sb.append(rewrittenContextPath);
             if (parent.equals(""))
@@ -1642,13 +1581,13 @@ public class DefaultServlet
         // Render the column headings
         sb.append("<tr>\r\n");
         sb.append("<td align=\"left\"><font size=\"+1\"><strong>");
-        sb.append(rb.getString(DIR_FILENAME_INFO));
+        sb.append(rb.getString(LogFacade.DIR_FILENAME_INFO));
         sb.append("</strong></font></td>\r\n");
         sb.append("<td align=\"center\"><font size=\"+1\"><strong>");
-        sb.append(rb.getString(DIR_SIZE_INFO));
+        sb.append(rb.getString(LogFacade.DIR_SIZE_INFO));
         sb.append("</strong></font></td>\r\n");
         sb.append("<td align=\"right\"><font size=\"+1\"><strong>");
-        sb.append(rb.getString(DIR_LAST_MODIFIED_INFO));
+        sb.append(rb.getString(LogFacade.DIR_LAST_MODIFIED_INFO));
         sb.append("</strong></font></td>\r\n");
         sb.append("</tr>");
 
@@ -1858,7 +1797,7 @@ public class DefaultServlet
                     long len = f.length();
                     byte b[] = new byte[(int)len]; /* danger! */
                     if (len != fis.read(b)) {
-                        throw new IOException(MessageFormat.format(READ_FILE_EXCEPTION, f.getAbsolutePath()));
+                        throw new IOException(MessageFormat.format(LogFacade.READ_FILE_EXCEPTION, f.getAbsolutePath()));
                     }
                     return new StreamSource(new ByteArrayInputStream(b));
                 } finally {
@@ -2539,7 +2478,7 @@ public class DefaultServlet
             return e;
         }
         if (skipped < start) {
-            String msg = MessageFormat.format(rb.getString(SKIP_BYTES_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SKIP_BYTES_EXCEPTION),
                                               new Object[] {Long.valueOf(skipped),
                                                             Long.valueOf(start)});
             return new IOException(msg);
@@ -2594,7 +2533,7 @@ public class DefaultServlet
             return e;
         }
         if (skipped < start) {
-            String msg = MessageFormat.format(rb.getString(SKIP_BYTES_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.SKIP_BYTES_EXCEPTION),
                                               new Object[] {Long.valueOf(skipped),
                                                             Long.valueOf(start)});
             return new IOException(msg);
@@ -2738,20 +2677,20 @@ public class DefaultServlet
         public InputSource resolveEntity(String publicId, String systemId)
                 throws SAXException, IOException {
             throw new SAXException(
-                    MessageFormat.format(BLOCK_EXTERNAL_ENTITY, publicId, systemId));
+                    MessageFormat.format(LogFacade.BLOCK_EXTERNAL_ENTITY, publicId, systemId));
         }
 
         public InputSource getExternalSubset(String name, String baseURI)
                 throws SAXException, IOException {
             throw new SAXException(
-                    MessageFormat.format(BLOCK_EXTERNAL_SUBSET, name, baseURI));
+                    MessageFormat.format(LogFacade.BLOCK_EXTERNAL_SUBSET, name, baseURI));
         }
 
         public InputSource resolveEntity(String name, String publicId,
                 String baseURI, String systemId) throws SAXException,
                 IOException {
             throw new SAXException(
-                    MessageFormat.format(BLOCK_EXTERNAL_ENTITY2,
+                    MessageFormat.format(LogFacade.BLOCK_EXTERNAL_ENTITY2,
                     name, publicId, baseURI, systemId));
         }
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,8 +58,7 @@
 
 package org.apache.catalina.connector;
 
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.WriteListener;
@@ -75,13 +74,7 @@ import java.util.ResourceBundle;
 public class CoyoteOutputStream 
     extends ServletOutputStream {
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Cannot set a null WriteListener object",
-            level = "WARNING"
-    )
-    public static final String NULL_WRITE_LISTENER_EXCEPTION = "AS-WEB-CORE-00043";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
 
     // ----------------------------------------------------- Instance Variables
@@ -133,7 +126,7 @@ public class CoyoteOutputStream
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         ob.writeByte(i);
@@ -144,7 +137,7 @@ public class CoyoteOutputStream
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         write(b, 0, b.length);
@@ -155,7 +148,7 @@ public class CoyoteOutputStream
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         ob.write(b, off, len);
@@ -169,7 +162,7 @@ public class CoyoteOutputStream
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         ob.flush();
@@ -180,7 +173,7 @@ public class CoyoteOutputStream
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         ob.close();
@@ -194,7 +187,7 @@ public class CoyoteOutputStream
         throws IOException {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         ob.write(s);
@@ -204,7 +197,7 @@ public class CoyoteOutputStream
     public boolean isReady() {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
         return ob.isReady();
     }
@@ -213,11 +206,11 @@ public class CoyoteOutputStream
     public void setWriteListener(WriteListener writeListener) {
         // Disallow operation if the object has gone out of scope
         if (ob == null) {
-            throw new IllegalStateException(rb.getString(CoyoteInputStream.OBJECT_INVALID_SCOPE_EXCEPTION));
+            throw new IllegalStateException(rb.getString(LogFacade.OBJECT_INVALID_SCOPE_EXCEPTION));
         }
 
         if (writeListener == null) {
-            throw new NullPointerException(rb.getString(NULL_WRITE_LISTENER_EXCEPTION));
+            throw new NullPointerException(rb.getString(LogFacade.NULL_WRITE_LISTENER_EXCEPTION));
         }
 
         ob.setWriteListener(writeListener);

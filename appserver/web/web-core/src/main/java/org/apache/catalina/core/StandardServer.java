@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -79,9 +79,6 @@ import java.text.MessageFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.glassfish.logging.annotation.LogMessageInfo;
-import org.glassfish.logging.annotation.LoggerInfo;
-import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 
 /**
  * Standard implementation of the <b>Server</b> interface, available for use
@@ -94,72 +91,9 @@ import org.glassfish.logging.annotation.LogMessagesResourceBundle;
 public final class StandardServer
     implements Lifecycle, Server
  {
-
-     @LogMessagesResourceBundle
-     public static final String SHARED_LOG_MESSAGE_RESOURCE =
-             "org.apache.catalina.core.LogMessages";
-
-     @LoggerInfo(subsystem = "WEB", description = "WEB Core Logger", publish = true)
-     public static final String WEB_CORE_LOGGER = "javax.enterprise.web.core";
-
-     public static final Logger log =
-             Logger.getLogger(WEB_CORE_LOGGER, SHARED_LOG_MESSAGE_RESOURCE);
-
+     private static final Logger log = LogFacade.getLogger();
      private static final ResourceBundle rb = log.getResourceBundle();
 
-     @LogMessageInfo(
-         message = "LifecycleException occurred during service initialization: {0}",
-         level = "SEVERE",
-         cause = "This service was already initialized",
-         action = "Verify if the service is not already initialized")
-     public static final String LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT = "AS-WEB-CORE-00243";
-
-     @LogMessageInfo(
-         message = "Exception StandardServer.await: create[{0}]",
-         level = "SEVERE",
-         cause = "An I/O error occurred when opening the socket",
-         action = "Verify the port number and try again")
-     public static final String STANDARD_SERVER_AWAIT_CREATE_EXCEPTION = "AS-WEB-CORE-00244";
-
-     @LogMessageInfo(
-         message = "StandardServer.accept security exception: {0}",
-         level = "WARNING",
-         cause = "Could not get connection",
-         action = "Verify the connection settings and try again")
-     public static final String STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION = "AS-WEB-CORE-00245";
-
-     @LogMessageInfo(
-         message = "StandardServer.await: accept: {0}",
-         level = "SEVERE",
-         cause = "Could not get input stream",
-         action = "Verify the input stream and try again")
-     public static final String STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION = "AS-WEB-CORE-00246";
-
-     @LogMessageInfo(
-         message = "StandardServer.await: read: {0}",
-         level = "WARNING",
-         cause = "Could not read from input stream",
-         action = "Verify the input stream and try again")
-     public static final String STANDARD_SERVER_AWAIT_READ_EXCEPTION = "AS-WEB-CORE-00247";
-
-     @LogMessageInfo(
-         message = "StandardServer.await: Invalid command {0} received",
-         level = "WARNING",
-         cause = "Invalid command",
-         action = "Verify the command")
-     public static final String STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION = "AS-WEB-CORE-00248";
-
-     @LogMessageInfo(
-         message = "This service has already been initialized",
-         level = "INFO")
-     public static final String STANDARD_SERVER_INITIALIZE_INITIALIZED = "AS-WEB-CORE-00249";
-
-     @LogMessageInfo(
-         message = "Error registering: {0}",
-         level = "SEVERE",
-         cause = "Could not register ObjectName: \"Catalina:type=Server\"",
-         action = "Verify the configuration and try again")
-     public static final String ERROR_REGISTERING = "AS-WEB-CORE-00250";
      //--------------------------------------------------------------
    
 
@@ -509,7 +443,7 @@ public final class StandardServer
                     service.initialize();
                 } catch (LifecycleException e) {
                     String msg = MessageFormat.format(rb.getString(
-                            LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT), e.toString());
+                            LogFacade.LIFECYCLE_EXCEPTION_DURING_SERVICE_INIT), e.toString());
                     log.log(Level.SEVERE, msg, e);
                 }
             }
@@ -542,7 +476,7 @@ public final class StandardServer
                                  InetAddress.getByName("127.0.0.1"));
         } catch (IOException e) {
             String msg = MessageFormat.format(
-                    rb.getString(STANDARD_SERVER_AWAIT_CREATE_EXCEPTION), port);
+                    rb.getString(LogFacade.STANDARD_SERVER_AWAIT_CREATE_EXCEPTION), port);
             log.log(Level.SEVERE, msg, e);
             System.exit(1);
         }
@@ -559,13 +493,13 @@ public final class StandardServer
                 stream = socket.getInputStream();
             } catch (AccessControlException ace) {
                 String msg = MessageFormat.format(
-                        rb.getString(STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION),
+                        rb.getString(LogFacade.STANDARD_SERVER_ACCEPT_SECURITY_EXCEPTION),
                                      ace.getMessage());
                 log.log(Level.WARNING, msg, ace);
                 continue;
             } catch (IOException e) {
                 String msg = MessageFormat.format(
-                        rb.getString(STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION),
+                        rb.getString(LogFacade.STANDARD_SERVER_AWAIT_ACCEPT_EXCEPTION),
                                      e.toString());
                 log.log(Level.SEVERE, msg, e);
                 System.exit(1);
@@ -585,7 +519,7 @@ public final class StandardServer
                     ch = stream.read();
                 } catch (IOException e) {
                     String msg = MessageFormat.format(
-                            rb.getString(STANDARD_SERVER_AWAIT_READ_EXCEPTION),
+                            rb.getString(LogFacade.STANDARD_SERVER_AWAIT_READ_EXCEPTION),
                                          e.toString());
                     log.log(Level.WARNING, msg, e);
                     ch = -1;
@@ -608,7 +542,7 @@ public final class StandardServer
             if (match) {
                 break;
             } else {
-                log.log(Level.WARNING, STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION,
+                log.log(Level.WARNING, LogFacade.STANDARD_SERVER_AWAIT_INVALID_COMMAND_RECEIVED_EXCEPTION,
                         command.toString());
             }
         }
@@ -880,7 +814,7 @@ public final class StandardServer
         throws LifecycleException 
     {
         if (initialized) {
-            log.log(Level.INFO, STANDARD_SERVER_INITIALIZE_INITIALIZED);
+            log.log(Level.INFO, LogFacade.STANDARD_SERVER_INITIALIZE_INITIALIZED);
             return;
         }
         // START GlassFish 2439
@@ -892,7 +826,7 @@ public final class StandardServer
             try {
                 oname=new ObjectName( "Catalina:type=Server");
             } catch (Exception e) {
-                String msg = MessageFormat.format(ERROR_REGISTERING, e.toString());
+                String msg = MessageFormat.format(LogFacade.ERROR_REGISTERING, e.toString());
                 log.log(Level.SEVERE, msg, e);
             }
         }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -61,8 +61,7 @@
 package org.apache.tomcat.util.digester;
 
 
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 import org.glassfish.web.util.IntrospectionUtils;
 import org.xml.sax.*;
 import org.xml.sax.helpers.AttributesImpl;
@@ -103,133 +102,6 @@ import java.util.logging.Logger;
 
 public class Digester extends DefaultHandler {
 
-    @LogMessageInfo(
-            message = "Digester.getParser: ",
-            level = "SEVERE",
-            cause = "Could not create new SAXParser",
-            action = "Verify the parser configuration and if SAXParser is supported"
-    )
-    public static final String GET_PARRSER_EXCEPTION = "AS-WEB-CORE-00517";
-
-    @LogMessageInfo(
-            message = "Cannot get XMLReader",
-            level = "SEVERE",
-            cause = "Could not get XML Reader",
-            action = "Verify if there are XML Readers can be instantiated"
-    )
-    public static final String CANNOT_GET_XML_READER_EXCEPTION = "AS-WEB-CORE-00518";
-
-    @LogMessageInfo(
-            message = "Finish event threw exception",
-            level = "SEVERE",
-            cause = "Rules could not remove data",
-            action = "Verify if finish() is called after all parsing methods have been called"
-    )
-    public static final String FINISH_EVENT_EXCEPTION = "AS-WEB-CORE-00519";
-
-    @LogMessageInfo(
-            message = "Finish event threw error",
-            level = "SEVERE",
-            cause = "Rules could not remove data",
-            action = "Verify if finish() is called after all parsing methods have been called"
-    )
-    public static final String FINISH_EVENT_ERROR = "AS-WEB-CORE-00520";
-
-    @LogMessageInfo(
-            message = "Body event threw exception",
-            level = "SEVERE",
-            cause = "Could not fire body()",
-            action = "Verify if the current rule has body"
-    )
-    public static final String BODY_EVENT_EXCEPTION = "AS-WEB-CORE-00521";
-
-    @LogMessageInfo(
-            message = "Body event threw error",
-            level = "SEVERE",
-            cause = "Could not fire body()",
-            action = "Verify if the current rule has body"
-    )
-    public static final String BODY_EVENT_ERROR = "AS-WEB-CORE-00522";
-
-    @LogMessageInfo(
-            message = "No rules found matching {0}.",
-            level = "WARNING"
-    )
-    public static final String NO_RULES_FOUND_MATCHING_EXCEPTION = "AS-WEB-CORE-00523";
-
-    @LogMessageInfo(
-            message = "End event threw exception",
-            level = "SEVERE",
-            cause = "Could not call end()",
-            action = "Verify if this method is called when the end of a matching XML element " +
-                     "is encountered"
-    )
-    public static final String END_EVENT_EXCEPTION = "AS-WEB-CORE-00524";
-
-    @LogMessageInfo(
-            message = "End event threw error",
-            level = "SEVERE",
-            cause = "Could not call end()",
-            action = "Verify if this method is called when the end of a matching XML element " +
-                    "is encountered"
-    )
-    public static final String END_EVENT_ERROR = "AS-WEB-CORE-00525";
-
-    @LogMessageInfo(
-            message = "Begin event threw exception",
-            level = "SEVERE",
-            cause = "Could not call begin()",
-            action = "Verify if this method is called when the beginning of a matching XML element " +
-                    "is encountered"
-    )
-    public static final String BEGIN_EVENT_EXCEPTION = "AS-WEB-CORE-00526";
-
-    @LogMessageInfo(
-            message = "Begin event threw error",
-            level = "SEVERE",
-            cause = "Could not call begin()",
-            action = "Verify if this method is called when the beginning of a matching XML element " +
-                    "is encountered"
-    )
-    public static final String BEGIN_EVENT_ERROR = "AS-WEB-CORE-00527";
-
-    @LogMessageInfo(
-            message = "Parse Error at line {0} column {1}: {2}",
-            level = "SEVERE",
-            cause = "Parsing error occurs",
-            action = "Verify if there are any parsing errors occur"
-    )
-    public static final String PARSE_ERROR = "AS-WEB-CORE-00528";
-
-    @LogMessageInfo(
-            message = "Parse Fatal Error at line {0} column {1}: {2}",
-            level = "SEVERE",
-            cause = "Parsing error occurs",
-            action = "Verify if there are any parsing errors occur"
-    )
-    public static final String PARSE_FATAL_ERROR = "AS-WEB-CORE-00529";
-
-    @LogMessageInfo(
-            message = "Parse Warning Error at line {0} column {1}: {2}",
-            level = "SEVERE",
-            cause = "Parsing error occurs",
-            action = "Verify if there are any parsing errors occur"
-    )
-    public static final String PARSE_WARNING_ERROR = "AS-WEB-CORE-00530";
-
-    @LogMessageInfo(
-            message = "Empty stack (returning null)",
-            level = "WARNING"
-    )
-    public static final String EMPTY_STACK_EXCEPTION = "AS-WEB-CORE-00531";
-
-    @LogMessageInfo(
-            message = "No Locator!",
-            level = "SEVERE",
-            cause = "There is no document locator",
-            action = "Verify if document locator has been set"
-    )
-    public static final String NO_LOCATOR_EXCEPTION = "AS-WEB-CORE-00532";
     // ---------------------------------------------------------- Static Fields
 
 
@@ -483,7 +355,7 @@ public class Digester extends DefaultHandler {
     /**
      * The Log to which most logging calls will be made.
      */
-    protected Logger log = StandardServer.log;
+    protected Logger log = LogFacade.getLogger();
     protected final ResourceBundle rb = log.getResourceBundle();
 
     /**
@@ -859,7 +731,7 @@ public class Digester extends DefaultHandler {
                 parser = getFactory().newSAXParser();
             }
         } catch (Exception e) {
-            log.log(Level.SEVERE, GET_PARRSER_EXCEPTION, e);
+            log.log(Level.SEVERE, LogFacade.GET_PARRSER_EXCEPTION, e);
             return (null);
         }
 
@@ -925,7 +797,7 @@ public class Digester extends DefaultHandler {
         try {
             return (getXMLReader());
         } catch (SAXException e) {
-            log.log(Level.SEVERE, CANNOT_GET_XML_READER_EXCEPTION, e);
+            log.log(Level.SEVERE, LogFacade.CANNOT_GET_XML_READER_EXCEPTION, e);
             return (null);
         }
 
@@ -1201,10 +1073,10 @@ public class Digester extends DefaultHandler {
             try {
                 rule.finish();
             } catch (Exception e) {
-                log.log(Level.SEVERE, FINISH_EVENT_EXCEPTION, e);
+                log.log(Level.SEVERE, LogFacade.FINISH_EVENT_EXCEPTION, e);
                 throw createSAXException(e);
             } catch (Error e) {
-                log.log(Level.SEVERE, FINISH_EVENT_ERROR, e);
+                log.log(Level.SEVERE, LogFacade.FINISH_EVENT_ERROR, e);
                 throw e;
             }
         }
@@ -1263,10 +1135,10 @@ public class Digester extends DefaultHandler {
                     }
                     rule.body(namespaceURI, name, bodyText);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, BODY_EVENT_EXCEPTION, e);
+                    log.log(Level.SEVERE, LogFacade.BODY_EVENT_EXCEPTION, e);
                     throw createSAXException(e);
                 } catch (Error e) {
-                    log.log(Level.SEVERE, BODY_EVENT_ERROR, e);
+                    log.log(Level.SEVERE, LogFacade.BODY_EVENT_ERROR, e);
                     throw e;
                 }
             }
@@ -1275,7 +1147,7 @@ public class Digester extends DefaultHandler {
                 log.log(Level.FINE, "  No rules found matching '" + match + "'.");
             }
             if (rulesValidation) {
-                log.log(Level.WARNING, NO_RULES_FOUND_MATCHING_EXCEPTION, match);
+                log.log(Level.WARNING, LogFacade.NO_RULES_FOUND_MATCHING_EXCEPTION, match);
             }
         }
 
@@ -1296,10 +1168,10 @@ public class Digester extends DefaultHandler {
                     }
                     rule.end(namespaceURI, name);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, END_EVENT_EXCEPTION, e);
+                    log.log(Level.SEVERE, LogFacade.END_EVENT_EXCEPTION, e);
                     throw createSAXException(e);
                 } catch (Error e) {
-                    log.log(Level.SEVERE, END_EVENT_ERROR, e);
+                    log.log(Level.SEVERE, LogFacade.END_EVENT_ERROR, e);
                     throw e;
                 }
             }
@@ -1514,10 +1386,10 @@ public class Digester extends DefaultHandler {
                     }
                     rule.begin(namespaceURI, name, list);
                 } catch (Exception e) {
-                    log.log(Level.SEVERE, BEGIN_EVENT_EXCEPTION, e);
+                    log.log(Level.SEVERE, LogFacade.BEGIN_EVENT_EXCEPTION, e);
                     throw createSAXException(e);
                 } catch (Error e) {
-                    log.log(Level.SEVERE, BEGIN_EVENT_ERROR, e);
+                    log.log(Level.SEVERE, LogFacade.BEGIN_EVENT_ERROR, e);
                     throw e;
                 }
             }
@@ -1689,7 +1561,7 @@ public class Digester extends DefaultHandler {
      */
     public void error(SAXParseException exception) throws SAXException {
 
-        String msg = MessageFormat.format(rb.getString(PARSE_ERROR),
+        String msg = MessageFormat.format(rb.getString(LogFacade.PARSE_ERROR),
                                           new Object[] {exception.getLineNumber(), exception.getColumnNumber(),
                                                         exception.getMessage()});
         log.log(Level.SEVERE, msg, exception);
@@ -1710,7 +1582,7 @@ public class Digester extends DefaultHandler {
      */
     public void fatalError(SAXParseException exception) throws SAXException {
 
-        String msg = MessageFormat.format(rb.getString(PARSE_FATAL_ERROR),
+        String msg = MessageFormat.format(rb.getString(LogFacade.PARSE_FATAL_ERROR),
                 new Object[] {exception.getLineNumber(), exception.getColumnNumber(),
                         exception.getMessage()});
 
@@ -1732,7 +1604,7 @@ public class Digester extends DefaultHandler {
      */
     public void warning(SAXParseException exception) throws SAXException {
          if (errorHandler != null) {
-             log.log(Level.WARNING, PARSE_WARNING_ERROR,
+             log.log(Level.WARNING, LogFacade.PARSE_WARNING_ERROR,
                      new Object[] {exception.getLineNumber(), exception.getColumnNumber(),
                                    exception.getMessage()});
 
@@ -2598,7 +2470,7 @@ public class Digester extends DefaultHandler {
         try {
             return (stack.peek());
         } catch (EmptyStackException e) {
-            log.log(Level.WARNING, EMPTY_STACK_EXCEPTION);
+            log.log(Level.WARNING, LogFacade.EMPTY_STACK_EXCEPTION);
             return (null);
         }
 
@@ -2618,7 +2490,7 @@ public class Digester extends DefaultHandler {
         try {
             return (stack.peek(n));
         } catch (EmptyStackException e) {
-            log.log(Level.WARNING, EMPTY_STACK_EXCEPTION);
+            log.log(Level.WARNING, LogFacade.EMPTY_STACK_EXCEPTION);
             return (null);
         }
 
@@ -2634,7 +2506,7 @@ public class Digester extends DefaultHandler {
         try {
             return (stack.pop());
         } catch (EmptyStackException e) {
-            log.log(Level.WARNING, EMPTY_STACK_EXCEPTION);
+            log.log(Level.WARNING, LogFacade.EMPTY_STACK_EXCEPTION);
             return (null);
         }
 
@@ -2853,7 +2725,7 @@ public class Digester extends DefaultHandler {
         try {
             return (params.peek());
         } catch (EmptyStackException e) {
-            log.log(Level.WARNING, EMPTY_STACK_EXCEPTION);
+            log.log(Level.WARNING, LogFacade.EMPTY_STACK_EXCEPTION);
             return (null);
         }
 
@@ -2876,7 +2748,7 @@ public class Digester extends DefaultHandler {
         try {
             return (params.peek(n));
         } catch (EmptyStackException e) {
-            log.log(Level.WARNING, EMPTY_STACK_EXCEPTION);
+            log.log(Level.WARNING, LogFacade.EMPTY_STACK_EXCEPTION);
             return (null);
         }
 
@@ -2898,7 +2770,7 @@ public class Digester extends DefaultHandler {
             }
             return (params.pop());
         } catch (EmptyStackException e) {
-            log.log(Level.WARNING, EMPTY_STACK_EXCEPTION);
+            log.log(Level.WARNING, LogFacade.EMPTY_STACK_EXCEPTION);
             return (null);
         }
 
@@ -2944,7 +2816,7 @@ public class Digester extends DefaultHandler {
                 return new SAXParseException(error, locator);
             }
         }
-        log.log(Level.SEVERE, NO_LOCATOR_EXCEPTION);
+        log.log(Level.SEVERE, LogFacade.NO_LOCATOR_EXCEPTION);
         if (e != null) {
             return new SAXException(message, e);
         } else {

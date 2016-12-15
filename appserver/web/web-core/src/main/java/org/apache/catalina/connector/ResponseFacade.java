@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,9 +58,8 @@
 
 package org.apache.catalina.connector;
 
-import org.apache.catalina.core.StandardServer;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.security.SecurityUtil;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -86,13 +85,7 @@ import java.util.ResourceBundle;
 public class ResponseFacade 
     implements HttpServletResponse {
 
-    private static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Null response object",
-            level = "WARNING"
-    )
-    public static final String NULL_RESPONSE_OBJECT = "AS-WEB-CORE-00082";
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
 
 
@@ -159,7 +152,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         response.setSuspended(true);
@@ -171,7 +164,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.isSuspended();
@@ -185,7 +178,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.getCharacterEncoding();
@@ -196,7 +189,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         //        if (isFinished())
@@ -214,7 +207,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         //        if (isFinished())
@@ -232,7 +225,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -246,7 +239,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -260,7 +253,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -278,7 +271,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -293,7 +286,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.getBufferSize();
@@ -304,7 +297,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isFinished())
@@ -342,7 +335,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -357,7 +350,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return (response.isAppCommitted());
@@ -368,7 +361,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -383,7 +376,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -397,7 +390,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.getLocale();
@@ -408,7 +401,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -422,7 +415,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.containsHeader(name);
@@ -433,7 +426,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.encodeURL(url);
@@ -444,7 +437,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.encodeRedirectURL(url);
@@ -455,7 +448,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.encodeURL(url);
@@ -466,7 +459,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.encodeRedirectURL(url);
@@ -477,7 +470,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -494,7 +487,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -511,7 +504,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -528,7 +521,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -542,7 +535,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -556,7 +549,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -570,7 +563,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -584,7 +577,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -598,7 +591,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -612,7 +605,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -626,7 +619,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         if (isCommitted())
@@ -640,7 +633,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.getContentType();
@@ -651,7 +644,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         response.setCharacterEncoding(arg0);
@@ -663,7 +656,7 @@ public class ResponseFacade
 
         // Disallow operation if the object has gone out of scope
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
 
         return response.getStatus();
@@ -674,7 +667,7 @@ public class ResponseFacade
 
     public String getHeader(String name) {
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
         return response.getHeader(name);
     }
@@ -682,7 +675,7 @@ public class ResponseFacade
 
     public Collection<String> getHeaders(String name) {
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
         return response.getHeaders(name);
     }
@@ -690,7 +683,7 @@ public class ResponseFacade
 
     public Collection<String> getHeaderNames() {
         if (response == null) {
-            throw new IllegalStateException(rb.getString(NULL_RESPONSE_OBJECT));
+            throw new IllegalStateException(rb.getString(LogFacade.NULL_RESPONSE_OBJECT));
         }
         return response.getHeaderNames();
     }

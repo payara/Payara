@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -64,7 +64,6 @@ import org.apache.catalina.authenticator.SingleSignOn;
 import org.apache.catalina.deploy.ErrorPage;
 import org.apache.catalina.util.RequestUtil;
 import org.apache.catalina.valves.ValveBase;
-import org.glassfish.logging.annotation.LogMessageInfo;
 import org.glassfish.web.valve.GlassFishValve;
 
 import javax.management.Notification;
@@ -96,68 +95,6 @@ public class StandardHost
     implements Deployer, Host  
  {
     /* Why do we implement deployer and delegate to deployer ??? */
-
-     @LogMessageInfo(
-         message = "Host name is required",
-         level = "WARNING"
-     )
-     public static final String HOST_NAME_REQUIRED_EXCEPTION = "AS-WEB-CORE-00198";
-
-     @LogMessageInfo(
-         message = "Child of a Host must be a Context",
-         level = "WARNING"
-     )
-     public static final String CHILD_MUST_BE_CONTEXT_EXCEPTION = "AS-WEB-CORE-00199";
-
-     @LogMessageInfo(
-         message = "MAPPING configuration error for request URI {0}",
-         level = "SEVERE",
-         cause = "No context has been selected",
-         action = "Verify the uri or default context"
-     )
-     public static final String MAPPING_CONF_REQUEST_URI_EXCEPTION = "AS-WEB-CORE-00200";
-
-     @LogMessageInfo(
-         message = "ErrorPage must not be null",
-         level = "WARNING"
-     )
-     public static final String ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION = "AS-WEB-CORE-00201";
-
-     @LogMessageInfo(
-         message = "XML validation enabled",
-         level = "FINE"
-     )
-     public static final String XML_VALIDATION_ENABLED = "AS-WEB-CORE-00202";
-
-     @LogMessageInfo(
-         message = "Create Host deployer for direct deployment ( non-jmx )",
-         level = "INFO"
-     )
-     public static final String CREATE_HOST_DEPLOYER_INFO = "AS-WEB-CORE-00203";
-
-     @LogMessageInfo(
-         message = "Error creating deployer ",
-         level = "SEVERE",
-         cause = "Could not instantiate deployer",
-         action = "Verify access permission"
-     )
-     public static final String ERROR_CREATING_DEPLOYER_EXCEPTION = "AS-WEB-CORE-00204";
-
-     @LogMessageInfo(
-         message = "Error registering host {0}",
-         level = "SEVERE",
-         cause = "Initialization failed",
-         action = "Verify domain and host name"
-     )
-     public static final String ERROR_REGISTERING_HOST_EXCEPTION = "AS-WEB-CORE-00205";
-
-     @LogMessageInfo(
-         message = "Couldn't load specified error report valve class: {0}",
-         level = "SEVERE",
-         cause = "Could not load instance of host valve",
-         action = "Verify access permission"
-     )
-     public static final String LOAD_SPEC_ERROR_REPORT_EXCEPTION = "AS-WEB-CORE-00206";
 
     
     // ----------------------------------------------------------- Constructors
@@ -533,7 +470,7 @@ public class StandardHost
 
         if (name == null)
             throw new IllegalArgumentException
-                    (rb.getString(HOST_NAME_REQUIRED_EXCEPTION));
+                    (rb.getString(LogFacade.HOST_NAME_REQUIRED_EXCEPTION));
 
         // START OF PE 4989789
         // name = name.toLowerCase();      // Internally all names are lower case
@@ -743,7 +680,7 @@ public class StandardHost
 
         if (!(child instanceof Context))
             throw new IllegalArgumentException
-                       (rb.getString(CHILD_MUST_BE_CONTEXT_EXCEPTION));
+                       (rb.getString(LogFacade.CHILD_MUST_BE_CONTEXT_EXCEPTION));
         super.addChild(child);
 
     }
@@ -830,7 +767,7 @@ public class StandardHost
 
         // Complain if no Context has been selected
         if (context == null) {
-            log.log(Level.SEVERE, MAPPING_CONF_REQUEST_URI_EXCEPTION, uri);
+            log.log(Level.SEVERE, LogFacade.MAPPING_CONF_REQUEST_URI_EXCEPTION, uri);
             return (null);
         }
 
@@ -891,7 +828,7 @@ public class StandardHost
         // Validate the input parameters
         if (errorPage == null) {
             throw new IllegalArgumentException
-                    (rb.getString(ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION));
+                    (rb.getString(LogFacade.ERROR_PAGE_CANNOT_BE_NULL_EXCEPTION));
         }
 
         // Add the specified error page to our internal collections
@@ -975,7 +912,7 @@ public class StandardHost
 
         // START SJSAS_PE 8.1 5034793
         if (log.isLoggable(Level.FINE)) {
-            log.log(Level.FINE, XML_VALIDATION_ENABLED);
+            log.log(Level.FINE, LogFacade.XML_VALIDATION_ENABLED);
         }
         // END SJSAS_PE 8.1 5034793 
 
@@ -1249,7 +1186,7 @@ public class StandardHost
         if( deployer!= null )
             return deployer;
         if (log.isLoggable(Level.INFO)) {
-            log.log(Level.INFO, CREATE_HOST_DEPLOYER_INFO);
+            log.log(Level.INFO, LogFacade.CREATE_HOST_DEPLOYER_INFO);
         }
         try {
             Class<?> c=Class.forName( STANDARD_HOST_DEPLOYER );
@@ -1257,7 +1194,7 @@ public class StandardHost
             Method m=c.getMethod("setHost", new Class[] {Host.class} );
             m.invoke( deployer,  new Object[] { this } );
         } catch( Throwable t ) {
-            log.log(Level.SEVERE, ERROR_CREATING_DEPLOYER_EXCEPTION, t);
+            log.log(Level.SEVERE, LogFacade.ERROR_CREATING_DEPLOYER_EXCEPTION, t);
         }
         return deployer;
     }
@@ -1320,7 +1257,7 @@ public class StandardHost
                         new Notification("j2ee.object.created", this, sequenceNumber++);
                 sendNotification(notification);
             } catch(Throwable t) {
-                String msg = MessageFormat.format(rb.getString(ERROR_REGISTERING_HOST_EXCEPTION), getName());
+                String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_REGISTERING_HOST_EXCEPTION), getName());
                 log.log(Level.SEVERE, msg, t);
             }
         }
@@ -1360,7 +1297,7 @@ public class StandardHost
                 host.setErrorReportValve(valve);
                 // END SJSAS 6374691
             } catch (Throwable t) {
-                String msg = MessageFormat.format(rb.getString(LOAD_SPEC_ERROR_REPORT_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.LOAD_SPEC_ERROR_REPORT_EXCEPTION),
                                                   errorReportValveClass);
                 log.log(Level.SEVERE, msg, t);
             }

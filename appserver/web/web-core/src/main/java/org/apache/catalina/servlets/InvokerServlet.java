@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -62,10 +62,9 @@ package org.apache.catalina.servlets;
 import org.apache.catalina.ContainerServlet;
 import org.apache.catalina.Context;
 import org.apache.catalina.Globals;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Wrapper;
-import org.apache.catalina.core.StandardServer;
 import org.apache.catalina.util.StringManager;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.Servlet;
@@ -91,43 +90,7 @@ import java.util.ResourceBundle;
 public final class InvokerServlet
     extends HttpServlet implements ContainerServlet {
 
-    public static final ResourceBundle rb = StandardServer.log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Container has not called setWrapper() for this servlet",
-            level = "WARNING"
-    )
-    public static final String SET_WRAPPER_NOT_CALLED_EXCEPTION = "AS-WEB-CORE-00329";
-
-    @LogMessageInfo(
-            message = "Cannot call invoker servlet with a named dispatcher",
-            level = "WARNING"
-    )
-    public static final String CANNOT_CALL_INVOKER_SERVLET = "AS-WEB-CORE-00330";
-
-    @LogMessageInfo(
-            message = "No servlet name or class was specified in path {0}",
-            level = "WARNING"
-    )
-    public static final String INVALID_PATH_EXCEPTION = "AS-WEB-CORE-00331";
-
-    @LogMessageInfo(
-            message = "Cannot create servlet wrapper for path {0}",
-            level = "WARNING"
-    )
-    public static final String CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION = "AS-WEB-CORE-00332";
-
-    @LogMessageInfo(
-            message = "Cannot allocate servlet instance for path {0}",
-            level = "WARNING"
-    )
-    public static final String CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00333";
-
-    @LogMessageInfo(
-            message = "Cannot deallocate servlet instance for path {0}",
-            level = "WARNING"
-    )
-    public static final String CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION = "AS-WEB-CORE-00334";
+    public static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
 
     // ----------------------------------------------------- Instance Variables
@@ -253,7 +216,7 @@ public final class InvokerServlet
         // Ensure that our ContainerServlet properties have been set
         if ((wrapper == null) || (context == null))
             throw new UnavailableException
-                (rb.getString(SET_WRAPPER_NOT_CALLED_EXCEPTION));
+                (rb.getString(LogFacade.SET_WRAPPER_NOT_CALLED_EXCEPTION));
 
         // Set our properties from the initialization parameters
         String value = null;
@@ -295,7 +258,7 @@ public final class InvokerServlet
         // Disallow calling this servlet via a named dispatcher
         if (request.getAttribute(Globals.NAMED_DISPATCHER_ATTR) != null)
             throw new ServletException
-                (rb.getString(CANNOT_CALL_INVOKER_SERVLET));
+                (rb.getString(LogFacade.CANNOT_CALL_INVOKER_SERVLET));
 
         // Identify the input parameters and our "included" state
         String inRequestURI = null;
@@ -327,7 +290,7 @@ public final class InvokerServlet
         if (inPathInfo == null) {
             if (debug >= 1)
                 log("Invalid pathInfo 'null'");
-            String msg = MessageFormat.format(rb.getString(INVALID_PATH_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.INVALID_PATH_EXCEPTION),
                     inRequestURI);
             if (included) {
                 throw new ServletException(msg);
@@ -415,7 +378,7 @@ public final class InvokerServlet
                 context.addChild(wrapper);
                 context.addServletMapping(pattern, name);
             } catch (Throwable t) {
-                String msg = MessageFormat.format(rb.getString(CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION),
+                String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_CREATE_SERVLET_WRAPPER_EXCEPTION),
                                                   inRequestURI);
                 log(msg, t);
                 context.removeServletMapping(pattern);
@@ -429,7 +392,7 @@ public final class InvokerServlet
                                        inRequestURI);
                     */
                     // BEGIN IASRI 4878272
-                    String invalidPathMsg = MessageFormat.format(rb.getString(INVALID_PATH_EXCEPTION),
+                    String invalidPathMsg = MessageFormat.format(rb.getString(LogFacade.INVALID_PATH_EXCEPTION),
                                                                  inRequestURI);
                     log(invalidPathMsg);
                     response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -459,9 +422,9 @@ public final class InvokerServlet
         // Allocate a servlet instance to perform this request
         Servlet instance = null;
 
-        String cannotAllocateMsg = MessageFormat.format(rb.getString(CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION),
+        String cannotAllocateMsg = MessageFormat.format(rb.getString(LogFacade.CANNOT_ALLOCATE_SERVLET_INSTANCE_EXCEPTION),
                 inRequestURI);
-        String invalidPathMsg = MessageFormat.format(rb.getString(INVALID_PATH_EXCEPTION),
+        String invalidPathMsg = MessageFormat.format(rb.getString(LogFacade.INVALID_PATH_EXCEPTION),
                 inRequestURI);
         try {
             //            if (debug >= 2)
@@ -583,7 +546,7 @@ public final class InvokerServlet
         }
 
         // Deallocate the allocated servlet instance
-        String cannotDeallocateMsg = MessageFormat.format(rb.getString(CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION),
+        String cannotDeallocateMsg = MessageFormat.format(rb.getString(LogFacade.CANNOT_DEALLOCATE_SERVLET_INSTANCE_EXCEPTION),
                                           inRequestURI);
         try {
             //            if (debug >= 2)
