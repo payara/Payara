@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -58,7 +58,7 @@
 
 package org.apache.catalina.startup;
 
-import org.apache.catalina.core.StandardServer;
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.loader.StandardClassLoader;
 
 import java.io.File;
@@ -96,7 +96,7 @@ public final class ClassLoaderFactory {
 
     // ------------------------------------------------------- Static Variables
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     /**
      * Debugging detail level for processing the startup.
      */

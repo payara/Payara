@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,8 +59,7 @@
 package org.apache.catalina.startup;
 
 import org.apache.catalina.Host;
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 
 import java.io.*;
 import java.net.JarURLConnection;
@@ -85,48 +84,8 @@ import java.util.logging.Logger;
 
 public class ExpandWar {
 
-    private static final Logger log = StandardServer.log;
+    private static final Logger log = LogFacade.getLogger();
     private static final ResourceBundle rb = log.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "Application base directory {0} does not exist",
-            level = "WARNING"
-    )
-    public static final String APP_NOT_EXIST_EXCEPTION = "AS-WEB-CORE-00444";
-
-    @LogMessageInfo(
-            message = "Unable to create the directory [{0}]",
-            level = "WARNING"
-    )
-    public static final String UNABLE_CREATE_DIRECTORY_EXCEPTION = "AS-WEB-CORE-00445";
-
-    @LogMessageInfo(
-            message = "The archive [{0}] is malformed and will be ignored: an entry contains an illegal path [{1}]",
-            level = "WARNING"
-    )
-    public static final String ARCHIVE_IS_MALFORMED_EXCEPTION = "AS-WEB-CORE-00446";
-
-    @LogMessageInfo(
-            message = "Failed to set last-modified time of the file {0}",
-            level = "WARNING"
-    )
-    public static final String FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION = "AS-WEB-CORE-00447";
-
-    @LogMessageInfo(
-            message = "Error copying {0} to {1}",
-            level = "SEVERE",
-            cause = "Could not copy file",
-            action = "Verify if channel is not available for file transfer"
-    )
-    public static final String ERROR_COPYING_EXCEPTION = "AS-WEB-CORE-00448";
-
-    @LogMessageInfo(
-            message = "[{0}] could not be completely deleted. The presence of the remaining files may cause problems",
-            level = "SEVERE",
-            cause = "Could not completely delete specified directory",
-            action = "Verify the access permission to specified directory"
-    )
-    public static final String DELETE_DIR_EXCEPTION = "AS-WEB-CORE-00449";
 
     /**
      * Expand the WAR file found at the specified URL into an unpacked
@@ -186,7 +145,7 @@ public class ExpandWar {
                                host.getAppBase());
         }
         if (!appBase.exists() || !appBase.isDirectory()) {
-            String msg = MessageFormat.format(rb.getString(APP_NOT_EXIST_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.APP_NOT_EXIST_EXCEPTION),
                                               appBase.getAbsolutePath());
             throw new IOException(msg);
         }
@@ -198,7 +157,7 @@ public class ExpandWar {
 
         // Create the new document base directory
         if (!docBase.mkdir()) {
-            String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_DIRECTORY_EXCEPTION),
+            String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_DIRECTORY_EXCEPTION),
                                               docBase);
             throw new IOException(msg);
         }
@@ -224,7 +183,7 @@ public class ExpandWar {
                         canonicalDocBasePrefix)) {
                     // Trying to expand outside the docBase
                     // Throw an exception to stop the deployment
-                    String msg = MessageFormat.format(rb.getString(ARCHIVE_IS_MALFORMED_EXCEPTION),
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ARCHIVE_IS_MALFORMED_EXCEPTION),
                                                       new Object[] {war, name});
                     throw new IllegalArgumentException(msg);
                 }
@@ -233,7 +192,7 @@ public class ExpandWar {
                     File parent = new File(docBase,
                                            name.substring(0, last));
                     if (!parent.mkdirs() && !parent.isDirectory()) {
-                        String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_DIRECTORY_EXCEPTION),
+                        String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_DIRECTORY_EXCEPTION),
                                                           parent);
                         throw new IOException(msg);
                     }
@@ -247,7 +206,7 @@ public class ExpandWar {
                 if ((lastModified != -1) && (lastModified != 0)) {
                     if (!expandedFile.setLastModified(lastModified)) {
                         if (log.isLoggable(Level.WARNING)) {
-                            log.log(Level.WARNING, FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION,
+                            log.log(Level.WARNING, LogFacade.FAILED_SET_LAST_MODIFIED_TIME_EXCEPTION,
                                     expandedFile.getAbsolutePath());
                         }
                     }
@@ -332,7 +291,7 @@ public class ExpandWar {
                         canonicalDocBasePrefix)) {
                     // Entry located outside the docBase
                     // Throw an exception to stop the deployment
-                    String msg = MessageFormat.format(rb.getString(ARCHIVE_IS_MALFORMED_EXCEPTION),
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ARCHIVE_IS_MALFORMED_EXCEPTION),
                                                     new Object[] {war, name});
                     throw new IllegalArgumentException(msg);
                 }
@@ -386,7 +345,7 @@ public class ExpandWar {
                     oc = (new FileOutputStream(fileDest)).getChannel();
                     ic.transferTo(0, ic.size(), oc);
                 } catch (IOException e) {
-                    String msg = MessageFormat.format(rb.getString(ERROR_COPYING_EXCEPTION),
+                    String msg = MessageFormat.format(rb.getString(LogFacade.ERROR_COPYING_EXCEPTION),
                                                       new Object[] {fileSrc, fileDest});
                     log.log(Level.SEVERE, msg, e);
                     result = false;
@@ -442,7 +401,7 @@ public class ExpandWar {
             }
         }
         if (logFailure && !result) {
-            log.log(Level.SEVERE, DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
+            log.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
         }
         return result;
      }
@@ -478,7 +437,7 @@ public class ExpandWar {
                 deleteDir(file, logFailure);
             } else {
                 if (!file.delete() && logFailure) {
-                    log.log(Level.SEVERE, DELETE_DIR_EXCEPTION, file.getAbsolutePath());
+                    log.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, file.getAbsolutePath());
                 }
             }
         }
@@ -491,7 +450,7 @@ public class ExpandWar {
         }
         
         if (logFailure && !result) {
-            log.log(Level.SEVERE, DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
+            log.log(Level.SEVERE, LogFacade.DELETE_DIR_EXCEPTION, dir.getAbsolutePath());
         }
         
         return result;

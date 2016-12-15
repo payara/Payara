@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,13 +59,13 @@
 package org.apache.catalina.valves;
 
 
+import org.apache.catalina.LogFacade;
 import org.apache.catalina.Request;
 import org.apache.catalina.Response;
 import org.apache.catalina.core.ApplicationDispatcher;
 import org.apache.catalina.core.StandardContext;
 import org.apache.catalina.core.StandardHost;
 import org.apache.catalina.deploy.ErrorPage;
-import org.glassfish.logging.annotation.LogMessageInfo;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.ServletContext;
@@ -118,17 +118,6 @@ import java.util.regex.PatternSyntaxException;
 public abstract class RequestFilterValve
     extends ValveBase {
 
-    @LogMessageInfo(
-            message = "Syntax error in request filter pattern {0}",
-            level = "WARNING"
-    )
-    public static final String SYNTAX_ERROR = "AS-WEB-CORE-00515";
-
-    @LogMessageInfo(
-            message = "Cannot process the error page: {0}",
-            level = "INFO"
-    )
-    public static final String CANNOT_PROCESS_ERROR_PAGE_INFO = "AS-WEB-CORE-00516";
     // ----------------------------------------------------- Class Variables
 
 
@@ -280,7 +269,7 @@ public abstract class RequestFilterValve
             try {
                 reList.add(Pattern.compile(pattern));
             } catch (PatternSyntaxException e) {
-                String msg = MessageFormat.format(rb.getString(SYNTAX_ERROR),
+                String msg = MessageFormat.format(rb.getString(LogFacade.SYNTAX_ERROR),
                                                   pattern);
                 IllegalArgumentException iae = new IllegalArgumentException
                     (msg);
@@ -398,7 +387,7 @@ public abstract class RequestFilterValve
                 sres.flushBuffer();
             } catch(Throwable t) {
                 if (log.isLoggable(Level.INFO)) {
-                    String msg = MessageFormat.format(rb.getString(CANNOT_PROCESS_ERROR_PAGE_INFO),
+                    String msg = MessageFormat.format(rb.getString(LogFacade.CANNOT_PROCESS_ERROR_PAGE_INFO),
                                                       errorPage.getLocation());
                     log.log(Level.INFO, msg, t);
                 }

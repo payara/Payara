@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -59,8 +59,7 @@
 
 package org.apache.catalina.filters;
 
-import org.apache.catalina.core.StandardServer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.apache.catalina.LogFacade;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -91,13 +90,7 @@ import javax.servlet.http.HttpSession;
  */
 public class CsrfPreventionFilter extends FilterBase {
 
-    protected static final Logger log = StandardServer.log;
-
-    @LogMessageInfo(
-            message = "Unable to create Random source using class [{0}]",
-            level = "WARNING"
-    )
-    public static final String UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION = "AS-WEB-CORE-00286";
+    protected static final Logger log = LogFacade.getLogger();
 
     private String randomClass = SecureRandom.class.getName();
 
@@ -157,7 +150,7 @@ public class CsrfPreventionFilter extends FilterBase {
         // Set the parameters
         super.init(filterConfig);
 
-        String msg = MessageFormat.format(rb.getString(UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION), randomClass);
+        String msg = MessageFormat.format(rb.getString(LogFacade.UNABLE_CREATE_RANDOM_SOURCE_EXCEPTION), randomClass);
 
         try {
             Class<?> clazz = Class.forName(randomClass);
