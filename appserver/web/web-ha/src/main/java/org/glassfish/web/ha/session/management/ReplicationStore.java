@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 /*
  * ReplicationStore.java
@@ -49,7 +50,6 @@ package org.glassfish.web.ha.session.management;
 
 import com.sun.appserv.util.cache.BaseCache;
 import com.sun.enterprise.container.common.spi.util.JavaEEIOUtils;
-import com.sun.enterprise.web.ServerConfigLookup;
 import org.apache.catalina.Container;
 import org.apache.catalina.Session;
 import org.apache.catalina.LifecycleException;
@@ -415,6 +415,15 @@ public class ReplicationStore extends HAStoreBase {
         try {
                 return loadFromBackingStore(id, version);
         } catch (BackingStoreException ex) {
+            if (ex.getCause() instanceof IllegalStateException && ex.getCause().getMessage().toUpperCase().startsWith("INIT")) {
+                // if there is a transient error, ignore it
+                _logger.warning("Loading session state: " + ex.getMessage());
+                final HANonStorableSession nss = new HANonStorableSession(manager);
+                nss.setValid(true);
+                nss.setId(id);
+                return nss;
+            }
+
             IOException ex1 =
                     (IOException) new IOException("Error during load: " + ex.getMessage()).initCause(ex);
             throw ex1;
