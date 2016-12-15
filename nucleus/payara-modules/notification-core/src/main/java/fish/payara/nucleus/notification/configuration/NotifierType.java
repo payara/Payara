@@ -49,8 +49,6 @@ public enum NotifierType {
     SLACK,
     JMS,
     EMAIL,
-    XMPP
-
-    // More types will be here soon! Things we have in mind:
-    // PAYARA-701 - SNMP NotifierConfiguration
+    XMPP,
+    SNMP
 }

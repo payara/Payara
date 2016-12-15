@@ -36,31 +36,29 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.snmp;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+public class SnmpNotificationEvent extends NotificationEvent {
 
-    @Attribute(required = true)
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    private String message;
 
-    @Attribute(required = true)
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    @Override
+    public String toString() {
+        return "SnmpNotificationEvent{" +
+                "message='" + message + '\'' +
+                '}';
+    }
 }

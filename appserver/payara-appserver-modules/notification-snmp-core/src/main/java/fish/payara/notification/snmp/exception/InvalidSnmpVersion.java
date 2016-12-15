@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,31 +37,13 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
-
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
-import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
-
-import java.beans.PropertyVetoException;
+package fish.payara.notification.snmp.exception;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
-
-    @Attribute(required = true)
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
-
-    @Attribute(required = true)
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+public class InvalidSnmpVersion extends Exception {
+    public InvalidSnmpVersion(String version) {
+        super(version);
+    }
 }

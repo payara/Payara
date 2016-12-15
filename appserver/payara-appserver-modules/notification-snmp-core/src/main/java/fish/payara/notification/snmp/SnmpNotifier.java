@@ -36,31 +36,20 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.snmp;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.Notifier;
 import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
 import org.jvnet.hk2.config.Configured;
 
-import java.beans.PropertyVetoException;
-
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
+ * Configuration class for attaching snmp notification mechanism into.
+ * Health check and Request tracing services enables the use of snmp notification mechanism with this notifier configuration.
  *
  * @author mertcaliskan
  */
 @Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
-
-    @Attribute(required = true)
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
-
-    @Attribute(required = true)
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+@NotifierConfigurationType(type = NotifierType.SNMP)
+public interface SnmpNotifier extends Notifier {
 }

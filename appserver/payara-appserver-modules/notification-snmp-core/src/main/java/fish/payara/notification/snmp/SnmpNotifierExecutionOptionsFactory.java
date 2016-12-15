@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,31 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.notification.hipchat;
+package fish.payara.notification.snmp;
 
-import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
-import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import org.jvnet.hk2.config.Attribute;
-import org.jvnet.hk2.config.Configured;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.beans.PropertyVetoException;
+import javax.annotation.PostConstruct;
 
 /**
- * Configuration class with the aim to configure hipchat notification specific parameters.
- * This configuration is only being used by notification services.
- *
  * @author mertcaliskan
  */
-@Configured
-@NotifierConfigurationType(type = NotifierType.HIPCHAT)
-public interface HipchatNotifierConfiguration extends NotifierConfiguration {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class SnmpNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<SnmpNotifier> {
 
-    @Attribute(required = true)
-    String getRoomName();
-    void setRoomName(String value) throws PropertyVetoException;
+    @PostConstruct
+    void postConstruct() {
+        register(NotifierType.SNMP, this);
+    }
 
-    @Attribute(required = true)
-    String getToken();
-    void setToken(String value) throws PropertyVetoException;
+    public NotifierExecutionOptions build(SnmpNotifier notifier) {
+        SnmpNotifierExecutionOptions executionOptions = new SnmpNotifierExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+        return executionOptions;
+    }
 }
