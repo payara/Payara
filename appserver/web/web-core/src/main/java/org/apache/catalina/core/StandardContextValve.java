@@ -55,7 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-// Portions Copyright [2016] [C2B2 Consulting Limited and/or its affiliates]
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.core;
 
@@ -67,7 +67,7 @@ import org.glassfish.web.valve.GlassFishValve;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.nio.file.Paths;
+import org.apache.catalina.core.pathcheck.PathChecker;
 import org.glassfish.grizzly.utils.Charsets;
 
 /**
@@ -283,12 +283,8 @@ final class StandardContextValve
         // START CR 6415120
         if (request.getCheckRestrictedResources()) {
         // END CR 6415120
-            // PAYARA-989 Help Windows find index.jsf by removing the double slash
             String requestPath = hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET);
-            if (requestPath.equals("//index.jsf")) {
-                requestPath = requestPath.replace("//", "/");
-            }
-            String requestPathDC = Paths.get(requestPath).normalize().toString().toUpperCase();
+            String requestPathDC = PathChecker.normalizePath(requestPath).toUpperCase();
             if ((requestPathDC.startsWith("/META-INF/", 0))
                     || (requestPathDC.equalsIgnoreCase("/META-INF"))
                     || (requestPathDC.startsWith("/WEB-INF/", 0))
