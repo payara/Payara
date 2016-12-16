@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.session;
 
@@ -1228,7 +1229,7 @@ public abstract class PersistentManagerBase
             return (null);
 
         if (!session.isValid()) {
-            log.log(Level.SEVERE, INVALID_EXPIRED_SESSION_EXCEPTION);
+            log.log(this.store.getManager().getDistributable()? Level.FINE : Level.SEVERE, INVALID_EXPIRED_SESSION_EXCEPTION);
             //6406580 START
             /* - these lines are calling remove on store redundantly
             session.expire();
