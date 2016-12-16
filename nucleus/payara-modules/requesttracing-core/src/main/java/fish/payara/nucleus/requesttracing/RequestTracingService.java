@@ -72,8 +72,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
+ * Main service class that provides methods used by interceptors for tracing requests.
+ *
  * @author mertcaliskan
- *         Main service class that provides methods used by interceptors for tracing requests.
  */
 @Service(name = "requesttracing-service")
 @RunLevel(StartupRunLevel.VAL)
@@ -102,6 +103,9 @@ public class RequestTracingService implements EventListener {
     RequestEventStore requestEventStore;
 
     @Inject
+    HistoricRequestEventStore historicRequestEventStore;
+
+    @Inject
     NotificationEventFactoryStore eventFactoryStore;
 
     @Inject
@@ -126,6 +130,8 @@ public class RequestTracingService implements EventListener {
             executionOptions.setEnabled(Boolean.parseBoolean(configuration.getEnabled()));
             executionOptions.setThresholdValue(Long.parseLong(configuration.getThresholdValue()));
             executionOptions.setThresholdUnit(TimeUnit.valueOf(configuration.getThresholdUnit()));
+            executionOptions.setHistoricalTraceEnabled(Boolean.parseBoolean(configuration.getHistoricalTraceEnabled()));
+            executionOptions.setHistoricalTraceStoreSize(Integer.parseInt(configuration.getHistoricalTraceStoreSize()));
 
             for (Notifier notifier : configuration.getNotifierList()) {
                 ConfigView view = ConfigSupport.getImpl(notifier);
@@ -135,6 +141,10 @@ public class RequestTracingService implements EventListener {
         }
 
         if (executionOptions != null && executionOptions.isEnabled()) {
+            if (executionOptions.isHistoricalTraceEnabled()) {
+                historicRequestEventStore.initialize(executionOptions.getHistoricalTraceStoreSize());
+            }
+
             logger.info("Payara Request Tracing Service Started with configuration: " + executionOptions);
         }
     }
@@ -190,12 +200,16 @@ public class RequestTracingService implements EventListener {
         long elapsedTime = requestEventStore.getElapsedTime();
         long elapsedTimeInNanos = TimeUnit.NANOSECONDS.convert(elapsedTime, TimeUnit.MILLISECONDS);
         if (elapsedTimeInNanos - thresholdValueInNanos > 0) {
+            String traceAsString = requestEventStore.getTraceAsString();
+
+            if (executionOptions.isHistoricalTraceEnabled()) {
+                historicRequestEventStore.addTrace(elapsedTime, traceAsString);
+            }
+
             for (NotifierExecutionOptions notifierExecutionOptions : getExecutionOptions().getNotifierExecutionOptionsList().values()) {
                 if (notifierExecutionOptions.isEnabled()) {
-                    NotificationEventFactory notificationEventFactory =
-                            eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                    NotificationEvent notificationEvent = notificationEventFactory.
-                            buildNotificationEvent(elapsedTime, requestEventStore.getTraceAsString());
+                    NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
+                    NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(elapsedTime, traceAsString);
                     notificationService.notify(notificationEvent);
                 }
             }
