@@ -321,11 +321,11 @@ final class StandardContextValve
         // START CR 6415120
         if (request.getCheckRestrictedResources()) {
         // END CR 6415120
-            String requestPath = hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET);
-            requestPath = normalize(requestPath).toUpperCase();
-            if ((requestPath.startsWith("/META-INF/", 0))
+            String requestPath = normalize(hreq.getRequestPathMB().toString(Charsets.UTF8_CHARSET));
+            if ((requestPath == null)
+                    || (requestPath.toUpperCase().startsWith("/META-INF/", 0))
                     || (requestPath.equalsIgnoreCase("/META-INF"))
-                    || (requestPath.startsWith("/WEB-INF/", 0))
+                    || (requestPath.toUpperCase().startsWith("/WEB-INF/", 0))
                     || (requestPath.equalsIgnoreCase("/WEB-INF"))) {
                 notFound((HttpServletResponse) response.getResponse());
                 return null;
