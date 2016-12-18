@@ -211,7 +211,7 @@ public class RequestEventStoreTest {
         assertEquals(0, trace2.getTrace().size());
         
         // check trace 1 has an elapsed time in the correct range
-        assertTrue(trace1.getElapsedTime() > 100);
+        assertTrue(trace1.getElapsedTime() >= 90);
         
     }
     

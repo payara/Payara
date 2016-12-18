@@ -66,7 +66,7 @@
         setPageSessionAttribute(key="has2Objects" value="#{true}" );  //for editPageButtons.inc
         setPageSessionAttribute(key="childType2" value="access-log");
         setPageSessionAttribute(key="selfUrl2", value="#{pageSession.selfUrl}/#{pageSession.childType2}");
-        setPageSessionAttribute(key="convertToFalseList2" value={"rotationEnabled"});
+        setPageSessionAttribute(key="convertToFalseList2" value={"rotationEnabled", "logToConsoleEnabled"});
         gf.getEntityAttrs(endpoint="#{pageSession.selfUrl2}.json", valueMap="#{pageSession.valueMap2}");
 
         //set the following for including buttons.inc

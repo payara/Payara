@@ -415,7 +415,7 @@ public interface VirtualServer extends ConfigBeanProxy, PropertyBag {
                         + "If this property is specified, the remote hostname must not match for this request to be accepted. "
                         + "If this property is not specified, request acceptance is governed solely by the 'allowRemoteHost' property"),
             @PropertyDesc(name = "authRealm",
-                description = "Specifies the name attribute of an “auth-realm�? on page 23 element, which overrides "
+                description = "Specifies the name attribute of an 'auth-realm' on page 23 element, which overrides "
                     + "the server instance's default realm for stand-alone web applications deployed to this virtual server. "
                     + "A realm defined in a stand-alone web application's web.xml file overrides the virtual server's realm"),
             @PropertyDesc(name = "securePagesWithPragma", defaultValue = "true", dataType = Boolean.class,

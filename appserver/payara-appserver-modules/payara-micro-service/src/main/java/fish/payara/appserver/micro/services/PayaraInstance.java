@@ -201,11 +201,13 @@ public class PayaraInstance implements EventListener, MessageReceiver {
             if (event.hook() != null && event.hook() instanceof DeploymentContext) {
                 DeploymentContext deploymentContext = (DeploymentContext) event.hook();
                 Application app = deploymentContext.getModuleMetaData(Application.class);
-                Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
-                if (appID != null) {
-                    app.setUniqueId(appID);
-                } else {
-                    cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), new Long(app.getUniqueId()));
+                if(app != null) {
+                    Long appID = (Long) cluster.getClusteredStore().get(APPLICATIONS_STORE_NAME, app.getName());
+                    if (appID != null) {
+                        app.setUniqueId(appID);
+                    } else {
+                        cluster.getClusteredStore().set(APPLICATIONS_STORE_NAME, app.getName(), new Long(app.getUniqueId()));
+                    }
                 }
             }
         } 
@@ -247,7 +249,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         return result;
     }
 
-    public void pubishCDIEvent(PayaraClusteredCDIEvent event) {
+    public void publishCDIEvent(PayaraClusteredCDIEvent event) {
         if (event.getInstanceDescriptor() == null) {
             event.setInstanceDescriptor(me);
         }
@@ -255,7 +257,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         cluster.getEventBus().publish(CDI_EVENTS_NAME, message);
     }
 
-    public void removeBootstrapListenr(PayaraClusterListener listener) {
+    public void removeBootstrapListener(PayaraClusterListener listener) {
         myListeners.remove(listener);
     }
 
@@ -263,7 +265,7 @@ public class PayaraInstance implements EventListener, MessageReceiver {
         myListeners.add(listener);
     }
 
-    public void removeCDIListenr(CDIEventListener listener) {
+    public void removeCDIListener(CDIEventListener listener) {
         myCDIListeners.remove(listener);
     }
 

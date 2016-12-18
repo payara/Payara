@@ -21,7 +21,7 @@
     <parent>
         <groupId>org.glassfish.main</groupId>
         <artifactId>glassfish-parent</artifactId>
-        <version>4.1.1.164-SNAPSHOT</version>
+        <version>4.1.1.171-SNAPSHOT</version>
     </parent>
     <artifactId>payara-appserver-modules</artifactId>
     <name>Payara Appserver Modules</name>
@@ -34,5 +34,7 @@
         <module>requesttracing-api</module>
         <module>jmx-monitoring-service</module>
         <module>payara-micro-service</module>
+        <module>payara-micro-cdi</module>
+        <module>jaspic-servlet-utils</module>
     </modules>
 </project>

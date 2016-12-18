@@ -55,12 +55,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 package org.apache.naming.factory;
 
 import java.util.Hashtable;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import javax.naming.Name;
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -104,6 +102,11 @@ public class ResourceLinkFactory
     public static void setGlobalContext(Context newGlobalContext) {
         if (globalContext != null)
             return;
+        SecurityManager sm = System.getSecurityManager();
+        if (sm != null) {
+            sm.checkPermission(new RuntimePermission(
+                   ResourceLinkFactory.class.getName() + ".setGlobalContext"));
+        }
         globalContext = newGlobalContext;
     }
 

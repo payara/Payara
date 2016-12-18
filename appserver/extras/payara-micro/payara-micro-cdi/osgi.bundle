@@ -1,1 +1,0 @@
--exportcontents: fish.payara.cdi.micro; version=${project.osgi.version}

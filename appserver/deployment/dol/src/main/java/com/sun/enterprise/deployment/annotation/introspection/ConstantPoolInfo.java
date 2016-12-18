@@ -129,6 +129,7 @@ public class ConstantPoolInfo {
                 case METHOD_HANDLE:
                     buffer.get();
                     buffer.getShort();
+                    break;
                 default:
                     DOLUtils.getDefaultLogger().severe("Unknow type constant pool " + type + " at position" + i);
                     break;

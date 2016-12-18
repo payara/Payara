@@ -198,6 +198,9 @@ public class ApplicationRuntimeNode extends RuntimeBundleNode<Application> {
 	if (element.getQName().equals(RuntimeTagNames.PAYARA_SCANNING_INCLUDE)) {
             descriptor.addScanningInclusions(ImmutableList.of(value));
 	} else
+	if (element.getQName().equals(RuntimeTagNames.PAYARA_WHITELIST_PACKAGE)) {
+            descriptor.addWhitelistPackage(value);
+	} else
 	if (element.getQName().equals(RuntimeTagNames.WEB_URI)) {
 	    currentWebUri=value;
 	} else 

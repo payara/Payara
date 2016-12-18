@@ -20,6 +20,8 @@
 package fish.payara.nucleus.phonehome;
 
 import com.sun.enterprise.config.serverbeans.Domain;
+import java.beans.PropertyVetoException;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -34,6 +36,9 @@ import org.glassfish.api.event.EventTypes;
 import org.glassfish.api.event.Events;
 import org.glassfish.hk2.runlevel.RunLevel;
 import org.jvnet.hk2.annotations.Service;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.SingleConfigCode;
+import org.jvnet.hk2.config.TransactionFailure;
 
 /**
  *
@@ -48,6 +53,8 @@ public class PhoneHomeCore implements EventListener {
     private static PhoneHomeCore theCore;
     private static Boolean overrideEnabled;
     private boolean enabled;
+    
+    private UUID phoneHomeId;
     
     private ScheduledExecutorService executor;
     
@@ -72,9 +79,29 @@ public class PhoneHomeCore implements EventListener {
         if (env.isDas()) {
              
             if (configuration == null) {
-                enabled = true;
+                enabled = true;    
+                phoneHomeId = UUID.randomUUID();
             } else {
                 enabled = Boolean.valueOf(configuration.getEnabled());
+                
+                // Get the UUID from the config if one is present, otherwise use a randomly generated one
+                try {
+                    phoneHomeId = UUID.fromString(configuration.getPhoneHomeId());
+                } catch (NullPointerException ex) {
+                    phoneHomeId = UUID.randomUUID();
+                    try {
+                        ConfigSupport.apply(new SingleConfigCode<PhoneHomeRuntimeConfiguration>() {
+                            @Override
+                            public Object run(PhoneHomeRuntimeConfiguration configurationProxy)
+                                    throws PropertyVetoException, TransactionFailure {
+                                configurationProxy.setPhoneHomeId(phoneHomeId.toString());
+                                return configurationProxy;
+                            }
+                        }, configuration);
+                    } catch(TransactionFailure e) {
+                        // Ignore and just don't write the ID to the config file
+                    }
+                }  
             }
             
             if (overrideEnabled != null) {
@@ -106,7 +133,7 @@ public class PhoneHomeCore implements EventListener {
                     return new Thread(r, THREAD_NAME);
                 }
             });
-            executor.scheduleAtFixedRate(new PhoneHomeTask(domain, env), 0, 1, TimeUnit.DAYS);
+            executor.scheduleAtFixedRate(new PhoneHomeTask(phoneHomeId.toString(), domain, env), 0, 1, TimeUnit.DAYS);
         }
     }
     

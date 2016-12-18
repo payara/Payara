@@ -24,7 +24,6 @@ import com.sun.enterprise.config.serverbeans.Domain;
 import com.sun.enterprise.config.serverbeans.Node;
 import com.sun.enterprise.config.serverbeans.Nodes;
 import com.sun.enterprise.config.serverbeans.Server;
-import com.sun.enterprise.config.serverbeans.Servers;
 import com.sun.enterprise.module.bootstrap.StartupContext;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -45,6 +44,7 @@ import org.glassfish.api.admin.ServerEnvironment;
  */
 public class PhoneHomeTask implements Runnable {
     
+    private final String PHONE_HOME_ID;
     private static final String PHONE_HOME_URL = "http://www.payara.fish/phonehome";
     private static final String USER_AGENT = "Mozilla/5.0";
     private static final int CONN_TIMEOUT_MS = 5000;    // 5 seconds
@@ -55,7 +55,8 @@ public class PhoneHomeTask implements Runnable {
     ServerEnvironment env;
     Domain domain;
     
-    PhoneHomeTask(Domain domain, ServerEnvironment env) {
+    PhoneHomeTask(String phoneHomeId, Domain domain, ServerEnvironment env) {
+        PHONE_HOME_ID = phoneHomeId;
         this.env = env;
         this.domain = domain;
     }
@@ -64,6 +65,7 @@ public class PhoneHomeTask implements Runnable {
     public void run() {
         
         Map<String,String> params = new HashMap<>();
+        params.put("id", PHONE_HOME_ID);
         params.put("ver", getVersion());
         params.put("jvm", getJavaVersion());
         params.put("uptime", getUptime());
