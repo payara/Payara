@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -122,6 +122,7 @@ import org.glassfish.grizzly.http.HttpRequestPacket;
 import org.glassfish.grizzly.http.HttpResponsePacket;
 import org.glassfish.grizzly.http.util.HttpStatus;
 import org.glassfish.hk2.api.ServiceLocator;
+import org.glassfish.hk2.api.ServiceLocatorFactory;
 import org.glassfish.internal.api.ClassLoaderHierarchy;
 import org.glassfish.internal.api.Globals;
 import org.glassfish.internal.api.ServerContext;
@@ -129,7 +130,7 @@ import org.glassfish.internal.data.ApplicationInfo;
 import org.glassfish.internal.data.ApplicationRegistry;
 import org.glassfish.internal.deployment.Deployment;
 import org.glassfish.internal.deployment.ExtendedDeploymentContext;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.admin.monitor.RequestProbeProvider;
 import org.glassfish.web.deployment.archivist.WebArchivist;
 import org.glassfish.web.deployment.descriptor.WebBundleDescriptorImpl;
@@ -160,203 +161,12 @@ public class VirtualServer extends StandardHost
     /**
      * The logger to use for logging this virtual server
      */
-    private static final Logger DEFAULT_LOGGER = WebContainer.logger;
+    private static final Logger DEFAULT_LOGGER = LogFacade.getLogger();
 
     /**
      * The resource bundle containing the message strings for _logger.
      */
     protected static final ResourceBundle rb = DEFAULT_LOGGER.getResourceBundle();
-
-    @LogMessageInfo(
-            message = "The web module {0} has been designated as the default-web-module for virtual server {1}",
-            level = "FINE")
-    public static final String VS_DEFAULT_WEB_MODULE = "AS-WEB-GLUE-00135";
-
-    @LogMessageInfo(
-            message = "Error looking up the configuration information of the default-web-module {0} for virtual server {1}",
-            level = "SEVERE",
-            cause = "The web module specified is either not found or disabled or does not specify this virtual server, " +
-                    "or there was an error loading its deployment descriptors",
-            action = "Verify if the virtual server's default web module is valid")
-    public static final String VS_DEFAULT_WEB_MODULE_NOT_FOUND = "AS-WEB-GLUE-00136";
-
-    @LogMessageInfo(
-            message = "The default-web-module {0} is either disabled or does not specify virtual server {1}",
-            level = "SEVERE",
-            cause = "The default web module is disabled or does not specify virtual server",
-            action = "Verify if the default web module is enabled and specify virtual server")
-    public static final String VS_DEFAULT_WEB_MODULE_DISABLED = "AS-WEB-GLUE-00137";
-
-    @LogMessageInfo(
-            message = "Virtual server {0} has invalid authentication realm {1}",
-            level = "SEVERE",
-            cause = "The realm {1} could not be found",
-            action = "Verify if the realm {1} exits for virtual server {0}")
-    public static final String INVALID_AUTH_REALM = "AS-WEB-GLUE-00138";
-
-    @LogMessageInfo(
-            message = "Invalid sso-cookie-secure configuration {0} for virtual server {1}",
-            level = "INFO")
-    public static final String INVALID_SSO_COOKIE_SECURE = "AS-WEB-GLUE-00139";
-
-    @LogMessageInfo(
-            message = "Realm {0} is not an instance of {1}, and will be ignored",
-            level = "SEVERE",
-            cause = "The realm {0} is either NULL or is not an instance of {1}",
-            action = "Verify if the realm {0} is an instance of {1}")
-    public static final String IGNORE_INVALID_REALM = "AS-WEB-GLUE-00140";
-
-    @LogMessageInfo(
-            message = "Virtual server {0} has a property with missing name or value",
-            level = "WARNING")
-    public static final String NULL_VIRTUAL_SERVER_PROPERTY = "AS-WEB-GLUE-00141";
-
-    @LogMessageInfo(
-            message = "Invalid redirect property value {0} for virtual server {1}: More than one {2} component",
-            level = "WARNING")
-    public static final String REDIRECT_MULTIPLE_ELEMENT = "AS-WEB-GLUE-00142";
-
-    @LogMessageInfo(
-            message = "Invalid redirect property value {0} for virtual server {1}: Missing url or url-prefix component",
-            level = "WARNING")
-    public static final String REDIRECT_MISSING_URL_OR_URL_PREFIX = "AS-WEB-GLUE-00143";
-
-    @LogMessageInfo(
-            message = "Invalid redirect property value {0} for virtual server {1}: Both url and url-prefix specified",
-            level = "WARNING")
-
-    public static final String REDIRECT_BOTH_URL_AND_URL_PREFIX = "AS-WEB-GLUE-00144";
-
-    @LogMessageInfo(
-            message = "Invalid redirect property value {0} for virtual server {1}: escape must be equal to yes or no",
-            level = "WARNING")
-    public static final String REDIRECT_INVALID_ESCAPE = "AS-WEB-GLUE-00145";
-
-    @LogMessageInfo(
-            message = "Invalid send-error property value {0} for virtual server {1}: More than one {2} component",
-            level = "WARNING")
-    public static final String SEND_ERROR_MULTIPLE_ELEMENT = "AS-WEB-GLUE-00146";
-
-    @LogMessageInfo(
-            message = "Invalid send-error property value {0} for virtual server {1}: Missing path component",
-            level = "WARNING")
-    public static final String SEND_ERROR_MISSING_PATH = "AS-WEB-GLUE-00147";
-
-    @LogMessageInfo(
-            message = "Unable to add listener of type {0} to virtual server {1}",
-            level = "SEVERE",
-            cause = "The listener is not an instance of ContainerListener or LifecycleListener",
-            action = "Verify if the listener type is supported")
-    public static final String INVALID_LISTENER = "AS-WEB-GLUE-00148";
-
-    @LogMessageInfo(
-            message = " Unable to load extension class {0} from web module {1}",
-            level = "SEVERE",
-            cause = "An exception occurred loading extension class",
-            action = "Check the exception for the error")
-    public static final String UNABLE_TO_LOAD_EXTENSION = "AS-WEB-GLUE-00149";
-
-    @LogMessageInfo(
-            message = "Object of type classname {0} not an instance of Valve or GlassFishValve",
-            level = "WARNING")
-    public static final String NOT_A_VALVE = "AS-WEB-GLUE-00150";
-
-    @LogMessageInfo(
-            message = "Error adding HttpProbes. NetworkListener {0}'s HttpCodecFilter is {1}",
-            level = "SEVERE",
-            cause = "HttpCodecFilter is either NULL or empty",
-            action = "Verify the NetworkListener is valid")
-    public static final String CODE_FILTERS_NULL = "AS-WEB-GLUE-00151";
-
-    @LogMessageInfo(
-            message = "Error adding HttpProbes",
-            level = "SEVERE",
-            cause = "An exception occurred adding HttpProbes",
-            action = "Check the exception for the error")
-    public static final String ADD_HTTP_PROBES_ERROR = "AS-WEB-GLUE-00152";
-
-    @LogMessageInfo(
-            message = "Disabling Single Sign On (SSO) for virtual server {0} as configured",
-            level = "FINE")
-    public static final String DISABLE_SSO= "AS-WEB-GLUE-00153";
-
-    @LogMessageInfo(
-            message = "Enabling Single Sign On (SSO) for virtual server {0} as configured",
-            level = "FINE")
-    public static final String ENABLE_SSO = "AS-WEB-GLUE-00154";
-
-    @LogMessageInfo(
-            message = "SSO entry max idle time set to {0} for virtual server {1}",
-            level = "FINE")
-    public static final String SSO_MAX_INACTIVE_SET= "AS-WEB-GLUE-00155";
-
-    @LogMessageInfo(
-            message = "SSO expire thread interval set to {0} for virtual server {1}",
-            level = "FINE")
-    public static final String SSO_REAP_INTERVAL_SET = "AS-WEB-GLUE-00156";
-
-    @LogMessageInfo(
-            message = "Allowing access to {0} from {1}",
-            level = "FINE")
-    public static final String ALLOW_ACCESS = "AS-WEB-GLUE-00157";
-
-    @LogMessageInfo(
-            message = "Denying access to {0} from {1}",
-            level = "FINE")
-    public static final String DENY_ACCESS = "AS-WEB-GLUE-00158";
-
-    @LogMessageInfo(
-            message = "Virtual server {0} enabled context {1}",
-            level = "FINE")
-    public static final String VS_ENABLED_CONTEXT = "AS-WEB-GLUE-00159";
-
-    @LogMessageInfo(
-            message = "Unable to delete {0}",
-            level = "WARNING")
-    public static final String UNABLE_TO_DELETE = "AS-WEB-GLUE-00160";
-
-    @LogMessageInfo(
-            message = "Unable to reconfigure access log valve",
-            level = "SEVERE",
-            cause = "An exception occurred during access log valve reconfiguration",
-            action = "Check the exception for error")
-    public static final String UNABLE_RECONFIGURE_ACCESS_LOG = "AS-WEB-GLUE-00161";
-
-    @LogMessageInfo(
-            message = "Virtual server {0} added context {1}",
-            level = "FINE")
-    public static final String VS_ADDED_CONTEXT = "AS-WEB-GLUE-00162";
-
-    @LogMessageInfo(
-            message = "Application {0} is not found",
-            level = "SEVERE",
-            cause = "The deployed application is not found",
-            action = "Check if the application is valid")
-    public static final String APP_NOT_FOUND = "AS-WEB-GLUE-00163";
-
-    @LogMessageInfo(
-            message = "Cannot create context for undeployment",
-            level = "SEVERE",
-            cause = "An IOException occurred during undeployment",
-            action = "Check the exception for error")
-    public static final String REMOVE_CONTEXT_ERROR = "AS-WEB-GLUE-00164";
-
-    @LogMessageInfo(
-            message = "Successfully removed context {0}",
-            level = "FINE")
-    public static final String REMOVED_CONTEXT = "AS-WEB-GLUE-00165";
-
-    @LogMessageInfo(
-            message = "Modifying web.xml {0}",
-            level = "FINE")
-    public static final String MODIFYING_WEB_XML = "AS-WEB-GLUE-00166";
-
-    @LogMessageInfo(
-            message = "Error adding HttpProbes. NetworkListener {0}'s GrizzlyProxy is NULL",
-            level = "SEVERE",
-            cause = "GrizzlyProxy is NULL",
-            action = "Verify the NetworkListener is valid")
-    public static final String PROXY_NULL = "AS-WEB-GLUE-00167";
 
 
     // ------------------------------------------------------------ Constructor
@@ -740,7 +550,7 @@ public class VirtualServer extends StandardHost
 
             if (contextRoot == null) {
                 Object[] params = { wmID, getID() };
-                _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_NOT_FOUND, params);
+                _logger.log(Level.SEVERE, LogFacade.VS_DEFAULT_WEB_MODULE_NOT_FOUND, params);
             }
         }
 
@@ -787,7 +597,7 @@ public class VirtualServer extends StandardHost
             }
 
             if (wmInfo == null) {
-                _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_NOT_FOUND, new Object[] {wmID, getID()});
+                _logger.log(Level.SEVERE, LogFacade.VS_DEFAULT_WEB_MODULE_NOT_FOUND, new Object[] {wmID, getID()});
             }
         }
 
@@ -859,7 +669,7 @@ public class VirtualServer extends StandardHost
         }
         if (wmID != null && _logger.isLoggable(Level.FINE)) {
             Object[] params = { wmID, _id };
-            _logger.log(Level.FINE, VS_DEFAULT_WEB_MODULE, params);
+            _logger.log(Level.FINE, LogFacade.VS_DEFAULT_WEB_MODULE, params);
         }
 
         return wmID;
@@ -904,7 +714,7 @@ public class VirtualServer extends StandardHost
                 if (appInfo == null) {
                     // XXX ApplicaionInfo is NULL after restart
                     Object[] params = { id, getID() };
-                    _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
+                    _logger.log(Level.SEVERE, LogFacade.VS_DEFAULT_WEB_MODULE_DISABLED,
                             params);
                     return wmInfo;
                 }
@@ -934,7 +744,7 @@ public class VirtualServer extends StandardHost
                 }
             } else {
                 Object[] params = { id, getID() };
-                _logger.log(Level.SEVERE, VS_DEFAULT_WEB_MODULE_DISABLED,
+                _logger.log(Level.SEVERE, LogFacade.VS_DEFAULT_WEB_MODULE_DISABLED,
                             params);
             }
         }
@@ -1088,7 +898,7 @@ public class VirtualServer extends StandardHost
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
                 _logger.log(Level.WARNING,
-                        NULL_VIRTUAL_SERVER_PROPERTY,
+                        LogFacade.NULL_VIRTUAL_SERVER_PROPERTY,
                         getName());
             }
 
@@ -1317,7 +1127,7 @@ public class VirtualServer extends StandardHost
                         }
 
                         if (realm == null) {
-                            _logger.log(Level.SEVERE, INVALID_AUTH_REALM,
+                            _logger.log(Level.SEVERE, LogFacade.INVALID_AUTH_REALM,
                                 new Object[] {getID(), authRealmName});
                         }
                     }
@@ -1350,7 +1160,7 @@ public class VirtualServer extends StandardHost
         } else if (valve instanceof GlassFishValve) {
             addValve((GlassFishValve) valve);
         } else {
-            _logger.log(Level.WARNING, NOT_A_VALVE, valveName);
+            _logger.log(Level.WARNING, LogFacade.NOT_A_VALVE, valveName);
         }
     }
 
@@ -1370,7 +1180,7 @@ public class VirtualServer extends StandardHost
         } else if (listener instanceof LifecycleListener){
             addLifecycleListener((LifecycleListener)listener);
         } else {
-            _logger.log(Level.SEVERE, INVALID_LISTENER,
+            _logger.log(Level.SEVERE, LogFacade.INVALID_LISTENER_VIRTUAL_SERVER,
                 new Object[] {listenerName, getID()});
         }
     }
@@ -1386,7 +1196,7 @@ public class VirtualServer extends StandardHost
         try{
             return loadInstance(className);
         } catch (Throwable ex){
-            _logger.log(Level.SEVERE, UNABLE_TO_LOAD_EXTENSION, ex);
+            _logger.log(Level.SEVERE, LogFacade.UNABLE_TO_LOAD_EXTENSION_SEVERE, ex);
         }
         return null;
     }
@@ -1408,7 +1218,7 @@ public class VirtualServer extends StandardHost
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
                 _logger.log(Level.WARNING,
-                        NULL_VIRTUAL_SERVER_PROPERTY,
+                        LogFacade.NULL_VIRTUAL_SERVER_PROPERTY,
                         getID());
                 continue;
             }
@@ -1430,7 +1240,7 @@ public class VirtualServer extends StandardHost
                 if (errorParams[j].startsWith("path=")) {
                     if (path != null) {
                         _logger.log(Level.WARNING,
-                                SEND_ERROR_MULTIPLE_ELEMENT,
+                                LogFacade.SEND_ERROR_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "path" });
                     }
                     path = errorParams[j].substring("path=".length());
@@ -1439,7 +1249,7 @@ public class VirtualServer extends StandardHost
                 if (errorParams[j].startsWith("reason=")) {
                     if (reason != null) {
                         _logger.log(Level.WARNING,
-                                SEND_ERROR_MULTIPLE_ELEMENT,
+                                LogFacade.SEND_ERROR_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "reason" });
                     }
                     reason = errorParams[j].substring("reason=".length());
@@ -1448,7 +1258,7 @@ public class VirtualServer extends StandardHost
                 if (errorParams[j].startsWith("code=")) {
                     if (status != null) {
                         _logger.log(Level.WARNING,
-                                SEND_ERROR_MULTIPLE_ELEMENT,
+                                LogFacade.SEND_ERROR_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "code" });
                     }
                     status = errorParams[j].substring("code=".length());
@@ -1456,7 +1266,7 @@ public class VirtualServer extends StandardHost
             }
 
             if (path == null || path.length() == 0) {
-                _logger.log(Level.WARNING, SEND_ERROR_MISSING_PATH, new Object[] { propValue, getID() });
+                _logger.log(Level.WARNING, LogFacade.SEND_ERROR_MISSING_PATH, new Object[] { propValue, getID() });
             }
 
             errorPage = new ErrorPage();
@@ -1487,7 +1297,7 @@ public class VirtualServer extends StandardHost
             String propValue = prop.getValue();
             if (propName == null || propValue == null) {
                 _logger.log(Level.WARNING,
-                        NULL_VIRTUAL_SERVER_PROPERTY,
+                        LogFacade.NULL_VIRTUAL_SERVER_PROPERTY,
                         getID());
                 continue;
             }
@@ -1510,7 +1320,7 @@ public class VirtualServer extends StandardHost
                 if (redirectParams[j].startsWith("from=")) {
                     if (from != null) {
                         _logger.log(Level.WARNING,
-                                REDIRECT_MULTIPLE_ELEMENT,
+                                LogFacade.REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "from" });
                     }
                     from = redirectParams[j].substring("from=".length());
@@ -1519,7 +1329,7 @@ public class VirtualServer extends StandardHost
                 if (redirectParams[j].startsWith("url=")) {
                     if (url != null) {
                         _logger.log(Level.WARNING,
-                                REDIRECT_MULTIPLE_ELEMENT,
+                                LogFacade.REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "url" });
                     }
                     url = redirectParams[j].substring("url=".length());
@@ -1528,7 +1338,7 @@ public class VirtualServer extends StandardHost
                 if (redirectParams[j].startsWith("url-prefix=")) {
                     if (urlPrefix != null) {
                         _logger.log(Level.WARNING,
-                                REDIRECT_MULTIPLE_ELEMENT,
+                                LogFacade.REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "url-prefix" });
                     }
                     urlPrefix = redirectParams[j].substring(
@@ -1538,7 +1348,7 @@ public class VirtualServer extends StandardHost
                 if (redirectParams[j].startsWith("escape=")) {
                     if (escape != null) {
                         _logger.log(Level.WARNING,
-                                REDIRECT_MULTIPLE_ELEMENT,
+                                LogFacade.REDIRECT_MULTIPLE_ELEMENT,
                                 new Object[] { propValue, getID(), "escape" });
                     }
                     escape = redirectParams[j].substring("escape=".length());
@@ -1547,7 +1357,7 @@ public class VirtualServer extends StandardHost
 
             if (from == null || from.length() == 0) {
                 _logger.log(Level.WARNING,
-                        REDIRECT_MULTIPLE_ELEMENT,
+                        LogFacade.REDIRECT_MULTIPLE_ELEMENT,
                         new Object[] { propValue, getID() });
             }
 
@@ -1555,13 +1365,13 @@ public class VirtualServer extends StandardHost
             if ((url == null || url.length() == 0)
                     && (urlPrefix == null || urlPrefix.length() == 0)) {
                 _logger.log(Level.WARNING,
-                        REDIRECT_MISSING_URL_OR_URL_PREFIX,
+                        LogFacade.REDIRECT_MISSING_URL_OR_URL_PREFIX,
                         new Object[] { propValue, getID() });
             }
             if (url != null && url.length() > 0
                     && urlPrefix != null && urlPrefix.length() > 0) {
                 _logger.log(Level.WARNING,
-                        REDIRECT_BOTH_URL_AND_URL_PREFIX,
+                        LogFacade.REDIRECT_BOTH_URL_AND_URL_PREFIX,
                         new Object[] { propValue, getID() });
             }
 
@@ -1573,7 +1383,7 @@ public class VirtualServer extends StandardHost
                     escapeURI = false;
                 } else {
                     _logger.log(Level.WARNING,
-                        REDIRECT_INVALID_ESCAPE,
+                        LogFacade.REDIRECT_INVALID_ESCAPE,
                         new Object[] { propValue, getID() });
                 }
             }
@@ -1604,7 +1414,7 @@ public class VirtualServer extends StandardHost
              * Disable SSO
              */
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, DISABLE_SSO, getID());
+                _logger.log(Level.FINE, LogFacade.DISABLE_SSO, getID());
             }
 
             boolean hasExistingSSO = false;
@@ -1627,7 +1437,7 @@ public class VirtualServer extends StandardHost
              * Enable SSO
              */
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, ENABLE_SSO, getID());
+                _logger.log(Level.FINE, LogFacade.ENABLE_SSO, getID());
             }
 
             GlassFishSingleSignOn sso = null;
@@ -1660,7 +1470,7 @@ public class VirtualServer extends StandardHost
             Property idle = vsBean.getProperty(SSO_MAX_IDLE);
             if (idle != null && idle.getValue() != null) {
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, SSO_MAX_INACTIVE_SET, new Object[]{idle.getValue(), getID()});
+                    _logger.log(Level.FINE, LogFacade.SSO_MAX_INACTIVE_SET, new Object[]{idle.getValue(), getID()});
                 }
                 sso.setMaxInactive(Integer.parseInt(idle.getValue()));
             }
@@ -1669,7 +1479,7 @@ public class VirtualServer extends StandardHost
             Property expireTime = vsBean.getProperty(SSO_REAP_INTERVAL);
             if (expireTime !=null && expireTime.getValue() != null) {
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, SSO_REAP_INTERVAL_SET);
+                    _logger.log(Level.FINE, LogFacade.SSO_REAP_INTERVAL_SET);
                 }
                 sso.setReapInterval(Integer.parseInt(expireTime.getValue()));
             }
@@ -1741,14 +1551,14 @@ public class VirtualServer extends StandardHost
 
         if (allow != null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, ALLOW_ACCESS, new Object[]{getID(), allow});
+                _logger.log(Level.FINE, LogFacade.ALLOW_ACCESS, new Object[]{getID(), allow});
             }
             remoteAddrValve.setAllow(allow);
         }
 
         if (deny != null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, DENY_ACCESS, new Object[]{getID(), deny});
+                _logger.log(Level.FINE, LogFacade.DENY_ACCESS, new Object[]{getID(), deny});
             }
             remoteAddrValve.setDeny(deny);
         }
@@ -1797,13 +1607,13 @@ public class VirtualServer extends StandardHost
         }
         if (allow != null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, ALLOW_ACCESS, new Object[]{getID(), allow});
+                _logger.log(Level.FINE, LogFacade.ALLOW_ACCESS, new Object[]{getID(), allow});
             }
             remoteHostValve.setAllow(allow);
         }
         if (deny != null) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, DENY_ACCESS, new Object[]{getID(), deny});
+                _logger.log(Level.FINE, LogFacade.DENY_ACCESS, new Object[]{getID(), deny});
             }
             remoteHostValve.setDeny(deny);
         }
@@ -1848,7 +1658,7 @@ public class VirtualServer extends StandardHost
                         if (grizzlyListener.isAjpEnabled()) {
                             continue;
                         }
-                        _logger.log(Level.SEVERE, CODE_FILTERS_NULL, new Object[] {listener.getName(), codecFilters});
+                        _logger.log(Level.SEVERE, LogFacade.CODE_FILTERS_NULL, new Object[] {listener.getName(), codecFilters});
                     } else {
                         for (HttpCodecFilter codecFilter : codecFilters) {
                             if (codecFilter.getMonitoringConfig().getProbes().length == 0) {
@@ -1879,12 +1689,12 @@ public class VirtualServer extends StandardHost
                 } else {
                     // check the listener is enabled before spitting out the SEVERE log
                     if (Boolean.parseBoolean(listener.getEnabled())) {
-                        _logger.log(Level.SEVERE, PROXY_NULL, new Object[] {listener.getName()});
+                        _logger.log(Level.SEVERE, LogFacade.PROXY_NULL, new Object[] {listener.getName()});
                     }
                 }
 
             } catch (Exception ex) {
-                _logger.log(Level.SEVERE, ADD_HTTP_PROBES_ERROR, ex);
+                _logger.log(Level.SEVERE, LogFacade.ADD_HTTP_PROBES_ERROR, ex);
             }
         }
     }
@@ -1912,7 +1722,7 @@ public class VirtualServer extends StandardHost
                 disableAccessLogging();
             }
         } catch (LifecycleException le) {
-            _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
+            _logger.log(Level.SEVERE, LogFacade.UNABLE_RECONFIGURE_ACCESS_LOG, le);
         }
     }
 
@@ -1939,7 +1749,7 @@ public class VirtualServer extends StandardHost
                     httpProbe.enableAccessLogging();
             }
         } catch (LifecycleException le) {
-            _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
+            _logger.log(Level.SEVERE, LogFacade.UNABLE_RECONFIGURE_ACCESS_LOG, le);
         }
     }
 
@@ -1967,7 +1777,7 @@ public class VirtualServer extends StandardHost
                 if (httpProbe != null)
                     httpProbe.enableAccessLogging();
             } catch (LifecycleException le) {
-                _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, le);
+                _logger.log(Level.SEVERE, LogFacade.UNABLE_RECONFIGURE_ACCESS_LOG, le);
             }
         }
     }
@@ -2062,7 +1872,7 @@ public class VirtualServer extends StandardHost
     @Override
     public void setRealm(Realm realm) {
         if ((realm != null) && !(realm instanceof RealmAdapter)) {
-            _logger.log(Level.SEVERE, IGNORE_INVALID_REALM,
+            _logger.log(Level.SEVERE, LogFacade.IGNORE_INVALID_REALM,
                     new Object[] { realm.getClass().getName(),
                         RealmAdapter.class.getName()});
         } else {
@@ -2080,7 +1890,7 @@ public class VirtualServer extends StandardHost
                 !"false".equalsIgnoreCase(cookieSecure) &&
                 !cookieSecure.equalsIgnoreCase(
                     SessionCookieConfig.DYNAMIC_SECURE)) {
-            _logger.log(Level.WARNING, INVALID_SSO_COOKIE_SECURE,
+            _logger.log(Level.WARNING, LogFacade.INVALID_SSO_COOKIE_SECURE,
                         new Object[] {cookieSecure, getID()});
         } else {
             ssoCookieSecure = cookieSecure;
@@ -2181,7 +1991,7 @@ public class VirtualServer extends StandardHost
         throws ConfigException, GlassFishException {
 
         if (_logger.isLoggable(Level.FINE)) {
-           _logger.log(Level.FINE, VS_ADDED_CONTEXT);
+           _logger.log(Level.FINE, LogFacade.VS_ADDED_CONTEXT);
         }
 
         if (!(context instanceof ContextFacade)) {
@@ -2279,7 +2089,7 @@ public class VirtualServer extends StandardHost
             if (appInfo!=null) {
                 facade.setAppName(appInfo.getName());
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, VS_ADDED_CONTEXT, new Object[]{getName(), appInfo.getName()});
+                    _logger.log(Level.FINE, LogFacade.VS_ADDED_CONTEXT, new Object[]{getName(), appInfo.getName()});
                 }
                 deployment.registerAppInDomainXML(appInfo, deploymentContext, t);
             } else {
@@ -2299,7 +2109,7 @@ public class VirtualServer extends StandardHost
                 }
                 updateWebXml(facade, file);
             } else {
-                _logger.log(Level.SEVERE, APP_NOT_FOUND);
+                _logger.log(Level.SEVERE, LogFacade.APP_NOT_FOUND);
             }
 
             ReadableArchive source = appInfo.getSource();
@@ -2329,14 +2139,14 @@ public class VirtualServer extends StandardHost
             deployment.updateAppEnabledAttributeInDomainXML(params.name, params.target, true);
 
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, VS_ENABLED_CONTEXT, new Object[]{getName(), params.name()});
+                _logger.log(Level.FINE, LogFacade.VS_ENABLED_CONTEXT, new Object[]{getName(), params.name()});
             }
 
             if (delete) {
                 if (file != null) {
                     if (file.exists() && !file.delete()) {
                         String path = file.toString();
-                        _logger.log(Level.WARNING, UNABLE_TO_DELETE, path);
+                        _logger.log(Level.WARNING, LogFacade.UNABLE_TO_DELETE, path);
                     }
                 }
             }
@@ -2407,7 +2217,7 @@ public class VirtualServer extends StandardHost
             deployment.undeploy(name, deploymentContext);
             deployment.unregisterAppFromDomainXML(name, "server");
         } catch (IOException e) {
-            _logger.log(Level.SEVERE, REMOVE_CONTEXT_ERROR, e);
+            _logger.log(Level.SEVERE, LogFacade.REMOVE_CONTEXT_ERROR, e);
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             throw new GlassFishException("Cannot create context for undeployment ", e);
         } catch (TransactionFailure e) {
@@ -2419,7 +2229,7 @@ public class VirtualServer extends StandardHost
         }
 
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, REMOVED_CONTEXT, name);
+            _logger.log(Level.FINE, LogFacade.REMOVED_CONTEXT, name);
         }
     }
 
@@ -2507,7 +2317,7 @@ public class VirtualServer extends StandardHost
 
         if (!filters.isEmpty() || !listeners.isEmpty() || !servlets.isEmpty()) {
             if (_logger.isLoggable(Level.FINE)) {
-                _logger.log(Level.FINE, MODIFYING_WEB_XML, file.getAbsolutePath());
+                _logger.log(Level.FINE, LogFacade.MODIFYING_WEB_XML, file.getAbsolutePath());
             }
 
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -2757,13 +2567,13 @@ public class VirtualServer extends StandardHost
                         try {
                             accessLogValve.postInvoke(req, res);
                         } catch (IOException ex) {
-                            _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG, ex);
+                            _logger.log(Level.SEVERE, LogFacade.UNABLE_RECONFIGURE_ACCESS_LOG, ex);
                         }
                     } else {
-                        _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
+                        _logger.log(Level.SEVERE, LogFacade.UNABLE_RECONFIGURE_ACCESS_LOG);
                     }
                 } else {
-                    _logger.log(Level.SEVERE, UNABLE_RECONFIGURE_ACCESS_LOG);
+                    _logger.log(Level.SEVERE, LogFacade.UNABLE_RECONFIGURE_ACCESS_LOG);
                 }
             }
         }
