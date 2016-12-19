@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -51,14 +51,14 @@ import com.sun.enterprise.deployment.node.DeploymentDescriptorNode;
 import com.sun.enterprise.deployment.node.XMLElement;
 import com.sun.enterprise.deployment.util.DOLUtils;
 import com.sun.enterprise.util.net.URLPattern;
-import com.sun.enterprise.web.WebContainer;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.descriptor.ServletFilterMappingDescriptor;
 import org.glassfish.web.deployment.xml.WebTagNames;
 import org.w3c.dom.Node;
 
 import java.text.MessageFormat;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.logging.Level;
 
 import javax.servlet.DispatcherType;
@@ -72,12 +72,9 @@ import javax.servlet.DispatcherType;
  */
 public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMappingDescriptor> {
 
-    private ServletFilterMappingDescriptor descriptor;
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
-    @LogMessageInfo(
-            message = "Invalid URL Pattern: [{0}]",
-            level = "INFO")
-    protected static final String ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN = "AS-WEB-GLUE-00279";
+    private ServletFilterMappingDescriptor descriptor;
 
     /**
      * @return the descriptor instance to associate with this XMLNode
@@ -141,9 +138,9 @@ public class FilterMappingNode extends DeploymentDescriptorNode<ServletFilterMap
                     value = trimmedUrl;
                 } else {
                     throw new IllegalArgumentException(
-                            WebContainer.rb.getString(
+                            rb.getString(
                                     MessageFormat.format(
-                                            ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN, value)));
+                                            LogFacade.ENTERPRISE_DEPLOYMENT_INVALID_URL_PATTERN, value)));
                 }
             }
             descriptor.addURLPattern(value);

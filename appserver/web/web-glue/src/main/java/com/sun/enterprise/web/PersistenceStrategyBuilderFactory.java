@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -44,7 +44,7 @@ package com.sun.enterprise.web;
 import com.sun.enterprise.web.session.PersistenceType;
 import org.apache.catalina.Context;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,27 +56,7 @@ import java.util.logging.Logger;
 public class PersistenceStrategyBuilderFactory {
 
 
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: resolvedPersistenceType = {0}, resolvedPersistenceFrequency = {1} resolvedPersistenceScope = {2}",
-            level = "FINEST")
-    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO = "AS-WEB-GLUE-00108";
-
-    @LogMessageInfo(
-            message = "Could not find PersistentStrategyBuilder for persistenceType {0}",
-            level = "FINEST")
-    public static final String PERSISTENT_STRATEGY_BUILDER_NOT_FOUND = "AS-WEB-GLUE-00109";
-
-    @LogMessageInfo(
-            message = "PersistenceStrategyBuilderFactory>>createPersistenceStrategyBuilder: CandidateBuilderClassName = {0}",
-            level = "FINEST")
-    public static final String CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME = "AS-WEB-GLUE-00110";
-
-    @LogMessageInfo(
-            message = "resolvedPersistenceType = {0}",
-            level = "FINEST")
-    public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-GLUE-00111";
+    private static final Logger _logger = LogFacade.getLogger();
 
     ServiceLocator services;
 
@@ -112,7 +92,7 @@ public class PersistenceStrategyBuilderFactory {
         }
 
         if (_logger.isLoggable(Level.FINEST)) {
-            _logger.log(Level.FINEST, CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO,
+            _logger.log(Level.FINEST, LogFacade.CREATE_PERSISTENCE_STRATEGY_BUILDER_INFO,
                     new Object[] {persistenceType, resolvedPersistenceFrequency, resolvedPersistenceScope});
         }
 
@@ -120,11 +100,11 @@ public class PersistenceStrategyBuilderFactory {
         if (builder == null) {
             builder = new MemoryStrategyBuilder();
             if (_logger.isLoggable(Level.FINEST)) {
-                _logger.log(Level.FINEST, PERSISTENT_STRATEGY_BUILDER_NOT_FOUND, persistenceType);
+                _logger.log(Level.FINEST, LogFacade.PERSISTENT_STRATEGY_BUILDER_NOT_FOUND, persistenceType);
             }
         } else {
                 if (_logger.isLoggable(Level.FINEST)) {
-                    _logger.log(Level.FINEST, CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME, builder.getClass());
+                    _logger.log(Level.FINEST, LogFacade.CREATE_PERSISTENCE_STRATEGY_BUILDER_CLASS_NAME, builder.getClass());
                 }
 
               builder.setPersistenceFrequency(frequency);

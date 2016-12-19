@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -47,7 +47,7 @@ import com.sun.appserv.web.cache.mapping.Field;
 import com.sun.appserv.web.cache.mapping.ValueConstraint;
 import com.sun.enterprise.config.serverbeans.ConfigBeansUtilities;
 import com.sun.enterprise.deployment.runtime.web.SunWebApp;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.runtime.*;
 import org.apache.catalina.deploy.FilterDef;
 import org.apache.catalina.deploy.FilterMap;
@@ -67,32 +67,7 @@ public final class CacheModule {
     public final static String DEFAULT_CACHE_HELPER_CLASSNAME =
                             "com.sun.appserv.web.cache.DefaultCacheHelper";
 
-    public static final Logger logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Configuring cache for web application",
-            level = "FINE")
-    public static final String CONFIGURE_CACHE = "AS-WEB-GLUE-00062";
-
-    @LogMessageInfo(
-            message = "Added a caching filter for servlet-name = {0} url-pattern = {1}",
-            level = "FINE")
-    public static final String CACHING_FILTER_ADDED = "AS-WEB-GLUE-00063";
-
-    @LogMessageInfo(
-            message = "Added a key-field : name = {0} scope = {1}",
-            level = "FINE")
-    public static final String KEY_FIELD_ADDED = "AS-WEB-GLUE-00064";
-
-    @LogMessageInfo(
-            message = "Added a constraint: {0}",
-            level = "FINE")
-    public static final String CONSTRAINT_ADDED = "AS-WEB-GLUE-00065";
-
-    @LogMessageInfo(
-            message = "Added a constraint-field name = {0} scope = {1} cache-on-match = {2} cache-on-match-failure = {3}",
-            level = "FINE")
-    public static final String CONSTRAINT_FIELD_ADDED = "AS-WEB-GLUE-00066";
+    public static final Logger logger = LogFacade.getLogger();
 
     private static String trim(String str) {
         if (str != null)
@@ -120,7 +95,7 @@ public final class CacheModule {
         }
 
         if (logger.isLoggable(Level.FINE)) {
-            logger.log(Level.FINE, CONFIGURE_CACHE, app.getPath());
+            logger.log(Level.FINE, LogFacade.CONFIGURE_CACHE, app.getPath());
         }
 
         // create the CacheManager object for this app
@@ -257,7 +232,7 @@ public final class CacheModule {
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE,
-                        CACHING_FILTER_ADDED,
+                        LogFacade.CACHING_FILTER_ADDED,
                         new Object[] {mapping.getServletName(), mapping.getURLPattern()});
             }
         }
@@ -351,7 +326,7 @@ public final class CacheModule {
                 mapping.addKeyField(new Field(name, scope));
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, KEY_FIELD_ADDED, new Object[]{name, scope});
+                    logger.log(Level.FINE, LogFacade.KEY_FIELD_ADDED, new Object[]{name, scope});
                 }
             }
         }
@@ -400,7 +375,7 @@ public final class CacheModule {
                 constraintField.addConstraint(constraint);
 
                 if (logger.isLoggable(Level.FINE)) {
-                    logger.log(Level.FINE, CONSTRAINT_ADDED, constraint.toString());
+                    logger.log(Level.FINE, LogFacade.CONSTRAINT_ADDED, constraint.toString());
                 }
             }
 
@@ -408,7 +383,7 @@ public final class CacheModule {
 
             if (logger.isLoggable(Level.FINE)) {
                 logger.log(Level.FINE,
-                        CONSTRAINT_FIELD_ADDED,
+                        LogFacade.CONSTRAINT_FIELD_ADDED,
                         new Object[]{
                                 name,
                                 scope,

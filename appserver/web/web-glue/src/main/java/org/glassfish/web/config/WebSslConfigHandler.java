@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 2011-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 2011-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -41,16 +41,16 @@
 package org.glassfish.web.config;
 
 import java.text.MessageFormat;
+import java.util.ResourceBundle;
 import com.sun.enterprise.admin.commands.CreateSsl;
 import com.sun.enterprise.admin.commands.DeleteSsl;
 import com.sun.enterprise.admin.commands.SslConfigHandler;
-import com.sun.enterprise.web.WebContainer;
 import org.glassfish.api.ActionReport;
 import org.glassfish.grizzly.config.dom.NetworkConfig;
 import org.glassfish.grizzly.config.dom.NetworkListener;
 import org.glassfish.grizzly.config.dom.Protocol;
 import org.glassfish.grizzly.config.dom.Ssl;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.jvnet.hk2.annotations.Service;
 import org.jvnet.hk2.config.ConfigSupport;
 import org.jvnet.hk2.config.SingleConfigCode;
@@ -63,26 +63,7 @@ import org.jvnet.hk2.config.TransactionFailure;
 @Service(name="http-listener")
 public class WebSslConfigHandler implements SslConfigHandler {
 
-    @LogMessageInfo(
-            message = "Network Listener named {0} does not exist.  Creating or using the named protocol element instead.",
-            level = "INFO")
-    private static final String CREATE_SSL_HTTP_NOT_FOUND = "AS-WEB-GLUE-00272";
-
-    @LogMessageInfo(
-            message = "Network Listener named {0} to which this ssl element is being added already has an ssl element.",
-            level = "INFO")
-    private static final String CREATE_SSL_HTTP_ALREADY_EXISTS = "AS-WEB-GLUE-00273";
-
-    @LogMessageInfo(
-            message = "HTTP Listener named {0} not found",
-            level = "INFO")
-    private static final String DELETE_SSL_HTTP_LISTENER_NOT_FOUND = "AS-WEB-GLUE-00274";
-
-    @LogMessageInfo(
-            message = "Ssl element does not exist for Listener named {0}",
-            level = "INFO")
-    private static final String DELETE_SSL_ELEMENT_DOES_NOT_EXIST = "AS-WEB-GLUE-00275";
-
+    private static final ResourceBundle rb = LogFacade.getLogger().getResourceBundle();
 
     @Override
     public void create(final CreateSsl command, ActionReport report) {
@@ -94,18 +75,18 @@ public class WebSslConfigHandler implements SslConfigHandler {
         try {
             if (listener == null) {
                 report.setMessage(
-                        WebContainer.rb.getString(
+                        rb.getString(
                                 MessageFormat.format(
-                                        CREATE_SSL_HTTP_NOT_FOUND, command.listenerId)));
+                                        LogFacade.CREATE_SSL_HTTP_NOT_FOUND, command.listenerId)));
                 httpProtocol = command.findOrCreateProtocol(command.listenerId);
             } else {
                 httpProtocol = listener.findHttpProtocol();
                 Ssl ssl = httpProtocol.getSsl();
                 if (ssl != null) {
                     report.setMessage(
-                            WebContainer.rb.getString(
+                            rb.getString(
                                     MessageFormat.format(
-                                            CREATE_SSL_HTTP_ALREADY_EXISTS, command.listenerId)));
+                                            LogFacade.CREATE_SSL_HTTP_ALREADY_EXISTS, command.listenerId)));
                     report.setActionExitCode(ActionReport.ExitCode.FAILURE);
                     return;
                 }
@@ -134,8 +115,8 @@ public class WebSslConfigHandler implements SslConfigHandler {
 
         if (networkListener == null) {
             report.setMessage(
-                    WebContainer.rb.getString(
-                            MessageFormat.format(DELETE_SSL_HTTP_LISTENER_NOT_FOUND, command.listenerId)));
+                    rb.getString(
+                            MessageFormat.format(LogFacade.DELETE_SSL_HTTP_LISTENER_NOT_FOUND, command.listenerId)));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }
@@ -143,8 +124,8 @@ public class WebSslConfigHandler implements SslConfigHandler {
         Protocol protocol = networkListener.findHttpProtocol();
         if (protocol.getSsl() == null) {
             report.setMessage(
-                    WebContainer.rb.getString(
-                            MessageFormat.format(DELETE_SSL_ELEMENT_DOES_NOT_EXIST, command.listenerId)));
+                    rb.getString(
+                            MessageFormat.format(LogFacade.DELETE_SSL_ELEMENT_DOES_NOT_EXIST, command.listenerId)));
             report.setActionExitCode(ActionReport.ExitCode.FAILURE);
             return;
         }

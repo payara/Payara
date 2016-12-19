@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright (c) 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright (c) 1997-2016 Oracle and/or its affiliates. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common Development
@@ -52,7 +52,7 @@ import com.sun.enterprise.web.jsp.ResourceInjectorImpl;
 import org.apache.catalina.*;
 import org.glassfish.api.invocation.InvocationManager;
 import org.glassfish.api.web.TldProvider;
-import org.glassfish.logging.annotation.LogMessageInfo;
+import org.glassfish.web.LogFacade;
 import org.glassfish.web.deployment.runtime.WebProperty;
 import org.glassfish.web.deployment.runtime.SunWebAppImpl;
 import org.glassfish.web.deployment.util.WebValidatorWithCL;
@@ -86,37 +86,7 @@ final class WebModuleListener
     /**
      * The logger used to log messages
      */
-    private static final Logger _logger = com.sun.enterprise.web.WebContainer.logger;
-
-    @LogMessageInfo(
-            message = "Lifecycle event data object [{0}] is not a WebModule",
-            level = "WARNING")
-    public static final String CLASS_CAST_EXCEPTION = "AS-WEB-GLUE-00259";
-
-    @LogMessageInfo(
-            message = "jsp-config property for {0} ",
-            level = "FINE")
-    public static final String JSP_CONFIG_PROPERTY = "AS-WEB-GLUE-00260";
-
-    @LogMessageInfo(
-            message = "sysClasspath for {0} ",
-            level = "FINE")
-    public static final String SYS_CLASSPATH = "AS-WEB-GLUE-00261";
-
-    @LogMessageInfo(
-            message = "Error creating cache manager and configuring the servlet caching subsystem",
-            level = "WARNING")
-    public static final String CACHE_MRG_EXCEPTION = "AS-WEB-GLUE-00262";
-
-    @LogMessageInfo(
-            message = "Cache Manager started",
-            level = "FINE")
-    public static final String CACHE_MANAGER_STARTED = "AS-WEB-GLUE-00263";
-
-    @LogMessageInfo(
-            message = "Cache Manager stopped",
-            level = "FINE")
-    public static final String CACHE_MANAGER_STOPPED = "AS-WEB-GLUE-00264";
+    private static final Logger _logger = LogFacade.getLogger();
 
     /**
      * Descriptor object associated with this web application.
@@ -151,7 +121,7 @@ final class WebModuleListener
         try {
             webModule = (WebModule) event.getLifecycle();
         } catch (ClassCastException e) {
-            _logger.log(Level.WARNING, CLASS_CAST_EXCEPTION, event.getLifecycle());
+            _logger.log(Level.WARNING, LogFacade.CLASS_CAST_EXCEPTION, event.getLifecycle());
             return;
         }
 
@@ -268,7 +238,7 @@ final class WebModuleListener
                 String pvalue = props[i].getAttributeValue("value");
                 if (_logger.isLoggable(Level.FINE)) {
                     _logger.log(Level.FINE,
-                            JSP_CONFIG_PROPERTY,
+                            LogFacade.JSP_CONFIG_PROPERTY,
                             "[" + webModule.getID() + "] is [" + pname + "] = [" + pvalue + "]");
                 }
                 wrapper.addInitParameter(pname, pvalue);
@@ -303,7 +273,7 @@ final class WebModuleListener
         // TODO: combine with classpath from
         // servletContext.getAttribute(("org.apache.catalina.jsp_classpath")
         if (_logger.isLoggable(Level.FINE)) {
-            _logger.log(Level.FINE, SYS_CLASSPATH, webModule.getID() + " is " + sysClassPath);
+            _logger.log(Level.FINE, LogFacade.SYS_CLASSPATH, webModule.getID() + " is " + sysClassPath);
         }
         if (sysClassPath.equals("")) {
             // In embedded mode, services returns SingleModulesRegistry and
@@ -437,7 +407,7 @@ final class WebModuleListener
             try {
                 cm = CacheModule.configureResponseCache(webModule, bean);
             } catch (Exception ee) {
-                _logger.log(Level.WARNING, CACHE_MRG_EXCEPTION, ee);
+                _logger.log(Level.WARNING, LogFacade.CACHE_MRG_EXCEPTION, ee);
             }
         
             if (cm != null) {
@@ -445,7 +415,7 @@ final class WebModuleListener
                     // first start the CacheManager, if enabled
                     cm.start();
                     if (_logger.isLoggable(Level.FINE)) {
-                        _logger.log(Level.FINE, CACHE_MANAGER_STARTED);
+                        _logger.log(Level.FINE, LogFacade.CACHE_MANAGER_STARTED);
                     }
                     // set this manager as a context attribute so that 
                     // caching filters/tags can find it
@@ -468,7 +438,7 @@ final class WebModuleListener
             try {
                 cm.stop();
                 if (_logger.isLoggable(Level.FINE)) {
-                    _logger.log(Level.FINE, CACHE_MANAGER_STOPPED);
+                    _logger.log(Level.FINE, LogFacade.CACHE_MANAGER_STOPPED);
                 }
                 ctxt.removeAttribute(CacheManager.CACHE_MANAGER_ATTR_NAME);
             } catch (LifecycleException ee) {
