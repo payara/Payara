@@ -36,13 +36,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
-
-import java.io.Serializable;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Configured;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+@Configured
+@NotifierConfigurationType(type = NotifierType.EVENTBUS)
+public interface EventbusNotifier extends Notifier {
 }

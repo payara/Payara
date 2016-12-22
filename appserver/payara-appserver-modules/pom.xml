@@ -42,5 +42,6 @@
         <module>notification-email-core</module>
         <module>notification-xmpp-core</module>
         <module>notification-snmp-core</module>
+        <module>notification-eventbus-core</module>
     </modules>
 </project>

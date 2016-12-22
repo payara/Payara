@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,13 +37,33 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.io.Serializable;
+import javax.annotation.PostConstruct;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EventbusNotifierExecutionOptionsFactory extends NotifierExecutionOptionsFactory<EventbusNotifier> {
+
+    @PostConstruct
+    void postConstruct() {
+        register(NotifierType.EVENTBUS, this);
+    }
+
+    public NotifierExecutionOptions build(EventbusNotifier notifier) {
+        EventbusNotifierExecutionOptions executionOptions = new EventbusNotifierExecutionOptions();
+        executionOptions.setEnabled(Boolean.parseBoolean(notifier.getEnabled()));
+
+        return executionOptions;
+    }
 }

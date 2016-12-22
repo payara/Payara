@@ -36,13 +36,17 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
-
-import java.io.Serializable;
+import fish.payara.nucleus.notification.service.MessageQueue;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EventbusMessageQueue extends MessageQueue<EventbusMessage> {
 }

@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,13 +37,51 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
+import com.google.common.eventbus.Subscribe;
+import fish.payara.nucleus.eventbus.ClusterMessage;
+import fish.payara.nucleus.eventbus.EventBus;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.service.QueueBasedNotifierService;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.api.event.EventTypes;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.io.Serializable;
+import javax.inject.Inject;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+@Service(name = "service-eventbus")
+@RunLevel(StartupRunLevel.VAL)
+public class EventbusNotifierService extends QueueBasedNotifierService<EventbusNotificationEvent,
+        EventbusNotifier,
+        EventbusNotifierConfiguration,
+        EventbusMessageQueue> {
+
+    @Inject
+    EventBus eventBus;
+
+    private EventbusNotifierConfigurationExecutionOptions executionOptions;
+
+    EventbusNotifierService() {
+        super("eventbus-message-consumer-");
+    }
+
+    public void event(Event event) {
+        if (event.is(EventTypes.SERVER_READY)) {
+            register(NotifierType.EVENTBUS, EventbusNotifier.class, EventbusNotifierConfiguration.class, this);
+
+            executionOptions = (EventbusNotifierConfigurationExecutionOptions) getNotifierConfigurationExecutionOptions();
+        }
+    }
+
+    @Override
+    @Subscribe
+    public void handleNotification(EventbusNotificationEvent event) {
+        EventbusMessage message = new EventbusMessage(event.getUserMessage(), event.getMessage());
+        eventBus.publish(executionOptions.getTopicName(), new ClusterMessage<>(message));
+    }
 }

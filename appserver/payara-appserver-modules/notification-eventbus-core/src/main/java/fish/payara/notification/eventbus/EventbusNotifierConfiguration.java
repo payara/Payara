@@ -36,13 +36,24 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
+import fish.payara.nucleus.notification.configuration.NotifierConfiguration;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import org.jvnet.hk2.config.Attribute;
+import org.jvnet.hk2.config.Configured;
 
-import java.io.Serializable;
+import java.beans.PropertyVetoException;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+@Configured
+@NotifierConfigurationType(type = NotifierType.EVENTBUS)
+public interface EventbusNotifierConfiguration extends NotifierConfiguration {
+
+    @Attribute(defaultValue = "payara.notification.event")
+    String getTopicName();
+    void setTopicName(String value) throws PropertyVetoException;
 }

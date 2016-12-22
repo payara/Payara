@@ -50,5 +50,6 @@ public enum NotifierType {
     JMS,
     EMAIL,
     XMPP,
-    SNMP
+    SNMP,
+    EVENTBUS
 }

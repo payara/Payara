@@ -36,13 +36,34 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
-
-import java.io.Serializable;
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierConfigurationExecutionOptions;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+public class EventbusNotifierConfigurationExecutionOptions extends NotifierConfigurationExecutionOptions {
+
+    private String topicName;
+
+    EventbusNotifierConfigurationExecutionOptions() {
+        super(NotifierType.EVENTBUS);
+    }
+
+    public String getTopicName() {
+        return topicName;
+    }
+
+    public void setTopicName(String topicName) {
+        this.topicName = topicName;
+    }
+
+    @Override
+    public String toString() {
+        return "EventbusNotifierConfigurationExecutionOptions{" +
+                "topicName='" + topicName + '\'' +
+                "} " + super.toString();
+    }
 }

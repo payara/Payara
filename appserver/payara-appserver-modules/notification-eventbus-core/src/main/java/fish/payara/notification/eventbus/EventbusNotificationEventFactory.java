@@ -1,4 +1,5 @@
 /*
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
  * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
  *
@@ -36,13 +37,47 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
+import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotificationEvent;
+import fish.payara.nucleus.notification.domain.NotificationEventFactory;
+import org.glassfish.api.StartupRunLevel;
+import org.glassfish.hk2.runlevel.RunLevel;
+import org.jvnet.hk2.annotations.Service;
 
-import java.io.Serializable;
+import javax.annotation.PostConstruct;
+import java.text.MessageFormat;
+import java.util.logging.Level;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+@Service
+@RunLevel(StartupRunLevel.VAL)
+public class EventbusNotificationEventFactory extends NotificationEventFactory<EventbusNotificationEvent> {
+
+    @PostConstruct
+    void postConstruct() {
+        registerEventFactory(NotifierType.EVENTBUS, this);
+    }
+
+    public EventbusNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+        EventbusNotificationEvent event = new EventbusNotificationEvent();
+        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setMessage(eventAsStr);
+
+        return event;
+    }
+
+    @Override
+    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+        EventbusNotificationEvent event = new EventbusNotificationEvent();
+        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        if (parameters != null && parameters.length > 0) {
+            message = MessageFormat.format(message, parameters);
+        }
+        event.setMessage(message);
+        return event;
+    }
 }

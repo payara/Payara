@@ -36,13 +36,36 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.nucleus.notification.service;
+package fish.payara.notification.eventbus;
 
-
-import java.io.Serializable;
+import fish.payara.nucleus.notification.service.Message;
 
 /**
  * @author mertcaliskan
  */
-public interface Message extends Serializable {
+public class EventbusMessage implements Message {
+
+    private String subject;
+    private String message;
+
+    public EventbusMessage(String userMessage, String message) {
+        this.subject = userMessage;
+        this.message = message;
+    }
+
+    public String getSubject() {
+        return subject;
+    }
+
+    public void setSubject(String subject) {
+        this.subject = subject;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 }
