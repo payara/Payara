@@ -83,16 +83,15 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <iiop-service>
                 <orb use-thread-pool-ids="thread-pool-1"></orb>
                 <iiop-listener id="orb-listener-1" enabled="false" address="0.0.0.0"></iiop-listener>
-            </iiop-service>
-     
+            </iiop-service>    
             <admin-service system-jmx-connector-name="system">
                 <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" enabled="false"></jmx-connector>
                 <das-config></das-config>
-            </admin-service>
+            </admin-service>     
             <connector-service shutdown-timeout-in-seconds="30">
             </connector-service>
             <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-                <ejb-timer-service />
+                <ejb-timer-service ejb-timer-service="Hazelcast"></ejb-timer-service>
             </ejb-container>
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />
@@ -150,22 +149,13 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                 </message-security-config>
                 <property value="SHA-256" name="default-digest-algorithm" />
             </security-service>
-            <monitoring-service>
-                <module-monitoring-levels />
-            </monitoring-service>      
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
-            <hazelcast-runtime-configuration enabled="false" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
+            <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
-            <request-tracing-service-configuration>
-                <log-notifier enabled="true"></log-notifier>
-            </request-tracing-service-configuration>
-            <notification-service-configuration enabled="true">
-                <log-notifier-configuration enabled="true"></log-notifier-configuration>
-            </notification-service-configuration>
-            <availability-service availability-enabled="false" >
-                <web-container-availability availability-enabled="false"></web-container-availability>
-                <ejb-container-availability sfsb-store-pool-name="jdbc/hastore"></ejb-container-availability>
+            <availability-service availability-enabled="true" >
+                <web-container-availability availability-enabled="true" persistence-scope="modified-session" sso-failover-enabled="true" persistence-type="hazelcast"></web-container-availability>
+                <ejb-container-availability sfsb-ha-persistence-type="hazelcast" sfsb-persistence-type="hazelcast" ></ejb-container-availability>
             </availability-service>
             <network-config>
                 <protocols>
@@ -183,7 +173,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                 </protocols>
                 <network-listeners>
                     <network-listener port="8080" protocol="http-listener" transport="tcp" name="http-listener" thread-pool="http-thread-pool" enabled="true" />
-                    <network-listener port="0" protocol="https-listener" transport="tcp" name="https-listener" thread-pool="http-thread-pool" enabled="false" />
+                    <network-listener port="8443" protocol="https-listener" transport="tcp" name="https-listener" thread-pool="http-thread-pool" enabled="false" />
                 </network-listeners>
                 <transports>
                     <transport byte-buffer-type="HEAP" name="tcp" acceptor-threads="-1"></transport>
@@ -191,7 +181,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             </network-config>
             <thread-pools>
                 <thread-pool name="http-thread-pool" min-thread-pool-size="10" max-thread-pool-size="200" max-queue-size="4096"></thread-pool>
-                <thread-pool name="thread-pool-1"  min-thread-pool-size="2" max-thread-pool-size="200"/>
+                <thread-pool name="thread-pool-1" min-thread-pool-size="2" max-thread-pool-size="200"/>
             </thread-pools>
         </config> 
     </configs>

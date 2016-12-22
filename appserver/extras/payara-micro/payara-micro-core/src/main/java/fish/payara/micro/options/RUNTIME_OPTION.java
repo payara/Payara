@@ -37,54 +37,32 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.payaramicro.boot;
-
-import fish.payara.payaramicro.boot.loader.ExecutableArchiveLauncher;
-import fish.payara.payaramicro.boot.loader.archive.Archive;
-import java.util.List;
+package fish.payara.micro.options;
 
 /**
- * This class boots a Payara Micro Executable jar It establishes the Payara
- * Micro Executable ClassLoader onto the main thread and then boots standard
- * Payara Micro.
  *
  * @author steve
  */
-public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
+public enum RUNTIME_OPTION {
+    nocluster(false), port(true, new PortValidator()), sslport(true, new PortValidator()), mcaddress(true, new MulticastValidator()), mcport(true, new PortValidator()), clustername(true), clusterpassword(true), startport(true, new PortValidator()), name(true), rootdir(true, new DirectoryValidator(true, true, true)), deploymentdir(true, new DirectoryValidator(true, true, false)), deploydir(true, new DirectoryValidator(true, true, false)), deploy(true, new FileValidator(true, true, false)), domainconfig(true, new FileValidator(true, true, true)), minhttpthreads(true, new IntegerValidator(1, Integer.MAX_VALUE)), maxhttpthreads(true, new IntegerValidator(2, Integer.MAX_VALUE)), hzconfigfile(true, new FileValidator(true, true, false)), autobindhttp(false), autobindssl(false), autobindrange(true,new IntegerValidator(1, 100000)), lite(false), enablehealthcheck(true), logo(false), deployfromgav(true), additionalrepository(true), outputuberjar(true, new FileValidator(false, false, false)), systemproperties(true, new FileValidator(true, true, false)), disablephonehome(false), version(false), logtofile(true, new FileValidator(false, false, false)), logproperties(true, new FileValidator(true, true, false)), accesslog(true, new DirectoryValidator(true, true, true)), accesslogformat(true), enablerequesttracing(false), requesttracingthresholdunit(true), requesttracingthresholdvalue(true), prebootcommandfile(true, new FileValidator(true, true, false)), postbootcommandfile(true, new FileValidator(true, true, false)), help(false);
 
-
-    private static final String JAR_MODULES_DIR = "MICRO-INF/runtime";
-    private static final String JAR_CLASSES_DIR = "MICRO-INF/classes";
-    private static final String JAR_LIB_DIR = "MICRO-INF/lib";
-    private static final String MICRO_MAIN = "fish.payara.micro.PayaraMicro";
-
-    public static void main(String args[]) throws Exception {
-        PayaraMicroLauncher launcher = new PayaraMicroLauncher();
-        //launcher.setBootProperties();
-        //launcher.unPackRuntime(args);
-        launcher.launch(args);
+    private RUNTIME_OPTION(boolean value) {
+        this(value, new Validator());
     }
 
-    @Override
-    protected boolean isNestedArchive(Archive.Entry entry) {
-        boolean result = false;
-        if (entry.isDirectory() && entry.getName().equals(JAR_CLASSES_DIR)) {
-            result = true;
-        } else if ((entry.getName().startsWith(JAR_LIB_DIR) || entry.getName().startsWith(JAR_MODULES_DIR)) && !entry.getName().endsWith(".gitkeep")) {
-            result = true;
-        }
-        return result;
+    private RUNTIME_OPTION(boolean value, Validator validator) {
+        this.value = value;
+        this.validator = validator;
     }
 
-    @Override
-    protected void postProcessClassPathArchives(List<Archive> archives) throws Exception {
-        archives.add(0, getArchive());
+    boolean validate(String optionValue) throws ValidationException {
+        return validator.validate(optionValue);
     }
 
-    @Override
-    protected String getMainClass() throws Exception {
-        return MICRO_MAIN;
+    boolean getValue() {
+        return value;
     }
-
+    private final Validator validator;
+    private final boolean value;
 
 }

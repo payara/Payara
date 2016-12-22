@@ -51,48 +51,24 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
     <system-applications />
     <applications />
     <resources>
-        <jdbc-resource pool-name="DerbyPool" jndi-name="jdbc/__default" object-type="system-all" />
-        <jdbc-connection-pool is-isolation-level-guaranteed="false" name="DerbyPool" datasource-classname="org.apache.derby.jdbc.EmbeddedDataSource" res-type="javax.sql.DataSource">
-            <property name="databaseName" value="${com.sun.aas.instanceRoot}/lib/databases/embedded_default" />
-            <property name="connectionAttributes" value=";create=true" />
-        </jdbc-connection-pool>
-        <context-service description="context service" jndi-name="concurrent/__defaultContextService" object-type="system-all"></context-service>
-        <managed-executor-service maximum-pool-size="200" core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" task-queue-capacity="20000" jndi-name="concurrent/__defaultManagedExecutorService" object-type="system-all"></managed-executor-service>
-        <managed-scheduled-executor-service core-pool-size="1" long-running-tasks="true" keep-alive-seconds="300" hung-after-seconds="300" jndi-name="concurrent/__defaultManagedScheduledExecutorService" object-type="system-all"></managed-scheduled-executor-service>
-        <managed-thread-factory description="thread factory" jndi-name="concurrent/__defaultManagedThreadFactory" object-type="system-all"></managed-thread-factory>
     </resources>
     <servers>
         <server name="server" config-ref="server-config">
-            <resource-ref ref="jdbc/__default" />
         </server>
     </servers>
     <configs>
         <config name="server-config">
-            <health-check-service-configuration enabled="false">
-                <cpu-usage-checker unit="MINUTES" name="CPU" time="1" enabled="true" />
-                <machine-memory-usage-checker unit="MINUTES" name="MMEM" time="3" enabled="true" />
-                <heap-memory-usage-checker unit="MINUTES" name="HEAP" time="3" enabled="true" />
-                <hogging-threads-checker unit="MINUTES" name="HT" time="5" enabled="true" />
-                <garbage-collector-checker unit="MINUTES" name="GC" time="5" enabled="true" />
-            </health-check-service-configuration>
             <http-service access-logging-enabled="false">
                 <access-log format="%client.name% %auth-user-name% %datetime% %request% %status% %response.length%"></access-log>
                 <access-log rotation-interval-in-minutes="15" rotation-suffix="yyyy-MM-dd" />
                 <virtual-server id="server" access-logging-enabled="false" access-log="" network-listeners="http-listener, https-listener"></virtual-server>
             </http-service>
-            <iiop-service>
-                <orb use-thread-pool-ids="thread-pool-1"></orb>
-                <iiop-listener id="orb-listener-1" enabled="false" address="0.0.0.0"></iiop-listener>
-            </iiop-service>    
             <admin-service system-jmx-connector-name="system">
                 <jmx-connector port="8686" address="0.0.0.0" security-enabled="false" auth-realm-name="admin-realm" name="system" enabled="false"></jmx-connector>
                 <das-config></das-config>
             </admin-service>     
             <connector-service shutdown-timeout-in-seconds="30">
             </connector-service>
-            <ejb-container steady-pool-size="0" max-pool-size="32" session-store="${com.sun.aas.instanceRoot}/session-store" pool-resize-quantity="8">
-                <ejb-timer-service ejb-timer-service="Hazelcast"></ejb-timer-service>
-            </ejb-container>
             <log-service file="${com.sun.aas.instanceRoot}/logs/server.log" log-rotation-limit-in-bytes="2000000">
                 <module-log-levels />
             </log-service>
@@ -113,65 +89,23 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
                 <audit-module classname="com.sun.enterprise.security.ee.Audit" name="default">
                     <property value="false" name="auditOn" />
                 </audit-module>
-                <message-security-config auth-layer="SOAP">
-                    <provider-config provider-id="XWS_ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
-                        <request-policy auth-source="content" />
-                        <response-policy auth-source="content" />
-                        <property value="s1as" name="encryption.key.alias" />
-                        <property value="s1as" name="signature.key.alias" />
-                        <property value="false" name="dynamic.username.password" />
-                        <property value="false" name="debug" />
-                    </provider-config>
-                    <provider-config provider-id="ClientProvider" class-name="com.sun.xml.wss.provider.ClientSecurityAuthModule" provider-type="client">
-                        <request-policy auth-source="content" />
-                        <response-policy auth-source="content" />
-                        <property value="s1as" name="encryption.key.alias" />
-                        <property value="s1as" name="signature.key.alias" />
-                        <property value="false" name="dynamic.username.password" />
-                        <property value="false" name="debug" />
-                        <property value="${com.sun.aas.instanceRoot}/config/wss-server-config-1.0.xml" name="security.config" />
-                    </provider-config>
-                    <provider-config provider-id="XWS_ServerProvider" class-name="com.sun.xml.wss.provider.ServerSecurityAuthModule" provider-type="server">
-                        <request-policy auth-source="content" />
-                        <response-policy auth-source="content" />
-                        <property value="s1as" name="encryption.key.alias" />
-                        <property value="s1as" name="signature.key.alias" />
-                        <property value="false" name="debug" />
-                    </provider-config>
-                    <provider-config provider-id="ServerProvider" class-name="com.sun.xml.wss.provider.ServerSecurityAuthModule" provider-type="server">
-                        <request-policy auth-source="content" />
-                        <response-policy auth-source="content" />
-                        <property value="s1as" name="encryption.key.alias" />
-                        <property value="s1as" name="signature.key.alias" />
-                        <property value="false" name="debug" />
-                        <property value="${com.sun.aas.instanceRoot}/config/wss-server-config-1.0.xml" name="security.config" />
-                    </provider-config>
-                </message-security-config>
                 <property value="SHA-256" name="default-digest-algorithm" />
             </security-service>
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
-            <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
-            <request-tracing-service-configuration>
-                <log-notifier enabled="true"></log-notifier>
-            </request-tracing-service-configuration>
-            <notification-service-configuration enabled="true">
-                <log-notifier-configuration enabled="true"></log-notifier-configuration>
-            </notification-service-configuration>
             <availability-service availability-enabled="true" >
                 <web-container-availability availability-enabled="true" persistence-scope="modified-session" sso-failover-enabled="true" persistence-type="hazelcast"></web-container-availability>
-                <ejb-container-availability sfsb-ha-persistence-type="hazelcast" sfsb-persistence-type="hazelcast" ></ejb-container-availability>
             </availability-service>
             <network-config>
                 <protocols>
                     <protocol name="http-listener">
-                        <http default-virtual-server="server" xpowered-by="false" max-connections="250"  comet-support-enabled="true">
+                        <http default-virtual-server="server" xpowered-by="false" max-connections="250"  comet-support-enabled="false" websockets-support-enabled="false" >
                             <file-cache enabled="false"></file-cache>
                         </http>       
                     </protocol>
                     <protocol security-enabled="true" name="https-listener">
-                        <http default-virtual-server="server" xpowered-by="false" comet-support-enabled="true" max-connections="250">
+                        <http default-virtual-server="server" xpowered-by="false" comet-support-enabled="false" websockets-support-enabled="false" max-connections="250">
                             <file-cache enabled="false"></file-cache>
                         </http>
                         <ssl classname="com.sun.enterprise.security.ssl.GlassfishSSLImpl" ssl3-enabled="false" cert-nickname="s1as"></ssl>

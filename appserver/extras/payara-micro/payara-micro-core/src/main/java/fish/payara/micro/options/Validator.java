@@ -37,54 +37,16 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
-package fish.payara.payaramicro.boot;
-
-import fish.payara.payaramicro.boot.loader.ExecutableArchiveLauncher;
-import fish.payara.payaramicro.boot.loader.archive.Archive;
-import java.util.List;
+package fish.payara.micro.options;
 
 /**
- * This class boots a Payara Micro Executable jar It establishes the Payara
- * Micro Executable ClassLoader onto the main thread and then boots standard
- * Payara Micro.
  *
  * @author steve
  */
-public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
-
-
-    private static final String JAR_MODULES_DIR = "MICRO-INF/runtime";
-    private static final String JAR_CLASSES_DIR = "MICRO-INF/classes";
-    private static final String JAR_LIB_DIR = "MICRO-INF/lib";
-    private static final String MICRO_MAIN = "fish.payara.micro.PayaraMicro";
-
-    public static void main(String args[]) throws Exception {
-        PayaraMicroLauncher launcher = new PayaraMicroLauncher();
-        //launcher.setBootProperties();
-        //launcher.unPackRuntime(args);
-        launcher.launch(args);
+class Validator {
+    
+    boolean validate(String optionValue) throws ValidationException {
+        return true;
     }
-
-    @Override
-    protected boolean isNestedArchive(Archive.Entry entry) {
-        boolean result = false;
-        if (entry.isDirectory() && entry.getName().equals(JAR_CLASSES_DIR)) {
-            result = true;
-        } else if ((entry.getName().startsWith(JAR_LIB_DIR) || entry.getName().startsWith(JAR_MODULES_DIR)) && !entry.getName().endsWith(".gitkeep")) {
-            result = true;
-        }
-        return result;
-    }
-
-    @Override
-    protected void postProcessClassPathArchives(List<Archive> archives) throws Exception {
-        archives.add(0, getArchive());
-    }
-
-    @Override
-    protected String getMainClass() throws Exception {
-        return MICRO_MAIN;
-    }
-
-
+    
 }
