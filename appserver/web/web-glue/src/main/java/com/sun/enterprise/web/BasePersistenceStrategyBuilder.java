@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package com.sun.enterprise.web;
 
@@ -134,7 +135,7 @@ public abstract class BasePersistenceStrategyBuilder
     protected static final int DEFAULT_SESSION_TIMEOUT = 1800;   // 30 minute
     protected int sessionMaxInactiveInterval = DEFAULT_SESSION_TIMEOUT;
     protected String persistentCookieName = "GLASSFISHCOOKIE";
-    protected boolean relaxCacheVersionSemantics;
+    protected boolean relaxCacheVersionSemantics = true;
 
     // Special constant for Java Server Faces
     protected static final String JSF_HA_ENABLED = "com.sun.appserver.enableHighAvailability";    
