@@ -15,6 +15,11 @@ package fish.payara.nucleus.healthcheck;
 
 import fish.payara.nucleus.healthcheck.configuration.HealthCheckServiceConfiguration;
 import fish.payara.nucleus.healthcheck.preliminary.BaseHealthCheck;
+import fish.payara.nucleus.notification.configuration.Notifier;
+import fish.payara.nucleus.notification.configuration.NotifierConfigurationType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptionsFactoryStore;
+import fish.payara.nucleus.notification.log.LogNotifierExecutionOptions;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.api.admin.ServerEnvironment;
 import org.glassfish.api.event.EventListener;
@@ -28,7 +33,9 @@ import org.jvnet.hk2.annotations.Service;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -37,6 +44,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.internal.api.ServerContext;
+import org.jvnet.hk2.config.ConfigSupport;
+import org.jvnet.hk2.config.ConfigView;
 
 /**
  * @author steve
@@ -62,6 +71,11 @@ public class HealthCheckService implements EventListener {
     @Inject
     ServerContext server;
 
+    @Inject
+    private NotifierExecutionOptionsFactoryStore executionOptionsFactoryStore;
+
+    private List<NotifierExecutionOptions> notifierExecutionOptionsList = new ArrayList<>();
+
     private final AtomicInteger threadNumber = new AtomicInteger(1);
 
     private ScheduledExecutorService executor;
@@ -69,7 +83,7 @@ public class HealthCheckService implements EventListener {
     private boolean enabled;
 
     public void event(Event event) {
-        if (event.is(EventTypes.SERVER_SHUTDOWN)) {
+        if (event.is(EventTypes.SERVER_SHUTDOWN) && executor != null) {
             executor.shutdownNow();
         }
         else if (event.is(EventTypes.SERVER_READY)) {
@@ -83,25 +97,36 @@ public class HealthCheckService implements EventListener {
 
     @PostConstruct
     void postConstruct() {
+        events.register(this);
+
+        configuration = habitat.getService(HealthCheckServiceConfiguration.class);
         if (configuration != null && Boolean.parseBoolean(configuration.getEnabled())) {
             enabled = true;
-            bootstrapHealthCheck();
         }
     }
 
     public void bootstrapHealthCheck() {
-        HealthCheckServiceConfiguration configuration = habitat.getService(HealthCheckServiceConfiguration.class);
         if (configuration != null) {
             executor = Executors.newScheduledThreadPool(configuration.getCheckerList().size(),  new ThreadFactory() {
                 public Thread newThread(Runnable r) {
                     return new Thread(r, PREFIX + threadNumber.getAndIncrement());
                 }
             });
-
-            events.register(this);
             if (enabled) {
                 logger.info("Payara Health Check Service Started.");
                 executeTasks();
+            }
+
+            for (Notifier notifier : configuration.getNotifierList()) {
+                ConfigView view = ConfigSupport.getImpl(notifier);
+                NotifierConfigurationType annotation = view.getProxyType().getAnnotation(NotifierConfigurationType.class);
+                notifierExecutionOptionsList.add(executionOptionsFactoryStore.get(annotation.type()).build(notifier));
+            }
+            if (notifierExecutionOptionsList.isEmpty()) {
+                // Add logging execution options by default
+                LogNotifierExecutionOptions logNotifierExecutionOptions = new LogNotifierExecutionOptions();
+                logNotifierExecutionOptions.setEnabled(true);
+                notifierExecutionOptionsList.add(logNotifierExecutionOptions);
             }
         }
     }
@@ -157,5 +182,9 @@ public class HealthCheckService implements EventListener {
     
     public void setConfiguration(HealthCheckServiceConfiguration configuration) {
         this.configuration = configuration;
+    }
+
+    public List<NotifierExecutionOptions> getNotifierExecutionOptionsList() {
+        return notifierExecutionOptionsList;
     }
 }

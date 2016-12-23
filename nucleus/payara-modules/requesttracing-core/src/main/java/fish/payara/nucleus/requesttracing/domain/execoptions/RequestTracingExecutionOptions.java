@@ -14,6 +14,7 @@
 package fish.payara.nucleus.requesttracing.domain.execoptions;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.domain.NotifierExecutionOptions;
 
 import java.util.HashMap;
 import java.util.Map;
