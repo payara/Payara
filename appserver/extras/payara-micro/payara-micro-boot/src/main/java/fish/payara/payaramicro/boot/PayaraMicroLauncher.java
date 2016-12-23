@@ -41,6 +41,9 @@ package fish.payara.payaramicro.boot;
 
 import fish.payara.payaramicro.boot.loader.ExecutableArchiveLauncher;
 import fish.payara.payaramicro.boot.loader.archive.Archive;
+import java.net.URI;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.List;
 
 /**
@@ -52,16 +55,19 @@ import java.util.List;
  */
 public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
 
-
     private static final String JAR_MODULES_DIR = "MICRO-INF/runtime";
     private static final String JAR_CLASSES_DIR = "MICRO-INF/classes";
     private static final String JAR_LIB_DIR = "MICRO-INF/lib";
     private static final String MICRO_MAIN = "fish.payara.micro.PayaraMicro";
+    private static final String MICRO_JAR_PROPERTY = "fish.payara.micro.BootJar";
 
     public static void main(String args[]) throws Exception {
         PayaraMicroLauncher launcher = new PayaraMicroLauncher();
-        //launcher.setBootProperties();
-        //launcher.unPackRuntime(args);
+        // set system property for our jar file
+        ProtectionDomain protectionDomain = PayaraMicroLauncher.class.getProtectionDomain();
+        CodeSource codeSource = protectionDomain.getCodeSource();
+        URI location = (codeSource == null ? null : codeSource.getLocation().toURI());
+        System.setProperty(MICRO_JAR_PROPERTY, location.toString());
         launcher.launch(args);
     }
 
@@ -85,6 +91,5 @@ public class PayaraMicroLauncher extends ExecutableArchiveLauncher {
     protected String getMainClass() throws Exception {
         return MICRO_MAIN;
     }
-
 
 }

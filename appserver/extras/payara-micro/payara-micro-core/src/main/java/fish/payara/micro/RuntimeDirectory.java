@@ -45,10 +45,15 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.CodeSource;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Class for manipulating the Payara Micro runtime directory
@@ -59,19 +64,19 @@ class RuntimeDirectory {
 
     private final File directory;
     private boolean isTempDir = true;
-    private boolean unpacked = false;
-    
+
     private static final String INSTANCE_ROOT_PROPERTY = "com.sun.aas.instanceRoot";
     private static final String INSTANCE_ROOTURI_PROPERTY = "com.sun.aas.instanceRootURI";
     private static final String INSTALL_ROOT_PROPERTY = "com.sun.aas.installRoot";
     private static final String INSTALL_ROOTURI_PROPERTY = "com.sun.aas.installRootURI";
     private static final String JAR_DOMAIN_DIR = "MICRO-INF/domain/";
     private File domainXML;
+    private File configDir;
 
     /**
      * Default constructor unpacks into a temporary directory
      */
-    RuntimeDirectory() throws IOException {
+    RuntimeDirectory() throws IOException, URISyntaxException {
         String tmpDir = System.getProperty("glassfish.embedded.tmpdir");
         if (tmpDir == null) {
             tmpDir = System.getProperty("java.io.tmpdir");
@@ -82,6 +87,7 @@ class RuntimeDirectory {
         }
         directory.deleteOnExit();
         setSystemProperties();
+        unpackRuntime();
     }
 
     /**
@@ -89,23 +95,24 @@ class RuntimeDirectory {
      *
      * @param directory
      */
-    RuntimeDirectory(File directory) {
+    RuntimeDirectory(File directory) throws URISyntaxException, IOException {
         this.directory = directory;
         isTempDir = false;
         setSystemProperties();
+        unpackRuntime();
     }
 
     public File getDirectory() {
         return directory;
     }
 
-    public void unpackRuntime() throws URISyntaxException, IOException {
+    private void unpackRuntime() throws URISyntaxException, IOException {
 
         // make a docroot here
         new File(directory, "docroot").mkdirs();
 
         // create a config dir and unpack
-        File configDir = new File(directory, "config");
+        configDir = new File(directory, "config");
         configDir.mkdirs();
 
         // Get our configuration files
@@ -123,7 +130,7 @@ class RuntimeDirectory {
                 if (entry.getName().startsWith(JAR_DOMAIN_DIR)) {
                     String fileName = entry.getName().substring(JAR_DOMAIN_DIR.length());
                     File outputFile = new File(configDir, fileName);
-                    
+
                     if (isTempDir) {
                         outputFile.deleteOnExit();
                     }
@@ -144,11 +151,9 @@ class RuntimeDirectory {
         } else {
             throw new IOException("Unable to find the runtime to unpack");
         }
-        unpacked = true;
-        
-        if (domainXML != null) {
-         Files.copy(domainXML.toPath(), directory.toPath().resolve("domain.xml"));            
-        }
+
+        // sort out the security properties
+        configureSecurity();
     }
 
     private void setSystemProperties() {
@@ -160,11 +165,93 @@ class RuntimeDirectory {
         System.setProperty(INSTALL_ROOTURI_PROPERTY, directory.toURI().toString());
     }
 
-    void setDomainXML(File alternateDomainXML) throws IOException {
-        domainXML = alternateDomainXML;
-        if (unpacked) {
-         Files.copy(alternateDomainXML.toPath(), directory.toPath().resolve("domain.xml"));
+    // copies security files referenced via system properties into the runtime directory
+    private void configureSecurity() {
+
+        // Set security properties PAYARA-803
+        Path loginConfPath = configDir.toPath().resolve("login.conf");
+        if (System.getProperty("java.security.auth.login.config") != null) {
+            // copy into the runtime directory the referenced file
+            Path referencedConfig = Paths.get(System.getProperty("java.security.auth.login.config"));
+            if (referencedConfig.toFile().exists()) {
+                try {
+                    Files.copy(referencedConfig, loginConfPath, StandardCopyOption.REPLACE_EXISTING);
+                    System.setProperty("java.security.auth.login.config", loginConfPath.toAbsolutePath().toString());
+                } catch (IOException ex) {
+                    Logger.getLogger(RuntimeDirectory.class.getName()).log(Level.WARNING, "Cannot copy over the referenced login config, using in place", ex);
+                    System.setProperty("java.security.auth.login.config", referencedConfig.toAbsolutePath().toString());
+                }
+            }
+        } else {
+            System.setProperty("java.security.auth.login.config", loginConfPath.toAbsolutePath().toString());
         }
+
+        Path serverPolicyPath = configDir.toPath().resolve("server.policy");
+        if (System.getProperty("java.security.policy") != null) {
+            // copy into the runtime directory the referenced file
+            Path referencedConfig = Paths.get(System.getProperty("java.security.policy"));
+            if (referencedConfig.toFile().exists()) {
+                try {
+                    Files.copy(referencedConfig, serverPolicyPath, StandardCopyOption.REPLACE_EXISTING);
+                    System.setProperty("java.security.policy", serverPolicyPath.toAbsolutePath().toString());
+                } catch (IOException ex) {
+                    Logger.getLogger(RuntimeDirectory.class.getName()).log(Level.WARNING, "Cannot copy over the referenced server policy file, using in place", ex);
+                    System.setProperty("java.security.policy", referencedConfig.toAbsolutePath().toString());
+                }
+            }
+        } else {
+           System.setProperty("java.security.policy", serverPolicyPath.toAbsolutePath().toString());
+        }
+
+        Path keystorePath = configDir.toPath().resolve("keystore.jks");
+        if (System.getProperty("javax.net.ssl.keyStore") != null) {
+            // copy into the runtime directory the referenced file
+            Path referencedConfig = Paths.get(System.getProperty("javax.net.ssl.keyStore"));
+            if (referencedConfig.toFile().exists()) {
+                try {
+                    Files.copy(referencedConfig, keystorePath, StandardCopyOption.REPLACE_EXISTING);
+                    System.setProperty("javax.net.ssl.keyStore", keystorePath.toAbsolutePath().toString());
+                } catch (IOException ex) {
+                    Logger.getLogger(RuntimeDirectory.class.getName()).log(Level.WARNING, "Cannot copy over the referenced keystore file, using in place", ex);
+                    System.setProperty("javax.net.ssl.keyStore", referencedConfig.toAbsolutePath().toString());
+                }
+            }
+        } else {
+            System.setProperty("javax.net.ssl.keyStore", keystorePath.toAbsolutePath().toString());
+        }
+
+        Path truststorePath = configDir.toPath().resolve("cacerts.jks");
+        if (System.getProperty("javax.net.ssl.trustStore") != null) {
+            // copy into the runtime directory the referenced file
+            Path referencedConfig = Paths.get(System.getProperty("javax.net.ssl.trustStore"));
+            if (referencedConfig.toFile().exists()) {
+                try {
+                    Files.copy(referencedConfig, truststorePath, StandardCopyOption.REPLACE_EXISTING);
+                    System.setProperty("javax.net.ssl.trustStore", truststorePath.toAbsolutePath().toString());
+                } catch (IOException ex) {
+                    Logger.getLogger(RuntimeDirectory.class.getName()).log(Level.WARNING, "Cannot copy over the referenced keystore file, using in place", ex);
+                    System.setProperty("javax.net.ssl.trustStore", referencedConfig.toAbsolutePath().toString());
+                }
+            }
+        } else {
+            System.setProperty("javax.net.ssl.trustStore", truststorePath.toAbsolutePath().toString());
+        }
+    }
+
+    void setDomainXML(File alternateDomainXML) throws IOException {
+        Files.copy(alternateDomainXML.toPath(), directory.toPath().resolve("domain.xml"));
+    }
+    
+    void setDomainXML(InputStream alternateDomainXML) throws IOException {
+        Files.copy(alternateDomainXML, directory.toPath().resolve("domain.xml"));
+    }
+    
+    File getConfigDirectory() {
+        return configDir;
+    }
+
+    File getDomainXML() {
+        return configDir.toPath().resolve("domain.xml").toFile();
     }
 
 }
