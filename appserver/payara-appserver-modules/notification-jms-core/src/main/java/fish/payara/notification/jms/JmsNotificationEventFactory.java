@@ -61,18 +61,18 @@ public class JmsNotificationEventFactory extends NotificationEventFactory<JmsNot
         registerEventFactory(NotifierType.JMS, this);
     }
 
-    public JmsNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public JmsNotificationEvent buildNotificationEvent(String userMessage, String message) {
         JmsNotificationEvent event = new JmsNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
-        event.setMessage(eventAsStr);
+        event.setUserMessage(userMessage);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public JmsNotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public JmsNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         JmsNotificationEvent event = new JmsNotificationEvent();
-        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        event.setUserMessage(userMessage);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

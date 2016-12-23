@@ -61,18 +61,18 @@ public class SnmpNotificationEventFactory extends NotificationEventFactory<SnmpN
         registerEventFactory(NotifierType.SNMP, this);
     }
 
-    public SnmpNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public SnmpNotificationEvent buildNotificationEvent(String userMessage, String message) {
         SnmpNotificationEvent event = new SnmpNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
-        event.setMessage(eventAsStr);
+        event.setUserMessage(userMessage);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public SnmpNotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public SnmpNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         SnmpNotificationEvent event = new SnmpNotificationEvent();
-        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        event.setUserMessage(userMessage);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

@@ -39,9 +39,7 @@
  */
 package fish.payara.notification.hipchat;
 
-import fish.payara.notification.hipchat.HipchatNotificationEvent;
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -63,18 +61,18 @@ public class HipchatNotificationEventFactory extends NotificationEventFactory<Hi
         registerEventFactory(NotifierType.HIPCHAT, this);
     }
 
-    public HipchatNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public HipchatNotificationEvent buildNotificationEvent(String userMessage, String message) {
         HipchatNotificationEvent event = new HipchatNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
-        event.setMessage(eventAsStr);
+        event.setUserMessage(userMessage);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public HipchatNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         HipchatNotificationEvent event = new HipchatNotificationEvent();
-        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        event.setUserMessage(userMessage);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

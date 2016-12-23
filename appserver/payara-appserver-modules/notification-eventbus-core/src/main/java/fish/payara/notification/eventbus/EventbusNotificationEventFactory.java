@@ -62,18 +62,18 @@ public class EventbusNotificationEventFactory extends NotificationEventFactory<E
         registerEventFactory(NotifierType.EVENTBUS, this);
     }
 
-    public EventbusNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public EventbusNotificationEvent buildNotificationEvent(String userMessage, String message) {
         EventbusNotificationEvent event = new EventbusNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
-        event.setMessage(eventAsStr);
+        event.setUserMessage(userMessage);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public EventbusNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         EventbusNotificationEvent event = new EventbusNotificationEvent();
-        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        event.setUserMessage(userMessage);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

@@ -140,7 +140,8 @@ public abstract class BaseHealthCheck<O extends HealthCheckExecutionOptions, C e
         for (NotifierExecutionOptions notifierExecutionOptions : healthCheckService.getNotifierExecutionOptionsList()) {
             if (notifierExecutionOptions.isEnabled()) {
                 NotificationEventFactory notificationEventFactory = eventFactoryStore.get(notifierExecutionOptions.getNotifierType());
-                NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, message, parameters);
+                String userMessage = "Health Check notification with severity level: " + level.getName();
+                NotificationEvent notificationEvent = notificationEventFactory.buildNotificationEvent(level, userMessage, message, parameters);
                 notificationService.notify(notificationEvent);
             }
         }

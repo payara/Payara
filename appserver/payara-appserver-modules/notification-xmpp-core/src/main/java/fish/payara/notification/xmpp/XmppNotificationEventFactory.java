@@ -62,18 +62,18 @@ public class XmppNotificationEventFactory extends NotificationEventFactory<XmppN
         registerEventFactory(NotifierType.XMPP, this);
     }
 
-    public XmppNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public XmppNotificationEvent buildNotificationEvent(String userMessage, String message) {
         XmppNotificationEvent event = new XmppNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
-        event.setMessage(eventAsStr);
+        event.setUserMessage(userMessage);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public XmppNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         XmppNotificationEvent event = new XmppNotificationEvent();
-        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        event.setUserMessage(userMessage);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

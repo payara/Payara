@@ -39,7 +39,6 @@
 package fish.payara.nucleus.notification.log;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
-import fish.payara.nucleus.notification.domain.NotificationEvent;
 import fish.payara.nucleus.notification.domain.NotificationEventFactory;
 import org.glassfish.api.StartupRunLevel;
 import org.glassfish.hk2.runlevel.RunLevel;
@@ -60,17 +59,17 @@ public class LogNotificationEventFactory extends NotificationEventFactory<LogNot
         registerEventFactory(NotifierType.LOG, this);
     }
 
-    public LogNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public LogNotificationEvent buildNotificationEvent(String userMessage, String message) {
         LogNotificationEvent event = new LogNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
+        event.setUserMessage(userMessage);
         event.setLevel(Level.INFO);
-        event.setMessage(eventAsStr);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public LogNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         LogNotificationEvent notificationEvent = new LogNotificationEvent();
         notificationEvent.setLevel(level);
         notificationEvent.setMessage(message);

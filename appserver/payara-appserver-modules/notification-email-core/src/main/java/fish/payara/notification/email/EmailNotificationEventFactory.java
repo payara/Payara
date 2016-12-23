@@ -62,18 +62,18 @@ public class EmailNotificationEventFactory extends NotificationEventFactory<Emai
         registerEventFactory(NotifierType.EMAIL, this);
     }
 
-    public EmailNotificationEvent buildNotificationEvent(long elapsedTime, String eventAsStr) {
+    public EmailNotificationEvent buildNotificationEvent(String userMessage, String message) {
         EmailNotificationEvent event = new EmailNotificationEvent();
-        event.setUserMessage("Request execution time: " + elapsedTime + "(ms) exceeded the acceptable threshold");
-        event.setMessage(eventAsStr);
+        event.setUserMessage(userMessage);
+        event.setMessage(message);
 
         return event;
     }
 
     @Override
-    public NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters) {
+    public EmailNotificationEvent buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters) {
         EmailNotificationEvent event = new EmailNotificationEvent();
-        event.setUserMessage("Health Check notification with severity level: " + level.getName());
+        event.setUserMessage(userMessage);
         if (parameters != null && parameters.length > 0) {
             message = MessageFormat.format(message, parameters);
         }

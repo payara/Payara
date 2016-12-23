@@ -40,6 +40,7 @@
 package fish.payara.nucleus.notification.domain;
 
 import fish.payara.nucleus.notification.configuration.NotifierType;
+import fish.payara.nucleus.notification.log.LogNotificationEvent;
 import fish.payara.nucleus.notification.service.NotificationEventFactoryStore;
 import org.jvnet.hk2.annotations.Contract;
 
@@ -59,9 +60,9 @@ public abstract class NotificationEventFactory<E extends NotificationEvent> {
         getStore().register(type, notificationEventFactory);
     }
 
-    public abstract E buildNotificationEvent(long elapsedTime, String eventAsStr);
+    public abstract E buildNotificationEvent(String userMessage, String message);
 
-    public abstract NotificationEvent buildNotificationEvent(Level level, String message, Object[] parameters);
+    public abstract E buildNotificationEvent(Level level, String userMessage, String message, Object[] parameters);
 
     public NotificationEventFactoryStore getStore() {
         return store;
