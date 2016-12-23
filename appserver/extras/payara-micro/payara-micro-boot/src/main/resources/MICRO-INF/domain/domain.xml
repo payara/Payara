@@ -152,6 +152,7 @@ Portions Copyright [2016] [Payara Foundation and/or its affiliates]
             <transaction-service tx-log-dir="${com.sun.aas.instanceRoot}/logs" >
             </transaction-service>
             <hazelcast-runtime-configuration enabled="true" multicastGroup="224.2.2.4" multicastPort="2904" ></hazelcast-runtime-configuration>
+            <phone-home-runtime-configuration></phone-home-runtime-configuration>
             <batch-runtime-configuration table-prefix="jbatch" data-source-lookup-name="jdbc/__default"></batch-runtime-configuration>
             <availability-service availability-enabled="true" >
                 <web-container-availability availability-enabled="true" persistence-scope="modified-session" sso-failover-enabled="true" persistence-type="hazelcast"></web-container-availability>

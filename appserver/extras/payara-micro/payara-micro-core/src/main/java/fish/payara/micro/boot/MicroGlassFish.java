@@ -40,9 +40,7 @@
 package fish.payara.micro.boot;
 
 import com.sun.enterprise.module.bootstrap.ModuleStartup;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
