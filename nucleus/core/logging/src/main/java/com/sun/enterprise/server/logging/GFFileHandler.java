@@ -386,6 +386,32 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         if (flushFrequency <= 0)
             flushFrequency = 1;
 
+        propValue = manager.getProperty(cname + ".maxHistoryFiles");
+        try {
+            if (propValue != null) {
+                maxHistoryFiles = Integer.parseInt(propValue);
+            }
+        } catch (NumberFormatException e) {
+            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
+            lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
+            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
+            lr.setThreadID((int) Thread.currentThread().getId());
+            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
+            EarlyLogHandler.earlyMessages.add(lr);
+        }
+
+        if (maxHistoryFiles < 0)
+            maxHistoryFiles = 10;
+
+        propValue = manager.getProperty(cname + ".compressOnRotation");
+        boolean compressionOnRotation = false;
+        if (propValue != null) {
+            compressionOnRotation = Boolean.parseBoolean(propValue);
+        }
+        if (compressionOnRotation) {
+            compressLogs = true;
+        }
+
         String formatterName = manager.getProperty(cname + ".formatter");
         formatterName = (formatterName == null) ? DEFAULT_LOG_FILE_FORMATTER_CLASS_NAME : formatterName; 
         
@@ -394,7 +420,7 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         gffileHandlerFormatter = formatterName;
         if (mustRotate) {
             rotate();
-        } else if (gffileHandlerFormatter != null 
+        } else if (gffileHandlerFormatter != null
                 && !gffileHandlerFormatter
                         .equals(currentgffileHandlerFormatter)) {
             rotate();
@@ -436,32 +462,6 @@ PostConstruct, PreDestroy, LogEventBroadcaster, LoggingRuntime {
         lr.setThreadID((int) Thread.currentThread().getId());
         lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
         EarlyLogHandler.earlyMessages.add(lr);
-        
-        propValue = manager.getProperty(cname + ".maxHistoryFiles");
-        try {
-            if (propValue != null) {
-                maxHistoryFiles = Integer.parseInt(propValue);
-            }
-        } catch (NumberFormatException e) {
-            lr = new LogRecord(Level.WARNING, LogFacade.INVALID_ATTRIBUTE_VALUE);
-            lr.setParameters(new Object[]{propValue, "maxHistoryFiles"});
-            lr.setResourceBundle(ResourceBundle.getBundle(LogFacade.LOGGING_RB_NAME));
-            lr.setThreadID((int) Thread.currentThread().getId());
-            lr.setLoggerName(LogFacade.LOGGING_LOGGER_NAME);
-            EarlyLogHandler.earlyMessages.add(lr);
-        }
-        
-        if (maxHistoryFiles < 0)
-            maxHistoryFiles = 10;
-
-        propValue = manager.getProperty(cname + ".compressOnRotation");
-        boolean compressionOnRotation = false;
-        if (propValue != null) {
-            compressionOnRotation = Boolean.parseBoolean(propValue);
-        }
-        if (compressionOnRotation) {
-            compressLogs = true;
-        }
     }
 
     Formatter findFormatterService(String formatterName) {
