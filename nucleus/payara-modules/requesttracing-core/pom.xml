@@ -67,6 +67,7 @@
                                 <Export-Package>
                                     fish.payara.nucleus.requesttracing,
                                     fish.payara.nucleus.requesttracing.domain,
+                                    fish.payara.nucleus.requesttracing.domain.execoptions,
                                     fish.payara.nucleus.requesttracing.configuration
                                 </Export-Package>
                             </instructions>
@@ -82,6 +83,12 @@
             <artifactId>notification-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>fish.payara.payara-modules</groupId>
+            <artifactId>hazelcast-bootstrap</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>javax.json</artifactId>

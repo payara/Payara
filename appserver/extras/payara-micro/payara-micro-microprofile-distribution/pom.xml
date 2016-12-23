@@ -808,6 +808,14 @@
             <type>zip</type>
             <optional>true</optional>
         </dependency>
+        <!-- notification package -->
+        <dependency>
+            <groupId>org.glassfish.main.packager</groupId>
+            <artifactId>notification</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+            <optional>true</optional>
+        </dependency>
         <!-- phonehome package -->
         <dependency>
             <groupId>org.glassfish.main.packager</groupId>
