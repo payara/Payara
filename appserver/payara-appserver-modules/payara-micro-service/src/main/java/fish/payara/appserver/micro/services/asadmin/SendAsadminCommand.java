@@ -124,14 +124,12 @@ public class SendAsadminCommand implements AdminCommand
                                     actionReport.setActionExitCode(ExitCode.WARNING);
                                 }
                                 // We only want to get the message, not the formatter name or exit code
-                                String warningMessage = commandResult.getOutput().split("WARNING")[1];
-                                failureMessages.add(warningMessage);
+                                failureMessages.add(processException(commandResult));
                                 break;
                             case FAILURE:
                                 actionReport.setActionExitCode(ExitCode.FAILURE);
                                 // We only want to get the message, not the formatter name or exit code
-                                String failureMessage = commandResult.getOutput().split("FAILURE")[1];
-                                failureMessages.add(failureMessage);
+                                failureMessages.add(processException(commandResult));
                                 break;
                         }
                     }
@@ -168,7 +166,17 @@ public class SendAsadminCommand implements AdminCommand
             actionReport.setMessage("Hazelcast not enabled");
             actionReport.setActionExitCode(ExitCode.FAILURE);
         }
-    }  
+    }
+
+    /**
+     * @param commandResult input
+     * @return readable error message from command result
+     */
+    private String processException(CommandResult commandResult) {
+        String msg = commandResult.getOutput();
+        String[] msgs = msg.split(commandResult.getExitStatus().name());
+        return msgs.length > 1? msgs[1] : commandResult.getFailureCause().getMessage();
+    }
     
     /**
      * Gets the GUIDs of the instances in the cluster that match the targets specified by the --targets option
