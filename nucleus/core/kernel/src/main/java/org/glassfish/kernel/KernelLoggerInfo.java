@@ -37,6 +37,8 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
+
 package org.glassfish.kernel;
 
 import java.util.logging.Logger;
@@ -130,7 +132,7 @@ public class KernelLoggerInfo {
     public static final String consoleCannotInitialize = LOGMSG_PREFIX + "-00011";
     
     @LogMessageInfo(
-            message = "Cannot write property '{0} = {1}' for AdminService in domain.xml, exception: {2}",
+            message = "Cannot write property ''{0} = {1}'' for AdminService in domain.xml, exception: {2}",
             level = "INFO")
     public static final String consoleCannotWriteProperty = LOGMSG_PREFIX + "-00012";
     

@@ -100,7 +100,7 @@ public final class PEAccessLogValve
     public static final String ACCESS_LOG_UNABLE_TO_WRITE = "AS-WEB-GLUE-00098";
 
     @LogMessageInfo(
-            message = "Setting accesslog directory for virtual server '{0}' to {1}",
+            message = "Setting accesslog directory for virtual server ''{0}'' to {1}",
             level = "FINE")
     public static final String ACCESS_LOG_DIRECTORY_SET = "AS-WEB-GLUE-00099";
 

@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.webservices;
 
@@ -286,7 +287,7 @@ public final class LogUtils {
     public static final String NULL_MESSAGE = LOGMSG_PREFIX + "-00075";
 
     @LogMessageInfo(
-            message = "Invalid request scheme for Endpoint {0}. Expected '{1}', received '{2}'.",
+            message = "Invalid request scheme for Endpoint {0}. Expected ''{1}'', received ''{2}''.",
             comment = "{0} - endpoint name, {1} - URL scheme, {2} - URL scheme",
             level = "WARNING")
     public static final String INVALID_REQUEST_SCHEME = LOGMSG_PREFIX + "-00076";
@@ -298,7 +299,7 @@ public final class LogUtils {
     public static final String AUTH_FAILED = LOGMSG_PREFIX + "-00077";
 
     @LogMessageInfo(
-            message = "Servlet web service endpoint '{0}' failure",
+            message = "Servlet web service endpoint ''{0}'' failure",
             comment = "{0} - endpoint name",
             level = "WARNING")
     public static final String SERVLET_ENDPOINT_FAILURE = LOGMSG_PREFIX + "-00078";
@@ -316,7 +317,7 @@ public final class LogUtils {
     public static final String ERROR_INVOKING_SERVLETIMPL = LOGMSG_PREFIX + "-00080";
 
     @LogMessageInfo(
-            message = "Servlet web service endpoint '{0}' HTTP GET error",
+            message = "Servlet web service endpoint ''{0}'' HTTP GET error",
             comment = "{0} - endpoint name",
             level = "WARNING")
     public static final String SERVLET_ENDPOINT_GET_ERROR = LOGMSG_PREFIX + "-00081";
@@ -521,7 +522,7 @@ public final class LogUtils {
     public static final String WSIMPORT_FAILED = LOGMSG_PREFIX + "-00113";
 
     @LogMessageInfo(
-            message = "authentication succeeded for endpoint '{0}' in {1} {2}",
+            message = "authentication succeeded for endpoint ''{0}'' in {1} {2}",
             level = "FINER")
     public static final String AUTHENTICATION_SUCCESS = LOGMSG_PREFIX + "-00114";
 
@@ -553,7 +554,7 @@ public final class LogUtils {
     public static final String DESTORY_ON_HANDLER_FAILED = LOGMSG_PREFIX + "-00120";
 
     @LogMessageInfo(
-            message = "Module type '{0}' is not supported.",
+            message = "Module type ''{0}'' is not supported.",
             comment = "{0} - module type name",
             level = "SEVERE",
             cause = "Deployed module is not a web application nor ejb module.",

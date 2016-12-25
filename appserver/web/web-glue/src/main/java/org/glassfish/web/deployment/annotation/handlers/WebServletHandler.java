@@ -37,6 +37,7 @@
  * only if the new code is made subject to such option by the copyright
  * holder.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.glassfish.web.deployment.annotation.handlers;
 
@@ -170,10 +171,10 @@ public class WebServletHandler extends AbstractWebHandler {
 
             if (webCompDesc.isServlet()) {
                 messageKey = "web.deployment.annotation.handlers.servletimpldontmatch";
-                defaultMessage = "The servlet '{0}' has implementation '{1}' in xml. It does not match with '{2}' from annotation @{3}.";
+                defaultMessage = "The servlet ''{0}'' has implementation ''{1}'' in xml. It does not match with ''{2}'' from annotation @{3}.";
             } else {
                 messageKey = "web.deployment.annotation.handlers.servletimpljspdontmatch";
-                defaultMessage = "The servlet '{0}' is a jsp '{1}' in xml. It does not match with '{2}' from annotation @{3}.";
+                defaultMessage = "The servlet ''{0}'' is a jsp ''{1}'' in xml. It does not match with ''{2}'' from annotation @{3}.";
             }
             
             log(Level.SEVERE, ainfo,
