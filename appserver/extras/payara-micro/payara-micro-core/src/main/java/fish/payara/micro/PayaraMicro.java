@@ -1,20 +1,41 @@
 /*
-
- DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-
- Copyright (c) 2016 Payara Foundation and/or its affiliates.
- All rights reserved.
-
- The contents of this file are subject to the terms of the Common Development
- and Distribution License("CDDL") (collectively, the "License").  You
- may not use this file except in compliance with the License.  You can
- obtain a copy of the License at
- https://glassfish.dev.java.net/public/CDDL+GPL_1_1.html
- or packager/legal/LICENSE.txt.  See the License for the specific
- language governing permissions and limitations under the License.
-
- When distributing the software, include this License Header Notice in each
- file and include the License file at packager/legal/LICENSE.txt.
+ * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ *
+ * Copyright (c) 2016 Payara Foundation and/or its affiliates. All rights reserved.
+ *
+ * The contents of this file are subject to the terms of either the GNU
+ * General Public License Version 2 only ("GPL") or the Common Development
+ * and Distribution License("CDDL") (collectively, the "License").  You
+ * may not use this file except in compliance with the License.  You can
+ * obtain a copy of the License at
+ * https://github.com/payara/Payara/blob/master/LICENSE.txt
+ * See the License for the specific
+ * language governing permissions and limitations under the License.
+ *
+ * When distributing the software, include this License Header Notice in each
+ * file and include the License file at glassfish/legal/LICENSE.txt.
+ *
+ * GPL Classpath Exception:
+ * The Payara Foundation designates this particular file as subject to the "Classpath"
+ * exception as provided by the Payara Foundation in the GPL Version 2 section of the License
+ * file that accompanied this code.
+ *
+ * Modifications:
+ * If applicable, add the following below the License Header, with the fields
+ * enclosed by brackets [] replaced by your own identifying information:
+ * "Portions Copyright [year] [name of copyright owner]"
+ *
+ * Contributor(s):
+ * If you wish your version of this file to be governed by only the CDDL or
+ * only the GPL Version 2, indicate your decision by adding "[Contributor]
+ * elects to include this software in this distribution under the [CDDL or GPL
+ * Version 2] license."  If you don't indicate a single choice of license, a
+ * recipient has the option to distribute your version of this file under
+ * either the CDDL, the GPL Version 2 or to extend the choice of license to
+ * its licensees as provided above.  However, if you add GPL Version 2 code
+ * and therefore, elected the GPL Version 2 license, then the option applies
+ * only if the new code is made subject to such option by the copyright
+ * holder.
  */
 package fish.payara.micro;
 
@@ -42,7 +63,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.net.JarURLConnection;
-import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.jar.JarEntry;
@@ -59,25 +79,15 @@ import com.sun.appserv.server.util.Version;
 import fish.payara.micro.util.NameGenerator;
 import fish.payara.nucleus.events.HazelcastEvents;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
+import com.sun.enterprise.server.logging.ODLLogFormatter;
 import fish.payara.micro.boot.BootCommands;
-import fish.payara.micro.boot.MicroGlassFish;
 import fish.payara.micro.options.RUNTIME_OPTION;
 import fish.payara.micro.options.ValidationException;
 import fish.payara.nucleus.requesttracing.RequestTracingService;
 import java.io.FileNotFoundException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.io.FileWriter;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Set;
-import java.nio.file.StandardCopyOption;
-import java.security.CodeSource;
+import java.io.OutputStream;
 import java.util.concurrent.TimeUnit;
-import org.glassfish.api.event.EventListener;
-import org.glassfish.api.event.Events;
+import java.util.logging.Handler;
 
 /**
  * Main class for Bootstrapping Payara Micro Edition This class is used from
@@ -91,7 +101,7 @@ import org.glassfish.api.event.Events;
 public class PayaraMicro {
 
     private static final String BOOT_PROPS_FILE = "/MICRO-INF/payara-boot.properties";
-    private static final Logger logger = Logger.getLogger("PayaraMicro");
+    private static final Logger LOGGER = Logger.getLogger("PayaraMicro");
     private static PayaraMicro instance;
 
     private String hzMulticastGroup;
@@ -136,9 +146,6 @@ public class PayaraMicro {
     private final short defaultHttpsPort = 8181;
     private BootCommands preBootCommands;
     private BootCommands postBootCommands;
-    private String loggingPropertiesFileName = "logging.properties";
-    private String loggingToFilePropertiesFileName = "loggingToFile.properties";
-    private String domainFileName = "domain.xml";
     private String userLogFile = "payara-server%u.log";
     private String userAccessLogDirectory = "";
     private String accessLogFormat = "%client.name% %auth-user-name% %datetime% %request% %status% %response.length%";
@@ -289,7 +296,7 @@ public class PayaraMicro {
         File file = new File(fileName);
         if (file.isDirectory()) {
             if (!file.exists() || !file.canWrite()) {
-                logger.log(Level.SEVERE, "{0} is not a valid directory for storing logs as it must exist and be writable", file.getAbsolutePath());
+                LOGGER.log(Level.SEVERE, "{0} is not a valid directory for storing logs as it must exist and be writable", file.getAbsolutePath());
                 throw new IllegalArgumentException();
             }
             this.userLogFile = file.getAbsolutePath() + File.separator + userLogFile;
@@ -593,7 +600,7 @@ public class PayaraMicro {
                 // Convert the provided GAV Strings into target URLs
                 getGAVURLs();
             } catch (GlassFishException ex) {
-                Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }
         return this;
@@ -619,7 +626,7 @@ public class PayaraMicro {
                     repositoryURLs.add(new URL(url));
                 }
             } catch (MalformedURLException ex) {
-                logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", url);
+                LOGGER.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", url);
             }
         }
         return this;
@@ -925,12 +932,12 @@ public class PayaraMicro {
             try {
                 configureCommandFiles();
             } catch (IOException ex) {
-                Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, "Unable to load command file", ex);
+                LOGGER.log(Level.SEVERE, "Unable to load command file", ex);
             }
 
             gf = gfruntime.newGlassFish(gfproperties);
 
-            configurePorts(gfproperties);
+            configurePorts();
             configureThreads();
             configureAccessLogging();
             configureHazelcast();
@@ -949,37 +956,7 @@ public class PayaraMicro {
             postBootActions();
 
             long end = System.currentTimeMillis();
-            logger.info(Version.getFullVersion() + " ready in " + (end - start) + " (ms)");
-
-            // Check the generated name is unique
-            if (nameIsGenerated) {
-                HazelcastCore hazelcast = gf.getService(HazelcastCore.class);
-                Set<Member> clusterMembers = hazelcast.getInstance().getCluster().getMembers();
-                
-                // If the instance name was generated, we need to compile a list of all the instance names in use within 
-                // the instance group, excluding this local instance
-                List<String> takenNames = new ArrayList<>();
-                for (Member member : clusterMembers) {
-                    if (member != hazelcast.getInstance().getCluster().getLocalMember() && 
-                            member.getStringAttribute(HazelcastCore.INSTANCE_GROUP_ATTRIBUTE).equalsIgnoreCase(
-                                    instanceGroup)) {
-                        takenNames.add(member.getStringAttribute(HazelcastCore.INSTANCE_ATTRIBUTE));
-                    }
-                }
-
-                // If our generated name is already in use within the instance group, either generate a new one or set the 
-                // name to this instance's UUID if there are no more unique generated options left
-                if (takenNames.contains(instanceName)) {
-                    NameGenerator nameGenerator = new NameGenerator();
-                    instanceName = nameGenerator.generateUniqueName(takenNames, 
-                            hazelcast.getInstance().getCluster().getLocalMember().getUuid());
-                    hazelcast.getInstance().getCluster().getLocalMember().setStringAttribute(
-                            HazelcastCore.INSTANCE_ATTRIBUTE, instanceName);
-                    // Fire off an event so that the instance descriptor in the Payara Micro Service can update itself
-                    Events events = gf.getService(Events.class);
-                    events.send(new EventListener.Event(HazelcastEvents.HAZELCAST_GENERATED_NAME_CHANGE));
-                }
-            }
+            LOGGER.log(Level.INFO, "{0} ready in {1} (ms)", new Object[]{Version.getFullVersion(), end - start});
             return runtime;
         } catch (GlassFishException ex) {
             throw new BootstrapException(ex.getMessage(), ex);
@@ -1006,7 +983,7 @@ public class PayaraMicro {
      * @throws BootstrapException
      */
     public void shutdown() throws BootstrapException {
-        if (!isRunning()) {>>>>>>> PAYARA-895 refactored the hazelcast and phone home configuration to act on the domain.xml
+        if (!isRunning()) {
  
             throw new IllegalStateException("Payara Micro is not running");
         }
@@ -1037,7 +1014,7 @@ public class PayaraMicro {
         try {
             options = new RuntimeOptions(args);
         } catch (ValidationException ex) {
-            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, ex.getMessage());
+            LOGGER.log(Level.SEVERE, ex.getMessage());
             System.exit(-1);
         }
 
@@ -1139,7 +1116,7 @@ public class PayaraMicro {
                             repositoryURLs.add(new URL(value));
                         }
                     } catch (MalformedURLException ex) {
-                        logger.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", value);
+                        LOGGER.log(Level.SEVERE, "{0} is not a valid URL and will be ignored", value);
                     }
                     break;
                 case outputuberjar:
@@ -1165,7 +1142,7 @@ public class PayaraMicro {
                             try {
                                 requestTracingThresholdValue = Long.parseLong(requestTracing[0]);
                             } catch (NumberFormatException e) {
-                                logger.log(Level.WARNING, "{0} is not a valid request tracing "
+                                LOGGER.log(Level.WARNING, "{0} is not a valid request tracing "
                                         + "threshold value", requestTracing[0]);
                                 throw e;
                             }
@@ -1176,8 +1153,8 @@ public class PayaraMicro {
                                     TimeUnit.valueOf(parsedUnit.toUpperCase());
                                     requestTracingThresholdUnit = parsedUnit.toUpperCase();
                                 } catch (IllegalArgumentException e) {
-                                    logger.log(Level.WARNING, "{0} is not a valid request "
-                                  + "tracing threshold unit", requestTracing[1]);
+                                    LOGGER.log(Level.WARNING, "{0} is not a valid request "
+                                            + "tracing threshold unit", requestTracing[1]);
                                     throw e;
                                 }
                             } // If there is a second entry, and it's not a String
@@ -1191,7 +1168,7 @@ public class PayaraMicro {
                                 TimeUnit.valueOf(parsedUnit.toUpperCase());
                                 requestTracingThresholdUnit = parsedUnit.toUpperCase();
                             } catch (IllegalArgumentException e) {
-                                logger.log(Level.WARNING, "{0} is not a valid request "
+                                LOGGER.log(Level.WARNING, "{0} is not a valid request "
                                         + "tracing threshold unit", requestTracing[0]);
                                 throw e;
                             }
@@ -1210,7 +1187,7 @@ public class PayaraMicro {
                         TimeUnit.valueOf(parsedUnit.toUpperCase());
                         requestTracingThresholdUnit = parsedUnit.toUpperCase();
                     } catch (IllegalArgumentException e) {
-                        logger.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdUnit",
+                        LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdUnit",
                                 value);
                         throw e;
                     }
@@ -1219,7 +1196,7 @@ public class PayaraMicro {
                     try {
                         requestTracingThresholdValue = Long.parseLong(value);
                     } catch (NumberFormatException e) {
-                        logger.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdValue",
+                        LOGGER.log(Level.WARNING, "{0} is not a valid value for --requestTracingThresholdValue",
                                 value);
                         throw e;
                     }
@@ -1265,13 +1242,13 @@ public class PayaraMicro {
                 System.setProperty(name, userSystemProperties.getProperty(name));
             }
         } catch (IOException e) {
-            logger.log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "{0} is not a valid properties file",
                     propertiesFile.getAbsolutePath());
             throw new IllegalArgumentException(e);
         }
         if (!propertiesFile.isFile() && !propertiesFile.canRead()) {
-            logger.log(Level.SEVERE,
+            LOGGER.log(Level.SEVERE,
                     "{0} is not a valid properties file",
                     propertiesFile.getAbsolutePath());
             throw new IllegalArgumentException();
@@ -1293,7 +1270,7 @@ public class PayaraMicro {
                     }
                     deploymentCount++;
                 } else {
-                    logger.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
+                    LOGGER.log(Level.WARNING, "{0} is not a valid deployment", war.getAbsolutePath());
                 }
             }
         }
@@ -1330,7 +1307,7 @@ public class PayaraMicro {
 
                         deploymentCount++;
                     } catch (URISyntaxException ex) {
-                        logger.log(Level.WARNING, "{0} could not be converted to a URI,"
+                        LOGGER.log(Level.WARNING, "{0} could not be converted to a URI,"
                                 + " artefact will be skipped",
                                 deploymentMapEntry.getValue().toString());
                     }
@@ -1351,8 +1328,8 @@ public class PayaraMicro {
                 while (entries.hasMoreElements()) {
                     JarEntry entry = entries.nextElement();
                     entryName = entry.getName();
-                    if (!entry.isDirectory() && !entry.getName().endsWith(".properties") && !entry.getName().endsWith(".xml") && !entry.getName().endsWith(".gitkeep") && entry.getName().startsWith("MICRO-INF/deploy")) {
-                        entriesToDeploy.add(entry.getName());
+                    if (!entry.isDirectory() && !entryName.endsWith(".properties") && !entryName.endsWith(".xml") && !entryName.endsWith(".gitkeep") && entryName.startsWith("MICRO-INF/deploy")) {
+                        entriesToDeploy.add(entryName);
                     }
                 }
 
@@ -1373,11 +1350,11 @@ public class PayaraMicro {
                     deploymentCount++;
                 }
             } catch (IOException ioe) {
-                logger.log(Level.WARNING, "Could not deploy jar entry {0}",
+                LOGGER.log(Level.WARNING, "Could not deploy jar entry {0}",
                         entryName);
             }
         } else {
-            logger.info("No META-INF/deploy directory");
+            LOGGER.info("No META-INF/deploy directory");
         }
 
         logger.log(Level.INFO, "Deployed {0} archive(s)", deploymentCount);
@@ -1419,57 +1396,72 @@ public class PayaraMicro {
     }
 
     private void resetLogging() {
-        // reset logger.
-        // reset the Log Manager
-        String instanceRootStr = System.getProperty("com.sun.aas.instanceRoot");
-        File configDir = new File(instanceRootStr, "config");
-        File loggingToFileProperties = new File(configDir.getAbsolutePath(), loggingToFilePropertiesFileName);
-        Path domainFile = Paths.get(configDir.getAbsolutePath() + File.separator + domainFileName);
 
-        if (enableAccessLog) {
-            Charset charset = StandardCharsets.UTF_8;
-            try {
-                String content = new String(Files.readAllBytes(domainFile), charset);
-                content = content.replaceAll("access-logging-enabled=\"false\"", "access-logging-enabled=\"true\"");
-                content = content.replace("access-log=\"\"", "access-log=\"" + userAccessLogDirectory + "\"");
-                if (enableAccessLogFormat) {
-                    content = content.replace("access-log format=\"%client.name% %auth-user-name% %datetime% %request% %status% %response.length%\"",
-                            "access-log format=\"" + accessLogFormat + "\"");
+        String loggingProperty = System.getProperty("java.util.logging.config.file");
+        if (loggingProperty != null) {
+            // we need to copy into the unpacked domain the specified logging.properties file
+            File file = new File(loggingProperty);
+            if (file.canRead()) {
+                try {
+                    runtimeDir.setLoggingProperties(file);
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE, "Could not copy over logging properties file", ex);
                 }
-                Files.write(domainFile, content.getBytes(charset));
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
             }
-        }
-        if (logToFile) {
-            loggingPropertiesFileName = loggingToFilePropertiesFileName;
-            Properties props = new Properties();
-            String propsFilename = loggingToFileProperties.getAbsolutePath();
-            FileInputStream configStream;
-            try {
-                configStream = new FileInputStream(propsFilename);
-                props.load(configStream);
-                configStream.close();
-                props.setProperty("java.util.logging.FileHandler.pattern", userLogFile);
-                FileOutputStream output = new FileOutputStream(propsFilename);
-                props.store(output, "Payara Micro Logging Properties File");
-                output.close();
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
-        }
 
-        File loggingProperties = new File(configDir.getAbsolutePath(), loggingPropertiesFileName);
-        if (loggingProperties.exists() && loggingProperties.canRead() && loggingProperties.isFile()) {
-            if (System.getProperty("java.util.logging.config.file") == null) {
-                System.setProperty("java.util.logging.config.file", loggingProperties.getAbsolutePath());
+            if (logToFile) {
+                LOGGER.log(Level.WARNING, "logToFile command line option ignored as a logging.properties file has been provided");
             }
+
+            System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
             try {
                 LogManager.getLogManager().readConfiguration();
-            } catch (IOException | SecurityException ex) {
-                logger.log(Level.SEVERE, null, ex);
+            } catch (SecurityException | IOException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
+            }
+        } else {  // system property was not set on the command line using the command option or via -D
+            // we are likely using our default properties file so see if we need to rewrite it
+            if (logToFile) {
+                // we need to reset our logging properties to use the file handler as well
+                // read the default properties and then add the file handler properties
+                Properties currentProps = new Properties();
+                try (InputStream is = new FileInputStream(runtimeDir.getLoggingProperties())) {
+                    currentProps.load(is);
+
+                    // add file handler properties
+                    currentProps.setProperty("java.util.logging.FileHandler.pattern", userLogFile);
+                    currentProps.setProperty("handlers", "java.util.logging.FileHandler, java.util.logging.ConsoleHandler");
+                    currentProps.setProperty("java.util.logging.FileHandler.limit", "1024000");
+                    currentProps.setProperty("java.util.logging.FileHandler.count", "10");
+                    currentProps.setProperty("java.util.logging.FileHandler.level", "INFO");
+                    currentProps.setProperty("java.util.logging.FileHandler.formatter", "java.util.logging.SimpleFormatter");
+                    currentProps.setProperty("java.util.logging.FileHandler.append", "true");
+
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE, "Unable to load the logging properties from the runtime directory", ex);
+                }
+
+                // now write them back
+                try (OutputStream os = new FileOutputStream(runtimeDir.getLoggingProperties())) {
+                    currentProps.store(os, "Generated Logging properties file from Payara Micro log to file option");
+                } catch (IOException ex) {
+                    LOGGER.log(Level.SEVERE, "Unable to load the logging properties from the runtime directory", ex);
+                }
+            }
+            System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
+            try {
+                LogManager.getLogManager().readConfiguration();
+                
+                // reset the formatters on the two handlers
+                Logger rootLogger = Logger.getLogger("");
+                for (Handler handler : rootLogger.getHandlers()) {
+                    handler.setFormatter(new ODLLogFormatter());
+                }
+            } catch (SecurityException | IOException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to reset the log manager", ex);
             }
         }
+
     }
 
     private void configureCommandFiles() throws IOException {
@@ -1514,7 +1506,7 @@ public class PayaraMicro {
         }
     }
 
-    private void configurePorts(GlassFishProperties gfproperties) throws GlassFishException {
+    private void configurePorts() throws GlassFishException {
         PortBinder portBinder = new PortBinder();
         // build the glassfish properties
 
@@ -1529,7 +1521,7 @@ public class PayaraMicro {
                     preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
                     preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
                 } catch (BindException ex) {
-                    logger.log(Level.SEVERE, "No available port found in range: "
+                    LOGGER.log(Level.SEVERE, "No available port found in range: "
                             + httpPort + " - "
                             + (httpPort + autoBindRange), ex);
 
@@ -1551,7 +1543,7 @@ public class PayaraMicro {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
             } catch (BindException ex) {
-                logger.log(Level.SEVERE, "No available port found in range: "
+                LOGGER.log(Level.SEVERE, "No available port found in range: "
                         + defaultHttpPort + " - "
                         + (defaultHttpPort + autoBindRange), ex);
 
@@ -1569,7 +1561,7 @@ public class PayaraMicro {
                     preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
                     preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
                 } catch (BindException ex) {
-                    logger.log(Level.SEVERE, "No available port found in range: "
+                    LOGGER.log(Level.SEVERE, "No available port found in range: "
                             + sslPort + " - " + (sslPort + autoBindRange), ex);
 
                     throw new GlassFishException("Could not bind SSL port");
@@ -1592,7 +1584,7 @@ public class PayaraMicro {
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
                 preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             } catch (BindException ex) {
-                logger.log(Level.SEVERE, "No available port found in range: "
+                LOGGER.log(Level.SEVERE, "No available port found in range: "
                         + defaultHttpsPort + " - " + (defaultHttpsPort + autoBindRange), ex);
 
                 throw new GlassFishException("Could not bind SSL port");
@@ -1663,8 +1655,7 @@ public class PayaraMicro {
 
             }
         } catch (IOException | NullPointerException ex) {
-            Logger.getLogger(PayaraMicro.class
-                    .getName()).log(Level.WARNING, "Problems displaying Boot Image", ex);
+            LOGGER.log(Level.WARNING, "Problems displaying Boot Image", ex);
         }
     }
 
@@ -1702,21 +1693,21 @@ public class PayaraMicro {
             if (alternateDomainXML != null) {
                 if (sslPort != Integer.MIN_VALUE) {
                     if (autoBindSsl == true) {
-                        logger.log(Level.INFO, "Overriding HTTPS port value set"
+                        LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
                                 + " in {0} and auto-binding against " + sslPort,
                                 alternateDomainXML.getAbsolutePath());
                     } else {
-                        logger.log(Level.INFO, "Overriding HTTPS port value set"
+                        LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
                                 + " in {0} with " + sslPort,
                                 alternateDomainXML.getAbsolutePath());
                     }
                 } else if (autoBindSsl == true) {
-                    logger.log(Level.INFO, "Overriding HTTPS port value set"
+                    LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
                             + " in {0} and auto-binding against "
                             + defaultHttpsPort,
                             alternateDomainXML.getAbsolutePath());
                 } else {
-                    logger.log(Level.INFO, "Overriding HTTPS port value set"
+                    LOGGER.log(Level.INFO, "Overriding HTTPS port value set"
                             + " in {0} with " + defaultHttpsPort,
                             alternateDomainXML.getAbsolutePath());
                 }
@@ -1729,21 +1720,21 @@ public class PayaraMicro {
                 if (configFile.exists()) {
                     if (sslPort != Integer.MIN_VALUE) {
                         if (autoBindSsl == true) {
-                            logger.log(Level.INFO, "Overriding HTTPS port value"
+                            LOGGER.log(Level.INFO, "Overriding HTTPS port value"
                                     + " set in {0} and auto-binding against "
                                     + sslPort, configFile.getAbsolutePath());
                         } else {
-                            logger.log(Level.INFO, "Overriding HTTPS port value"
+                            LOGGER.log(Level.INFO, "Overriding HTTPS port value"
                                     + " set in {0} with " + sslPort,
                                     configFile.getAbsolutePath());
                         }
                     } else if (autoBindSsl == true) {
-                        logger.log(Level.INFO, "Overriding HTTPS port value"
+                        LOGGER.log(Level.INFO, "Overriding HTTPS port value"
                                 + " set in {0} and auto-binding against "
                                 + defaultHttpsPort,
                                 configFile.getAbsolutePath());
                     } else {
-                        logger.log(Level.INFO, "Overriding HTTPS port value"
+                        LOGGER.log(Level.INFO, "Overriding HTTPS port value"
                                 + " set in {0} with default value of "
                                 + defaultHttpsPort,
                                 configFile.getAbsolutePath());
@@ -1754,21 +1745,21 @@ public class PayaraMicro {
             if (alternateDomainXML != null) {
                 if (httpPort != Integer.MIN_VALUE) {
                     if (autoBindHttp == true) {
-                        logger.log(Level.INFO, "Overriding HTTP port value set "
+                        LOGGER.log(Level.INFO, "Overriding HTTP port value set "
                                 + "in {0} and auto-binding against " + httpPort,
                                 alternateDomainXML.getAbsolutePath());
                     } else {
-                        logger.log(Level.INFO, "Overriding HTTP port value set "
+                        LOGGER.log(Level.INFO, "Overriding HTTP port value set "
                                 + "in {0} with " + httpPort,
                                 alternateDomainXML.getAbsolutePath());
                     }
                 } else if (autoBindHttp == true) {
-                    logger.log(Level.INFO, "Overriding HTTP port value set "
+                    LOGGER.log(Level.INFO, "Overriding HTTP port value set "
                             + "in {0} and auto-binding against "
                             + defaultHttpPort,
                             alternateDomainXML.getAbsolutePath());
                 } else {
-                    logger.log(Level.INFO, "Overriding HTTP port value set "
+                    LOGGER.log(Level.INFO, "Overriding HTTP port value set "
                             + "in {0} with default value of "
                             + defaultHttpPort,
                             alternateDomainXML.getAbsolutePath());
@@ -1782,21 +1773,21 @@ public class PayaraMicro {
                 if (configFile.exists()) {
                     if (httpPort != Integer.MIN_VALUE) {
                         if (autoBindHttp == true) {
-                            logger.log(Level.INFO, "Overriding HTTP port value "
+                            LOGGER.log(Level.INFO, "Overriding HTTP port value "
                                     + "set in {0} and auto-binding against "
                                     + httpPort, configFile.getAbsolutePath());
                         } else {
-                            logger.log(Level.INFO, "Overriding HTTP port value "
+                            LOGGER.log(Level.INFO, "Overriding HTTP port value "
                                     + "set in {0} with " + httpPort,
                                     configFile.getAbsolutePath());
                         }
                     } else if (autoBindHttp == true) {
-                        logger.log(Level.INFO, "Overriding HTTP port value "
+                        LOGGER.log(Level.INFO, "Overriding HTTP port value "
                                 + "set in {0} and auto-binding against "
                                 + defaultHttpPort,
                                 configFile.getAbsolutePath());
                     } else {
-                        logger.log(Level.INFO, "Overriding HTTP port value "
+                        LOGGER.log(Level.INFO, "Overriding HTTP port value "
                                 + "set in {0} with default value of "
                                 + defaultHttpPort,
                                 configFile.getAbsolutePath());
@@ -1818,7 +1809,7 @@ public class PayaraMicro {
                 }
             }
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, "", ex);
+            LOGGER.log(Level.SEVERE, "", ex);
         }
 
         // Set the domain.xml
@@ -1833,7 +1824,7 @@ public class PayaraMicro {
             try {
                 alternateHZConfigFile = Thread.currentThread().getContextClassLoader().getResource(alternateHZConfigFileStr).toURI();
             } catch (URISyntaxException ex) {
-                logger.log(Level.WARNING, "payaramicro.hzConfigFile has invalid URI syntax and will be ignored", ex);
+                LOGGER.log(Level.WARNING, "payaramicro.hzConfigFile has invalid URI syntax and will be ignored", ex);
                 alternateHZConfigFile = null;
             }
         }
@@ -1882,7 +1873,7 @@ public class PayaraMicro {
 
     private void packageUberJar() {
         long start = System.currentTimeMillis();
-        logger.info("Building Uber Jar... " + uberJar);
+        LOGGER.info("Building Uber Jar... " + uberJar);
         String entryString;
         try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));) {
             // get the current payara micro jar
@@ -1929,7 +1920,7 @@ public class PayaraMicro {
                         jos.flush();
                         jos.closeEntry();
                     } catch (IOException ioe) {
-                        logger.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
+                        LOGGER.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
                     }
                 }
             }
@@ -1948,7 +1939,7 @@ public class PayaraMicro {
                             jos.flush();
                             jos.closeEntry();
                         } catch (IOException ioe) {
-                            logger.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
+                            LOGGER.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
                         }
                     }
                 }
@@ -1972,11 +1963,11 @@ public class PayaraMicro {
                             jos.flush();
                             jos.closeEntry();
                         } catch (IOException ioe) {
-                            logger.log(Level.WARNING, "Error adding deployment " + name + " to the Uber Jar Skipping...", ioe);
+                            LOGGER.log(Level.WARNING, "Error adding deployment " + name + " to the Uber Jar Skipping...", ioe);
                         }
                     }
                 } catch (GlassFishException ex) {
-                    logger.log(Level.SEVERE, "Unable to process maven deployment units", ex);
+                    LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
                 }
             }
 
@@ -2086,7 +2077,7 @@ public class PayaraMicro {
                     jos.flush();
                     jos.closeEntry();
                 } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error adding alternative domain.xml to the Uber Jar Skipping...", ioe);
+                    LOGGER.log(Level.WARNING, "Error adding alternative domain.xml to the Uber Jar Skipping...", ioe);
                 }
             }
 
@@ -2103,14 +2094,14 @@ public class PayaraMicro {
                     jos.flush();
                     jos.closeEntry();
                 } catch (IOException ioe) {
-                    logger.log(Level.WARNING, "Error adding alternative hzconfig.xml to the Uber Jar Skipping...", ioe);
+                    LOGGER.log(Level.WARNING, "Error adding alternative hzconfig.xml to the Uber Jar Skipping...", ioe);
                 }
             }
 
-            logger.info("Built Uber Jar " + uberJar + " in " + (System.currentTimeMillis() - start) + " (ms)");
+            LOGGER.info("Built Uber Jar " + uberJar + " in " + (System.currentTimeMillis() - start) + " (ms)");
 
         } catch (IOException ex) {
-            logger.log(Level.SEVERE, "Error creating Uber Jar " + uberJar.getAbsolutePath(), ex);
+            LOGGER.log(Level.SEVERE, "Error creating Uber Jar " + uberJar.getAbsolutePath(), ex);
         }
 
     }
@@ -2187,12 +2178,10 @@ public class PayaraMicro {
             System.err.println(output.toString());
 
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(PayaraMicro.class
-                    .getName()).log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, null, ex);
 
         } catch (IOException io) {
-            Logger.getLogger(PayaraMicro.class
-                    .getName()).log(Level.SEVERE, null, io);
+            LOGGER.log(Level.SEVERE, null, io);
         }
     }
 
@@ -2228,7 +2217,7 @@ public class PayaraMicro {
                 }
             }
         } catch (IOException ioe) {
-            Logger.getLogger(PayaraMicro.class.getName()).log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
+            LOGGER.log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
         }
     }
 

@@ -239,11 +239,19 @@ class RuntimeDirectory {
     }
 
     void setDomainXML(File alternateDomainXML) throws IOException {
-        Files.copy(alternateDomainXML.toPath(), directory.toPath().resolve("domain.xml"));
+        Files.copy(alternateDomainXML.toPath(), directory.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
     }
     
     void setDomainXML(InputStream alternateDomainXML) throws IOException {
-        Files.copy(alternateDomainXML, directory.toPath().resolve("domain.xml"));
+        Files.copy(alternateDomainXML, directory.toPath().resolve("domain.xml"),StandardCopyOption.REPLACE_EXISTING);
+    }
+    
+    void setLoggingProperties(File alternativeFile) throws IOException {
+        Files.copy(alternativeFile.toPath(), directory.toPath().resolve("logging.properties"),StandardCopyOption.REPLACE_EXISTING);
+    }
+    
+    File getLoggingProperties() {
+        return configDir.toPath().resolve("logging.properties").toFile();        
     }
     
     File getConfigDirectory() {
