@@ -19,8 +19,7 @@
 package fish.payara.micro;
 
 
-import com.hazelcast.core.Member;
-import static com.sun.enterprise.glassfish.bootstrap.StaticGlassFishRuntime.copy;
+import fish.payara.micro.boot.BootCommand;
 import fish.payara.micro.options.RuntimeOptions;
 import java.io.File;
 import java.io.IOException;
@@ -39,7 +38,6 @@ import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
-import fish.payara.nucleus.healthcheck.HealthCheckService;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
@@ -61,6 +59,7 @@ import com.sun.appserv.server.util.Version;
 import fish.payara.micro.util.NameGenerator;
 import fish.payara.nucleus.events.HazelcastEvents;
 import com.sun.enterprise.glassfish.bootstrap.Constants;
+import fish.payara.micro.boot.BootCommands;
 import fish.payara.micro.boot.MicroGlassFish;
 import fish.payara.micro.options.RUNTIME_OPTION;
 import fish.payara.micro.options.ValidationException;
@@ -135,6 +134,8 @@ public class PayaraMicro {
     private final String defaultMavenRepository = "https://repo.maven.apache.org/maven2/";
     private final short defaultHttpPort = 8080;
     private final short defaultHttpsPort = 8181;
+    private BootCommands preBootCommands;
+    private BootCommands postBootCommands;
     private String loggingPropertiesFileName = "logging.properties";
     private String loggingToFilePropertiesFileName = "loggingToFile.properties";
     private String domainFileName = "domain.xml";
@@ -907,7 +908,7 @@ public class PayaraMicro {
             throw new BootstrapException("Problem unpacking the Runtime", ex);
         }
         resetLogging();
-       
+
         // build the runtime
         BootstrapProperties bprops = new BootstrapProperties();
         bprops.setInstallRoot(runtimeDir.getDirectory().getAbsolutePath());
@@ -916,21 +917,30 @@ public class PayaraMicro {
         try {
             gfruntime = GlassFishRuntime.bootstrap(bprops, Thread.currentThread().getContextClassLoader());
             GlassFishProperties gfproperties = new GlassFishProperties();
-            configurePorts(gfproperties);
-            configureThreads(gfproperties);
-            configureAccessLogging(gfproperties);
-            configureCommandFiles(gfproperties);
             gfproperties.setProperty("-type", "MICRO");
             gfproperties.setInstanceRoot(runtimeDir.getDirectory().getAbsolutePath());
             gfproperties.setConfigFileReadOnly(false);
             gfproperties.setConfigFileURI(runtimeDir.getDomainXML().toURI().toString());
+
+            try {
+                configureCommandFiles();
+            } catch (IOException ex) {
+                Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, "Unable to load command file", ex);
+            }
+
             gf = gfruntime.newGlassFish(gfproperties);
 
+            configurePorts(gfproperties);
+            configureThreads();
+            configureAccessLogging();
             configureHazelcast();
             configurePhoneHome();
+            configureHealthCheck();
 
             // boot the server
+            preBootCommands.executeCommands(gf.getCommandRunner());
             gf.start();
+            postBootCommands.executeCommands(gf.getCommandRunner());
             this.runtime = new PayaraMicroRuntime(instanceName, gf, gfruntime);
 
             // do deployments
@@ -1008,21 +1018,19 @@ public class PayaraMicro {
         // Initialise a random instance name
         NameGenerator nameGenerator = new NameGenerator();
         instanceName = nameGenerator.generateName();
-        
+        repositoryURLs = new LinkedList<>();
+        preBootCommands = new BootCommands();
+        postBootCommands = new BootCommands();
         try {
-            repositoryURLs = new LinkedList<>();
             repositoryURLs.add(new URL(defaultMavenRepository));
-            setBootProperties();
-            setArgumentsFromSystemProperties();
-            addShutdownHook();
         } catch (MalformedURLException ex) {
-            logger.log(Level.SEVERE, "{0} is not a valid default URL", defaultMavenRepository);
-        } catch (IOException ioe) {
-            logger.log(Level.SEVERE, "Problem setting system properties", ioe);
+            // will never happen as it is a constant
         }
+        setBootProperties();
+        setArgumentsFromSystemProperties();
+        addShutdownHook();
     }
 
-    @SuppressWarnings("empty-statement")
     private void scanArgs(String[] args) {
 
         RuntimeOptions options = null;
@@ -1231,8 +1239,7 @@ public class PayaraMicro {
                     setAccessLogFormat(value);
                     break;
                 case logproperties:
-                    File logPropertiesFile = new File(value);
-                    setLogPropertiesFile(logPropertiesFile);
+                    setLogPropertiesFile(new File(value));
                     break;
                 case logo:
                     generateLogo = true;
@@ -1397,11 +1404,6 @@ public class PayaraMicro {
             generateLogo();
         }
 
-        if (enableHealthCheck) {
-            HealthCheckService healthCheckService = gf.getService(HealthCheckService.class);
-            healthCheckService.setEnabled(enableHealthCheck);
-        }
-
         if (enableRequestTracing) {
             RequestTracingService requestTracing = gf.getService(RequestTracingService.class);
             requestTracing.getExecutionOptions().setEnabled(true);
@@ -1470,34 +1472,45 @@ public class PayaraMicro {
         }
     }
 
-    private void configureCommandFiles(GlassFishProperties gfproperties) {
-        if (postBootFileName != null) {
-            gfproperties.setProperty(MicroGlassFish.POSTBOOT_FILE_PROP, postBootFileName);
+    private void configureCommandFiles() throws IOException {
+        // load the embedded files
+        URL scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/pre-boot-commands.txt");
+        if (scriptURL != null) {
+            preBootCommands.parseCommandScript(scriptURL);
         }
 
         if (preBootFileName != null) {
-            gfproperties.setProperty(MicroGlassFish.PREBOOT_FILE_PROP, preBootFileName);
+            preBootCommands.parseCommandScript(new File(preBootFileName));
+        }
+
+        scriptURL = Thread.currentThread().getContextClassLoader().getResource("MICRO-INF/post-boot-commands.txt");
+        if (scriptURL != null) {
+            postBootCommands.parseCommandScript(scriptURL);
+        }
+
+        if (postBootFileName != null) {
+            postBootCommands.parseCommandScript(new File(postBootFileName));
         }
     }
 
-    private void configureAccessLogging(GlassFishProperties gfproperties) {
+    private void configureAccessLogging() {
         if (enableAccessLog) {
-            gfproperties.setProperty("embedded-glassfish-config.server.http-service.access-logging-enabled", "true");
-            gfproperties.setProperty("embedded-glassfish-config.server.http-service.virtual-server.server.access-logging-enabled", "true");
-            gfproperties.setProperty("embedded-glassfish-config.server.http-service.virtual-server.server.access-log", userAccessLogDirectory);
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.access-logging-enabled=true"));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.access-log=" + userAccessLogDirectory));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.http-service.virtual-server.server.access-logging-enabled=true"));
             if (enableAccessLogFormat) {
-                gfproperties.setProperty("embedded-glassfish-config.server.http-service.access-log.format", accessLogFormat);
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.ttp-service.access-log.format=" + accessLogFormat));
             }
         }
     }
 
-    private void configureThreads(GlassFishProperties gfproperties) {
+    private void configureThreads() {
         if (this.maxHttpThreads != Integer.MIN_VALUE) {
-            gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size", Integer.toString(maxHttpThreads));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.thread-pools.thread-pool.http-thread-pool.max-thread-pool-size=" + maxHttpThreads));
         }
 
         if (this.minHttpThreads != Integer.MIN_VALUE) {
-            gfproperties.setProperty("embedded-glassfish-config.server.thread-pools.thread-pool.http-thread-pool.min-thread-pool-size", Integer.toString(minHttpThreads));
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config..thread-pools.thread-pool.http-thread-pool.min-thread-pool-size=" + minHttpThreads));
         }
     }
 
@@ -1512,9 +1525,9 @@ public class PayaraMicro {
 
                 // Search for an available port from the specified port
                 try {
-                    gfproperties.setPort("http-listener",
-                            portBinder.findAvailablePort(httpPort,
-                                    autoBindRange));
+                    int port = portBinder.findAvailablePort(httpPort, autoBindRange);
+                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
+                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
                 } catch (BindException ex) {
                     logger.log(Level.SEVERE, "No available port found in range: "
                             + httpPort + " - "
@@ -1525,9 +1538,8 @@ public class PayaraMicro {
             } else {
                 // Log warnings if overriding other options
                 logPortPrecedenceWarnings(false);
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + httpPort));
 
-                // Set the port as normal
-                gfproperties.setPort("http-listener", httpPort);
             }
         } else if (autoBindHttp == true) {
             // Log warnings if overriding other options
@@ -1535,9 +1547,9 @@ public class PayaraMicro {
 
             // Search for an available port from the default HTTP port
             try {
-                gfproperties.setPort("http-listener",
-                        portBinder.findAvailablePort(defaultHttpPort,
-                                autoBindRange));
+                int port = portBinder.findAvailablePort(defaultHttpPort, autoBindRange);
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.port=" + port));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.http-listener.enabled=true"));
             } catch (BindException ex) {
                 logger.log(Level.SEVERE, "No available port found in range: "
                         + defaultHttpPort + " - "
@@ -1553,8 +1565,9 @@ public class PayaraMicro {
 
                 // Search for an available port from the specified port
                 try {
-                    gfproperties.setPort("https-listener",
-                            portBinder.findAvailablePort(sslPort, autoBindRange));
+                    int port = portBinder.findAvailablePort(sslPort, autoBindRange);
+                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
+                    preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
                 } catch (BindException ex) {
                     logger.log(Level.SEVERE, "No available port found in range: "
                             + sslPort + " - " + (sslPort + autoBindRange), ex);
@@ -1566,7 +1579,8 @@ public class PayaraMicro {
                 logPortPrecedenceWarnings(true);
 
                 // Set the port as normal
-                gfproperties.setPort("https-listener", sslPort);
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + sslPort));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             }
         } else if (autoBindSsl == true) {
             // Log warnings if overriding other options
@@ -1574,8 +1588,9 @@ public class PayaraMicro {
 
             // Search for an available port from the default HTTPS port
             try {
-                gfproperties.setPort("https-listener",
-                        portBinder.findAvailablePort(defaultHttpsPort, autoBindRange));
+                int port = portBinder.findAvailablePort(defaultHttpsPort, autoBindRange);
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.port=" + port));
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.network-config.network-listeners.network-listener.https-listener.enabled=true"));
             } catch (BindException ex) {
                 logger.log(Level.SEVERE, "No available port found in range: "
                         + defaultHttpsPort + " - " + (defaultHttpsPort + autoBindRange), ex);
@@ -1587,50 +1602,41 @@ public class PayaraMicro {
 
     private void configurePhoneHome() {
         if (disablePhoneHome == true) {
-            try {            
-                gf.getCommandRunner().run("set", "configs.config.server-config.phone-home-runtime-configuration.enabled=false");
-            } catch (GlassFishException ex) {
-                Logger.getLogger(PayaraMicro.class.getName()).log(Level.WARNING, "Problem diabling Phone Home", ex);
-            }
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.phone-home-runtime-configuration.enabled=false"));
         }
     }
 
     private void configureHazelcast() {
-        try {
-            // check hazelcast cluster overrides
-            if (noCluster) {
-                gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false");
-            } else {
-                gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.member-name=" + instanceName);
+        // check hazelcast cluster overrides
+        if (noCluster) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.enabled=false"));
+        } else {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.member-name=" + instanceName));
 
-                if (hzPort > Integer.MIN_VALUE) {
-                    gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-port=" + hzPort);
-                }
-
-                if (hzStartPort > Integer.MIN_VALUE) {
-                    gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.start-port=" + hzStartPort);
-                }
-
-                if (hzMulticastGroup != null) {
-                    gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup);
-                }
-
-                if (alternateHZConfigFile != null) {
-                    gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile);
-                }
-                gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.lite=" + liteMember);
-
-                if (hzClusterName != null) {
-                    gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName);
-                }
-
-                if (hzClusterPassword != null) {
-                    gf.getCommandRunner().run("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword);
-                }
+            if (hzPort > Integer.MIN_VALUE) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-port=" + hzPort));
             }
-            //HazelcastCore.setMulticastOverride(mc);*/
-        } catch (GlassFishException ex) {
-            Logger.getLogger(PayaraMicro.class.getName()).log(Level.SEVERE, null, ex);
+
+            if (hzStartPort > Integer.MIN_VALUE) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.start-port=" + hzStartPort));
+            }
+
+            if (hzMulticastGroup != null) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.multicast-group=" + hzMulticastGroup));
+            }
+
+            if (alternateHZConfigFile != null) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.hazelcast-configuration-file=" + alternateHZConfigFile));
+            }
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.lite=" + liteMember));
+
+            if (hzClusterName != null) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-name=" + hzClusterName));
+            }
+
+            if (hzClusterPassword != null) {
+                preBootCommands.add(new BootCommand("set", "configs.config.server-config.hazelcast-runtime-configuration.cluster-group-password=" + hzClusterPassword));
+            }
         }
     }
 
@@ -2207,7 +2213,7 @@ public class PayaraMicro {
         }
     }
 
-    private void setBootProperties() throws IOException {
+    private void setBootProperties() {
         Properties bootProperties = new Properties();
 
         try (InputStream is = PayaraMicro.class
@@ -2221,6 +2227,14 @@ public class PayaraMicro {
                     }
                 }
             }
+        } catch (IOException ioe) {
+            Logger.getLogger(PayaraMicro.class.getName()).log(Level.WARNING, "Could not load the boot system properties from " + BOOT_PROPS_FILE, ioe);
+        }
+    }
+
+    private void configureHealthCheck() {
+        if (enableHealthCheck) {
+            preBootCommands.add(new BootCommand("set", "configs.config.server-config.health-check-service-configuration.enabled=true"));
         }
     }
 

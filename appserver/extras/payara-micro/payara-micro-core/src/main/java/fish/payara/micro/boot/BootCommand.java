@@ -39,75 +39,32 @@
  */
 package fish.payara.micro.boot;
 
-import com.sun.enterprise.module.bootstrap.ModuleStartup;
-import java.util.Properties;
+import org.glassfish.embeddable.CommandResult;
+import org.glassfish.embeddable.CommandResult.ExitStatus;
 import org.glassfish.embeddable.CommandRunner;
-import org.glassfish.embeddable.Deployer;
-import org.glassfish.embeddable.GlassFish;
-import org.glassfish.embeddable.GlassFishException;
-import org.glassfish.hk2.api.ServiceLocator;
 
 /**
- *
+ * Simple class for holding an asadmin command representation for using during
+ * pre and post boot
  * @author steve
  */
-public class MicroGlassFish implements GlassFish {
+public class BootCommand {
     
-    public static final String PREBOOT_FILE_PROP="micro.preboot.command.file";
-    public static final String POSTBOOT_FILE_PROP="micro.postboot.command.file";
+    private final String command;
+    private final String[] arguments;
+
+    public BootCommand(String command, String ... arguments) {
+        this.command = command;
+        this.arguments = arguments;
+    }
     
-
-    private final ModuleStartup kernel;
-    private final ServiceLocator habitat;
-    private Status status = Status.INIT;
-
-    MicroGlassFish(ModuleStartup kernel, ServiceLocator habitat, Properties glassfishProperties) throws GlassFishException {
-        this.kernel = kernel;
-        this.habitat = habitat;
+    public boolean execute(CommandRunner runner) {
+        boolean result = true;
+        CommandResult asadminResult = runner.run(command, arguments);
+        if (asadminResult.getExitStatus().equals(ExitStatus.FAILURE)) {
+            result = false;
+        }
+        return result;
     }
-
-    @Override
-    public void start() throws GlassFishException {
-        status = Status.STARTING;
-        kernel.start();
-        status = Status.STARTED;
-    }
-
-    @Override
-    public void stop() throws GlassFishException {
-        status = Status.STOPPING;
-        kernel.stop();
-        status = Status.STOPPED;
-    }
-
-    @Override
-    public void dispose() throws GlassFishException {
-        status = Status.DISPOSED;
-    }
-
-    @Override
-    public Status getStatus() throws GlassFishException {
-        return status;
-    }
-
-    @Override
-    public <T> T getService(Class<T> serviceType) throws GlassFishException {
-        return habitat.getService(serviceType);
-    }
-
-    @Override
-    public <T> T getService(Class<T> serviceType, String serviceName) throws GlassFishException {
-        return habitat.getService(serviceType, serviceName);
-    }
-
-    @Override
-    public Deployer getDeployer() throws GlassFishException {
-        return getService(Deployer.class);
-    }
-
-    @Override
-    public CommandRunner getCommandRunner() throws GlassFishException {
-        return getService(CommandRunner.class);
-    }
-
+   
 }
