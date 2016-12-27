@@ -139,12 +139,7 @@
                 <include name="microdomain*"/>      
             </fileset>
         </delete>
-        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Microprofile"/>
-        <copy todir="${domaindir}">
-            <fileset dir="${rootdir}/../src/main/resources">
-                <include name="*.xml"/>
-            </fileset>
-        </copy>   
+        <replace file="${domaindir}/branding/glassfish-version.properties" token="@@@PRODUCT@@@" value="Payara Microprofile"/>  
      </target>
      
     <target name="addSchemas" >
