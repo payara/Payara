@@ -55,6 +55,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+// Portions Copyright [2016] [Payara Foundation and/or its affiliates]
 
 package org.apache.catalina.authenticator;
 
@@ -133,7 +134,7 @@ public class SingleSignOn
     public static final String PROCESS_SESSION_DESTROYED_INFO = "AS-WEB-CORE-00007";
 
     @LogMessageInfo(
-            message = "Process request for '{0}'",
+            message = "Process request for ''{0}''",
             level = "INFO"
     )
     public static final String PROCESS_REQUEST_INFO = "AS-WEB-CORE-00008";
