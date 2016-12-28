@@ -117,7 +117,7 @@ public class PayaraMicro {
     private File rootDir;
     private File deploymentRoot;
     private File alternateDomainXML;
-    private URI alternateHZConfigFile;
+    private File alternateHZConfigFile;
     private List<File> deployments;
     private GlassFish gf;
     private PayaraMicroRuntime runtime;
@@ -1085,8 +1085,7 @@ public class PayaraMicro {
                     liteMember = true;
                     break;
                 case hzconfigfile:
-                    File testFile = new File(value);
-                    alternateHZConfigFile = testFile.toURI();
+                    alternateHZConfigFile = new File(value);
                     break;
                 case autobindhttp:
                     autoBindHttp = true;
@@ -1451,7 +1450,7 @@ public class PayaraMicro {
             System.setProperty("java.util.logging.config.file", runtimeDir.getLoggingProperties().getAbsolutePath());
             try {
                 LogManager.getLogManager().readConfiguration();
-                
+
                 // reset the formatters on the two handlers
                 Logger rootLogger = Logger.getLogger("");
                 for (Handler handler : rootLogger.getHandlers()) {
@@ -1821,12 +1820,7 @@ public class PayaraMicro {
         // Set the hazelcast config file
         String alternateHZConfigFileStr = System.getProperty("payaramicro.hzConfigFile");
         if (alternateHZConfigFileStr != null && !alternateHZConfigFileStr.isEmpty()) {
-            try {
-                alternateHZConfigFile = Thread.currentThread().getContextClassLoader().getResource(alternateHZConfigFileStr).toURI();
-            } catch (URISyntaxException ex) {
-                LOGGER.log(Level.WARNING, "payaramicro.hzConfigFile has invalid URI syntax and will be ignored", ex);
-                alternateHZConfigFile = null;
-            }
+            alternateHZConfigFile = new File(alternateHZConfigFileStr);
         }
 
         autoBindHttp = Boolean.getBoolean("payaramicro.autoBindHttp");
@@ -1872,238 +1866,135 @@ public class PayaraMicro {
     }
 
     private void packageUberJar() {
-        long start = System.currentTimeMillis();
-        LOGGER.info("Building Uber Jar... " + uberJar);
-        String entryString;
-        try (JarOutputStream jos = new JarOutputStream(new FileOutputStream(uberJar));) {
-            // get the current payara micro jar
-            URL url = this.getClass().getClassLoader().getResource("MICRO-INF/payara-boot.properties");
-            JarURLConnection urlcon = (JarURLConnection) url.openConnection();
 
-            // copy all entries from the existing jar file
-            JarFile jFile = urlcon.getJarFile();
-            Enumeration<JarEntry> entries = jFile.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                JarEntry newEntry = new JarEntry(entry.getName());
-                newEntry.setMethod(JarEntry.STORED);
-                newEntry.setSize(entry.getSize());
-                newEntry.setCrc(entry.getCrc());
-                newEntry.setCompressedSize(entry.getCompressedSize());
-                jos.putNextEntry(newEntry);
-                InputStream is = jFile.getInputStream(entry);
-                if (entry.toString().contains("MICRO-INF/domain/logging.properties") && logPropertiesFile) {
-                    is = new FileInputStream(new File(userLogPropertiesFile));
-                }
-
-                byte[] buffer = new byte[4096];
-                int bytesRead = 0;
-                while ((bytesRead = is.read(buffer)) != -1) {
-                    jos.write(buffer, 0, bytesRead);
-                }
-
-                is.close();
-                jos.flush();
-                jos.closeEntry();
-            }
-
-            if (deployments != null) {
-                for (File deployment : deployments) {
-                    JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
-                    jos.putNextEntry(deploymentEntry);
-                    try (FileInputStream fis = new FileInputStream(deployment)) {
-                        byte[] buffer = new byte[4096];
-                        int bytesRead = 0;
-                        while ((bytesRead = fis.read(buffer)) != -1) {
-                            jos.write(buffer, 0, bytesRead);
-                        }
-                        jos.flush();
-                        jos.closeEntry();
-                    } catch (IOException ioe) {
-                        LOGGER.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
-                    }
-                }
-            }
-
-            if (deploymentRoot != null) {
-                for (File deployment : deploymentRoot.listFiles()) {
-                    if (deployment.isFile()) {
-                        JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + deployment.getName());
-                        jos.putNextEntry(deploymentEntry);
-                        try (FileInputStream fis = new FileInputStream(deployment)) {
-                            byte[] buffer = new byte[4096];
-                            int bytesRead = 0;
-                            while ((bytesRead = fis.read(buffer)) != -1) {
-                                jos.write(buffer, 0, bytesRead);
-                            }
-                            jos.flush();
-                            jos.closeEntry();
-                        } catch (IOException ioe) {
-                            LOGGER.log(Level.WARNING, "Error adding deployment " + deployment.getAbsolutePath() + " to the Uber Jar Skipping...", ioe);
-                        }
-                    }
-                }
-            }
-
-            if (GAVs != null) {
-                try {
-                    // Convert the provided GAV Strings into target URLs
-                    getGAVURLs();
-                    for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
-                        URL deployment = deploymentMapEntry.getValue();
-                        String name = deploymentMapEntry.getKey();
-                        try (InputStream is = deployment.openStream()) {
-                            JarEntry deploymentEntry = new JarEntry("MICRO-INF/deploy/" + name);
-                            jos.putNextEntry(deploymentEntry);
-                            byte[] buffer = new byte[4096];
-                            int bytesRead = 0;
-                            while ((bytesRead = is.read(buffer)) != -1) {
-                                jos.write(buffer, 0, bytesRead);
-                            }
-                            jos.flush();
-                            jos.closeEntry();
-                        } catch (IOException ioe) {
-                            LOGGER.log(Level.WARNING, "Error adding deployment " + name + " to the Uber Jar Skipping...", ioe);
-                        }
-                    }
-                } catch (GlassFishException ex) {
-                    LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
-                }
-            }
-
-            // write the system properties file
-            JarEntry je = new JarEntry("MICRO-INF/deploy/payaramicro.properties");
-            jos.putNextEntry(je);
-            Properties props = new Properties();
-            if (hzMulticastGroup != null) {
-                props.setProperty("payaramicro.mcAddress", hzMulticastGroup);
-            }
-
-            if (hzPort != Integer.MIN_VALUE) {
-                props.setProperty("payaramicro.mcPort", Integer.toString(hzPort));
-            }
-
-            if (hzStartPort != Integer.MIN_VALUE) {
-                props.setProperty("payaramicro.startPort", Integer.toString(hzStartPort));
-            }
-
-            props.setProperty("payaramicro.name", instanceName);
-            props.setProperty("payaramicro.instanceGroup", instanceGroup);
-
-            if (rootDir != null) {
-                props.setProperty("payaramicro.rootDir", rootDir.getAbsolutePath());
-            }
-
-            if (alternateDomainXML != null) {
-                props.setProperty("payaramicro.domainConfig", "MICRO-INF/domain/domain.xml");
-            }
-
-            if (minHttpThreads != Integer.MIN_VALUE) {
-                props.setProperty("payaramicro.minHttpThreads", Integer.toString(minHttpThreads));
-            }
-
-            if (maxHttpThreads != Integer.MIN_VALUE) {
-                props.setProperty("payaramicro.maxHttpThreads", Integer.toString(maxHttpThreads));
-            }
-
-            if (alternateHZConfigFile != null) {
-                props.setProperty("payaramicro.hzConfigFile", "MICRO-INF/domain/hzconfig.xml");
-            }
-
-            if (hzClusterName != null) {
-                props.setProperty("payaramicro.clusterName", hzClusterName);
-            }
-
-            if (hzClusterPassword != null) {
-                props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
-            }
-
-            props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
-            props.setProperty("payaramicro.autoBindSsl", Boolean.toString(autoBindSsl));
-            props.setProperty("payaramicro.autoBindRange", Integer.toString(autoBindRange));
-            props.setProperty("payaramicro.lite", Boolean.toString(liteMember));
-            props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
-            props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
-            props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
-            props.setProperty("payaramicro.enableAccessLog", Boolean.toString(enableAccessLog));
-            props.setProperty("payaramicro.enableAccessLogFormat", Boolean.toString(enableAccessLogFormat));
-            props.setProperty("payaramicro.logPropertiesFile", Boolean.toString(logPropertiesFile));
-            props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
-            props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
-
-            if (httpPort != Integer.MIN_VALUE) {
-                props.setProperty("payaramicro.port", Integer.toString(httpPort));
-            }
-
-            if (sslPort != Integer.MIN_VALUE) {
-                props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
-            }
-
-            if (enableRequestTracing) {
-                props.setProperty("payaramicro.enableRequestTracing", Boolean.toString(enableRequestTracing));
-            }
-
-            if (!requestTracingThresholdUnit.equals("SECONDS")) {
-                props.setProperty("payaramicro.requestTracingThresholdUnit", requestTracingThresholdUnit);
-            }
-
-            if (requestTracingThresholdValue != 30) {
-                props.setProperty("payaramicro.requestTracingThresholdValue", Long.toString(requestTracingThresholdValue));
-            }
-
-            // write all user defined system properties
-            if (userSystemProperties != null) {
-                Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
-                while (names.hasMoreElements()) {
-                    String name = names.nextElement();
-                    props.setProperty(name, userSystemProperties.getProperty(name));
-                }
-            }
-
-            props.store(jos, "");
-            jos.flush();
-            jos.closeEntry();
-
-            // add the alternate domain.xml file if present
-            if (alternateDomainXML != null && alternateDomainXML.isFile() && alternateDomainXML.canRead()) {
-                try (InputStream is = new FileInputStream(alternateDomainXML)) {
-                    JarEntry domainXml = new JarEntry("MICRO-INF/domain/domain.xml");
-                    jos.putNextEntry(domainXml);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead = 0;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        jos.write(buffer, 0, bytesRead);
-                    }
-                    jos.flush();
-                    jos.closeEntry();
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, "Error adding alternative domain.xml to the Uber Jar Skipping...", ioe);
-                }
-            }
-
-            // add the alternate hazelcast config to the uberJar
-            if (alternateHZConfigFile != null) {
-                try (InputStream is = alternateHZConfigFile.toURL().openStream()) {
-                    JarEntry domainXml = new JarEntry("MICRO-INF/domain/hzconfig.xml");
-                    jos.putNextEntry(domainXml);
-                    byte[] buffer = new byte[4096];
-                    int bytesRead = 0;
-                    while ((bytesRead = is.read(buffer)) != -1) {
-                        jos.write(buffer, 0, bytesRead);
-                    }
-                    jos.flush();
-                    jos.closeEntry();
-                } catch (IOException ioe) {
-                    LOGGER.log(Level.WARNING, "Error adding alternative hzconfig.xml to the Uber Jar Skipping...", ioe);
-                }
-            }
-
-            LOGGER.info("Built Uber Jar " + uberJar + " in " + (System.currentTimeMillis() - start) + " (ms)");
-
-        } catch (IOException ex) {
-            LOGGER.log(Level.SEVERE, "Error creating Uber Jar " + uberJar.getAbsolutePath(), ex);
+        UberJarCreator creator = new UberJarCreator(rootDir, uberJar);
+        if (logPropertiesFile) {
+            creator.setLoggingPropertiesFile(new File(userLogPropertiesFile));
         }
 
+        if (deployments != null) {
+            for (File deployment : deployments) {
+                creator.addDeployment(deployment);
+            }
+        }
+
+        if (deploymentRoot != null) {
+            creator.setDeploymentDir(deploymentRoot);
+        }
+
+        if (GAVs != null) {
+            try {
+                // Convert the provided GAV Strings into target URLs
+                getGAVURLs();
+                for (Map.Entry<String, URL> deploymentMapEntry : deploymentURLsMap.entrySet()) {
+                    URL deployment = deploymentMapEntry.getValue();
+                    String name = deploymentMapEntry.getKey();
+                    creator.addDeployment(name, deployment);
+                }
+            } catch (GlassFishException ex) {
+                LOGGER.log(Level.SEVERE, "Unable to process maven deployment units", ex);
+            }
+        }
+
+        // write the system properties file
+        Properties props = new Properties();
+        if (hzMulticastGroup != null) {
+            props.setProperty("payaramicro.mcAddress", hzMulticastGroup);
+        }
+
+        if (hzPort != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.mcPort", Integer.toString(hzPort));
+        }
+            props.setProperty("payaramicro.name", instanceName);
+            props.setProperty("payaramicro.instanceGroup", instanceGroup);
+            
+        if (hzStartPort != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.startPort", Integer.toString(hzStartPort));
+        }
+
+        props.setProperty("payaramicro.name", instanceName);
+
+        if (rootDir != null) {
+            props.setProperty("payaramicro.rootDir", rootDir.getAbsolutePath());
+        }
+
+        if (alternateDomainXML != null) {
+            props.setProperty("payaramicro.domainConfig", "MICRO-INF/domain/domain.xml");
+        }
+
+        if (minHttpThreads != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.minHttpThreads", Integer.toString(minHttpThreads));
+        }
+
+        if (maxHttpThreads != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.maxHttpThreads", Integer.toString(maxHttpThreads));
+        }
+
+        if (alternateHZConfigFile != null) {
+            props.setProperty("payaramicro.hzConfigFile", "MICRO-INF/domain/hzconfig.xml");
+        }
+
+        if (hzClusterName != null) {
+            props.setProperty("payaramicro.clusterName", hzClusterName);
+        }
+
+        if (hzClusterPassword != null) {
+            props.setProperty("payaramicro.clusterPassword", hzClusterPassword);
+        }
+
+        props.setProperty("payaramicro.autoBindHttp", Boolean.toString(autoBindHttp));
+        props.setProperty("payaramicro.autoBindSsl", Boolean.toString(autoBindSsl));
+        props.setProperty("payaramicro.autoBindRange", Integer.toString(autoBindRange));
+        props.setProperty("payaramicro.lite", Boolean.toString(liteMember));
+        props.setProperty("payaramicro.enableHealthCheck", Boolean.toString(enableHealthCheck));
+        props.setProperty("payaramicro.logo", Boolean.toString(generateLogo));
+        props.setProperty("payaramicro.logToFile", Boolean.toString(logToFile));
+        props.setProperty("payaramicro.enableAccessLog", Boolean.toString(enableAccessLog));
+        props.setProperty("payaramicro.enableAccessLogFormat", Boolean.toString(enableAccessLogFormat));
+        props.setProperty("payaramicro.logPropertiesFile", Boolean.toString(logPropertiesFile));
+        props.setProperty("payaramicro.noCluster", Boolean.toString(noCluster));
+        props.setProperty("payaramicro.disablePhoneHome", Boolean.toString(disablePhoneHome));
+
+        if (httpPort != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.port", Integer.toString(httpPort));
+        }
+
+        if (sslPort != Integer.MIN_VALUE) {
+            props.setProperty("payaramicro.sslPort", Integer.toString(sslPort));
+        }
+
+        if (enableRequestTracing) {
+            props.setProperty("payaramicro.enableRequestTracing", Boolean.toString(enableRequestTracing));
+        }
+
+        if (!requestTracingThresholdUnit.equals("SECONDS")) {
+            props.setProperty("payaramicro.requestTracingThresholdUnit", requestTracingThresholdUnit);
+        }
+
+        if (requestTracingThresholdValue != 30) {
+            props.setProperty("payaramicro.requestTracingThresholdValue", Long.toString(requestTracingThresholdValue));
+        }
+
+        // write all user defined system properties
+        if (userSystemProperties != null) {
+            Enumeration<String> names = (Enumeration<String>) userSystemProperties.propertyNames();
+            while (names.hasMoreElements()) {
+                String name = names.nextElement();
+                props.setProperty(name, userSystemProperties.getProperty(name));
+            }
+        }
+        creator.addBootProperties(props);
+
+        // add the alternate domain.xml file if present
+        if (alternateDomainXML != null && alternateDomainXML.isFile() && alternateDomainXML.canRead()) {
+            creator.setDomainXML(alternateDomainXML);
+        }
+
+        // add the alternate hazelcast config to the uberJar
+        if (alternateHZConfigFile != null) {
+            creator.setAlternateHZConfigFile(alternateHZConfigFile);
+        }
+        creator.buildUberJar();
     }
 
     private String parseRequestTracingUnit(String option) {
